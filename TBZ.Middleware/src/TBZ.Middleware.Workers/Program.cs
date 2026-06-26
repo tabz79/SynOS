@@ -19,6 +19,7 @@ builder.Services.AddHostedService<DoctorReferralProjectionWorker>();
 builder.Services.AddHostedService<ReferralPartnerProjectionWorker>();
 builder.Services.AddHostedService<TrendProjectionWorker>();
 builder.Services.AddHostedService<ReferralConversionProjectionWorker>();
+builder.Services.AddHostedService<BusinessSourceProjectionWorker>();
 
 var host = builder.Build();
 host.Run();

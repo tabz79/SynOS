@@ -42,7 +42,8 @@ namespace SynOS.Models.Events
         string? ReferralPartnerName = null,
         string? ReferralPartnerLocation = null,
         string? PatientLocation = null,
-        string? PatientPincode = null
+        string? PatientPincode = null,
+        Guid? PatientId = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -70,7 +71,8 @@ namespace SynOS.Models.Events
         string? ReferralPartnerName = null,
         string? ReferralPartnerLocation = null,
         string? PatientLocation = null,
-        string? PatientPincode = null
+        string? PatientPincode = null,
+        Guid? PatientId = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -116,7 +118,8 @@ namespace SynOS.Models.Events
         string? ReferralPartnerName = null,
         string? ReferralPartnerLocation = null,
         string? PatientLocation = null,
-        string? PatientPincode = null
+        string? PatientPincode = null,
+        Guid? PatientId = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();

@@ -220,7 +220,8 @@ namespace SynOS.Services.Operational
                     referralPartnerName,
                     referralPartnerLocation,
                     null, // PatientLocation
-                    null  // PatientPincode
+                    null, // PatientPincode
+                    patientId // PatientId
                 ));
             }
             await _db.SaveChangesAsync();

@@ -22,6 +22,8 @@ namespace TBZ.Middleware.Infrastructure
         public DbSet<ReferralPartnerFact> ReferralPartnerFacts => Set<ReferralPartnerFact>();
         public DbSet<TrendFact> TrendFacts => Set<TrendFact>();
         public DbSet<ReferralConversionFact> ReferralConversionFacts => Set<ReferralConversionFact>();
+        public DbSet<BusinessSourceFact> BusinessSourceFacts => Set<BusinessSourceFact>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -159,6 +161,17 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.ReferralPartnerId).IsRequired().HasMaxLength(100);
                 entity.HasIndex(e => new { e.LabId, e.Date, e.ReferralPartnerId }).IsUnique();
+            });
+
+            modelBuilder.Entity<BusinessSourceFact>(entity =>
+            {
+                entity.ToTable("BusinessSourceFacts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.SourceType).HasConversion<string>().IsRequired().HasMaxLength(50);
+                entity.Property(e => e.SourceId).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.SourceName).IsRequired().HasMaxLength(200);
+                entity.HasIndex(e => new { e.LabId, e.Date, e.SourceType, e.SourceId, e.IsFirstVisit }).IsUnique();
             });
         }
     }

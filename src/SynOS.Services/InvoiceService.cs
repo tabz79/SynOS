@@ -230,7 +230,8 @@ namespace SynOS.Services
                 referralPartnerName,
                 referralPartnerLocation,
                 null, // PatientLocation
-                null  // PatientPincode
+                null, // PatientPincode
+                patientId // PatientId
             ));
 
             await _context.SaveChangesAsync();

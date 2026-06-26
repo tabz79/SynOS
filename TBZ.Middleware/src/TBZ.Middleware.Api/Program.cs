@@ -14,6 +14,27 @@ builder.Services.AddDbContext<MiddlewareDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Register Leaf Services
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.OverviewService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.HealthService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.WorkflowService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.RevenueService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.TestService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.DeliveryService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.DemographicsService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.ReferralService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.BusinessSourceService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.TrendService>();
+
+// Register Section Services
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.OperationalService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.BusinessService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.IntelligenceService>();
+
+// Register Dashboard Aggregator Service
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.DashboardService>();
+
+
 var app = builder.Build();
 
 // Auto-migrate and seed default tenant
@@ -177,6 +198,7 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
         await db.ReferralPartnerFacts.ExecuteDeleteAsync();
         await db.TrendFacts.ExecuteDeleteAsync();
         await db.ReferralConversionFacts.ExecuteDeleteAsync();
+        await db.BusinessSourceFacts.ExecuteDeleteAsync();
         await db.ProjectionCheckpoints.ExecuteDeleteAsync();
         
         await transaction.CommitAsync();
