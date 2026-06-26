@@ -102,8 +102,13 @@ namespace SynOS.Api.BackgroundServices
                             Content = new StringContent(json, Encoding.UTF8, "application/json")
                         };
 
+                        var pendingCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "Pending" || e.Status == "Failed", stoppingToken);
+                        var deadLetterCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "DeadLetter", stoppingToken);
+
                         request.Headers.Add("X-Lab-Id", evt.LabId);
                         request.Headers.Add("X-Api-Key", _apiKey);
+                        request.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
+                        request.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());
 
                         var response = await _httpClient.SendAsync(request, stoppingToken);
 

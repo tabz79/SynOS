@@ -466,6 +466,41 @@ namespace SynOS.Services.Phlebotomy
                         };
                         await _db.Reports.AddAsync(report);
 
+                        // Resolve demographics and referral dimensions for event
+                        var visit = await _db.Visits.FindAsync(visitId);
+                        string? gender = null;
+                        DateTime? dob = null;
+                        Guid? referrerId = null;
+                        string? referrerName = null;
+                        Guid? referralPartnerId = null;
+                        string? referralPartnerName = null;
+                        string? referralPartnerLocation = null;
+
+                        var patient = await _db.Patients.FindAsync(branchInfo.PatientId);
+                        if (patient != null)
+                        {
+                            gender = patient.Gender;
+                            dob = patient.DateOfBirth;
+                        }
+
+                        if (visit != null)
+                        {
+                            referrerId = visit.ReferrerId;
+                            if (referrerId.HasValue)
+                            {
+                                var referrer = await _db.Referrers.FindAsync(referrerId.Value);
+                                referrerName = referrer?.ProviderName;
+                            }
+
+                            referralPartnerId = visit.ReferralPartnerId;
+                            if (referralPartnerId.HasValue)
+                            {
+                                var partner = await _db.ReferralPartners.FindAsync(referralPartnerId.Value);
+                                referralPartnerName = partner?.Name;
+                                referralPartnerLocation = partner?.Location;
+                            }
+                        }
+
                         _outboxService.Enqueue(new ReportDraftedEvent(
                             report.ReportId,
                             report.VisitId,
@@ -474,7 +509,16 @@ namespace SynOS.Services.Phlebotomy
                             report.SourceType,
                             report.SourceId,
                             report.Status,
-                            branchInfo.BranchId.Value
+                            branchInfo.BranchId.Value,
+                            gender,
+                            dob,
+                            referrerId,
+                            referrerName,
+                            referralPartnerId,
+                            referralPartnerName,
+                            referralPartnerLocation,
+                            null, // PatientLocation
+                            null  // PatientPincode
                         ));
                     }
                 }

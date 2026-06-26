@@ -10,7 +10,9 @@ namespace SynOS.Models.Events
         string Gender,
         DateTime DateOfBirth,
         string CurrentPhoneNumber,
-        Guid? BranchId = null
+        Guid? BranchId = null,
+        string? PatientLocation = null,
+        string? PatientPincode = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -31,7 +33,16 @@ namespace SynOS.Models.Events
         decimal Total,
         string Status,
         DateTime DueDate,
-        Guid? BranchId
+        Guid? BranchId,
+        string? Gender = null,
+        DateTime? DateOfBirth = null,
+        Guid? ReferringDoctorId = null,
+        string? ReferringDoctorName = null,
+        Guid? ReferralPartnerId = null,
+        string? ReferralPartnerName = null,
+        string? ReferralPartnerLocation = null,
+        string? PatientLocation = null,
+        string? PatientPincode = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -50,7 +61,16 @@ namespace SynOS.Models.Events
         string Method,
         Guid ReceivedByUserId,
         DateTime ReceivedAt,
-        Guid? BranchId
+        Guid? BranchId,
+        string? Gender = null,
+        DateTime? DateOfBirth = null,
+        Guid? ReferringDoctorId = null,
+        string? ReferringDoctorName = null,
+        Guid? ReferralPartnerId = null,
+        string? ReferralPartnerName = null,
+        string? ReferralPartnerLocation = null,
+        string? PatientLocation = null,
+        string? PatientPincode = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -87,7 +107,16 @@ namespace SynOS.Models.Events
         string Department,
         string Status,
         DateTime StartedAt,
-        Guid? BranchId
+        Guid? BranchId,
+        string? Gender = null,
+        DateTime? DateOfBirth = null,
+        Guid? ReferringDoctorId = null,
+        string? ReferringDoctorName = null,
+        Guid? ReferralPartnerId = null,
+        string? ReferralPartnerName = null,
+        string? ReferralPartnerLocation = null,
+        string? PatientLocation = null,
+        string? PatientPincode = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -106,7 +135,16 @@ namespace SynOS.Models.Events
         string SourceType,
         Guid SourceId,
         string Status,
-        Guid? BranchId
+        Guid? BranchId,
+        string? Gender = null,
+        DateTime? DateOfBirth = null,
+        Guid? ReferringDoctorId = null,
+        string? ReferringDoctorName = null,
+        Guid? ReferralPartnerId = null,
+        string? ReferralPartnerName = null,
+        string? ReferralPartnerLocation = null,
+        string? PatientLocation = null,
+        string? PatientPincode = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
@@ -125,7 +163,16 @@ namespace SynOS.Models.Events
         string Status,
         Guid? SignedByUserId,
         DateTimeOffset? SignedAt,
-        Guid? BranchId
+        Guid? BranchId,
+        string? Gender = null,
+        DateTime? DateOfBirth = null,
+        Guid? ReferringDoctorId = null,
+        string? ReferringDoctorName = null,
+        Guid? ReferralPartnerId = null,
+        string? ReferralPartnerName = null,
+        string? ReferralPartnerLocation = null,
+        string? PatientLocation = null,
+        string? PatientPincode = null
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();

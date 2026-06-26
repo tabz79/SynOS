@@ -165,6 +165,42 @@ namespace SynOS.Services.Operational
                 .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Status != OrderStatus.Cancelled)
                 .ToListAsync();
 
+            // Resolve demographics and referral dimensions for event
+            var visit = await _db.Visits.FindAsync(snapshot.VisitId);
+            Guid? patientId = visit?.PatientId;
+            string? gender = null;
+            DateTime? dob = null;
+            Guid? referrerId = null;
+            string? referrerName = null;
+            Guid? referralPartnerId = null;
+            string? referralPartnerName = null;
+            string? referralPartnerLocation = null;
+
+            if (patientId.HasValue)
+            {
+                var patient = await _db.Patients.FindAsync(patientId.Value);
+                gender = patient?.Gender;
+                dob = patient?.DateOfBirth;
+            }
+
+            if (visit != null)
+            {
+                referrerId = visit.ReferrerId;
+                if (referrerId.HasValue)
+                {
+                    var referrer = await _db.Referrers.FindAsync(referrerId.Value);
+                    referrerName = referrer?.ProviderName;
+                }
+
+                referralPartnerId = visit.ReferralPartnerId;
+                if (referralPartnerId.HasValue)
+                {
+                    var partner = await _db.ReferralPartners.FindAsync(referralPartnerId.Value);
+                    referralPartnerName = partner?.Name;
+                    referralPartnerLocation = partner?.Location;
+                }
+            }
+
             foreach (var order in orders)
             {
                 _outboxService.Enqueue(new ProcessingStartedEvent(
@@ -175,7 +211,16 @@ namespace SynOS.Services.Operational
                     order.Department ?? "Pathology",
                     "Active",
                     DateTime.UtcNow,
-                    snapshot.BranchId
+                    snapshot.BranchId,
+                    gender,
+                    dob,
+                    referrerId,
+                    referrerName,
+                    referralPartnerId,
+                    referralPartnerName,
+                    referralPartnerLocation,
+                    null, // PatientLocation
+                    null  // PatientPincode
                 ));
             }
             await _db.SaveChangesAsync();

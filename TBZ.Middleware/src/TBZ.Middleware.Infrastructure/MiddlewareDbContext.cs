@@ -17,6 +17,11 @@ namespace TBZ.Middleware.Infrastructure
         public DbSet<TestVolumeFact> TestVolumeFacts => Set<TestVolumeFact>();
         public DbSet<WorkflowFact> WorkflowFacts => Set<WorkflowFact>();
         public DbSet<DeliveryFact> DeliveryFacts => Set<DeliveryFact>();
+        public DbSet<PatientDemographicFact> PatientDemographicFacts => Set<PatientDemographicFact>();
+        public DbSet<DoctorReferralFact> DoctorReferralFacts => Set<DoctorReferralFact>();
+        public DbSet<ReferralPartnerFact> ReferralPartnerFacts => Set<ReferralPartnerFact>();
+        public DbSet<TrendFact> TrendFacts => Set<TrendFact>();
+        public DbSet<ReferralConversionFact> ReferralConversionFacts => Set<ReferralConversionFact>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -102,6 +107,58 @@ namespace TBZ.Middleware.Infrastructure
                 entity.HasKey(e => e.ReportId);
                 entity.Property(e => e.DeliveryMethod).HasMaxLength(50);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<PatientDemographicFact>(entity =>
+            {
+                entity.ToTable("PatientDemographicFacts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.AgeGroup).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Gender).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.PatientLocation).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.PatientPincode).IsRequired().HasMaxLength(20);
+                entity.HasIndex(e => new { e.LabId, e.Date, e.AgeGroup, e.Gender, e.PatientLocation, e.PatientPincode }).IsUnique();
+            });
+
+            modelBuilder.Entity<DoctorReferralFact>(entity =>
+            {
+                entity.ToTable("DoctorReferralFacts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.DoctorId).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.DoctorName).IsRequired().HasMaxLength(200);
+                entity.HasIndex(e => new { e.LabId, e.Date, e.DoctorId }).IsUnique();
+            });
+
+            modelBuilder.Entity<ReferralPartnerFact>(entity =>
+            {
+                entity.ToTable("ReferralPartnerFacts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.ReferralPartnerId).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ReferralPartnerName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.ReferralPartnerLocation).IsRequired().HasMaxLength(200);
+                entity.HasIndex(e => new { e.LabId, e.Date, e.ReferralPartnerId }).IsUnique();
+            });
+
+            modelBuilder.Entity<TrendFact>(entity =>
+            {
+                entity.ToTable("TrendFacts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.EntityType).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.EntityKey).IsRequired().HasMaxLength(200);
+                entity.HasIndex(e => new { e.LabId, e.Date, e.EntityType, e.EntityKey }).IsUnique();
+            });
+
+            modelBuilder.Entity<ReferralConversionFact>(entity =>
+            {
+                entity.ToTable("ReferralConversionFacts");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.ReferralPartnerId).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => new { e.LabId, e.Date, e.ReferralPartnerId }).IsUnique();
             });
         }
     }

@@ -83,6 +83,18 @@ namespace SynOS.Models.Entities
         [StringLength(500)]
         public string? BackupPath { get; set; }
 
+        [Required]
+        [StringLength(100)]
+        public string OperatingRegion { get; set; } = "Khammam";
+
+        [Required]
+        [StringLength(100)]
+        public string LabCity { get; set; } = "Khammam";
+
+        [Required]
+        [StringLength(20)]
+        public string LabPincode { get; set; } = "507001";
+
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

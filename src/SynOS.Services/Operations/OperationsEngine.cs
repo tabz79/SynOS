@@ -763,6 +763,41 @@ namespace SynOS.Services.Operations
                 "Report"
             );
 
+            // Resolve demographics and referral dimensions for event
+            Guid? patientId = report.PatientId;
+            string? gender = null;
+            DateTime? dob = null;
+            Guid? referrerId = null;
+            string? referrerName = null;
+            Guid? referralPartnerId = null;
+            string? referralPartnerName = null;
+            string? referralPartnerLocation = null;
+
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient != null)
+            {
+                gender = patient.Gender;
+                dob = patient.DateOfBirth;
+            }
+
+            if (visit != null)
+            {
+                referrerId = visit.ReferrerId;
+                if (referrerId.HasValue)
+                {
+                    var referrer = await _context.Referrers.FindAsync(referrerId.Value);
+                    referrerName = referrer?.ProviderName;
+                }
+
+                referralPartnerId = visit.ReferralPartnerId;
+                if (referralPartnerId.HasValue)
+                {
+                    var partner = await _context.ReferralPartners.FindAsync(referralPartnerId.Value);
+                    referralPartnerName = partner?.Name;
+                    referralPartnerLocation = partner?.Location;
+                }
+            }
+
             // Enqueue ReportSignedEvent
             _outboxService.Enqueue(new ReportSignedEvent(
                 report.ReportId,
@@ -772,7 +807,16 @@ namespace SynOS.Services.Operations
                 report.Status,
                 report.SignedByUserId,
                 report.SignedAt,
-                branchId
+                branchId,
+                gender,
+                dob,
+                referrerId,
+                referrerName,
+                referralPartnerId,
+                referralPartnerName,
+                referralPartnerLocation,
+                null, // PatientLocation
+                null  // PatientPincode
             ));
 
             // Persist (Atomic State + Event)

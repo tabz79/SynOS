@@ -14,6 +14,11 @@ builder.Services.AddHostedService<DailyOperationsProjectionWorker>();
 builder.Services.AddHostedService<TestVolumeProjectionWorker>();
 builder.Services.AddHostedService<WorkflowProjectionWorker>();
 builder.Services.AddHostedService<DeliveryProjectionWorker>();
+builder.Services.AddHostedService<PatientDemographicProjectionWorker>();
+builder.Services.AddHostedService<DoctorReferralProjectionWorker>();
+builder.Services.AddHostedService<ReferralPartnerProjectionWorker>();
+builder.Services.AddHostedService<TrendProjectionWorker>();
+builder.Services.AddHostedService<ReferralConversionProjectionWorker>();
 
 var host = builder.Build();
 host.Run();

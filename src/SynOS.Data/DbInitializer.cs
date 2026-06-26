@@ -521,6 +521,9 @@ namespace SynOS.Data
                 Accreditation = "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
                 FooterDisclaimer = "* Clinical correlation of findings. If necessary Discuss / Repeat.",
                 HeaderLogoUrl = "/branding/logo_placeholder.png", // Skeleton mode will ignore this but model requires it
+                OperatingRegion = "Khammam",
+                LabCity = "Khammam",
+                LabPincode = "507001",
                 UpdatedAt = DateTimeOffset.UtcNow
             });
 

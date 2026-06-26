@@ -138,6 +138,7 @@ namespace SynOS.Services
                 CreatedAt = DateTime.UtcNow,
                 IsReferred = visitDto.IsReferred ?? false,
                 ReferralPartnerId = visitDto.ReferralPartnerId,
+                ReferrerId = visitDto.ReferrerId,
                 PaymentCollectionModel = visitDto.PaymentCollectionModel,
                 ReferrerText = visitDto.ReferrerText,
                 CreatedByUserId = actorUserId != Guid.Empty ? actorUserId : (Guid?)null,
@@ -276,6 +277,29 @@ namespace SynOS.Services
                 visitMetadata
             );
 
+            // Resolve demographics and referral dimensions for event
+            var patientEntity = await _context.Patients.FindAsync(visit.PatientId);
+            var gender = patientEntity?.Gender;
+            var dob = patientEntity?.DateOfBirth;
+
+            Guid? referrerId = visit.ReferrerId;
+            string? referrerName = null;
+            if (referrerId.HasValue)
+            {
+                var referrer = await _context.Referrers.FindAsync(referrerId.Value);
+                referrerName = referrer?.ProviderName;
+            }
+
+            Guid? referralPartnerId = visit.ReferralPartnerId;
+            string? referralPartnerName = null;
+            string? referralPartnerLocation = null;
+            if (referralPartnerId.HasValue)
+            {
+                var partner = await _context.ReferralPartners.FindAsync(referralPartnerId.Value);
+                referralPartnerName = partner?.Name;
+                referralPartnerLocation = partner?.Location;
+            }
+
             // Enqueue BillCreatedEvent
             _outboxService.Enqueue(new BillCreatedEvent(
                 invoice.InvoiceId,
@@ -287,7 +311,16 @@ namespace SynOS.Services
                 invoice.Total,
                 invoice.Status,
                 invoice.DueDate,
-                visit.BranchId
+                visit.BranchId,
+                gender,
+                dob,
+                referrerId,
+                referrerName,
+                referralPartnerId,
+                referralPartnerName,
+                referralPartnerLocation,
+                null, // PatientLocation
+                null  // PatientPincode
             ));
             await _context.SaveChangesAsync();
 

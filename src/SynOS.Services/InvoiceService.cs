@@ -165,14 +165,50 @@ namespace SynOS.Services
             else
             {
                 invoice.Status = "Paid";
-                var visit = await _context.Visits.FindAsync(invoice.VisitId);
-                if (visit != null) 
+                var targetVisit = await _context.Visits.FindAsync(invoice.VisitId);
+                if (targetVisit != null) 
                 {
-                    visit.Status = VisitStatus.Paid;
-                    if (visit.Token.StartsWith("DRAFT"))
+                    targetVisit.Status = VisitStatus.Paid;
+                    if (targetVisit.Token.StartsWith("DRAFT"))
                     {
-                        await _visitService.AssignOfficialTokenAsync(visit.VisitId, paymentDto.ReceivedByUserId);
+                        await _visitService.AssignOfficialTokenAsync(targetVisit.VisitId, paymentDto.ReceivedByUserId);
                     }
+                }
+            }
+
+            // Resolve demographics and referral dimensions for event
+            var visit = await _context.Visits.FindAsync(invoice.VisitId);
+            Guid? patientId = visit?.PatientId;
+            string? gender = null;
+            DateTime? dob = null;
+            Guid? referrerId = null;
+            string? referrerName = null;
+            Guid? referralPartnerId = null;
+            string? referralPartnerName = null;
+            string? referralPartnerLocation = null;
+
+            if (patientId.HasValue)
+            {
+                var patient = await _context.Patients.FindAsync(patientId.Value);
+                gender = patient?.Gender;
+                dob = patient?.DateOfBirth;
+            }
+
+            if (visit != null)
+            {
+                referrerId = visit.ReferrerId;
+                if (referrerId.HasValue)
+                {
+                    var referrer = await _context.Referrers.FindAsync(referrerId.Value);
+                    referrerName = referrer?.ProviderName;
+                }
+
+                referralPartnerId = visit.ReferralPartnerId;
+                if (referralPartnerId.HasValue)
+                {
+                    var partner = await _context.ReferralPartners.FindAsync(referralPartnerId.Value);
+                    referralPartnerName = partner?.Name;
+                    referralPartnerLocation = partner?.Location;
                 }
             }
 
@@ -185,7 +221,16 @@ namespace SynOS.Services
                 payment.Method,
                 payment.ReceivedByUserId,
                 payment.ReceivedAt,
-                invoice.Visit?.BranchId ?? _userContext.CurrentBranchId
+                visit?.BranchId ?? _userContext.CurrentBranchId,
+                gender,
+                dob,
+                referrerId,
+                referrerName,
+                referralPartnerId,
+                referralPartnerName,
+                referralPartnerLocation,
+                null, // PatientLocation
+                null  // PatientPincode
             ));
 
             await _context.SaveChangesAsync();

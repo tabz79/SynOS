@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TBZ.Middleware.Api.DTOs;
+using TBZ.Middleware.Api.Endpoints;
 using TBZ.Middleware.Domain;
 using TBZ.Middleware.Infrastructure;
 
@@ -135,6 +136,26 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
         }
     }
 
+    // Capture and cache Lab Health metrics from incoming headers
+    context.Request.Headers.TryGetValue("X-Pending-Outbox-Count", out var pendingOutboxStr);
+    context.Request.Headers.TryGetValue("X-Dead-Letter-Count", out var deadLetterStr);
+
+    var pendingOutbox = 0;
+    var deadLetter = 0;
+    if (int.TryParse(pendingOutboxStr, out var poCount))
+    {
+        pendingOutbox = poCount;
+    }
+    if (int.TryParse(deadLetterStr, out var dlCount))
+    {
+        deadLetter = dlCount;
+    }
+
+    var liveMetrics = LabHealthCache.Metrics.GetOrAdd(dto.LabId, _ => new LiveLabMetrics());
+    liveMetrics.PendingOutboxCount = pendingOutbox;
+    liveMetrics.DeadLetterCount = deadLetter;
+    liveMetrics.LastEventReceivedAt = DateTime.UtcNow;
+
     await db.SaveChangesAsync();
 
     return Results.Ok(new { success = true, eventId = dto.EventId });
@@ -151,6 +172,11 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
         await db.TestVolumeFacts.ExecuteDeleteAsync();
         await db.WorkflowFacts.ExecuteDeleteAsync();
         await db.DeliveryFacts.ExecuteDeleteAsync();
+        await db.PatientDemographicFacts.ExecuteDeleteAsync();
+        await db.DoctorReferralFacts.ExecuteDeleteAsync();
+        await db.ReferralPartnerFacts.ExecuteDeleteAsync();
+        await db.TrendFacts.ExecuteDeleteAsync();
+        await db.ReferralConversionFacts.ExecuteDeleteAsync();
         await db.ProjectionCheckpoints.ExecuteDeleteAsync();
         
         await transaction.CommitAsync();
@@ -164,5 +190,7 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
 })
 .WithName("ResetProjections")
 .WithOpenApi();
+
+app.MapControlTowerEndpoints();
 
 app.Run();
