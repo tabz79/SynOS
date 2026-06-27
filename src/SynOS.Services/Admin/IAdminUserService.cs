@@ -20,6 +20,7 @@ namespace SynOS.Services.Admin
         Task SyncOperationalResourcesAsync();
         Task UpdateUserAsync(Guid userId, string name, string username, string email, string? designation, bool isActive, string departmentCode);
         Task ResetPasswordAsync(Guid userId, string newPassword);
+        Task UnlockUserAsync(Guid userId);
         Task<IEnumerable<DepartmentMaster>> GetAllDepartmentsAsync();
         Task<DepartmentMaster> CreateDepartmentAsync(string code, string name, string? macroDepartment = null);
         Task<DepartmentMaster> UpdateDepartmentAsync(Guid departmentId, string name, string? macroDepartment, bool isActive);

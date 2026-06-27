@@ -410,6 +410,17 @@ namespace SynOS.Services.Admin
             await _context.SaveChangesAsync();
         }
 
+        public async Task UnlockUserAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) throw new KeyNotFoundException("User not found.");
+
+            user.FailedLoginAttempts = 0;
+            user.LockoutEnd = null;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<DepartmentMaster>> GetAllDepartmentsAsync()
         {
             return await _context.DepartmentMasters.Where(d => d.IsActive).OrderBy(d => d.Name).ToListAsync();

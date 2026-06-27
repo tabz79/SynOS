@@ -28,7 +28,8 @@ import {
     LayoutDashboard,
     Edit,
     Check,
-    X
+    X,
+    Unlock
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { AdminApi } from '@/api/admin';
@@ -2377,6 +2378,20 @@ export function IdentityProvisioningScreen() {
         }
     };
 
+    const handleUnlockUser = async (user) => {
+        if (!window.confirm(`Unlock account for ${user.name}?`)) return;
+        setLoading(true);
+        try {
+            await AdminApi.unlockUser(user.userId);
+            alert("User account unlocked successfully.");
+            await loadData();
+        } catch (error) {
+            alert("Failed to unlock user: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const pending = staff.filter(e => !e.userId && e.isActive);
 
     return (
@@ -2618,6 +2633,13 @@ export function IdentityProvisioningScreen() {
                                                 title="Reset Password"
                                             >
                                                 <Fingerprint className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleUnlockUser(user)}
+                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors"
+                                                title="Unlock Account"
+                                            >
+                                                <Unlock className="w-3.5 h-3.5" />
                                             </button>
                                             <button 
                                                 onClick={() => fileInputRefs.current[user.userId]?.click()}

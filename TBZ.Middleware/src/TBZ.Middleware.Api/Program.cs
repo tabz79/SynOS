@@ -34,8 +34,30 @@ builder.Services.AddScoped<TBZ.Middleware.Api.Services.IntelligenceService>();
 // Register Dashboard Aggregator Service
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.DashboardService>();
 
+// Register AI Context Services
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.DoctorContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.ReferralPartnerContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.BusinessSourceContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.TestContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.DemographicsContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.LabContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.ContextMetadataService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.EntityContextService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.ContextService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
+
+app.UseCors();
 
 // Auto-migrate and seed default tenant
 using (var scope = app.Services.CreateScope())

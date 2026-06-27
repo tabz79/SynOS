@@ -1,13 +1,7 @@
-Windows PowerShell
-Copyright (C) Microsoft Corporation. All rights reserved.
-
-Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
-
-PS C:\Users\Asus> cd D:\Projects\SynOS-Synthesized-Lab-Intelligence
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --urls "http://localhost:5000"
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --launch-profile http
 Building...
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (21ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
       SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
       Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
@@ -20,13 +14,42 @@ info: Microsoft.EntityFrameworkCore.Database.Command[20101]
 info: Microsoft.EntityFrameworkCore.Migrations[20405]
       No migrations were applied. The database is already up to date.
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (8ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      Executed DbCommand (6ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
       SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
       FROM "Labs" AS "l"
       WHERE "l"."Id" = @__defaultLabId_0
       LIMIT 1
 info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: http://localhost:5000
+      Now listening on: http://localhost:5069
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --launch-profile http
+Building...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (168ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
+      FROM "Labs" AS "l"
+      WHERE "l"."Id" = @__defaultLabId_0
+      LIMIT 1
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5069
 info: Microsoft.Hosting.Lifetime[0]
       Application started. Press Ctrl+C to shut down.
 info: Microsoft.Hosting.Lifetime[0]
@@ -34,2390 +57,302 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api
 info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (2ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (14ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (6ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__labId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__labId_0
-      LIMIT 1
+      Executed DbCommand (14ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ReceivedAt"
+      FROM "StoredEvents" AS "s"
+      WHERE "s"."LabId" = @__resolvedLabId_0
+      ORDER BY "s"."Sequence" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
+      FROM "ProjectionCheckpoints" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__targetDate_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
+      FROM "DailyOperationsFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" = @__targetDate_1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" IS NOT NULL AND "w"."PaymentReceivedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."PaymentReceivedAt" IS NOT NULL AND "w"."SampleCollectedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."SampleCollectedAt" IS NOT NULL AND "w"."ProcessingStartedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."ProcessingStartedAt" IS NOT NULL AND "w"."ReportSignedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "DeliveryFacts" AS "d"
+      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."Status" = 'Pending'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "w"."VisitId", "w"."BranchId", "w"."CreatedAt", "w"."LabId", "w"."PatientId", "w"."PatientRegisteredAt", "w"."PaymentReceivedAt", "w"."ProcessingStartedAt", "w"."ReportDeliveredAt", "w"."ReportSignedAt", "w"."SampleCollectedAt", "w"."UpdatedAt", "w"."VisitCreatedAt"
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" >= @__start_1 AND "w"."VisitCreatedAt" <= @__end_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."ReportId", "d"."CreatedAt", "d"."DeliveredAt", "d"."DeliveryMethod", "d"."PatientId", "d"."RequestedAt", "d"."Status", "d"."UpdatedAt"
+      FROM "DeliveryFacts" AS "d"
+      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."CreatedAt" >= @__start_1 AND "d"."CreatedAt" <= @__end_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ReceivedAt"
+      FROM "StoredEvents" AS "s"
+      WHERE "s"."LabId" = @__resolvedLabId_0
+      ORDER BY "s"."Sequence" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
+      FROM "ProjectionCheckpoints" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
+      FROM "DailyOperationsFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_1 AND "d"."Date" <= @__end_2
+      ORDER BY "d"."Date"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "b"."Id", "b"."CreatedAt", "b"."Date", "b"."IsFirstVisit", "b"."LabId", "b"."PatientCount", "b"."RevenueGenerated", "b"."SourceId", "b"."SourceName", "b"."SourceType", "b"."TestCount", "b"."UpdatedAt"
+      FROM "BusinessSourceFacts" AS "b"
+      WHERE "b"."LabId" = @__resolvedLabId_0 AND "b"."Date" >= @__start_Date_1 AND "b"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."CreatedAt", "d"."Date", "d"."DoctorId", "d"."DoctorName", "d"."LabId", "d"."PatientCount", "d"."RevenueGenerated", "d"."TestCount", "d"."UpdatedAt"
+      FROM "DoctorReferralFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_Date_1 AND "d"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CreatedAt", "r"."Date", "r"."LabId", "r"."PatientCount", "r"."ReferralPartnerId", "r"."ReferralPartnerLocation", "r"."ReferralPartnerName", "r"."RevenueGenerated", "r"."TestCount", "r"."UpdatedAt"
+      FROM "ReferralPartnerFacts" AS "r"
+      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."Date" >= @__start_Date_1 AND "r"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__previousStart_1='?' (DbType = DateTime), @__currentEnd_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."Count", "t"."CreatedAt", "t"."Date", "t"."EntityKey", "t"."EntityType", "t"."LabId", "t"."Revenue", "t"."UpdatedAt"
+      FROM "TrendFacts" AS "t"
+      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__previousStart_1 AND "t"."Date" <= @__currentEnd_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT "d"."DoctorId", "d"."DoctorName"
+      FROM "DoctorReferralFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."DoctorId" <> 'Direct'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT "r"."ReferralPartnerId", "r"."ReferralPartnerName"
+      FROM "ReferralPartnerFacts" AS "r"
+      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."ReferralPartnerId" <> 'Direct'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."CreatedAt", "t"."Date", "t"."Department", "t"."LabId", "t"."TestCode", "t"."UpdatedAt", "t"."VolumeCount"
+      FROM "TestVolumeFacts" AS "t"
+      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__start_1 AND "t"."Date" <= @__end_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Id", "p"."AgeGroup", "p"."CreatedAt", "p"."Date", "p"."Gender", "p"."LabId", "p"."PatientCount", "p"."PatientLocation", "p"."PatientPincode", "p"."Revenue", "p"."TestCount", "p"."UpdatedAt"
+      FROM "PatientDemographicFacts" AS "p"
+      WHERE "p"."LabId" = @__resolvedLabId_0 AND "p"."Date" >= @__start_Date_1 AND "p"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ReceivedAt"
+      FROM "StoredEvents" AS "s"
+      WHERE "s"."LabId" = @__resolvedLabId_0
+      ORDER BY "s"."Sequence" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
+      FROM "ProjectionCheckpoints" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__targetDate_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
+      FROM "DailyOperationsFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" = @__targetDate_1
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" IS NOT NULL AND "w"."PaymentReceivedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."PaymentReceivedAt" IS NOT NULL AND "w"."SampleCollectedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."SampleCollectedAt" IS NOT NULL AND "w"."ProcessingStartedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."ProcessingStartedAt" IS NOT NULL AND "w"."ReportSignedAt" IS NULL
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*)
+      FROM "DeliveryFacts" AS "d"
+      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."Status" = 'Pending'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "w"."VisitId", "w"."BranchId", "w"."CreatedAt", "w"."LabId", "w"."PatientId", "w"."PatientRegisteredAt", "w"."PaymentReceivedAt", "w"."ProcessingStartedAt", "w"."ReportDeliveredAt", "w"."ReportSignedAt", "w"."SampleCollectedAt", "w"."UpdatedAt", "w"."VisitCreatedAt"
+      FROM "WorkflowFacts" AS "w"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" >= @__start_1 AND "w"."VisitCreatedAt" <= @__end_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."ReportId", "d"."CreatedAt", "d"."DeliveredAt", "d"."DeliveryMethod", "d"."PatientId", "d"."RequestedAt", "d"."Status", "d"."UpdatedAt"
+      FROM "DeliveryFacts" AS "d"
+      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
+      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."CreatedAt" >= @__start_1 AND "d"."CreatedAt" <= @__end_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "s"."ReceivedAt"
+      FROM "StoredEvents" AS "s"
+      WHERE "s"."LabId" = @__resolvedLabId_0
+      ORDER BY "s"."Sequence" DESC
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
+      FROM "ProjectionCheckpoints" AS "p"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
+      FROM "DailyOperationsFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_1 AND "d"."Date" <= @__end_2
+      ORDER BY "d"."Date"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "b"."Id", "b"."CreatedAt", "b"."Date", "b"."IsFirstVisit", "b"."LabId", "b"."PatientCount", "b"."RevenueGenerated", "b"."SourceId", "b"."SourceName", "b"."SourceType", "b"."TestCount", "b"."UpdatedAt"
+      FROM "BusinessSourceFacts" AS "b"
+      WHERE "b"."LabId" = @__resolvedLabId_0 AND "b"."Date" >= @__start_Date_1 AND "b"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "d"."Id", "d"."CreatedAt", "d"."Date", "d"."DoctorId", "d"."DoctorName", "d"."LabId", "d"."PatientCount", "d"."RevenueGenerated", "d"."TestCount", "d"."UpdatedAt"
+      FROM "DoctorReferralFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_Date_1 AND "d"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "r"."Id", "r"."CreatedAt", "r"."Date", "r"."LabId", "r"."PatientCount", "r"."ReferralPartnerId", "r"."ReferralPartnerLocation", "r"."ReferralPartnerName", "r"."RevenueGenerated", "r"."TestCount", "r"."UpdatedAt"
+      FROM "ReferralPartnerFacts" AS "r"
+      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."Date" >= @__start_Date_1 AND "r"."Date" <= @__end_Date_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__previousStart_1='?' (DbType = DateTime), @__currentEnd_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."Count", "t"."CreatedAt", "t"."Date", "t"."EntityKey", "t"."EntityType", "t"."LabId", "t"."Revenue", "t"."UpdatedAt"
+      FROM "TrendFacts" AS "t"
+      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__previousStart_1 AND "t"."Date" <= @__currentEnd_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT "d"."DoctorId", "d"."DoctorName"
+      FROM "DoctorReferralFacts" AS "d"
+      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."DoctorId" <> 'Direct'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT DISTINCT "r"."ReferralPartnerId", "r"."ReferralPartnerName"
+      FROM "ReferralPartnerFacts" AS "r"
+      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."ReferralPartnerId" <> 'Direct'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "t"."Id", "t"."CreatedAt", "t"."Date", "t"."Department", "t"."LabId", "t"."TestCode", "t"."UpdatedAt", "t"."VolumeCount"
+      FROM "TestVolumeFacts" AS "t"
+      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__start_1 AND "t"."Date" <= @__end_2
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
+      SELECT "p"."Id", "p"."AgeGroup", "p"."CreatedAt", "p"."Date", "p"."Gender", "p"."LabId", "p"."PatientCount", "p"."PatientLocation", "p"."PatientPincode", "p"."Revenue", "p"."TestCount", "p"."UpdatedAt"
+      FROM "PatientDemographicFacts" AS "p"
+      WHERE "p"."LabId" = @__resolvedLabId_0 AND "p"."Date" >= @__start_Date_1 AND "p"."Date" <= @__end_Date_2
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --launch-profile http
+Building...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (87ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20405]
+      No migrations were applied. The database is already up to date.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (32ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
+      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
+      FROM "Labs" AS "l"
+      WHERE "l"."Id" = @__defaultLabId_0
+      LIMIT 1
+fail: Microsoft.Extensions.Hosting.Internal.Host[11]
+      Hosting failed to start
+      System.IO.IOException: Failed to bind to address http://127.0.0.1:5069: address already in use.
+       ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+       ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+         at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+         at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+         at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+         --- End of inner exception stack trace ---
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+      --- End of stack trace from previous location ---
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+         --- End of inner exception stack trace ---
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+         at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+         at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+         at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+Unhandled exception. System.IO.IOException: Failed to bind to address http://127.0.0.1:5069: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+ ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
+   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
+   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api\Program.cs:line 240

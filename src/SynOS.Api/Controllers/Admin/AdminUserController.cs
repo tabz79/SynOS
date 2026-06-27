@@ -58,6 +58,20 @@ namespace SynOS.Api.Controllers.Admin
             }
         }
 
+        [HttpPost("{id}/unlock")]
+        public async Task<IActionResult> UnlockUser(Guid id)
+        {
+            try
+            {
+                await _adminUserService.UnlockUserAsync(id);
+                return Ok(new { Message = "User account unlocked successfully." });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
         [HttpPut("{id}/status")]
         public async Task<IActionResult> SetUserStatus(Guid id, [FromBody] SetUserStatusRequest request)
         {

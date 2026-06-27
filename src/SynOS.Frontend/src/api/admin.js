@@ -39,6 +39,10 @@ export const AdminApi = {
         return apiClient.post(`${API_BASE}/users/${id}/reset-password`, { password });
     },
 
+    unlockUser: async (id) => {
+        return apiClient.post(`${API_BASE}/users/${id}/unlock`);
+    },
+
     assignBranchRole: async (id, branchId, roleId, roleName) => {
         return apiClient.post(`${API_BASE}/users/${id}/branches`, { branchId, roleId, roleName });
     },

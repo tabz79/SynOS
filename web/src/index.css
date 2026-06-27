@@ -6,29 +6,82 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Basic global styles, apply dark mode by default */
+/* Custom CSS Scrollbar and grid styling */
 html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Inter', 'Manrope', sans-serif;
-  @apply bg-background text-textPrimary; /* Apply Tailwind colors */
+  font-family: 'Inter', sans-serif;
+  background-color: #060814;
+  color: #ffffff;
+  overflow-x: hidden;
 }
 
-/* Custom scrollbar for dark mode (optional) */
+/* Blueprint grid background */
+.tech-grid {
+  background-image: 
+    linear-gradient(rgba(30, 38, 77, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 38, 77, 0.15) 1px, transparent 1px);
+  background-size: 80px 80px;
+  background-position: center top;
+}
+
+/* Custom scrollbar for dark mode */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-card;
+  background: #060814;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-textSecondary rounded-full;
+  background: #1e264d;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-textPrimary;
+  background: #2d3875;
+}
+
+/* Donut chart keyframes and rotation animation */
+@keyframes dash {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-dash {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: dash 1.5s ease-out forwards;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.pulsing-glow {
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+@keyframes orbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.orbiting-ring {
+  animation: orbit 20s linear infinite;
+}
+
+.font-display {
+  font-family: 'Outfit', sans-serif;
 }

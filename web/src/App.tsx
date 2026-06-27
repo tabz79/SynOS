@@ -2,7 +2,7 @@
 // Author: Gemini
 // Date: 2025-11-13
 
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,6 +12,7 @@ import AppointmentsPage from './pages/AppointmentsPage';
 import VisitsPage from './pages/VisitsPage'; // Import the new VisitsPage
 import OutsourcedPayablesScreen from './pages/finance/OutsourcedPayablesScreen';
 import AdminDashboard from './pages/AdminDashboard';
+import ControlTowerDashboard from './pages/controltower/ControlTowerDashboard';
 import './App.css'; // Assuming some basic app-wide styles
 
 // Dummy components for demonstration
@@ -27,6 +28,16 @@ const UnauthorizedPage = () => <h2>403 - Unauthorized Access</h2>;
 
 function App() {
   const { isAuthenticated, user, logout, hasRole } = useAuth();
+  const location = useLocation();
+
+  if (location.pathname.startsWith('/controltower')) {
+    return (
+      <Routes>
+        <Route path="/controltower/*" element={<ControlTowerDashboard />} />
+      </Routes>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900">
