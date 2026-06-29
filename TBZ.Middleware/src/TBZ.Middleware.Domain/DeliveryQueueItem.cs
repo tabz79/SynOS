@@ -12,5 +12,18 @@ namespace TBZ.Middleware.Domain
         public string Status { get; set; } = "Pending"; // "Pending", "Sent", "Failed"
         public DateTime CreatedAt { get; set; }
         public DateTime? SentAt { get; set; }
+
+        // WhatsApp Manager V1 Fields
+        public Guid? PatientId { get; set; }
+        public Guid? VisitId { get; set; }
+        public Guid? ReportId { get; set; }
+        public string? TemplateName { get; set; }
+        public string? TriggerEvent { get; set; }
+        public int RetryCount { get; set; } = 0;
+        public string? FailureReason { get; set; }
+        public DateTime? DeliveredAt { get; set; }
+        public string Provider { get; set; } = "Meta"; // Meta, Twilio, Gupshup, etc.
+        public string? ProviderMessageId { get; set; }
+        public string Channel { get; set; } = "Operational"; // Operational, Marketing
     }
 }

@@ -97,14 +97,9 @@ const ControlTowerDashboard: React.FC = () => {
       <aside className="w-64 bg-[#080b18]/85 backdrop-blur-md border-r border-cardBorder flex flex-col justify-between select-none z-10">
         <div>
           {/* Logo container */}
-          <div className="p-6 border-b border-cardBorder flex items-center space-x-3 bg-cardBg/10">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brandPrimary to-brandSecondary flex items-center justify-center font-bold text-white shadow-neon-purple font-display">
-              TB
-            </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-wider font-display text-white">TBZ LABS</h1>
-              <p className="text-[10px] text-textSecondary uppercase tracking-widest font-semibold">Control Tower</p>
-            </div>
+          <div className="px-5 py-4 border-b border-cardBorder flex flex-col items-start bg-cardBg/10">
+            <img src="/TBZ-labs-logo.svg" alt="TBZ Labs" className="h-10 w-auto max-w-full mb-1" />
+            <p className="text-[9px] text-textSecondary uppercase tracking-widest font-semibold pl-1">Control Tower</p>
           </div>
 
           {/* Active Navigation Menu */}

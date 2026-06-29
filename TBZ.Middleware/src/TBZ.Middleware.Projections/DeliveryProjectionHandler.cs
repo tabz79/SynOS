@@ -14,6 +14,7 @@ namespace TBZ.Middleware.Projections
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
             if (storedEvent.EventType != "WhatsappDeliveryRequested" && 
+                storedEvent.EventType != "ReportDeliveryRequestedEvent" &&
                 storedEvent.EventType != "ReportDelivered")
             {
                 return;
@@ -33,6 +34,18 @@ namespace TBZ.Middleware.Projections
                     if (root.TryGetProperty("TargetId", out var targetProp) && targetProp.TryGetGuid(out var tId))
                     {
                         reportId = tId;
+                    }
+                    deliveryMethod = "WhatsApp";
+                }
+                else if (storedEvent.EventType == "ReportDeliveryRequestedEvent")
+                {
+                    if (root.TryGetProperty("ReportId", out var repProp) && repProp.TryGetGuid(out var rId))
+                    {
+                        reportId = rId;
+                    }
+                    if (root.TryGetProperty("PatientId", out var patProp) && patProp.TryGetGuid(out var pId))
+                    {
+                        patientId = pId;
                     }
                     deliveryMethod = "WhatsApp";
                 }
@@ -112,7 +125,7 @@ namespace TBZ.Middleware.Projections
             }
 
             // Update timestamps and status based on EventType
-            if (storedEvent.EventType == "WhatsappDeliveryRequested")
+            if (storedEvent.EventType == "WhatsappDeliveryRequested" || storedEvent.EventType == "ReportDeliveryRequestedEvent")
             {
                 fact.RequestedAt = storedEvent.OccurredAt;
             }

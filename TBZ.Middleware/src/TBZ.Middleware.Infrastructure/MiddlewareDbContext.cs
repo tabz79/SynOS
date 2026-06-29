@@ -1,9 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using TBZ.Middleware.Domain;
+using TBZ.Middleware.Application.Interfaces;
 
 namespace TBZ.Middleware.Infrastructure
 {
-    public class MiddlewareDbContext : DbContext
+    public class MiddlewareDbContext : DbContext, INotificationDbContext
     {
         public MiddlewareDbContext(DbContextOptions<MiddlewareDbContext> options) : base(options)
         {
@@ -23,6 +24,13 @@ namespace TBZ.Middleware.Infrastructure
         public DbSet<TrendFact> TrendFacts => Set<TrendFact>();
         public DbSet<ReferralConversionFact> ReferralConversionFacts => Set<ReferralConversionFact>();
         public DbSet<BusinessSourceFact> BusinessSourceFacts => Set<BusinessSourceFact>();
+        public DbSet<PatientIntelligenceFact> PatientIntelligenceFacts => Set<PatientIntelligenceFact>();
+        public DbSet<PatientVisitFact> PatientVisitFacts => Set<PatientVisitFact>();
+        public DbSet<NotificationMessage> NotificationMessages => Set<NotificationMessage>();
+        public DbSet<NotificationOutbox> NotificationOutboxes => Set<NotificationOutbox>();
+        public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
+        public DbSet<NotificationWebhookEvent> NotificationWebhookEvents => Set<NotificationWebhookEvent>();
+        public DbSet<NotificationInbox> NotificationInboxes => Set<NotificationInbox>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -172,6 +180,84 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.SourceId).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.SourceName).IsRequired().HasMaxLength(200);
                 entity.HasIndex(e => new { e.LabId, e.Date, e.SourceType, e.SourceId, e.IsFirstVisit }).IsUnique();
+            });
+
+            modelBuilder.Entity<PatientIntelligenceFact>(entity =>
+            {
+                entity.ToTable("PatientIntelligenceFacts");
+                entity.HasKey(e => e.PatientId);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.MRN).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.PatientName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Gender).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.MobileNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.ReferringDoctorOrPartner).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.LastVisitedBranchId).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<PatientVisitFact>(entity =>
+            {
+                entity.ToTable("PatientVisitFacts");
+                entity.HasKey(e => e.VisitId);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Token).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ReferringDoctorOrPartner).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.TestsJson).IsRequired();
+            });
+
+             modelBuilder.Entity<NotificationMessage>(entity =>
+            {
+                entity.ToTable("NotificationMessages");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50).HasDefaultValue("LAB001");
+                entity.Property(e => e.Channel).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Recipient).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.TemplateName).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.MessageId).HasMaxLength(150);
+                entity.HasIndex(e => e.MessageId);
+            });
+
+            modelBuilder.Entity<NotificationOutbox>(entity =>
+            {
+                entity.ToTable("NotificationOutboxes");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50).HasDefaultValue("LAB001");
+                entity.Property(e => e.Status)
+                      .HasConversion<string>()
+                      .IsRequired()
+                      .HasMaxLength(20);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => new { e.Status, e.NextRetry, e.LockedUntil });
+                entity.HasOne(e => e.NotificationMessage)
+                      .WithMany()
+                      .HasForeignKey(e => e.NotificationMessageId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<NotificationTemplate>(entity =>
+            {
+                entity.ToTable("NotificationTemplates");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TemplateName).IsRequired().HasMaxLength(100);
+                entity.HasIndex(e => new { e.TemplateName, e.Version, e.Language }).IsUnique();
+            });
+
+            modelBuilder.Entity<NotificationWebhookEvent>(entity =>
+            {
+                entity.ToTable("NotificationWebhookEvents");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.MessageId).HasMaxLength(150);
+                entity.HasIndex(e => e.MessageId);
+            });
+
+            modelBuilder.Entity<NotificationInbox>(entity =>
+            {
+                entity.ToTable("NotificationInboxes");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Sender).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.MessageId).HasMaxLength(150);
+                entity.Property(e => e.Channel).IsRequired().HasMaxLength(50);
+                entity.HasIndex(e => e.MessageId);
             });
         }
     }

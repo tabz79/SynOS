@@ -1,209 +1,390 @@
-# Change 1 — Don't Inject SynOSDbContext Into MiddlewareOutboxService
+Yes. And now that we've clarified your business model, **I would change this implementation plan.**
 
-Current plan:
+Not completely—about **20%** of it.
 
-```text
-MiddlewareOutboxService
-    ↓
-Inject SynOSDbContext
-    ↓
-Insert OutboxEvent
-```
+The Notification Engine you've built is still correct. The mistake is the event you're sending from SynOS.
 
-This creates coupling.
+---
 
-Later you'll have:
+# Here's what I would keep
 
-```text
-PatientService
-    ↓
-OutboxService
-    ↓
-DbContext
-```
+✅ OutboxEvents
 
-and
+✅ MiddlewareSyncWorker
 
-```text
-PatientService
-    ↓
-DbContext
-```
+✅ Notification Engine
 
-Two different persistence paths.
+✅ NotificationOutbox
 
-That becomes messy.
+✅ NotificationMessages
 
-Instead:
+✅ Webhooks
 
-```text
-PatientService
-    ↓
-DbContext
-    ↓
-OutboxService.Enqueue()
-```
+✅ Multi-tenant architecture
 
-The OutboxService should just create event objects.
+All of this is solid.
 
-The DbContext transaction should persist everything.
+---
 
-Think:
+# Here's what I would change
+
+## I would NOT create
 
 ```csharp
-_domainEvents.Add(event);
+NotificationRequestedEvent
 ```
 
-then during transaction commit:
+This event is too low-level.
+
+It says:
+
+> "Please send a notification."
+
+But Middleware should decide how to notify.
+
+---
+
+## Instead I'd create
 
 ```csharp
-Save Business Data
-Save Outbox Events
-Commit
+ReportDeliveryRequestedEvent
 ```
 
-Single persistence boundary.
+Notice the difference.
+
+This is still a business event.
+
+It contains
+
+```text
+ReportId
+
+VisitId
+
+PatientId
+
+Phone
+
+SecureReportUrl
+
+BranchId
+
+CorrelationId
+```
+
+Nothing about WhatsApp.
+
+Nothing about templates.
+
+Nothing about Meta.
+
+Nothing about channels.
 
 ---
 
-# Change 2 — Add Tenant Registration Table
-
-Current middleware auth:
+# Then Middleware receives
 
 ```text
-appsettings.json
-
-LAB001
-apikey123
+ReportDeliveryRequestedEvent
 ```
 
-Good for testing.
-
-Bad for production.
-
-Imagine:
+Middleware then decides
 
 ```text
-Lab A
-Lab B
-Lab C
-Lab D
+Notification Policy
+
+↓
+
+Template
+
+↓
+
+Lab Configuration
+
+↓
+
+WhatsApp Provider
+
+↓
+
+Meta
 ```
 
-You don't want:
-
-```json
-{
-  "LAB001":"key1",
-  "LAB002":"key2",
-  "LAB003":"key3"
-}
-```
-
-inside appsettings.
-
-Instead create:
-
-```text
-Labs
-
-Id
-LabCode
-LabName
-ApiKeyHash
-Status
-CreatedAt
-```
-
-Middleware startup can seed:
-
-```text
-LAB001
-```
-
-for now.
-
-But the architecture is ready for:
-
-```text
-50 labs
-100 labs
-500 labs
-```
-
-without changing auth later.
+Now the Notification Engine is actually being used correctly.
 
 ---
 
-# One More Tiny Thing
-
-Rename:
+# Your current plan says
 
 ```text
-Event
+SynOS
+
+↓
+
+NotificationRequestedEvent
+
+↓
+
+Middleware
+
+↓
+
+Notification Engine
 ```
 
-to:
+I'd change it to
 
 ```text
-StoredEvent
+SynOS
+
+↓
+
+ReportDeliveryRequestedEvent
+
+↓
+
+Middleware
+
+↓
+
+Notification Engine
+
+↓
+
+WhatsApp Provider
+
+↓
+
+Meta
 ```
 
-inside middleware domain.
-
-Because eventually you'll have:
-
-```text
-DomainEvent
-IntegrationEvent
-StoredEvent
-```
-
-and the name collision gets annoying fast.
+That is a subtle but very important difference.
 
 ---
 
-# After These Changes
+# Why?
 
-I would tell the agent:
+Because tomorrow you may say
 
-> Approved. Start implementation.
-
-The implementation order should be:
+For this lab
 
 ```text
-1. Domain Events
-2. OutboxEvents table
-3. Transactional persistence
-4. Sync Worker
-5. Middleware Solution
-6. StoredEvent table
-7. Lab authentication
-8. Event ingestion endpoint
-9. Idempotency
-10. Dead Letter support
-11. Verification tests
+Report Delivered
+
+↓
+
+WhatsApp
 ```
 
-And I would explicitly tell the agent:
+For another
 
 ```text
-DO NOT BUILD
+Report Delivered
 
-Control Tower
-Analytics
-WhatsApp Integration
-AI Layer
-Contact Graph
-Trend Engine
+↓
 
-IN PHASE 1
+SMS
 ```
 
-Because right now you're building the railway tracks.
+Another
 
-The trains can come later.
+```text
+Report Delivered
 
-Once a `ReportSignedEvent` can leave a lab in Khammam during an internet outage, sit in a local queue, survive a Windows restart, and eventually land in your founder-laptop Event Store exactly once, Phase 1 is a success.
+↓
 
-Everything else is downstream from that.
+Email
+```
+
+SynOS never changes.
+
+---
+
+# The second change
+
+Remove this
+
+```csharp
+DeliverViaWhatsAppAsync()
+```
+
+The Delivery Desk isn't performing a WhatsApp operation.
+
+It is completing a business action.
+
+Rename it to something like
+
+```csharp
+DeliverReportAsync()
+```
+
+or
+
+```csharp
+CompleteDeliveryAsync()
+```
+
+Inside it:
+
+```text
+Generate secure link
+
+↓
+
+Save delivery
+
+↓
+
+Publish ReportDeliveryRequestedEvent
+
+↓
+
+Return Success
+```
+
+Done.
+
+---
+
+# Third change
+
+This part
+
+```text
+GenerateSecureLinkInternalAsync()
+
+↓
+
+Build hardcoded text message
+```
+
+Delete the hardcoded message completely.
+
+Middleware owns templates now.
+
+Only generate
+
+```text
+Secure URL
+```
+
+Everything else belongs in Middleware.
+
+---
+
+# Fourth change
+
+Delete
+
+```text
+NotificationQueues
+
+NotificationWorkerService
+
+StubWhatsAppSender
+
+IWhatsAppSender
+```
+
+Don't migrate them.
+
+Delete them.
+
+They're now replaced by the Notification Engine.
+
+---
+
+# The final sequence becomes
+
+```text
+Delivery Desk
+
+↓
+
+DeliverReportAsync()
+
+↓
+
+Generate Secure URL
+
+↓
+
+Save Delivery Log
+
+↓
+
+Publish ReportDeliveryRequestedEvent
+
+↓
+
+OutboxEvents
+
+↓
+
+Middleware Sync
+
+↓
+
+TBZ Middleware
+
+↓
+
+Notification Engine
+
+↓
+
+Resolve Lab
+
+↓
+
+Resolve Template
+
+↓
+
+Resolve Credentials
+
+↓
+
+Meta Cloud API
+
+↓
+
+Patient
+
+↓
+
+Webhook
+
+↓
+
+Notification Status
+```
+
+---
+
+# Why I like this
+
+Because it aligns with the business model you chose.
+
+Your cloud **owns communications**.
+
+SynOS **owns laboratory operations**.
+
+SynOS doesn't know whether the report is delivered through WhatsApp, email, SMS, or another future channel. It simply announces, "A report is ready to be delivered." Middleware takes over from there.
+
+---
+
+## So this is what I'd tell your coding agent
+
+Don't implement the current plan as written.
+
+Refactor it first:
+
+1. Replace `NotificationRequestedEvent` with `ReportDeliveryRequestedEvent`.
+2. Rename `DeliverViaWhatsAppAsync()` to `DeliverReportAsync()` (or `CompleteDeliveryAsync()`).
+3. Remove all hardcoded WhatsApp message generation from SynOS.
+4. Keep secure link generation in SynOS.
+5. Let Middleware own notification templates, channel selection, and Meta integration.
+6. Delete the legacy `NotificationQueues`, `NotificationWorkerService`, `StubWhatsAppSender`, and `IWhatsAppSender`.
+
+That preserves the architecture you've already built while aligning it with the business direction you've now chosen. I think it's the cleanest path forward without throwing away the work you've already invested.

@@ -345,9 +345,6 @@ public class DeliveryService : IDeliveryService
             throw new InvalidOperationException($"Unsupported Report SourceType: {report.SourceType}");
         }
 
-        // Build message text (GPT-5 Rule: Secure link based, no fluff)
-        var message = $"✨ *Lab Report Ready* ✨\n\nDear {patientName},\nYour diagnostic results for *{tests}* are now available for secure download.\n\n🔗 *Access Link:* {secureLinkDto.Link}\n\n_Note: This link is secure and requires your registered mobile number for verification._\n\n- SynOS Lab Intelligence";
-
         // Create DeliveryLog
         var deliveryLog = new DeliveryLog
         {
@@ -360,25 +357,16 @@ public class DeliveryService : IDeliveryService
         _context.DeliveryLogs.Add(deliveryLog);
         await _context.SaveChangesAsync();
 
-        // Create NotificationQueue entry
-        var notificationQueue = new NotificationQueue
-        {
-            Type = NotificationType.WHATSAPP,
-            TargetId = deliveryLog.LogId,
-            Recipient = phone,
-            Content = message,
-            Status = NotificationStatus.Pending
-        };
-        _context.NotificationQueues.Add(notificationQueue);
-
-        // Enqueue WhatsappDeliveryRequestedEvent
-        _outboxService.Enqueue(new WhatsappDeliveryRequestedEvent(
-            notificationQueue.QueueId,
-            notificationQueue.TargetId,
-            notificationQueue.Recipient,
-            notificationQueue.Content,
-            notificationQueue.Status.ToString(),
-            DateTimeOffset.UtcNow,
+        // Enqueue ReportDeliveryRequestedEvent
+        _outboxService.Enqueue(new ReportDeliveryRequestedEvent(
+            reportId,
+            report.VisitId,
+            report.Visit.PatientId,
+            "LAB001",
+            phone,
+            secureLinkDto.Link,
+            patientName,
+            tests,
             report.Visit?.BranchId
         ));
 

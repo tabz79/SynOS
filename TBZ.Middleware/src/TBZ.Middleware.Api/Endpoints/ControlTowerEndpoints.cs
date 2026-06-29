@@ -142,6 +142,36 @@ namespace TBZ.Middleware.Api.Endpoints
             .WithName("GetBusinessSources")
             .WithOpenApi();
 
+            // GET /api/controltower/patients
+            app.MapGet("/api/controltower/patients", async (HttpContext context, string? labId, string? q, PatientService service) =>
+            {
+                var resolvedLabId = GetLabId(context, labId);
+                var data = await service.GetPatientsAsync(resolvedLabId, q);
+                return Results.Ok(data);
+            })
+            .WithName("GetPatients")
+            .WithOpenApi();
+
+            // GET /api/controltower/patients/{id}
+            app.MapGet("/api/controltower/patients/{id}", async (HttpContext context, Guid id, string? labId, PatientService service) =>
+            {
+                var resolvedLabId = GetLabId(context, labId);
+                var data = await service.GetPatientDetailsAsync(resolvedLabId, id);
+                return data != null ? Results.Ok(data) : Results.NotFound();
+            })
+            .WithName("GetPatientDetails")
+            .WithOpenApi();
+
+            // GET /api/controltower/referrals/partners/{id}
+            app.MapGet("/api/controltower/referrals/partners/{id}", async (HttpContext context, Guid id, string? labId, PartnerProfileService service) =>
+            {
+                var resolvedLabId = GetLabId(context, labId);
+                var data = await service.GetPartnerProfileAsync(resolvedLabId, id);
+                return data != null ? Results.Ok(data) : Results.NotFound();
+            })
+            .WithName("GetReferralPartnerProfile")
+            .WithOpenApi();
+
             // 11. GET /api/controltower/dashboard
             app.MapGet("/api/controltower/dashboard", async (
                 HttpContext context,
@@ -286,11 +316,9 @@ namespace TBZ.Middleware.Api.Endpoints
             {
                 var resolvedLabId = GetLabId(context, labId);
                 
-                // Connection Metadata defaults to "Not Configured"
                 var connectionStatus = "Not Configured";
                 var businessAccount = "N/A";
                 
-                // If there are any delivery facts or queue items, we can claim Connected for demo metrics
                 var totalQueue = await db.DeliveryQueueItems.CountAsync(q => q.LabId == resolvedLabId);
                 if (totalQueue > 0)
                 {
@@ -298,17 +326,23 @@ namespace TBZ.Middleware.Api.Endpoints
                     businessAccount = "Divya Diagnostics WhatsApp Biz";
                 }
 
-                var delivered = await db.DeliveryFacts
-                    .CountAsync(f => f.DeliveryMethod == "WhatsApp" && f.Status == "Delivered");
-
-                var sent = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Sent");
-
                 var pending = await db.DeliveryQueueItems
                     .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Pending");
 
+                var sending = await db.DeliveryQueueItems
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Sending");
+
+                var sent = await db.DeliveryQueueItems
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Sent" && q.DeliveredAt == null);
+
+                var delivered = await db.DeliveryQueueItems
+                    .CountAsync(q => q.LabId == resolvedLabId && (q.Status == "Delivered" || q.DeliveredAt != null));
+
                 var failed = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Failed");
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Failed" && q.RetryCount >= 3);
+
+                var retryQueue = await db.DeliveryQueueItems
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Failed" && q.RetryCount < 3);
 
                 return Results.Ok(new
                 {
@@ -317,7 +351,9 @@ namespace TBZ.Middleware.Api.Endpoints
                     Sent = sent,
                     Delivered = delivered,
                     Pending = pending,
+                    Sending = sending,
                     Failed = failed,
+                    RetryQueue = retryQueue,
                     TotalQueue = totalQueue
                 });
             })
@@ -328,27 +364,63 @@ namespace TBZ.Middleware.Api.Endpoints
             app.MapGet("/api/controltower/whatsapp/logs", async (
                 HttpContext context,
                 string? labId,
+                string? status,
+                string? channel,
+                string? messageType,
+                Guid? patientId,
                 MiddlewareDbContext db) =>
             {
                 var resolvedLabId = GetLabId(context, labId);
-                var logs = await db.DeliveryQueueItems
-                    .Where(q => q.LabId == resolvedLabId)
+                var query = db.DeliveryQueueItems.Where(q => q.LabId == resolvedLabId);
+
+                if (!string.IsNullOrEmpty(status))
+                {
+                    if (status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                        query = query.Where(q => q.Status == "Pending");
+                    else if (status.Equals("Sent", StringComparison.OrdinalIgnoreCase))
+                        query = query.Where(q => q.Status == "Sent" && q.DeliveredAt == null);
+                    else if (status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
+                        query = query.Where(q => q.Status == "Delivered" || q.DeliveredAt != null);
+                    else if (status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
+                        query = query.Where(q => q.Status == "Failed" && q.RetryCount >= 3);
+                    else if (status.Equals("Retry", StringComparison.OrdinalIgnoreCase))
+                        query = query.Where(q => q.Status == "Failed" && q.RetryCount < 3);
+                }
+
+                if (!string.IsNullOrEmpty(channel))
+                {
+                    query = query.Where(q => q.Channel == channel);
+                }
+
+                if (!string.IsNullOrEmpty(messageType))
+                {
+                    query = query.Where(q => q.MessageType == messageType);
+                }
+
+                if (patientId.HasValue)
+                {
+                    query = query.Where(q => q.PatientId == patientId.Value);
+                }
+
+                var logs = await query
                     .OrderByDescending(q => q.CreatedAt)
-                    .Take(50)
-                    .Select(q => new
-                    {
-                        q.Id,
-                        q.Phone,
-                        q.MessageType,
-                        q.Status,
-                        q.CreatedAt,
-                        q.SentAt
-                    })
+                    .Take(100)
                     .ToListAsync();
 
                 return Results.Ok(logs);
             })
             .WithName("GetWhatsAppLogs")
+            .WithOpenApi();
+
+            // 19b. GET /api/controltower/whatsapp/logs/{id}
+            app.MapGet("/api/controltower/whatsapp/logs/{id}", async (
+                Guid id,
+                MiddlewareDbContext db) =>
+            {
+                var log = await db.DeliveryQueueItems.FindAsync(id);
+                return log != null ? Results.Ok(log) : Results.NotFound();
+            })
+            .WithName("GetWhatsAppLogDetails")
             .WithOpenApi();
 
             // 20. GET /api/controltower/whatsapp/templates

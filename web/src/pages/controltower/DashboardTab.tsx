@@ -46,6 +46,28 @@ const DashboardTab: React.FC = () => {
     );
   }
 
+  const largestAgeGroup = viewModel.ageGroups.length > 0
+    ? [...viewModel.ageGroups].sort((a, b) => b.value - a.value)[0]
+    : null;
+
+  const largestGender = viewModel.genderSplit.length > 0
+    ? [...viewModel.genderSplit].sort((a, b) => b.value - a.value)[0]
+    : null;
+
+  const totalPatientsInt = viewModel.newCustomersFormatted 
+    ? parseInt(viewModel.newCustomersFormatted.replace(/,/g, '')) || 0
+    : 0;
+
+  const agePercentFloat = (largestAgeGroup && totalPatientsInt > 0)
+    ? (largestAgeGroup.value / totalPatientsInt)
+    : 0;
+
+  const genderPercentFloat = (largestGender && totalPatientsInt > 0)
+    ? (largestGender.value / totalPatientsInt)
+    : 0;
+
+  const waDeliveryRateFloat = parseFloat(viewModel.whatsAppDeliveryRate) / 100 || 0;
+
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Greetings block */}
@@ -73,13 +95,17 @@ const DashboardTab: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-[10px] text-success font-bold flex items-center">
-              ↑ 18.2% <span className="text-textMuted font-normal ml-1">vs yesterday</span>
+            <span className="text-[10px] text-textMuted font-normal">
+              No Trend Data
             </span>
             <div className="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-              <svg className="w-full h-full animate-pulse" viewBox="0 0 100 35">
-                <path d={viewModel.revenueSparkline} fill="none" stroke="#8a2be2" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              {viewModel.revenueSparkline ? (
+                <svg className="w-full h-full" viewBox="0 0 100 35">
+                  <path d={viewModel.revenueSparkline} fill="none" stroke="#8a2be2" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <span className="text-[8px] text-textMuted font-mono">No Trend</span>
+              )}
             </div>
           </div>
         </div>
@@ -98,13 +124,17 @@ const DashboardTab: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-[10px] text-success font-bold flex items-center">
-              ↑ 16.7% <span className="text-textMuted font-normal ml-1">vs yesterday</span>
+            <span className="text-[10px] text-textMuted font-normal">
+              No Trend Data
             </span>
             <div className="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-              <svg className="w-full h-full" viewBox="0 0 100 35">
-                <path d={viewModel.patientsSparkline} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              {viewModel.patientsSparkline ? (
+                <svg className="w-full h-full" viewBox="0 0 100 35">
+                  <path d={viewModel.patientsSparkline} fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <span className="text-[8px] text-textMuted font-mono">No Trend</span>
+              )}
             </div>
           </div>
         </div>
@@ -123,13 +153,17 @@ const DashboardTab: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-[10px] text-success font-bold flex items-center">
-              ↑ 3.8% <span className="text-textMuted font-normal ml-1">vs yesterday</span>
+            <span className="text-[10px] text-textMuted font-normal">
+              No Trend Data
             </span>
             <div className="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-              <svg className="w-full h-full" viewBox="0 0 100 35">
-                <path d={viewModel.avgBillSparkline} fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              {viewModel.avgBillSparkline ? (
+                <svg className="w-full h-full" viewBox="0 0 100 35">
+                  <path d={viewModel.avgBillSparkline} fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <span className="text-[8px] text-textMuted font-mono">No Trend</span>
+              )}
             </div>
           </div>
         </div>
@@ -148,13 +182,17 @@ const DashboardTab: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-[10px] text-success font-bold flex items-center">
-              ↑ 14.3% <span className="text-textMuted font-normal ml-1">vs last 30d</span>
+            <span className="text-[10px] text-textMuted font-normal">
+              No Trend Data
             </span>
             <div className="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-              <svg className="w-full h-full" viewBox="0 0 100 35">
-                <path d={viewModel.newCustomersSparkline} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              {viewModel.newCustomersSparkline ? (
+                <svg className="w-full h-full" viewBox="0 0 100 35">
+                  <path d={viewModel.newCustomersSparkline} fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <span className="text-[8px] text-textMuted font-mono">No Trend</span>
+              )}
             </div>
           </div>
         </div>
@@ -173,13 +211,17 @@ const DashboardTab: React.FC = () => {
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="text-[10px] text-success font-bold flex items-center">
-              ↑ 22.6% <span className="text-textMuted font-normal ml-1">vs last 30d</span>
+            <span className="text-[10px] text-textMuted font-normal">
+              No Trend Data
             </span>
             <div className="w-16 h-8 opacity-60 group-hover:opacity-100 transition-opacity">
-              <svg className="w-full h-full" viewBox="0 0 100 35">
-                <path d={viewModel.whatsAppSparkline} fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" />
-              </svg>
+              {viewModel.whatsAppSparkline ? (
+                <svg className="w-full h-full" viewBox="0 0 100 35">
+                  <path d={viewModel.whatsAppSparkline} fill="none" stroke="#ec4899" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <span className="text-[8px] text-textMuted font-mono">No Trend</span>
+              )}
             </div>
           </div>
         </div>
@@ -206,11 +248,11 @@ const DashboardTab: React.FC = () => {
                 <div className="w-24 h-24 relative flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
                     <circle cx="48" cy="48" r="38" stroke="#1e264d" strokeWidth="6" fill="transparent" />
-                    <circle cx="48" cy="48" r="38" stroke="#8a2be2" strokeWidth="6" fill="transparent" strokeDasharray={238} strokeDashoffset={238 * (1 - 0.34)} />
+                    <circle cx="48" cy="48" r="38" stroke="#8a2be2" strokeWidth="6" fill="transparent" strokeDasharray={238} strokeDashoffset={238 * (1 - agePercentFloat)} />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-sm font-bold text-white">Main</span>
-                    <span className="text-[9px] text-textSecondary">36-50 Brac</span>
+                    <span className="text-sm font-bold text-white">{largestAgeGroup ? largestAgeGroup.label : 'N/A'}</span>
+                    <span className="text-[9px] text-textSecondary">{largestAgeGroup ? largestAgeGroup.percentFormatted : ''}</span>
                   </div>
                 </div>
                 <div className="mt-4 text-left w-full space-y-1 text-[10px]">
@@ -229,11 +271,11 @@ const DashboardTab: React.FC = () => {
                 <div className="w-24 h-24 relative flex items-center justify-center">
                   <svg className="w-full h-full transform -rotate-90">
                     <circle cx="48" cy="48" r="38" stroke="#3b82f6" strokeWidth="6" fill="transparent" />
-                    <circle cx="48" cy="48" r="38" stroke="#ec4899" strokeWidth="6" fill="transparent" strokeDasharray={238} strokeDashoffset={238 * (1 - 0.58)} />
+                    <circle cx="48" cy="48" r="38" stroke="#ec4899" strokeWidth="6" fill="transparent" strokeDasharray={238} strokeDashoffset={238 * (1 - genderPercentFloat)} />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-sm font-bold text-white">Female</span>
-                    <span className="text-[9px] text-textSecondary">58%</span>
+                    <span className="text-sm font-bold text-white">{largestGender ? largestGender.label : 'N/A'}</span>
+                    <span className="text-[9px] text-textSecondary">{largestGender ? largestGender.percentFormatted : ''}</span>
                   </div>
                 </div>
                 <div className="mt-4 text-left w-full space-y-1 text-[10px]">
@@ -278,7 +320,7 @@ const DashboardTab: React.FC = () => {
             </div>
             <div>
               <p className="text-[9px] text-textSecondary uppercase font-bold">Avg Visits / Pat</p>
-              <p className="text-lg font-bold text-white mt-1">{viewModel.avgVisitsPerCustomer}</p>
+              <p className="text-lg font-bold text-white mt-1">{viewModel.avgVisitsPerCustomer || '—'}</p>
             </div>
             <div>
               <p className="text-[9px] text-textSecondary uppercase font-bold">30D Retention</p>
@@ -314,7 +356,7 @@ const DashboardTab: React.FC = () => {
                     strokeWidth="8" 
                     fill="transparent" 
                     strokeDasharray={351} 
-                    strokeDashoffset={351 * (1 - 0.923)} 
+                    strokeDashoffset={351 * (1 - waDeliveryRateFloat)} 
                   />
                   <defs>
                     <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">

@@ -3,6 +3,8 @@ using TBZ.Middleware.Api.DTOs;
 using TBZ.Middleware.Api.Endpoints;
 using TBZ.Middleware.Domain;
 using TBZ.Middleware.Infrastructure;
+using TBZ.Middleware.Application;
+using TBZ.Middleware.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=MiddlewareDb.db";
 builder.Services.AddDbContext<MiddlewareDbContext>(options =>
     options.UseSqlite(connectionString));
+
+builder.Services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<MiddlewareDbContext>());
+builder.Services.AddNotificationEngine(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -25,6 +30,8 @@ builder.Services.AddScoped<TBZ.Middleware.Api.Services.DemographicsService>();
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.ReferralService>();
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.BusinessSourceService>();
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.TrendService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.PatientService>();
+builder.Services.AddScoped<TBZ.Middleware.Api.Services.PartnerProfileService>();
 
 // Register Section Services
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.OperationalService>();
@@ -89,6 +96,60 @@ using (var scope = app.Services.CreateScope())
         existingLab.ApiKeyHash = hashedKey;
         db.SaveChanges();
     }
+
+    // Dynamic one-time migration to backfill ReferralPartnerId and ReferringDoctorId columns from StoredEvents
+    try
+    {
+        var billEvents = db.StoredEvents
+            .Where(e => e.EventType == "BillCreated")
+            .ToList();
+
+        foreach (var e in billEvents)
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(e.PayloadJson);
+            var root = doc.RootElement;
+
+            var visitIdStr = root.TryGetProperty("VisitId", out var vProp) ? vProp.GetString() : null;
+            var patientIdStr = root.TryGetProperty("PatientId", out var pProp) ? pProp.GetString() : null;
+
+            if (Guid.TryParse(visitIdStr, out var visitId))
+            {
+                Guid? partnerId = null;
+                if (root.TryGetProperty("ReferralPartnerId", out var rpProp) && rpProp.ValueKind != System.Text.Json.JsonValueKind.Null && Guid.TryParse(rpProp.GetString(), out var rpGuid))
+                {
+                    partnerId = rpGuid;
+                }
+
+                Guid? doctorId = null;
+                if (root.TryGetProperty("ReferringDoctorId", out var rdProp) && rdProp.ValueKind != System.Text.Json.JsonValueKind.Null && Guid.TryParse(rdProp.GetString(), out var rdGuid))
+                {
+                    doctorId = rdGuid;
+                }
+
+                var visit = db.PatientVisitFacts.FirstOrDefault(vf => vf.VisitId == visitId);
+                if (visit != null)
+                {
+                    visit.ReferralPartnerId = partnerId;
+                    visit.ReferringDoctorId = doctorId;
+                }
+
+                if (Guid.TryParse(patientIdStr, out var patientId))
+                {
+                    var patient = db.PatientIntelligenceFacts.FirstOrDefault(pf => pf.PatientId == patientId);
+                    if (patient != null)
+                    {
+                        patient.ReferralPartnerId = partnerId;
+                        patient.ReferringDoctorId = doctorId;
+                    }
+                }
+            }
+        }
+        db.SaveChanges();
+    }
+    catch
+    {
+        // Suppress any parse/database error to prevent startup failure
+    }
 }
 
 if (app.Environment.IsDevelopment())
@@ -97,7 +158,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db) =>
+app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService) =>
 {
     // 1. Extract authentication headers
     if (!context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues) ||
@@ -148,29 +209,74 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     db.StoredEvents.Add(storedEvent);
     
     // Check if the event is a WhatsappDeliveryRequestedEvent to queue for delivery
-    if (dto.EventType == "WhatsappDeliveryRequestedEvent")
+    if (dto.EventType == "ReportDeliveryRequestedEvent")
     {
         try
         {
-            // Simple parse of payload to extract phone, template/message
             using var doc = System.Text.Json.JsonDocument.Parse(dto.PayloadJson);
             var root = doc.RootElement;
-            var phone = root.TryGetProperty("RecipientPhone", out var phoneProp) ? phoneProp.GetString() : string.Empty;
-            var msgType = root.TryGetProperty("MessageType", out var typeProp) ? typeProp.GetString() : "Unknown";
-            
+            var phone = (root.TryGetProperty("Phone", out var phoneProp) ? phoneProp.GetString() : string.Empty) ?? string.Empty;
+
             if (!string.IsNullOrEmpty(phone))
             {
-                var queueItem = new DeliveryQueueItem
+                var reportId = root.TryGetProperty("ReportId", out var repProp) ? repProp.GetString() : string.Empty;
+                var visitId = root.TryGetProperty("VisitId", out var visProp) ? visProp.GetString() : string.Empty;
+                var patientId = root.TryGetProperty("PatientId", out var patProp) ? patProp.GetString() : string.Empty;
+                var secureReportUrl = (root.TryGetProperty("SecureReportUrl", out var urlProp) ? urlProp.GetString() : string.Empty) ?? string.Empty;
+                var patientName = (root.TryGetProperty("PatientName", out var nameProp) ? nameProp.GetString() : string.Empty) ?? string.Empty;
+                var investigationSummary = (root.TryGetProperty("InvestigationSummary", out var invProp) ? invProp.GetString() : string.Empty) ?? string.Empty;
+                var labIdVal = root.TryGetProperty("LabId", out var labIdProp) ? labIdProp.GetString() : dto.LabId;
+
+                await notificationService.EnqueueNotificationAsync(new TBZ.Middleware.Application.DTOs.NotificationRequest
                 {
-                    Id = Guid.NewGuid(),
-                    LabId = dto.LabId,
-                    Phone = phone,
-                    MessageType = msgType ?? "Whatsapp",
-                    PayloadJson = dto.PayloadJson,
-                    Status = "Pending",
-                    CreatedAt = DateTime.UtcNow
-                };
-                db.DeliveryQueueItems.Add(queueItem);
+                    Recipient = phone,
+                    TemplateName = "report_ready",
+                    Variables = new Dictionary<string, string>
+                    {
+                        { "PatientName", patientName },
+                        { "DownloadLink", secureReportUrl },
+                        { "InvestigationSummary", investigationSummary }
+                    },
+                    CorrelationId = reportId,
+                    LabId = labIdVal ?? dto.LabId
+                });
+            }
+        }
+        catch
+        {
+            // Fail silently on queue item creation so event ingestion succeeds
+        }
+    }
+    else if (dto.EventType == "WhatsappDeliveryRequestedEvent" || dto.EventType == "WhatsappDeliveryRequested")
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(dto.PayloadJson);
+            var root = doc.RootElement;
+            var phone = root.TryGetProperty("RecipientPhone", out var phoneProp) ? phoneProp.GetString() : (root.TryGetProperty("Recipient", out var recProp) ? recProp.GetString() : string.Empty);
+            var content = root.TryGetProperty("Content", out var contentProp) ? contentProp.GetString() : string.Empty;
+
+            if (!string.IsNullOrEmpty(phone))
+            {
+                var reportId = root.TryGetProperty("ReportId", out var repProp) && repProp.ValueKind != System.Text.Json.JsonValueKind.Null ? repProp.GetString() : null;
+                if (string.IsNullOrEmpty(reportId) && root.TryGetProperty("TargetId", out var targetProp))
+                {
+                    reportId = targetProp.GetString();
+                }
+
+                await notificationService.EnqueueNotificationAsync(new TBZ.Middleware.Application.DTOs.NotificationRequest
+                {
+                    Recipient = phone,
+                    TemplateName = "report_ready",
+                    Variables = new Dictionary<string, string>
+                    {
+                        { "PatientName", "Valued Customer" },
+                        { "DownloadLink", string.IsNullOrEmpty(content) ? "https://tbzlabs.com" : content },
+                        { "InvestigationSummary", "Reports" }
+                    },
+                    CorrelationId = reportId,
+                    LabId = dto.LabId
+                });
             }
         }
         catch
@@ -236,5 +342,6 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
 .WithOpenApi();
 
 app.MapControlTowerEndpoints();
+app.MapWhatsAppWebhookEndpoints();
 
 app.Run();

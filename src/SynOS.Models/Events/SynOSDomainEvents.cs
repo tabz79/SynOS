@@ -205,20 +205,22 @@ namespace SynOS.Models.Events
         public object Payload => this;
     }
 
-    public record WhatsappDeliveryRequestedEvent(
-        Guid QueueId,
-        Guid TargetId,
-        string Recipient,
-        string Content,
-        string Status,
-        DateTimeOffset CreatedAt,
+    public record ReportDeliveryRequestedEvent(
+        Guid ReportId,
+        Guid VisitId,
+        Guid PatientId,
+        string LabId,
+        string Phone,
+        string SecureReportUrl,
+        string PatientName,
+        string InvestigationSummary,
         Guid? BranchId
     ) : IDomainEvent
     {
         public Guid EventId { get; } = Guid.NewGuid();
-        public string EventType => "WhatsappDeliveryRequested";
-        public string AggregateType => "NotificationQueue";
-        public string AggregateId => QueueId.ToString();
+        public string EventType => "ReportDeliveryRequestedEvent";
+        public string AggregateType => "Report";
+        public string AggregateId => ReportId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
         public object Payload => this;
     }

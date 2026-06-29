@@ -32,7 +32,13 @@ namespace TBZ.Middleware.Projections
                 var patientLocation = root.TryGetProperty("PatientLocation", out var locProp) ? locProp.GetString() : null;
                 var patientPincode = root.TryGetProperty("PatientPincode", out var pinProp) ? pinProp.GetString() : null;
 
-                var resolvedGender = string.IsNullOrEmpty(gender) ? "NotCaptured" : gender;
+                var resolvedGender = "Unknown";
+                if (!string.IsNullOrEmpty(gender))
+                {
+                    var lower = gender.ToLower();
+                    if (lower == "m" || lower == "male") resolvedGender = "Male";
+                    else if (lower == "f" || lower == "female") resolvedGender = "Female";
+                }
                 var resolvedLocation = string.IsNullOrEmpty(patientLocation) ? "NotCaptured" : patientLocation;
                 var resolvedPincode = string.IsNullOrEmpty(patientPincode) ? "NotCaptured" : patientPincode;
 
