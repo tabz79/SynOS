@@ -7,7 +7,36 @@ using TBZ.Middleware.Application.Interfaces;
 var builder = Host.CreateApplicationBuilder(args);
 
 // Register MiddlewareDbContext
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=../TBZ.Middleware.Api/MiddlewareDb.db";
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    var currentDir = new DirectoryInfo(AppContext.BaseDirectory);
+    string? resolvedDbPath = null;
+    while (currentDir != null)
+    {
+        var synosSln = Path.Combine(currentDir.FullName, "SynOS.sln");
+        if (File.Exists(synosSln))
+        {
+            resolvedDbPath = Path.Combine(currentDir.FullName, "TBZ.Middleware", "src", "TBZ.Middleware.Api", "MiddlewareDb.db");
+            break;
+        }
+        var tbzSln = Path.Combine(currentDir.FullName, "TBZ.Middleware.sln");
+        if (File.Exists(tbzSln))
+        {
+            resolvedDbPath = Path.Combine(currentDir.FullName, "src", "TBZ.Middleware.Api", "MiddlewareDb.db");
+            break;
+        }
+        currentDir = currentDir.Parent;
+    }
+    
+    var finalDbPath = resolvedDbPath ?? Path.Combine(AppContext.BaseDirectory, "MiddlewareDb.db");
+    connectionString = $"Data Source={finalDbPath}";
+}
+
+var sqliteBuilder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString);
+var absoluteDbPath = Path.GetFullPath(sqliteBuilder.DataSource);
+Console.WriteLine($"[DATABASE AUDIT] Worker SQLite Database absolute path: {absoluteDbPath}");
+
 builder.Services.AddDbContext<MiddlewareDbContext>(options =>
     options.UseSqlite(connectionString));
 

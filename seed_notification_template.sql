@@ -1,0 +1,2 @@
+INSERT INTO NotificationTemplates (Id, TemplateName, Version, Language, Category, Approved, LastSyncedFromMeta, BodyPattern, VariableMappingsJson)
+VALUES ('06bf8a08-3bb8-4c8d-872e-836e4f3a71b1', 'report_ready', 1, 'en', 'Utility', 1, CURRENT_TIMESTAMP, 'Dear {PatientName}, your clinical reports for {InvestigationSummary} are ready. Download it here: {DownloadLink}', '["PatientName", "InvestigationSummary", "DownloadLink"]');

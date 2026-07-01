@@ -856,7 +856,9 @@ const normalizeDbTest = (dbTest) => {
         useAdultFemale: !!p.useAdultFemale,
         adultFemaleMin: p.adultFemaleMin !== null && p.adultFemaleMin !== undefined ? p.adultFemaleMin : "",
         adultFemaleMax: p.adultFemaleMax !== null && p.adultFemaleMax !== undefined ? p.adultFemaleMax : "",
-        adultFemaleText: p.adultFemaleText || ""
+        adultFemaleText: p.adultFemaleText || "",
+        narrativeTemplate: p.narrativeTemplate || "",
+        showNarrative: !!p.showNarrative
       };
     }).sort((a, b) => a.sortOrder - b.sortOrder),
     dbIncludedTestCodes: dbTest.includedTestCodes || []
