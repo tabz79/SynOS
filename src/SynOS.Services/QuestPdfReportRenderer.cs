@@ -263,6 +263,18 @@ namespace SynOS.Services
                                 var cell = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3);
                                 RenderColumnCell(cell, col, parameter);
                             }
+
+                            if (parameter.ShowNarrative && !string.IsNullOrWhiteSpace(parameter.Narrative))
+                            {
+                                var cleanText = ConvertTipTapToPlainText(parameter.Narrative);
+                                if (!string.IsNullOrWhiteSpace(cleanText))
+                                {
+                                    table.Cell().ColumnSpan((uint)visibleColumns.Count)
+                                         .BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3)
+                                         .PaddingTop(1).PaddingBottom(5).PaddingHorizontal(10)
+                                         .Text(cleanText).Italic().FontSize(8.5f).FontColor(Colors.Grey.Darken2);
+                                }
+                            }
                         }
                     }
                 });
@@ -275,7 +287,7 @@ namespace SynOS.Services
 
             column.Item().PaddingBottom(10).Column(commentsCol =>
             {
-                commentsCol.Item().PaddingVertical(5).Text(data.Comments);
+                commentsCol.Item().PaddingVertical(5).Text(ConvertTipTapToPlainText(data.Comments));
             });
         }
 
@@ -285,7 +297,7 @@ namespace SynOS.Services
             
             column.Item().PaddingBottom(10).Column(interpCol =>
             {
-                interpCol.Item().PaddingVertical(5).Text(data.Interpretation);
+                interpCol.Item().PaddingVertical(5).Text(ConvertTipTapToPlainText(data.Interpretation));
             });
         }
 
@@ -369,6 +381,64 @@ namespace SynOS.Services
                     text.TotalPages().FontSize(8);
                 });
             });
+        }
+
+        private string ConvertTipTapToPlainText(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+            if (!input.Trim().StartsWith("{") && !input.Trim().StartsWith("["))
+            {
+                // Strip HTML tags using regex
+                return System.Text.RegularExpressions.Regex.Replace(input, "<.*?>", string.Empty);
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(input);
+                var sb = new System.Text.StringBuilder();
+                ExtractTextFromJson(doc.RootElement, sb);
+                return sb.ToString().Trim();
+            }
+            catch
+            {
+                // Fallback: strip HTML
+                return System.Text.RegularExpressions.Regex.Replace(input, "<.*?>", string.Empty);
+            }
+        }
+
+        private void ExtractTextFromJson(JsonElement element, System.Text.StringBuilder sb)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                if (element.TryGetProperty("type", out var typeProp))
+                {
+                    var typeVal = typeProp.GetString();
+                    if (typeVal == "text" && element.TryGetProperty("text", out var textProp))
+                    {
+                        sb.Append(textProp.GetString());
+                    }
+                    else if (typeVal == "paragraph" || typeVal == "heading")
+                    {
+                        sb.Append("\n");
+                    }
+                    else if (typeVal == "listItem")
+                    {
+                        sb.Append("\n• ");
+                    }
+                }
+
+                if (element.TryGetProperty("content", out var contentProp))
+                {
+                    ExtractTextFromJson(contentProp, sb);
+                }
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var child in element.EnumerateArray())
+                {
+                    ExtractTextFromJson(child, sb);
+                }
+            }
         }
     }
 }

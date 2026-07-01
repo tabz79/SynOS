@@ -618,41 +618,52 @@ export const ReportA4 = ({ reportData, template }) => {
                 )}
                 {/* Parameters */}
                 {group.parameters?.map((param) => (
-                  <tr key={param.code + param.sequence} className="break-inside-avoid">
-                    {visibleColumns.map((col, idx) => {
-                      if (col === "Parameter") {
-                        return (
-                          <td key={col} className="py-1 pr-2 text-left" style={getColWidthStyle(idx)}>
-                             <span className="font-medium uppercase">{param.name}</span>
-                             {param.method && <div className="text-[9px] text-zinc-500 italic lowercase print:hidden">Method: {param.method}</div>}
-                          </td>
-                        );
-                      }
-                      if (col === "Value") {
-                        const showSeparateUnit = visibleColumns.includes("Unit");
-                        return (
-                          <td key={col} className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`} style={getColWidthStyle(idx)}>
-                            {param.displayValue || param.value} {!showSeparateUnit && param.unit}
-                          </td>
-                        );
-                      }
-                      if (col === "Unit") {
-                        return (
-                          <td key={col} className="py-1 text-center font-medium text-zinc-600" style={getColWidthStyle(idx)}>
-                            {param.unit}
-                          </td>
-                        );
-                      }
-                      if (col === "ReferenceRange") {
-                        return (
-                          <td key={col} className="py-1 text-right font-medium" style={getColWidthStyle(idx)}>
-                            {param.referenceRangeText || param.referenceRange}
-                          </td>
-                        );
-                      }
-                      return <td key={col} className="py-1" style={getColWidthStyle(idx)}></td>;
-                    })}
-                  </tr>
+                  <Fragment key={param.code + param.sequence}>
+                    <tr className="break-inside-avoid">
+                      {visibleColumns.map((col, idx) => {
+                        if (col === "Parameter") {
+                          return (
+                            <td key={col} className="py-1 pr-2 text-left" style={getColWidthStyle(idx)}>
+                               <span className="font-medium uppercase">{param.name}</span>
+                               {param.method && <div className="text-[9px] text-zinc-500 italic lowercase print:hidden">Method: {param.method}</div>}
+                            </td>
+                          );
+                        }
+                        if (col === "Value") {
+                          const showSeparateUnit = visibleColumns.includes("Unit");
+                          return (
+                            <td key={col} className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`} style={getColWidthStyle(idx)}>
+                              {param.displayValue || param.value} {!showSeparateUnit && param.unit}
+                            </td>
+                          );
+                        }
+                        if (col === "Unit") {
+                          return (
+                            <td key={col} className="py-1 text-center font-medium text-zinc-600" style={getColWidthStyle(idx)}>
+                              {param.unit}
+                            </td>
+                          );
+                        }
+                        if (col === "ReferenceRange") {
+                          return (
+                            <td key={col} className="py-1 text-right font-medium" style={getColWidthStyle(idx)}>
+                              {param.referenceRangeText || param.referenceRange}
+                            </td>
+                          );
+                        }
+                        return <td key={col} className="py-1" style={getColWidthStyle(idx)}></td>;
+                      })}
+                    </tr>
+                    {(param.showNarrative || param.ShowNarrative) && (param.narrative || param.narrativeTemplate) && (
+                      <tr className="break-inside-avoid">
+                        <td colSpan={visibleColumns.length} className="py-1 px-4 text-[10px] text-zinc-600 italic bg-zinc-50/5 border-none">
+                          <div className="wysiwyg-content leading-normal font-normal">
+                            {renderRichContent(param.narrative || param.narrativeTemplate)}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </Fragment>
             ))}

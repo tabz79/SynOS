@@ -34,6 +34,10 @@ namespace SynOS.Models.Entities
 
         public bool IsActive { get; set; } = true;
 
+        public string? NarrativeTemplate { get; set; }
+
+        public bool ShowNarrative { get; set; } = false;
+
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow; // Added
 

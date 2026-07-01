@@ -832,7 +832,9 @@ namespace SynOS.Services
                         Flag = (p.Flag == "Normal" || string.IsNullOrEmpty(p.Flag)) ? null : p.Flag,
                         IsAbnormal = p.IsAbnormal,
                         Sequence = idx,
-                        Method = p.Method
+                        Method = p.Method,
+                        Narrative = p.NarrativeTemplate,
+                        ShowNarrative = p.ShowNarrative
                     }).ToList()
                 }).ToList(),
                 Comments = domain.Comments,
@@ -1307,7 +1309,9 @@ namespace SynOS.Services
                         Flag = (p.Flag == "Normal" || string.IsNullOrEmpty(p.Flag)) ? null : p.Flag, // GPT-5 Rule: Purity
                         IsAbnormal = p.IsAbnormal, // Still present for backend logic, UI avoids if possible
                         Sequence = idx,
-                        Method = p.Methodology
+                        Method = p.Methodology,
+                        Narrative = p.NarrativeTemplate,
+                        ShowNarrative = p.ShowNarrative
                     }).ToList()
                 }).ToList(),
                 Comments = interpretationData?.Notes ?? string.Empty,

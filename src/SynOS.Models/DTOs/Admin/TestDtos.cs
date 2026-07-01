@@ -120,6 +120,9 @@ namespace SynOS.Models.DTOs.Admin
         public decimal? AdultFemaleMin { get; set; }
         public decimal? AdultFemaleMax { get; set; }
         public string? AdultFemaleText { get; set; }
+
+        public string? NarrativeTemplate { get; set; }
+        public bool ShowNarrative { get; set; }
     }
 
 
@@ -141,7 +144,7 @@ namespace SynOS.Models.DTOs.Admin
         public string? Category { get; set; }
 
         [Required]
-        [Range(0.01, double.MaxValue)]
+        [Range(0.00, double.MaxValue)]
         public decimal BasePrice { get; set; }
 
         [Range(1, int.MaxValue)]

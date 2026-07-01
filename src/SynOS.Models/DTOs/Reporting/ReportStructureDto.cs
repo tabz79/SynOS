@@ -72,7 +72,9 @@ namespace SynOS.Models.DTOs.Reporting
                         IsCalculated = p.IsCalculated,
                         HasFormula = p.HasFormula,
                         Formula = p.Formula,
-                        IsAbnormal = p.IsAbnormal
+                        IsAbnormal = p.IsAbnormal,
+                        NarrativeTemplate = p.NarrativeTemplate,
+                        ShowNarrative = p.ShowNarrative
                     }).ToList()
                 }).ToList(),
                 Notes = state.Notes.Select(n => new ReportNoteDto
@@ -124,7 +126,9 @@ namespace SynOS.Models.DTOs.Reporting
                         IsCalculated = p.IsCalculated,
                         HasFormula = p.HasFormula,
                         Formula = p.Formula,
-                        IsAbnormal = p.IsAbnormal
+                        IsAbnormal = p.IsAbnormal,
+                        NarrativeTemplate = p.NarrativeTemplate,
+                        ShowNarrative = p.ShowNarrative
                     }).ToList()
                 }).ToList(),
                 Notes = Notes.Select(n => new ReportNoteState
@@ -171,6 +175,8 @@ namespace SynOS.Models.DTOs.Reporting
         public bool HasFormula { get; set; }
         public string? Formula { get; set; }
         public bool IsAbnormal { get; set; }
+        public string? NarrativeTemplate { get; set; }
+        public bool ShowNarrative { get; set; }
     }
 
     public class ReportNoteDto

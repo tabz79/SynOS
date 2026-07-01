@@ -761,6 +761,8 @@ namespace SynOS.Services
                         Methodology = paramDto.Methodology,
                         Formula = formula,
                         IsCalculated = isCalculated,
+                        NarrativeTemplate = paramDto.NarrativeTemplate,
+                        ShowNarrative = paramDto.ShowNarrative,
                         IsActive = true,
                         CreatedBy = actorUserId,
                         CreatedAt = DateTimeOffset.UtcNow,
@@ -778,6 +780,8 @@ namespace SynOS.Services
                     catParam.Methodology = paramDto.Methodology;
                     catParam.Formula = formula;
                     catParam.IsCalculated = isCalculated;
+                    catParam.NarrativeTemplate = paramDto.NarrativeTemplate;
+                    catParam.ShowNarrative = paramDto.ShowNarrative;
                     catParam.IsActive = true;
                     catParam.UpdatedBy = actorUserId;
                     catParam.UpdatedAt = DateTimeOffset.UtcNow;
@@ -812,6 +816,8 @@ namespace SynOS.Services
                         Unit = paramDto.Unit,
                         DataType = paramDto.DataType,
                         SortOrder = paramDto.SortOrder,
+                        NarrativeTemplate = paramDto.NarrativeTemplate,
+                        ShowNarrative = paramDto.ShowNarrative,
                         IsActive = true,
                         CreatedAt = DateTimeOffset.UtcNow,
                         UpdatedAt = DateTimeOffset.UtcNow
@@ -824,6 +830,8 @@ namespace SynOS.Services
                     opParam.Unit = paramDto.Unit;
                     opParam.DataType = paramDto.DataType;
                     opParam.SortOrder = paramDto.SortOrder;
+                    opParam.NarrativeTemplate = paramDto.NarrativeTemplate;
+                    opParam.ShowNarrative = paramDto.ShowNarrative;
                     opParam.IsActive = true;
                     opParam.UpdatedAt = DateTimeOffset.UtcNow;
                 }

@@ -1392,6 +1392,7 @@ export function TestMasterScreen() {
   const [editFormula, setEditFormula] = useState("");
   const [editHasFormula, setEditHasFormula] = useState(false);
   const [editNarrative, setEditNarrative] = useState("");
+  const [editShowNarrative, setEditShowNarrative] = useState(false);
   const [editAnalyzerModel, setEditAnalyzerModel] = useState("");
   const [editAnalyzerChannel, setEditAnalyzerChannel] = useState("");
   const [editUseMale, setEditUseMale] = useState(false);
@@ -1564,6 +1565,7 @@ export function TestMasterScreen() {
           analyzerModel: "",
           analyzerChannel: "",
           narrativeTemplate: "",
+          showNarrative: false,
           genderRanges: { maleMin: 0, maleMax: 100, femaleMin: 0, femaleMax: 100 }
         }
       ],
@@ -1736,6 +1738,7 @@ export function TestMasterScreen() {
       analyzerModel: "",
       analyzerChannel: "",
       narrativeTemplate: "",
+      showNarrative: false,
       genderRanges: { maleMin: 0, maleMax: 100, femaleMin: 0, femaleMax: 100 }
     };
 
@@ -1772,6 +1775,7 @@ export function TestMasterScreen() {
     setEditFormula(param.formula || "");
     setEditHasFormula(param.hasFormula || false);
     setEditNarrative(param.narrativeTemplate || "");
+    setEditShowNarrative(param.showNarrative || false);
     setEditAnalyzerModel(param.analyzerModel || "");
     setEditAnalyzerChannel(param.analyzerChannel || "");
     setEditMaleMin(param.maleMin !== undefined && param.maleMin !== null && param.maleMin !== "" ? param.maleMin : (param.genderRanges?.maleMin ?? ""));
@@ -1869,6 +1873,7 @@ export function TestMasterScreen() {
           hasFormula: editHasFormula,
           formula: editHasFormula ? editFormula : "",
           narrativeTemplate: editNarrative,
+          showNarrative: editShowNarrative,
           analyzerModel: editAnalyzerModel,
           analyzerChannel: editAnalyzerChannel,
           referenceRange: editDefaultRange,
@@ -2107,6 +2112,8 @@ export function TestMasterScreen() {
             Formula: p.formula || null,
             IsCalculated: !!(p.hasFormula || p.formula),
             ReferenceRange: p.referenceRange || formatReferenceRange(p),
+            NarrativeTemplate: p.narrativeTemplate || null,
+            ShowNarrative: !!p.showNarrative,
             UseMale: !!p.useMale,
             MaleMin: p.useMale && p.maleMin !== undefined && p.maleMin !== "" && p.maleMin !== null ? Number(p.maleMin) : null,
             MaleMax: p.useMale && p.maleMax !== undefined && p.maleMax !== "" && p.maleMax !== null ? Number(p.maleMax) : null,
@@ -2257,7 +2264,10 @@ export function TestMasterScreen() {
 
     const interpretationVal = activeTab === "interpretation"
       ? (selectedTest.defaultInterpretation || "")
-      : (selectedTest.defaultInterpretation || (displayParams && displayParams[0]?.narrativeTemplate ? displayParams[0]?.narrativeTemplate : ""));
+      : (selectedTest.defaultInterpretation || 
+         ((selectedTest.reportStyle === "Descriptive Narrative" || selectedTest.department?.toUpperCase() === "RADIOLOGY") && displayParams && displayParams[0]?.narrativeTemplate
+          ? displayParams[0]?.narrativeTemplate 
+          : ""));
 
     const shouldShowInterpretation = activeTab === "interpretation"
       ? !!interpretationVal
@@ -2693,37 +2703,47 @@ export function TestMasterScreen() {
                         </thead>
                         <tbody className="divide-y divide-zinc-200 text-zinc-800">
                           {displayParams && displayParams.map((p, i) => (
-                            <tr 
-                              key={i} 
-                              className={cn(
-                                selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
-                              )}
-                            >
-                              {activeTemplate.columns.map((col, idx) => {
-                                let text = "";
-                                if (col.code === "Parameter") text = p.name;
-                                else if (col.code === "Value") {
-                                  text = getParamMidpoint(p);
-                                }
-                                else if (col.code === "Unit") text = p.unit;
-                                else if (col.code === "ReferenceRange") text = selectedTest.showRange ? formatReferenceRange(p) : "";
-                                else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
+                            <React.Fragment key={i}>
+                              <tr 
+                                className={cn(
+                                  selectedTest.reportStyle === "Modern Tabular" && i % 2 === 1 && !activeTemplate.enableAbsolutePositioning && "bg-zinc-50/30"
+                                )}
+                              >
+                                {activeTemplate.columns.map((col, idx) => {
+                                  let text = "";
+                                  if (col.code === "Parameter") text = p.name;
+                                  else if (col.code === "Value") {
+                                    text = getParamMidpoint(p);
+                                  }
+                                  else if (col.code === "Unit") text = p.unit;
+                                  else if (col.code === "ReferenceRange") text = selectedTest.showRange ? formatReferenceRange(p) : "";
+                                  else if (col.code === "Methodology") text = selectedTest.showMethod ? p.method : "";
 
-                                return (
-                                  <td
-                                    key={idx}
-                                    className={cn(
-                                      "py-1 px-2",
-                                      selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
-                                      col.bold && "font-bold text-zinc-950",
-                                      col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
-                                    )}
-                                  >
-                                    {text}
+                                  return (
+                                    <td
+                                      key={idx}
+                                      className={cn(
+                                        "py-1 px-2",
+                                        selectedTest.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0",
+                                        col.bold && "font-bold text-zinc-950",
+                                        col.alignment === "Left" ? "text-left" : col.alignment === "Center" ? "text-center" : "text-right"
+                                      )}
+                                    >
+                                      {text}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                              {p.showNarrative && p.narrativeTemplate && (
+                                <tr>
+                                  <td colSpan={activeTemplate.columns.length} className="py-1 px-4 text-[7px] text-zinc-500 italic bg-zinc-50/20">
+                                    <div className="wysiwyg-content leading-normal">
+                                      {renderPreviewInterpretation(p.narrativeTemplate)}
+                                    </div>
                                   </td>
-                                );
-                              })}
-                            </tr>
+                                </tr>
+                              )}
+                            </React.Fragment>
                           ))}
                         </tbody>
                       </table>
@@ -3682,9 +3702,21 @@ export function TestMasterScreen() {
                                 <div className="flex justify-center items-center">
                                   {isFromChild ? (
                                     <button
-                                      disabled
-                                      className="p-1 rounded border border-zinc-200 dark:border-zinc-800 text-zinc-300 dark:text-zinc-700 cursor-not-allowed flex items-center justify-center"
-                                      title={`Configured on child test: ${p.childTestName}`}
+                                      onClick={() => {
+                                        const childTest = catalog.find(t => t.code === p.childTestCode);
+                                        if (childTest) {
+                                          const confirmSwitch = window.confirm(
+                                            `This parameter is inherited from the child test "${p.childTestName}" (${p.childTestCode}).\n\nTo edit its reference ranges or overrides, you must modify the child test directly.\n\nWould you like to switch to "${p.childTestName}" now?`
+                                          );
+                                          if (confirmSwitch) {
+                                            handleSelectTest(childTest);
+                                          }
+                                        } else {
+                                          alert(`Child test "${p.childTestName}" not found in catalog.`);
+                                        }
+                                      }}
+                                      className="p-1 rounded border border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-synos-primary hover:border-synos-primary/20 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-all active:scale-90 flex items-center justify-center"
+                                      title={`Inherited from child test: ${p.childTestName}. Click to open child test and configure.`}
                                     >
                                       <Settings className="w-3.5 h-3.5" />
                                     </button>
@@ -4525,16 +4557,31 @@ export function TestMasterScreen() {
 
             {/* Drawer context: narrative template */}
             {drawerMode === "narrative" && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Default narrative / interpretation template</label>
-                <textarea
-                  rows="6"
-                  className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary placeholder-zinc-400"
-                  placeholder="Type standard medical commentaries or test explanations to render inside report PDF..."
-                  value={editNarrative}
-                  onChange={(e) => setEditNarrative(e.target.value)}
-                />
-                <p className="text-[9px] text-zinc-400 leading-tight">This comment will render at the bottom of the test results section if "Interpretation Commentaries" is enabled in Report Setup.</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="show-narrative-checkbox"
+                    checked={editShowNarrative}
+                    onChange={(e) => setEditShowNarrative(e.target.checked)}
+                    className="rounded border-zinc-300 text-synos-primary focus:ring-synos-primary h-4 w-4"
+                  />
+                  <label htmlFor="show-narrative-checkbox" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Show Narrative in Report (as a full-width sub-row)
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Default narrative / interpretation template</label>
+                  <div className="h-96 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-950">
+                    <RichMedicalEditor
+                      value={editNarrative}
+                      onChange={(val) => setEditNarrative(val)}
+                      placeholder="Type standard medical commentaries, range tables, or test explanations to render inside report PDF..."
+                      className="h-full border-0 bg-transparent dark:bg-transparent shadow-none rounded-none"
+                    />
+                  </div>
+                  <p className="text-[9px] text-zinc-400 leading-tight">When enabled, this comment will render directly under the parameter row spanning all columns of the report table.</p>
+                </div>
               </div>
             )}
           </div>

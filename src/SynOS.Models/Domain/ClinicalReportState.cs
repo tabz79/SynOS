@@ -61,6 +61,8 @@ namespace SynOS.Models.Domain
         public bool HasFormula { get; set; }
         public string? Formula { get; set; }
         public bool IsAbnormal { get; set; }
+        public string? NarrativeTemplate { get; set; }
+        public bool ShowNarrative { get; set; }
     }
 
     public class ReportNoteState

@@ -429,7 +429,9 @@ namespace SynOS.Services.Reporting
                     OverrideReason = result?.OverrideReason,
                     IsCalculated = meta.IsCalculated || !string.IsNullOrWhiteSpace(meta.Formula),
                     HasFormula = meta.IsCalculated || !string.IsNullOrWhiteSpace(meta.Formula),
-                    Formula = meta.Formula
+                    Formula = meta.Formula,
+                    NarrativeTemplate = meta.NarrativeTemplate,
+                    ShowNarrative = meta.ShowNarrative
                 };
 
                 // NEW: Dynamic Formula Engine (GPT-5 Hardened)
@@ -554,16 +556,8 @@ namespace SynOS.Services.Reporting
                     dob = referenceDate.AddYears(-patient.Age);
                 }
 
-                string patientAgeGroup = Utils.ReferenceRangeResolver.DetermineAgeCategory(dob, referenceDate);
-
-                // Find matching demographic range in ReferenceRanges table
-                var range = await _context.ReferenceRanges
-                    .Where(r => r.Parameter.ParameterCode == result.ParameterCode && r.IsActive &&
-                               (r.Sex == "ALL" || r.Sex == patient.Gender) &&
-                               (r.AgeGroup == "ALL" || r.AgeGroup == patientAgeGroup))
-                    .OrderByDescending(r => r.Sex == patient.Gender)
-                    .ThenByDescending(r => r.AgeGroup == patientAgeGroup)
-                    .FirstOrDefaultAsync();
+                // Find matching demographic range in ReferenceRanges table using centralized resolver
+                var range = await Utils.ReferenceRangeResolver.ResolveRangeEntityAsync(_context, result.ParameterCode, patient.Gender, dob, referenceDate);
 
                 if (range != null)
                 {

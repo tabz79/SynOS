@@ -82,6 +82,8 @@ namespace SynOS.Services
         public int Sequence { get; set; }
         public string? Method { get; set; }
         public string? SampleType { get; set; }
+        public string? Narrative { get; set; }
+        public bool ShowNarrative { get; set; }
     }
 
     public class ReportReferenceRange

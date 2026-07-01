@@ -63,6 +63,10 @@ namespace SynOS.Models.Entities.Catalog
 
         public int DecimalPlaces { get; set; } = 2;
 
+        public string? NarrativeTemplate { get; set; }
+
+        public bool ShowNarrative { get; set; } = false;
+
         public bool IsActive { get; set; } = true;
 
         public Guid CreatedBy { get; set; }

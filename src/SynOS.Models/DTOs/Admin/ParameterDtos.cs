@@ -77,6 +77,9 @@ namespace SynOS.Models.DTOs.Admin
         public decimal? AdultFemaleMin { get; set; }
         public decimal? AdultFemaleMax { get; set; }
         public string? AdultFemaleText { get; set; }
+
+        public string? NarrativeTemplate { get; set; }
+        public bool ShowNarrative { get; set; }
     }
 
     public class CreateParameterDto

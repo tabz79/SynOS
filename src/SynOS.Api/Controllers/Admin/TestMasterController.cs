@@ -357,6 +357,7 @@ namespace SynOS.Api.Controllers.Admin
                 {
                     var childMappings = await _context.CatalogPanelMappings
                         .Where(m => m.PanelTestCode == dto.TestCode)
+                        .OrderBy(m => m.SortOrder)
                         .Select(m => m.ChildTestCode)
                         .ToListAsync();
                     dto.IncludedTestCodes = childMappings;
@@ -371,6 +372,8 @@ namespace SynOS.Api.Controllers.Admin
                         paramDto.Formula = catParam.Formula;
                         paramDto.IsCalculated = catParam.IsCalculated || !string.IsNullOrWhiteSpace(catParam.Formula);
                         paramDto.ReferenceRange = catParam.ReferenceRange;
+                        paramDto.NarrativeTemplate = catParam.NarrativeTemplate;
+                        paramDto.ShowNarrative = catParam.ShowNarrative;
                     }
                 }
             }
