@@ -160,10 +160,23 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService) =>
 {
+    Console.WriteLine($"[INTEGRATION DEB] /api/events endpoint started. EventId: {dto?.EventId}, Type: {dto?.EventType}");
+    
+    // Check initial counts
+    int countMsgBefore = 0;
+    int countOutboxBefore = 0;
+    try
+    {
+        countMsgBefore = await db.NotificationMessages.CountAsync();
+        countOutboxBefore = await db.NotificationOutboxes.CountAsync();
+    }
+    catch {}
+
     // 1. Extract authentication headers
     if (!context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues) ||
         !context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
     {
+        Console.WriteLine("[INTEGRATION DEB] /api/events returning 401: Missing auth headers");
         return Results.Json(new { error = "Missing auth headers X-Lab-Id or X-Api-Key" }, statusCode: StatusCodes.Status401Unauthorized);
     }
 
@@ -178,16 +191,18 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     }
 
     // Validate payload tenant against HTTP headers
-    if (dto.LabId != labId)
+    if (dto == null || dto.LabId != labId)
     {
         return Results.Json(new { error = "Lab ID in payload does not match authenticated header Lab ID" }, statusCode: StatusCodes.Status400BadRequest);
     }
 
     // 3. Deduplication Check (Idempotency)
+    Console.WriteLine($"[INTEGRATION DEB] Hop 2: /api/events received request. EventId: {dto.EventId}, EventType: {dto.EventType}");
     var alreadyExists = await db.StoredEvents.AnyAsync(e => e.EventId == dto.EventId);
     if (alreadyExists)
     {
         // Return 208 AlreadyReported to satisfy idempotency requirement silently
+        Console.WriteLine($"[INTEGRATION DEB] Hop 2: Duplicate event skipped. EventId: {dto.EventId}");
         return Results.Json(new { message = "Duplicate event skipped", eventId = dto.EventId }, statusCode: StatusCodes.Status208AlreadyReported);
     }
 
@@ -211,6 +226,7 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     // Check if the event is a WhatsappDeliveryRequestedEvent to queue for delivery
     if (dto.EventType == "ReportDeliveryRequestedEvent")
     {
+        Console.WriteLine($"[INTEGRATION DEB] Hop 3: Event type matched: {dto.EventType}");
         try
         {
             using var doc = System.Text.Json.JsonDocument.Parse(dto.PayloadJson);
@@ -227,6 +243,7 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
                 var investigationSummary = (root.TryGetProperty("InvestigationSummary", out var invProp) ? invProp.GetString() : string.Empty) ?? string.Empty;
                 var labIdVal = root.TryGetProperty("LabId", out var labIdProp) ? labIdProp.GetString() : dto.LabId;
 
+                Console.WriteLine($"[INTEGRATION DEB] Hop 4: EnqueueNotificationAsync() is called for Recipient: {phone}, Template: report_ready");
                 await notificationService.EnqueueNotificationAsync(new TBZ.Middleware.Application.DTOs.NotificationRequest
                 {
                     Recipient = phone,
@@ -307,6 +324,16 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
 
     await db.SaveChangesAsync();
 
+    // Check final counts and log
+    try
+    {
+        var countMsgAfter = await db.NotificationMessages.CountAsync();
+        var countOutboxAfter = await db.NotificationOutboxes.CountAsync();
+        Console.WriteLine($"[INTEGRATION DEB] DB Changes. Messages: {countMsgBefore} -> {countMsgAfter}, Outbox: {countOutboxBefore} -> {countOutboxAfter}");
+    }
+    catch {}
+
+    Console.WriteLine($"[INTEGRATION DEB] /api/events returning 200 OK: success = true, eventId = {dto.EventId}");
     return Results.Ok(new { success = true, eventId = dto.EventId });
 })
 .WithName("IngestEvent")

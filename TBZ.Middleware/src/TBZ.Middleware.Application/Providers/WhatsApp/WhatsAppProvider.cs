@@ -28,18 +28,36 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp
 
         public string Channel => "WhatsApp";
 
+        private string FormatToE164(string phone)
+        {
+            if (string.IsNullOrEmpty(phone)) return phone;
+            var cleaned = new string(System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Where(phone, char.IsDigit)));
+            if (cleaned.Length == 10)
+            {
+                return "91" + cleaned;
+            }
+            return cleaned;
+        }
+
         public async Task<ProviderSendResult> SendAsync(NotificationMessage message, Dictionary<string, string> variables)
         {
             try
             {
-                // Resolve the template pattern and language mappings
+                var recipient = FormatToE164(message.Recipient);
+
                 var template = await _db.NotificationTemplates
                     .FirstOrDefaultAsync(t => t.TemplateName == message.TemplateName && t.Approved);
 
-                var language = template?.Language ?? "en";
-                var parameters = _templateRenderer.MapPositionalParameters(template!, variables);
+                if (template == null)
+                {
+                    throw new InvalidOperationException($"Notification template '{message.TemplateName}' is not configured.");
+                }
 
-                var sendResult = await _whatsAppService.SendTemplateAsync(message.Recipient, message.TemplateName, language, parameters);
+                var apiTemplateName = template.TemplateName;
+                var apiLanguage = template.Language ?? "en";
+                var parameters = _templateRenderer.MapPositionalParameters(template, variables);
+
+                var sendResult = await _whatsAppService.SendTemplateAsync(recipient, apiTemplateName, apiLanguage, parameters);
 
                 return new ProviderSendResult
                 {

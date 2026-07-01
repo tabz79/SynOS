@@ -4,6 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-TBZ.Middleware.Api-e3b7c688-4299-4c12-9c3f-c6b71b80c58e</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

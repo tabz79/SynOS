@@ -113,8 +113,11 @@ namespace TBZ.Middleware.Application.Core
             };
 
             _db.NotificationMessages.Add(message);
+            Console.WriteLine($"[INTEGRATION DEB] Hop 5: NotificationMessage is inserted. MessageId: {message.Id}, LabId: {message.LabId}");
             _db.NotificationOutboxes.Add(outbox);
+            Console.WriteLine($"[INTEGRATION DEB] Hop 6: NotificationOutbox is inserted. OutboxId: {outbox.Id}");
             await _db.SaveChangesAsync();
+            Console.WriteLine($"[INTEGRATION DEB] Hop 5 & 6 Success: NotificationMessage and NotificationOutbox saved to DB.");
         }
     }
 }

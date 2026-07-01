@@ -36,6 +36,18 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
             return client;
         }
 
+        private void LogRuntimeUrl(HttpClient client, string endpoint)
+        {
+            var resolvedUri = new Uri(client.BaseAddress!, endpoint);
+            _logger.LogInformation("[RUNTIME URL DEB] client.BaseAddress: {BaseAddress}", client.BaseAddress);
+            _logger.LogInformation("[RUNTIME URL DEB] _options.PhoneNumberId: {PhoneNumberId}", _options.PhoneNumberId);
+            _logger.LogInformation("[RUNTIME URL DEB] endpoint: {Endpoint}", endpoint);
+            _logger.LogInformation("[RUNTIME URL DEB] Fully resolved request URI: {ResolvedUri}", resolvedUri);
+            _logger.LogInformation("[RUNTIME URL DEB] Loaded Config - WhatsApp:BaseUrl: {BaseUrl}", _options.BaseUrl);
+            _logger.LogInformation("[RUNTIME URL DEB] Loaded Config - WhatsApp:GraphApiVersion: {GraphApiVersion}", _options.GraphApiVersion);
+            _logger.LogInformation("[RUNTIME URL DEB] Loaded Config - WhatsApp:PhoneNumberId: {ConfigPhoneNumberId}", _options.PhoneNumberId);
+        }
+
         public async Task<WhatsAppSendResult> SendTemplateAsync(string recipient, string templateName, string language, object[] parameters)
         {
             try
@@ -75,6 +87,7 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 _logger.LogInformation("Sending WhatsApp template request: {Json}", json);
+                LogRuntimeUrl(client, endpoint);
                 var response = await client.PostAsync(endpoint, content);
                 var responseBody = await response.Content.ReadAsStringAsync();
                 _logger.LogInformation("WhatsApp template response: {Status} {Body}", response.StatusCode, responseBody);

@@ -110,16 +110,18 @@ namespace SynOS.Api.BackgroundServices
                         request.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
                         request.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());
 
+                        _logger.LogInformation("[INTEGRATION DEB] Hop 1: OutboxWorker POST to /api/events. EventId: {EventId}, EventType: {EventType}", evt.Id, evt.EventType);
                         var response = await _httpClient.SendAsync(request, stoppingToken);
 
                         if (response.StatusCode == System.Net.HttpStatusCode.OK || 
                             response.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
                         {
                             isSuccess = true;
+                            _logger.LogInformation("[INTEGRATION DEB] Hop 1 Success: OutboxWorker POST completed successfully for Event {EventId} (Status: {Status}).", evt.Id, response.StatusCode);
                         }
                         else
                         {
-                            _logger.LogWarning("Middleware API returned status code {StatusCode} for Event {EventId}.", response.StatusCode, evt.Id);
+                            _logger.LogWarning("[INTEGRATION DEB] Hop 1 Fail: Middleware API returned status code {StatusCode} for Event {EventId}.", response.StatusCode, evt.Id);
                         }
                     }
                     catch (Exception ex)

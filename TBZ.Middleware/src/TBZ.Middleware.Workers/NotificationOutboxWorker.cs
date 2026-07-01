@@ -30,6 +30,7 @@ namespace TBZ.Middleware.Workers
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("[WORKER] NotificationOutboxWorker started.");
             _logger.LogInformation("Notification Outbox Worker {WorkerId} started.", _workerId);
 
             while (!stoppingToken.IsCancellationRequested)
@@ -56,6 +57,7 @@ namespace TBZ.Middleware.Workers
             INotificationProviderResolver providerResolver,
             CancellationToken stoppingToken)
         {
+            _logger.LogInformation("[WORKER] Polling NotificationOutboxes...");
             var now = DateTime.UtcNow;
 
             // Fetch and lock pending/retrying notifications
@@ -75,6 +77,7 @@ namespace TBZ.Middleware.Workers
 
                 foreach (var item in itemsToLock)
                 {
+                    _logger.LogInformation("[INTEGRATION DEB] Hop 7: Notification worker {WorkerId} picked up OutboxId: {OutboxId}, MessageId: {MessageId}", _workerId, item.Id, item.NotificationMessageId);
                     item.Status = NotificationStatus.Sending;
                     item.LockedUntil = now.AddMinutes(2);
                     item.WorkerId = _workerId;

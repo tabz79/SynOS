@@ -33,7 +33,16 @@ namespace TBZ.Middleware.Application
             services.AddHttpClient("WhatsAppClient", (sp, client) =>
             {
                 var options = sp.GetRequiredService<IOptions<WhatsAppOptions>>().Value;
-                client.BaseAddress = new Uri(options.BaseUrl);
+                var baseUrl = options.BaseUrl ?? "https://graph.facebook.com/";
+                if (!baseUrl.Contains("/v") && !string.IsNullOrEmpty(options.GraphApiVersion))
+                {
+                    baseUrl = baseUrl.TrimEnd('/') + "/" + options.GraphApiVersion.Trim('/');
+                }
+                if (!baseUrl.EndsWith("/"))
+                {
+                    baseUrl += "/";
+                }
+                client.BaseAddress = new Uri(baseUrl);
                 if (!string.IsNullOrEmpty(options.AccessToken))
                 {
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.AccessToken);
