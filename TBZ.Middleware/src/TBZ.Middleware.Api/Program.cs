@@ -399,5 +399,6 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
 
 app.MapControlTowerEndpoints();
 app.MapWhatsAppWebhookEndpoints();
+app.MapWhatsAppManagementEndpoints();
 
 app.Run();

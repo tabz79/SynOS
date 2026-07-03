@@ -1,332 +1,69 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --launch-profile http
-Building...
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "MigrationId", "ProductVersion"
-      FROM "__EFMigrationsHistory"
-      ORDER BY "MigrationId";
-info: Microsoft.EntityFrameworkCore.Migrations[20405]
-      No migrations were applied. The database is already up to date.
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (6ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__defaultLabId_0
-      LIMIT 1
-info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: http://localhost:5069
-info: Microsoft.Hosting.Lifetime[0]
-      Application started. Press Ctrl+C to shut down.
-info: Microsoft.Hosting.Lifetime[0]
-      Hosting environment: Development
-info: Microsoft.Hosting.Lifetime[0]
-      Content root path: D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --launch-profile http
-Building...
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (168ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "MigrationId", "ProductVersion"
-      FROM "__EFMigrationsHistory"
-      ORDER BY "MigrationId";
-info: Microsoft.EntityFrameworkCore.Migrations[20405]
-      No migrations were applied. The database is already up to date.
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (12ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__defaultLabId_0
-      LIMIT 1
-info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: http://localhost:5069
-info: Microsoft.Hosting.Lifetime[0]
-      Application started. Press Ctrl+C to shut down.
-info: Microsoft.Hosting.Lifetime[0]
-      Hosting environment: Development
-info: Microsoft.Hosting.Lifetime[0]
-      Content root path: D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (14ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "s"."ReceivedAt"
-      FROM "StoredEvents" AS "s"
-      WHERE "s"."LabId" = @__resolvedLabId_0
-      ORDER BY "s"."Sequence" DESC
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
-      FROM "ProjectionCheckpoints" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__targetDate_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
-      FROM "DailyOperationsFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" = @__targetDate_1
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" IS NOT NULL AND "w"."PaymentReceivedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."PaymentReceivedAt" IS NOT NULL AND "w"."SampleCollectedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."SampleCollectedAt" IS NOT NULL AND "w"."ProcessingStartedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."ProcessingStartedAt" IS NOT NULL AND "w"."ReportSignedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "DeliveryFacts" AS "d"
-      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."Status" = 'Pending'
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (11ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "w"."VisitId", "w"."BranchId", "w"."CreatedAt", "w"."LabId", "w"."PatientId", "w"."PatientRegisteredAt", "w"."PaymentReceivedAt", "w"."ProcessingStartedAt", "w"."ReportDeliveredAt", "w"."ReportSignedAt", "w"."SampleCollectedAt", "w"."UpdatedAt", "w"."VisitCreatedAt"
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" >= @__start_1 AND "w"."VisitCreatedAt" <= @__end_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."ReportId", "d"."CreatedAt", "d"."DeliveredAt", "d"."DeliveryMethod", "d"."PatientId", "d"."RequestedAt", "d"."Status", "d"."UpdatedAt"
-      FROM "DeliveryFacts" AS "d"
-      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."CreatedAt" >= @__start_1 AND "d"."CreatedAt" <= @__end_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "s"."ReceivedAt"
-      FROM "StoredEvents" AS "s"
-      WHERE "s"."LabId" = @__resolvedLabId_0
-      ORDER BY "s"."Sequence" DESC
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
-      FROM "ProjectionCheckpoints" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
-      FROM "DailyOperationsFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_1 AND "d"."Date" <= @__end_2
-      ORDER BY "d"."Date"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "b"."Id", "b"."CreatedAt", "b"."Date", "b"."IsFirstVisit", "b"."LabId", "b"."PatientCount", "b"."RevenueGenerated", "b"."SourceId", "b"."SourceName", "b"."SourceType", "b"."TestCount", "b"."UpdatedAt"
-      FROM "BusinessSourceFacts" AS "b"
-      WHERE "b"."LabId" = @__resolvedLabId_0 AND "b"."Date" >= @__start_Date_1 AND "b"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."Id", "d"."CreatedAt", "d"."Date", "d"."DoctorId", "d"."DoctorName", "d"."LabId", "d"."PatientCount", "d"."RevenueGenerated", "d"."TestCount", "d"."UpdatedAt"
-      FROM "DoctorReferralFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_Date_1 AND "d"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "r"."Id", "r"."CreatedAt", "r"."Date", "r"."LabId", "r"."PatientCount", "r"."ReferralPartnerId", "r"."ReferralPartnerLocation", "r"."ReferralPartnerName", "r"."RevenueGenerated", "r"."TestCount", "r"."UpdatedAt"
-      FROM "ReferralPartnerFacts" AS "r"
-      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."Date" >= @__start_Date_1 AND "r"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__previousStart_1='?' (DbType = DateTime), @__currentEnd_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."Id", "t"."Count", "t"."CreatedAt", "t"."Date", "t"."EntityKey", "t"."EntityType", "t"."LabId", "t"."Revenue", "t"."UpdatedAt"
-      FROM "TrendFacts" AS "t"
-      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__previousStart_1 AND "t"."Date" <= @__currentEnd_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT DISTINCT "d"."DoctorId", "d"."DoctorName"
-      FROM "DoctorReferralFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."DoctorId" <> 'Direct'
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT DISTINCT "r"."ReferralPartnerId", "r"."ReferralPartnerName"
-      FROM "ReferralPartnerFacts" AS "r"
-      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."ReferralPartnerId" <> 'Direct'
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."Id", "t"."CreatedAt", "t"."Date", "t"."Department", "t"."LabId", "t"."TestCode", "t"."UpdatedAt", "t"."VolumeCount"
-      FROM "TestVolumeFacts" AS "t"
-      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__start_1 AND "t"."Date" <= @__end_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."Id", "p"."AgeGroup", "p"."CreatedAt", "p"."Date", "p"."Gender", "p"."LabId", "p"."PatientCount", "p"."PatientLocation", "p"."PatientPincode", "p"."Revenue", "p"."TestCount", "p"."UpdatedAt"
-      FROM "PatientDemographicFacts" AS "p"
-      WHERE "p"."LabId" = @__resolvedLabId_0 AND "p"."Date" >= @__start_Date_1 AND "p"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "s"."ReceivedAt"
-      FROM "StoredEvents" AS "s"
-      WHERE "s"."LabId" = @__resolvedLabId_0
-      ORDER BY "s"."Sequence" DESC
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
-      FROM "ProjectionCheckpoints" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__targetDate_1='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
-      FROM "DailyOperationsFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" = @__targetDate_1
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" IS NOT NULL AND "w"."PaymentReceivedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."PaymentReceivedAt" IS NOT NULL AND "w"."SampleCollectedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."SampleCollectedAt" IS NOT NULL AND "w"."ProcessingStartedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."ProcessingStartedAt" IS NOT NULL AND "w"."ReportSignedAt" IS NULL
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*)
-      FROM "DeliveryFacts" AS "d"
-      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."Status" = 'Pending'
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "w"."VisitId", "w"."BranchId", "w"."CreatedAt", "w"."LabId", "w"."PatientId", "w"."PatientRegisteredAt", "w"."PaymentReceivedAt", "w"."ProcessingStartedAt", "w"."ReportDeliveredAt", "w"."ReportSignedAt", "w"."SampleCollectedAt", "w"."UpdatedAt", "w"."VisitCreatedAt"
-      FROM "WorkflowFacts" AS "w"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "w"."VisitCreatedAt" >= @__start_1 AND "w"."VisitCreatedAt" <= @__end_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."ReportId", "d"."CreatedAt", "d"."DeliveredAt", "d"."DeliveryMethod", "d"."PatientId", "d"."RequestedAt", "d"."Status", "d"."UpdatedAt"
-      FROM "DeliveryFacts" AS "d"
-      INNER JOIN "WorkflowFacts" AS "w" ON "d"."PatientId" = "w"."PatientId"
-      WHERE "w"."LabId" = @__resolvedLabId_0 AND "d"."CreatedAt" >= @__start_1 AND "d"."CreatedAt" <= @__end_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "s"."ReceivedAt"
-      FROM "StoredEvents" AS "s"
-      WHERE "s"."LabId" = @__resolvedLabId_0
-      ORDER BY "s"."Sequence" DESC
-      LIMIT 1
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."ProjectionName", "p"."LastProcessedSequence", "p"."UpdatedAt"
-      FROM "ProjectionCheckpoints" AS "p"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."Id", "d"."BillsCreated", "d"."CreatedAt", "d"."Date", "d"."LabId", "d"."PatientsRegistered", "d"."PaymentsCount", "d"."ReportsDelivered", "d"."ReportsSigned", "d"."RevenueCollected", "d"."SamplesCollected", "d"."UpdatedAt"
-      FROM "DailyOperationsFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_1 AND "d"."Date" <= @__end_2
-      ORDER BY "d"."Date"
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "b"."Id", "b"."CreatedAt", "b"."Date", "b"."IsFirstVisit", "b"."LabId", "b"."PatientCount", "b"."RevenueGenerated", "b"."SourceId", "b"."SourceName", "b"."SourceType", "b"."TestCount", "b"."UpdatedAt"
-      FROM "BusinessSourceFacts" AS "b"
-      WHERE "b"."LabId" = @__resolvedLabId_0 AND "b"."Date" >= @__start_Date_1 AND "b"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (18ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "d"."Id", "d"."CreatedAt", "d"."Date", "d"."DoctorId", "d"."DoctorName", "d"."LabId", "d"."PatientCount", "d"."RevenueGenerated", "d"."TestCount", "d"."UpdatedAt"
-      FROM "DoctorReferralFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."Date" >= @__start_Date_1 AND "d"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "r"."Id", "r"."CreatedAt", "r"."Date", "r"."LabId", "r"."PatientCount", "r"."ReferralPartnerId", "r"."ReferralPartnerLocation", "r"."ReferralPartnerName", "r"."RevenueGenerated", "r"."TestCount", "r"."UpdatedAt"
-      FROM "ReferralPartnerFacts" AS "r"
-      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."Date" >= @__start_Date_1 AND "r"."Date" <= @__end_Date_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__previousStart_1='?' (DbType = DateTime), @__currentEnd_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."Id", "t"."Count", "t"."CreatedAt", "t"."Date", "t"."EntityKey", "t"."EntityType", "t"."LabId", "t"."Revenue", "t"."UpdatedAt"
-      FROM "TrendFacts" AS "t"
-      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__previousStart_1 AND "t"."Date" <= @__currentEnd_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT DISTINCT "d"."DoctorId", "d"."DoctorName"
-      FROM "DoctorReferralFacts" AS "d"
-      WHERE "d"."LabId" = @__resolvedLabId_0 AND "d"."DoctorId" <> 'Direct'
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT DISTINCT "r"."ReferralPartnerId", "r"."ReferralPartnerName"
-      FROM "ReferralPartnerFacts" AS "r"
-      WHERE "r"."LabId" = @__resolvedLabId_0 AND "r"."ReferralPartnerId" <> 'Direct'
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_1='?' (DbType = DateTime), @__end_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "t"."Id", "t"."CreatedAt", "t"."Date", "t"."Department", "t"."LabId", "t"."TestCode", "t"."UpdatedAt", "t"."VolumeCount"
-      FROM "TestVolumeFacts" AS "t"
-      WHERE "t"."LabId" = @__resolvedLabId_0 AND "t"."Date" >= @__start_1 AND "t"."Date" <= @__end_2
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (0ms) [Parameters=[@__resolvedLabId_0='?' (Size = 6), @__start_Date_1='?' (DbType = DateTime), @__end_Date_2='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']
-      SELECT "p"."Id", "p"."AgeGroup", "p"."CreatedAt", "p"."Date", "p"."Gender", "p"."LabId", "p"."PatientCount", "p"."PatientLocation", "p"."PatientPincode", "p"."Revenue", "p"."TestCount", "p"."UpdatedAt"
-      FROM "PatientDemographicFacts" AS "p"
-      WHERE "p"."LabId" = @__resolvedLabId_0 AND "p"."Date" >= @__start_Date_1 AND "p"."Date" <= @__end_Date_2
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --launch-profile http
-Building...
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (87ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT COUNT(*) FROM "sqlite_master" WHERE "name" = '__EFMigrationsHistory' AND "type" = 'table';
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-      SELECT "MigrationId", "ProductVersion"
-      FROM "__EFMigrationsHistory"
-      ORDER BY "MigrationId";
-info: Microsoft.EntityFrameworkCore.Migrations[20405]
-      No migrations were applied. The database is already up to date.
-info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-      Executed DbCommand (32ms) [Parameters=[@__defaultLabId_0='?' (Size = 6)], CommandType='Text', CommandTimeout='30']
-      SELECT "l"."Id", "l"."ApiKeyHash", "l"."CreatedAt", "l"."LabCode", "l"."LabName", "l"."Status"
-      FROM "Labs" AS "l"
-      WHERE "l"."Id" = @__defaultLabId_0
-      LIMIT 1
-fail: Microsoft.Extensions.Hosting.Internal.Host[11]
-      Hosting failed to start
-      System.IO.IOException: Failed to bind to address http://127.0.0.1:5069: address already in use.
-       ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
-       ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-         at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-         at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-         at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-         --- End of inner exception stack trace ---
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
-      --- End of stack trace from previous location ---
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-         at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-         at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-Unhandled exception. System.IO.IOException: Failed to bind to address http://127.0.0.1:5069: address already in use.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\
+src\SynOS.Services\SynOS.Services.csproj : warn
+ing NU1902: Package 'NCalcSync' 5.12.0 has a kn
+own moderate severity vulnerability, https://gi
+thub.com/advisories/GHSA-3w5p-95mh-gq75 [D:\Pro
+jects\SynOS-Synthesized-Lab-Intelligence\src\Sy
+nOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\
+src\SynOS.Services\SynOS.Services.csproj : warn
+ing NU1902: Package 'NCalcSync' 5.12.0 has a kn
+own moderate severity vulnerability, https://gi
+thub.com/advisories/GHSA-3w5p-95mh-gq75
+[14:06:45 WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
+[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.
+[14:07:08 INF] Checking if signed reports need PDF regeneration...
+[14:07:10 WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+[14:07:18 INF] Successfully regenerated PDF for signed report f893cf89-9219-4c37-853a-1192b406ccdc
+[14:07:25 INF] Successfully regenerated PDF for signed report 79cc11fa-e984-4efa-a361-25620da89975
+[14:07:33 INF] Successfully regenerated PDF for signed report 4a400591-1aab-4e66-8773-2f3bf6783518
+[14:07:40 INF] Successfully regenerated PDF for signed report a2c3f314-709c-43c9-a728-a812ccf15cee
+[14:07:50 INF] Successfully regenerated PDF for signed report 37cb56cb-af4d-44d4-9915-b219e3f2f45c
+[14:07:56 INF] Successfully regenerated PDF for signed report 972f38db-6157-49bb-a06c-d1cc95397d03
+[14:08:05 INF] Successfully regenerated PDF for signed report 212f5961-38f8-4ca6-a632-ef1644ee95ab
+[14:08:14 INF] Successfully regenerated PDF for signed report 159de9e5-a619-4c45-bae5-f0d62ad02461
+[14:08:15 INF] Notification Worker Service running.
+[14:08:15 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[14:08:15 INF] Worker: Running Consistency Check and Catch-up...
+[14:08:15 INF] MiddlewareSyncWorker is starting. Target API: http://localhost:5069/api/events
+[14:08:15 INF] Worker: Catch-up complete. Awaiting real-time events...
+[14:08:25 WRN] Failed to determine the https port for redirect.
+[14:08:26 INF] Terminal web-1zy6xxtky authorized and added to Thermal80mm group for Branch a0000000-0000-0000-0000-000000000001.
+[14:08:42 WRN] Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+[14:40:40 INF] Notification Worker Service stopping gracefully.
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls "http://127.0.0.1:59999"
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\
+src\SynOS.Services\SynOS.Services.csproj : warn
+ing NU1902: Package 'NCalcSync' 5.12.0 has a kn
+own moderate severity vulnerability, https://gi
+thub.com/advisories/GHSA-3w5p-95mh-gq75 [D:\Pro
+jects\SynOS-Synthesized-Lab-Intelligence\src\Sy
+nOS.Api\SynOS.Api.csproj]
+D:\Projects\SynOS-Synthesized-Lab-Intelligence\
+src\SynOS.Services\SynOS.Services.csproj : warn
+ing NU1902: Package 'NCalcSync' 5.12.0 has a kn
+own moderate severity vulnerability, https://gi
+thub.com/advisories/GHSA-3w5p-95mh-gq75
+[14:52:29 WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
+[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.
+[14:52:48 INF] Checking if signed reports need PDF regeneration...
+[14:52:51 WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
+[14:53:01 INF] Successfully regenerated PDF for signed report f893cf89-9219-4c37-853a-1192b406ccdc
+[14:53:10 INF] Successfully regenerated PDF for signed report 79cc11fa-e984-4efa-a361-25620da89975
+[14:53:20 INF] Successfully regenerated PDF for signed report 4a400591-1aab-4e66-8773-2f3bf6783518
+[14:53:44 INF] Successfully regenerated PDF for signed report a2c3f314-709c-43c9-a728-a812ccf15cee
+[14:54:12 INF] Successfully regenerated PDF for signed report 37cb56cb-af4d-44d4-9915-b219e3f2f45c
+[14:54:30 INF] Successfully regenerated PDF for signed report 972f38db-6157-49bb-a06c-d1cc95397d03
+[14:54:42 INF] Successfully regenerated PDF for signed report 212f5961-38f8-4ca6-a632-ef1644ee95ab
+[14:55:12 INF] Successfully regenerated PDF for signed report 159de9e5-a619-4c45-bae5-f0d62ad02461
+[14:55:14 INF] Notification Worker Service running.
+[14:55:14 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[14:55:15 INF] Worker: Running Consistency Check and Catch-up...
+[14:55:16 INF] MiddlewareSyncWorker is starting. Target API: http://localhost:5069/api/events
+[14:55:16 INF] Worker: Catch-up complete. Awaiting real-time events...
+[14:55:17 ERR] Hosting failed to start
+System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
  ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
  ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
    at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
@@ -343,7 +80,32 @@ Unhandled exception. System.IO.IOException: Failed to bind to address http://127
    at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
    --- End of inner exception stack trace ---
    at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+[Unhandled exception. 14:55:17 System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
+ ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+ ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
+   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
+   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
+   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
+   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   --- End of inner exception stack trace ---
+   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
+   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
    at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
    at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
    at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
@@ -355,4 +117,31 @@ Unhandled exception. System.IO.IOException: Failed to bind to address http://127
    at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
    at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
    at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
-   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api\Program.cs:line 240
+   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs:line 612
+   at Program.<Main>(String[] args)
+INF] Notification Worker Service stopping gracefully.
+[14:55:17 ERR] BackgroundService failed
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at SynOS.Api.BackgroundServices.MiddlewareSyncWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\MiddlewareSyncWorker.cs:line 54
+   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
+[14:55:17 ERR] BackgroundService failed
+System.OperationCanceledException: The operation was canceled.
+   at System.Threading.Channels.AsyncOperation`1.GetResult(Int16 token)
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+MoveNext()
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
+   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
+[14:55:18 FTL] The HostOptions.BackgroundServiceExceptionBehavior is configured to StopHost. A BackgroundService has thrown an unhandled exception, and the IHost instance is stopping. To avoid this behavior, configure this to Ignore; however the BackgroundService will not be restarted.
+System.Threading.Tasks.TaskCanceledException: A task was canceled.
+   at SynOS.Api.BackgroundServices.MiddlewareSyncWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\MiddlewareSyncWorker.cs:line 54
+   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
+[14:55:18 FTL] The HostOptions.BackgroundServiceExceptionBehavior is configured to StopHost. A BackgroundService has thrown an unhandled exception, and the IHost instance is stopping. To avoid this behavior, configure this to Ignore; however the BackgroundService will not be restarted.
+System.OperationCanceledException: The operation was canceled.
+   at System.Threading.Channels.AsyncOperation`1.GetResult(Int16 token)
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+MoveNext()
+   at System.Threading.Channels.ChannelReader`1.ReadAllAsync(CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
+   at SynOS.Api.BackgroundServices.OperationalStatsProjectionWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\OperationalStatsProjectionWorker.cs:line 55
+   at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>

@@ -19,7 +19,8 @@ import {
     ChevronDown,
     Eye,
     Activity,
-    Archive
+    Archive,
+    MessageSquare
 } from 'lucide-react';
 import { SystemBar } from '@/components/layout/SystemBar';
 
@@ -54,6 +55,7 @@ export function AdminLayout() {
 
     const standaloneItems = [
         { name: "Patient Directory", icon: Users, path: "/admin/patients" },
+        { name: "WhatsApp Manager", icon: MessageSquare, path: "/admin/whatsapp" },
         { name: "Report Archive", icon: Archive, path: "/admin/report-archive" },
         { name: "Test Master", icon: Settings2, path: "/admin/test-master" },
         { name: "Report Templates", icon: Layout, path: "/admin/report-templates" },

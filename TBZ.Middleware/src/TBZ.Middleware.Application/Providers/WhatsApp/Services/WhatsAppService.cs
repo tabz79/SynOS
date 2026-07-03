@@ -19,6 +19,8 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<WhatsAppService> _logger;
         private readonly WhatsAppOptions _options;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int bodyCount, int buttonCount)> _templateParamCache = 
+            new System.Collections.Concurrent.ConcurrentDictionary<string, (int, int)>();
 
         public WhatsAppService(
             IHttpClientFactory httpClientFactory,
@@ -55,6 +57,68 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
                 var client = GetClient();
                 var endpoint = $"{_options.PhoneNumberId}/messages";
 
+                var (bodyCount, buttonCount) = await GetTemplateParamCountsAsync(templateName, language);
+
+                var componentsList = new System.Collections.Generic.List<object>();
+
+                if (bodyCount > 0 || buttonCount > 0)
+                {
+                    var bodyParams = parameters.Take(bodyCount).ToArray();
+                    var buttonParams = parameters.Skip(bodyCount).Take(buttonCount).ToArray();
+
+                    if (buttonParams.Length == 0 && buttonCount > 0)
+                    {
+                        var urlParam = bodyParams.FirstOrDefault(p => p?.ToString()?.Contains("://") == true);
+                        if (urlParam != null)
+                        {
+                            buttonParams = new object[] { urlParam };
+                            _logger.LogInformation("[PARAM DEBUG] Auto-filled button parameters from body parameter URL: {Url}", urlParam);
+                        }
+                        else if (bodyParams.Length > 0)
+                        {
+                            buttonParams = new object[] { bodyParams.Last() };
+                            _logger.LogInformation("[PARAM DEBUG] Auto-filled button parameters from last body parameter: {Val}", bodyParams.Last());
+                        }
+                    }
+
+                    componentsList.Add(new
+                    {
+                        type = "body",
+                        parameters = bodyParams.Select(p => new
+                        {
+                            type = "text",
+                            text = p?.ToString() ?? string.Empty
+                        }).ToArray()
+                    });
+
+                    if (buttonParams.Length > 0)
+                    {
+                        componentsList.Add(new
+                        {
+                            type = "button",
+                            sub_type = "url",
+                            index = "0",
+                            parameters = buttonParams.Select(p => new
+                            {
+                                type = "text",
+                                text = ExtractUrlSuffix(p?.ToString() ?? string.Empty)
+                            }).ToArray()
+                        });
+                    }
+                }
+                else
+                {
+                    componentsList.Add(new
+                    {
+                        type = "body",
+                        parameters = parameters.Select(p => new
+                        {
+                            type = "text",
+                            text = p?.ToString() ?? string.Empty
+                        }).ToArray()
+                    });
+                }
+
                 var payload = new
                 {
                     messaging_product = "whatsapp",
@@ -68,18 +132,7 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
                         {
                             code = language
                         },
-                        components = new object[]
-                        {
-                            new
-                            {
-                                type = "body",
-                                parameters = parameters.Select(p => new
-                                {
-                                    type = "text",
-                                    text = p?.ToString() ?? string.Empty
-                                }).ToArray()
-                            }
-                        }
+                        components = componentsList.ToArray()
                     }
                 };
 
@@ -327,6 +380,114 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
             {
                 return new WhatsAppSendResult { Success = false, ErrorMessage = ex.Message };
             }
+        }
+
+        private async Task<(int bodyCount, int buttonCount)> GetTemplateParamCountsAsync(string templateName, string language)
+        {
+            var cacheKey = $"{templateName}:{language}";
+            if (_templateParamCache.TryGetValue(cacheKey, out var counts))
+            {
+                _logger.LogInformation("[PARAM DEBUG] Cache hit for {CacheKey}: Body={Body}, Button={Button}", cacheKey, counts.bodyCount, counts.buttonCount);
+                return counts;
+            }
+
+            try
+            {
+                var client = GetClient();
+                var endpoint = $"{_options.BusinessAccountId}/message_templates?name={Uri.EscapeDataString(templateName)}";
+                _logger.LogInformation("[PARAM DEBUG] Querying Meta templates endpoint: {Endpoint}", endpoint);
+                var response = await client.GetAsync(endpoint);
+                _logger.LogInformation("[PARAM DEBUG] Response status: {Status}", response.StatusCode);
+                if (response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation("[PARAM DEBUG] Response body: {Body}", body);
+                    using var doc = JsonDocument.Parse(body);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("data", out var dataProp) && dataProp.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var item in dataProp.EnumerateArray())
+                        {
+                            var itemLang = item.TryGetProperty("language", out var langProp) ? langProp.GetString() : string.Empty;
+                            var itemStatus = item.TryGetProperty("status", out var statusProp) ? statusProp.GetString() : string.Empty;
+                            
+                            _logger.LogInformation("[PARAM DEBUG] Inspecting template: Name={Name}, Lang={Lang} (expected {ExpectedLang}), Status={Status} (expected APPROVED)", 
+                                item.TryGetProperty("name", out var n) ? n.GetString() : "N/A", itemLang, language, itemStatus);
+
+                            if (itemLang == language && itemStatus == "APPROVED")
+                            {
+                                int bodyCount = 0;
+                                int buttonCount = 0;
+
+                                if (item.TryGetProperty("components", out var componentsProp) && componentsProp.ValueKind == JsonValueKind.Array)
+                                {
+                                    foreach (var comp in componentsProp.EnumerateArray())
+                                    {
+                                        var type = comp.TryGetProperty("type", out var typeProp) ? typeProp.GetString() : string.Empty;
+                                        if (type == "BODY" && comp.TryGetProperty("text", out var textProp))
+                                        {
+                                            var text = textProp.GetString() ?? string.Empty;
+                                            bodyCount = System.Text.RegularExpressions.Regex.Matches(text, @"\{\{\d+\}\}").Count;
+                                            _logger.LogInformation("[PARAM DEBUG] Matched BODY component. Placeholders count: {Count}", bodyCount);
+                                        }
+                                        else if (type == "BUTTONS" && comp.TryGetProperty("buttons", out var buttonsProp) && buttonsProp.ValueKind == JsonValueKind.Array)
+                                        {
+                                            foreach (var btn in buttonsProp.EnumerateArray())
+                                            {
+                                                var btnType = btn.TryGetProperty("type", out var btnTypeProp) ? btnTypeProp.GetString() : string.Empty;
+                                                if (btnType == "URL" && btn.TryGetProperty("url", out var urlProp))
+                                                {
+                                                    var url = urlProp.GetString() ?? string.Empty;
+                                                    if (url.Contains("{{1}}"))
+                                                    {
+                                                        buttonCount = 1;
+                                                        _logger.LogInformation("[PARAM DEBUG] Matched BUTTONS component with dynamic URL.");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                var result = (bodyCount, buttonCount);
+                                _templateParamCache[cacheKey] = result;
+                                _logger.LogInformation("[PARAM DEBUG] Success. Mapped Body={Body}, Button={Button}", bodyCount, buttonCount);
+                                return result;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching template param counts from Meta for {TemplateName}", templateName);
+            }
+
+            _logger.LogInformation("[PARAM DEBUG] No matching APPROVED template found. Fallback to (0, 0)");
+            return (0, 0);
+        }
+
+        private static string ExtractUrlSuffix(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+            if (value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    var uri = new Uri(value);
+                    var path = uri.PathAndQuery;
+                    if (path.StartsWith("/"))
+                    {
+                        path = path.Substring(1);
+                    }
+                    return path;
+                }
+                catch
+                {
+                    return value;
+                }
+            }
+            return value;
         }
     }
 }

@@ -29,6 +29,7 @@ public class DeliveryService : IDeliveryService
     private readonly IPrintService _printService;
     private readonly ILogger<DeliveryService> _logger;
     private readonly string _secureLinkBaseUrl;
+    private readonly string _publicBaseUrl;
     private readonly IFileStorageService _fileStorageService; // Inject IFileStorageService
     private readonly IMiddlewareOutboxService _outboxService;
 
@@ -56,6 +57,7 @@ public class DeliveryService : IDeliveryService
         _printService = printService;
         _logger = logger;
         _secureLinkBaseUrl = configuration["SecureLink:BaseUrl"] ?? throw new ArgumentNullException("SecureLink:BaseUrl not configured.");
+        _publicBaseUrl = configuration["SecureLink:PublicBaseUrl"] ?? "http://127.0.0.1:59999";
         _fileStorageService = fileStorageService;
         _outboxService = outboxService;
     }
@@ -585,8 +587,8 @@ public class DeliveryService : IDeliveryService
         _context.DownloadLinks.Add(downloadLink);
         await _context.SaveChangesAsync();
 
-        var linkUrl = $"{_secureLinkBaseUrl}/r/{token}";
-        var packageLinkUrl = $"{_secureLinkBaseUrl}/r/{token}?pkg=1";
+        var linkUrl = $"{_publicBaseUrl}/r/{token}";
+        var packageLinkUrl = $"{_publicBaseUrl}/r/{token}?pkg=1";
         
         return new SecureLinkDto(token, linkUrl, packageLinkUrl, expiresAt, maxDownloads, maxDownloads);
     }

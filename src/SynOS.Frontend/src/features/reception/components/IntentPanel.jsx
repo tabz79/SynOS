@@ -53,7 +53,7 @@ export function IntentPanel() {
     // THEME ISOLATION CONTRACT: Style Branching
     const ui = isDark ? {
         // DARK MODE: Solid Zinc, No Blur (Performance)
-        panel: "bg-zinc-900 border-l border-white/10 shadow-2xl relative z-20",
+        panel: "bg-zinc-900 border-l border-white/10 shadow-2xl z-20",
         header: "bg-zinc-900 border-b border-white/5",
         footer: "bg-zinc-900 border-t border-white/5",
         title: "text-white",
@@ -70,7 +70,7 @@ export function IntentPanel() {
             "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
             "border-l border-white shadow-[-20px_0_50px_rgba(0,0,0,0.3)]", // Knife Edge: Solid White Border + Deep Shadow
             "border-t border-white/80", // Top Rim Light
-            "relative z-20"
+            "z-20"
         ),
         // Header: EXACT MATCH with ActivityStream.jsx (Line 172)
         header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
@@ -310,7 +310,14 @@ export function IntentPanel() {
     if (isCorrectionIntent) { panelTitle = "Visit Correction"; }
 
     return (
-        <div ref={panelRef} className={cn("flex flex-col h-full overflow-hidden rounded-2xl", ui.panel)}>
+        <div 
+            ref={panelRef} 
+            className={cn(
+                "flex flex-col h-full overflow-hidden rounded-2xl transition-all duration-300 ease-out shadow-2xl", 
+                hasPatient ? "absolute right-0 top-0 bottom-0 w-[190%] lg:w-[195%] xl:w-[200%]" : "absolute right-0 top-0 bottom-0 w-full",
+                ui.panel
+            )}
+        >
             {/* Header */}
             <div className={cn("h-16 flex items-center justify-between px-4 shrink-0", ui.header)}>
                 <div>
@@ -345,17 +352,23 @@ export function IntentPanel() {
 
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
                         {hasVisit && (
-                            <div className={cn("px-4 pb-4 flex flex-col gap-6 animate-in fade-in duration-500 mt-6", (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto")}>
-                                <VisitDetails
-                                    snapshot={snapshot}
-                                    visitId={snapshot.visit.visitId || snapshot.visit.id || snapshot.visit.VisitId}
-                                    onVisitUpdated={loadSnapshot}
-                                    isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
-                                    setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
-                                    isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
-                                />
+                            <div className={cn(
+                                "px-4 pb-4 mt-6 animate-in fade-in duration-500",
+                                hasPatient ? "grid grid-cols-2 gap-6" : "flex flex-col gap-6",
+                                (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
+                            )}>
+                                <div className={hasPatient ? "flex flex-col gap-6" : ""}>
+                                    <VisitDetails
+                                        snapshot={snapshot}
+                                        visitId={snapshot.visit.visitId || snapshot.visit.id || snapshot.visit.VisitId}
+                                        onVisitUpdated={loadSnapshot}
+                                        isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
+                                        setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
+                                        isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
+                                    />
+                                </div>
 
-                                <div className="animate-in fade-in duration-700">
+                                <div className={cn("animate-in fade-in duration-700", hasPatient ? "flex flex-col gap-6" : "")}>
                                     <BillingSummary
                                         snapshot={snapshot}
                                         onVisitUpdated={loadSnapshot}
@@ -372,13 +385,13 @@ export function IntentPanel() {
             </div>
 
             {/* Footer / Status Bar - UNIFIED BUTTON */}
-            <div className={cn("p-4 space-y-3", ui.footer)}>
+            <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
                 {isCorrectionIntent ? (
                     <button
                         onClick={closePanel}
                         className={cn(
-                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
-                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
+                            "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 mx-auto",
+                            hasPatient ? "max-w-md" : "w-full",
                             ui.actionBtn.enabled
                         )}
                     >
@@ -390,7 +403,8 @@ export function IntentPanel() {
                             onClick={handleUnifiedAction}
                             disabled={!isActionEnabled || isLoading}
                             className={cn(
-                                "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                                "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mx-auto",
+                                hasPatient ? "max-w-md" : "w-full",
                                 isActionEnabled
                                     ? ui.actionBtn.enabled
                                     : ui.actionBtn.disabled

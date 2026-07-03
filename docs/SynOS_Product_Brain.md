@@ -143,6 +143,16 @@ No hardcoded medical definitions in UI.
 
 These may integrate later but are not core.
 
+---
+
+# Implemented Extensions
+
+## QuestPDF Absolute A4 Coordinate Engine
+* Reports are rendered dynamically via QuestPDF using templates designed in React.
+* When `enableAbsolutePositioning` is true, the default flow table is skipped. All patient metadata is positioned at precise `X` and `Y` coordinate offsets (in millimeters) relative to the page canvas, enabling compatibility with preprinted background paper letterheads.
+
+## Transactional Outbox Sync Middleware
+* Patient visits and report delivery request actions enqueued in the local outbox database table are picked up by `MiddlewareSyncWorker` and synced to the standalone TBZ Middleware (port 5069) for WhatsApp dispatching.
 
 -------
 

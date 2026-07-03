@@ -4,6 +4,26 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
     {
         public string Title { get; set; } = "Report";
         public bool ShowLogo { get; set; } = true;
+
+        public bool? UsePreprinted { get; set; }
+        public float? TopMargin { get; set; }
+        public float? LeftRightMargin { get; set; }
+        public float? BottomMargin { get; set; }
+        public string? BgType { get; set; }
+        public string? BackgroundPath { get; set; }
+        public double? BgImageOpacity { get; set; }
+        public string? BgColor { get; set; }
+        public string? BgGradientStart { get; set; }
+        public string? BgGradientEnd { get; set; }
+        public double? BgGradientAngle { get; set; }
+
+        public bool? IncludeBranding { get; set; }
+        public bool? IncludeLogo { get; set; }
+        public bool? IncludeHeaderName { get; set; }
+        public bool? IncludeHeaderSubtitle { get; set; }
+        public bool? ShowHeaderDivider { get; set; }
+        public string? HeaderDividerColor { get; set; }
+        public float? HeaderDividerThickness { get; set; }
     }
 
     public class PatientInfoConfig
@@ -13,6 +33,21 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
         public bool ShowDateOfBirth { get; set; } = true;
         public bool ShowGender { get; set; } = true;
         public bool ShowContactInfo { get; set; } = true;
+
+        public bool? EnableAbsolutePositioning { get; set; }
+        public float? PatientBlockY { get; set; }
+        public float? PatientNameX { get; set; }
+        public float? PatientNameY { get; set; }
+        public float? PatientAgeSexX { get; set; }
+        public float? PatientAgeSexY { get; set; }
+        public float? RefDoctorX { get; set; }
+        public float? RefDoctorY { get; set; }
+        public float? PatientIdX { get; set; }
+        public float? PatientIdY { get; set; }
+        public float? BillingDateX { get; set; }
+        public float? BillingDateY { get; set; }
+        public float? ReportDateX { get; set; }
+        public float? ReportDateY { get; set; }
     }
 
     public class ParameterTableConfig
@@ -21,6 +56,12 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
         public bool HighlightCriticalValues { get; set; } = true;
         public System.Collections.Generic.List<string>? VisibleColumns { get; set; }
         public System.Collections.Generic.List<int>? ColumnWeights { get; set; }
+
+        public float? TableBlockY { get; set; }
+        public float? TestTitleX { get; set; }
+        public float? TestTitleY { get; set; }
+        public float? ResultsTableX { get; set; }
+        public float? ResultsTableY { get; set; }
     }
 
     public class CommentsConfig
@@ -46,6 +87,11 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
         public bool ShowDoctorName { get; set; } = true;
         public bool ShowCredentials { get; set; } = true;
         public bool ShowDigitalSignatureImage { get; set; } = true;
+
+        public float? SignatureBlockY { get; set; }
+        public float? SignatureX { get; set; }
+        public float? SignatureY { get; set; }
+        public bool? IncludeSignatures { get; set; }
     }
 
     public class QRCodeConfig

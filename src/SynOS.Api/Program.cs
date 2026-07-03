@@ -526,7 +526,7 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
     DbInitializer.Initialize(context);
-    
+
     var misconfiguredBranches = context.Branches
         .Where(b => string.IsNullOrEmpty(b.Code))
         .ToList();

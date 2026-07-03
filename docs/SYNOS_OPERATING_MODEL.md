@@ -349,11 +349,19 @@ The Director dashboard provides a unified control center for management:
 
 ---
 
-## 11. Future Vision
+## 11. WhatsApp Delivery Integration & TBZ Middleware Connection
+
+SynOS is fully integrated with the **TBZ Middleware** to enable event-driven diagnostics projections and automated patient communications:
+* **The Transactional Outbox Pattern**: When clinical actions occur (such as Billing or Report Signing), SynOS writes domain events (like `BillCreated` or `ReportDeliveryRequestedEvent`) to a local SQL Server Outbox table in a single atomic transaction. A background service (`MiddlewareSyncWorker`) reads these events and pushes them over HTTP to the Middleware (`/api/events` on port `5069`).
+* **WhatsApp Report Delivery**: When a report is signed and WhatsApp delivery is requested, SynOS generates a secure download link (format: `https://<cloudflare-domain>/r/{token}`). This link is carried in the event to the Middleware, which utilizes Meta's Graph API to instantly send an automated WhatsApp message (using template `report_ready`) containing the secure download link.
+* **Unified Webhook Routing (The Hybrid Tunneling Strategy)**: To allow a single public Cloudflare tunnel to handle both patient report downloads (on port `59999`) and Meta webhook subscriptions/read-delivery events (on port `5069`), SynOS.Api implements a proxy controller at `/api/webhooks/whatsapp` that forwards webhook requests to the local Middleware instance.
+
+---
+
+## 12. Future Vision
 
 Planned system updates include:
 
-* **WhatsApp Report Delivery**: Pushing PDF report links to patient phone numbers automatically upon signature validation.
 * **Integrated Machine Analyzers**: Direct RS232/TCP connections for automatic test logging.
 * **B2B Doctor Portals**: Independent web views for partner clinics to track referrals.
 * **AI Transcription Assistance**: Automated transcription drafts matching spoken pathologist dictation.

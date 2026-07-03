@@ -308,8 +308,15 @@ namespace SynOS.Api.Controllers.Admin
                 if (reportData == null) return BadRequest("Report data not available");
 
                 var department = order.Department ?? "General";
-                var template = await context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == department && t.IsDefault)
-                            ?? await context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault);
+                var normModality = (department ?? "").ToLower().Trim();
+                var isRad = normModality.Contains("rad");
+                var targetModality = isRad ? "Radiology" : "Pathology";
+
+                var template = await context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && t.IsDefault && !t.IsDeleted)
+                            ?? await context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == department && t.IsDefault && !t.IsDeleted)
+                            ?? await context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && !t.IsDeleted)
+                            ?? await context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault && !t.IsDeleted)
+                            ?? await context.ReportTemplates.FirstOrDefaultAsync(t => !t.IsDeleted);
 
                 if (template == null) return BadRequest("No template found");
 

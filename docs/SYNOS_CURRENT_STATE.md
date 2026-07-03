@@ -508,7 +508,7 @@ All integrations should pass through middleware services.
 
 ---
 
-# Planned Middleware Layer
+# Completed Middleware Layer
 
 Purpose:
 
@@ -516,20 +516,18 @@ Provide integration between SynOS and external platforms.
 
 Examples:
 
-* WhatsApp Manager
-* Super Admin Dashboard
-* TBZ Labs Cloud Services
-* Analytics
-* AI Agents
-* Customer Portals
+* WhatsApp Delivery Manager (Active)
+* TBZ Labs Control Tower Dashboard (Active)
+* SQLite-based Analytics Store (Active)
+* AI Agents Integration Contracts (Ready)
 
 Responsibilities:
 
-* Data synchronization
-* Event aggregation
+* Data synchronization (Transactional Outbox Pattern via `MiddlewareSyncWorker` posting to port `5069`)
+* Event aggregation and database fact projection (`PatientVisitFact`, `PatientIntelligenceFact` in SQLite)
 * Cross-branch analytics
-* Notification routing
-* AI orchestration
+* Notification routing (Meta Graph API templates)
+* Hybrid tunnel proxying (forwarding Meta webhooks via `WhatsAppWebhookProxyController.cs` in SynOS)
 
 Must not replace operational logic inside SynOS.
 
@@ -541,7 +539,7 @@ Must not replace operational logic inside SynOS.
 
 2. Interpretation templates originate only from Test Master.
 
-3. ReportA4 is the single rendering engine.
+3. ReportA4 is the single rendering engine (including absolute coordinate template offsets).
 
 4. Typist and Pathologist share one narrative.
 
@@ -559,7 +557,7 @@ Must not replace operational logic inside SynOS.
 
 Overall Progress Estimate:
 
-75-85%
+90-95%
 
 Completed:
 
@@ -567,18 +565,18 @@ Completed:
 * Radiology workflows
 * Test Master redesign
 * Interpretation template architecture
-* Report rendering unification
+* Report rendering unification (QuestPDF A4 absolute positioning support)
+* Middleware integration layer (SQLite projections and outbox listener)
+* WhatsApp Delivery Manager (Meta Graph template dispatch and webhook proxying)
 
 In Progress:
 
-* Control Tower funnel redesign
+* Control Tower funnel refinement
 * Inventory completion
-* Middleware integration layer
 
 Upcoming:
 
-* WhatsApp Manager
-* Super Admin Dashboard
+* Super Admin Dashboard scaling
 * AI Operational Services
-* Multi-branch analytics
-* Customer communication platform
+* Multi-branch analytics expansion
+* Customer communication platform expansions

@@ -319,30 +319,30 @@ namespace TBZ.Middleware.Api.Endpoints
                 var connectionStatus = "Not Configured";
                 var businessAccount = "N/A";
                 
-                var totalQueue = await db.DeliveryQueueItems.CountAsync(q => q.LabId == resolvedLabId);
+                var totalQueue = await db.NotificationOutboxes.CountAsync(q => q.LabId == resolvedLabId);
                 if (totalQueue > 0)
                 {
                     connectionStatus = "Connected";
                     businessAccount = "Divya Diagnostics WhatsApp Biz";
                 }
 
-                var pending = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Pending");
+                var pending = await db.NotificationOutboxes
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == NotificationStatus.Pending);
 
-                var sending = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Sending");
+                var sending = await db.NotificationOutboxes
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == NotificationStatus.Sending);
 
-                var sent = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Sent" && q.DeliveredAt == null);
+                var sent = await db.NotificationOutboxes
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == NotificationStatus.Sent && (q.NotificationMessage == null || q.NotificationMessage.DeliveredAt == null));
 
-                var delivered = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && (q.Status == "Delivered" || q.DeliveredAt != null));
+                var delivered = await db.NotificationMessages
+                    .CountAsync(q => q.LabId == resolvedLabId && q.DeliveredAt != null);
 
-                var failed = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Failed" && q.RetryCount >= 3);
+                var failed = await db.NotificationOutboxes
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == NotificationStatus.Failed && q.Attempts >= 5);
 
-                var retryQueue = await db.DeliveryQueueItems
-                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == "Failed" && q.RetryCount < 3);
+                var retryQueue = await db.NotificationOutboxes
+                    .CountAsync(q => q.LabId == resolvedLabId && q.Status == NotificationStatus.Failed && q.Attempts < 5);
 
                 return Results.Ok(new
                 {
@@ -371,41 +371,61 @@ namespace TBZ.Middleware.Api.Endpoints
                 MiddlewareDbContext db) =>
             {
                 var resolvedLabId = GetLabId(context, labId);
-                var query = db.DeliveryQueueItems.Where(q => q.LabId == resolvedLabId);
+                var query = db.NotificationOutboxes
+                    .Include(o => o.NotificationMessage)
+                    .Where(q => q.LabId == resolvedLabId);
 
                 if (!string.IsNullOrEmpty(status))
                 {
                     if (status.Equals("Pending", StringComparison.OrdinalIgnoreCase))
-                        query = query.Where(q => q.Status == "Pending");
+                        query = query.Where(q => q.Status == NotificationStatus.Pending);
                     else if (status.Equals("Sent", StringComparison.OrdinalIgnoreCase))
-                        query = query.Where(q => q.Status == "Sent" && q.DeliveredAt == null);
+                        query = query.Where(q => q.Status == NotificationStatus.Sent);
                     else if (status.Equals("Delivered", StringComparison.OrdinalIgnoreCase))
-                        query = query.Where(q => q.Status == "Delivered" || q.DeliveredAt != null);
+                        query = query.Where(q => q.NotificationMessage != null && q.NotificationMessage.DeliveredAt != null);
                     else if (status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
-                        query = query.Where(q => q.Status == "Failed" && q.RetryCount >= 3);
+                        query = query.Where(q => q.Status == NotificationStatus.Failed && q.Attempts >= 5);
                     else if (status.Equals("Retry", StringComparison.OrdinalIgnoreCase))
-                        query = query.Where(q => q.Status == "Failed" && q.RetryCount < 3);
+                        query = query.Where(q => q.Status == NotificationStatus.Failed && q.Attempts < 5);
                 }
 
                 if (!string.IsNullOrEmpty(channel))
                 {
-                    query = query.Where(q => q.Channel == channel);
+                    query = query.Where(q => q.NotificationMessage != null && q.NotificationMessage.Channel == channel);
                 }
 
                 if (!string.IsNullOrEmpty(messageType))
                 {
-                    query = query.Where(q => q.MessageType == messageType);
+                    query = query.Where(q => q.NotificationMessage != null && q.NotificationMessage.TemplateName == messageType);
                 }
 
-                if (patientId.HasValue)
-                {
-                    query = query.Where(q => q.PatientId == patientId.Value);
-                }
-
-                var logs = await query
+                var outboxItems = await query
                     .OrderByDescending(q => q.CreatedAt)
                     .Take(100)
                     .ToListAsync();
+
+                var logs = outboxItems.Select(outbox => new
+                {
+                    Id = outbox.Id,
+                    LabId = outbox.LabId,
+                    Phone = outbox.NotificationMessage != null ? outbox.NotificationMessage.Recipient : string.Empty,
+                    MessageType = outbox.NotificationMessage != null ? outbox.NotificationMessage.TemplateName : string.Empty,
+                    PayloadJson = outbox.NotificationMessage != null ? outbox.NotificationMessage.VariablesJson : string.Empty,
+                    Status = outbox.Status.ToString(),
+                    CreatedAt = outbox.CreatedAt,
+                    SentAt = outbox.NotificationMessage != null ? outbox.NotificationMessage.SentAt : null,
+                    PatientId = (Guid?)null,
+                    VisitId = (Guid?)null,
+                    ReportId = (Guid?)null,
+                    TemplateName = outbox.NotificationMessage != null ? outbox.NotificationMessage.TemplateName : string.Empty,
+                    TriggerEvent = outbox.NotificationMessage != null ? outbox.NotificationMessage.TemplateName : string.Empty,
+                    RetryCount = outbox.Attempts,
+                    FailureReason = outbox.LastError,
+                    DeliveredAt = outbox.NotificationMessage != null ? outbox.NotificationMessage.DeliveredAt : null,
+                    Provider = "Meta",
+                    ProviderMessageId = outbox.NotificationMessage != null ? outbox.NotificationMessage.MessageId : null,
+                    Channel = outbox.NotificationMessage != null ? outbox.NotificationMessage.Channel : "WhatsApp"
+                }).ToList();
 
                 return Results.Ok(logs);
             })
@@ -417,23 +437,37 @@ namespace TBZ.Middleware.Api.Endpoints
                 Guid id,
                 MiddlewareDbContext db) =>
             {
-                var log = await db.DeliveryQueueItems.FindAsync(id);
-                return log != null ? Results.Ok(log) : Results.NotFound();
+                var outbox = await db.NotificationOutboxes
+                    .Include(o => o.NotificationMessage)
+                    .FirstOrDefaultAsync(o => o.Id == id);
+                if (outbox == null) return Results.NotFound();
+
+                var log = new
+                {
+                    Id = outbox.Id,
+                    LabId = outbox.LabId,
+                    Phone = outbox.NotificationMessage != null ? outbox.NotificationMessage.Recipient : string.Empty,
+                    MessageType = outbox.NotificationMessage != null ? outbox.NotificationMessage.TemplateName : string.Empty,
+                    PayloadJson = outbox.NotificationMessage != null ? outbox.NotificationMessage.VariablesJson : string.Empty,
+                    Status = outbox.Status.ToString(),
+                    CreatedAt = outbox.CreatedAt,
+                    SentAt = outbox.NotificationMessage != null ? outbox.NotificationMessage.SentAt : null,
+                    PatientId = (Guid?)null,
+                    VisitId = (Guid?)null,
+                    ReportId = (Guid?)null,
+                    TemplateName = outbox.NotificationMessage != null ? outbox.NotificationMessage.TemplateName : string.Empty,
+                    TriggerEvent = outbox.NotificationMessage != null ? outbox.NotificationMessage.TemplateName : string.Empty,
+                    RetryCount = outbox.Attempts,
+                    FailureReason = outbox.LastError,
+                    DeliveredAt = outbox.NotificationMessage != null ? outbox.NotificationMessage.DeliveredAt : null,
+                    Provider = "Meta",
+                    ProviderMessageId = outbox.NotificationMessage != null ? outbox.NotificationMessage.MessageId : null,
+                    Channel = outbox.NotificationMessage != null ? outbox.NotificationMessage.Channel : "WhatsApp"
+                };
+
+                return Results.Ok(log);
             })
             .WithName("GetWhatsAppLogDetails")
-            .WithOpenApi();
-
-            // 20. GET /api/controltower/whatsapp/templates
-            app.MapGet("/api/controltower/whatsapp/templates", (HttpContext context) =>
-            {
-                return Results.Ok(new[]
-                {
-                    new { Name = "visit_finalized_alert", Body = "Hello {{1}}, your test results for {{2}} are now finalized. View report here: {{3}}" },
-                    new { Name = "invoice_billing_receipt", Body = "Dear {{1}}, thank you for choosing Divya Diagnostics. Your invoice for ₹{{2}} has been generated: {{3}}" },
-                    new { Name = "critical_alert_low_hemoglobin", Body = "CRITICAL ALERT: Hello Dr. {{1}}, patient {{2}} returned a critical value of {{3}} for {{4}}." }
-                });
-            })
-            .WithName("GetWhatsAppTemplates")
             .WithOpenApi();
         }
     }

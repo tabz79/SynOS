@@ -144,9 +144,15 @@ namespace SynOS.Services
                     var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
                     var modality = order?.Department ?? "General";
                     
-                    // GPT-5: Robust template discovery with fallback
-                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault);
+                    var normModality = (modality ?? "").ToLower().Trim();
+                    var isRad = normModality.Contains("rad");
+                    var targetModality = isRad ? "Radiology" : "Pathology";
+
+                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && t.IsDefault && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => !t.IsDeleted);
                     
                     if (template != null)
                     {
@@ -163,6 +169,7 @@ namespace SynOS.Services
                         if (reportVersion != null)
                         {
                             reportVersion.PdfPath = relativePath;
+                            report.PdfUrl = relativePath;
                             await _context.SaveChangesAsync();
                         }
                     }
@@ -454,8 +461,16 @@ namespace SynOS.Services
             var reportData = await GetReportDataForPdfAsync(report.ReportId);
                 if (reportData != null)
                 {
-                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == order.Department && t.IsDefault)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault);
+                    var modality = order.Department ?? "General";
+                    var normModality = (modality ?? "").ToLower().Trim();
+                    var isRad = normModality.Contains("rad");
+                    var targetModality = isRad ? "Radiology" : "Pathology";
+
+                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && t.IsDefault && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault && !t.IsDeleted)
+                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => !t.IsDeleted);
                     if (template != null)
                     {
                         var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
@@ -470,6 +485,7 @@ namespace SynOS.Services
                         if (reportVersion != null)
                         {
                             reportVersion.PdfPath = relativePath;
+                            report.PdfUrl = relativePath;
                             reportVersion.SignedByUserId = signedByUserId;
                             reportVersion.SignedAt = timestamp;
                             await _context.SaveChangesAsync();
@@ -1814,6 +1830,17 @@ namespace SynOS.Services
                 .GroupBy(id => id)
                 .ToDictionary(g => g.Key, g => g.Count());
 
+            // Fetch latest PDF path from ReportVersions as a fallback
+            var reportVersions = await _context.ReportVersions
+                .Where(rv => reportIds.Contains(rv.ReportId) && !string.IsNullOrEmpty(rv.PdfPath))
+                .OrderByDescending(rv => rv.VersionNumber)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var reportIdToPdfPathMap = reportVersions
+                .GroupBy(rv => rv.ReportId)
+                .ToDictionary(g => g.Key, g => g.First().PdfPath);
+
             var mappedList = reports.Select(r => {
                 var orderId = getOrderId(r);
                 orders.TryGetValue(orderId, out var order);
@@ -1828,9 +1855,15 @@ namespace SynOS.Services
                 }
 
                 string pdfUrl = "";
-                if (!string.IsNullOrEmpty(r.PdfUrl))
+                string? relativePath = r.PdfUrl;
+                if (string.IsNullOrEmpty(relativePath) && reportIdToPdfPathMap.TryGetValue(r.ReportId, out var versionPdfPath))
                 {
-                    pdfUrl = _fileStorageService.GetFileUrl(r.PdfUrl);
+                    relativePath = versionPdfPath;
+                }
+
+                if (!string.IsNullOrEmpty(relativePath))
+                {
+                    pdfUrl = _fileStorageService.GetFileUrl(relativePath);
                 }
 
                 return new ReportListItemDto

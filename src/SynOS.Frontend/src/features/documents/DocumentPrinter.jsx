@@ -76,7 +76,7 @@ export const DocumentPrinter = () => {
         
         // 1. Fetch primary report data
         const primaryData = await ReportsApi.getReportData(id, forceLive);
-        const visitToken = primaryData.Metadata?.Token || primaryData.Token;
+        const visitToken = primaryData.metadata?.token || primaryData.Metadata?.Token || primaryData.token || primaryData.Token;
         
         // 2. Fetch all reports to check for siblings
         let finalReportDataList = [primaryData];
@@ -150,10 +150,10 @@ export const DocumentPrinter = () => {
     if (!loading && reportsData.length > 0 && templates.length === reportsData.length && !error) {
       // Generate descriptive, unique filename from primary report
       const primary = reportsData[0];
-      const patientName = (primary.Patient?.Name || 'Unknown_Patient').replace(/[^a-zA-Z0-9-]/g, '_');
-      const mrn = (primary.Patient?.PatientId || 'Unknown_MRN').replace(/[^a-zA-Z0-9-]/g, '_');
-      const tokenNum = (primary.Metadata?.Token || 'Unknown_Token').replace(/[^a-zA-Z0-9-]/g, '_');
-      const testCode = (primary.Metadata?.TestCode || primary.Modality || 'Report').replace(/[^a-zA-Z0-9-]/g, '_');
+      const patientName = (primary.patient?.name || primary.Patient?.Name || 'Unknown_Patient').replace(/[^a-zA-Z0-9-]/g, '_');
+      const mrn = (primary.patient?.patientId || primary.Patient?.PatientId || 'Unknown_MRN').replace(/[^a-zA-Z0-9-]/g, '_');
+      const tokenNum = (primary.metadata?.token || primary.Metadata?.Token || 'Unknown_Token').replace(/[^a-zA-Z0-9-]/g, '_');
+      const testCode = (primary.metadata?.testCode || primary.Metadata?.TestCode || primary.modality || primary.Modality || 'Report').replace(/[^a-zA-Z0-9-]/g, '_');
       
       const fileName = `${tokenNum}_${mrn}_${patientName}_${testCode}`;
       
