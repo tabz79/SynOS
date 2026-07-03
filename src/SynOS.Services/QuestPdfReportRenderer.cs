@@ -68,10 +68,29 @@ namespace SynOS.Services
                         topMargin = headerConfig.TopMargin ?? 48f;
                     }
 
-                    page.MarginLeft(leftRightMargin, QuestPDF.Infrastructure.Unit.Millimetre);
-                    page.MarginRight(leftRightMargin, QuestPDF.Infrastructure.Unit.Millimetre);
-                    page.MarginTop(topMargin, QuestPDF.Infrastructure.Unit.Millimetre);
-                    page.MarginBottom(bottomMargin, QuestPDF.Infrastructure.Unit.Millimetre);
+                    var patientInfoSectionForMargin = templateModel.Sections.FirstOrDefault(s => s.Type == "PatientInfo");
+                    var isAbsoluteForMargin = false;
+                    if (patientInfoSectionForMargin != null)
+                    {
+                        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                        var patientConfig = JsonSerializer.Deserialize<PatientInfoConfig>(
+                            patientInfoSectionForMargin.Config.ValueKind != JsonValueKind.Undefined && patientInfoSectionForMargin.Config.ValueKind != JsonValueKind.Null
+                                ? patientInfoSectionForMargin.Config.GetRawText() 
+                                : "{}", 
+                            options
+                        );
+                        isAbsoluteForMargin = patientConfig?.EnableAbsolutePositioning == true;
+                    }
+
+                    float pageMarginLeft = isAbsoluteForMargin ? 0f : leftRightMargin;
+                    float pageMarginRight = isAbsoluteForMargin ? 0f : leftRightMargin;
+                    float pageMarginTop = isAbsoluteForMargin ? 0f : topMargin;
+                    float pageMarginBottom = isAbsoluteForMargin ? 0f : bottomMargin;
+
+                    page.MarginLeft(pageMarginLeft, QuestPDF.Infrastructure.Unit.Millimetre);
+                    page.MarginRight(pageMarginRight, QuestPDF.Infrastructure.Unit.Millimetre);
+                    page.MarginTop(pageMarginTop, QuestPDF.Infrastructure.Unit.Millimetre);
+                    page.MarginBottom(pageMarginBottom, QuestPDF.Infrastructure.Unit.Millimetre);
 
                     // Dynamic Background/Backdrop & Absolute Positioning Layers
                     page.Background().Layers(layers =>
@@ -183,23 +202,34 @@ namespace SynOS.Services
                         }
                     });
 
-                    page.Content().Column(contentCol =>
-                    {
-                        // Add spacer if absolute positioning is active to push content down to resultsTableY
-                        var patientInfoSection = templateModel.Sections.FirstOrDefault(s => s.Type == "PatientInfo");
-                        var paramTableSection = templateModel.Sections.FirstOrDefault(s => s.Type == "ParameterTable");
-                        if (patientInfoSection != null && paramTableSection != null)
+                    var patientInfoSectionForPadding = templateModel.Sections.FirstOrDefault(s => s.Type == "PatientInfo");
+                    var paramTableSectionForPadding = templateModel.Sections.FirstOrDefault(s => s.Type == "ParameterTable");
+                    var patientConfigForPadding = patientInfoSectionForPadding != null ? DeserializeConfig<PatientInfoConfig>(patientInfoSectionForPadding) : null;
+                    var paramConfigForPadding = paramTableSectionForPadding != null ? DeserializeConfig<ParameterTableConfig>(paramTableSectionForPadding) : null;
+                    var signatureSectionForPadding = templateModel.Sections.FirstOrDefault(s => s.Type == "SignatureBlock");
+                    var isAbsoluteForPadding = patientConfigForPadding?.EnableAbsolutePositioning == true;
+
+                    float contentPaddingLeft = isAbsoluteForPadding ? (paramConfigForPadding?.ResultsTableX ?? 15f) : 0f;
+                    float contentPaddingRight = isAbsoluteForPadding ? (paramConfigForPadding?.ResultsTableX ?? 15f) : 0f;
+                    float contentPaddingTop = isAbsoluteForPadding ? (headerConfig?.TopMargin ?? 12f) : 0f;
+                    float contentPaddingBottom = isAbsoluteForPadding ? 0f : (headerConfig?.BottomMargin ?? 15f);
+
+                    page.Content()
+                        .PaddingLeft(contentPaddingLeft, QuestPDF.Infrastructure.Unit.Millimetre)
+                        .PaddingRight(contentPaddingRight, QuestPDF.Infrastructure.Unit.Millimetre)
+                        .PaddingTop(contentPaddingTop, QuestPDF.Infrastructure.Unit.Millimetre)
+                        .PaddingBottom(contentPaddingBottom, QuestPDF.Infrastructure.Unit.Millimetre)
+                        .Column(contentCol =>
                         {
-                            var patientConfig = DeserializeConfig<PatientInfoConfig>(patientInfoSection);
-                            var paramConfig = DeserializeConfig<ParameterTableConfig>(paramTableSection);
-                            if (patientConfig?.EnableAbsolutePositioning == true)
+                            if (isAbsoluteForPadding && paramConfigForPadding != null)
                             {
-                                float tableY = paramConfig?.ResultsTableY ?? 95f;
-                                float topMargin = headerConfig?.TopMargin ?? 12f;
-                                float spacerHeight = Math.Max(0, tableY - topMargin);
-                                contentCol.Item().Height(spacerHeight, QuestPDF.Infrastructure.Unit.Millimetre);
+                                float tableY = paramConfigForPadding.ResultsTableY ?? 95f;
+                                float spacerHeight = Math.Max(0f, tableY - contentPaddingTop);
+                                if (spacerHeight > 0f)
+                                {
+                                    contentCol.Item().Height(spacerHeight, QuestPDF.Infrastructure.Unit.Millimetre);
+                                }
                             }
-                        }
 
                         foreach (var section in templateModel.Sections)
                         {
@@ -221,7 +251,10 @@ namespace SynOS.Services
                                     RenderRecommendations(contentCol, data, DeserializeConfig<RecommendationsConfig>(section));
                                     break;
                                 case "SignatureBlock":
-                                    RenderSignatureBlock(contentCol, data, DeserializeConfig<SignatureBlockConfig>(section));
+                                    if (!isAbsoluteForPadding)
+                                    {
+                                        RenderSignatureBlock(contentCol, data, DeserializeConfig<SignatureBlockConfig>(section));
+                                    }
                                     break;
                                 case "QRCode":
                                     RenderQRCode(contentCol, data, DeserializeConfig<QRCodeConfig>(section));
@@ -232,6 +265,15 @@ namespace SynOS.Services
 
                     page.Footer().Column(footerCol =>
                     {
+                        if (isAbsoluteForPadding && signatureSectionForPadding != null)
+                        {
+                            var sigConfig = DeserializeConfig<SignatureBlockConfig>(signatureSectionForPadding);
+                            RenderSignatureBlock(footerCol, data, sigConfig);
+                            
+                            float bottomMarginSpace = sigConfig?.SignatureBlockY ?? 25f;
+                            footerCol.Item().Height(bottomMarginSpace, QuestPDF.Infrastructure.Unit.Millimetre);
+                        }
+
                         foreach (var section in templateModel.Sections)
                         {
                             if (section.Type == "Footer")
@@ -401,36 +443,51 @@ namespace SynOS.Services
             };
         }
 
-        private void RenderColumnCell(IContainer cell, string col, ParameterResult parameter)
+        private void RenderColumnCell(IContainer cell, ReportColumnDefinition col, ParameterResult parameter)
         {
-            switch (col)
+            var align = col.Alignment?.ToLower() ?? "left";
+            IContainer contentContainer = cell;
+            if (align == "center") contentContainer = cell.AlignCenter();
+            else if (align == "right") contentContainer = cell.AlignRight();
+            else contentContainer = cell.AlignLeft();
+
+            switch (col.Code)
             {
                 case "Parameter":
-                    cell.AlignLeft().Text(parameter.Name).FontSize(9).Medium();
+                    var pText = contentContainer.Text(parameter.Name).FontSize(9);
+                    if (col.Bold) pText.Bold();
+                    else pText.Medium();
                     break;
                 case "Value":
                     var val = string.IsNullOrWhiteSpace(parameter.DisplayValue) ? parameter.Value : parameter.DisplayValue;
-                    var valCell = cell.AlignCenter();
+                    var vText = contentContainer.Text(val).FontSize(9);
                     if (parameter.IsAbnormal)
                     {
-                        valCell.Text(val).FontColor(Colors.Red.Medium).Bold().FontSize(9);
+                        vText.FontColor(Colors.Red.Medium).Bold();
+                    }
+                    else if (col.Bold)
+                    {
+                        vText.Bold();
                     }
                     else
                     {
-                        valCell.Text(val).FontSize(9).Medium();
+                        vText.Medium();
                     }
                     break;
                 case "Unit":
-                    cell.AlignCenter().Text(parameter.Unit).FontSize(9);
+                    var uText = contentContainer.Text(parameter.Unit).FontSize(9);
+                    if (col.Bold) uText.Bold();
                     break;
                 case "ReferenceRange":
-                    cell.AlignRight().Text(parameter.ReferenceRangeText).FontSize(9);
+                    var rText = contentContainer.Text(parameter.ReferenceRangeText).FontSize(9);
+                    if (col.Bold) rText.Bold();
                     break;
                 case "Methodology":
-                    cell.AlignCenter().Text(parameter.Method).FontSize(9);
+                    var mText = contentContainer.Text(parameter.Method ?? "").FontSize(9);
+                    if (col.Bold) mText.Bold();
                     break;
                 default:
-                    cell.Text("");
+                    contentContainer.Text("");
                     break;
             }
         }
@@ -439,12 +496,45 @@ namespace SynOS.Services
         {
             if (config == null) return;
 
-            var visibleColumns = config.VisibleColumns ?? new List<string> { "Parameter", "Value", "Unit", "ReferenceRange" };
-            var columnWeights = config.ColumnWeights ?? new List<int> { 3, 2, 1, 3 };
-
-            if (columnWeights.Count < visibleColumns.Count)
+            var activeColumns = config.Columns ?? new List<ReportColumnDefinition>();
+            if (activeColumns.Count == 0)
             {
-                columnWeights = visibleColumns.Select(_ => 1).ToList();
+                var visible = config.VisibleColumns ?? new List<string> { "Parameter", "Value", "Unit", "ReferenceRange" };
+                var weights = config.ColumnWeights ?? new List<int> { 3, 2, 1, 3 };
+                if (weights.Count < visible.Count) weights = visible.Select(_ => 1).ToList();
+
+                for (int i = 0; i < visible.Count; i++)
+                {
+                    var colCode = visible[i];
+                    var defaultTitle = colCode switch
+                    {
+                        "Parameter" => "Parameter",
+                        "Value" => "Findings / Commentary",
+                        "Unit" => "Unit",
+                        "ReferenceRange" => "Reference Range",
+                        "Methodology" => "Methodology",
+                        _ => colCode
+                    };
+
+                    var defaultAlign = colCode switch
+                    {
+                        "Parameter" => "Left",
+                        "Value" => "Center",
+                        "Unit" => "Center",
+                        "ReferenceRange" => "Right",
+                        "Methodology" => "Center",
+                        _ => "Left"
+                    };
+
+                    activeColumns.Add(new ReportColumnDefinition
+                    {
+                        Code = colCode,
+                        Title = defaultTitle,
+                        Weight = weights[i],
+                        Alignment = defaultAlign,
+                        Bold = (colCode == "Parameter")
+                    });
+                }
             }
 
             column.Item().PaddingBottom(10).Column(tableCol =>
@@ -457,23 +547,25 @@ namespace SynOS.Services
                 {
                     table.ColumnsDefinition(columns =>
                     {
-                        for (int i = 0; i < visibleColumns.Count; i++)
+                        foreach (var col in activeColumns)
                         {
-                            columns.RelativeColumn(columnWeights[i]);
+                            columns.RelativeColumn(col.Weight);
                         }
                     });
 
                     table.Header(header =>
                     {
-                        foreach (var col in visibleColumns)
+                        foreach (var col in activeColumns)
                         {
                             var cell = header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3);
                             IContainer contentContainer = cell;
-                            if (col == "Parameter") contentContainer = cell.AlignLeft();
-                            else if (col == "Value" || col == "Unit" || col == "Methodology") contentContainer = cell.AlignCenter();
-                            else if (col == "ReferenceRange") contentContainer = cell.AlignRight();
                             
-                            contentContainer.Text(GetColumnHeaderName(col).ToUpper()).FontSize(9).Bold();
+                            var align = col.Alignment?.ToLower() ?? "left";
+                            if (align == "center") contentContainer = cell.AlignCenter();
+                            else if (align == "right") contentContainer = cell.AlignRight();
+                            else contentContainer = cell.AlignLeft();
+
+                            contentContainer.Text(col.Title.ToUpper()).FontSize(9).Bold();
                         }
                     });
 
@@ -482,13 +574,13 @@ namespace SynOS.Services
                         // Group Heading
                         if (!string.IsNullOrWhiteSpace(group.GroupName))
                         {
-                            table.Cell().ColumnSpan((uint)visibleColumns.Count).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
+                            table.Cell().ColumnSpan((uint)activeColumns.Count).Background(Colors.Grey.Lighten4).PaddingVertical(2).PaddingHorizontal(5)
                                  .Text(group.GroupName).SemiBold().FontSize(11);
                         }
 
                         foreach (var parameter in group.Parameters)
                         {
-                            foreach (var col in visibleColumns)
+                            foreach (var col in activeColumns)
                             {
                                 var cell = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3);
                                 RenderColumnCell(cell, col, parameter);
@@ -499,7 +591,7 @@ namespace SynOS.Services
                                 var cleanText = ConvertTipTapToPlainText(parameter.Narrative);
                                 if (!string.IsNullOrWhiteSpace(cleanText))
                                 {
-                                    table.Cell().ColumnSpan((uint)visibleColumns.Count)
+                                    table.Cell().ColumnSpan((uint)activeColumns.Count)
                                          .BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3)
                                          .PaddingTop(1).PaddingBottom(5).PaddingHorizontal(10)
                                          .Text(cleanText).Italic().FontSize(8.5f).FontColor(Colors.Grey.Darken2);
@@ -575,9 +667,6 @@ namespace SynOS.Services
                                 sigCol.Item().AlignCenter().Text(sig.Credentials).FontSize(7.5f).FontColor("#4b5563");
                             }
 
-                            var roleParts = sig.Role?.Split(' ');
-                            var roleText = roleParts != null && roleParts.Length > 1 ? roleParts[1] : "Pathologist";
-                            sigCol.Item().AlignCenter().Text(roleText.ToUpper()).Bold().FontSize(7.5f).FontColor("#1f2937");
                         }
                         else
                         {

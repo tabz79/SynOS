@@ -417,6 +417,22 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
+// Run DB Suffix Cleanup unconditionally
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<SynOSDbContext>();
+        context.Database.ExecuteSqlRaw("UPDATE Patients SET LastName = '' WHERE LastName = 'Patient';");
+        Log.Information("Mononym database cleanup executed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to run mononym database cleanup on startup.");
+    }
+}
+
 // Seed the database
 if (args.Contains("seed") || app.Environment.IsDevelopment())
 {

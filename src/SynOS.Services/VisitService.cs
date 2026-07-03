@@ -287,7 +287,7 @@ namespace SynOS.Services
             if (referrerId.HasValue)
             {
                 var referrer = await _context.Referrers.FindAsync(referrerId.Value);
-                referrerName = referrer?.ProviderName;
+                referrerName = referrer?.ProviderName ?? visit.ReferrerText;
             }
 
             Guid? referralPartnerId = visit.ReferralPartnerId;

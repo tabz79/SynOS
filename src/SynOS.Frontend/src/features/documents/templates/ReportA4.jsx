@@ -571,7 +571,7 @@ export const ReportA4 = ({ reportData, template }) => {
           position: 'absolute',
           left: `${coords.testTitleX}mm`,
           top: `${coords.testTitleY}mm`,
-          width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`
+          width: `calc(210mm - ${(coords.testTitleX ?? 15) * 2}mm)`
         } : {
           marginBottom: '16px',
           marginTop: '8px'
@@ -589,7 +589,7 @@ export const ReportA4 = ({ reportData, template }) => {
           position: 'absolute',
           left: `${coords.resultsTableX}mm`,
           top: `${coords.resultsTableY}mm`,
-          width: `calc(210mm - ${(activeTemplate.leftRightMargin ?? 15) * 2}mm)`
+          width: `calc(210mm - ${(coords.resultsTableX ?? 15) * 2}mm)`
         } : {
           flex: 1
         }}
@@ -623,7 +623,7 @@ export const ReportA4 = ({ reportData, template }) => {
                       {visibleColumns.map((col, idx) => {
                         if (col === "Parameter") {
                           return (
-                            <td key={col} className="py-1 pr-2 text-left" style={getColWidthStyle(idx)}>
+                            <td key={col} className={`py-1 pr-2 ${getAlignClass(col)}`} style={getColWidthStyle(idx)}>
                                <span className="font-medium uppercase">{param.name}</span>
                                {param.method && <div className="text-[9px] text-zinc-500 italic lowercase print:hidden">Method: {param.method}</div>}
                             </td>
@@ -632,22 +632,29 @@ export const ReportA4 = ({ reportData, template }) => {
                         if (col === "Value") {
                           const showSeparateUnit = visibleColumns.includes("Unit");
                           return (
-                            <td key={col} className={`py-1 text-center ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`} style={getColWidthStyle(idx)}>
+                            <td key={col} className={`py-1 ${getAlignClass(col)} ${param.isAbnormal ? 'font-black text-[13px] border-b border-zinc-200' : 'font-semibold'}`} style={getColWidthStyle(idx)}>
                               {param.displayValue || param.value} {!showSeparateUnit && param.unit}
                             </td>
                           );
                         }
                         if (col === "Unit") {
                           return (
-                            <td key={col} className="py-1 text-center font-medium text-zinc-600" style={getColWidthStyle(idx)}>
+                            <td key={col} className={`py-1 ${getAlignClass(col)} font-medium text-zinc-600`} style={getColWidthStyle(idx)}>
                               {param.unit}
                             </td>
                           );
                         }
                         if (col === "ReferenceRange") {
                           return (
-                            <td key={col} className="py-1 text-right font-medium" style={getColWidthStyle(idx)}>
+                            <td key={col} className={`py-1 ${getAlignClass(col)} font-medium`} style={getColWidthStyle(idx)}>
                               {param.referenceRangeText || param.referenceRange}
+                            </td>
+                          );
+                        }
+                        if (col === "Methodology") {
+                          return (
+                            <td key={col} className={`py-1 ${getAlignClass(col)} font-medium`} style={getColWidthStyle(idx)}>
+                              {param.method}
                             </td>
                           );
                         }
@@ -688,11 +695,23 @@ export const ReportA4 = ({ reportData, template }) => {
                 </div>
              </div>
            )}
-        </div>
+         </div>
+       </div>
 
         {/* 🖋️ SIGNATURE QUAD */}
         {activeTemplate?.includeSignatures !== false && (
-          <div className="mt-12 pt-8 break-inside-avoid">
+          <div 
+            className="break-inside-avoid"
+            style={activeTemplate && activeTemplate.enableAbsolutePositioning ? {
+              position: 'absolute',
+              bottom: `${coords.signatureY ?? 25}mm`,
+              left: `${coords.signatureX ?? 15}mm`,
+              width: `calc(210mm - ${(coords.signatureX ?? 15) * 2}mm)`
+            } : {
+              marginTop: '48px',
+              paddingTop: '32px'
+            }}
+          >
             <div className="grid grid-cols-4 gap-2">
               {[0, 1, 2, 3].map((slotIdx) => {
                 const sig = signatures[slotIdx];
@@ -723,7 +742,6 @@ export const ReportA4 = ({ reportData, template }) => {
                             {sig.doctorName}
                           </div>
                           <div className="text-[9px] font-medium leading-tight">{sig.credentials}</div>
-                          <div className="font-bold text-[9px] uppercase mt-0.5">{sig.role?.split(' ')[1] || 'Pathologist'}</div>
                        </>
                      ) : (
                        <div className="h-[40mm] opacity-0 text-[1px]">Empty Slot</div>
@@ -735,7 +753,6 @@ export const ReportA4 = ({ reportData, template }) => {
           </div>
         )}
 
-      </div>
     </div>
   );
 };

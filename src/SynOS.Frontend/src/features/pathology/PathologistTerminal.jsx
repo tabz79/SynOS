@@ -585,6 +585,7 @@ export function PathologistTerminal() {
         } catch (err) {
             console.error("Save failed:", err);
             alert("Verification Context Sync Failed: " + err.message);
+            throw err;
         } finally {
             setIsSaving(false);
         }
@@ -619,6 +620,9 @@ export function PathologistTerminal() {
         const reportId = selectedReportId; // Lock ID before async
 
         try {
+            // Automatically save any unsaved clinical narrative and results first
+            await handleSaveInterpretation();
+
             await ReportsApi.signReport(reportId);
             const otherPending = siblingReports.filter(r => r.status !== 'Signed' && r.status !== 'ManualVerified' && r.reportId !== reportId);
             await fetchWorklist();

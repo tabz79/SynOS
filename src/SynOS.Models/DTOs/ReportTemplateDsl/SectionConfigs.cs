@@ -50,12 +50,22 @@ namespace SynOS.Models.DTOs.ReportTemplateDsl
         public float? ReportDateY { get; set; }
     }
 
+    public class ReportColumnDefinition
+    {
+        public string Code { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public int Weight { get; set; } = 1;
+        public string Alignment { get; set; } = "Left";
+        public bool Bold { get; set; }
+    }
+
     public class ParameterTableConfig
     {
         public bool ShowReferenceRanges { get; set; } = true;
         public bool HighlightCriticalValues { get; set; } = true;
         public System.Collections.Generic.List<string>? VisibleColumns { get; set; }
         public System.Collections.Generic.List<int>? ColumnWeights { get; set; }
+        public System.Collections.Generic.List<ReportColumnDefinition>? Columns { get; set; }
 
         public float? TableBlockY { get; set; }
         public float? TestTitleX { get; set; }

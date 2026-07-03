@@ -573,6 +573,7 @@ namespace SynOS.Services
                 .Include(o => o.Test) // Corrected to o.Test
                 .Include(o => o.Visit).ThenInclude(v => v.Patient)
                 .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
 
             if (order == null)
@@ -631,7 +632,7 @@ namespace SynOS.Services
                 Patient = new PatientSummaryDto
                 {
                     PatientId = order.Visit.Patient.PatientId,
-                    Name = $"{order.Visit.Patient.FirstName} {order.Visit.Patient.LastName}",
+                    Name = FormatPatientName(order.Visit.Patient.FirstName, order.Visit.Patient.LastName),
                     Mrn = order.Visit.Patient.MRN
                 },
                 Visit = new VisitSummaryDto
@@ -677,6 +678,7 @@ namespace SynOS.Services
                         .Include(o => o.Test)
                         .Include(o => o.Visit).ThenInclude(v => v.Patient)
                         .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                        .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
                         .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
                 }
             }
@@ -686,6 +688,7 @@ namespace SynOS.Services
                     .Include(o => o.Test)
                     .Include(o => o.Visit).ThenInclude(v => v.Patient)
                     .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                    .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
                     .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
             }
 
@@ -817,7 +820,7 @@ namespace SynOS.Services
                     SampleReceivedAtFormatted = specimen != null 
                         ? specimen.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") 
                         : "N/A",
-                    ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
+                    ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Self / Walk-in")),
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                     PreparedBy = report.TypedByUser?.Name ?? "N/A",
                     TestCode = order.TestCode,
@@ -971,7 +974,7 @@ namespace SynOS.Services
                         SampleCollectedAtFormatted = "N/A",
                         SampleReceivedAt = null,
                         SampleReceivedAtFormatted = "N/A",
-                        ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
+                        ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Self / Walk-in")),
                         BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                         PreparedBy = report.TypedByUser?.Name ?? "N/A",
                         TestCode = order.Test?.TestCode ?? "RAD",
@@ -981,7 +984,7 @@ namespace SynOS.Services
                     ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? "Radiology"),
                     Patient = new PatientInfo
                     {
-                        Name = $"{patient.FirstName} {patient.LastName}",
+                        Name = FormatPatientName(patient.FirstName, patient.LastName),
                         PatientId = patient.MRN,
                         DateOfBirth = patient.DateOfBirth.ToString("yyyy-MM-dd"),
                         Gender = patient.Gender,
@@ -1294,7 +1297,7 @@ namespace SynOS.Services
                     SampleReceivedAtFormatted = specimen != null 
                         ? specimen.CreatedAt.ToString("dd MMM yyyy, hh:mm tt") 
                         : "N/A",
-                    ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Self / Walk-in",
+                    ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Self / Walk-in")),
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                     PreparedBy = report.TypedByUser?.Name ?? "N/A",
                     TestCode = order.TestCode,
@@ -1304,7 +1307,7 @@ namespace SynOS.Services
                 ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? $"{order.Department} Report"),
                 Patient = new PatientInfo
                 {
-                    Name = $"{patient.FirstName} {patient.LastName}",
+                    Name = FormatPatientName(patient.FirstName, patient.LastName),
                     PatientId = patient.MRN,
                     DateOfBirth = patient.DateOfBirth.ToString("yyyy-MM-dd"), // Kept for logic if needed
                     Gender = patient.Gender,
@@ -1385,7 +1388,7 @@ namespace SynOS.Services
                     ContractVersion = 2,
                     GeneratedFrom = "snapshot-v1-converted",
                     GeneratedAt = DateTimeOffset.UtcNow,
-                    ReferenceDoctor = order.Visit?.Referrer?.ProviderName ?? "Legacy Data"
+                    ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Legacy Data"))
                 },
                 Modality = v1.Modality,
                 ReportTitle = v1.ReportTitle,
@@ -1627,7 +1630,7 @@ namespace SynOS.Services
                 {
                     ReportId = r.ReportId,
                     VisitId = r.VisitId,
-                    PatientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : "Unknown",
+                    PatientName = patient != null ? FormatPatientName(patient.FirstName, patient.LastName) : "Unknown",
                     PatientAgeGender = patient != null ? $"{age} / {patient.Gender}" : "N/A",
                     TestName = order?.Test?.TestName ?? order?.TestCode ?? "Unknown",
                     Department = r.Department,
@@ -1692,6 +1695,7 @@ namespace SynOS.Services
                 .Include(r => r.Visit).ThenInclude(v => v.Patient)
                 .Include(r => r.Visit).ThenInclude(v => v.Branch)
                 .Include(r => r.Visit).ThenInclude(v => v.Referrer)
+                .Include(r => r.Visit).ThenInclude(v => v.ReferralPartner)
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
                 .AsQueryable();
@@ -1869,7 +1873,7 @@ namespace SynOS.Services
                 return new ReportListItemDto
                 {
                     ReportId = r.ReportId,
-                    PatientName = patient != null ? $"{patient.FirstName} {patient.LastName}" : "Unknown",
+                    PatientName = patient != null ? FormatPatientName(patient.FirstName, patient.LastName) : "Unknown",
                     PatientAgeGender = patient != null ? $"{age} / {patient.Gender}" : "N/A",
                     TestName = order?.Test?.TestName ?? order?.TestCode ?? "Unknown",
                     Department = r.Department,
@@ -1902,6 +1906,17 @@ namespace SynOS.Services
                 PageNumber = pageNumber,
                 PageSize = pageSize
             };
+        }
+
+        private static string FormatPatientName(string firstName, string lastName)
+        {
+            var f = (firstName ?? "").Trim();
+            var l = (lastName ?? "").Trim();
+            if (string.Equals(l, "Patient", StringComparison.OrdinalIgnoreCase))
+            {
+                l = "";
+            }
+            return $"{f} {l}".Trim();
         }
     }
 }

@@ -12,7 +12,6 @@ import { DeliveryTerminal } from '@/features/delivery/DeliveryTerminal'
 import { DocumentPrinter } from '@/features/documents/DocumentPrinter'
 import { AdminLayout } from '@/features/admin/AdminLayout'
 import { ControlTowerDashboard } from '@/features/admin/ControlTowerDashboard'
-import { WhatsAppManagerScreen } from '@/features/admin/WhatsAppManagerScreen'
 import { PendingRequestsQueue } from '@/features/admin/PendingRequestsQueue'
 import { ImsRoleMappingScreen } from '@/features/admin/ImsRoleMappingScreen'
 import { TestMasterScreen } from '@/features/admin/TestMasterScreen'
@@ -249,7 +248,6 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<ControlTowerDashboard />} />
-                <Route path="/admin/whatsapp" element={<WhatsAppManagerScreen />} />
                 <Route path="/admin/inventory" element={<PendingRequestsQueue />} />
                 <Route path="/admin/inventory/setup" element={<ImsRoleMappingScreen />} />
                 <Route path="/admin/test-master" element={<TestMasterScreen />} />

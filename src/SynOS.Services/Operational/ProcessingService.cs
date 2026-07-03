@@ -189,7 +189,7 @@ namespace SynOS.Services.Operational
                 if (referrerId.HasValue)
                 {
                     var referrer = await _db.Referrers.FindAsync(referrerId.Value);
-                    referrerName = referrer?.ProviderName;
+                    referrerName = referrer?.ProviderName ?? visit.ReferrerText;
                 }
 
                 referralPartnerId = visit.ReferralPartnerId;

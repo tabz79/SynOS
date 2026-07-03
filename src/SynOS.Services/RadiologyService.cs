@@ -443,7 +443,7 @@ namespace SynOS.Services
                 {
                     VisitId = visit.VisitId,
                     TokenNumber = visit.Token,
-                    PatientName = $"{patient.FirstName} {patient.LastName}",
+                    PatientName = FormatPatientName(patient.FirstName, patient.LastName),
                     PatientAge = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25),
                     PatientGender = patient.Gender,
                     Studies = visitGroup.Select(x => new RadiologyStudyWorklistItemDto
@@ -539,7 +539,7 @@ namespace SynOS.Services
                 ExternalViewerUrl = result.study.ExternalViewerUrl,
 
                 PatientId = result.study.PatientId,
-                PatientName = $"{result.patient.FirstName} {result.patient.LastName}",
+                PatientName = FormatPatientName(result.patient.FirstName, result.patient.LastName),
                 PatientAge = (int)((DateTime.Today - result.patient.DateOfBirth).TotalDays / 365.25),
                 PatientGender = result.patient.Gender,
                 TokenNumber = result.visit.Token,
@@ -668,7 +668,7 @@ namespace SynOS.Services
              var query = 
                 from study in _context.RadiologyStudies
                 where study.RadiologyStudyId == studyId
-                join visit in _context.Visits on study.VisitId equals visit.VisitId
+                join visit in _context.Visits.Include(v => v.Referrer).Include(v => v.ReferralPartner) on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
                 join order in _context.Orders on study.VisitTestId equals order.OrderId
                 join test in _context.Tests on order.TestId equals test.TestId // Corrected to join on Test entity
@@ -727,13 +727,13 @@ namespace SynOS.Services
                     ContractVersion = 2,
                     GeneratedFrom = "live",
                     GeneratedAt = DateTimeOffset.UtcNow,
-                    ReferenceDoctor = result.visit.Referrer?.ProviderName ?? "Self / Walk-in"
+                    ReferenceDoctor = !string.IsNullOrWhiteSpace(result.visit?.ReferrerText) ? result.visit.ReferrerText : (!string.IsNullOrWhiteSpace(result.visit?.Referrer?.ProviderName) ? result.visit.Referrer.ProviderName : (result.visit?.ReferralPartner?.Name ?? "Self / Walk-in"))
                 },
                 ReportTitle = !string.IsNullOrWhiteSpace(studyEntity.Order.Test?.ReportTitle) ? studyEntity.Order.Test.ReportTitle : studyEntity.Order.Test?.TestName,
                 Modality = studyEntity.Modality,
                 Patient = new PatientInfo
                 {
-                    Name = $"{studyEntity.Patient.FirstName} {studyEntity.Patient.LastName}",
+                    Name = FormatPatientName(studyEntity.Patient.FirstName, studyEntity.Patient.LastName),
                     PatientId = studyEntity.Patient.MRN,
                     DateOfBirth = studyEntity.Patient.DateOfBirth.ToString("yyyy-MM-dd"),
                     Gender = studyEntity.Patient.Gender.ToString(),
@@ -886,6 +886,17 @@ namespace SynOS.Services
 
             study.Status = "AwaitingSignature";
             await _context.SaveChangesAsync();
+        }
+
+        private static string FormatPatientName(string firstName, string lastName)
+        {
+            var f = (firstName ?? "").Trim();
+            var l = (lastName ?? "").Trim();
+            if (string.Equals(l, "Patient", StringComparison.OrdinalIgnoreCase))
+            {
+                l = "";
+            }
+            return $"{f} {l}".Trim();
         }
     }
 }

@@ -35,7 +35,7 @@ namespace SynOS.Services.Reception
             var rawName = request.Name?.Trim() ?? "Unknown";
             var names = rawName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             var firstName = names.Length > 0 ? names[0] : "Unknown";
-            var lastName = names.Length > 1 ? names[1] : "Patient"; // Default if mononym
+            var lastName = names.Length > 1 ? names[1] : ""; // Default if mononym
 
             // 3. Generate MRN (Canonical Authority via Sequence + Base36)
             var nextMrn = await GenerateCanonicalMrnAsync();

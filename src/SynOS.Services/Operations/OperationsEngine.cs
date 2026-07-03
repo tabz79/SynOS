@@ -786,7 +786,7 @@ namespace SynOS.Services.Operations
                 if (referrerId.HasValue)
                 {
                     var referrer = await _context.Referrers.FindAsync(referrerId.Value);
-                    referrerName = referrer?.ProviderName;
+                    referrerName = referrer?.ProviderName ?? visit.ReferrerText;
                 }
 
                 referralPartnerId = visit.ReferralPartnerId;
@@ -909,12 +909,7 @@ namespace SynOS.Services.Operations
 
                 if (result == null) continue;
 
-                if (string.IsNullOrWhiteSpace(resultDto.Value))
-                {
-                     throw new InvalidOperationException($"Parameter '{resultDto.ParameterCode}' requires a value.");
-                }
-
-                result.Value = resultDto.Value;
+                result.Value = resultDto.Value ?? "";
                 result.TechComments = resultDto.Remarks;
                 result.Status = "Finalized"; 
             }

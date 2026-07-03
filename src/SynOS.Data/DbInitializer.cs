@@ -279,15 +279,25 @@ namespace SynOS.Data
 
                 if (user != null)
                 {
-                    // Update existing user
-                    user.Username = userData.Username; // Migrating legacy users to the new identity
-                    user.Name = userData.Name; // Sync Name to clear any stale identity artifacts
-                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
+                    // Update existing user ONLY if they are not yet fully populated, or for essential fields
+                    if (string.IsNullOrEmpty(user.Username))
+                    {
+                        user.Username = userData.Username;
+                    }
+                    if (string.IsNullOrEmpty(user.Name))
+                    {
+                        user.Name = userData.Name;
+                    }
+                    if (string.IsNullOrEmpty(user.PasswordHash))
+                    {
+                        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
+                    }
+                    
                     user.CanUseOperationalMode = userData.CanUseOperational;
                     user.CanUseOversightMode = userData.CanUseOversight;
                     
-                    // Force designation if missing or if it's one of our seeded users
-                    if (string.IsNullOrEmpty(user.Designation) || userData.Email.Contains("@lab.com") || userData.Email == "admin@synos.com")
+                    // Set designation only if it is missing
+                    if (string.IsNullOrEmpty(user.Designation))
                     {
                         user.Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" :
                                            userData.Email == "pathologist@lab.com" ? "Consultant Pathologist" :
