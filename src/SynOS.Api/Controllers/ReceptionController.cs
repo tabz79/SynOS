@@ -375,6 +375,32 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpDelete("visit/{visitId}")]
+        public async Task<IActionResult> DeleteVisit(Guid visitId)
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdClaim, out var actorUserId)) return Unauthorized();
+
+                await _receptionFlowService.DeleteVisitAsync(visitId, actorUserId);
+                return Ok(new { success = true });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to delete visit {VisitId}", visitId);
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 
     public class ReceptionAddTestRequest

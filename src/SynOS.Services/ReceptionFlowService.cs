@@ -1485,5 +1485,81 @@ namespace SynOS.Services
                 })
                 .ToListAsync();
         }
+
+        public async Task DeleteVisitAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.PartialPayments)
+                .Include(v => v.Specimens)
+                .Include(v => v.ReferralDraft)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit with ID {visitId} not found.");
+
+            if (visit.Status != VisitStatus.Draft && visit.Status != VisitStatus.PendingPayment)
+            {
+                throw new InvalidOperationException("Only draft or pending payment visits can be deleted.");
+            }
+
+            var branchId = visit.BranchId?.ToString() ?? "";
+
+            // Delete reports
+            var reports = await _context.Reports.Where(r => r.VisitId == visitId).ToListAsync();
+            _context.Reports.RemoveRange(reports);
+
+            // Delete critical alerts
+            var alerts = await _context.CriticalAlerts.Where(a => a.VisitId == visitId).ToListAsync();
+            _context.CriticalAlerts.RemoveRange(alerts);
+
+            // Delete work assignments
+            var orderIds = visit.Orders.Select(o => o.OrderId).ToList();
+            var assignments = await _context.WorkAssignments
+                .Where(a => a.SourceReferenceId == visitId || orderIds.Contains(a.SourceReferenceId))
+                .ToListAsync();
+            _context.WorkAssignments.RemoveRange(assignments);
+
+            // Delete invoices and payments
+            foreach (var invoice in visit.Invoices)
+            {
+                _context.Payments.RemoveRange(invoice.Payments);
+                if (invoice.PartialPayments != null)
+                {
+                    _context.PartialPayments.RemoveRange(invoice.PartialPayments);
+                }
+            }
+            _context.Invoices.RemoveRange(visit.Invoices);
+
+            // Delete orders
+            _context.Orders.RemoveRange(visit.Orders);
+
+            // Delete specimens
+            _context.Specimens.RemoveRange(visit.Specimens);
+
+            // Delete referral draft
+            if (visit.ReferralDraft != null)
+            {
+                _context.ReferralDrafts.Remove(visit.ReferralDraft);
+            }
+
+            // Delete cancellations
+            var cancellations = await _context.VisitCancellations.Where(c => c.VisitId == visitId).ToListAsync();
+            _context.VisitCancellations.RemoveRange(cancellations);
+
+            // Delete visit
+            _context.Visits.Remove(visit);
+
+            await _context.SaveChangesAsync();
+
+            // Notify
+            if (!string.IsNullOrEmpty(branchId))
+            {
+                await _notifier.NotifyActionQueueDeltaAsync(branchId, "");
+                await _notifier.NotifyRealitySummaryUpdateAsync(branchId, null);
+            }
+        }
     }
 }

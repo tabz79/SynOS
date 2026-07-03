@@ -387,6 +387,7 @@ builder.Services.AddHostedService<NotificationWorkerService>();
 // builder.Services.AddHostedService<AnalyzerTcpListenerService>();
 builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
 builder.Services.AddHostedService<MiddlewareSyncWorker>();
+builder.Services.AddHostedService<DraftVisitCleanupService>();
 
 // Add SignalR
 builder.Services.AddSignalR();

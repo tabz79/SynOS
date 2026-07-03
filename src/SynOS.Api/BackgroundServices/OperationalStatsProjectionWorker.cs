@@ -51,26 +51,33 @@ namespace SynOS.Api.BackgroundServices
 
             _logger.LogInformation("Worker: Catch-up complete. Awaiting real-time events...");
 
-            // 2. Event-Driven Real-Time Processing
-            await foreach (var eventId in _eventChannel.ReadAllAsync(stoppingToken))
+            try
             {
-                try
+                // 2. Event-Driven Real-Time Processing
+                await foreach (var eventId in _eventChannel.ReadAllAsync(stoppingToken))
                 {
-                    using (var scope = _serviceProvider.CreateScope())
+                    try
                     {
-                        var projector = scope.ServiceProvider.GetRequiredService<IOperationalStatsProjector>();
-                        await projector.ProjectSingleEventAsync(eventId, stoppingToken);
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var projector = scope.ServiceProvider.GetRequiredService<IOperationalStatsProjector>();
+                            await projector.ProjectSingleEventAsync(eventId, stoppingToken);
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Expected during shutdown
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error occurred while projecting event {EventId}.", eventId);
+                        // Do not crash the worker on a single event failure. The event remains in the DB for manual replay if needed.
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    // Expected during shutdown
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred while projecting event {EventId}.", eventId);
-                    // Do not crash the worker on a single event failure. The event remains in the DB for manual replay if needed.
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during host shutdown
             }
 
             _logger.LogInformation("OperationalStatsProjectionWorker is stopping.");

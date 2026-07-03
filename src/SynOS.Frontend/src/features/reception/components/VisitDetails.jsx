@@ -5,8 +5,10 @@ import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 import ReferralDraftForm from './ReferralDraftForm'
 import OutsourceDraftForm from './OutsourceDraftForm'
+import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 
 export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent, isCorrectionIntent }) {
+    const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
@@ -15,6 +17,22 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const [outsourcedCatalog, setOutsourcedCatalog] = useState([]); // ADDED: Outsourced Catalog Master
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
+
+    const handleDeleteDraft = async () => {
+        if (!visitId) return;
+        if (!window.confirm("Are you sure you want to permanently delete this draft visit? This action cannot be undone.")) return;
+
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.deleteVisit(visitId);
+            closePanel();
+        } catch (err) {
+            console.error("Failed to delete draft visit:", err);
+            alert("Failed to delete draft visit: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     // Referral Draft UI State
     const [isDraftFormVisible, setIsDraftFormVisible] = useState(false);
@@ -331,13 +349,21 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     <h3 className={cn("tracking-tight", ui.headerText)}>Visit Details</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
-                {isReadOnly && (
+                {isReadOnly ? (
                     <div className={cn("flex items-center gap-1.5 px-2 py-0.5 rounded border", isDark ? "bg-zinc-800/50 border-zinc-700" : "bg-zinc-100 border-zinc-200")}>
                         <Lock className="w-3 h-3 text-zinc-500" />
                         <span className="type-section-header">
                             {readOnlyReason || "LOCKED"}
                         </span>
                     </div>
+                ) : (
+                    <button
+                        onClick={handleDeleteDraft}
+                        disabled={isProcessing}
+                        className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-95 flex items-center gap-1 shadow-sm disabled:opacity-50"
+                    >
+                        {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Delete Draft"}
+                    </button>
                 )}
             </div>
 

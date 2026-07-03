@@ -96,6 +96,25 @@ export const ReceptionApi = {
     },
 
     /**
+     * Permanently deletes a draft visit.
+     * @param {string} visitId 
+     * @returns {Promise<boolean>}
+     */
+    deleteVisit: async (visitId) => {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/reception/visit/${visitId}`), {
+            method: 'DELETE',
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Failed to delete draft visit: ${response.status}`);
+        }
+
+        return true;
+    },
+
+    /**
      * Searches for patients by query string.
      * @param {string} query 
      * @returns {Promise<Array>}

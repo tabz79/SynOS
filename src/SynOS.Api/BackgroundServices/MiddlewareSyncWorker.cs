@@ -40,18 +40,25 @@ namespace SynOS.Api.BackgroundServices
         {
             _logger.LogInformation("MiddlewareSyncWorker is starting. Target API: {ApiUrl}", _apiUrl);
 
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                try
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    await SyncPendingEventsAsync(stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error occurred during middleware event sync execution loop.");
-                }
+                    try
+                    {
+                        await SyncPendingEventsAsync(stoppingToken);
+                    }
+                    catch (Exception ex) when (ex is not OperationCanceledException)
+                    {
+                        _logger.LogError(ex, "Error occurred during middleware event sync execution loop.");
+                    }
 
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during host shutdown
             }
 
             _logger.LogInformation("MiddlewareSyncWorker is stopping.");

@@ -70,11 +70,16 @@ namespace SynOS.Api.Services
 
                 // Fallback to Thundering Herd (Scoped to Group) if no Delta is provided or fetch failed
                 await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueUpdated");
+                await _hubContext.Clients.Group($"Branch-{branchId}").SendAsync("ActionQueueUpdated");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[SignalRNotifier] Delta Push Failed: {ex.Message}");
-                try { await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueUpdated"); } catch { }
+                try 
+                { 
+                    await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueUpdated"); 
+                    await _hubContext.Clients.Group($"Branch-{branchId}").SendAsync("ActionQueueUpdated"); 
+                } catch { }
             }
         }
 
@@ -116,6 +121,7 @@ namespace SynOS.Api.Services
                         // Broadcast Branch-Wide Reality Summary to Branch Admins Group
                         var branchStats = await dashboardService.GetTodaysSummaryAsync(guid, null);
                         await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ReceptionSummaryUpdated", branchStats);
+                        await _hubContext.Clients.Group($"Branch-{branchId}").SendAsync("ReceptionSummaryUpdated", branchStats);
 
                         // If the event corresponds to a specific desk, push only to that desk
                         if (targetUserId.HasValue && targetUserId.Value != Guid.Empty)

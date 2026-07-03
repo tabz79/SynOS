@@ -369,7 +369,7 @@ namespace SynOS.Services.Operational
 
                                     if (collectedAt.HasValue)
                                     {
-                                        var duration = (report.SignedAt.Value - collectedAt.Value).TotalMinutes;
+                                        var duration = ((report.SignedAt.Value.UtcDateTime - DateTime.SpecifyKind(collectedAt.Value, DateTimeKind.Utc)).TotalMinutes);
                                         if (duration > 0)
                                         {
                                             userStats.ReportTatTotalMinutes += duration;
@@ -400,7 +400,7 @@ namespace SynOS.Services.Operational
 
                                     if (collectedAt.HasValue)
                                     {
-                                        var duration = (report.SignedAt.Value - collectedAt.Value).TotalMinutes;
+                                        var duration = ((report.SignedAt.Value.UtcDateTime - DateTime.SpecifyKind(collectedAt.Value, DateTimeKind.Utc)).TotalMinutes);
                                         if (duration > 0)
                                         {
                                             userStats.ReportTatTotalMinutes -= duration;

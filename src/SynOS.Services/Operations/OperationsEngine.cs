@@ -58,8 +58,6 @@ namespace SynOS.Services.Operations
                 
                 if (stats != null)
                 {
-                    pendingReports = stats.PendingReportsCount;
-                    if (stats.ReportTatCount > 0) avgTime = stats.ReportTatTotalMinutes / stats.ReportTatCount;
                     pendingCollections = stats.PendingCollectionsCount;
                     completedCollections = stats.CompletedCollectionsCount;
                     testsRunning = stats.TestsRunningCount;
@@ -72,21 +70,74 @@ namespace SynOS.Services.Operations
 
                 if (stats != null)
                 {
-                    pendingReports = stats.PendingReportsCount;
-                    if (stats.ReportTatCount > 0) avgTime = stats.ReportTatTotalMinutes / stats.ReportTatCount;
                     pendingCollections = stats.PendingCollectionsCount;
                     completedCollections = stats.CompletedCollectionsCount;
                     testsRunning = stats.TestsRunningCount;
                 }
             }
 
+            // 1. Live Pending Reports Calculation (Avoids negative drift/errors)
+            pendingReports = await _context.Reports
+                .Where(r => r.Visit.BranchId == branchId 
+                         && r.Visit.Status != VisitStatus.Cancelled 
+                         && r.Status != "Signed" 
+                         && r.Status != "ManualVerified")
+                .CountAsync();
+
+            // 2. Live Avg Report Time Calculation (Filters out polluted backlog/draft data)
+            var todayStart = new DateTimeOffset(today, TimeSpan.Zero);
+            var todayEnd = todayStart.AddDays(1);
+
+            var signedToday = await _context.Reports
+                .Where(r => r.Visit.BranchId == branchId 
+                         && r.SignedAt.HasValue 
+                         && r.SignedAt.Value >= todayStart 
+                         && r.SignedAt.Value < todayEnd)
+                .ToListAsync();
+
+            if (signedToday.Any())
+            {
+                var visitIds = signedToday.Select(r => r.VisitId).Distinct().ToList();
+                var specimens = await _context.Specimens
+                    .Where(s => visitIds.Contains(s.VisitId) && s.CollectedAt.HasValue)
+                    .ToListAsync();
+
+                double totalMinutes = 0;
+                int count = 0;
+
+                foreach (var r in signedToday)
+                {
+                    var collectedAt = specimens
+                        .Where(s => s.VisitId == r.VisitId)
+                        .Select(s => s.CollectedAt)
+                        .FirstOrDefault();
+
+                    if (collectedAt.HasValue)
+                    {
+                        var collectedAtUtc = DateTime.SpecifyKind(collectedAt.Value, DateTimeKind.Utc);
+                        var duration = (r.SignedAt.Value.UtcDateTime - collectedAtUtc).TotalMinutes;
+                        // Exclude any unreasonable durations (e.g. > 24 hours) as they might be polluted backlog/draft data
+                        if (duration > 0 && duration <= 1440) 
+                        {
+                            totalMinutes += duration;
+                            count++;
+                        }
+                    }
+                }
+
+                if (count > 0)
+                {
+                    avgTime = totalMinutes / count;
+                }
+            }
+
             return new OperationsStatsDto
             {
-                PendingReports = pendingReports,
-                AvgReportTimeMinutes = avgTime,
-                PendingCollections = pendingCollections,
-                CompletedCollections = completedCollections,
-                TestsRunning = testsRunning
+                PendingReports = Math.Max(0, pendingReports),
+                AvgReportTimeMinutes = Math.Round(avgTime),
+                PendingCollections = Math.Max(0, pendingCollections),
+                CompletedCollections = Math.Max(0, completedCollections),
+                TestsRunning = Math.Max(0, testsRunning)
             };
         }
 

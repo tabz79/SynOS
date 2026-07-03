@@ -34,6 +34,7 @@ namespace SynOS.Services
         Task ReassignVisitAsync(Guid visitId, Guid newReceptionistId, Guid actorUserId);
         Task<IEnumerable<TestSummaryDto>> GetOutsourcedTestCatalogAsync();
         Task<IEnumerable<ReferenceLabDto>> GetReferenceLabsAsync();
+        Task DeleteVisitAsync(Guid visitId, Guid actorUserId);
     }
 
     public class TestSummaryDto
