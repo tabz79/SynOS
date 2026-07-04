@@ -173,7 +173,11 @@ public class SecureDownloadController : ControllerBase
     [ProducesResponseType(typeof(FileStreamResult), 200)]
     [ProducesResponseType(401)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> DownloadReport(string token, [FromQuery] string phone)
+    public async Task<IActionResult> DownloadReport(
+        string token, 
+        [FromQuery] string phone,
+        [FromServices] SynOS.Data.SynOSDbContext context,
+        [FromServices] Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
         if (string.IsNullOrEmpty(phone))
         {
@@ -184,8 +188,46 @@ public class SecureDownloadController : ControllerBase
         try
         {
             var fileStream = await _deliveryService.VerifyAndDownloadAsync(token, phone);
-            // Assuming the filename can be derived or is stored with the report.
-            // For now, a generic filename. The service should ideally return filename too.
+            
+            // Diagnostics
+            string absolutePath = "Unknown";
+            long fileSize = 0;
+            string fileHash = "Unknown";
+            try
+            {
+                var downloadLink = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(
+                        Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(
+                            context.DownloadLinks, dl => dl.Report), 
+                        r => r.Report.ReportVersions),
+                    dl => dl.Token == token);
+
+                if (downloadLink != null)
+                {
+                    var latestReportVersion = downloadLink.Report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
+                    string? relativePath = latestReportVersion?.PdfPath ?? downloadLink.Report.PdfUrl;
+                    if (!string.IsNullOrEmpty(relativePath))
+                    {
+                        var basePath = configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
+                        absolutePath = System.IO.Path.Combine(basePath, relativePath);
+                        if (System.IO.File.Exists(absolutePath))
+                        {
+                            var fileBytes = await System.IO.File.ReadAllBytesAsync(absolutePath);
+                            fileSize = fileBytes.Length;
+                            using var sha256 = System.Security.Cryptography.SHA256.Create();
+                            var hashBytes = sha256.ComputeHash(fileBytes);
+                            fileHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to compute diagnostics for token {Token}", token);
+            }
+
+            _logger.LogInformation("DOWNLOAD REPORT DIAGNOSTIC TRACE - Path: {AbsolutePath}, Size: {Size} bytes, SHA256: {Hash}", absolutePath, fileSize, fileHash);
+
             var fileName = $"Report_{token}.pdf"; 
             Response.Headers.Append("X-Content-Type-Options", "nosniff");
             Response.Headers.Append("X-Frame-Options", "DENY");

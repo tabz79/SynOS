@@ -37,6 +37,29 @@ namespace TBZ.Middleware.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
+            // Configure all Guid properties to be stored as lowercase strings in SQLite to avoid casing mismatch errors
+            if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+            {
+                foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+                {
+                    foreach (var property in entityType.GetProperties())
+                    {
+                        if (property.ClrType == typeof(Guid))
+                        {
+                            property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<Guid, string>(
+                                v => v.ToString().ToLowerInvariant(),
+                                v => Guid.Parse(v)));
+                        }
+                        else if (property.ClrType == typeof(Guid?))
+                        {
+                            property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<Guid?, string>(
+                                v => v.HasValue ? v.Value.ToString().ToLowerInvariant() : string.Empty,
+                                v => string.IsNullOrEmpty(v) ? (Guid?)null : Guid.Parse(v)));
+                        }
+                    }
+                }
+            }
+
             modelBuilder.Entity<StoredEvent>(entity =>
             {
                 entity.ToTable("StoredEvents");

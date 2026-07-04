@@ -32,7 +32,7 @@ namespace TBZ.Middleware.Application
             // Configure named HttpClient
             services.AddHttpClient("WhatsAppClient", (sp, client) =>
             {
-                var options = sp.GetRequiredService<IOptions<WhatsAppOptions>>().Value;
+                var options = sp.GetRequiredService<IOptionsMonitor<WhatsAppOptions>>().CurrentValue;
                 var baseUrl = options.BaseUrl ?? "https://graph.facebook.com/";
                 if (!baseUrl.Contains("/v") && !string.IsNullOrEmpty(options.GraphApiVersion))
                 {

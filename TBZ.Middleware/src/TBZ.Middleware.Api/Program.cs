@@ -47,6 +47,7 @@ builder.Services.AddNotificationEngine(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient();
 
 // Register Leaf Services
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.OverviewService>();
@@ -126,6 +127,42 @@ using (var scope = app.Services.CreateScope())
         db.SaveChanges();
     }
 
+    // Seed default WhatsApp templates if not present
+    var hasReportReady = db.NotificationTemplates.Any(t => t.TemplateName == "report_ready");
+    if (!hasReportReady)
+    {
+        db.NotificationTemplates.Add(new NotificationTemplate
+        {
+            Id = Guid.Parse("06bf8a08-3bb8-4c8d-872e-836e4f3a71b1"),
+            TemplateName = "report_ready",
+            Version = 1,
+            Language = "en",
+            Category = "Utility",
+            Approved = true,
+            LastSyncedFromMeta = DateTime.UtcNow,
+            BodyPattern = "Dear {PatientName}, your clinical reports for {InvestigationSummary} are ready. Download it here: {DownloadLink}",
+            VariableMappingsJson = "[\"PatientName\",\"InvestigationSummary\",\"DownloadLink\"]"
+        });
+    }
+
+    var hasReportReadyV2 = db.NotificationTemplates.Any(t => t.TemplateName == "report_ready_v2");
+    if (!hasReportReadyV2)
+    {
+        db.NotificationTemplates.Add(new NotificationTemplate
+        {
+            Id = Guid.Parse("07bf8a08-3bb8-4c8d-872e-836e4f3a71b2"),
+            TemplateName = "report_ready_v2",
+            Version = 1,
+            Language = "en",
+            Category = "Utility",
+            Approved = true,
+            LastSyncedFromMeta = DateTime.UtcNow,
+            BodyPattern = "Dear {PatientName}, your clinical reports for {InvestigationSummary} are ready (v2). Download it here: {DownloadLink}",
+            VariableMappingsJson = "[\"PatientName\",\"InvestigationSummary\",\"DownloadLink\"]"
+        });
+    }
+    db.SaveChanges();
+
     // Dynamic one-time migration to backfill ReferralPartnerId and ReferringDoctorId columns from StoredEvents
     try
     {
@@ -187,7 +224,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService) =>
+app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options) =>
 {
     Console.WriteLine($"[INTEGRATION DEB] /api/events endpoint started. EventId: {dto?.EventId}, Type: {dto?.EventType}");
     
@@ -272,11 +309,30 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
                 var investigationSummary = (root.TryGetProperty("InvestigationSummary", out var invProp) ? invProp.GetString() : string.Empty) ?? string.Empty;
                 var labIdVal = root.TryGetProperty("LabId", out var labIdProp) ? labIdProp.GetString() : dto.LabId;
 
-                Console.WriteLine($"[INTEGRATION DEB] Hop 4: EnqueueNotificationAsync() is called for Recipient: {phone}, Template: report_ready");
+                // Rewrite domain to configured PublicTunnelUrl if available
+                var publicTunnel = options.Value.PublicTunnelUrl;
+                if (!string.IsNullOrEmpty(publicTunnel) && !string.IsNullOrEmpty(secureReportUrl))
+                {
+                    try
+                    {
+                        var uri = new Uri(secureReportUrl);
+                        var uriBuilder = new UriBuilder(publicTunnel.TrimEnd('/'));
+                        uriBuilder.Path = uri.AbsolutePath;
+                        uriBuilder.Query = uri.Query;
+                        secureReportUrl = uriBuilder.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[WARNING] Failed to rewrite secure report URL: {ex.Message}");
+                    }
+                }
+
+                var activeTemplate = !string.IsNullOrEmpty(options.Value.ActiveTemplateName) ? options.Value.ActiveTemplateName : "report_ready";
+                Console.WriteLine($"[INTEGRATION DEB] Hop 4: EnqueueNotificationAsync() is called for Recipient: {phone}, Template: {activeTemplate}, URL: {secureReportUrl}");
                 await notificationService.EnqueueNotificationAsync(new TBZ.Middleware.Application.DTOs.NotificationRequest
                 {
                     Recipient = phone,
-                    TemplateName = "report_ready",
+                    TemplateName = activeTemplate,
                     Variables = new Dictionary<string, string>
                     {
                         { "PatientName", patientName },
@@ -310,14 +366,30 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
                     reportId = targetProp.GetString();
                 }
 
+                var downloadLink = string.IsNullOrEmpty(content) ? "https://tbzlabs.com" : content;
+                var publicTunnel = options.Value.PublicTunnelUrl;
+                if (!string.IsNullOrEmpty(publicTunnel) && downloadLink.Contains("://"))
+                {
+                    try
+                    {
+                        var uri = new Uri(downloadLink);
+                        var uriBuilder = new UriBuilder(publicTunnel.TrimEnd('/'));
+                        uriBuilder.Path = uri.AbsolutePath;
+                        uriBuilder.Query = uri.Query;
+                        downloadLink = uriBuilder.ToString();
+                    }
+                    catch {}
+                }
+
+                var activeTemplate = !string.IsNullOrEmpty(options.Value.ActiveTemplateName) ? options.Value.ActiveTemplateName : "report_ready";
                 await notificationService.EnqueueNotificationAsync(new TBZ.Middleware.Application.DTOs.NotificationRequest
                 {
                     Recipient = phone,
-                    TemplateName = "report_ready",
+                    TemplateName = activeTemplate,
                     Variables = new Dictionary<string, string>
                     {
                         { "PatientName", "Valued Customer" },
-                        { "DownloadLink", string.IsNullOrEmpty(content) ? "https://tbzlabs.com" : content },
+                        { "DownloadLink", downloadLink },
                         { "InvestigationSummary", "Reports" }
                     },
                     CorrelationId = reportId,
@@ -400,5 +472,54 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
 app.MapControlTowerEndpoints();
 app.MapWhatsAppWebhookEndpoints();
 app.MapWhatsAppManagementEndpoints();
+
+// Proxy /r/ requests to SynOS.Api on port 59999 so that patient download links work seamlessly through the same Cloudflare tunnel
+app.MapGet("/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    var client = httpClientFactory.CreateClient();
+    var response = await client.GetAsync($"http://127.0.0.1:59999/r/{token}{context.Request.QueryString}");
+    context.Response.StatusCode = (int)response.StatusCode;
+    foreach (var header in response.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    foreach (var header in response.Content.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    await response.Content.CopyToAsync(context.Response.Body);
+});
+
+app.MapGet("/api/v1/public/reports/download/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    var client = httpClientFactory.CreateClient();
+    var response = await client.GetAsync($"http://127.0.0.1:59999/api/v1/public/reports/download/{token}{context.Request.QueryString}");
+    context.Response.StatusCode = (int)response.StatusCode;
+    foreach (var header in response.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    foreach (var header in response.Content.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    await response.Content.CopyToAsync(context.Response.Body);
+});
+
+app.MapGet("/api/v1/public/reports/download-package/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    var client = httpClientFactory.CreateClient();
+    var response = await client.GetAsync($"http://127.0.0.1:59999/api/v1/public/reports/download-package/{token}{context.Request.QueryString}");
+    context.Response.StatusCode = (int)response.StatusCode;
+    foreach (var header in response.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    foreach (var header in response.Content.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    await response.Content.CopyToAsync(context.Response.Body);
+});
 
 app.Run();

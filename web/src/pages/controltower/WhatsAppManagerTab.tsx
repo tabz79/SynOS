@@ -72,7 +72,6 @@ const WhatsAppManagerTab: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [phoneSearchQuery, setPhoneSearchQuery] = useState<string>('');
 
-  // Sub-tab States
   const [config, setConfig] = useState({
     accessToken: '',
     phoneNumberId: '',
@@ -80,9 +79,11 @@ const WhatsAppManagerTab: React.FC = () => {
     verifyToken: '',
     appSecret: '',
     graphApiVersion: 'v20.0',
-    callbackUrl: '/api/webhooks/whatsapp'
+    callbackUrl: '/api/webhooks/whatsapp',
+    publicTunnelUrl: ''
   });
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
+  const [activeTemplateName, setActiveTemplateName] = useState<string>('report_ready');
   const [inbox, setInbox] = useState<InboxItem[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookItem[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData>({
@@ -105,6 +106,14 @@ const WhatsAppManagerTab: React.FC = () => {
   const getApiHost = () => {
     const base = controlTowerClient.defaults.baseURL;
     return base ? base.replace('/api/controltower', '') : 'http://localhost:5069';
+  };
+
+  const extractErrorMsg = (e: any, fallback: string): string => {
+    const data = e.response?.data;
+    if (typeof data === 'object' && data !== null) {
+      return data.detail || data.message || data.title || JSON.stringify(data);
+    }
+    return data || fallback;
   };
 
   useEffect(() => {
@@ -198,8 +207,25 @@ const WhatsAppManagerTab: React.FC = () => {
     try {
       const res = await controlTowerClient.get('/whatsapp/templates');
       setTemplates(res.data);
+      const activeRes = await controlTowerClient.get('/whatsapp/templates/active');
+      setActiveTemplateName(activeRes.data.activeTemplateName || 'report_ready');
     } catch (e) {
       console.error('Failed to load templates', e);
+    }
+  };
+
+  const handleSetActiveTemplate = async (templateName: string) => {
+    setLoading(true);
+    setError(null);
+    setSuccessMsg(null);
+    try {
+      await controlTowerClient.post('/whatsapp/templates/active', { templateName });
+      setActiveTemplateName(templateName);
+      setSuccessMsg(`Template '${templateName}' activated successfully!`);
+    } catch (e: any) {
+      setError(e.response?.data?.message || 'Failed to activate template.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -212,7 +238,7 @@ const WhatsAppManagerTab: React.FC = () => {
       setSuccessMsg(`Successfully synced ${res.data.syncedCount} templates from Meta WABA!`);
       loadTemplates();
     } catch (e: any) {
-      setError(e.response?.data || 'Failed to sync templates from Meta.');
+      setError(extractErrorMsg(e, 'Failed to sync templates from Meta.'));
     } finally {
       setLoading(false);
     }
@@ -289,7 +315,7 @@ const WhatsAppManagerTab: React.FC = () => {
       setTestVariables({});
       setSelectedTemplate('');
     } catch (e: any) {
-      setError(e.response?.data || 'Failed to dispatch custom notification.');
+      setError(extractErrorMsg(e, 'Failed to dispatch custom notification.'));
     } finally {
       setLoading(false);
     }
@@ -389,7 +415,7 @@ const WhatsAppManagerTab: React.FC = () => {
       {/* Alerts */}
       {error && (
         <div className="p-4 bg-error/10 border border-error/25 text-error rounded-xl text-xs font-semibold flex items-center space-x-2">
-          <span>⚠️</span> <span>{error}</span>
+          <span>⚠️</span> <span>{typeof error === 'object' && error !== null ? (error.detail || error.message || error.title || JSON.stringify(error)) : error}</span>
         </div>
       )}
       {successMsg && (
@@ -751,31 +777,48 @@ const WhatsAppManagerTab: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {templates.map(tmpl => (
-              <div key={tmpl.id} className="bg-cardBg border border-cardBorder p-5 rounded-xl space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="font-mono font-bold text-xs text-brandPrimary">{tmpl.templateName}</span>
-                    <div className="flex gap-2 mt-1">
-                      <span className="text-[9px] text-textSecondary uppercase font-semibold">Lang: {tmpl.language}</span>
-                      <span className="text-[9px] text-textSecondary uppercase font-semibold">Cat: {tmpl.category}</span>
+            {templates.map(tmpl => {
+              const isActive = tmpl.templateName === activeTemplateName;
+              return (
+                <div key={tmpl.id} className={`bg-cardBg border p-5 rounded-xl space-y-4 transition-all duration-300 ${isActive ? 'border-brandPrimary shadow-card-glow' : 'border-cardBorder'}`}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-mono font-bold text-xs text-brandPrimary">{tmpl.templateName}</span>
+                      <div className="flex gap-2 mt-1">
+                        <span className="text-[9px] text-textSecondary uppercase font-semibold">Lang: {tmpl.language}</span>
+                        <span className="text-[9px] text-textSecondary uppercase font-semibold">Cat: {tmpl.category}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      {isActive ? (
+                        <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-brandPrimary/20 text-brandPrimary border border-brandPrimary/40 uppercase">
+                          Active
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleSetActiveTemplate(tmpl.templateName)}
+                          className="px-2 py-0.5 bg-[#0f1228] hover:bg-brandPrimary hover:text-white text-brandPrimary font-bold text-[9px] rounded border border-brandPrimary/35 transition-all"
+                        >
+                          Select Active
+                        </button>
+                      )}
+                      <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-success/15 text-success border border-success/30">
+                        APPROVED
+                      </span>
                     </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded text-[8px] font-bold bg-success/15 text-success border border-success/30">
-                    APPROVED
-                  </span>
+                  <div className="p-3 bg-background/50 rounded-lg text-[10px] font-mono leading-relaxed text-slate-300">
+                    {tmpl.bodyPattern}
+                  </div>
+                  <div>
+                    <span className="text-[9px] font-bold text-textSecondary uppercase tracking-wider block mb-1">Variable Mappings</span>
+                    <span className="text-[10px] font-mono text-slate-450 block truncate bg-[#080b18] p-2 rounded border border-cardBorder/40">
+                      {tmpl.variableMappingsJson}
+                    </span>
+                  </div>
                 </div>
-                <div className="p-3 bg-background/50 rounded-lg text-[10px] font-mono leading-relaxed text-slate-300">
-                  {tmpl.bodyPattern}
-                </div>
-                <div>
-                  <span className="text-[9px] font-bold text-textSecondary uppercase tracking-wider block mb-1">Variable Mappings</span>
-                  <span className="text-[10px] font-mono text-slate-450 block truncate bg-[#080b18] p-2 rounded border border-cardBorder/40">
-                    {tmpl.variableMappingsJson}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -1058,6 +1101,17 @@ const WhatsAppManagerTab: React.FC = () => {
                 placeholder="Meta Business Account ID"
                 value={config.businessAccountId}
                 onChange={e => setConfig({ ...config, businessAccountId: e.target.value })}
+                className="w-full bg-background border border-cardBorder rounded-xl px-4 py-2.5 text-xs focus:outline-none text-white focus:border-brandPrimary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[9px] font-bold text-textSecondary uppercase tracking-wider mb-1">Public Tunnel URL (Active Cloudflare URL)</label>
+              <input 
+                type="text"
+                placeholder="https://xxxx.trycloudflare.com"
+                value={config.publicTunnelUrl}
+                onChange={e => setConfig({ ...config, publicTunnelUrl: e.target.value })}
                 className="w-full bg-background border border-cardBorder rounded-xl px-4 py-2.5 text-xs focus:outline-none text-white focus:border-brandPrimary"
               />
             </div>

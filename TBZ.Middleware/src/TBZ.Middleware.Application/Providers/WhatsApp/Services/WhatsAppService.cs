@@ -24,7 +24,7 @@ namespace TBZ.Middleware.Application.Providers.WhatsApp.Services
 
         public WhatsAppService(
             IHttpClientFactory httpClientFactory,
-            IOptions<WhatsAppOptions> options,
+            IOptionsSnapshot<WhatsAppOptions> options,
             ILogger<WhatsAppService> logger)
         {
             _httpClientFactory = httpClientFactory;

@@ -35,7 +35,8 @@ namespace TBZ.Middleware.Api.Endpoints
                     AppSecret = string.IsNullOrEmpty(val.AppSecret) ? "" : "...",
                     GraphApiVersion = val.GraphApiVersion,
                     BaseUrl = val.BaseUrl,
-                    CallbackUrl = "/api/webhooks/whatsapp"
+                    CallbackUrl = "/api/webhooks/whatsapp",
+                    PublicTunnelUrl = val.PublicTunnelUrl
                 });
             });
 
@@ -53,6 +54,7 @@ namespace TBZ.Middleware.Api.Endpoints
                 var verifyToken = root.TryGetProperty("verifyToken", out var verifyProp) ? verifyProp.GetString() : null;
                 var appSecret = root.TryGetProperty("appSecret", out var secretProp) ? secretProp.GetString() : null;
                 var graphApiVersion = root.TryGetProperty("graphApiVersion", out var verProp) ? verProp.GetString() : null;
+                var publicTunnelUrl = root.TryGetProperty("publicTunnelUrl", out var tunnelProp) ? tunnelProp.GetString() : null;
 
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
                 if (File.Exists(path))
@@ -74,6 +76,7 @@ namespace TBZ.Middleware.Api.Endpoints
                         if (verifyToken != null) whatsAppDict["VerifyToken"] = verifyToken;
                         if (appSecret != null && !appSecret.Contains("...")) whatsAppDict["AppSecret"] = appSecret;
                         if (graphApiVersion != null) whatsAppDict["GraphApiVersion"] = graphApiVersion;
+                        if (publicTunnelUrl != null) whatsAppDict["PublicTunnelUrl"] = publicTunnelUrl;
 
                         dict["WhatsApp"] = whatsAppDict;
                         
@@ -96,6 +99,7 @@ namespace TBZ.Middleware.Api.Endpoints
                                 if (verifyToken != null) secretsDict["WhatsApp:VerifyToken"] = verifyToken;
                                 if (appSecret != null && !appSecret.Contains("...")) secretsDict["WhatsApp:AppSecret"] = appSecret;
                                 if (graphApiVersion != null) secretsDict["WhatsApp:GraphApiVersion"] = graphApiVersion;
+                                if (publicTunnelUrl != null) secretsDict["WhatsApp:PublicTunnelUrl"] = publicTunnelUrl;
 
                                 var updatedSecretsJson = JsonSerializer.Serialize(secretsDict, new JsonSerializerOptions { WriteIndented = true });
                                 await File.WriteAllTextAsync(secretsPath, updatedSecretsJson);
@@ -114,6 +118,7 @@ namespace TBZ.Middleware.Api.Endpoints
                         if (verifyToken != null) opt.VerifyToken = verifyToken;
                         if (appSecret != null && !appSecret.Contains("...")) opt.AppSecret = appSecret;
                         if (graphApiVersion != null) opt.GraphApiVersion = graphApiVersion;
+                        if (publicTunnelUrl != null) opt.PublicTunnelUrl = publicTunnelUrl;
                         
                         return Results.Ok(new { success = true });
                     }
@@ -290,6 +295,78 @@ namespace TBZ.Middleware.Api.Endpoints
                     return Results.Ok(new { success = true });
                 }
                 return Results.NotFound();
+            });
+
+            // 6.5. Active Template Management Endpoints
+            app.MapPost("/api/controltower/whatsapp/templates/active", async (
+                HttpContext context,
+                IOptions<WhatsAppOptions> options) =>
+            {
+                using var doc = await JsonDocument.ParseAsync(context.Request.Body);
+                var root = doc.RootElement;
+                var templateName = root.TryGetProperty("templateName", out var nameProp) ? nameProp.GetString() : string.Empty;
+
+                if (string.IsNullOrEmpty(templateName))
+                {
+                    return Results.BadRequest("Template name cannot be empty");
+                }
+
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        var json = await File.ReadAllTextAsync(path);
+                        var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(json) ?? new();
+                        
+                        Dictionary<string, string> whatsAppDict = new();
+                        if (dict.TryGetValue("WhatsApp", out var whatsAppObj) && whatsAppObj != null)
+                        {
+                            whatsAppDict = JsonSerializer.Deserialize<Dictionary<string, string>>(whatsAppObj.ToString() ?? "{}") ?? new();
+                        }
+                        
+                        whatsAppDict["ActiveTemplateName"] = templateName;
+                        dict["WhatsApp"] = whatsAppDict;
+                        
+                        var updatedJson = JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true });
+                        await File.WriteAllTextAsync(path, updatedJson);
+
+                        // Update User Secrets
+                        try
+                        {
+                            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                            var secretsPath = Path.Combine(appData, "Microsoft", "UserSecrets", "dotnet-TBZ.Middleware.Api-e3b7c688-4299-4c12-9c3f-c6b71b80c58e", "secrets.json");
+                            if (File.Exists(secretsPath))
+                            {
+                                var secretsJson = await File.ReadAllTextAsync(secretsPath);
+                                var secretsDict = JsonSerializer.Deserialize<Dictionary<string, string>>(secretsJson) ?? new();
+                                secretsDict["WhatsApp:ActiveTemplateName"] = templateName;
+                                var updatedSecretsJson = JsonSerializer.Serialize(secretsDict, new JsonSerializerOptions { WriteIndented = true });
+                                await File.WriteAllTextAsync(secretsPath, updatedSecretsJson);
+                            }
+                        }
+                        catch (Exception secretsEx)
+                        {
+                            Console.WriteLine($"[WARNING] Failed to write back to User Secrets: {secretsEx.Message}");
+                        }
+
+                        // Reload options value directly in memory
+                        options.Value.ActiveTemplateName = templateName;
+                        
+                        return Results.Ok(new { success = true, activeTemplateName = templateName });
+                    }
+                    catch (Exception ex)
+                    {
+                        return Results.BadRequest(new { success = false, message = ex.Message });
+                    }
+                }
+                
+                return Results.NotFound("appsettings.json not found");
+            });
+
+            app.MapGet("/api/controltower/whatsapp/templates/active", (IOptionsSnapshot<WhatsAppOptions> options) =>
+            {
+                return Results.Ok(new { activeTemplateName = options.Value.ActiveTemplateName });
             });
 
             // 7. POST /api/controltower/whatsapp/logs/retry/{id}

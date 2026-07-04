@@ -248,6 +248,7 @@ namespace SynOS.Services
             }
 
             var report = await _context.Reports
+                .Include(r => r.PathologyReport)
                 .FirstOrDefaultAsync(r => r.ReportId == reportId);
 
             if (report == null) throw new KeyNotFoundException("Report not found.");
@@ -358,6 +359,13 @@ namespace SynOS.Services
                     domainState.Status = "Signed";
                     domainState.SignedAt = timestamp;
                     domainState.SignedBy = user.Name;
+
+                    if (interpretation != null)
+                    {
+                        domainState.Comments = interpretation.Notes ?? string.Empty;
+                        domainState.Interpretation = interpretation.Summary ?? string.Empty;
+                    }
+                    domainState.Recommendations = report.PathologyReport?.Recommendations ?? string.Empty;
 
                     domainState.Signatures = new List<SignatureState>
                     {
@@ -790,6 +798,64 @@ namespace SynOS.Services
                 FooterDisclaimer = "* Clinical correlation required."
             };
 
+            var signaturesList = domain.Signatures.Select(s => new ReportSignatureDetails
+            {
+                DoctorName = s.Name,
+                Credentials = s.Designation,
+                Role = s.Designation.Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
+                SignedAt = s.SignedAt,
+                Hash = s.Hash,
+                Version = domain.Verification.ReportVersion
+            }).ToList();
+
+            // Ensure Lab Director is ALWAYS present to satisfy forensic letterhead requirements.
+            var director = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+
+            if (director != null)
+            {
+                var alreadyPresent = signaturesList.Any(s => 
+                    s.DoctorName == director.Name || 
+                    (director.UserId != Guid.Empty && domain.Signatures.Any(ds => ds.Name == director.Name)));
+
+                if (!alreadyPresent)
+                {
+                    var directorSig = new ReportSignatureDetails
+                    {
+                        DoctorName = director.Name,
+                        Credentials = director.Designation ?? "Chief Pathologist",
+                        Role = "Chief Pathologist / Director",
+                        SignedAt = null,
+                        Hash = "BASELINE_IDENTITY",
+                        Version = 0
+                    };
+                    signaturesList.Insert(0, directorSig); // Lab Director always comes first as the Baseline Identity
+                }
+            }
+
+            // Fetch ALL authorized pathologists to populate the clinical registry slots
+            var allPathologists = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Pathologist") && u.IsActive && !u.IsDefaultSignatory)
+                .ToListAsync();
+
+            foreach (var path in allPathologists)
+            {
+                if (!signaturesList.Any(s => s.DoctorName == path.Name))
+                {
+                    signaturesList.Add(new ReportSignatureDetails
+                    {
+                        DoctorName = path.Name,
+                        Credentials = path.Designation ?? string.Empty,
+                        Role = "Pathologist",
+                        SignedAt = null,
+                        Hash = "REGISTRY",
+                        Version = 0
+                    });
+                }
+            }
+
             var model = new ReportDataModel
             {
                 ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
@@ -859,15 +925,7 @@ namespace SynOS.Services
                 Comments = domain.Comments,
                 Interpretation = domain.Interpretation,
                 Recommendations = domain.Recommendations,
-                Signatures = domain.Signatures.Select(s => new ReportSignatureDetails
-                {
-                    DoctorName = s.Name,
-                    Credentials = s.Designation,
-                    Role = s.Designation.Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
-                    SignedAt = s.SignedAt,
-                    Hash = s.Hash,
-                    Version = domain.Verification.ReportVersion
-                }).ToList(),
+                Signatures = signaturesList,
                 Verification = new VerificationInfo
                 {
                     QrCodeContent = domain.Verification.QrCodeContent,
@@ -880,11 +938,18 @@ namespace SynOS.Services
             foreach (var sig in model.Signatures)
             {
                 var domainSig = domain.Signatures.FirstOrDefault(s => s.Name == sig.DoctorName);
-                if (domainSig != null && !string.IsNullOrEmpty(domainSig.SignatureImageUrl))
+                string? signatureImageUrl = domainSig?.SignatureImageUrl;
+
+                if (string.IsNullOrEmpty(signatureImageUrl) && director != null && sig.DoctorName == director.Name)
+                {
+                    signatureImageUrl = director.SignatureImageUrl;
+                }
+
+                if (!string.IsNullOrEmpty(signatureImageUrl))
                 {
                     try
                     {
-                        using var stream = await _fileStorageService.GetFileStreamAsync(domainSig.SignatureImageUrl);
+                        using var stream = await _fileStorageService.GetFileStreamAsync(signatureImageUrl);
                         using var ms = new MemoryStream();
                         await stream.CopyToAsync(ms);
                         var bytes = ms.ToArray();
@@ -893,7 +958,7 @@ namespace SynOS.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to load signature image in mapping: {Path}", domainSig.SignatureImageUrl);
+                        _logger.LogWarning(ex, "Failed to load signature image in mapping: {Path}", signatureImageUrl);
                     }
                 }
             }

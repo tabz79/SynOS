@@ -292,6 +292,10 @@ namespace SynOS.Services.Operational
             // 6. Trace Order(s) and Trigger Verification
             try
             {
+                await _db.Orders
+                    .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Department == snapshot.DepartmentCode && o.Status != OrderStatus.Cancelled)
+                    .ExecuteUpdateAsync(setters => setters.SetProperty(o => o.Status, OrderStatus.Completed));
+
                 var ordersToVerify = await _db.Orders
                     .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Department == snapshot.DepartmentCode)
                     .Select(o => o.OrderId)

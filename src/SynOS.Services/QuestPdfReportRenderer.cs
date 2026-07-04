@@ -223,7 +223,7 @@ namespace SynOS.Services
                         {
                             if (isAbsoluteForPadding && paramConfigForPadding != null)
                             {
-                                float tableY = paramConfigForPadding.ResultsTableY ?? 95f;
+                                float tableY = paramConfigForPadding.TableBlockY ?? paramConfigForPadding.ResultsTableY ?? 95f;
                                 float spacerHeight = Math.Max(0f, tableY - contentPaddingTop);
                                 if (spacerHeight > 0f)
                                 {
@@ -443,7 +443,7 @@ namespace SynOS.Services
             };
         }
 
-        private void RenderColumnCell(IContainer cell, ReportColumnDefinition col, ParameterResult parameter)
+        private void RenderColumnCell(IContainer cell, ReportColumnDefinition col, ParameterResult parameter, System.Collections.Generic.List<ReportColumnDefinition> activeColumns)
         {
             var align = col.Alignment?.ToLower() ?? "left";
             IContainer contentContainer = cell;
@@ -460,10 +460,18 @@ namespace SynOS.Services
                     break;
                 case "Value":
                     var val = string.IsNullOrWhiteSpace(parameter.DisplayValue) ? parameter.Value : parameter.DisplayValue;
+                    
+                    // If "Unit" column is not active/visible, append unit to the value!
+                    var isUnitColumnActive = activeColumns.Any(c => c.Code == "Unit");
+                    if (!isUnitColumnActive && !string.IsNullOrEmpty(parameter.Unit))
+                    {
+                        val = $"{val} {parameter.Unit}";
+                    }
+
                     var vText = contentContainer.Text(val).FontSize(9);
                     if (parameter.IsAbnormal)
                     {
-                        vText.FontColor(Colors.Red.Medium).Bold();
+                        vText.Bold();
                     }
                     else if (col.Bold)
                     {
@@ -583,7 +591,7 @@ namespace SynOS.Services
                             foreach (var col in activeColumns)
                             {
                                 var cell = table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten3).PaddingVertical(3);
-                                RenderColumnCell(cell, col, parameter);
+                                RenderColumnCell(cell, col, parameter, activeColumns);
                             }
 
                             if (parameter.ShowNarrative && !string.IsNullOrWhiteSpace(parameter.Narrative))
