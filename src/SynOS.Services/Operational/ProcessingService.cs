@@ -80,9 +80,9 @@ namespace SynOS.Services.Operational
             }
             else
             {
-                // History View: show Completed assignments from last 7 days
+                // History View: show Completed assignments from last 7 days (excluding today)
                 filteredQuery = query.Where(a => 
-                    a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= startDate && a.CompletedAt < nextDay
+                    a.Status == ProcessingAssignmentStatus.Completed && a.CompletedAt >= startDate && a.CompletedAt < today
                 );
             }
 
@@ -241,6 +241,9 @@ namespace SynOS.Services.Operational
 
         public async Task<ProcessingResult> CompleteAssignmentAsync(Guid processingAssignmentId)
         {
+            var totalSw = System.Diagnostics.Stopwatch.StartNew();
+            _logger.LogInformation("Start CompleteAssignment");
+
             // 1. Validate Operational Mode
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
@@ -292,19 +295,15 @@ namespace SynOS.Services.Operational
             // 6. Trace Order(s) and Trigger Verification
             try
             {
+                var ordersSw = System.Diagnostics.Stopwatch.StartNew();
                 await _db.Orders
                     .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Department == snapshot.DepartmentCode && o.Status != OrderStatus.Cancelled)
                     .ExecuteUpdateAsync(setters => setters.SetProperty(o => o.Status, OrderStatus.Completed));
+                _logger.LogInformation("Orders Updated ............. {Elapsed} ms", ordersSw.ElapsedMilliseconds);
 
-                var ordersToVerify = await _db.Orders
-                    .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Department == snapshot.DepartmentCode)
-                    .Select(o => o.OrderId)
-                    .ToListAsync();
-
-                foreach (var orderId in ordersToVerify)
-                {
-                    await _resultService.SubmitForVerificationAsync(orderId);
-                }
+                var verifySw = System.Diagnostics.Stopwatch.StartNew();
+                await _resultService.SubmitSpecimenForVerificationAsync(snapshot.SpecimenId, snapshot.DepartmentCode);
+                _logger.LogInformation("SubmitForVerification ...... {Elapsed} ms", verifySw.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
@@ -313,6 +312,7 @@ namespace SynOS.Services.Operational
             }
 
             // 7. Emit SignalR (Only on success)
+            var notifySw = System.Diagnostics.Stopwatch.StartNew();
             await _notifier.NotifyAssignmentUpdateAsync(
                 resource.BranchId.ToString(),
                 snapshot.DepartmentCode,
@@ -321,7 +321,9 @@ namespace SynOS.Services.Operational
                 snapshot.VisitId.ToString(),
                 resource.OperationalResourceId,
                 _userContext.UserName);
+            _logger.LogInformation("NotifyAssignment ........... {Elapsed} ms", notifySw.ElapsedMilliseconds);
 
+            _logger.LogInformation("CompleteAssignment Finished (Total: {Elapsed} ms)", totalSw.ElapsedMilliseconds);
             return ProcessingResult.Success;
         }
 

@@ -495,7 +495,9 @@ export function TypistTerminal() {
     const fetchWorklist = async () => {
         setIsLoadingList(true);
         try {
-            const statusStr = showHistory ? 'Signed,ManualVerified,Finalized' : 'Draft,ReadyForVerification';
+            const statusStr = showHistory 
+                ? 'Signed,ManualVerified,Finalized,Delivered' 
+                : 'Draft,ReadyForVerification,Signed,ManualVerified,Delivered';
             const data = await ReportsApi.getReportsByStatus(statusStr, 'Pathology', showHistory);
             setReports(data);
         } catch (err) {

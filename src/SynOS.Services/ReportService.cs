@@ -1554,7 +1554,7 @@ namespace SynOS.Services
             var nextDay = today.AddDays(1);
 
             // Terminal/Completed statuses for reports
-            var terminalStatuses = new List<string> { "Signed", "ManualVerified", "Finalized" };
+            var terminalStatuses = new List<string> { "Signed", "ManualVerified", "Finalized", "Delivered" };
 
             var reportsQuery = _context.Reports
                 .Include(r => r.TypedByUser)
@@ -1574,9 +1574,9 @@ namespace SynOS.Services
             else
             {
                 // History View:
-                // Show Completed (terminal) reports from the last 7 days
+                // Show Completed (terminal) reports from the last 7 days (excluding today)
                 reportsQuery = reportsQuery.Where(r => 
-                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < nextDay
+                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < today
                 );
             }
 

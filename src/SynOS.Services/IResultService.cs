@@ -18,5 +18,6 @@ namespace SynOS.Services
         Task<ResultDto> ModifyResultAsync(Guid resultId, Guid userId, string newValue, string reason);
         Task<IReadOnlyList<ResultChangeAudit>> GetResultAuditHistoryAsync(Guid resultId);
         Task DeliverReportAsync(Guid orderId);
+        Task SubmitSpecimenForVerificationAsync(Guid specimenId, string departmentCode);
     }
 }

@@ -595,7 +595,7 @@ namespace SynOS.Services
             else
             {
                 query = query.Where(rs =>
-                    terminalStatuses.Contains(rs.Status) && (rs.LastActivityAt ?? rs.CreatedAt) >= startDate && (rs.LastActivityAt ?? rs.CreatedAt) < nextDay
+                    terminalStatuses.Contains(rs.Status) && (rs.LastActivityAt ?? rs.CreatedAt) >= startDate && (rs.LastActivityAt ?? rs.CreatedAt) < today
                 );
             }
 

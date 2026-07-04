@@ -503,7 +503,9 @@ export function PathologistTerminal() {
     const fetchWorklist = async () => {
         setIsLoadingList(true);
         try {
-            const statusStr = showHistory ? 'Signed,ManualVerified,Finalized' : 'Draft,ReadyForVerification,Signed,ManualVerified';
+            const statusStr = showHistory 
+                ? 'Signed,ManualVerified,Finalized,Delivered' 
+                : 'Draft,ReadyForVerification,Signed,ManualVerified,Delivered';
             const data = await ReportsApi.getReportsByStatus(statusStr, 'Pathology', showHistory);
             setReports(data);
         } catch (err) {

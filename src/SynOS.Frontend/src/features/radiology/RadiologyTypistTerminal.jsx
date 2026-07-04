@@ -67,7 +67,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
         try {
             const statuses = showHistory 
                 ? ['Signed', 'ManualVerified', 'Finalized'] 
-                : ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature'];
+                : ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
             const params = statuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
             const response = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${showHistory}&${params}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }

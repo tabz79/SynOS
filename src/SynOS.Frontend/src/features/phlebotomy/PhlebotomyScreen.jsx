@@ -48,7 +48,10 @@ export function PhlebotomyScreen() {
 
     // Filter Function for Branch-Wide Phlebotomy View
     const isPhleboRelevant = (row) => {
+        const isToday = row.dateGroup === 'Today';
         if (showHistoryRef.current) {
+            // History: Only show completed/processed items from YESTERDAY and older
+            if (isToday) return false;
             return row.operationalStatus === 'Collected' ||
                    row.operationalStatus === 'In Processing' ||
                    row.operationalStatus === 'Reporting' ||
@@ -56,6 +59,9 @@ export function PhlebotomyScreen() {
                    row.operationalStatus === 'Reported' ||
                    row.operationalStatus === 'Delivered';
         } else {
+            // Live: Show today's items (proof of work) regardless of status,
+            // plus older items that are still pending/active
+            if (isToday) return true;
             return row.operationalStatus === 'Ready for Sample' || 
                    row.operationalStatus === 'Pending Collection' ||
                    row.operationalStatus === 'Collected' ||

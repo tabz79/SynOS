@@ -292,6 +292,7 @@ namespace SynOS.Services
             await _context.SaveChangesAsync();
 
             // 3. Snapshot Management (Idempotent & Scoped)
+            var createSnapshotSw = System.Diagnostics.Stopwatch.StartNew();
             using (var scope = _serviceProvider.CreateScope())
             {
                 var reportingService = scope.ServiceProvider.GetRequiredService<Reporting.IReportingService>();
@@ -314,11 +315,15 @@ namespace SynOS.Services
                     }
                 }
             }
+            _logger.LogInformation("CreateSnapshot ............. {Elapsed} ms", createSnapshotSw.ElapsedMilliseconds);
 
             // Notify Operations Engine
+            var recordReadySw = System.Diagnostics.Stopwatch.StartNew();
             await _operationsEngine.RecordReportReadyAsync(report.VisitId, report.ReportId, Guid.Empty);
+            _logger.LogInformation("RecordReportReady .......... {Elapsed} ms", recordReadySw.ElapsedMilliseconds);
 
             // --- BEGIN COST ATTRIBUTION WIRING ---
+            var costSw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 await OrchestrateCostAttributionForOrderAsync(orderId);
@@ -327,6 +332,7 @@ namespace SynOS.Services
             {
                 _logger.LogError(ex, "Cost attribution failed for OrderId {OrderId}", orderId);
             }
+            _logger.LogInformation("CostAttribution ............ {Elapsed} ms", costSw.ElapsedMilliseconds);
             // --- END COST ATTRIBUTION WIRING ---
         }
 
@@ -705,5 +711,23 @@ namespace SynOS.Services
             return null;
         }
 
+        private async Task<IEnumerable<Guid>> ResolveAffectedReportsForSpecimenAsync(Guid specimenId, string departmentCode)
+        {
+            return await _context.Orders
+                .Where(o => o.SpecimenId == specimenId && o.Department == departmentCode && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                .Select(o => o.ParentOrderId ?? o.OrderId)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task SubmitSpecimenForVerificationAsync(Guid specimenId, string departmentCode)
+        {
+            var rootOrderIds = await ResolveAffectedReportsForSpecimenAsync(specimenId, departmentCode);
+
+            foreach (var rootId in rootOrderIds)
+            {
+                await SubmitForVerificationAsync(rootId);
+            }
+        }
     }
 }

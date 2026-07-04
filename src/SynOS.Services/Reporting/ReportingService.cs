@@ -19,6 +19,13 @@ namespace SynOS.Services.Reporting
         private readonly SynOSDbContext _context;
         private readonly ILogger<ReportingService> _logger;
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ReportTemplate?> TemplateCache = new();
+
+        public static void ClearTemplateCache()
+        {
+            TemplateCache.Clear();
+        }
+
         public ReportingService(SynOSDbContext context, ILogger<ReportingService> logger)
         {
             _context = context;
@@ -134,10 +141,12 @@ namespace SynOS.Services.Reporting
 
         public async Task CreateSnapshotAsync(Guid reportVersionId, bool overwrite = false)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var version = await _context.ReportVersions
                 .Include(rv => rv.Report)
                 .Include(rv => rv.Snapshot)
                 .FirstOrDefaultAsync(rv => rv.ReportVersionId == reportVersionId);
+            _logger.LogInformation("CS: Fetch version: {Elapsed} ms", sw.ElapsedMilliseconds); sw.Restart();
 
             if (version == null) throw new KeyNotFoundException($"ReportVersion {reportVersionId} not found.");
 
@@ -155,14 +164,20 @@ namespace SynOS.Services.Reporting
             var visit = await _context.Visits
                 .Include(v => v.Patient)
                 .FirstOrDefaultAsync(v => v.VisitId == version.Report.VisitId);
+            _logger.LogInformation("CS: Fetch visit: {Elapsed} ms", sw.ElapsedMilliseconds); sw.Restart();
+
             if (visit == null) throw new KeyNotFoundException($"Visit {version.Report.VisitId} not found.");
 
+            var buildSw = System.Diagnostics.Stopwatch.StartNew();
             var structure = await BuildDynamicStructureAsync(version.Report, visit);
+            _logger.LogInformation("BuildDynamicStructure ...... {Elapsed} ms", buildSw.ElapsedMilliseconds);
             var domainState = structure.ToDomain();
+            sw.Restart();
 
             Order order = null;
             try
             {
+                var resolveOrderSw = System.Diagnostics.Stopwatch.StartNew();
                 if (version.Report.SourceType == "RadiologyStudy")
                 {
                     var study = await _context.RadiologyStudies
@@ -176,24 +191,49 @@ namespace SynOS.Services.Reporting
                 {
                     order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == version.Report.SourceId);
                 }
+                _logger.LogInformation("CS: Resolve template - Order lookup took {Elapsed} ms", resolveOrderSw.ElapsedMilliseconds);
+
+                var modalitySw = System.Diagnostics.Stopwatch.StartNew();
                 var modality = order?.Department ?? "General";
+                _logger.LogInformation("CS Resolve: Modality resolve took {Elapsed} ms", modalitySw.ElapsedMilliseconds);
+
+                var query1Sw = System.Diagnostics.Stopwatch.StartNew();
                 var template = await _context.ReportTemplates
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault)
-                    ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.IsDefault);
+                    .FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault);
+                _logger.LogInformation("CS Resolve: Modality template query took {Elapsed} ms", query1Sw.ElapsedMilliseconds);
+
+                if (template == null)
+                {
+                    var query2Sw = System.Diagnostics.Stopwatch.StartNew();
+                    template = await _context.ReportTemplates
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(t => t.IsDefault);
+                    _logger.LogInformation("CS Resolve: Default template query took {Elapsed} ms", query2Sw.ElapsedMilliseconds);
+                }
 
                 if (template != null)
                 {
+                    var deserializeModelSw = System.Diagnostics.Stopwatch.StartNew();
                     var templateModel = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                    _logger.LogInformation("CS Resolve: Deserialize template model took {Elapsed} ms", deserializeModelSw.ElapsedMilliseconds);
+
                     if (templateModel?.Sections != null)
                     {
+                        var sectionFindSw = System.Diagnostics.Stopwatch.StartNew();
                         var parameterTableSection = templateModel.Sections
                             .FirstOrDefault(s => s.Type == "ParameterTable");
+                        _logger.LogInformation("CS Resolve: ParameterTable section lookup took {Elapsed} ms", sectionFindSw.ElapsedMilliseconds);
+
                         if (parameterTableSection != null)
                         {
+                            var deserializeConfigSw = System.Diagnostics.Stopwatch.StartNew();
                             var tableConfig = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.ParameterTableConfig>(parameterTableSection.Config.GetRawText());
+                            _logger.LogInformation("CS Resolve: Deserialize table config took {Elapsed} ms", deserializeConfigSw.ElapsedMilliseconds);
+
                             if (tableConfig != null && tableConfig.VisibleColumns != null)
                             {
+                                var mapColumnsSw = System.Diagnostics.Stopwatch.StartNew();
                                 domainState.ColumnDefinitions = tableConfig.VisibleColumns.Select((col, idx) => new ColumnDefinitionState
                                 {
                                     Code = col,
@@ -207,6 +247,7 @@ namespace SynOS.Services.Reporting
                                             col == "Unit" ? "Center" : "Right",
                                     HighlightRule = "None"
                                 }).ToList();
+                                _logger.LogInformation("CS Resolve: Map columns took {Elapsed} ms", mapColumnsSw.ElapsedMilliseconds);
                             }
                         }
                     }
@@ -216,6 +257,7 @@ namespace SynOS.Services.Reporting
             {
                 _logger.LogWarning(ex, "Failed to load default report template for table config.");
             }
+            _logger.LogInformation("CS: Resolve template: {Elapsed} ms", sw.ElapsedMilliseconds); sw.Restart();
 
             if (domainState.ColumnDefinitions == null || !domainState.ColumnDefinitions.Any())
             {
@@ -242,6 +284,7 @@ namespace SynOS.Services.Reporting
                     domainState.Interpretation = test.DefaultInterpretation;
                 }
             }
+            _logger.LogInformation("CS: Fetch interpretation/tests: {Elapsed} ms", sw.ElapsedMilliseconds); sw.Restart();
 
             var json = JsonSerializer.Serialize(domainState);
 
@@ -261,8 +304,10 @@ namespace SynOS.Services.Reporting
                 };
                 _context.ReportSnapshots.Add(snapshot);
             }
+            _logger.LogInformation("CS: Prepare snapshot: {Elapsed} ms", sw.ElapsedMilliseconds); sw.Restart();
 
             await _context.SaveChangesAsync();
+            _logger.LogInformation("CS: SaveChangesAsync: {Elapsed} ms", sw.ElapsedMilliseconds);
         }
         private async Task<ReportStructureDto> BuildDynamicStructureAsync(Report report, Visit visit)
         {

@@ -35,9 +35,15 @@ export function DeliveryTerminal() {
     const [isVerifying, setIsVerifying] = useState(false);
     const [isDelivering, setIsDelivering] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+    const [toast, setToast] = useState(null);
     const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
     const [deliveryPhone, setDeliveryPhone] = useState("");
-    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
 
     const { template, loading: templateLoading } = useTemplateForReport(reportData);
 
@@ -57,9 +63,9 @@ export function DeliveryTerminal() {
     const fetchWorklist = async () => {
         setIsLoadingList(true);
         try {
-            // Live: ReadyForVerification, Signed, ManualVerified
+            // Live: ReadyForVerification, Signed, ManualVerified, Delivered
             // History: Delivered
-            const statusStr = showHistory ? 'Delivered' : 'ReadyForVerification,Signed,ManualVerified';
+            const statusStr = showHistory ? 'Delivered' : 'ReadyForVerification,Signed,ManualVerified,Delivered';
             const data = await ReportsApi.getReportsByStatus(statusStr, undefined, showHistory);
             setReports(data);
             
@@ -107,9 +113,11 @@ export function DeliveryTerminal() {
         try {
             // GPT-5: Record the desk operator's ID as the verifier for the manual flow audit trail
             await ReportsApi.verifyManual(selectedReportId, user?.id || "00000000-0000-0000-0000-000000000000");
+            showToast("Physical verification registered successfully!", "success");
         } catch (err) {
             // If it's already verified or has another non-critical issue, we still want to refresh the UI
             console.warn("Verification API note:", err.message);
+            showToast("Physical verification note: " + err.message, "info");
         } finally {
             // ALWAYS refresh state to ensure UI is in sync with DB truth
             await fetchReportDetail(selectedReportId);
@@ -122,10 +130,12 @@ export function DeliveryTerminal() {
         if (!selectedReportId) return;
         try {
             await ReportsApi.deliverViaPrint(selectedReportId);
+            showToast("Report queued for local printing!", "success");
             window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
             autoAdvance();
         } catch (err) {
             console.error("Print delivery failed:", err);
+            showToast("Print dispatch failed: " + err.message, "error");
         }
     };
 
@@ -135,9 +145,10 @@ export function DeliveryTerminal() {
         try {
             await ReportsApi.deliverViaWhatsApp(selectedReportId, deliveryPhone);
             setShowWhatsAppPrompt(false);
+            showToast("Report queued for WhatsApp dispatch successfully!", "success");
             autoAdvance();
         } catch (err) {
-            alert("WhatsApp distribution failed: " + err.message);
+            showToast("WhatsApp dispatch failed: " + err.message, "error");
         } finally {
             setIsDelivering(false);
         }
@@ -412,6 +423,34 @@ export function DeliveryTerminal() {
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+            {toast && (
+                <div className={cn(
+                    "fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border border-white/10 text-white text-sm font-semibold animate-in slide-in-from-bottom duration-300",
+                    toast.type === 'success' ? "bg-emerald-600 shadow-emerald-600/20" : 
+                    toast.type === 'info' ? "bg-indigo-600 shadow-indigo-600/20" : "bg-red-600 shadow-red-600/20"
+                )}>
+                    {toast.type === 'success' ? (
+                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                    ) : toast.type === 'info' ? (
+                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    ) : (
+                        <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                    )}
+                    <span>{toast.message}</span>
                 </div>
             )}
         </div>

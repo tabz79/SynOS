@@ -274,6 +274,11 @@ public class DeliveryService : IDeliveryService
         };
         _context.DeliveryLogs.Add(deliveryLog);
 
+        // Update Report State to Delivered
+        report.Delivered = true;
+        report.DeliveredAt = DateTimeOffset.UtcNow;
+        report.Status = "Delivered";
+
         // Enqueue ReportDeliveredEvent
         _outboxService.Enqueue(new ReportDeliveredEvent(
             report.ReportId,
@@ -357,6 +362,12 @@ public class DeliveryService : IDeliveryService
             Status = Models.Enums.DeliveryStatus.Pending
         };
         _context.DeliveryLogs.Add(deliveryLog);
+
+        // Update Report State to Delivered
+        report.Delivered = true;
+        report.DeliveredAt = DateTimeOffset.UtcNow;
+        report.Status = "Delivered";
+
         await _context.SaveChangesAsync();
 
         // Enqueue ReportDeliveryRequestedEvent
@@ -445,6 +456,12 @@ public class DeliveryService : IDeliveryService
             Status = Models.Enums.DeliveryStatus.Pending
         };
         _context.DeliveryLogs.Add(deliveryLog);
+
+        // Update Report State to Delivered
+        report.Delivered = true;
+        report.DeliveredAt = DateTimeOffset.UtcNow;
+        report.Status = "Delivered";
+
         await _context.SaveChangesAsync();
 
         // Create NotificationQueue entry
@@ -546,6 +563,12 @@ public class DeliveryService : IDeliveryService
             Status = Models.Enums.DeliveryStatus.Pending
         };
         _context.DeliveryLogs.Add(deliveryLog);
+
+        // Update Report State to Delivered
+        report.Delivered = true;
+        report.DeliveredAt = DateTimeOffset.UtcNow;
+        report.Status = "Delivered";
+
         await _context.SaveChangesAsync();
 
         // Create NotificationQueue entry
