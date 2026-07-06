@@ -43,6 +43,22 @@ export function PhlebotomyScreen() {
     const showHistoryRef = useRef(false);
     useEffect(() => { showHistoryRef.current = showHistory; }, [showHistory]);
 
+    useEffect(() => {
+        let isMounted = true;
+        const reloadQueue = async () => {
+            try {
+                const queueData = await ReceptionApi.getActionQueue(showHistory);
+                if (isMounted && Array.isArray(queueData)) {
+                    setActionQueue(normalizeQueueData(queueData).filter(isPhleboRelevant));
+                }
+            } catch (e) {
+                console.error("Failed to reload phlebotomy queue", e);
+            }
+        };
+        reloadQueue();
+        return () => { isMounted = false; };
+    }, [showHistory]);
+
     // Helper: Normalize Backend DTO using shared API method
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 

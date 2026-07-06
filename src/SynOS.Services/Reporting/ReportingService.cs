@@ -195,27 +195,79 @@ namespace SynOS.Services.Reporting
 
                 var modalitySw = System.Diagnostics.Stopwatch.StartNew();
                 var modality = order?.Department ?? "General";
-                _logger.LogInformation("CS Resolve: Modality resolve took {Elapsed} ms", modalitySw.ElapsedMilliseconds);
+                _logger.LogInformation("CS Resolve: Modality resolve took {Elapsed} ms. Resolved modality value: {Modality}", modalitySw.ElapsedMilliseconds, modality);
 
-                var query1Sw = System.Diagnostics.Stopwatch.StartNew();
-                var template = await _context.ReportTemplates
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault);
-                _logger.LogInformation("CS Resolve: Modality template query took {Elapsed} ms", query1Sw.ElapsedMilliseconds);
-
-                if (template == null)
+                var connection = _context.Database.GetDbConnection();
+                if (connection.State != System.Data.ConnectionState.Open)
                 {
-                    var query2Sw = System.Diagnostics.Stopwatch.StartNew();
-                    template = await _context.ReportTemplates
-                        .AsNoTracking()
-                        .FirstOrDefaultAsync(t => t.IsDefault);
-                    _logger.LogInformation("CS Resolve: Default template query took {Elapsed} ms", query2Sw.ElapsedMilliseconds);
+                    await connection.OpenAsync();
                 }
 
-                if (template != null)
+                using (var cmd = connection.CreateCommand())
                 {
+                    cmd.CommandText = "SELECT Name, Modality, IsDefault, IsDeleted FROM ReportTemplates";
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            _logger.LogInformation("CS Resolve Template Row: Name={Name}, Modality={Modality}, IsDefault={IsDefault}, IsDeleted={IsDeleted}",
+                                reader.GetString(0), reader.GetString(1), reader.GetBoolean(2), reader.GetBoolean(3));
+                        }
+                    }
+                }
+
+                string templateJson = null;
+                var rawQuery1Sw = System.Diagnostics.Stopwatch.StartNew();
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT TOP(1) TemplateJson FROM ReportTemplates WHERE Modality = @Modality AND IsDefault = 1 AND IsDeleted = 0";
+                    var param = cmd.CreateParameter();
+                    param.ParameterName = "@Modality";
+                    param.Value = modality;
+                    cmd.Parameters.Add(param);
+
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            templateJson = reader.GetString(0);
+                        }
+                    }
+                }
+                rawQuery1Sw.Stop();
+                _logger.LogInformation("CS Resolve: Raw DbCommand Query 1 (Modality) took {Elapsed} ms. String Length: {Length}", 
+                    rawQuery1Sw.ElapsedMilliseconds, templateJson?.Length ?? 0);
+
+                if (templateJson == null)
+                {
+                    var rawQuery2Sw = System.Diagnostics.Stopwatch.StartNew();
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = "SELECT TOP(1) TemplateJson FROM ReportTemplates WHERE IsDefault = 1 AND IsDeleted = 0";
+                        using (var reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                templateJson = reader.GetString(0);
+                            }
+                        }
+                    }
+                    rawQuery2Sw.Stop();
+                    _logger.LogInformation("CS Resolve: Raw DbCommand Query 2 (Default fallback) took {Elapsed} ms. String Length: {Length}", 
+                        rawQuery2Sw.ElapsedMilliseconds, templateJson?.Length ?? 0);
+                }
+
+                if (templateJson != null)
+                {
+                    var allocationSw = System.Diagnostics.Stopwatch.StartNew();
+                    var jsonText = templateJson;
+                    var jsonLength = jsonText?.Length ?? 0;
+                    allocationSw.Stop();
+                    _logger.LogInformation("CS Resolve: JSON String retrieval/allocation took {Elapsed} ms (Length: {Length} chars)", allocationSw.ElapsedMilliseconds, jsonLength);
+
                     var deserializeModelSw = System.Diagnostics.Stopwatch.StartNew();
-                    var templateModel = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
+                    var templateModel = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(jsonText);
+                    deserializeModelSw.Stop();
                     _logger.LogInformation("CS Resolve: Deserialize template model took {Elapsed} ms", deserializeModelSw.ElapsedMilliseconds);
 
                     if (templateModel?.Sections != null)
@@ -800,8 +852,222 @@ namespace SynOS.Services.Reporting
             catch (Exception ex)
             {
                 // Note: The caller (BuildDynamicStructureAsync) will catch and log more context
-                throw; 
+                throw;
             }
+        }
+    }
+
+    public static class TemplateQueryDiagnostics
+    {
+        public static string SqlQueryText = "";
+        public static long SqlStartTimestamp = 0;
+        public static long SqlDurationMs = 0;
+        public static int RowsReturned = 0;
+        public static long BytesReturned = 0;
+        public static readonly object Lock = new();
+
+        public static void Reset()
+        {
+            lock (Lock)
+            {
+                SqlQueryText = "";
+                SqlStartTimestamp = 0;
+                SqlDurationMs = 0;
+                RowsReturned = 0;
+                BytesReturned = 0;
+            }
+        }
+    }
+
+    public class TemplateQueryInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbCommandInterceptor
+    {
+        public override Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader> ReaderExecuting(
+            System.Data.Common.DbCommand command, 
+            Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData eventData, 
+            Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader> result)
+        {
+            if (command.CommandText.Contains("ReportTemplates"))
+            {
+                lock (TemplateQueryDiagnostics.Lock)
+                {
+                    TemplateQueryDiagnostics.SqlQueryText = command.CommandText;
+                    TemplateQueryDiagnostics.SqlStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                }
+                Console.WriteLine("[TemplateQueryInterceptor] SQL starts");
+            }
+            return base.ReaderExecuting(command, eventData, result);
+        }
+
+        public override System.Threading.Tasks.ValueTask<Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader>> ReaderExecutingAsync(
+            System.Data.Common.DbCommand command, 
+            Microsoft.EntityFrameworkCore.Diagnostics.CommandEventData eventData, 
+            Microsoft.EntityFrameworkCore.Diagnostics.InterceptionResult<System.Data.Common.DbDataReader> result, 
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.Contains("ReportTemplates"))
+            {
+                lock (TemplateQueryDiagnostics.Lock)
+                {
+                    TemplateQueryDiagnostics.SqlQueryText = command.CommandText;
+                    TemplateQueryDiagnostics.SqlStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                }
+                Console.WriteLine("[TemplateQueryInterceptor] SQL starts");
+            }
+            return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
+        }
+
+        public override System.Data.Common.DbDataReader ReaderExecuted(
+            System.Data.Common.DbCommand command, 
+            Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData eventData, 
+            System.Data.Common.DbDataReader result)
+        {
+            if (command.CommandText.Contains("ReportTemplates"))
+            {
+                lock (TemplateQueryDiagnostics.Lock)
+                {
+                    TemplateQueryDiagnostics.SqlDurationMs = (long)eventData.Duration.TotalMilliseconds;
+                }
+                Console.WriteLine($"[TemplateQueryInterceptor] SQL finishes. Duration: {eventData.Duration.TotalMilliseconds} ms");
+                return new DiagnosticDataReader(result);
+            }
+            return base.ReaderExecuted(command, eventData, result);
+        }
+
+        public override System.Threading.Tasks.ValueTask<System.Data.Common.DbDataReader> ReaderExecutedAsync(
+            System.Data.Common.DbCommand command, 
+            Microsoft.EntityFrameworkCore.Diagnostics.CommandExecutedEventData eventData, 
+            System.Data.Common.DbDataReader result, 
+            System.Threading.CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.Contains("ReportTemplates"))
+            {
+                lock (TemplateQueryDiagnostics.Lock)
+                {
+                    TemplateQueryDiagnostics.SqlDurationMs = (long)eventData.Duration.TotalMilliseconds;
+                }
+                Console.WriteLine($"[TemplateQueryInterceptor] SQL finishes. Duration: {eventData.Duration.TotalMilliseconds} ms");
+                return new System.Threading.Tasks.ValueTask<System.Data.Common.DbDataReader>(new DiagnosticDataReader(result));
+            }
+            return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
+        }
+
+        private class DiagnosticDataReader : System.Data.Common.DbDataReader
+        {
+            private readonly System.Data.Common.DbDataReader _inner;
+
+            public DiagnosticDataReader(System.Data.Common.DbDataReader inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool Read()
+            {
+                var hasRow = _inner.Read();
+                if (hasRow)
+                {
+                    lock (TemplateQueryDiagnostics.Lock)
+                    {
+                        TemplateQueryDiagnostics.RowsReturned++;
+                        UpdateBytes();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[TemplateQueryInterceptor] End of Read. Rows: {TemplateQueryDiagnostics.RowsReturned}, Bytes: {TemplateQueryDiagnostics.BytesReturned}");
+                }
+                return hasRow;
+            }
+
+            public override async System.Threading.Tasks.Task<bool> ReadAsync(System.Threading.CancellationToken cancellationToken)
+            {
+                var hasRow = await _inner.ReadAsync(cancellationToken);
+                if (hasRow)
+                {
+                    lock (TemplateQueryDiagnostics.Lock)
+                    {
+                        TemplateQueryDiagnostics.RowsReturned++;
+                        UpdateBytes();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[TemplateQueryInterceptor] End of Read. Rows: {TemplateQueryDiagnostics.RowsReturned}, Bytes: {TemplateQueryDiagnostics.BytesReturned}");
+                }
+                return hasRow;
+            }
+
+            private void UpdateBytes()
+            {
+                for (int i = 0; i < _inner.FieldCount; i++)
+                {
+                    if (!_inner.IsDBNull(i))
+                    {
+                        var val = _inner.GetValue(i);
+                        if (val is string s)
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += s.Length * 2; // UTF-16
+                        }
+                        else if (val is byte[] b)
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += b.Length;
+                        }
+                        else if (val is Guid)
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += 16;
+                        }
+                        else if (val is DateTime || val is DateTimeOffset)
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += 8;
+                        }
+                        else if (val is int)
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += 4;
+                        }
+                        else if (val is bool)
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += 1;
+                        }
+                        else
+                        {
+                            TemplateQueryDiagnostics.BytesReturned += 8;
+                        }
+                    }
+                }
+            }
+
+            public override object this[int ordinal] => _inner[ordinal];
+            public override object this[string name] => _inner[name];
+            public override int Depth => _inner.Depth;
+            public override int FieldCount => _inner.FieldCount;
+            public override bool HasRows => _inner.HasRows;
+            public override bool IsClosed => _inner.IsClosed;
+            public override int RecordsAffected => _inner.RecordsAffected;
+
+            public override bool GetBoolean(int ordinal) => _inner.GetBoolean(ordinal);
+            public override byte GetByte(int ordinal) => _inner.GetByte(ordinal);
+            public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length) => _inner.GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
+            public override char GetChar(int ordinal) => _inner.GetChar(ordinal);
+            public override long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, int length) => _inner.GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
+            public override string GetDataTypeName(int ordinal) => _inner.GetDataTypeName(ordinal);
+            public override DateTime GetDateTime(int ordinal) => _inner.GetDateTime(ordinal);
+            public override decimal GetDecimal(int ordinal) => _inner.GetDecimal(ordinal);
+            public override double GetDouble(int ordinal) => _inner.GetDouble(ordinal);
+            public override Type GetFieldType(int ordinal) => _inner.GetFieldType(ordinal);
+            public override float GetFloat(int ordinal) => _inner.GetFloat(ordinal);
+            public override Guid GetGuid(int ordinal) => _inner.GetGuid(ordinal);
+            public override short GetInt16(int ordinal) => _inner.GetInt16(ordinal);
+            public override int GetInt32(int ordinal) => _inner.GetInt32(ordinal);
+            public override long GetInt64(int ordinal) => _inner.GetInt64(ordinal);
+            public override string GetName(int ordinal) => _inner.GetName(ordinal);
+            public override int GetOrdinal(string name) => _inner.GetOrdinal(name);
+            public override string GetString(int ordinal) => _inner.GetString(ordinal);
+            public override object GetValue(int ordinal) => _inner.GetValue(ordinal);
+            public override int GetValues(object[] values) => _inner.GetValues(values);
+            public override bool IsDBNull(int ordinal) => _inner.IsDBNull(ordinal);
+            public override bool NextResult() => _inner.NextResult();
+            public override async System.Threading.Tasks.Task<bool> NextResultAsync(System.Threading.CancellationToken cancellationToken) => await _inner.NextResultAsync(cancellationToken);
+            public override void Close() => _inner.Close();
+            public override System.Collections.IEnumerator GetEnumerator() => ((System.Collections.IEnumerable)_inner).GetEnumerator();
         }
     }
 }

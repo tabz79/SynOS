@@ -1559,6 +1559,7 @@ namespace SynOS.Services
             var reportsQuery = _context.Reports
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
+                .Include(r => r.SignedBy)
                 .Where(r => statusList.Contains(r.Status) && (r.SourceType == "Order" || r.SourceType == "RadiologyStudy"));
 
             if (!includeHistory)
@@ -1574,9 +1575,9 @@ namespace SynOS.Services
             else
             {
                 // History View:
-                // Show Completed (terminal) reports from the last 7 days (excluding today)
+                // Show Completed (terminal) reports from the last 7 days (including today)
                 reportsQuery = reportsQuery.Where(r => 
-                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < today
+                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < nextDay
                 );
             }
 
@@ -1705,9 +1706,9 @@ namespace SynOS.Services
                     AbnormalCount = abnormalCount,
                     Token = order?.Visit?.Token ?? "---",
                     TypedByUserName = r.TypedByUser?.Name,
-                    VerifiedByUserName = r.VerifiedByUser?.Name,
+                    VerifiedByUserName = r.VerifiedByUser?.Name ?? r.SignedBy?.Name,
                     TypedByUserId = r.TypedByUserId,
-                    VerifiedByUserId = r.VerifiedByUserId,
+                    VerifiedByUserId = r.VerifiedByUserId ?? r.SignedByUserId,
                     IsPhysicallyVerified = r.IsPhysicallyVerified,
                     SignaturesCount = sigCount,
                     Delivered = r.Delivered,
@@ -1763,6 +1764,7 @@ namespace SynOS.Services
                 .Include(r => r.Visit).ThenInclude(v => v.ReferralPartner)
                 .Include(r => r.TypedByUser)
                 .Include(r => r.VerifiedByUser)
+                .Include(r => r.SignedBy)
                 .AsQueryable();
 
             // 1. Search term filter (searches Patient demographics, Visit token, Report ID, and accession numbers)
@@ -1948,9 +1950,9 @@ namespace SynOS.Services
                     AbnormalCount = abnormalCount,
                     Token = r.Visit?.Token ?? "---",
                     TypedByUserName = r.TypedByUser?.Name,
-                    VerifiedByUserName = r.VerifiedByUser?.Name,
+                    VerifiedByUserName = r.VerifiedByUser?.Name ?? r.SignedBy?.Name,
                     TypedByUserId = r.TypedByUserId,
-                    VerifiedByUserId = r.VerifiedByUserId,
+                    VerifiedByUserId = r.VerifiedByUserId ?? r.SignedByUserId,
                     IsPhysicallyVerified = r.IsPhysicallyVerified,
                     SignaturesCount = sigCount,
                     Delivered = r.Delivered,

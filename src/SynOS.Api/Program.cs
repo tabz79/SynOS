@@ -139,6 +139,7 @@ builder.Services.AddSwaggerGen(option =>
 // Configure DbContext
 builder.Services.AddDbContext<SynOSDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor())
            .EnableSensitiveDataLogging()
            .EnableDetailedErrors());
 
