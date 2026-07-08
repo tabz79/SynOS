@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AdminApi } from '@/api/admin';
 import { useTheme } from '@/context/ThemeContext';
 // Native Date helpers to avoid dayjs dependency
@@ -37,6 +37,15 @@ function dateToISOString(dateStr) {
   const date = new Date(dateStr);
   return isNaN(date.getTime()) ? '' : date.toISOString();
 }
+
+function formatFileSize(bytes) {
+  if (bytes === undefined || bytes === null || isNaN(bytes)) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
 import { 
   Settings, 
   ShieldAlert, 
@@ -50,15 +59,44 @@ import {
   AlertCircle,
   Eye,
   Globe,
-  Printer
+  Printer,
+  Database,
+  LifeBuoy,
+  Info
 } from 'lucide-react';
+import { apiClient } from '@/api/client';
 
 export function SystemSettingsScreen() {
   const { theme } = useTheme();
   const [activeTab, setActiveTab] = useState('settings');
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(null);
   const [saveError, setSaveError] = useState(null);
+
+  // Backup State
+  const [backups, setBackups] = useState([]);
+  const [runningBackup, setRunningBackup] = useState(false);
+  const [restoringBackupId, setRestoringBackupId] = useState(null);
+
+  // Support Tickets State
+  const [tickets, setTickets] = useState([]);
+  const [submittingTicket, setSubmittingTicket] = useState(false);
+  const [ticketTitle, setTicketTitle] = useState('');
+  const [ticketDesc, setTicketDesc] = useState('');
+  const [ticketPriority, setTicketPriority] = useState('Medium');
+  const [ticketCategory, setTicketCategory] = useState('General');
+
+  // About / System Update State
+  const [systemInfo, setSystemInfo] = useState(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [applyingUpdate, setApplyingUpdate] = useState(false);
+  const [updateManifest, setUpdateManifest] = useState(JSON.stringify({
+    TargetArchitecture: "x64",
+    RequiredDiskSpaceGB: 10,
+    DatabaseVersion: "LocalDB v15.0"
+  }, null, 2));
 
   // Branches State
   const [branches, setBranches] = useState([]);
@@ -77,6 +115,36 @@ export function SystemSettingsScreen() {
   const [roles, setRoles] = useState([]);
   const [capabilities, setCapabilities] = useState([]);
   const [mappings, setMappings] = useState([]);
+
+  // Sync scrollbar references for Roles Matrix
+  const topScrollRef = useRef(null);
+  const tableContainerRef = useRef(null);
+  const tableRef = useRef(null);
+  const [tableWidth, setTableWidth] = useState(0);
+
+  useEffect(() => {
+    if (activeTab === 'permissions' && tableRef.current) {
+      const handleResize = () => {
+        setTableWidth(tableRef.current.scrollWidth);
+      };
+      const observer = new ResizeObserver(handleResize);
+      observer.observe(tableRef.current);
+      handleResize();
+      return () => observer.disconnect();
+    }
+  }, [activeTab, mappings, roles, capabilities]);
+
+  const handleTopScroll = () => {
+    if (tableContainerRef.current && topScrollRef.current) {
+      tableContainerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+    }
+  };
+
+  const handleTableScroll = () => {
+    if (tableContainerRef.current && topScrollRef.current) {
+      topScrollRef.current.scrollLeft = tableContainerRef.current.scrollLeft;
+    }
+  };
 
   // Department Policies State
   const [policies, setPolicies] = useState([]);
@@ -535,6 +603,131 @@ export function SystemSettingsScreen() {
     }
   };
 
+  // Backup handlers
+  const loadBackups = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/api/v1/admin/operations/backups');
+      setBackups(res || []);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load backups.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunBackup = async () => {
+    setRunningBackup(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post('/api/v1/admin/operations/backups/run?backupType=Full');
+      setSaveSuccess(res?.message || 'Backup executed successfully');
+      loadBackups();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to execute backup.');
+    } finally {
+      setRunningBackup(false);
+    }
+  };
+
+  const handleRestoreBackup = async (backupId, fileName) => {
+    if (!window.confirm(`Are you sure you want to restore database to backup "${fileName}"? This will restart host operations.`)) return;
+    setRestoringBackupId(backupId);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post(`/api/v1/admin/operations/backups/restore?backupId=${backupId}&fileName=${fileName}`);
+      setSaveSuccess(res?.message || 'Restore completed successfully');
+      loadBackups();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to restore database.');
+    } finally {
+      setRestoringBackupId(null);
+    }
+  };
+
+  // Support handlers
+  const loadTickets = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/api/v1/admin/operations/tickets');
+      setTickets(res || []);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load support tickets.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitTicket = async (e) => {
+    e.preventDefault();
+    setSubmittingTicket(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post('/api/v1/admin/operations/tickets/create', {
+        title: ticketTitle,
+        description: ticketDesc,
+        priority: ticketPriority,
+        category: ticketCategory
+      });
+      setSaveSuccess(res?.message || 'Support ticket queued successfully');
+      setTicketTitle('');
+      setTicketDesc('');
+      loadTickets();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to submit support ticket.');
+    } finally {
+      setSubmittingTicket(false);
+    }
+  };
+
+  // About/updates handlers
+  const loadSystemInfo = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/api/v1/admin/operations/system-info');
+      setSystemInfo(res);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load system info.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post('/api/v1/admin/operations/updates/check');
+      setSaveSuccess(res?.message || 'Check completed');
+      loadSystemInfo();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to check for updates.');
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  const handleApplyUpdate = async () => {
+    if (!window.confirm('Apply system update now? This will execute preflight validations and restart host services.')) return;
+    setApplyingUpdate(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const parsedManifest = JSON.parse(updateManifest);
+      const res = await apiClient.post('/api/v1/admin/operations/updates/apply', parsedManifest);
+      setSaveSuccess(res?.message || 'Update successfully applied.');
+      loadSystemInfo();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to apply update.');
+    } finally {
+      setApplyingUpdate(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
@@ -546,6 +739,9 @@ export function SystemSettingsScreen() {
     if (activeTab === 'workspaces') loadWorkspaces();
     if (activeTab === 'printing') loadPrintingData();
     if (activeTab === 'audit') loadAuditLogs();
+    if (activeTab === 'backup') loadBackups();
+    if (activeTab === 'support') loadTickets();
+    if (activeTab === 'about') loadSystemInfo();
   }, [activeTab, auditOffset]);
 
   // Handle Settings Submit
@@ -743,17 +939,7 @@ export function SystemSettingsScreen() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-6 text-zinc-800 dark:text-zinc-100 font-sans">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b dark:border-zinc-900/60 border-zinc-200 pb-4 gap-4">
-        <div>
-          <h1 className="text-xl font-medium tracking-tight text-zinc-800 dark:text-white flex items-center gap-2.5">
-            <Settings className="w-5 h-5 text-synos-primary" /> System Settings
-          </h1>
-          <p className="text-xs text-zinc-400 mt-1">Configure system settings, access credentials, SMS APIs, discount structures, and inspect logs</p>
-        </div>
-      </div>
-
+    <div className="w-full py-8 px-6 text-zinc-800 dark:text-zinc-100 font-sans">
       {/* Success/Error Alerts */}
       {saveSuccess && (
         <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-455 flex justify-between items-center transition-all">
@@ -768,38 +954,87 @@ export function SystemSettingsScreen() {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="flex flex-wrap border-b dark:border-zinc-850 border-zinc-200 pb-px mb-8 gap-1">
-        {[
-          { id: 'settings', label: 'System Configuration', icon: Settings },
-          { id: 'permissions', label: 'Roles Matrix', icon: ShieldAlert },
-          { id: 'departments', label: 'Department Hours', icon: Clock },
-          { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
-          { id: 'branches', label: 'Branches', icon: Globe },
-          { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
-          { id: 'printing', label: 'Printing Setup', icon: Printer },
-          { id: 'audit', label: 'Audit Logs', icon: History }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveTab(tab.id);
-              setAuditOffset(0);
-            }}
-            className={`px-5 py-2.5 text-sm font-semibold border-b-2 transition-all flex items-center gap-1.5 -mb-px ${
-              activeTab === tab.id
-                ? 'border-synos-primary text-synos-primary'
-                : 'border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300'
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(156, 163, 175, 0.08);
+          border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: var(--synos-primary, #2563eb);
+          border-radius: 9999px;
+          opacity: 0.8;
+        }
+      `}} />
 
-      {/* Tab Contents */}
-      <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl p-8 shadow-sm">
+      {/* Grid Layout: Left Menu Sidebar, Right Settings Contents Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-8 items-start">
+        {/* Left Sub-Sidebar Menu Navigation */}
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className={`sticky top-0 lg:top-8 z-20 lg:sticky bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl p-4 shadow-sm flex overflow-x-auto lg:flex-col gap-1 lg:gap-1.5 custom-scrollbar lg:overflow-x-visible transition-all duration-300 ${
+            (!isCollapsed || isHovered) ? 'lg:w-64' : 'lg:w-20'
+          }`}
+        >
+          <div className="hidden lg:block px-4 py-3 border-b dark:border-zinc-900 border-zinc-100 mb-2">
+            <div className={`flex items-center gap-3 transition-all duration-300 ${(!isCollapsed || isHovered) ? 'justify-between' : 'justify-center'}`}>
+              <button
+                type="button"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="hover:bg-zinc-100 dark:hover:bg-zinc-900 p-1.5 rounded-lg transition-colors flex items-center justify-center shrink-0"
+                title={isCollapsed ? "Expand System Settings Menu" : "Collapse System Settings Menu"}
+              >
+                <Settings className="w-5 h-5 text-synos-primary animate-spin-slow" />
+              </button>
+              {(!isCollapsed || isHovered) && (
+                <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 animate-fadeIn truncate flex-1">
+                  System Settings
+                </h2>
+              )}
+            </div>
+          </div>
+          {[
+            { id: 'settings', label: 'System Configuration', icon: Settings },
+            { id: 'permissions', label: 'Roles Matrix', icon: ShieldAlert },
+            { id: 'departments', label: 'Department Hours', icon: Clock },
+            { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
+            { id: 'branches', label: 'Branches', icon: Globe },
+            { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
+            { id: 'printing', label: 'Printing Setup', icon: Printer },
+            { id: 'audit', label: 'Audit Logs', icon: History },
+            { id: 'backup', label: 'Backup & Restore', icon: Database },
+            { id: 'support', label: 'Support Desk', icon: LifeBuoy },
+            { id: 'about', label: 'About & Updates', icon: Info }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setAuditOffset(0);
+                setIsCollapsed(true);
+              }}
+              className={`flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all whitespace-nowrap lg:whitespace-normal border shrink-0 lg:shrink w-full ${
+                (!isCollapsed || isHovered) ? 'justify-start' : 'justify-center'
+              } ${
+                activeTab === tab.id
+                  ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/10'
+                  : 'border-transparent text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-zinc-800 dark:hover:text-zinc-200'
+              }`}
+              title={tab.label}
+            >
+              <tab.icon className="w-4 h-4 shrink-0 text-current" />
+              {(!isCollapsed || isHovered) && (
+                <span className="truncate animate-fadeIn">{tab.label}</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Right Tab Contents Card Container */}
+        <div className="w-full bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl p-8 shadow-sm">
         {loading && <div className="text-center py-12 text-zinc-500 font-bold uppercase tracking-widest text-xs">Loading operational parameters...</div>}
 
         {/* SYSTEM SETUP TAB */}
@@ -1216,16 +1451,30 @@ export function SystemSettingsScreen() {
               <p className="text-zinc-500 text-xs font-semibold">Assign permissions and modules access directly to employee roles.</p>
             </div>
 
-            <div className="overflow-x-auto border dark:border-zinc-850 border-zinc-200/10 rounded-xl">
-              <table className="min-w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-zinc-50/60 dark:bg-zinc-950/60 border-b dark:border-zinc-800 border-zinc-200">
-                    <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Capability Module / Action</th>
-                    <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Scope Module</th>
+            {/* Top Dummy Scrollbar for Horizontal Scroll Indicator */}
+            <div 
+              ref={topScrollRef}
+              onScroll={handleTopScroll}
+              className="overflow-x-auto overflow-y-hidden border dark:border-zinc-850 border-zinc-200/10 rounded-t-xl bg-zinc-50 dark:bg-zinc-950 custom-scrollbar shrink-0"
+              style={{ minHeight: '6px' }}
+            >
+              <div style={{ width: tableWidth, height: '1px' }} />
+            </div>
+
+            <div 
+              ref={tableContainerRef}
+              onScroll={handleTableScroll}
+              className="max-h-[calc(100vh-220px)] overflow-auto border-x border-b dark:border-zinc-850 border-zinc-200/10 rounded-b-xl custom-scrollbar"
+            >
+              <table ref={tableRef} className="min-w-full text-left border-collapse text-xs">
+                <thead className="sticky top-0 z-10 bg-zinc-50 dark:bg-zinc-950 border-b dark:border-zinc-800 border-zinc-200">
+                  <tr className="bg-zinc-50 dark:bg-zinc-950">
+                    <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400 bg-zinc-50 dark:bg-zinc-950">Capability Module / Action</th>
+                    <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400 bg-zinc-50 dark:bg-zinc-950">Scope Module</th>
                     {roles.map(role => (
                       <th
-                         key={role.roleId}
-                        className="p-4 text-xxs font-bold uppercase tracking-wider text-center text-synos-primary"
+                        key={role.roleId}
+                        className="p-4 text-xxs font-bold uppercase tracking-wider text-center text-synos-primary bg-zinc-50 dark:bg-zinc-950"
                       >
                         {role.name}
                       </th>
@@ -3115,7 +3364,346 @@ export function SystemSettingsScreen() {
             )}
           </div>
         )}
+
+        {/* BACKUP & RESTORE TAB */}
+        {activeTab === 'backup' && !loading && (
+          <div className="space-y-8 animate-fadeIn text-xs">
+            <div>
+              <h3 className="text-sm font-bold text-synos-primary border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 tracking-widest">
+                Database Backup Policy & Manual Actions
+              </h3>
+              <p className="text-zinc-500 font-semibold mb-6">Manage automated database snapshots and restore recovery operations.</p>
+              
+              {settings && (
+                <form onSubmit={handleSettingsSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850">
+                  <div className="flex items-center space-x-3 md:col-span-4 mb-2 select-none">
+                    <input
+                      type="checkbox"
+                      id="backupEnabled"
+                      checked={settings.backupEnabled ?? false}
+                      onChange={e => setSettings({ ...settings, backupEnabled: e.target.checked })}
+                      className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5 cursor-pointer"
+                    />
+                    <label htmlFor="backupEnabled" className="text-xs font-bold text-zinc-800 dark:text-zinc-200 cursor-pointer">
+                      Enable Automated Local Database Backups
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Backup Frequency</label>
+                    <select
+                      value={settings.backupFrequency || 'Daily'}
+                      onChange={e => setSettings({ ...settings, backupFrequency: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-semibold shadow-sm"
+                    >
+                      <option value="Daily">Daily (GFS retention)</option>
+                      <option value="Weekly">Weekly</option>
+                      <option value="Monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Execution Time</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 02:00"
+                      value={settings.backupTime || ''}
+                      onChange={e => setSettings({ ...settings, backupTime: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-955 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Backup Storage Path</label>
+                    <input
+                      type="text"
+                      value={settings.backupPath || ''}
+                      onChange={e => setSettings({ ...settings, backupPath: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
+                  <div className="md:col-span-4 flex justify-end">
+                    <button
+                      type="submit"
+                      className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all w-full md:w-auto flex items-center justify-center"
+                    >
+                      Save Backup Policy
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              <div className="flex justify-between items-center mb-6">
+                <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest">
+                  Available Encrypted Backups
+                </h4>
+                <button
+                  type="button"
+                  onClick={handleRunBackup}
+                  disabled={runningBackup}
+                  className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                >
+                  {runningBackup ? '⏳ Running...' : '💾 Execute Manual Backup Now'}
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl">
+                <table className="min-w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-zinc-50 dark:bg-zinc-900/40 border-b border-zinc-200 dark:border-zinc-900">
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Backup ID</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">File Name</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Size</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Created Date</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Integrity</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200 dark:divide-zinc-900">
+                    {backups.map(b => (
+                      <tr key={b.backupId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors">
+                        <td className="p-4 font-mono font-bold text-zinc-500">{b.backupId}</td>
+                        <td className="p-4 font-semibold text-zinc-800 dark:text-zinc-200">{b.fileName}</td>
+                        <td className="p-4 font-mono text-zinc-700 dark:text-zinc-300">{formatFileSize(b.size)}</td>
+                        <td className="p-4 text-zinc-400 dark:text-zinc-500 font-mono">
+                          {formatDateTime(b.createdAt)}
+                        </td>
+                        <td className="p-4 text-emerald-500 font-bold">✓ Verified</td>
+                        <td className="p-4 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleRestoreBackup(b.backupId, b.fileName)}
+                            disabled={restoringBackupId === b.backupId}
+                            className="h-8 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-lg transition-all flex items-center justify-center inline-block mx-auto"
+                          >
+                            {restoringBackupId === b.backupId ? 'Restoring...' : '🔄 Restore'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {backups.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-zinc-400 dark:text-zinc-500 text-xs font-semibold">
+                          No database backup records found on disk.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUPPORT DESK TAB */}
+        {activeTab === 'support' && !loading && (
+          <div className="space-y-8 animate-fadeIn text-xs">
+            <div>
+              <h3 className="text-sm font-bold text-synos-primary border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 tracking-widest">
+                Support Triage & Crash Desk
+              </h3>
+              <p className="text-zinc-500 font-semibold mb-6">Create diagnostics tickets and verify support sync telemetry.</p>
+
+              <form onSubmit={handleSubmitTicket} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850">
+                <div className="md:col-span-2">
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Ticket Title / Summary</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Thermal printer print spools frozen"
+                    value={ticketTitle}
+                    onChange={e => setTicketTitle(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Priority</label>
+                  <select
+                    value={ticketPriority}
+                    onChange={e => setTicketPriority(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-semibold shadow-sm"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Category</label>
+                  <select
+                    value={ticketCategory}
+                    onChange={e => setTicketCategory(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-semibold shadow-sm"
+                  >
+                    <option value="Database">Database</option>
+                    <option value="Printers">Printers / Labels</option>
+                    <option value="Backup">Backup & Recovery</option>
+                    <option value="OTA">OTA Updates</option>
+                    <option value="General">General Exception</option>
+                  </select>
+                </div>
+                <div className="md:col-span-4">
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">Description of Issue</label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Provide full description of exceptions, warning patterns, and hardware configurations..."
+                    value={ticketDesc}
+                    onChange={e => setTicketDesc(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-955 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div className="md:col-span-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
+                  <span className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 tracking-wide">
+                    📎 Telemetry: Submitting compiles diagnostic manifests.
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={submittingTicket}
+                    className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all w-full md:w-auto flex items-center justify-center"
+                  >
+                    {submittingTicket ? 'Submitting...' : '📩 Submit Support Ticket'}
+                  </button>
+                </div>
+              </form>
+
+              <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest mb-6">
+                Active Incident Outbox Log
+              </h4>
+
+              <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl">
+                <table className="min-w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-zinc-50 dark:bg-zinc-900/40 border-b border-zinc-200 dark:border-zinc-900">
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Ticket ID</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Title</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Category</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Priority</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Created Date</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Sync Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-200 dark:divide-zinc-900">
+                    {tickets.map(t => (
+                      <tr key={t.ticketId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors">
+                        <td className="p-4 font-mono font-bold text-zinc-500">{t.ticketId}</td>
+                        <td className="p-4 font-semibold text-zinc-800 dark:text-zinc-200">{t.title}</td>
+                        <td className="p-4 text-zinc-650 dark:text-zinc-400 font-semibold">{t.category}</td>
+                        <td className="p-4">
+                          <span className={'px-2 py-0.5 rounded text-xxs font-bold ' + (
+                            t.priority === 'Critical' ? 'bg-red-500/10 text-red-500 border border-red-500/10' :
+                            t.priority === 'High' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/10' :
+                            'bg-blue-500/10 text-blue-500 border border-blue-500/10'
+                          )}>
+                            {t.priority}
+                          </span>
+                        </td>
+                        <td className="p-4 text-zinc-400 dark:text-zinc-500 font-mono">
+                          {formatDateTime(t.createdAt)}
+                        </td>
+                        <td className="p-4 font-mono">
+                          <span className={'px-2 py-0.5 rounded text-xxs font-bold ' + (
+                            t.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500 animate-pulse'
+                          )}>
+                            {t.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {tickets.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-zinc-400 dark:text-zinc-500 text-xs font-semibold">
+                          No support tickets found in outbox telemetry.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ABOUT & UPDATES TAB */}
+        {activeTab === 'about' && !loading && (
+          <div className="space-y-8 animate-fadeIn text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                    On-Prem Client Identity
+                  </h4>
+                  <div className="text-2xl font-bold text-synos-primary">LAB001</div>
+                  <div className="text-xxs text-zinc-400 mt-1 font-semibold">TBZ Labs Khammam Branch</div>
+                </div>
+              </div>
+              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                    Active Suite Version
+                  </h4>
+                  <div className="text-2xl font-bold text-synos-primary">v1.2.0</div>
+                  <div className="text-xxs text-emerald-500 font-bold mt-1">✓ Running stable release ring</div>
+                </div>
+              </div>
+              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                    System Environment
+                  </h4>
+                  <div className="text-xxs text-zinc-650 dark:text-zinc-400 font-semibold font-mono space-y-1 mt-1">
+                    <div>OS: {systemInfo?.os || 'Windows 11 Home 23H2'}</div>
+                    <div>Runtime: .NET {systemInfo?.dotNet || '8.0.3'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850">
+              <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest mb-4">
+                Software Update Manager
+              </h4>
+              <div className="flex justify-between items-center bg-white dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-850 mb-6">
+                <div>
+                  <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Status: System up to date</div>
+                  <div className="text-xxs text-zinc-400 mt-1">
+                    Last checked: {systemInfo?.lastChecked ? formatDateTime(systemInfo.lastChecked) : 'Recently'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCheckUpdate}
+                  disabled={checkingUpdate}
+                  className="h-10 px-6 border border-zinc-200 dark:border-zinc-850 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-150 dark:hover:bg-zinc-900 font-bold text-xxs tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center"
+                >
+                  {checkingUpdate ? 'Checking...' : 'Check for Updates'}
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">
+                  Trigger Migration / Update Manifest (JSON Config)
+                </label>
+                <textarea
+                  rows={4}
+                  value={updateManifest}
+                  onChange={e => setUpdateManifest(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-mono outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                />
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleApplyUpdate}
+                    disabled={applyingUpdate}
+                    className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all w-full md:w-auto flex items-center justify-center gap-1.5"
+                  >
+                    {applyingUpdate ? 'Applying Update...' : '⚙️ Trigger Preflight & Apply Update'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  );
+  </div>
+);
 }

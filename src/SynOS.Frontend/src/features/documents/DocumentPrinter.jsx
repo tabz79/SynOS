@@ -76,14 +76,14 @@ export const DocumentPrinter = () => {
         
         // 1. Fetch primary report data
         const primaryData = await ReportsApi.getReportData(id, forceLive);
-        const visitToken = primaryData.metadata?.token || primaryData.Metadata?.Token || primaryData.token || primaryData.Token;
+        const visitId = primaryData.metadata?.visitId || primaryData.Metadata?.VisitId || primaryData.visitId || primaryData.VisitId;
         
         // 2. Fetch all reports to check for siblings
         let finalReportDataList = [primaryData];
         try {
           const allReports = await ReportsApi.getReportsByStatus('ReadyForVerification,Signed,ManualVerified,Draft');
           const siblingReportItems = allReports.filter(r => 
-            r.token === visitToken && 
+            r.visitId === visitId && 
             r.reportId !== id &&
             (r.status === 'Signed' || r.status === 'ManualVerified' || r.status === 'ReadyForVerification')
           );

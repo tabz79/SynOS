@@ -12,11 +12,16 @@ namespace SynOS.Api.BackgroundServices
     {
         private readonly ILogger<ExpiredLockCleanupService> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IRestoreStateCoordinator _restoreStateCoordinator;
 
-        public ExpiredLockCleanupService(ILogger<ExpiredLockCleanupService> logger, IServiceProvider serviceProvider)
+        public ExpiredLockCleanupService(
+            ILogger<ExpiredLockCleanupService> logger,
+            IServiceProvider serviceProvider,
+            IRestoreStateCoordinator restoreStateCoordinator)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _restoreStateCoordinator = restoreStateCoordinator;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -25,6 +30,13 @@ namespace SynOS.Api.BackgroundServices
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                if (_restoreStateCoordinator != null && _restoreStateCoordinator.IsRestoreInProgress)
+                {
+                    _logger.LogInformation("Database restore in progress. Pausing ExpiredLockCleanupService execution...");
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                    continue;
+                }
+
                 try
                 {
                     using (var scope = _serviceProvider.CreateScope())

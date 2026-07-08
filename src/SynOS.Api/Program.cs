@@ -320,6 +320,11 @@ builder.Services.AddScoped<IProcessingService, ProcessingService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
+builder.Services.AddScoped<IUpdateService, UpdateService>();
+builder.Services.AddScoped<IBackupService, BackupService>();
+builder.Services.AddSingleton<IRestoreStateCoordinator, RestoreStateCoordinator>();
+builder.Services.AddScoped<ISupportService, SupportService>();
 builder.Services.AddScoped<IReportingService, ReportingService>(); // New Reporting Engine
 builder.Services.AddScoped<IInterpretationService, InterpretationService>(); // ADDED
 builder.Services.AddScoped<ICriticalValueService, CriticalValueService>();

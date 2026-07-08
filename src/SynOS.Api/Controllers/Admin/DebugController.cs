@@ -363,5 +363,74 @@ namespace SynOS.Api.Controllers.Admin
                 });
             }
         }
+
+        [HttpPost("trigger-diagnostics")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TriggerDiagnostics(
+            [FromServices] SynOS.Services.IDiagnosticsService diagnosticsService,
+            [FromQuery] string triggerType = "ManualRequest")
+        {
+            try
+            {
+                var bundleId = await diagnosticsService.GenerateDiagnosticBundleAsync(triggerType);
+                return Ok(new { Message = "Diagnostics bundle generated successfully", BundleId = bundleId });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+        [HttpPost("trigger-update")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TriggerUpdate(
+            [FromServices] SynOS.Services.IUpdateService updateService,
+            [FromBody] System.Text.Json.JsonElement manifest)
+        {
+            try
+            {
+                var manifestJson = manifest.GetRawText();
+                var success = await updateService.ExecuteUpdateAsync(manifestJson);
+                return Ok(new { Success = success, Message = success ? "Update sequence succeeded" : "Update sequence failed or was deferred" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+        [HttpPost("trigger-backup")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TriggerBackup(
+            [FromServices] SynOS.Services.IBackupService backupService,
+            [FromQuery] string backupType = "Full")
+        {
+            try
+            {
+                var backupId = await backupService.ExecuteBackupAsync(backupType);
+                return Ok(new { BackupId = backupId, Message = "Backup executed successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+        [HttpPost("trigger-support-ticket")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TriggerSupportTicket(
+            [FromServices] SynOS.Services.ISupportService supportService,
+            [FromQuery] string title = "Database backup failed",
+            [FromQuery] string description = "Out of disk space on partition D:",
+            [FromQuery] string priority = "High",
+            [FromQuery] string category = "Backup")
+        {
+            try
+            {
+                var ticketId = await supportService.CreateTicketAsync(title, description, priority, category);
+                return Ok(new { TicketId = ticketId, Message = "Support ticket queued successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
     }
 }

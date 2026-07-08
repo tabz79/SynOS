@@ -5,6 +5,7 @@ using TBZ.Middleware.Domain;
 using TBZ.Middleware.Infrastructure;
 using TBZ.Middleware.Application;
 using TBZ.Middleware.Application.Interfaces;
+using TBZ.Middleware.Application.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -95,6 +96,183 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors();
+
+// Subscribe to HeartbeatReceivedEvent on the OperationalEventBus
+var eventBusService = app.Services.GetRequiredService<IOperationalEventBus>();
+eventBusService.Subscribe<HeartbeatReceivedEvent>(async @event =>
+{
+    Console.WriteLine($"[EVENT BUS HANDLER] Heartbeat Received from Lab: {@event.LabId}, EventId: {@event.EventId}, Time: {@event.OccurredAt}");
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MiddlewareDbContext>();
+
+        try
+        {
+            // Update Lab seen time & versions
+            var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == @event.LabId);
+            if (lab != null)
+            {
+                lab.LastSeenAt = DateTime.UtcNow;
+
+                if (!string.IsNullOrEmpty(@event.PayloadJson))
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(@event.PayloadJson);
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("OSVersion", out var osProp))
+                        lab.OSVersion = osProp.GetString() ?? string.Empty;
+                    if (root.TryGetProperty("DotNetVersion", out var dnProp))
+                        lab.DotNetVersion = dnProp.GetString() ?? string.Empty;
+                }
+            }
+
+            // Create HealthSnapshot record
+            var snapshot = new HealthSnapshot
+            {
+                Id = Guid.NewGuid(),
+                LabId = @event.LabId,
+                Timestamp = DateTime.UtcNow,
+                CpuUsagePercent = 12.5, // Mock value
+                MemoryUsageMB = 450.0, // Mock value
+                DiskFreeSpaceGB = 80.0, // Mock value
+                PendingOutboxCount = 0,
+                DeadLetterCount = 0
+            };
+
+            // Look up from LabHealthCache
+            if (LabHealthCache.Metrics.TryGetValue(@event.LabId, out var metrics))
+            {
+                snapshot.PendingOutboxCount = metrics.PendingOutboxCount;
+                snapshot.DeadLetterCount = metrics.DeadLetterCount;
+            }
+
+            db.HealthSnapshots.Add(snapshot);
+            await db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to record heartbeat health snapshot: {ex.Message}");
+        }
+    }
+});
+
+eventBusService.Subscribe<TBZ.Middleware.Application.Events.SupportTicketCreatedEvent>(async @event =>
+{
+    Console.WriteLine($"[EVENT BUS HANDLER] Support Ticket Event Received: LabId: {@event.LabId}");
+    
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<MiddlewareDbContext>();
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(@event.PayloadJson);
+            var root = doc.RootElement;
+
+            var ticketId = root.GetProperty("TicketId").GetGuid();
+            var title = root.GetProperty("Title").GetString() ?? string.Empty;
+            var description = root.GetProperty("Description").GetString() ?? string.Empty;
+            var priority = root.GetProperty("Priority").GetString() ?? "Medium";
+            var category = root.GetProperty("Category").GetString() ?? "General";
+            var bundleIdStr = root.TryGetProperty("DiagnosticBundleId", out var bundleProp) && bundleProp.ValueKind != System.Text.Json.JsonValueKind.Null ? bundleProp.GetString() : null;
+            Guid? bundleId = string.IsNullOrEmpty(bundleIdStr) ? null : Guid.Parse(bundleIdStr);
+
+            // Check if ticket already registered in database
+            var ticketExists = await db.SupportTickets.AnyAsync(t => t.Id == ticketId);
+            if (ticketExists) return;
+
+            // 1. Intake & Fingerprint Assessment (Lookup in KnownIssues)
+            var knownIssues = await db.KnownIssues.ToListAsync();
+            KnownIssue? matchedIssue = null;
+
+            foreach (var issue in knownIssues)
+            {
+                if (!string.IsNullOrEmpty(issue.DiagnosticFingerprint) &&
+                    (description.Contains(issue.DiagnosticFingerprint, StringComparison.OrdinalIgnoreCase) ||
+                     title.Contains(issue.DiagnosticFingerprint, StringComparison.OrdinalIgnoreCase)))
+                {
+                    matchedIssue = issue;
+                    break;
+                }
+            }
+
+            Guid supportCaseId;
+            if (matchedIssue != null)
+            {
+                Console.WriteLine($"[TRIAGE] Diagnostic fingerprint match found for ticket {ticketId}: {matchedIssue.Title}");
+                
+                // Check if there is an open Case for this known issue
+                var existingCase = await db.SupportCases
+                    .FirstOrDefaultAsync(c => c.Title == matchedIssue.Title && c.Status != "Closed");
+
+                if (existingCase != null)
+                {
+                    supportCaseId = existingCase.Id;
+                }
+                else
+                {
+                    // Create new Case from KnownIssue
+                    var newCase = new SupportCase
+                    {
+                        Id = Guid.NewGuid(),
+                        CaseNumber = $"CASE-{new Random().Next(1000, 9999)}",
+                        Title = matchedIssue.Title,
+                        Description = matchedIssue.Description,
+                        Priority = priority,
+                        Category = category,
+                        Status = "Open",
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    db.SupportCases.Add(newCase);
+                    supportCaseId = newCase.Id;
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[TRIAGE] No known issue match for ticket {ticketId}. Escalating to new Case.");
+                
+                // Create new Support Case
+                var newCase = new SupportCase
+                {
+                    Id = Guid.NewGuid(),
+                    CaseNumber = $"CASE-{new Random().Next(1000, 9999)}",
+                    Title = $"Unresolved Bug: {title}",
+                    Description = description,
+                    Priority = priority,
+                    Category = category,
+                    Status = "Open",
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.SupportCases.Add(newCase);
+                supportCaseId = newCase.Id;
+            }
+
+            // Create and save SupportTicket record
+            var ticket = new SupportTicket
+            {
+                Id = ticketId,
+                LabId = @event.LabId,
+                Title = title,
+                Description = description,
+                Priority = priority,
+                Category = category,
+                CreatedAt = DateTime.UtcNow,
+                DiagnosticBundleId = bundleId,
+                Status = matchedIssue != null ? "WaitingForUpdate" : "InAnalysis",
+                SupportCaseId = supportCaseId
+            };
+
+            db.SupportTickets.Add(ticket);
+            await db.SaveChangesAsync();
+            Console.WriteLine($"[TRIAGE] Ticket {ticketId} saved. Linked to Case {supportCaseId}. Status: {ticket.Status}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to process incoming support ticket: {ex.Message}");
+        }
+    }
+});
 
 // Auto-migrate and seed default tenant
 using (var scope = app.Services.CreateScope())
@@ -224,7 +402,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options) =>
+app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options, IOperationalEventBus eventBus) =>
 {
     Console.WriteLine($"[INTEGRATION DEB] /api/events endpoint started. EventId: {dto?.EventId}, Type: {dto?.EventType}");
     
@@ -424,6 +602,44 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     liveMetrics.LastEventReceivedAt = DateTime.UtcNow;
 
     await db.SaveChangesAsync();
+
+    if (dto.EventType == "HeartbeatEvent" || dto.EventType == "Heartbeat")
+    {
+        Console.WriteLine($"[INTEGRATION DEB] IngestEvent publishing HeartbeatReceivedEvent to Event Bus. LabId: {dto.LabId}");
+        try
+        {
+            await eventBus.PublishAsync(new HeartbeatReceivedEvent
+            {
+                EventId = dto.EventId,
+                LabId = dto.LabId,
+                BranchId = dto.BranchId,
+                OccurredAt = dto.OccurredAt,
+                PayloadJson = dto.PayloadJson
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to publish HeartbeatReceivedEvent to Event Bus: {ex.Message}");
+        }
+    }
+    else if (dto.EventType == "SupportTicketCreated")
+    {
+        Console.WriteLine($"[INTEGRATION DEB] IngestEvent publishing SupportTicketCreatedEvent to Event Bus. LabId: {dto.LabId}");
+        try
+        {
+            await eventBus.PublishAsync(new TBZ.Middleware.Application.Events.SupportTicketCreatedEvent
+            {
+                EventId = dto.EventId,
+                LabId = dto.LabId,
+                PayloadJson = dto.PayloadJson,
+                OccurredAt = dto.OccurredAt
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to publish SupportTicketCreatedEvent to Event Bus: {ex.Message}");
+        }
+    }
 
     // Check final counts and log
     try

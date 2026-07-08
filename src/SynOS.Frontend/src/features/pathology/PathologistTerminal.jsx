@@ -751,7 +751,7 @@ export function PathologistTerminal() {
     };
 
     const currentReportItem = reports.find(r => r.reportId === selectedReportId);
-    const siblingReports = currentReportItem ? reports.filter(r => r.token === currentReportItem.token) : [];
+    const siblingReports = currentReportItem ? reports.filter(r => r.visitId === currentReportItem.visitId) : [];
     const currentReportIndex = currentReportItem ? siblingReports.findIndex(r => r.reportId === selectedReportId) : -1;
     const remainingReportsCount = siblingReports.filter(r => r.status !== 'Signed' && r.status !== 'ManualVerified').length;
 

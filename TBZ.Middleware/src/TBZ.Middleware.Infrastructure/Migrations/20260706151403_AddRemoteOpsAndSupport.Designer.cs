@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TBZ.Middleware.Infrastructure;
 
@@ -10,9 +11,11 @@ using TBZ.Middleware.Infrastructure;
 namespace TBZ.Middleware.Infrastructure.Migrations
 {
     [DbContext(typeof(MiddlewareDbContext))]
-    partial class MiddlewareDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260706151403_AddRemoteOpsAndSupport")]
+    partial class AddRemoteOpsAndSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");

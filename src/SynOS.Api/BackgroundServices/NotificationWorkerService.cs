@@ -12,12 +12,17 @@ public class NotificationWorkerService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<NotificationWorkerService> _logger;
+    private readonly IRestoreStateCoordinator _restoreStateCoordinator;
     private readonly TimeSpan _pollingInterval = TimeSpan.FromMinutes(2); // Process every 2 minutes
 
-    public NotificationWorkerService(IServiceProvider serviceProvider, ILogger<NotificationWorkerService> logger)
+    public NotificationWorkerService(
+        IServiceProvider serviceProvider,
+        ILogger<NotificationWorkerService> logger,
+        IRestoreStateCoordinator restoreStateCoordinator)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _restoreStateCoordinator = restoreStateCoordinator;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -26,6 +31,13 @@ public class NotificationWorkerService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            if (_restoreStateCoordinator != null && _restoreStateCoordinator.IsRestoreInProgress)
+            {
+                _logger.LogInformation("Database restore in progress. Pausing NotificationWorkerService execution...");
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                continue;
+            }
+
             _logger.LogDebug("Notification Worker Service checking for pending notifications.");
             await ProcessNotificationQueue(stoppingToken);
 

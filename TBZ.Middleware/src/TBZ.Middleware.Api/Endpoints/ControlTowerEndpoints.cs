@@ -469,6 +469,92 @@ namespace TBZ.Middleware.Api.Endpoints
             })
             .WithName("GetWhatsAppLogDetails")
             .WithOpenApi();
+
+            // 20. POST /api/commands/queue
+            app.MapPost("/api/commands/queue", async (CommandDirective command, MiddlewareDbContext db) =>
+            {
+                command.Id = Guid.NewGuid();
+                command.CreatedAt = DateTime.UtcNow;
+                command.Status = "Pending";
+                db.CommandDirectives.Add(command);
+                await db.SaveChangesAsync();
+                return Results.Ok(new { Success = true, CommandId = command.Id });
+            })
+            .WithName("QueueCommand")
+            .WithOpenApi();
+
+            // 21. GET /api/commands/pending
+            app.MapGet("/api/commands/pending", async (string labId, MiddlewareDbContext db) =>
+            {
+                var pending = await db.CommandDirectives
+                    .Where(c => c.LabId == labId && c.Status == "Pending")
+                    .ToListAsync();
+
+                // Transition status to "Dispatched"
+                foreach (var cmd in pending)
+                {
+                    cmd.Status = "Dispatched";
+                    cmd.DispatchedAt = DateTime.UtcNow;
+                }
+                await db.SaveChangesAsync();
+
+                return Results.Ok(pending);
+            })
+            .WithName("GetPendingCommands")
+            .WithOpenApi();
+
+            // 22. POST /api/commands/status
+            app.MapPost("/api/commands/status", async (Guid commandId, string status, MiddlewareDbContext db) =>
+            {
+                var command = await db.CommandDirectives.FindAsync(commandId);
+                if (command == null) return Results.NotFound();
+
+                command.Status = status;
+                if (status == "Executed")
+                {
+                    command.ExecutedAt = DateTime.UtcNow;
+                }
+                await db.SaveChangesAsync();
+                return Results.Ok(new { Success = true });
+            })
+            .WithName("UpdateCommandStatus")
+            .WithOpenApi();
+
+            // 23. GET /api/operations/analytics
+            app.MapGet("/api/operations/analytics", async (MiddlewareDbContext db) =>
+            {
+                var totalLabs = await db.Labs.CountAsync();
+                var activeLabs = await db.Labs.CountAsync(l => l.Status == "Active");
+                var onlineLabs = await db.Labs.CountAsync(l => l.LastSeenAt >= DateTime.UtcNow.AddMinutes(-5));
+
+                var versionAdoption = await db.Labs
+                    .GroupBy(l => l.ActiveVersion)
+                    .Select(g => new { Version = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                var ticketStats = await db.SupportTickets
+                    .GroupBy(t => t.Category)
+                    .Select(g => new { Category = g.Key, Count = g.Count() })
+                    .ToListAsync();
+
+                var crashStats = await db.SupportTickets
+                    .Where(t => t.Category == "Crash")
+                    .CountAsync();
+
+                var response = new
+                {
+                    TotalLabsCount = totalLabs,
+                    ActiveLabsCount = activeLabs,
+                    OnlineLabsCount = onlineLabs,
+                    VersionAdoption = versionAdoption,
+                    TicketCategoryDistribution = ticketStats,
+                    TotalCrashCount = crashStats
+                };
+
+                return Results.Ok(response);
+            })
+            .WithName("GetOperationsAnalytics")
+            .WithOpenApi();
         }
     }
 }

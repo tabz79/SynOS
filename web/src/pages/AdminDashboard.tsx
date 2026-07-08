@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import apiClient from '../services/apiClient';
 import dayjs from 'dayjs';
 
+function formatFileSize(bytes: number) {
+  if (bytes === undefined || bytes === null || isNaN(bytes)) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
 interface LabProfile {
   labProfileId: string;
   name: string;
@@ -134,10 +142,33 @@ interface ReferralPartner {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'settings' | 'permissions' | 'departments' | 'pricing' | 'workspaces' | 'audit'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'permissions' | 'departments' | 'pricing' | 'workspaces' | 'audit' | 'backup' | 'support' | 'about'>('settings');
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Backup State
+  const [backups, setBackups] = useState<any[]>([]);
+  const [runningBackup, setRunningBackup] = useState(false);
+  const [restoringBackupId, setRestoringBackupId] = useState<string | null>(null);
+
+  // Support Tickets State
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [submittingTicket, setSubmittingTicket] = useState(false);
+  const [ticketTitle, setTicketTitle] = useState('');
+  const [ticketDesc, setTicketDesc] = useState('');
+  const [ticketPriority, setTicketPriority] = useState('Medium');
+  const [ticketCategory, setTicketCategory] = useState('General');
+
+  // About / System Update State
+  const [systemInfo, setSystemInfo] = useState<any>(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [applyingUpdate, setApplyingUpdate] = useState(false);
+  const [updateManifest, setUpdateManifest] = useState(JSON.stringify({
+    TargetArchitecture: "x64",
+    RequiredDiskSpaceGB: 10,
+    DatabaseVersion: "LocalDB v15.0"
+  }, null, 2));
 
   // Global Settings State
   const [settings, setSettings] = useState<LabProfile | null>(null);
@@ -394,6 +425,131 @@ export default function AdminDashboard() {
     }
   };
 
+  // Backup handlers
+  const loadBackups = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/admin/operations/backups');
+      setBackups(res.data);
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to load backups.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunBackup = async () => {
+    setRunningBackup(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post('/admin/operations/backups/run?backupType=Full');
+      setSaveSuccess(res.data.message || 'Backup executed successfully');
+      loadBackups();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to execute backup.');
+    } finally {
+      setRunningBackup(false);
+    }
+  };
+
+  const handleRestoreBackup = async (backupId: string, fileName: string) => {
+    if (!window.confirm(`Are you sure you want to restore database to backup "${fileName}"? This will restart host operations.`)) return;
+    setRestoringBackupId(backupId);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post(`/admin/operations/backups/restore?backupId=${backupId}&fileName=${fileName}`);
+      setSaveSuccess(res.data.message || 'Restore completed successfully');
+      loadBackups();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to restore database.');
+    } finally {
+      setRestoringBackupId(null);
+    }
+  };
+
+  // Support handlers
+  const loadTickets = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/admin/operations/tickets');
+      setTickets(res.data);
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to load support tickets.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingTicket(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post('/admin/operations/tickets/create', {
+        title: ticketTitle,
+        description: ticketDesc,
+        priority: ticketPriority,
+        category: ticketCategory
+      });
+      setSaveSuccess(res.data.message || 'Support ticket queued successfully');
+      setTicketTitle('');
+      setTicketDesc('');
+      loadTickets();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to submit support ticket.');
+    } finally {
+      setSubmittingTicket(false);
+    }
+  };
+
+  // About/updates handlers
+  const loadSystemInfo = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get('/admin/operations/system-info');
+      setSystemInfo(res.data);
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to load system info.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const res = await apiClient.post('/admin/operations/updates/check');
+      setSaveSuccess(res.data.message || 'Check completed');
+      loadSystemInfo();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to check for updates.');
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  const handleApplyUpdate = async () => {
+    if (!window.confirm('Apply system update now? This will execute preflight validations and restart host services.')) return;
+    setApplyingUpdate(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      const parsedManifest = JSON.parse(updateManifest);
+      const res = await apiClient.post('/admin/operations/updates/apply', parsedManifest);
+      setSaveSuccess(res.data.message || 'Update successfully applied.');
+      loadSystemInfo();
+    } catch (err: any) {
+      setSaveError(err.response?.data?.message || 'Failed to apply update.');
+    } finally {
+      setApplyingUpdate(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
@@ -406,6 +562,9 @@ export default function AdminDashboard() {
       loadWorkspaceUsers();
     }
     if (activeTab === 'audit') loadAuditLogs();
+    if (activeTab === 'backup') loadBackups();
+    if (activeTab === 'support') loadTickets();
+    if (activeTab === 'about') loadSystemInfo();
   }, [activeTab, auditOffset]);
 
   // Handle Settings Submit
@@ -588,13 +747,16 @@ export default function AdminDashboard() {
             { id: 'departments', label: 'Department Hours' },
             { id: 'pricing', label: 'Pricing & Discounts' },
             { id: 'workspaces', label: 'Workspace Registry' },
-            { id: 'audit', label: 'Audit Logs' }
-          ] as const
+            { id: 'audit', label: 'Audit Logs' },
+            { id: 'backup', label: 'Backup & Restore' },
+            { id: 'support', label: 'Support Desk' },
+            { id: 'about', label: 'About & Updates' }
+          ]
         ).map(tab => (
           <button
             key={tab.id}
             onClick={() => {
-              setActiveTab(tab.id);
+              setActiveTab(tab.id as any);
               setAuditOffset(0);
             }}
             className={`px-6 py-3 font-semibold text-sm rounded-t-lg transition-all duration-200 border-t border-x -mb-[1px] ${
@@ -2027,6 +2189,338 @@ export default function AdminDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* BACKUP & RESTORE TAB */}
+        {activeTab === 'backup' && !loading && (
+          <div className="space-y-8 animate-fadeIn">
+            <div>
+              <h3 className="text-lg font-semibold border-b border-border pb-2 mb-6 text-blue-400">
+                Database Backup Policy & Manual Actions
+              </h3>
+              
+              {settings && (
+                <form onSubmit={handleSettingsSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-elevated/20 p-6 rounded-xl border border-border">
+                  <div className="flex items-center space-x-2 md:col-span-4 mb-2">
+                    <input
+                      type="checkbox"
+                      id="backupEnabled"
+                      checked={settings.backupEnabled}
+                      onChange={e => setSettings({ ...settings, backupEnabled: e.target.checked })}
+                      className="rounded border-border bg-inputBackground text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="backupEnabled" className="text-sm font-bold text-textPrimary">
+                      Enable Automated Local Database Backups
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-textSecondary mb-2">BACKUP FREQUENCY</label>
+                    <select
+                      value={settings.backupFrequency}
+                      onChange={e => setSettings({ ...settings, backupFrequency: e.target.value })}
+                      className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="Daily">Daily (GFS retention)</option>
+                      <option value="Weekly">Weekly</option>
+                      <option value="Monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-textSecondary mb-2">EXECUTION TIME</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 02:00"
+                      value={settings.backupTime}
+                      onChange={e => setSettings({ ...settings, backupTime: e.target.value })}
+                      className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-textSecondary mb-2">BACKUP STORAGE PATH</label>
+                    <input
+                      type="text"
+                      value={settings.backupPath}
+                      onChange={e => setSettings({ ...settings, backupPath: e.target.value })}
+                      className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="md:col-span-4 flex justify-end">
+                    <button
+                      type="submit"
+                      className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all"
+                    >
+                      Save Backup Policy
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              <div className="flex justify-between items-center mb-6">
+                <h4 className="text-sm font-bold text-textPrimary uppercase tracking-wider">
+                  Available Encrypted Backups
+                </h4>
+                <button
+                  onClick={handleRunBackup}
+                  disabled={runningBackup}
+                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 disabled:opacity-40 flex items-center gap-1.5 transition-all"
+                >
+                  {runningBackup ? '⏳ Running...' : '💾 Execute Manual Backup Now'}
+                </button>
+              </div>
+
+              <div className="overflow-x-auto border border-border rounded-xl">
+                <table className="min-w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-elevated/40 border-b border-border">
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Backup ID</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">File Name</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Size</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Created Date</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Integrity</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-center text-textSecondary">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {backups.map(b => (
+                      <tr key={b.backupId} className="hover:bg-elevated/10 transition-colors">
+                        <td className="p-4 text-xs text-textSecondary font-mono font-bold">{b.backupId}</td>
+                        <td className="p-4 text-xs text-textPrimary font-semibold">{b.fileName}</td>
+                        <td className="p-4 text-xs text-textPrimary font-mono">{formatFileSize(b.size)}</td>
+                        <td className="p-4 text-xs text-textSecondary font-mono">
+                          {dayjs(b.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                        </td>
+                        <td className="p-4 text-xs text-emerald-400 font-bold">✓ Verified</td>
+                        <td className="p-4 text-center">
+                          <button
+                            onClick={() => handleRestoreBackup(b.backupId, b.fileName)}
+                            disabled={restoringBackupId === b.backupId}
+                            className="px-4 py-2 text-xs bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 rounded-lg font-bold disabled:opacity-40 transition-all"
+                          >
+                            {restoringBackupId === b.backupId ? 'Restoring...' : '🔄 Restore'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {backups.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-textSecondary text-sm font-medium">
+                          No database backup records found on disk.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SUPPORT DESK TAB */}
+        {activeTab === 'support' && !loading && (
+          <div className="space-y-8 animate-fadeIn">
+            <div>
+              <h3 className="text-lg font-semibold border-b border-border pb-2 mb-6 text-blue-400">
+                Support incident Triage & Crash Reports
+              </h3>
+
+              <form onSubmit={handleSubmitTicket} className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-elevated/20 p-6 rounded-xl border border-border">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-textSecondary mb-2">TICKET TITLE / SUMMARY</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Printer Spooler exception"
+                    value={ticketTitle}
+                    onChange={e => setTicketTitle(e.target.value)}
+                    className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-textSecondary mb-2">PRIORITY</label>
+                  <select
+                    value={ticketPriority}
+                    onChange={e => setTicketPriority(e.target.value)}
+                    className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-textSecondary mb-2">CATEGORY</label>
+                  <select
+                    value={ticketCategory}
+                    onChange={e => setTicketCategory(e.target.value)}
+                    className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="Database">Database</option>
+                    <option value="Printers">Printers / Labels</option>
+                    <option value="Backup">Backup & Recovery</option>
+                    <option value="OTA">OTA Updates</option>
+                    <option value="General">General Exception</option>
+                  </select>
+                </div>
+                <div className="md:col-span-4">
+                  <label className="block text-xs font-bold text-textSecondary mb-2">DESCRIPTION OF ISSUE</label>
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="Provide full description of diagnostic anomalies, error codes, and clinical impacts..."
+                    value={ticketDesc}
+                    onChange={e => setTicketDesc(e.target.value)}
+                    className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                <div className="md:col-span-4 flex justify-between items-center">
+                  <span className="text-xs text-textSecondary font-semibold">
+                    📎 Note: Submitting a ticket automatically compiles a redacted Diagnostic Telemetry Bundle.
+                  </span>
+                  <button
+                    type="submit"
+                    disabled={submittingTicket}
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-lg disabled:opacity-40 transition-all"
+                  >
+                    {submittingTicket ? 'Submitting...' : '📩 Submit Support Ticket'}
+                  </button>
+                </div>
+              </form>
+
+              <h4 className="text-sm font-bold text-textPrimary uppercase tracking-wider mb-6">
+                Active Incident Outbox Log
+              </h4>
+
+              <div className="overflow-x-auto border border-border rounded-xl">
+                <table className="min-w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-elevated/40 border-b border-border">
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Ticket ID</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Title</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Category</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Priority</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Created Date</th>
+                      <th className="p-4 text-xs font-bold uppercase tracking-wider text-textSecondary">Sync Outbox</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {tickets.map(t => (
+                      <tr key={t.ticketId} className="hover:bg-elevated/10 transition-colors">
+                        <td className="p-4 text-xs text-textSecondary font-mono font-bold">{t.ticketId}</td>
+                        <td className="p-4 text-xs text-textPrimary font-semibold">{t.title}</td>
+                        <td className="p-4 text-xs text-textPrimary">{t.category}</td>
+                        <td className="p-4 text-xs font-bold">
+                          <span className={`px-2.5 py-1 rounded text-xxs ${
+                            t.priority === 'Critical' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                            t.priority === 'High' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' :
+                            'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          }`}>
+                            {t.priority}
+                          </span>
+                        </td>
+                        <td className="p-4 text-xs text-textSecondary font-mono">
+                          {dayjs(t.createdAt).format('YYYY-MM-DD HH:mm:ss')}
+                        </td>
+                        <td className="p-4 text-xs font-bold font-mono">
+                          <span className={`px-2 py-0.5 rounded text-xxs ${
+                            t.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400 animate-pulse'
+                          }`}>
+                            {t.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    {tickets.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-textSecondary text-sm font-medium">
+                          No support tickets found in outbox telemetry.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ABOUT & UPDATES TAB */}
+        {activeTab === 'about' && !loading && (
+          <div className="space-y-8 animate-fadeIn">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-elevated/20 p-6 rounded-2xl border border-border flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-4">
+                    On-Prem Client Identity
+                  </h4>
+                  <div className="text-3xl font-extrabold text-blue-400 mb-2">LAB001</div>
+                  <div className="text-xs text-textSecondary font-semibold">TBZ Labs Core On-Prem Node</div>
+                </div>
+              </div>
+              <div className="bg-elevated/20 p-6 rounded-2xl border border-border flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-4">
+                    Active Suite Version
+                  </h4>
+                  <div className="text-3xl font-extrabold text-indigo-400 mb-2">v1.2.0</div>
+                  <div className="text-xs text-emerald-400 font-bold">✓ Stable release ring</div>
+                </div>
+              </div>
+              <div className="bg-elevated/20 p-6 rounded-2xl border border-border flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-4">
+                    System Environment
+                  </h4>
+                  <div className="text-xs text-textPrimary font-semibold font-mono space-y-1 mt-2">
+                    <div>OS: {systemInfo?.os || 'Windows 11 Home 23H2'}</div>
+                    <div>Runtime: .NET {systemInfo?.dotNet || '8.0.3'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-elevated/20 p-6 rounded-2xl border border-border">
+              <h4 className="text-sm font-bold text-textPrimary uppercase tracking-wider mb-4">
+                Software Update Manager
+              </h4>
+              <div className="flex justify-between items-center bg-card p-4 rounded-xl border border-border mb-6">
+                <div>
+                  <div className="text-sm font-semibold text-textPrimary">Status: System up to date</div>
+                  <div className="text-xs text-textSecondary mt-1">
+                    Last checked: {systemInfo?.lastChecked ? dayjs(systemInfo.lastChecked).format('YYYY-MM-DD HH:mm') : 'Recently'}
+                  </div>
+                </div>
+                <button
+                  onClick={handleCheckUpdate}
+                  disabled={checkingUpdate}
+                  className="px-5 py-2 bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-600/25 rounded-xl font-bold text-xs transition-all"
+                >
+                  {checkingUpdate ? 'Checking...' : '🔄 Check for Updates'}
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <label className="block text-xs font-bold text-textSecondary">
+                  TRIGGER MIGRATION / UPDATE MANIFEST (JSON MOCK)
+                </label>
+                <textarea
+                  rows={4}
+                  value={updateManifest}
+                  onChange={e => setUpdateManifest(e.target.value)}
+                  className="w-full bg-inputBackground border border-border rounded-lg px-4 py-2 text-xs font-mono focus:outline-none focus:border-blue-500"
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleApplyUpdate}
+                    disabled={applyingUpdate}
+                    className="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-lg disabled:opacity-40 transition-all"
+                  >
+                    {applyingUpdate ? 'Applying Update...' : '⚙️ Trigger Preflight & Apply Update'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

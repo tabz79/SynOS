@@ -21,6 +21,7 @@ namespace TBZ.Middleware.Application
             // Register Services
             services.AddSingleton<NotificationTemplateRenderer>();
             services.AddScoped<IWhatsAppService, WhatsAppService>();
+            services.AddSingleton<IOperationalEventBus, OperationalEventBus>();
             
             // Register providers
             services.AddScoped<INotificationProvider, WhatsAppProvider>();

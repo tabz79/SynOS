@@ -31,6 +31,13 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
 
     useEffect(() => {
         let isMounted = true;
+        
+        // Reset action/loader states when panel toggles or active visit changes
+        setIsClaiming(false);
+        setIsCollecting(false);
+        setIsPrinting(false);
+        setShowPrintSuccess(false);
+
         if (isOpen && visitId) {
             const fetchPlan = async () => {
                 setIsLoadingPlan(true);
@@ -39,7 +46,7 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
                     try {
                         const data = await PhlebotomyApi.getCollectionPlan(visitId);
                         if (isMounted) setPlanData(data);
-                        } catch (err) {
+                    } catch (err) {
                         // If plan is not found (already collected), try summary
                         if (err.message.includes('404') || err.message.includes('not found') || err.message.includes('collected')) {
                             console.info(`[Phlebotomy] Plan not found (404), attempting to fetch collection summary for ${visitId}`);
@@ -132,6 +139,7 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
         try {
             console.log("Completing collection for assignment:", planData.assignmentId);
             await PhlebotomyApi.collectAssignment(planData.assignmentId);
+            setIsCollecting(false);
             closePanel(); 
         } catch (err) {
             setError(err.message || 'Failed to complete collection.');

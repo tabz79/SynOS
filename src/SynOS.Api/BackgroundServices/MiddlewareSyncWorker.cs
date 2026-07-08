@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.Entities;
+using SynOS.Services;
 
 namespace SynOS.Api.BackgroundServices
 {
@@ -22,14 +23,17 @@ namespace SynOS.Api.BackgroundServices
         private readonly HttpClient _httpClient;
         private readonly string _apiUrl;
         private readonly string _apiKey;
+        private readonly IRestoreStateCoordinator _restoreStateCoordinator;
 
         public MiddlewareSyncWorker(
             ILogger<MiddlewareSyncWorker> logger,
             IServiceProvider serviceProvider,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IRestoreStateCoordinator restoreStateCoordinator)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _restoreStateCoordinator = restoreStateCoordinator;
             _httpClient = new HttpClient();
             
             _apiUrl = configuration["Middleware:ApiUrl"] ?? "http://localhost:5000/api/events";
@@ -44,9 +48,17 @@ namespace SynOS.Api.BackgroundServices
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
+                    if (_restoreStateCoordinator != null && _restoreStateCoordinator.IsRestoreInProgress)
+                    {
+                        _logger.LogInformation("Database restore in progress. Pausing MiddlewareSyncWorker execution...");
+                        await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                        continue;
+                    }
+
                     try
                     {
                         await SyncPendingEventsAsync(stoppingToken);
+                        await SendHeartbeatAsync(stoppingToken);
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {
@@ -158,6 +170,60 @@ namespace SynOS.Api.BackgroundServices
                     // Save each event immediately to ensure exactly-once semantics/outbox checkpointing
                     await dbContext.SaveChangesAsync(stoppingToken);
                 }
+            }
+        }
+
+        private async Task SendHeartbeatAsync(CancellationToken stoppingToken)
+        {
+            try
+            {
+                var heartbeatEvent = new
+                {
+                    eventId = Guid.NewGuid(),
+                    eventType = "Heartbeat",
+                    aggregateType = "Lab",
+                    aggregateId = Guid.Empty,
+                    labId = "LAB001",
+                    branchId = Guid.Empty,
+                    payloadJson = "{}",
+                    occurredAt = DateTimeOffset.UtcNow
+                };
+
+                var json = JsonSerializer.Serialize(heartbeatEvent);
+                var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+
+                request.Headers.Add("X-Lab-Id", "LAB001");
+                request.Headers.Add("X-Api-Key", _apiKey);
+                
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                    var pendingCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "Pending" || e.Status == "Failed", stoppingToken);
+                    var deadLetterCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "DeadLetter", stoppingToken);
+
+                    request.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
+                    request.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());
+                }
+
+                _logger.LogInformation("[INTEGRATION DEB] OutboxWorker POST heartbeat to /api/events.");
+                var response = await _httpClient.SendAsync(request, stoppingToken);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK || 
+                    response.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
+                {
+                    _logger.LogInformation("[INTEGRATION DEB] Heartbeat sent successfully to Middleware API.");
+                }
+                else
+                {
+                    _logger.LogWarning("[INTEGRATION DEB] Heartbeat failed. Middleware API returned: {StatusCode}", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send heartbeat to Middleware API.");
             }
         }
     }

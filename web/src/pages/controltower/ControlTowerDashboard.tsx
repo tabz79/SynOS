@@ -1,6 +1,3 @@
-// File: web/src/pages/controltower/ControlTowerDashboard.tsx
-// Redesigned to match the premium 'Mission Control' mockup
-
 import React, { useState, useEffect } from 'react';
 import DashboardTab from './DashboardTab';
 import OperationsTab from './OperationsTab'; // Labeled as 'Reports' (TAT & Operational stats)
@@ -9,6 +6,10 @@ import SourcesTab from './SourcesTab';       // Labeled as 'Customers'
 import DemographicsTab from './DemographicsTab';
 import WhatsAppManagerTab from './WhatsAppManagerTab';
 import SettingsTab from './SettingsTab';
+import IncidentCenterTab from './IncidentCenterTab';
+import RemoteOpsTab from './RemoteOpsTab';
+import SupportTicketsTab from './SupportTicketsTab';
+import ReleaseManagerTab from './ReleaseManagerTab';
 
 const ControlTowerDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
@@ -45,6 +46,10 @@ const ControlTowerDashboard: React.FC = () => {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '⚡' },
+    { id: 'incident-center', label: 'Incident Center', icon: '🚨' },
+    { id: 'remote-ops', label: 'Remote Operations', icon: '🛠️' },
+    { id: 'support-tickets', label: 'Support Tickets', icon: '🎫' },
+    { id: 'releases', label: 'Release Manager', icon: '🚀' },
     { id: 'referral-partners', label: 'Referral Partners', icon: '👥' },
     { id: 'customers', label: 'Customers', icon: '👤' },
     { id: 'demographics', label: 'Demographics', icon: '📊' },
@@ -59,6 +64,14 @@ const ControlTowerDashboard: React.FC = () => {
     switch (activeTab) {
       case 'dashboard':
         return <DashboardTab />;
+      case 'incident-center':
+        return <IncidentCenterTab />;
+      case 'remote-ops':
+        return <RemoteOpsTab />;
+      case 'support-tickets':
+        return <SupportTicketsTab />;
+      case 'releases':
+        return <ReleaseManagerTab />;
       case 'referral-partners':
         return <PartnersTab />;
       case 'customers':

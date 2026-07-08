@@ -63,7 +63,7 @@ const WhatsAppManagerTab: React.FC = () => {
   
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<any>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Filters state

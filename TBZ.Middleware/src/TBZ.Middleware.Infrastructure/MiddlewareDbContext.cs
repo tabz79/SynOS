@@ -31,6 +31,11 @@ namespace TBZ.Middleware.Infrastructure
         public DbSet<NotificationTemplate> NotificationTemplates => Set<NotificationTemplate>();
         public DbSet<NotificationWebhookEvent> NotificationWebhookEvents => Set<NotificationWebhookEvent>();
         public DbSet<NotificationInbox> NotificationInboxes => Set<NotificationInbox>();
+        public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
+        public DbSet<SupportCase> SupportCases => Set<SupportCase>();
+        public DbSet<KnownIssue> KnownIssues => Set<KnownIssue>();
+        public DbSet<HealthSnapshot> HealthSnapshots => Set<HealthSnapshot>();
+        public DbSet<CommandDirective> CommandDirectives => Set<CommandDirective>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -281,6 +286,47 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.MessageId).HasMaxLength(150);
                 entity.Property(e => e.Channel).IsRequired().HasMaxLength(50);
                 entity.HasIndex(e => e.MessageId);
+            });
+
+            modelBuilder.Entity<SupportTicket>(entity =>
+            {
+                entity.ToTable("SupportTickets");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<SupportCase>(entity =>
+            {
+                entity.ToTable("SupportCases");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.CaseNumber).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<KnownIssue>(entity =>
+            {
+                entity.ToTable("KnownIssues");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<HealthSnapshot>(entity =>
+            {
+                entity.ToTable("HealthSnapshots");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<CommandDirective>(entity =>
+            {
+                entity.ToTable("CommandDirectives");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.CommandType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             });
         }
     }

@@ -890,7 +890,8 @@ namespace SynOS.Services
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                     PreparedBy = report.TypedByUser?.Name ?? "N/A",
                     TestCode = order.TestCode,
-                    Token = order.Visit?.Token ?? "N/A"
+                    Token = order.Visit?.Token ?? "N/A",
+                    VisitId = report.VisitId
                 },
                 Modality = domain.Department,
                 ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? $"{domain.Department} Report"),
@@ -1043,7 +1044,8 @@ namespace SynOS.Services
                         BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                         PreparedBy = report.TypedByUser?.Name ?? "N/A",
                         TestCode = order.Test?.TestCode ?? "RAD",
-                        Token = order.Visit?.Token ?? "N/A"
+                        Token = order.Visit?.Token ?? "N/A",
+                        VisitId = report.VisitId
                     },
                     Modality = "Radiology",
                     ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? "Radiology"),
@@ -1366,7 +1368,8 @@ namespace SynOS.Services
                     BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                     PreparedBy = report.TypedByUser?.Name ?? "N/A",
                     TestCode = order.TestCode,
-                    Token = order.Visit?.Token ?? "N/A"
+                    Token = order.Visit?.Token ?? "N/A",
+                    VisitId = report.VisitId
                 },
                 Modality = order.Department,
                 ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? $"{order.Department} Report"),
@@ -1453,7 +1456,8 @@ namespace SynOS.Services
                     ContractVersion = 2,
                     GeneratedFrom = "snapshot-v1-converted",
                     GeneratedAt = DateTimeOffset.UtcNow,
-                    ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Legacy Data"))
+                    ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Legacy Data")),
+                    VisitId = report.VisitId
                 },
                 Modality = v1.Modality,
                 ReportTitle = v1.ReportTitle,

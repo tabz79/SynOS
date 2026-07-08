@@ -10,5 +10,12 @@ namespace TBZ.Middleware.Domain
         public string ApiKeyHash { get; set; } = string.Empty;
         public string Status { get; set; } = "Active"; // "Active", "Suspended"
         public DateTime CreatedAt { get; set; }
+        
+        public string GeographicalRegion { get; set; } = string.Empty;
+        public string ActiveVersion { get; set; } = string.Empty;
+        public string HardwareToken { get; set; } = string.Empty;
+        public string DotNetVersion { get; set; } = string.Empty;
+        public string OSVersion { get; set; } = string.Empty;
+        public DateTime? LastSeenAt { get; set; }
     }
 }
