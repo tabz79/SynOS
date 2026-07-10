@@ -893,7 +893,7 @@ namespace SynOS.Services.Reporting
                     TemplateQueryDiagnostics.SqlQueryText = command.CommandText;
                     TemplateQueryDiagnostics.SqlStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 }
-                Console.WriteLine("[TemplateQueryInterceptor] SQL starts");
+                // Console.WriteLine("[TemplateQueryInterceptor] SQL starts");
             }
             return base.ReaderExecuting(command, eventData, result);
         }
@@ -911,7 +911,7 @@ namespace SynOS.Services.Reporting
                     TemplateQueryDiagnostics.SqlQueryText = command.CommandText;
                     TemplateQueryDiagnostics.SqlStartTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 }
-                Console.WriteLine("[TemplateQueryInterceptor] SQL starts");
+                // Console.WriteLine("[TemplateQueryInterceptor] SQL starts");
             }
             return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
         }
@@ -927,7 +927,7 @@ namespace SynOS.Services.Reporting
                 {
                     TemplateQueryDiagnostics.SqlDurationMs = (long)eventData.Duration.TotalMilliseconds;
                 }
-                Console.WriteLine($"[TemplateQueryInterceptor] SQL finishes. Duration: {eventData.Duration.TotalMilliseconds} ms");
+                // Console.WriteLine($"[TemplateQueryInterceptor] SQL finishes. Duration: {eventData.Duration.TotalMilliseconds} ms");
                 return new DiagnosticDataReader(result);
             }
             return base.ReaderExecuted(command, eventData, result);
@@ -945,7 +945,7 @@ namespace SynOS.Services.Reporting
                 {
                     TemplateQueryDiagnostics.SqlDurationMs = (long)eventData.Duration.TotalMilliseconds;
                 }
-                Console.WriteLine($"[TemplateQueryInterceptor] SQL finishes. Duration: {eventData.Duration.TotalMilliseconds} ms");
+                // Console.WriteLine($"[TemplateQueryInterceptor] SQL finishes. Duration: {eventData.Duration.TotalMilliseconds} ms");
                 return new System.Threading.Tasks.ValueTask<System.Data.Common.DbDataReader>(new DiagnosticDataReader(result));
             }
             return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
@@ -973,7 +973,7 @@ namespace SynOS.Services.Reporting
                 }
                 else
                 {
-                    Console.WriteLine($"[TemplateQueryInterceptor] End of Read. Rows: {TemplateQueryDiagnostics.RowsReturned}, Bytes: {TemplateQueryDiagnostics.BytesReturned}");
+                    // Console.WriteLine($"[TemplateQueryInterceptor] End of Read. Rows: {TemplateQueryDiagnostics.RowsReturned}, Bytes: {TemplateQueryDiagnostics.BytesReturned}");
                 }
                 return hasRow;
             }
@@ -991,7 +991,7 @@ namespace SynOS.Services.Reporting
                 }
                 else
                 {
-                    Console.WriteLine($"[TemplateQueryInterceptor] End of Read. Rows: {TemplateQueryDiagnostics.RowsReturned}, Bytes: {TemplateQueryDiagnostics.BytesReturned}");
+                    // Console.WriteLine($"[TemplateQueryInterceptor] End of Read. Rows: {TemplateQueryDiagnostics.RowsReturned}, Bytes: {TemplateQueryDiagnostics.BytesReturned}");
                 }
                 return hasRow;
             }

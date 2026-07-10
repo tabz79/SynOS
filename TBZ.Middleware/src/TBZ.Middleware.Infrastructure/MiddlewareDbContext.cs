@@ -36,6 +36,12 @@ namespace TBZ.Middleware.Infrastructure
         public DbSet<KnownIssue> KnownIssues => Set<KnownIssue>();
         public DbSet<HealthSnapshot> HealthSnapshots => Set<HealthSnapshot>();
         public DbSet<CommandDirective> CommandDirectives => Set<CommandDirective>();
+        public DbSet<DiagnosticsBundle> DiagnosticsBundles => Set<DiagnosticsBundle>();
+        public DbSet<Release> Releases => Set<Release>();
+        public DbSet<ReleasePackage> ReleasePackages => Set<ReleasePackage>();
+        public DbSet<Deployment> Deployments => Set<Deployment>();
+        public DbSet<DeploymentEvent> DeploymentEvents => Set<DeploymentEvent>();
+        public DbSet<DeploymentPolicy> DeploymentPolicies => Set<DeploymentPolicy>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -295,6 +301,7 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.StatusMessage).HasMaxLength(500);
             });
 
             modelBuilder.Entity<SupportCase>(entity =>
@@ -327,6 +334,54 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.CommandType).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<DiagnosticsBundle>(entity =>
+            {
+                entity.ToTable("DiagnosticsBundles");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<Release>(entity =>
+            {
+                entity.ToTable("Releases");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Version).IsUnique();
+                entity.Property(e => e.Version).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.RolloutRing).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<ReleasePackage>(entity =>
+            {
+                entity.ToTable("ReleasePackages");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TargetArchitecture).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.PackageFileName).IsRequired().HasMaxLength(250);
+                entity.Property(e => e.ChecksumSha256).IsRequired().HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<Deployment>(entity =>
+            {
+                entity.ToTable("Deployments");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.LabId).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<DeploymentEvent>(entity =>
+            {
+                entity.ToTable("DeploymentEvents");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.EventType).IsRequired().HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<DeploymentPolicy>(entity =>
+            {
+                entity.ToTable("DeploymentPolicies");
+                entity.HasKey(e => e.Id);
             });
         }
     }

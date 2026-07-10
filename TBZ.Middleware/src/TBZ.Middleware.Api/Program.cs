@@ -13,27 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(connectionString))
 {
-    var currentDir = new DirectoryInfo(AppContext.BaseDirectory);
-    string? resolvedDbPath = null;
-    while (currentDir != null)
-    {
-        var synosSln = Path.Combine(currentDir.FullName, "SynOS.sln");
-        if (File.Exists(synosSln))
-        {
-            resolvedDbPath = Path.Combine(currentDir.FullName, "TBZ.Middleware", "src", "TBZ.Middleware.Api", "MiddlewareDb.db");
-            break;
-        }
-        var tbzSln = Path.Combine(currentDir.FullName, "TBZ.Middleware.sln");
-        if (File.Exists(tbzSln))
-        {
-            resolvedDbPath = Path.Combine(currentDir.FullName, "src", "TBZ.Middleware.Api", "MiddlewareDb.db");
-            break;
-        }
-        currentDir = currentDir.Parent;
-    }
-    
-    var finalDbPath = resolvedDbPath ?? Path.Combine(AppContext.BaseDirectory, "MiddlewareDb.db");
-    connectionString = $"Data Source={finalDbPath}";
+    // Use CallerFilePath compilation metadata to find the source code directory reliably under any execution context
+    string GetSourceDir([System.Runtime.CompilerServices.CallerFilePath] string? path = null) => Path.GetDirectoryName(path) ?? "";
+    var sourceDir = GetSourceDir();
+    var resolvedDbPath = Path.Combine(sourceDir, "MiddlewareDb.db");
+    connectionString = $"Data Source={resolvedDbPath}";
 }
 
 var sqliteBuilder = new Microsoft.Data.Sqlite.SqliteConnectionStringBuilder(connectionString);
@@ -82,6 +66,7 @@ builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.LabContextService
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.ContextMetadataService>();
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.EntityContextService>();
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.ContextService>();
+builder.Services.AddHostedService<TBZ.Middleware.Api.Services.DiagnosticsReassemblyWorker>();
 
 builder.Services.AddCors(options =>
 {
@@ -101,7 +86,7 @@ app.UseCors();
 var eventBusService = app.Services.GetRequiredService<IOperationalEventBus>();
 eventBusService.Subscribe<HeartbeatReceivedEvent>(async @event =>
 {
-    Console.WriteLine($"[EVENT BUS HANDLER] Heartbeat Received from Lab: {@event.LabId}, EventId: {@event.EventId}, Time: {@event.OccurredAt}");
+    app.Logger.LogDebug("[EVENT BUS HANDLER] Heartbeat Received from Lab: {LabId}, EventId: {EventId}, Time: {OccurredAt}", @event.LabId, @event.EventId, @event.OccurredAt);
 
     using (var scope = app.Services.CreateScope())
     {
@@ -127,15 +112,35 @@ eventBusService.Subscribe<HeartbeatReceivedEvent>(async @event =>
                 }
             }
 
+            double cpu = 12.5;
+            double mem = 450.0;
+            double disk = 80.0;
+
+            if (!string.IsNullOrEmpty(@event.PayloadJson))
+            {
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(@event.PayloadJson);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("CpuUsagePercent", out var cpuProp) && cpuProp.TryGetDouble(out var cpuVal))
+                        cpu = cpuVal;
+                    if (root.TryGetProperty("MemoryUsageMB", out var memProp) && memProp.TryGetDouble(out var memVal))
+                        mem = memVal;
+                    if (root.TryGetProperty("DiskFreeSpaceGB", out var diskProp) && diskProp.TryGetDouble(out var diskVal))
+                        disk = diskVal;
+                }
+                catch {}
+            }
+
             // Create HealthSnapshot record
             var snapshot = new HealthSnapshot
             {
                 Id = Guid.NewGuid(),
                 LabId = @event.LabId,
                 Timestamp = DateTime.UtcNow,
-                CpuUsagePercent = 12.5, // Mock value
-                MemoryUsageMB = 450.0, // Mock value
-                DiskFreeSpaceGB = 80.0, // Mock value
+                CpuUsagePercent = cpu,
+                MemoryUsageMB = mem,
+                DiskFreeSpaceGB = disk,
                 PendingOutboxCount = 0,
                 DeadLetterCount = 0
             };
@@ -152,14 +157,14 @@ eventBusService.Subscribe<HeartbeatReceivedEvent>(async @event =>
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to record heartbeat health snapshot: {ex.Message}");
+            app.Logger.LogError(ex, "Failed to record heartbeat health snapshot");
         }
     }
 });
 
 eventBusService.Subscribe<TBZ.Middleware.Application.Events.SupportTicketCreatedEvent>(async @event =>
 {
-    Console.WriteLine($"[EVENT BUS HANDLER] Support Ticket Event Received: LabId: {@event.LabId}");
+    app.Logger.LogDebug("[EVENT BUS HANDLER] Support Ticket Event Received: LabId: {LabId}", @event.LabId);
     
     using (var scope = app.Services.CreateScope())
     {
@@ -200,7 +205,7 @@ eventBusService.Subscribe<TBZ.Middleware.Application.Events.SupportTicketCreated
             Guid supportCaseId;
             if (matchedIssue != null)
             {
-                Console.WriteLine($"[TRIAGE] Diagnostic fingerprint match found for ticket {ticketId}: {matchedIssue.Title}");
+                app.Logger.LogDebug("[TRIAGE] Diagnostic fingerprint match found for ticket {TicketId}: {Title}", ticketId, matchedIssue.Title);
                 
                 // Check if there is an open Case for this known issue
                 var existingCase = await db.SupportCases
@@ -230,7 +235,7 @@ eventBusService.Subscribe<TBZ.Middleware.Application.Events.SupportTicketCreated
             }
             else
             {
-                Console.WriteLine($"[TRIAGE] No known issue match for ticket {ticketId}. Escalating to new Case.");
+                app.Logger.LogDebug("[TRIAGE] No known issue match for ticket {TicketId}. Escalating to new Case.", ticketId);
                 
                 // Create new Support Case
                 var newCase = new SupportCase
@@ -265,11 +270,11 @@ eventBusService.Subscribe<TBZ.Middleware.Application.Events.SupportTicketCreated
 
             db.SupportTickets.Add(ticket);
             await db.SaveChangesAsync();
-            Console.WriteLine($"[TRIAGE] Ticket {ticketId} saved. Linked to Case {supportCaseId}. Status: {ticket.Status}");
+            app.Logger.LogDebug("[TRIAGE] Ticket {TicketId} saved. Linked to Case {CaseId}. Status: {Status}", ticketId, supportCaseId, ticket.Status);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to process incoming support ticket: {ex.Message}");
+            app.Logger.LogError(ex, "Failed to process incoming support ticket");
         }
     }
 });
@@ -404,7 +409,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options, IOperationalEventBus eventBus) =>
 {
-    Console.WriteLine($"[INTEGRATION DEB] /api/events endpoint started. EventId: {dto?.EventId}, Type: {dto?.EventType}");
+    app.Logger.LogDebug("[INTEGRATION DEB] /api/events endpoint started. EventId: {EventId}, Type: {EventType}", dto?.EventId, dto?.EventType);
     
     // Check initial counts
     int countMsgBefore = 0;
@@ -420,7 +425,7 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     if (!context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues) ||
         !context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
     {
-        Console.WriteLine("[INTEGRATION DEB] /api/events returning 401: Missing auth headers");
+        app.Logger.LogDebug("[INTEGRATION DEB] /api/events returning 401: Missing auth headers");
         return Results.Json(new { error = "Missing auth headers X-Lab-Id or X-Api-Key" }, statusCode: StatusCodes.Status401Unauthorized);
     }
 
@@ -441,12 +446,12 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     }
 
     // 3. Deduplication Check (Idempotency)
-    Console.WriteLine($"[INTEGRATION DEB] Hop 2: /api/events received request. EventId: {dto.EventId}, EventType: {dto.EventType}");
+    app.Logger.LogDebug("[INTEGRATION DEB] Hop 2: /api/events received request. EventId: {EventId}, EventType: {EventType}", dto.EventId, dto.EventType);
     var alreadyExists = await db.StoredEvents.AnyAsync(e => e.EventId == dto.EventId);
     if (alreadyExists)
     {
         // Return 208 AlreadyReported to satisfy idempotency requirement silently
-        Console.WriteLine($"[INTEGRATION DEB] Hop 2: Duplicate event skipped. EventId: {dto.EventId}");
+        app.Logger.LogDebug("[INTEGRATION DEB] Hop 2: Duplicate event skipped. EventId: {EventId}", dto.EventId);
         return Results.Json(new { message = "Duplicate event skipped", eventId = dto.EventId }, statusCode: StatusCodes.Status208AlreadyReported);
     }
 
@@ -605,7 +610,7 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
 
     if (dto.EventType == "HeartbeatEvent" || dto.EventType == "Heartbeat")
     {
-        Console.WriteLine($"[INTEGRATION DEB] IngestEvent publishing HeartbeatReceivedEvent to Event Bus. LabId: {dto.LabId}");
+        app.Logger.LogDebug("[INTEGRATION DEB] IngestEvent publishing HeartbeatReceivedEvent to Event Bus. LabId: {LabId}", dto.LabId);
         try
         {
             await eventBus.PublishAsync(new HeartbeatReceivedEvent
@@ -619,12 +624,12 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to publish HeartbeatReceivedEvent to Event Bus: {ex.Message}");
+            app.Logger.LogError(ex, "Failed to publish HeartbeatReceivedEvent to Event Bus");
         }
     }
     else if (dto.EventType == "SupportTicketCreated")
     {
-        Console.WriteLine($"[INTEGRATION DEB] IngestEvent publishing SupportTicketCreatedEvent to Event Bus. LabId: {dto.LabId}");
+        app.Logger.LogDebug("[INTEGRATION DEB] IngestEvent publishing SupportTicketCreatedEvent to Event Bus. LabId: {LabId}", dto.LabId);
         try
         {
             await eventBus.PublishAsync(new TBZ.Middleware.Application.Events.SupportTicketCreatedEvent
@@ -637,7 +642,43 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[ERROR] Failed to publish SupportTicketCreatedEvent to Event Bus: {ex.Message}");
+            app.Logger.LogError(ex, "Failed to publish SupportTicketCreatedEvent to Event Bus");
+        }
+    }
+    else if (dto.EventType == "DiagnosticsBundleChunk")
+    {
+        app.Logger.LogDebug("[INTEGRATION DEB] IngestEvent handling DiagnosticsBundleChunk. LabId: {LabId}", dto.LabId);
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(dto.PayloadJson);
+            var root = doc.RootElement;
+            var bundleId = root.GetProperty("BundleId").GetGuid();
+            var totalChunks = root.GetProperty("TotalChunks").GetInt32();
+
+            var bundle = await db.DiagnosticsBundles.FindAsync(bundleId);
+            if (bundle == null)
+            {
+                bundle = new TBZ.Middleware.Domain.DiagnosticsBundle
+                {
+                    Id = bundleId,
+                    LabId = dto.LabId,
+                    Status = "Processing",
+                    ReceivedChunks = 1,
+                    TotalChunks = totalChunks,
+                    CreatedAt = DateTime.UtcNow
+                };
+                db.DiagnosticsBundles.Add(bundle);
+            }
+            else
+            {
+                bundle.ReceivedChunks += 1;
+            }
+            await db.SaveChangesAsync();
+            app.Logger.LogDebug("[INTEGRATION DEB] DiagnosticsBundle {BundleId} progress updated: {Received}/{Total}", bundleId, bundle.ReceivedChunks, bundle.TotalChunks);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogError(ex, "Failed to handle DiagnosticsBundleChunk event");
         }
     }
 
@@ -646,11 +687,11 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     {
         var countMsgAfter = await db.NotificationMessages.CountAsync();
         var countOutboxAfter = await db.NotificationOutboxes.CountAsync();
-        Console.WriteLine($"[INTEGRATION DEB] DB Changes. Messages: {countMsgBefore} -> {countMsgAfter}, Outbox: {countOutboxBefore} -> {countOutboxAfter}");
+        app.Logger.LogDebug("[INTEGRATION DEB] DB Changes. Messages: {BeforeMsg} -> {AfterMsg}, Outbox: {BeforeOut} -> {AfterOut}", countMsgBefore, countMsgAfter, countOutboxBefore, countOutboxAfter);
     }
     catch {}
 
-    Console.WriteLine($"[INTEGRATION DEB] /api/events returning 200 OK: success = true, eventId = {dto.EventId}");
+    app.Logger.LogDebug("[INTEGRATION DEB] /api/events returning 200 OK: success = true, eventId = {EventId}", dto.EventId);
     return Results.Ok(new { success = true, eventId = dto.EventId });
 })
 .WithName("IngestEvent")

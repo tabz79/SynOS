@@ -92,6 +92,9 @@ export function SystemSettingsScreen() {
   const [systemInfo, setSystemInfo] = useState(null);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [applyingUpdate, setApplyingUpdate] = useState(false);
+  const [availableUpdate, setAvailableUpdate] = useState(null);
+  const [readinessReport, setReadinessReport] = useState(null);
+  const [checkingReadiness, setCheckingReadiness] = useState(false);
   const [updateManifest, setUpdateManifest] = useState(JSON.stringify({
     TargetArchitecture: "x64",
     RequiredDiskSpaceGB: 10,
@@ -700,9 +703,26 @@ export function SystemSettingsScreen() {
     setCheckingUpdate(true);
     setSaveSuccess(null);
     setSaveError(null);
+    setAvailableUpdate(null);
     try {
       const res = await apiClient.post('/api/v1/admin/operations/updates/check');
-      setSaveSuccess(res?.message || 'Check completed');
+      if (res?.updateAvailable || res?.UpdateAvailable) {
+        const updateData = {
+          updateAvailable: res.updateAvailable ?? res.UpdateAvailable,
+          version: res.version ?? res.Version,
+          releaseNotes: res.releaseNotes ?? res.ReleaseNotes,
+          schemaVersion: res.schemaVersion ?? res.SchemaVersion,
+          requiredFreeSpaceBytes: res.requiredFreeSpaceBytes ?? res.RequiredFreeSpaceBytes,
+          checksumSha256: res.checksumSha256 ?? res.ChecksumSha256,
+          downloadUrl: res.downloadUrl ?? res.DownloadUrl,
+          deploymentId: res.deploymentId ?? res.DeploymentId,
+          packageId: res.packageId ?? res.PackageId
+        };
+        setAvailableUpdate(updateData);
+        setSaveSuccess(`Update v${updateData.version} is available!`);
+      } else {
+        setSaveSuccess(res?.message || 'The system is already running the latest software version.');
+      }
       loadSystemInfo();
     } catch (err) {
       setSaveError(err.message || 'Failed to check for updates.');
@@ -711,14 +731,32 @@ export function SystemSettingsScreen() {
     }
   };
 
-  const handleApplyUpdate = async () => {
-    if (!window.confirm('Apply system update now? This will execute preflight validations and restart host services.')) return;
+  const handleCheckReadiness = async (manifestToApply) => {
+    setCheckingReadiness(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    setReadinessReport(null);
+    try {
+      const res = await apiClient.post('/api/v1/admin/operations/updates/assess', manifestToApply);
+      setReadinessReport({ manifest: manifestToApply, report: res });
+    } catch (err) {
+      setSaveError(err.message || 'Failed to assess update readiness.');
+    } finally {
+      setCheckingReadiness(false);
+    }
+  };
+
+  const handleApplyUpdate = async (manifestToApply, backupId) => {
     setApplyingUpdate(true);
     setSaveSuccess(null);
     setSaveError(null);
+    setReadinessReport(null);
     try {
-      const parsedManifest = JSON.parse(updateManifest);
-      const res = await apiClient.post('/api/v1/admin/operations/updates/apply', parsedManifest);
+      const payload = {
+        ...manifestToApply,
+        backupId: backupId
+      };
+      const res = await apiClient.post('/api/v1/admin/operations/updates/apply', payload);
       setSaveSuccess(res?.message || 'Update successfully applied.');
       loadSystemInfo();
     } catch (err) {
@@ -740,9 +778,21 @@ export function SystemSettingsScreen() {
     if (activeTab === 'printing') loadPrintingData();
     if (activeTab === 'audit') loadAuditLogs();
     if (activeTab === 'backup') loadBackups();
-    if (activeTab === 'support') loadTickets();
     if (activeTab === 'about') loadSystemInfo();
   }, [activeTab, auditOffset]);
+
+  // Support tab polling loop
+  useEffect(() => {
+    if (activeTab !== 'support') return;
+
+    loadTickets(); // Immediate load
+
+    const interval = setInterval(() => {
+      loadTickets();
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [activeTab]);
 
   // Handle Settings Submit
   const handleSettingsSubmit = async (e) => {
@@ -3577,8 +3627,9 @@ export function SystemSettingsScreen() {
                       <th className="p-4 font-bold text-zinc-400 tracking-wider">Title</th>
                       <th className="p-4 font-bold text-zinc-400 tracking-wider">Category</th>
                       <th className="p-4 font-bold text-zinc-400 tracking-wider">Priority</th>
-                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Created Date</th>
-                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Sync Status</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Status</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Latest Update Comment</th>
+                      <th className="p-4 font-bold text-zinc-400 tracking-wider">Last Updated</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-200 dark:divide-zinc-900">
@@ -3596,21 +3647,30 @@ export function SystemSettingsScreen() {
                             {t.priority}
                           </span>
                         </td>
-                        <td className="p-4 text-zinc-400 dark:text-zinc-500 font-mono">
-                          {formatDateTime(t.createdAt)}
-                        </td>
-                        <td className="p-4 font-mono">
+                        <td className="p-4">
                           <span className={'px-2 py-0.5 rounded text-xxs font-bold ' + (
-                            t.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500 animate-pulse'
+                            t.status === 'Submitted' ? 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/10' :
+                            t.status === 'Under Review' ? 'bg-purple-500/10 text-purple-500 border border-purple-500/10' :
+                            t.status === 'In Progress' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/10' :
+                            t.status === 'Waiting for Customer' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/10' :
+                            t.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/10' :
+                            t.status === 'Closed' ? 'bg-slate-500/10 text-slate-500 border border-slate-500/10' :
+                            'bg-zinc-500/10 text-zinc-500 border border-zinc-500/10'
                           )}>
                             {t.status}
                           </span>
+                        </td>
+                        <td className="p-4 text-zinc-500 dark:text-zinc-400 font-medium">
+                          {t.statusMessage || <span className="text-zinc-400 dark:text-zinc-600 italic">No update comments yet.</span>}
+                        </td>
+                        <td className="p-4 text-zinc-400 dark:text-zinc-500 font-mono">
+                          {formatDateTime(t.updatedAt || t.createdAt)}
                         </td>
                       </tr>
                     ))}
                     {tickets.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-zinc-400 dark:text-zinc-500 text-xs font-semibold">
+                        <td colSpan={7} className="p-8 text-center text-zinc-400 dark:text-zinc-500 text-xs font-semibold">
                           No support tickets found in outbox telemetry.
                         </td>
                       </tr>
@@ -3661,9 +3721,12 @@ export function SystemSettingsScreen() {
               <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest mb-4">
                 Software Update Manager
               </h4>
+              
               <div className="flex justify-between items-center bg-white dark:bg-zinc-950 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-850 mb-6">
                 <div>
-                  <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Status: System up to date</div>
+                  <div className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                    {availableUpdate ? `Status: Update Available (v${availableUpdate.version})` : 'Status: System up to date'}
+                  </div>
                   <div className="text-xxs text-zinc-400 mt-1">
                     Last checked: {systemInfo?.lastChecked ? formatDateTime(systemInfo.lastChecked) : 'Recently'}
                   </div>
@@ -3678,24 +3741,185 @@ export function SystemSettingsScreen() {
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <label className="block text-xxs font-bold text-zinc-400 mb-2 tracking-wide">
-                  Trigger Migration / Update Manifest (JSON Config)
+              {availableUpdate && !readinessReport && (
+                <div className="bg-white dark:bg-zinc-950 border border-synos-primary/30 p-5 rounded-2xl mb-6 space-y-4 shadow-sm animate-fadeIn">
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900 pb-3">
+                    <div>
+                      <h5 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">New Software Available</h5>
+                      <p className="text-xxs text-zinc-400 mt-0.5">Version: <span className="font-mono text-synos-primary font-bold">v{availableUpdate.version}</span></p>
+                    </div>
+                    <span className="text-[10px] bg-synos-primary/10 text-synos-primary font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      Staged
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xxs font-mono">
+                    <div className="bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50">
+                      <div className="text-zinc-400 mb-1">Estimated Download</div>
+                      <div className="font-bold text-zinc-800 dark:text-zinc-200">50.0 MB</div>
+                    </div>
+                    <div className="bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50">
+                      <div className="text-zinc-400 mb-1">Database Schema</div>
+                      <div className="font-bold text-zinc-800 dark:text-zinc-200">v{availableUpdate.schemaVersion}</div>
+                    </div>
+                    <div className="bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50">
+                      <div className="text-zinc-400 mb-1">Required Space</div>
+                      <div className="font-bold text-zinc-800 dark:text-zinc-200">
+                        {availableUpdate.requiredFreeSpaceBytes ? `${(availableUpdate.requiredFreeSpaceBytes / (1024 * 1024)).toFixed(1)} MB` : 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="text-xxs font-bold text-zinc-400 uppercase tracking-wider">Release Notes</div>
+                    <div className="bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50 text-xs text-zinc-700 dark:text-zinc-300 font-sans leading-relaxed whitespace-pre-line">
+                      {availableUpdate.releaseNotes || 'No notes provided for this version.'}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleCheckReadiness(availableUpdate)}
+                    disabled={applyingUpdate || checkingReadiness}
+                    className="w-full h-11 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    {checkingReadiness ? 'Checking Readiness...' : (applyingUpdate ? 'Applying Update...' : '⚙️ Install Software Update Now')}
+                  </button>
+                </div>
+              )}
+
+              {readinessReport && (
+                <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 p-6 rounded-2xl mb-6 space-y-6 shadow-sm animate-fadeIn text-xs">
+                  <div className="flex justify-between items-center border-b border-zinc-150 dark:border-zinc-900 pb-4">
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-850 dark:text-zinc-150">Pre-Update Readiness Advisor</h4>
+                      <p className="text-xxs text-zinc-400 mt-1">Target Version: <span className="font-mono text-synos-primary font-bold">v{readinessReport.manifest?.version}</span></p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setReadinessReport(null)}
+                      className="text-zinc-400 hover:text-zinc-655 dark:hover:text-zinc-200 text-xs font-bold font-mono"
+                    >
+                      ✕ Close
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {readinessReport.report.checks.map((check) => {
+                      const getSeverityStyle = (severity) => {
+                        if (severity === 0 || severity === 'Success') return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
+                        if (severity === 1 || severity === 'Warning') return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+                        return 'text-rose-500 bg-rose-500/10 border-rose-500/20';
+                      };
+
+                      const getIcon = (severity) => {
+                        if (severity === 0 || severity === 'Success') return '✓';
+                        if (severity === 1 || severity === 'Warning') return '⚠';
+                        return '✗';
+                      };
+
+                      return (
+                        <div key={check.code} className="flex items-start gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50">
+                          <span className={`flex items-center justify-center h-5 w-5 rounded-full border text-[10px] font-bold shrink-0 ${getSeverityStyle(check.severity)}`}>
+                            {getIcon(check.severity)}
+                          </span>
+                          <div>
+                            <div className="font-bold text-zinc-850 dark:text-zinc-200 text-xs">{check.title}</div>
+                            <div className="text-xxs text-zinc-450 dark:text-zinc-400 mt-0.5">{check.message}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-zinc-50 dark:bg-zinc-900/40 p-4 border border-zinc-200 dark:border-zinc-850 rounded-xl space-y-2">
+                    <div className="text-xxs font-bold text-zinc-450 dark:text-zinc-400 uppercase tracking-wider">Estimated Installation & Downtime</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xxs font-mono mt-1 text-zinc-600 dark:text-zinc-400">
+                      <div>
+                        <div className="text-zinc-400 mb-0.5">Download</div>
+                        <div className="font-bold text-zinc-800 dark:text-zinc-200">12 sec</div>
+                      </div>
+                      <div>
+                        <div className="text-zinc-400 mb-0.5">Backup</div>
+                        <div className="font-bold text-zinc-800 dark:text-zinc-200">8 sec</div>
+                      </div>
+                      <div>
+                        <div className="text-zinc-400 mb-0.5">DB Migration</div>
+                        <div className="font-bold text-zinc-800 dark:text-zinc-200">4 sec</div>
+                      </div>
+                      <div>
+                        <div className="text-zinc-400 mb-0.5">Restart</div>
+                        <div className="font-bold text-zinc-800 dark:text-zinc-200">15 sec</div>
+                      </div>
+                    </div>
+                    <div className="border-t border-zinc-200 dark:border-zinc-800/80 pt-2 mt-2 flex justify-between text-xs items-center">
+                      <span className="text-zinc-450 dark:text-zinc-400">Estimated offline time:</span>
+                      <span className="font-bold text-synos-primary">≈ 40 seconds</span>
+                    </div>
+                  </div>
+
+                  {readinessReport.report.checks.some(c => c.severity === 1 || c.severity === 'Warning') && (
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <span>⚠️</span>
+                        <span>Operational Conditions Detected</span>
+                      </div>
+                      <p className="text-xxs leading-relaxed font-semibold">
+                        The following operational conditions were detected. Installing now may interrupt laboratory operations. Continue only if you are within a planned maintenance window.
+                      </p>
+                    </div>
+                  )}
+
+                  {!readinessReport.report.canInstall && (
+                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 rounded-xl space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <span>✗</span>
+                        <span>Critical Blocker(s) Present</span>
+                      </div>
+                      <p className="text-xxs leading-relaxed font-semibold">
+                        Pre-update validation checks failed with critical errors. Please resolve all error items before proceeding with the upgrade.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setReadinessReport(null)}
+                      className="flex-1 h-11 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-150 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xs tracking-wider rounded-xl transition-colors flex items-center justify-center"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyUpdate(readinessReport.manifest, readinessReport.report.backupId)}
+                      disabled={applyingUpdate || !readinessReport.report.canInstall}
+                      className="flex-1 h-11 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {applyingUpdate ? 'Applying Update...' : 'Install Update'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4 border-t border-zinc-200 dark:border-zinc-850/80 pt-6">
+                <label className="block text-xxs font-bold text-zinc-400 mb-1 tracking-wide uppercase">
+                  Developer Mode: Trigger Manual Update Manifest
                 </label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={updateManifest}
                   onChange={e => setUpdateManifest(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-mono outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-mono outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                 />
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={handleApplyUpdate}
-                    disabled={applyingUpdate}
-                    className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all w-full md:w-auto flex items-center justify-center gap-1.5"
+                    onClick={() => handleCheckReadiness(JSON.parse(updateManifest))}
+                    disabled={applyingUpdate || checkingReadiness}
+                    className="h-10 px-6 bg-zinc-650 hover:bg-zinc-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
-                    {applyingUpdate ? 'Applying Update...' : '⚙️ Trigger Preflight & Apply Update'}
+                    {checkingReadiness ? 'Checking Readiness...' : (applyingUpdate ? 'Applying Update...' : 'Trigger Manual Apply')}
                   </button>
                 </div>
               </div>

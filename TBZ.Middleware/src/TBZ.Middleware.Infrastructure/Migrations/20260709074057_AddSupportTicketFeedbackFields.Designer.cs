@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TBZ.Middleware.Infrastructure;
 
@@ -10,9 +11,11 @@ using TBZ.Middleware.Infrastructure;
 namespace TBZ.Middleware.Infrastructure.Migrations
 {
     [DbContext(typeof(MiddlewareDbContext))]
-    partial class MiddlewareDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260709074057_AddSupportTicketFeedbackFields")]
+    partial class AddSupportTicketFeedbackFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -272,87 +275,6 @@ namespace TBZ.Middleware.Infrastructure.Migrations
                     b.ToTable("DeliveryQueueItems", (string)null);
                 });
 
-            modelBuilder.Entity("TBZ.Middleware.Domain.Deployment", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LabId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReleaseId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Deployments", (string)null);
-                });
-
-            modelBuilder.Entity("TBZ.Middleware.Domain.DeploymentEvent", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DeploymentId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("OccurredAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PayloadJson")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeploymentEvents", (string)null);
-                });
-
-            modelBuilder.Entity("TBZ.Middleware.Domain.DeploymentPolicy", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("DeploymentTimeoutSeconds")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("HeartbeatTimeoutSeconds")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ReleaseId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<double>("RollbackThresholdPercentage")
-                        .HasColumnType("REAL");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("DeploymentPolicies", (string)null);
-                });
-
             modelBuilder.Entity("TBZ.Middleware.Domain.DiagnosticsBundle", b =>
                 {
                     b.Property<string>("Id")
@@ -566,10 +488,6 @@ namespace TBZ.Middleware.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("OSVersion")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RolloutRing")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -1113,90 +1031,6 @@ namespace TBZ.Middleware.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("ReferralPartnerFacts", (string)null);
-                });
-
-            modelBuilder.Entity("TBZ.Middleware.Domain.Release", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("CanaryPercentage")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReleaseNotes")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RolloutRing")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Version")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Version")
-                        .IsUnique();
-
-                    b.ToTable("Releases", (string)null);
-                });
-
-            modelBuilder.Entity("TBZ.Middleware.Domain.ReleasePackage", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ChecksumSha256")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PackageFileName")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReleaseId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("RequiredFreeSpaceBytes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("SchemaVersion")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Signature")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SignatureAlgorithm")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("TargetArchitecture")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ReleasePackages", (string)null);
                 });
 
             modelBuilder.Entity("TBZ.Middleware.Domain.StoredEvent", b =>

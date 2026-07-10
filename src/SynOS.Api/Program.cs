@@ -561,7 +561,121 @@ using (var scope = app.Services.CreateScope())
         {
             logger.LogCritical("Startup Validation Failed: Branch '{BranchName}' (ID: {BranchId}) is missing Code.", branch.Name, branch.BranchId);
         }
-        // In production, we might want to throw here. For now, we log as Critical.
+    }
+
+    // Run Startup Update Verification Check
+    var updatesDir = System.IO.Path.Combine(AppContext.BaseDirectory, "updates");
+    if (System.IO.Directory.Exists(updatesDir))
+    {
+        foreach (var versionDir in System.IO.Directory.GetDirectories(updatesDir))
+        {
+            var stateFile = System.IO.Path.Combine(versionDir, "update_state.json");
+            if (System.IO.File.Exists(stateFile))
+            {
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+                logger.LogInformation("Found active update transaction state file in {Path}", versionDir);
+                Guid deploymentId = Guid.Empty;
+                Guid backupId = Guid.Empty;
+                string backupFilePath = "";
+                try
+                {
+                    var stateText = await System.IO.File.ReadAllTextAsync(stateFile);
+                    using var stateDoc = System.Text.Json.JsonDocument.Parse(stateText);
+                    var root = stateDoc.RootElement;
+                    deploymentId = Guid.Parse(root.GetProperty("DeploymentId").GetString() ?? Guid.Empty.ToString());
+                    backupId = Guid.Parse(root.GetProperty("BackupId").GetString() ?? Guid.Empty.ToString());
+                    backupFilePath = root.GetProperty("BackupFilePath").GetString() ?? "";
+
+                    logger.LogInformation("Processing startup migration check for deployment: {DeploymentId}", deploymentId);
+
+                    // 1. Run migrations
+                    logger.LogInformation("Running database migrations...");
+                    await context.Database.MigrateAsync();
+
+                    // 2. Run post-migration health checks
+                    logger.LogInformation("Running database connection health check...");
+                    var healthy = await context.Database.CanConnectAsync();
+                    if (!healthy)
+                    {
+                        throw new Exception("Unable to connect to database after migration.");
+                    }
+
+                    // 3. Report Healthy to Middleware
+                    logger.LogInformation("Post-migration health check passed. Reporting Healthy to Middleware...");
+                    using (var client = new System.Net.Http.HttpClient())
+                    {
+                        var apiUrl = configuration["Middleware:ApiUrl"] ?? "http://localhost:5069/api/events";
+                        var baseUrl = apiUrl.Replace("/api/events", "");
+                        var requestUrl = $"{baseUrl}/api/controltower/deployments/events";
+                        var payload = new { DeploymentId = deploymentId, EventType = "Healthy" };
+                        var content = new System.Net.Http.StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+                        await client.PostAsync(requestUrl, content);
+                    }
+
+                    System.IO.File.Delete(stateFile);
+                    logger.LogInformation("Update transaction completed successfully.");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Startup update check failed. Triggering automatic rollback...");
+                    try
+                    {
+                        using (var client = new System.Net.Http.HttpClient())
+                        {
+                            var apiUrl = configuration["Middleware:ApiUrl"] ?? "http://localhost:5069/api/events";
+                            var baseUrl = apiUrl.Replace("/api/events", "");
+                            var requestUrl = $"{baseUrl}/api/controltower/deployments/events";
+                            
+                            if (deploymentId != Guid.Empty)
+                            {
+                                var payloadRollback = new { DeploymentId = deploymentId, EventType = "RolledBack" };
+                                await client.PostAsync(requestUrl, new System.Net.Http.StringContent(System.Text.Json.JsonSerializer.Serialize(payloadRollback), System.Text.Encoding.UTF8, "application/json"));
+
+                                var payloadFailed = new { DeploymentId = deploymentId, EventType = "Failed", PayloadJson = $"{{\"error\":\"{ex.Message}\"}}" };
+                                await client.PostAsync(requestUrl, new System.Net.Http.StringContent(System.Text.Json.JsonSerializer.Serialize(payloadFailed), System.Text.Encoding.UTF8, "application/json"));
+                            }
+                        }
+
+                        // Shutdown and run updater in rollback mode
+                        var targetDir = AppContext.BaseDirectory;
+                        var backupDir = System.IO.Path.Combine(targetDir, "backup");
+                        var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+                        var updaterExePath = System.IO.Path.Combine(targetDir, "SynOS.Updater.exe");
+                        if (!System.IO.File.Exists(updaterExePath))
+                        {
+                            updaterExePath = System.IO.Path.Combine(targetDir, "..", "SynOS.Updater", "bin", "Debug", "net8.0", "SynOS.Updater.exe");
+                        }
+                        
+                        var launchPath = System.IO.Path.Combine(targetDir, "SynOS.Api.exe");
+                        if (!System.IO.File.Exists(launchPath)) launchPath = System.IO.Path.Combine(targetDir, "SynOS.Api.dll");
+
+                        var updaterArgs = $"--action rollback --target-dir \"{targetDir}\" --backup-dir \"{backupDir}\" --process-id {currentProcess.Id} --launch-path \"{launchPath}\"";
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = updaterExePath,
+                            Arguments = updaterArgs,
+                            UseShellExecute = true
+                        });
+
+                        // Restore DB backup using BackupService
+                        var backupService = scope.ServiceProvider.GetRequiredService<IBackupService>();
+                        if (backupId != Guid.Empty && System.IO.File.Exists(backupFilePath))
+                        {
+                            await backupService.ExecuteRestoreAsync(backupId, backupFilePath, Guid.Empty);
+                        }
+
+                        System.IO.File.Delete(stateFile);
+                        Environment.Exit(1);
+                    }
+                    catch (Exception rollEx)
+                    {
+                        logger.LogCritical(rollEx, "CRITICAL: Automated database/binary rollback failed!");
+                    }
+                }
+            }
+        }
     }
 }
 

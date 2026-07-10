@@ -13,6 +13,8 @@ namespace TBZ.Middleware.Domain
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Guid? DiagnosticBundleId { get; set; }
         public string Status { get; set; } = "Created";
+        public string? StatusMessage { get; set; }
+        public DateTime? UpdatedAt { get; set; }
         public Guid? SupportCaseId { get; set; }
     }
 }

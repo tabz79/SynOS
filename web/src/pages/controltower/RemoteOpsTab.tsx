@@ -1,60 +1,114 @@
-import React, { useState } from 'react';
-
-interface Lab {
-    id: string;
-    name: string;
-    region: string;
-    version: string;
-    os: string;
-    dotnet: string;
-    status: 'Online' | 'Degraded' | 'Offline';
-    lastSeen: string;
-}
-
-interface TimelineEvent {
-    time: string;
-    type: string;
-    description: string;
-    icon: string;
-}
+import React, { useState, useEffect } from 'react';
+import {
+    fetchRemoteLabs,
+    fetchLabTimeline,
+    dispatchLabCommand,
+    updateLabRolloutRing,
+    RemoteLab,
+    TimelineEvent
+} from '../../repositories/controlTowerRepository';
 
 const RemoteOpsTab: React.FC = () => {
-    const [labs] = useState<Lab[]>([
-        { id: 'LAB001', name: 'Divya Diagnostics Central', region: 'Mumbai', version: '1.2.0', os: 'Windows 11 Home 23H2', dotnet: '.NET 8.0.3', status: 'Online', lastSeen: 'Just Now' },
-        { id: 'LAB002', name: 'Apollo Health Branch', region: 'Pune', version: '1.1.9', os: 'Windows Server 2022', dotnet: '.NET 8.0.3', status: 'Degraded', lastSeen: '2 mins ago' },
-        { id: 'LAB003', name: 'Metro Lab Clinic', region: 'Nashik', version: '1.1.9', os: 'Windows 10 Pro 22H2', dotnet: '.NET 8.0.2', status: 'Offline', lastSeen: '1 day ago' }
-    ]);
+    const [labs, setLabs] = useState<RemoteLab[]>([]);
+    const [selectedLab, setSelectedLab] = useState<RemoteLab | null>(null);
+    const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
+    const [commandLogs, setCommandLogs] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [selectedLab, setSelectedLab] = useState<Lab | null>(labs[0]);
-    const [timeline, setTimeline] = useState<TimelineEvent[]>([
-        { time: '2026-07-06 14:30', type: 'Heartbeat', description: 'System telemetry synced successfully. Queue depth: 0.', icon: '💚' },
-        { time: '2026-07-06 14:15', type: 'Command', description: 'Remote command RequestHealthSnapshot executed.', icon: '🛠️' },
-        { time: '2026-07-06 13:00', type: 'Backup', description: 'Database backup backup_LAB001_20260706.zip generated and verified (142 MB).', icon: '💾' },
-        { time: '2026-07-06 12:45', type: 'Update', description: 'Software version upgraded from 1.1.9 to 1.2.0.', icon: '🚀' },
-        { time: '2026-07-06 10:20', type: 'Crash', description: 'NullReferenceException inside PrintLabelSpooler thread.', icon: '💥' }
-    ]);
+    const loadLabs = async () => {
+        try {
+            const data = await fetchRemoteLabs();
+            setLabs(data);
+            if (data.length > 0) {
+                setSelectedLab(prev => {
+                    if (prev) {
+                        const updated = data.find(l => l.id === prev.id);
+                        return updated || data[0];
+                    }
+                    return data[0];
+                });
+            } else {
+                setSelectedLab(null);
+            }
+        } catch (err) {
+            console.error('Failed to load labs directory', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-    const [commandLogs, setCommandLogs] = useState<string[]>([
-        '2026-07-06 14:15: RequestHealthSnapshot dispatched to LAB001 - Status: Executed',
-        '2026-07-06 13:00: ScheduleBackup dispatched to LAB001 - Status: Executed'
-    ]);
+    const loadTimeline = async (labId: string) => {
+        try {
+            const events = await fetchLabTimeline(labId);
+            setTimeline(events);
 
-    const triggerCommand = (commandType: string) => {
+            // Populate command logs from timeline/commands
+            const commands = events.filter(e => e.type === 'Operations');
+            const logs = commands.map(c => `${c.time}: Command activity - ${c.description}`);
+            setCommandLogs(logs);
+        } catch (err) {
+            console.error('Failed to load lab timeline', err);
+        }
+    };
+
+    useEffect(() => {
+        loadLabs();
+        const interval = setInterval(() => {
+            loadLabs();
+        }, 10000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        if (selectedLab) {
+            loadTimeline(selectedLab.id);
+            const interval = setInterval(() => {
+                loadTimeline(selectedLab.id);
+            }, 10000);
+            return () => clearInterval(interval);
+        } else {
+            setTimeline([]);
+            setCommandLogs([]);
+        }
+    }, [selectedLab?.id]);
+
+    const triggerCommand = async (commandType: string) => {
         if (!selectedLab) return;
-        const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-        const logMsg = `${timestamp}: Command ${commandType} dispatched to ${selectedLab.id} - Status: Pending`;
-        setCommandLogs(prev => [logMsg, ...prev]);
 
-        // Add to timeline
-        const newEvent: TimelineEvent = {
-            time: timestamp,
-            type: 'Command',
-            description: `Remote command ${commandType} queued and dispatched to client.`,
-            icon: '⚡'
-        };
-        setTimeline(prev => [newEvent, ...prev]);
-        
-        alert(`Dispatched remote command [${commandType}] to lab [${selectedLab.name} (${selectedLab.id})].`);
+        try {
+            await dispatchLabCommand({
+                labId: selectedLab.id,
+                commandType: commandType,
+                payloadJson: '{}'
+            });
+
+            alert(`Command [${commandType}] queued successfully in database.`);
+            // Automatically refresh timeline and logs from backend
+            await loadTimeline(selectedLab.id);
+        } catch (err) {
+            alert('Failed to queue command.');
+        }
+    };
+
+    const handleUpdateRolloutRing = async (labId: string, ring: string) => {
+        try {
+            await updateLabRolloutRing(labId, ring);
+            alert(`Lab rollout ring successfully updated to [${ring}].`);
+            await loadLabs();
+        } catch (err) {
+            alert('Failed to update lab rollout ring.');
+        }
+    };
+
+
+    const getRingBadgeIcon = (ring: string) => {
+        switch (ring) {
+            case 'Canary': return '🟣';
+            case 'Early': return '🟡';
+            case 'Production': return '🟢';
+            case 'Disabled': return '🔴';
+            default: return '⚪';
+        }
     };
 
     return (
@@ -69,32 +123,40 @@ const RemoteOpsTab: React.FC = () => {
                 <div className="bg-cardBg border border-cardBorder rounded-xl p-5 space-y-4">
                     <h3 className="font-bold text-white text-sm font-display">Lab Directory</h3>
                     <div className="space-y-3">
-                        {labs.map(lab => (
-                            <button
-                                key={lab.id}
-                                onClick={() => setSelectedLab(lab)}
-                                className={`w-full text-left p-3 rounded-lg border transition-all ${
-                                    selectedLab?.id === lab.id 
-                                        ? 'bg-brandSecondary/25 border-brandPrimary shadow-card-glow' 
-                                        : 'bg-[#0b0c16] border-cardBorder hover:border-cardBorder/80'
-                                }`}
-                            >
-                                <div className="flex justify-between items-start">
-                                    <h4 className="text-xs font-bold text-white font-display">{lab.name}</h4>
-                                    <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                                        lab.status === 'Online' ? 'bg-success/10 text-success' :
-                                        lab.status === 'Degraded' ? 'bg-amber-500/10 text-amber-500' :
-                                        'bg-textMuted/15 text-textMuted'
-                                    }`}>
-                                        {lab.status}
-                                    </span>
-                                </div>
-                                <div className="mt-2 flex justify-between text-[10px] text-textSecondary font-mono">
-                                    <span>{lab.id} • {lab.region}</span>
-                                    <span>v{lab.version}</span>
-                                </div>
-                            </button>
-                        ))}
+                        {isLoading ? (
+                            <div className="text-xs text-textSecondary font-mono py-4 text-center">Loading labs...</div>
+                        ) : labs.length === 0 ? (
+                            <div className="text-xs text-textSecondary font-mono py-4 text-center">No labs registered.</div>
+                        ) : (
+                            labs.map(lab => (
+                                <button
+                                    key={lab.id}
+                                    onClick={() => setSelectedLab(lab)}
+                                    className={`w-full text-left p-3 rounded-lg border transition-all ${
+                                        selectedLab?.id === lab.id 
+                                            ? 'bg-brandSecondary/25 border-brandPrimary shadow-card-glow' 
+                                            : 'bg-[#0b0c16] border-cardBorder hover:border-cardBorder/80'
+                                    }`}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <h4 className="text-xs font-bold text-white font-display">
+                                            {getRingBadgeIcon(lab.rolloutRing)} {lab.labName}
+                                        </h4>
+                                        <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                                            lab.status === 'Online' ? 'bg-success/10 text-success' :
+                                            lab.status === 'Degraded' ? 'bg-amber-500/10 text-amber-500' :
+                                            'bg-textMuted/15 text-textMuted'
+                                        }`}>
+                                            {lab.status}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 flex justify-between text-[10px] text-textSecondary font-mono">
+                                        <span>{lab.id} • {lab.geographicalRegion}</span>
+                                        <span>v{lab.activeVersion}</span>
+                                    </div>
+                                </button>
+                            ))
+                        )}
                     </div>
                 </div>
 
@@ -106,12 +168,29 @@ const RemoteOpsTab: React.FC = () => {
                             <div className="bg-cardBg border border-cardBorder rounded-xl p-6">
                                 <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-cardBorder pb-4 mb-4 gap-4">
                                     <div>
-                                        <h3 className="text-lg font-bold font-display text-white">{selectedLab.name}</h3>
-                                        <p className="text-xs text-textSecondary mt-0.5 font-mono">{selectedLab.id} • {selectedLab.region}</p>
+                                        <h3 className="text-lg font-bold font-display text-white">{selectedLab.labName}</h3>
+                                        <p className="text-xs text-textSecondary mt-0.5 font-mono">{selectedLab.id} • {selectedLab.geographicalRegion}</p>
                                     </div>
-                                    <div className="flex items-center space-x-2 text-xs font-mono">
-                                        <span className="text-textSecondary">OS:</span>
-                                        <span className="text-white font-semibold">{selectedLab.os}</span>
+                                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-textSecondary">OS:</span>
+                                            <span className="text-white font-semibold">{selectedLab.osVersion}</span>
+                                        </div>
+                                        <div className="flex items-center space-x-2 border-l border-cardBorder pl-4">
+                                            <span className="text-textSecondary">Rollout Ring:</span>
+                                            <span className="mr-1">{getRingBadgeIcon(selectedLab.rolloutRing)}</span>
+                                            <select
+                                                value={selectedLab.rolloutRing || ''}
+                                                onChange={(e) => handleUpdateRolloutRing(selectedLab.id, e.target.value)}
+                                                className="bg-[#0b0c16] border border-cardBorder rounded px-2 py-1 text-white font-semibold text-xs outline-none focus:border-brandPrimary"
+                                            >
+                                                <option value="">Unconfigured (Production Only)</option>
+                                                <option value="Canary">Canary (All Rings)</option>
+                                                <option value="Early">Early Adopters</option>
+                                                <option value="Production">Production</option>
+                                                <option value="Disabled">Disabled (No Updates)</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -157,6 +236,48 @@ const RemoteOpsTab: React.FC = () => {
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Live Health Snapshot Panel */}
+                            <div className="bg-cardBg border border-cardBorder rounded-xl p-6">
+                                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-display mb-4 flex items-center space-x-2">
+                                    <span>📊 Live Health Status</span>
+                                    {selectedLab.latestSnapshot && (
+                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    )}
+                                </h3>
+                                {selectedLab.latestSnapshot ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        <div className="bg-[#0b0c16] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">CPU Usage</span>
+                                            <p className="text-base font-bold text-white mt-1 font-display">{selectedLab.latestSnapshot.cpuUsagePercent}%</p>
+                                        </div>
+                                        <div className="bg-[#0b0c16] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Memory Usage</span>
+                                            <p className="text-base font-bold text-white mt-1 font-display">{selectedLab.latestSnapshot.memoryUsageMB} MB</p>
+                                        </div>
+                                        <div className="bg-[#0b0c16] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Free Disk Space</span>
+                                            <p className="text-base font-bold text-white mt-1 font-display">{selectedLab.latestSnapshot.diskFreeSpaceGB} GB</p>
+                                        </div>
+                                        <div className="bg-[#0b0c16] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Pending Outbox</span>
+                                            <p className="text-base font-bold text-white mt-1 font-display">{selectedLab.latestSnapshot.pendingOutboxCount} Evt</p>
+                                        </div>
+                                        <div className="bg-[#0b0c16] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Dead Letter Queue</span>
+                                            <p className="text-base font-bold text-white mt-1 font-display">{selectedLab.latestSnapshot.deadLetterCount} Evt</p>
+                                        </div>
+                                        <div className="bg-[#0b0c16] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Last Heartbeat</span>
+                                            <p className="text-[10px] text-white mt-2 font-mono truncate">{new Date(selectedLab.latestSnapshot.timestamp).toLocaleTimeString()}</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-textSecondary font-mono py-4 text-center">
+                                        No health snapshot recorded yet. Click "Health Snapshot" to request one.
+                                    </div>
+                                )}
                             </div>
 
                             {/* Fleet Timeline */}

@@ -52,6 +52,21 @@ namespace SynOS.Services
                 DiagnosticBundleId = bundleId
             };
 
+            // Save locally
+            var localTicket = new SupportTicket
+            {
+                Id = ticketId,
+                LabId = "LAB001",
+                Title = title,
+                Description = description,
+                Priority = priority,
+                Category = category,
+                Status = "Submitted",
+                DiagnosticBundleId = bundleId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.SupportTickets.Add(localTicket);
+
             // 3. Queue in OutboxEvents
             var outboxEvent = new OutboxEvent
             {
@@ -69,7 +84,7 @@ namespace SynOS.Services
             _context.OutboxEvents.Add(outboxEvent);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Queued SupportTicketCreated outbox event for ticket {TicketId}", ticketId);
+            _logger.LogInformation("Created ticket locally and queued SupportTicketCreated outbox event for ticket {TicketId}", ticketId);
             return ticketId;
         }
 
@@ -99,6 +114,21 @@ namespace SynOS.Services
                 CreatedAt = DateTime.UtcNow,
                 DiagnosticBundleId = bundleId
             };
+
+            // Save locally
+            var localTicket = new SupportTicket
+            {
+                Id = ticketId,
+                LabId = "LAB001",
+                Title = $"Application Crash: {exceptionMessage.Split('\n')[0]}",
+                Description = $"Exception: {exceptionMessage}\nStack Trace: {stackTrace}",
+                Priority = "Critical",
+                Category = "Crash",
+                Status = "Submitted",
+                DiagnosticBundleId = bundleId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.SupportTickets.Add(localTicket);
 
             var outboxEvent = new OutboxEvent
             {

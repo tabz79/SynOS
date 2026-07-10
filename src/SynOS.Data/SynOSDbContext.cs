@@ -247,6 +247,7 @@ namespace SynOS.Data
         public DbSet<CriticalAudit> CriticalAudits { get; set; } = null!;
         public DbSet<Referrer> Referrers { get; set; } = null!;
         public DbSet<Report> Reports { get; set; } = null!;
+        public DbSet<SupportTicket> SupportTickets { get; set; } = null!;
         public DbSet<ReportVersion> ReportVersions { get; set; } = null!;
         public DbSet<ReportSnapshot> ReportSnapshots { get; set; } = null!;
         public DbSet<ReportTemplate> ReportTemplates { get; set; } = null!;
@@ -434,6 +435,18 @@ namespace SynOS.Data
                 entity.Property(e => e.LabId).HasMaxLength(50);
                 entity.Property(e => e.BranchId).HasMaxLength(50);
                 entity.Property(e => e.Status).HasMaxLength(20);
+            });
+
+            // Support Tickets Configuration
+            modelBuilder.Entity<SupportTicket>(entity =>
+            {
+                entity.HasIndex(e => e.Status);
+                entity.Property(e => e.LabId).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Title).HasMaxLength(200).IsRequired();
+                entity.Property(e => e.Priority).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Status).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.StatusMessage).HasMaxLength(500);
             });
 
             // Collaborative live session relationships

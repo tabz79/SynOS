@@ -17,5 +17,6 @@ namespace TBZ.Middleware.Domain
         public string DotNetVersion { get; set; } = string.Empty;
         public string OSVersion { get; set; } = string.Empty;
         public DateTime? LastSeenAt { get; set; }
+        public string RolloutRing { get; set; } = "General"; // "Canary", "Early", "Production"
     }
 }

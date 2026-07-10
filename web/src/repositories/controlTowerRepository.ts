@@ -2,6 +2,7 @@
 // Centralized frontend repository layer for API communication and view model mapping.
 
 import controlTowerClient from '../services/controlTowerClient';
+import axios from 'axios';
 import { 
   formatRupees, 
   formatPercentage, 
@@ -652,4 +653,247 @@ export const fetchOperations = async (): Promise<OperationsViewModel> => {
   const res = await controlTowerClient.get('/dashboard');
   return res.data.operational;
 };
+
+export interface SupportTicket {
+  id: string;
+  labId: string;
+  title: string;
+  description: string;
+  priority: 'Critical' | 'High' | 'Medium' | 'Low';
+  category: string;
+  status: 'Created' | 'InAnalysis' | 'WaitingForUpdate' | 'Closed';
+  createdAt: string;
+  diagnosticBundleId?: string;
+  diagnosticBundleStatus?: 'Missing' | 'Processing' | 'Ready' | 'Failed';
+  supportCaseId?: string;
+  statusMessage?: string;
+}
+
+export interface SupportCase {
+  id: string;
+  caseNumber: string;
+  title: string;
+  description: string;
+  priority: string;
+  category: string;
+  status: 'Open' | 'InProgress' | 'Resolved' | 'Closed';
+  createdAt: string;
+  resolvedAt?: string;
+  affectedLabsCount: number;
+}
+
+export interface KnownIssue {
+  id: string;
+  title: string;
+  description: string;
+  diagnosticFingerprint: string;
+  rootCause: string;
+  workaround: string;
+  fixedVersion: string;
+  affectedVersions: string;
+  resolutionPackage: string;
+}
+
+export interface RemoteLab {
+  id: string;
+  labCode: string;
+  labName: string;
+  geographicalRegion: string;
+  activeVersion: string;
+  osVersion: string;
+  dotNetVersion: string;
+  lastSeenAt: string | null;
+  status: 'Online' | 'Offline' | 'Degraded';
+  rolloutRing: string;
+  latestSnapshot?: {
+    cpuUsagePercent: number;
+    memoryUsageMB: number;
+    diskFreeSpaceGB: number;
+    pendingOutboxCount: number;
+    deadLetterCount: number;
+    timestamp: string;
+  } | null;
+}
+
+export interface TimelineEvent {
+  time: string;
+  type: string;
+  description: string;
+  icon: string;
+}
+
+export const fetchSupportTickets = async (): Promise<SupportTicket[]> => {
+  const res = await controlTowerClient.get('/tickets');
+  return res.data;
+};
+
+export const fetchSupportCases = async (): Promise<SupportCase[]> => {
+  const res = await controlTowerClient.get('/cases');
+  return res.data;
+};
+
+export const fetchKnownIssues = async (): Promise<KnownIssue[]> => {
+  const res = await controlTowerClient.get('/knownissues');
+  return res.data;
+};
+
+export const createKnownIssue = async (issue: Omit<KnownIssue, 'id'>): Promise<void> => {
+  await controlTowerClient.post('/knownissues', issue);
+};
+
+export const linkTicketToCase = async (ticketId: string, caseId: string): Promise<void> => {
+  await controlTowerClient.post(`/tickets/${ticketId}/link`, { caseId });
+};
+
+export const updateTicketStatus = async (ticketId: string, status: string, statusMessage: string): Promise<void> => {
+  await controlTowerClient.post(`/tickets/${ticketId}/status`, { status, statusMessage });
+};
+
+export const fetchRemoteLabs = async (): Promise<RemoteLab[]> => {
+  const res = await controlTowerClient.get('/labs');
+  return res.data;
+};
+
+export const updateLabRolloutRing = async (labId: string, ring: string): Promise<void> => {
+  await controlTowerClient.put(`/labs/${labId}/rollout-ring`, { rolloutRing: ring });
+};
+
+export const fetchLabTimeline = async (labId: string): Promise<TimelineEvent[]> => {
+  const res = await controlTowerClient.get(`/labs/${labId}/timeline`);
+  return res.data;
+};
+
+export const dispatchLabCommand = async (command: { labId: string; commandType: string; payloadJson: string }): Promise<void> => {
+  const base = controlTowerClient.defaults.baseURL || 'http://localhost:5069/api/controltower';
+  const commandUrl = base.replace('/api/controltower', '/api/commands/queue');
+  await axios.post(commandUrl, command);
+};
+
+export interface DiagnosticBundleSummary {
+  bundleId: string;
+  labId: string;
+  status: 'Processing' | 'Ready' | 'Failed';
+  bundleSizeBytes: number;
+  checksumSha256: string;
+  completedAt: string | null;
+  errorMessage: string | null;
+  manifest: any;
+  hostInventory: any;
+  healthSnapshot: any;
+  summaryMarkdown: string;
+  recentLogs: string;
+}
+
+export const fetchDiagnosticBundleSummary = async (bundleId: string): Promise<DiagnosticBundleSummary> => {
+  const res = await controlTowerClient.get(`/diagnostics/${bundleId}/summary`);
+  return res.data;
+};
+
+// OTA Update APIs
+export interface ReleasePackageViewModel {
+  id: string;
+  targetArchitecture: string;
+  checksumSha256: string;
+  requiredFreeSpaceBytes: number;
+  schemaVersion: number;
+}
+
+export interface DeploymentPolicyViewModel {
+  deploymentTimeoutSeconds: number;
+  heartbeatTimeoutSeconds: number;
+  rollbackThresholdPercentage: number;
+}
+
+export interface ReleaseViewModel {
+  id: string;
+  version: string;
+  releaseNotes: string;
+  rolloutRing: 'Canary' | 'Early' | 'Production';
+  canaryPercentage: number;
+  status: 'Draft' | 'Beta' | 'Stable' | 'Deprecated' | 'Paused' | 'Cancelled';
+  createdAt: string;
+  publishedAt: string | null;
+  packages: ReleasePackageViewModel[];
+  policy: DeploymentPolicyViewModel | null;
+}
+
+export interface DeploymentEventViewModel {
+  eventType: string;
+  occurredAt: string;
+  payloadJson: string | null;
+}
+
+export interface DeploymentViewModel {
+  id: string;
+  labId: string;
+  labName: string;
+  releaseId: string;
+  status: 'Pending' | 'Downloading' | 'Installing' | 'Success' | 'Completed' | 'Failed' | 'RolledBack' | 'Cancelled';
+  startedAt: string;
+  updatedAt: string;
+  events: DeploymentEventViewModel[];
+}
+
+export const fetchReleases = async (): Promise<ReleaseViewModel[]> => {
+  const res = await controlTowerClient.get('/releases');
+  return res.data;
+};
+
+export const uploadReleasePackage = async (formData: FormData): Promise<void> => {
+  await controlTowerClient.post('/releases', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+export const publishRelease = async (id: string, canaryPercentage: number): Promise<void> => {
+  await controlTowerClient.post(`/releases/${id}/publish?canaryPercentage=${canaryPercentage}`);
+};
+
+export const pauseRelease = async (id: string): Promise<void> => {
+  await controlTowerClient.post(`/releases/${id}/pause`);
+};
+
+export const resumeRelease = async (id: string): Promise<void> => {
+  await controlTowerClient.post(`/releases/${id}/resume`);
+};
+
+export const cancelRelease = async (id: string): Promise<void> => {
+  await controlTowerClient.post(`/releases/${id}/cancel`);
+};
+
+export const fetchDeployments = async (): Promise<DeploymentViewModel[]> => {
+  const res = await controlTowerClient.get('/deployments');
+  return res.data;
+};
+
+export interface EligibilityDetail {
+  labId: string;
+  labName: string;
+  eligible: boolean;
+  failedAt: string | null;
+  reason: string;
+  reasonDetail: string;
+  currentVersion: string;
+  targetVersion: string;
+  ring: string;
+}
+
+export interface EligibilityResponse {
+  summary: {
+    eligible: number;
+    disabled: number;
+    ringMismatch: number;
+    unconfigured: number;
+    alreadyNewer: number;
+    canaryPercentage: number;
+  };
+  labs: EligibilityDetail[];
+}
+
+export const fetchReleaseEligibility = async (version: string): Promise<EligibilityResponse> => {
+  const res = await controlTowerClient.get(`/releases/${version}/eligibility`);
+  return res.data;
+};
+
+
 

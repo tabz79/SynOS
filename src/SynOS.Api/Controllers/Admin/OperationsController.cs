@@ -20,17 +20,23 @@ namespace SynOS.Api.Controllers.Admin
         private readonly IBackupService _backupService;
         private readonly ISupportService _supportService;
         private readonly IUpdateService _updateService;
+        private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
+        private readonly System.Net.Http.IHttpClientFactory _httpClientFactory;
 
         public OperationsController(
             SynOSDbContext context,
             IBackupService backupService,
             ISupportService supportService,
-            IUpdateService updateService)
+            IUpdateService updateService,
+            Microsoft.Extensions.Configuration.IConfiguration configuration,
+            System.Net.Http.IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _backupService = backupService;
             _supportService = supportService;
             _updateService = updateService;
+            _configuration = configuration;
+            _httpClientFactory = httpClientFactory;
         }
 
         // ==========================================
@@ -123,27 +129,21 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                var outboxEvents = await _context.OutboxEvents
-                    .Where(e => e.EventType == "SupportTicketCreated")
-                    .OrderByDescending(e => e.CreatedAt)
-                    .ToListAsync();
-
-                var tickets = outboxEvents.Select(e =>
-                {
-                    using var doc = JsonDocument.Parse(e.PayloadJson);
-                    var root = doc.RootElement;
-
-                    return new
+                var tickets = await _context.SupportTickets
+                    .OrderByDescending(t => t.CreatedAt)
+                    .Select(t => new
                     {
-                        TicketId = root.GetProperty("TicketId").GetGuid(),
-                        Title = root.GetProperty("Title").GetString(),
-                        Description = root.GetProperty("Description").GetString(),
-                        Priority = root.GetProperty("Priority").GetString(),
-                        Category = root.GetProperty("Category").GetString(),
-                        CreatedAt = root.GetProperty("CreatedAt").GetDateTime(),
-                        Status = e.Status
-                    };
-                }).ToList();
+                        TicketId = t.Id,
+                        Title = t.Title,
+                        Description = t.Description,
+                        Priority = t.Priority,
+                        Category = t.Category,
+                        CreatedAt = t.CreatedAt,
+                        Status = t.Status,
+                        StatusMessage = t.StatusMessage,
+                        UpdatedAt = t.UpdatedAt
+                    })
+                    .ToListAsync();
 
                 return Ok(tickets);
             }
@@ -202,14 +202,67 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPost("updates/check")]
-        public IActionResult CheckForUpdates()
+        public async Task<IActionResult> CheckForUpdates()
         {
-            return Ok(new
+            try
             {
-                updateAvailable = false,
-                version = "v1.2.0",
-                message = "The system is already running the latest software version."
-            });
+                var versionObj = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+                var currentVersion = versionObj != null ? $"{versionObj.Major}.{versionObj.Minor}.{versionObj.Build}" : "1.2.0";
+                if (currentVersion == "1.0.0")
+                {
+                    currentVersion = "1.2.0";
+                }
+
+                var labId = _configuration["Middleware:LabId"] ?? "LAB001";
+                var apiUrl = _configuration["Middleware:ApiUrl"] ?? "http://localhost:5069/api/events";
+                var apiKey = _configuration["Middleware:ApiKey"] ?? "TBZ-LAB-KEY-12345";
+
+                var baseUrl = apiUrl.Replace("/api/events", "/api/controltower");
+                var requestUrl = $"{baseUrl}/updates/check?labId={Uri.EscapeDataString(labId)}&currentVersion={Uri.EscapeDataString(currentVersion)}";
+
+                var client = _httpClientFactory.CreateClient();
+                client.DefaultRequestHeaders.Add("X-Lab-Id", labId);
+                client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
+
+                var response = await client.GetAsync(requestUrl);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        return Ok(new
+                        {
+                            updateAvailable = false,
+                            version = currentVersion,
+                            message = "The system is already running the latest software version."
+                        });
+                    }
+                    var errText = await response.Content.ReadAsStringAsync();
+                    return StatusCode((int)response.StatusCode, new { message = $"Middleware error: {errText}" });
+                }
+
+                var jsonText = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(jsonText);
+                return Ok(doc.RootElement.Clone());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Failed to check for updates: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("updates/assess")]
+        public async Task<IActionResult> AssessReadiness([FromBody] System.Text.Json.JsonElement manifest)
+        {
+            try
+            {
+                var manifestJson = manifest.GetRawText();
+                var report = await _updateService.AssessUpdateReadinessAsync(manifestJson);
+                return Ok(report);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
         }
 
         [HttpPost("updates/apply")]
