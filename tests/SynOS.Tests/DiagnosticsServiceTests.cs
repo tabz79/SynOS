@@ -12,8 +12,8 @@ namespace SynOS.Tests
         [InlineData("contact: john.doe@example.com", "contact: [REDACTED_EMAIL]")]
         [InlineData("phone is +91 9876543210", "phone is [REDACTED_PHONE]")]
         [InlineData("phone: 703-299-6647", "phone: [REDACTED_PHONE]")]
-        [InlineData("database password=mySecret123;host=...", "database password=[REDACTED_CREDENTIALS];host=...")]
-        [InlineData("ApiKey: key_12345", "ApiKey=[REDACTED_CREDENTIALS]")]
+        [InlineData("database password=mySecret123;host=...", "database password=[REDACTED_SECRET];host=...")]
+        [InlineData("ApiKey: key_12345", "ApiKey=[REDACTED_SECRET]")]
         [InlineData("Patient ID: PAT-12345-678", "Patient ID: PAT-[REDACTED_ID]")]
         [InlineData("MRN: MRN-909-abc", "MRN: MRN-[REDACTED_ID]")]
         public void RedactPII_Should_Redact_Sensitive_Information(string input, string expected)

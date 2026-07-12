@@ -113,6 +113,15 @@ export function SystemSettingsScreen() {
 
   // Global Settings State
   const [settings, setSettings] = useState(null);
+  const [advancedSettings, setAdvancedSettings] = useState(null);
+  const [savingAdvanced, setSavingAdvanced] = useState(false);
+  const [oneTimeKey, setOneTimeKey] = useState(null);
+  const [showKeyDialog, setShowKeyDialog] = useState(false);
+
+  // License Key State
+  const [newLicenseKey, setNewLicenseKey] = useState('');
+  const [licenseUpdating, setLicenseUpdating] = useState(false);
+  const [licenseMsg, setLicenseMsg] = useState(null);
 
   // Roles & Permissions Matrix State
   const [roles, setRoles] = useState([]);
@@ -389,6 +398,18 @@ export function SystemSettingsScreen() {
       setSettings(response);
     } catch (err) {
       setSaveError(err.message || 'Failed to load settings.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAdvancedSettings = async () => {
+    setLoading(true);
+    try {
+      const response = await AdminApi.getAdvancedSettings();
+      setAdvancedSettings(response);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to load advanced settings.');
     } finally {
       setLoading(false);
     }
@@ -766,6 +787,32 @@ export function SystemSettingsScreen() {
     }
   };
 
+  const handleUpdateLicenseKey = async () => {
+    if (!newLicenseKey.trim()) {
+      setLicenseMsg({ type: 'error', text: 'Please enter a valid License Key.' });
+      return;
+    }
+    setLicenseUpdating(true);
+    setLicenseMsg(null);
+    try {
+      const res = await AdminApi.updateLicenseKey(newLicenseKey.trim());
+      if (res.success) {
+        setLicenseMsg({ type: 'success', text: res.message || 'License key applied successfully.' });
+        setNewLicenseKey('');
+        loadSettings();
+      } else {
+        setLicenseMsg({ type: 'error', text: res.message || 'Failed to update license key.' });
+      }
+    } catch (err) {
+      setLicenseMsg({
+        type: 'error',
+        text: err.response?.data?.message || err.message || 'Failed to connect to backend server.'
+      });
+    } finally {
+      setLicenseUpdating(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
@@ -778,7 +825,11 @@ export function SystemSettingsScreen() {
     if (activeTab === 'printing') loadPrintingData();
     if (activeTab === 'audit') loadAuditLogs();
     if (activeTab === 'backup') loadBackups();
-    if (activeTab === 'about') loadSystemInfo();
+    if (activeTab === 'advanced') loadAdvancedSettings();
+    if (activeTab === 'about') {
+      loadSystemInfo();
+      loadSettings();
+    }
   }, [activeTab, auditOffset]);
 
   // Support tab polling loop
@@ -808,6 +859,52 @@ export function SystemSettingsScreen() {
       setSaveError(err.message || 'Error occurred while saving configurations.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAdvancedSettingsSubmit = async (e) => {
+    e.preventDefault();
+    if (!advancedSettings) return;
+    setSavingAdvanced(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+    try {
+      await AdminApi.updateAdvancedSettings(advancedSettings);
+      setSaveSuccess('Advanced system configurations successfully saved to appsettings.json. Some changes may require restarting the application host.');
+    } catch (err) {
+      setSaveError(err.message || 'Failed to update advanced settings.');
+    } finally {
+      setSavingAdvanced(false);
+    }
+  };
+
+  const rotateSecret = async (secretType) => {
+    let warning = '';
+    if (secretType === 'jwt') {
+      warning = 'Regenerating the JWT secret logs out all users. Are you sure you want to proceed?';
+    } else if (secretType === 'backup') {
+      warning = 'Rotating the backup key affects future backups. Are you sure you want to proceed?';
+    } else if (secretType === 'diagnostics') {
+      warning = 'Rotating the diagnostics key affects future diagnostic bundles. Are you sure you want to proceed?';
+    } else if (secretType === 'middleware') {
+      warning = 'Generating a new Middleware API Key will invalidate the current key immediately, disconnecting the Middleware until the new key is updated in its configuration. Are you sure you want to proceed?';
+    }
+
+    if (!window.confirm(warning)) return;
+    setSaveError(null);
+    setSaveSuccess(null);
+    try {
+      const response = await AdminApi.rotateSecret(secretType);
+      if (response.success) {
+        setSaveSuccess(`${secretType.toUpperCase()} secret rotated successfully.`);
+        if (secretType === 'middleware' && response.key) {
+          setOneTimeKey(response.key);
+          setShowKeyDialog(true);
+        }
+        loadAdvancedSettings();
+      }
+    } catch (err) {
+      setSaveError(err.message || 'Secret rotation failed.');
     }
   };
 
@@ -1056,6 +1153,7 @@ export function SystemSettingsScreen() {
             { id: 'printing', label: 'Printing Setup', icon: Printer },
             { id: 'audit', label: 'Audit Logs', icon: History },
             { id: 'backup', label: 'Backup & Restore', icon: Database },
+            { id: 'advanced', label: 'Super Admin Config', icon: ShieldAlert },
             { id: 'support', label: 'Support Desk', icon: LifeBuoy },
             { id: 'about', label: 'About & Updates', icon: Info }
           ].map(tab => (
@@ -3682,17 +3780,323 @@ export function SystemSettingsScreen() {
           </div>
         )}
 
+        {/* ADVANCED SUPER ADMIN CONFIG TAB */}
+        {activeTab === 'advanced' && advancedSettings && !loading && (
+          <form onSubmit={handleAdvancedSettingsSubmit} className="space-y-8 animate-fadeIn text-xs">
+            {/* Section 1: Host & Database Connection */}
+            <div>
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+                1. Host & Database Connection
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Database Connection String</label>
+                  <input
+                    type="text"
+                    required
+                    value={advancedSettings.connectionString || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, connectionString: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-mono outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Allowed Hosts</label>
+                  <input
+                    type="text"
+                    required
+                    value={advancedSettings.allowedHosts || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, allowedHosts: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Inventory Valuation Method</label>
+                  <select
+                    value={advancedSettings.inventoryValuationMethod || 'FIFO'}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, inventoryValuationMethod: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  >
+                    <option value="FIFO">FIFO (First-In, First-Out)</option>
+                    <option value="LIFO">LIFO (Last-In, First-Out)</option>
+                    <option value="Average">Weighted Average Cost</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Security & JWT Cryptography */}
+            <div>
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+                2. Security & JWT Cryptography
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">JWT Signing Secret</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-10 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-mono text-zinc-500 dark:text-zinc-400 flex items-center select-none shadow-sm">
+                      ••••••••••••••••
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => rotateSecret('jwt')}
+                      className="h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center"
+                    >
+                      Regenerate
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">JWT Issuer</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.jwtIssuer || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, jwtIssuer: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">JWT Audience</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.jwtAudience || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, jwtAudience: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Backup AES Encryption Key</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-10 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-mono text-zinc-500 dark:text-zinc-400 flex items-center select-none shadow-sm">
+                      ••••••••••••••••
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => rotateSecret('backup')}
+                      className="h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center"
+                    >
+                      Rotate
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Diagnostics AES Encryption Key</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-10 px-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs font-mono text-zinc-500 dark:text-zinc-400 flex items-center select-none shadow-sm">
+                      ••••••••••••••••
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => rotateSecret('diagnostics')}
+                      className="h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center"
+                    >
+                      Rotate
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center pt-6">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={advancedSettings.referralEconomicsEnabled || false}
+                      onChange={e => setAdvancedSettings({ ...advancedSettings, referralEconomicsEnabled: e.target.checked })}
+                      className="h-4 w-4 rounded border-zinc-300 text-synos-primary focus:ring-synos-primary"
+                    />
+                    <span className="text-xxs font-bold text-zinc-400 uppercase tracking-wide">Enable Referral Economics</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Middleware Configuration */}
+            <div>
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+                3. Middleware & Control Tower Integration
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Middleware API Endpoint Url</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.middlewareApiUrl || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, middlewareApiUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Middleware API Key / Secret</label>
+                  <div className="flex items-center gap-2">
+                    <div className={`flex-1 h-10 px-3 border rounded-xl text-xs font-mono flex items-center select-none shadow-sm ${
+                      advancedSettings.middlewareApiKey 
+                        ? 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400' 
+                        : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-500'
+                    }`}>
+                      {advancedSettings.middlewareApiKey ? '••••••••••••••••' : 'Missing'}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => rotateSecret('middleware')}
+                      className="h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center"
+                    >
+                      {advancedSettings.middlewareApiKey ? 'Regenerate' : 'Generate'}
+                    </button>
+                  </div>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Middleware CORS Allowed Origins</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.allowedOrigins || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, allowedOrigins: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t dark:border-zinc-900 border-zinc-200/50">
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Rate Limit Permit Limit</label>
+                    <input
+                      type="number"
+                      value={advancedSettings.rateLimitPermitLimit || 0}
+                      onChange={e => setAdvancedSettings({ ...advancedSettings, rateLimitPermitLimit: Number(e.target.value) })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Rate Limit Window (Seconds)</label>
+                    <input
+                      type="number"
+                      value={advancedSettings.rateLimitWindowSeconds || 0}
+                      onChange={e => setAdvancedSettings({ ...advancedSettings, rateLimitWindowSeconds: Number(e.target.value) })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Rate Limit Queue Limit</label>
+                    <input
+                      type="number"
+                      value={advancedSettings.rateLimitQueueLimit || 0}
+                      onChange={e => setAdvancedSettings({ ...advancedSettings, rateLimitQueueLimit: Number(e.target.value) })}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: PACS DICOM & Files Storage */}
+            <div>
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+                4. PACS DICOM & File Storage Paths
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">PACS Storage Root Path</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.pacsRootPath || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, pacsRootPath: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">File Storage Base Path</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.fileStorageBasePath || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, fileStorageBasePath: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">PACS Max Instances Per Series</label>
+                  <input
+                    type="number"
+                    value={advancedSettings.pacsMaxInstancesPerSeriesInSeriesTree || 0}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, pacsMaxInstancesPerSeriesInSeriesTree: Number(e.target.value) })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">PACS Max Total Instances Per Study</label>
+                  <input
+                    type="number"
+                    value={advancedSettings.pacsMaxTotalInstancesPerStudyInSeriesTree || 0}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, pacsMaxTotalInstancesPerStudyInSeriesTree: Number(e.target.value) })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">File Storage Public Base URL</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.fileStoragePublicBaseUrl || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, fileStoragePublicBaseUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Secure Link Base URL</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.secureLinkBaseUrl || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, secureLinkBaseUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Secure Link Public Base URL</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.secureLinkPublicBaseUrl || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, secureLinkPublicBaseUrl: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 5: Trusted Keys */}
+            <div>
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+                5. Trusted OTA Public Signing Keys
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">KeyId 'key-2026-v1' Public Key PEM</label>
+                  <textarea
+                    rows={6}
+                    value={advancedSettings.trustedKey2026v1 || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, trustedKey2026v1: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-mono outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="flex justify-end pt-4 border-t dark:border-zinc-900 border-zinc-200/50">
+              <button
+                type="submit"
+                disabled={savingAdvanced}
+                className="h-10 px-6 bg-synos-primary hover:bg-synos-primary-dark text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              >
+                {savingAdvanced ? 'Saving advanced configurations...' : 'Save Advanced Configurations'}
+              </button>
+            </div>
+          </form>
+        )}
+
         {/* ABOUT & UPDATES TAB */}
         {activeTab === 'about' && !loading && (
           <div className="space-y-8 animate-fadeIn text-xs">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
                 <div>
                   <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
                     On-Prem Client Identity
                   </h4>
-                  <div className="text-2xl font-bold text-synos-primary">LAB001</div>
-                  <div className="text-xxs text-zinc-400 mt-1 font-semibold">TBZ Labs Khammam Branch</div>
+                  <div className="text-2xl font-bold text-synos-primary">{settings?.labId || 'LAB001'}</div>
+                  <div className="text-xxs text-zinc-400 mt-1 font-semibold">{settings?.name || 'TBZ Labs Khammam Branch'}</div>
                 </div>
               </div>
               <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
@@ -3715,6 +4119,72 @@ export function SystemSettingsScreen() {
                   </div>
                 </div>
               </div>
+              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                    License Subscription
+                  </h4>
+                  <div className={`text-2xl font-bold ${
+                    settings?.licenseStatus === 'Suspended' ? 'text-red-500' : 'text-emerald-500'
+                  }`}>
+                    {settings?.licenseType || 'Trial'}
+                  </div>
+                  <div className="text-xxs text-zinc-450 dark:text-zinc-400 font-semibold mt-1">
+                    {settings?.licenseStatus === 'Suspended' ? '🔴 Suspended' : '🟢 Active'} 
+                    {settings?.licenseExpiryDate && ` • Exp: ${dayjs(settings.licenseExpiryDate).format('YYYY-MM-DD')}`}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850">
+              <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest mb-4">
+                License Key Manager
+              </h4>
+              <p className="text-xxs text-zinc-400 mb-4 font-semibold">
+                Verify, update, or roll your local license key to refresh branch capacity and cloud synchronization.
+              </p>
+              {licenseMsg && (
+                <div className={`p-3 rounded-xl mb-4 text-xxs font-semibold ${
+                  licenseMsg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400'
+                }`}>
+                  {licenseMsg.text}
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  placeholder="Enter License Key (e.g. TBZ-XXXX-XXXX-XXXX-XXXX)"
+                  value={newLicenseKey}
+                  onChange={e => setNewLicenseKey(e.target.value)}
+                  className="flex-1 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl px-4 py-2.5 text-xs outline-none focus:border-synos-primary transition-colors text-zinc-800 dark:text-zinc-200 shadow-sm font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={handleUpdateLicenseKey}
+                  disabled={licenseUpdating}
+                  className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center"
+                >
+                  {licenseUpdating ? 'Updating...' : 'Apply Key'}
+                </button>
+              </div>
+
+              {settings && (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white dark:bg-zinc-950 p-4 rounded-xl border border-zinc-200 dark:border-zinc-850 text-xxs font-semibold">
+                  <div>
+                    <span className="text-zinc-400 dark:text-zinc-500">Branch License Limit:</span>{' '}
+                    <span className="font-bold text-zinc-800 dark:text-zinc-200">{settings.maximumBranches ?? 1} branch(es)</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 dark:text-zinc-500">Enabled Features:</span>{' '}
+                    <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                      {settings.enabledFeatures && settings.enabledFeatures.length > 0 
+                        ? settings.enabledFeatures.join(', ') 
+                        : 'Core Diagnostic Platform'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850">
@@ -3923,6 +4393,44 @@ export function SystemSettingsScreen() {
                   </button>
                 </div>
               </div>
+              {/* One-time Copy Key Dialog */}
+              {showKeyDialog && oneTimeKey && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
+                    <h3 className="text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                      ⚠️ One-Time Generated Key
+                    </h3>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                      This is the new Middleware API Key. For absolute security, this key is never displayed again. Please copy it immediately:
+                    </p>
+                    <div className="bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 p-3 rounded-xl font-mono text-xs text-synos-primary break-all select-all flex justify-between items-center">
+                      <span>{oneTimeKey}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(oneTimeKey);
+                          alert('Copied to clipboard!');
+                        }}
+                        className="ml-2 px-2.5 py-1 bg-synos-primary hover:bg-synos-primary/95 text-[10px] font-bold rounded-lg text-white shadow-sm transition-all"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowKeyDialog(false);
+                          setOneTimeKey(null);
+                        }}
+                        className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-semibold rounded-xl transition-all text-zinc-700 dark:text-zinc-300"
+                      >
+                        Done & Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

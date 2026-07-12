@@ -66,7 +66,11 @@ namespace TBZ.Middleware.Api.Services
 
             if (pendingBundles.Count == 0) return;
 
-            var encryptionKey = _configuration["Diagnostics:EncryptionKey"] ?? "TBZ-DIAGNOSTICS-KEY-12345-67890";
+            var encryptionKey = _configuration["Diagnostics:EncryptionKey"];
+            if (string.IsNullOrEmpty(encryptionKey))
+            {
+                throw new CryptographicException("CRITICAL CONFIGURATION ERROR: Diagnostics encryption key is missing in configuration.");
+            }
 
             foreach (var bundle in pendingBundles)
             {
@@ -105,25 +109,27 @@ namespace TBZ.Middleware.Api.Services
                     var fullBase64 = string.Concat(parsedChunks.Select(c => c.Data));
                     var encryptedBytes = Convert.FromBase64String(fullBase64);
 
-                    // 2. Decrypt using AES-256 GCM-like shared key configuration
+                    // 2. Decrypt using AES-256 GCM configuration
                     var keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(encryptionKey));
-                    var iv = new byte[16];
-                    Array.Copy(keyBytes, iv, 16);
 
-                    byte[] decryptedBytes;
-                    using (var aes = Aes.Create())
+                    if (encryptedBytes.Length < 28) // 12 (IV) + 16 (Tag)
                     {
-                        aes.Key = keyBytes;
-                        aes.IV = iv;
+                        throw new CryptographicException("Encrypted diagnostic bundle is corrupt or too small.");
+                    }
 
-                        using var msInput = new MemoryStream(encryptedBytes);
-                        using var msOutput = new MemoryStream();
-                        using (var decryptor = aes.CreateDecryptor())
-                        using (var cryptoStream = new CryptoStream(msInput, decryptor, CryptoStreamMode.Read))
-                        {
-                            await cryptoStream.CopyToAsync(msOutput, stoppingToken);
-                        }
-                        decryptedBytes = msOutput.ToArray();
+                    var iv = new byte[12];
+                    var tag = new byte[16];
+                    var ciphertext = new byte[encryptedBytes.Length - 28];
+
+                    Buffer.BlockCopy(encryptedBytes, 0, iv, 0, 12);
+                    Buffer.BlockCopy(encryptedBytes, 12, tag, 0, 16);
+                    Buffer.BlockCopy(encryptedBytes, 28, ciphertext, 0, ciphertext.Length);
+
+                    var decryptedBytes = new byte[ciphertext.Length];
+
+                    using (var aesGcm = new AesGcm(keyBytes, 16))
+                    {
+                        aesGcm.Decrypt(iv, ciphertext, tag, decryptedBytes);
                     }
 
                     // 3. Staging and folder extraction

@@ -21,6 +21,8 @@ namespace SynOS.Tests
         private readonly Mock<IDiagnosticsService> _diagMock = new();
         private readonly Mock<ILogger<BackupService>> _backupLoggerMock = new();
         private readonly Mock<ILogger<UpdateService>> _updateLoggerMock = new();
+        private readonly Mock<IBackupService> _backupServiceMock = new();
+        private readonly Mock<ITrustedKeyStore> _keyStoreMock = new();
 
         private SynOSDbContext GetInMemoryDb()
         {
@@ -94,6 +96,7 @@ namespace SynOS.Tests
             var configMock = new Mock<IConfiguration>();
             configMock.Setup(c => c["FileStorage:BasePath"]).Returns("C:\\SynOS_Files");
             configMock.Setup(c => c["Inventory:ValuationMethod"]).Returns("FIFO");
+            configMock.Setup(c => c["Backup:EncryptionKey"]).Returns("TBZ-BACKUP-KEY-12345-67890");
             
             var sectionMock = new Mock<IConfigurationSection>();
             sectionMock.Setup(s => s.Value).Returns("true");
@@ -162,7 +165,7 @@ namespace SynOS.Tests
             // Arrange
             using var db = GetInMemoryDb();
             var configMock = new Mock<IConfiguration>();
-            var service = new UpdateService(db, configMock.Object, _updateLoggerMock.Object, _diagMock.Object);
+            var service = new UpdateService(db, configMock.Object, _updateLoggerMock.Object, _diagMock.Object, _backupServiceMock.Object, _keyStoreMock.Object);
 
             var manifestJson = "{\"TargetArchitecture\":\"x64\",\"RequiredDiskSpaceGB\":10,\"DatabaseVersion\":\"LocalDB v15.0\"}";
 

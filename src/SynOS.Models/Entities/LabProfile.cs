@@ -95,6 +95,37 @@ namespace SynOS.Models.Entities
         [StringLength(20)]
         public string LabPincode { get; set; } = "507001";
 
+        public string? MiddlewareApiUrl { get; set; }
+        public string? MiddlewareApiKey { get; set; }
+        [StringLength(50)]
+        public string LabId { get; set; } = "LAB001";
+        public string? LicenseType { get; set; }
+        public int MaximumBranches { get; set; } = 1;
+        public DateTime? LicenseExpiryDate { get; set; }
+        public string? LicenseStatus { get; set; }
+        public System.Collections.Generic.List<string> EnabledFeatures { get; set; } = new();
+        public string? BackupEncryptionKey { get; set; }
+        public string? DiagnosticsEncryptionKey { get; set; }
+        public int PacsMaxInstancesPerSeriesInSeriesTree { get; set; } = 5000;
+        public int PacsMaxTotalInstancesPerStudyInSeriesTree { get; set; } = 20000;
+        public bool ReferralEconomicsEnabled { get; set; } = true;
+        public string? InventoryValuationMethod { get; set; } = "FIFO";
+
+        // New Operational Paths
+        public string? ReportStorageFolder { get; set; }
+        public string? WorkingDirectory { get; set; }
+
+        // JWT Session Expiration
+        public int JwtExpiryMinutes { get; set; } = 1440;
+        public int JwtRefreshTokenExpiryDays { get; set; } = 7;
+
+        // OTA Update Configurations
+        public string? OtaChannel { get; set; } = "Stable"; // Stable, Beta, Canary
+        public string? OtaPolicy { get; set; } = "NotifyOnly"; // Manual, NotifyOnly, Automatic
+        public string? MaintenanceDay { get; set; } = "Sunday";
+        public string? MaintenanceStartHour { get; set; } = "02:00";
+        public string? MaintenanceEndHour { get; set; } = "04:00";
+
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

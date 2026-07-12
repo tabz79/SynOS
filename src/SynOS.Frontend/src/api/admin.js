@@ -123,6 +123,22 @@ export const AdminApi = {
         return apiClient.put(`${API_BASE}/settings`, dto);
     },
 
+    getAdvancedSettings: async () => {
+        return apiClient.get(`${API_BASE}/settings/advanced`);
+    },
+    
+    updateAdvancedSettings: async (dto) => {
+        return apiClient.put(`${API_BASE}/settings/advanced`, dto);
+    },
+
+    rotateSecret: async (secretType) => {
+        return apiClient.post(`${API_BASE}/settings/rotate-secret`, { secretType });
+    },
+
+    updateLicenseKey: async (licenseKey) => {
+        return apiClient.post(`${API_BASE}/settings/update-license-key`, { licenseKey });
+    },
+
     getPermissionsMatrix: async () => {
         return apiClient.get(`${API_BASE}/roles/matrix`);
     },

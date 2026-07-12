@@ -50,6 +50,12 @@ namespace SynOS.Services
             _restoreStateCoordinator = restoreStateCoordinator;
         }
 
+        private string GetWorkingDirectory()
+        {
+            var path = _configuration["Working:Directory"];
+            return string.IsNullOrEmpty(path) ? AppContext.BaseDirectory : path;
+        }
+
         public async Task<Guid> ExecuteBackupAsync(string backupType)
         {
             var backupId = Guid.NewGuid();
@@ -76,8 +82,8 @@ namespace SynOS.Services
                 StartedAt = DateTime.UtcNow
             });
 
-            var baseDir = AppContext.BaseDirectory;
-            var tempStagingPath = Path.Combine(baseDir, $"temp_backup_{backupId}");
+            var baseDir = GetWorkingDirectory();
+            var tempStagingPath = Path.Combine(baseDir, "BackupStaging", $"temp_backup_{backupId}");
             Directory.CreateDirectory(tempStagingPath);
 
             try
@@ -232,7 +238,7 @@ namespace SynOS.Services
 
                 var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.2.0";
                 var labProfile = await _context.LabProfiles.FirstOrDefaultAsync();
-                var labId = labProfile?.LabProfileId.ToString() ?? _configuration["Lab:Identifier"] ?? "LAB001";
+                var labId = labProfile?.LabId ?? _configuration["Middleware:LabId"] ?? "LAB001";
                 long backupFileSize = new FileInfo(dbSnapshotFile).Length;
 
                 // 6. Save manifest metadata containing the checksum and duration telemetry
@@ -245,7 +251,7 @@ namespace SynOS.Services
                     BackupType = backupType,
                     DatabaseVersion = _context.Database.IsRelational() ? "Microsoft SQL Server LocalDB" : "InMemory Test Database",
                     SchemaVersion = schemaVersion,
-                    EncryptionVersion = "AES-256-CBC-v1",
+                    EncryptionVersion = "AES-256-GCM-v1",
                     Checksum = checksum,
                     LabId = labId,
                     DatabaseSize = databaseSize,
@@ -340,9 +346,9 @@ namespace SynOS.Services
                 return false;
             }
 
-            var baseDir = AppContext.BaseDirectory;
-            var decryptedPath = Path.Combine(baseDir, $"backup_verify_{backupId}.zip");
-            var extractPath = Path.Combine(baseDir, $"temp_verify_{backupId}");
+            var baseDir = GetWorkingDirectory();
+            var decryptedPath = Path.Combine(baseDir, "Restore", $"backup_verify_{backupId}.zip");
+            var extractPath = Path.Combine(baseDir, "Restore", $"temp_verify_{backupId}");
 
             try
             {
@@ -506,9 +512,9 @@ namespace SynOS.Services
                 return false;
             }
 
-            var baseDir = AppContext.BaseDirectory;
-            var decryptedPath = Path.Combine(baseDir, $"backup_restore_{backupId}.zip");
-            var extractPath = Path.Combine(baseDir, $"temp_restore_{backupId}");
+            var baseDir = GetWorkingDirectory();
+            var decryptedPath = Path.Combine(baseDir, "Restore", $"backup_restore_{backupId}.zip");
+            var extractPath = Path.Combine(baseDir, "Restore", $"temp_restore_{backupId}");
 
             try
             {
@@ -722,9 +728,9 @@ namespace SynOS.Services
         {
             _logger.LogInformation("Running automated sandboxed test restore drill for {BackupId}...", backupId);
 
-            var baseDir = AppContext.BaseDirectory;
-            var decryptedPath = Path.Combine(baseDir, $"backup_sandbox_{backupId}.zip");
-            var sandboxPath = Path.Combine(baseDir, $"temp_sandbox_{backupId}");
+            var baseDir = GetWorkingDirectory();
+            var decryptedPath = Path.Combine(baseDir, "Restore", $"backup_sandbox_{backupId}.zip");
+            var sandboxPath = Path.Combine(baseDir, "Restore", $"temp_sandbox_{backupId}");
 
             try
             {
@@ -792,8 +798,8 @@ namespace SynOS.Services
             {
                 _logger.LogInformation("[Sandbox] Creating simulated safety snapshot...");
                 var mockTimestamp = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid().ToString().Substring(0, 8)}";
-                var mockBaseDir = AppContext.BaseDirectory;
-                var mockSafetyDir = Path.Combine(mockBaseDir, "Backups", "SafetySnapshots", mockTimestamp);
+                var mockBaseDir = GetWorkingDirectory();
+                var mockSafetyDir = Path.Combine(mockBaseDir, "Backup", "SafetySnapshots", mockTimestamp);
                 Directory.CreateDirectory(mockSafetyDir);
                 
                 var mockManifest = new
@@ -851,8 +857,8 @@ namespace SynOS.Services
             }
 
             var timestamp = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid().ToString().Substring(0, 8)}";
-            var baseDir = AppContext.BaseDirectory;
-            var safetySnapshotDir = Path.Combine(baseDir, "Backups", "SafetySnapshots", timestamp);
+            var baseDir = GetWorkingDirectory();
+            var safetySnapshotDir = Path.Combine(baseDir, "Backup", "SafetySnapshots", timestamp);
             Directory.CreateDirectory(safetySnapshotDir);
 
             _logger.LogWarning("Setting database {DatabaseName} to OFFLINE to release locks for safety snapshot file copy...", databaseName);
@@ -963,38 +969,64 @@ namespace SynOS.Services
 
         private async Task EncryptFileAsync(string sourcePath, string destPath)
         {
-            var key = SHA256.HashData(Encoding.UTF8.GetBytes("TBZ-BACKUP-KEY-12345-67890"));
-            var iv = new byte[16];
-            Array.Copy(key, iv, 16);
+            var configKey = _configuration["Backup:EncryptionKey"];
+            if (string.IsNullOrEmpty(configKey))
+            {
+                throw new CryptographicException("CRITICAL CONFIGURATION ERROR: Backup encryption key is missing in configuration.");
+            }
+            var keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(configKey));
 
-            using var aes = Aes.Create();
-            aes.Key = key;
-            aes.IV = iv;
+            var plaintext = await File.ReadAllBytesAsync(sourcePath);
+            var iv = new byte[12];
+            RandomNumberGenerator.Fill(iv);
 
-            using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
-            using var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write);
-            using var encryptor = aes.CreateEncryptor();
-            using var cryptoStream = new CryptoStream(destStream, encryptor, CryptoStreamMode.Write);
+            var ciphertext = new byte[plaintext.Length];
+            var tag = new byte[16];
 
-            await sourceStream.CopyToAsync(cryptoStream);
+            using (var aesGcm = new AesGcm(keyBytes, 16))
+            {
+                aesGcm.Encrypt(iv, plaintext, ciphertext, tag);
+            }
+
+            using (var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write))
+            {
+                await destStream.WriteAsync(iv, 0, iv.Length);
+                await destStream.WriteAsync(tag, 0, tag.Length);
+                await destStream.WriteAsync(ciphertext, 0, ciphertext.Length);
+            }
         }
 
         private async Task DecryptFileAsync(string sourcePath, string destPath)
         {
-            var key = SHA256.HashData(Encoding.UTF8.GetBytes("TBZ-BACKUP-KEY-12345-67890"));
-            var iv = new byte[16];
-            Array.Copy(key, iv, 16);
+            var configKey = _configuration["Backup:EncryptionKey"];
+            if (string.IsNullOrEmpty(configKey))
+            {
+                throw new CryptographicException("CRITICAL CONFIGURATION ERROR: Backup encryption key is missing in configuration.");
+            }
+            var keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(configKey));
 
-            using var aes = Aes.Create();
-            aes.Key = key;
-            aes.IV = iv;
+            byte[] fileBytes = await File.ReadAllBytesAsync(sourcePath);
+            if (fileBytes.Length < 28) // 12 (IV) + 16 (Tag)
+            {
+                throw new CryptographicException("Encrypted backup file is corrupt or too small.");
+            }
 
-            using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
-            using var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write);
-            using var decryptor = aes.CreateDecryptor();
-            using var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read);
+            var iv = new byte[12];
+            var tag = new byte[16];
+            var ciphertext = new byte[fileBytes.Length - 28];
 
-            await cryptoStream.CopyToAsync(destStream);
+            Buffer.BlockCopy(fileBytes, 0, iv, 0, 12);
+            Buffer.BlockCopy(fileBytes, 12, tag, 0, 16);
+            Buffer.BlockCopy(fileBytes, 28, ciphertext, 0, ciphertext.Length);
+
+            var plaintext = new byte[ciphertext.Length];
+
+            using (var aesGcm = new AesGcm(keyBytes, 16))
+            {
+                aesGcm.Decrypt(iv, ciphertext, tag, plaintext);
+            }
+
+            await File.WriteAllBytesAsync(destPath, plaintext);
         }
 
         private async Task PublishEventAsync(string eventType, Guid backupId, object payload)
@@ -1029,6 +1061,9 @@ namespace SynOS.Services
         {
             try
             {
+                var profile = await context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+                var labId = profile?.LabId ?? "LAB001";
+
                 var outboxEvent = new OutboxEvent
                 {
                     Id = Guid.NewGuid(),
@@ -1036,7 +1071,7 @@ namespace SynOS.Services
                     EventType = eventType,
                     AggregateType = "BackupSystem",
                     AggregateId = backupId.ToString(),
-                    LabId = "LAB001",
+                    LabId = labId,
                     PayloadJson = JsonSerializer.Serialize(payload),
                     CreatedAt = DateTime.UtcNow,
                     Status = "Pending"

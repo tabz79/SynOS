@@ -4,6 +4,11 @@ import {
     fetchLabTimeline,
     dispatchLabCommand,
     updateLabRolloutRing,
+    registerLaboratory,
+    updateLabProperties,
+    manageLabLicense,
+    extendLabTrial,
+    regenerateLabLicenseKey,
     RemoteLab,
     TimelineEvent
 } from '../../repositories/controlTowerRepository';
@@ -14,6 +19,101 @@ const RemoteOpsTab: React.FC = () => {
     const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
     const [commandLogs, setCommandLogs] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Register Lab Modal States
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [registerLabName, setRegisterLabName] = useState('');
+    const [registerContactPerson, setRegisterContactPerson] = useState('');
+    const [registerEmail, setRegisterEmail] = useState('');
+    const [registerPhone, setRegisterPhone] = useState('');
+    const [registerLicenseType, setRegisterLicenseType] = useState('Commercial');
+    const [registerMaximumBranches, setRegisterMaximumBranches] = useState(1);
+    const [registerExpiryDate, setRegisterExpiryDate] = useState('');
+    const [registerEnabledFeatures, setRegisterEnabledFeatures] = useState<string[]>(['WhatsApp', 'Diagnostics', 'Cloud Backup', 'OTA Updates']);
+    const [registering, setRegistering] = useState(false);
+    const [registrationResult, setRegistrationResult] = useState<{ labId: string; licenseKey: string } | null>(null);
+    const [registerError, setRegisterError] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    // Edit Laboratory Info Modal States
+    const [showEditInfoModal, setShowEditInfoModal] = useState(false);
+    const [editLabName, setEditLabName] = useState('');
+    const [editContactPerson, setEditContactPerson] = useState('');
+    const [editEmail, setEditEmail] = useState('');
+    const [editPhone, setEditPhone] = useState('');
+    const [editInfoError, setEditInfoError] = useState<string | null>(null);
+    const [updatingInfo, setUpdatingInfo] = useState(false);
+
+    // Manage License Modal States
+    const [showLicenseModal, setShowLicenseModal] = useState(false);
+    const [licenseType, setLicenseType] = useState('Commercial');
+    const [maximumBranches, setMaximumBranches] = useState(1);
+    const [expiryDate, setExpiryDate] = useState('');
+    const [enabledFeatures, setEnabledFeatures] = useState<string[]>([]);
+    const [licenseStatus, setLicenseStatus] = useState('Active');
+    const [licenseError, setLicenseError] = useState<string | null>(null);
+    const [updatingLicense, setUpdatingLicense] = useState(false);
+
+    // Regenerate Key Disclosure Modal States
+    const [showKeyModal, setShowKeyModal] = useState(false);
+    const [newLicenseKey, setNewLicenseKey] = useState('');
+    const [keyCopied, setKeyCopied] = useState(false);
+
+    const toggleFeature = (featureName: string) => {
+        setRegisterEnabledFeatures(prev => 
+            prev.includes(featureName) 
+                ? prev.filter(f => f !== featureName) 
+                : [...prev, featureName]
+        );
+    };
+
+    const handleRegisterLab = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setRegistering(true);
+        setRegisterError(null);
+        setRegistrationResult(null);
+        try {
+            const res = await registerLaboratory({
+                labName: registerLabName,
+                contactPerson: registerContactPerson || undefined,
+                email: registerEmail || undefined,
+                phone: registerPhone || undefined,
+                licenseType: registerLicenseType,
+                maximumBranches: registerMaximumBranches,
+                expiryDate: registerExpiryDate || undefined,
+                enabledFeatures: registerEnabledFeatures
+            });
+            setRegistrationResult({ labId: res.labId, licenseKey: res.licenseKey });
+            await loadLabs();
+        } catch (err: any) {
+            setRegisterError(err.response?.data?.error || 'Failed to register laboratory');
+        } finally {
+            setRegistering(false);
+        }
+    };
+
+    const copyLicenseKey = () => {
+        if (registrationResult) {
+            navigator.clipboard.writeText(registrationResult.licenseKey);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleOpenModal = () => {
+        setRegisterLabName('');
+        setRegisterContactPerson('');
+        setRegisterEmail('');
+        setRegisterPhone('');
+        setRegisterLicenseType('Commercial');
+        setRegisterMaximumBranches(1);
+        setRegisterExpiryDate('');
+        setRegisterEnabledFeatures(['WhatsApp', 'Diagnostics', 'Cloud Backup', 'OTA Updates']);
+        setRegistrationResult(null);
+        setRegisterError(null);
+        setCopied(false);
+        setShowRegisterModal(true);
+    };
 
     const loadLabs = async () => {
         try {
@@ -48,6 +148,114 @@ const RemoteOpsTab: React.FC = () => {
             setCommandLogs(logs);
         } catch (err) {
             console.error('Failed to load lab timeline', err);
+        }
+    };
+
+    const handleOpenEditInfoModal = () => {
+        if (!selectedLab) return;
+        setEditLabName(selectedLab.labName);
+        setEditContactPerson(selectedLab.contactPerson || '');
+        setEditEmail(selectedLab.email || '');
+        setEditPhone(selectedLab.phone || '');
+        setEditInfoError(null);
+        setShowEditInfoModal(true);
+    };
+
+    const handleEditInfoSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedLab) return;
+        setUpdatingInfo(true);
+        setEditInfoError(null);
+        try {
+            await updateLabProperties(selectedLab.id, {
+                labName: editLabName,
+                contactPerson: editContactPerson || undefined,
+                email: editEmail || undefined,
+                phone: editPhone || undefined
+            });
+            setShowEditInfoModal(false);
+            await loadLabs();
+        } catch (err: any) {
+            console.error('Failed to update lab properties', err);
+            setEditInfoError(err.response?.data?.error || 'Failed to update laboratory information');
+        } finally {
+            setUpdatingInfo(false);
+        }
+    };
+
+    const handleOpenLicenseModal = () => {
+        if (!selectedLab) return;
+        setLicenseType(selectedLab.licenseType || 'Commercial');
+        setMaximumBranches(selectedLab.maximumBranches ?? 1);
+        setLicenseStatus(selectedLab.licenseStatus === 'Suspended' ? 'Suspended' : 'Active');
+        
+        let formattedDate = '';
+        if (selectedLab.expiryDate) {
+            try {
+                formattedDate = new Date(selectedLab.expiryDate).toISOString().substring(0, 10);
+            } catch (e) {}
+        }
+        setExpiryDate(formattedDate);
+        setEnabledFeatures(selectedLab.enabledFeatures || []);
+        setLicenseError(null);
+        setShowLicenseModal(true);
+    };
+
+    const toggleLicenseFeature = (featureName: string) => {
+        setEnabledFeatures(prev => 
+            prev.includes(featureName) 
+                ? prev.filter(f => f !== featureName) 
+                : [...prev, featureName]
+        );
+    };
+
+    const handleLicenseSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedLab) return;
+        setUpdatingLicense(true);
+        setLicenseError(null);
+        try {
+            await manageLabLicense(selectedLab.id, {
+                licenseType,
+                maximumBranches,
+                expiryDate: expiryDate || undefined,
+                enabledFeatures,
+                status: licenseStatus
+            });
+            setShowLicenseModal(false);
+            await loadLabs();
+        } catch (err: any) {
+            console.error('Failed to manage license', err);
+            setLicenseError(err.response?.data?.error || 'Failed to update license parameters');
+        } finally {
+            setUpdatingLicense(false);
+        }
+    };
+
+    const handleExtendTrial = async () => {
+        if (!selectedLab) return;
+        if (!window.confirm('Are you sure you want to extend this trial by 7 days?')) return;
+        try {
+            await extendLabTrial(selectedLab.id, 7);
+            await loadLabs();
+        } catch (err) {
+            console.error('Failed to extend trial', err);
+            alert('Failed to extend trial');
+        }
+    };
+
+    const handleRegenerateKey = async () => {
+        if (!selectedLab) return;
+        if (!window.confirm('WARNING: Regenerating the license key will immediately invalidate the existing key. The client must re-authenticate with the new key. Are you sure you want to proceed?')) return;
+        try {
+            const res = await regenerateLabLicenseKey(selectedLab.id);
+            setNewLicenseKey(res.licenseKey);
+            setKeyCopied(false);
+            setShowKeyModal(true);
+            await loadLabs();
+        } catch (err) {
+            console.error('Failed to regenerate key', err);
+            alert('Failed to regenerate key');
         }
     };
 
@@ -121,7 +329,15 @@ const RemoteOpsTab: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Labs Directory Panel */}
                 <div className="bg-cardBg border border-cardBorder rounded-xl p-5 space-y-4">
-                    <h3 className="font-bold text-white text-sm font-display">Lab Directory</h3>
+                    <div className="flex justify-between items-center pb-2 border-b border-cardBorder">
+                        <h3 className="font-bold text-white text-sm font-display">Lab Directory</h3>
+                        <button
+                            onClick={handleOpenModal}
+                            className="text-[10px] px-2 py-1 bg-brandSecondary/25 border border-brandSecondary/30 hover:bg-brandSecondary/40 text-brandPrimary rounded font-bold transition-all uppercase tracking-wider"
+                        >
+                            + Register Lab
+                        </button>
+                    </div>
                     <div className="space-y-3">
                         {isLoading ? (
                             <div className="text-xs text-textSecondary font-mono py-4 text-center">Loading labs...</div>
@@ -168,8 +384,21 @@ const RemoteOpsTab: React.FC = () => {
                             <div className="bg-cardBg border border-cardBorder rounded-xl p-6">
                                 <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-cardBorder pb-4 mb-4 gap-4">
                                     <div>
-                                        <h3 className="text-lg font-bold font-display text-white">{selectedLab.labName}</h3>
-                                        <p className="text-xs text-textSecondary mt-0.5 font-mono">{selectedLab.id} • {selectedLab.geographicalRegion}</p>
+                                        <div className="flex items-center space-x-3">
+                                            <h3 className="text-lg font-bold font-display text-white">{selectedLab.labName}</h3>
+                                            <button
+                                                onClick={handleOpenEditInfoModal}
+                                                className="text-[10px] text-brandPrimary hover:underline px-2 py-0.5 bg-brandPrimary/10 border border-brandPrimary/20 rounded font-semibold"
+                                            >
+                                                ✏️ Edit Info
+                                            </button>
+                                        </div>
+                                        <p className="text-xs text-textSecondary mt-0.5 font-mono">
+                                            {selectedLab.id} • {selectedLab.geographicalRegion}
+                                            {selectedLab.contactPerson && ` • ${selectedLab.contactPerson}`}
+                                            {selectedLab.email && ` • ${selectedLab.email}`}
+                                            {selectedLab.phone && ` • ${selectedLab.phone}`}
+                                        </p>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
                                         <div className="flex items-center space-x-2">
@@ -190,6 +419,55 @@ const RemoteOpsTab: React.FC = () => {
                                                 <option value="Production">Production</option>
                                                 <option value="Disabled">Disabled (No Updates)</option>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Branch License Telemetry */}
+                                <div className="mb-6 p-4 rounded-xl bg-[#090b11] border border-cardBorder text-xs space-y-3">
+                                    <div className="flex justify-between items-center border-b border-cardBorder pb-2">
+                                        <div className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                                            Branch License Status ({selectedLab.licenseType}) • <span className={selectedLab.licenseStatus === 'Active' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>{selectedLab.licenseStatus || 'Active'}</span>
+                                        </div>
+                                        <div className="flex space-x-2">
+                                            {selectedLab.licenseType === 'Trial' && (
+                                                <button
+                                                    onClick={handleExtendTrial}
+                                                    className="text-[9px] px-2 py-0.5 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 text-amber-400 rounded transition-colors font-semibold"
+                                                >
+                                                    ⏱️ Extend Trial (7d)
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={handleOpenLicenseModal}
+                                                className="text-[9px] px-2 py-0.5 bg-brandSecondary/25 border border-brandSecondary/30 hover:bg-brandSecondary/40 text-brandPrimary rounded transition-colors font-semibold"
+                                            >
+                                                🔑 Manage License
+                                            </button>
+                                            <button
+                                                onClick={handleRegenerateKey}
+                                                className="text-[9px] px-2 py-0.5 bg-red-950/20 border border-red-800 hover:bg-red-900/20 text-red-400 rounded transition-colors font-semibold"
+                                            >
+                                                🔄 Regenerate Key
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-4 text-center">
+                                        <div className="bg-[#04060c] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Licensed Branches</span>
+                                            <p className="text-lg font-bold text-white mt-1 font-display">{selectedLab.maximumBranches ?? 1}</p>
+                                        </div>
+                                        <div className="bg-[#04060c] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Current Branches</span>
+                                            <p className="text-lg font-bold text-indigo-400 mt-1 font-display">{selectedLab.branchCount ?? 0}</p>
+                                        </div>
+                                        <div className="bg-[#04060c] border border-cardBorder p-3 rounded-lg">
+                                            <span className="text-[9px] text-textSecondary uppercase font-bold font-mono">Remaining</span>
+                                            <p className={`text-lg font-bold mt-1 font-display ${
+                                                (selectedLab.maximumBranches ?? 1) - (selectedLab.branchCount ?? 0) <= 0 ? 'text-red-400' : 'text-emerald-400'
+                                            }`}>
+                                                {Math.max(0, (selectedLab.maximumBranches ?? 1) - (selectedLab.branchCount ?? 0))}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -318,6 +596,491 @@ const RemoteOpsTab: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {showRegisterModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-[#0b0c16] border border-cardBorder rounded-xl max-w-lg w-full flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+                        {/* Header */}
+                        <div className="p-5 border-b border-cardBorder flex justify-between items-center bg-cardBg/30">
+                            <div className="flex items-center space-x-2">
+                                <span className="text-lg">🧪</span>
+                                <h3 className="text-md font-bold text-white font-display">Register New Laboratory</h3>
+                            </div>
+                            <button 
+                                onClick={() => setShowRegisterModal(false)}
+                                className="text-textSecondary hover:text-white transition-colors"
+                            >
+                                <span className="text-xl">&times;</span>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 overflow-y-auto max-h-[75vh] space-y-4 text-xs text-textSecondary font-sans">
+                            {registerError && (
+                                <div className="p-3 bg-red-950/20 border border-red-800 text-red-400 rounded-lg">
+                                    {registerError}
+                                </div>
+                            )}
+
+                            {!registrationResult ? (
+                                <form onSubmit={handleRegisterLab} className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Laboratory Name *</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={registerLabName}
+                                            onChange={e => setRegisterLabName(e.target.value)}
+                                            placeholder="e.g. ABC Diagnostics"
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Contact Person</label>
+                                            <input
+                                                type="text"
+                                                value={registerContactPerson}
+                                                onChange={e => setRegisterContactPerson(e.target.value)}
+                                                placeholder="e.g. John Doe"
+                                                className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Phone Number</label>
+                                            <input
+                                                type="text"
+                                                value={registerPhone}
+                                                onChange={e => setRegisterPhone(e.target.value)}
+                                                placeholder="e.g. +91 98765 43210"
+                                                className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email Address</label>
+                                        <input
+                                            type="email"
+                                            value={registerEmail}
+                                            onChange={e => setRegisterEmail(e.target.value)}
+                                            placeholder="e.g. contact@laboratory.com"
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">License Type</label>
+                                            <select
+                                                value={registerLicenseType}
+                                                onChange={e => setRegisterLicenseType(e.target.value)}
+                                                className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                            >
+                                                <option value="Commercial">Commercial</option>
+                                                <option value="Trial">Trial</option>
+                                                <option value="Educational">Educational</option>
+                                                <option value="Internal">Internal</option>
+                                                <option value="Partner">Partner</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maximum Branches</label>
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={registerMaximumBranches}
+                                                onChange={e => setRegisterMaximumBranches(Math.max(1, parseInt(e.target.value) || 1))}
+                                                className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Expiry Date</label>
+                                        <input
+                                            type="date"
+                                            value={registerExpiryDate}
+                                            onChange={e => setRegisterExpiryDate(e.target.value)}
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Enabled Features</label>
+                                        <div className="grid grid-cols-2 gap-2 bg-[#060814] p-3 rounded-lg border border-cardBorder">
+                                            {['WhatsApp', 'Diagnostics', 'Cloud Backup', 'OTA Updates', 'Referral Module', 'Inventory'].map(feature => (
+                                                <label key={feature} className="flex items-center space-x-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={registerEnabledFeatures.includes(feature)}
+                                                        onChange={() => toggleFeature(feature)}
+                                                        className="rounded border-cardBorder bg-inputBackground text-brandPrimary focus:ring-brandPrimary"
+                                                    />
+                                                    <span className="text-white text-xs">{feature}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-cardBorder flex justify-end space-x-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowRegisterModal(false)}
+                                            className="px-4 py-2 border border-cardBorder text-white rounded-lg hover:bg-cardBg transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={registering}
+                                            className="px-5 py-2 bg-brandPrimary text-white font-bold rounded-lg hover:bg-brandPrimary/80 transition-all flex items-center space-x-2"
+                                        >
+                                            {registering ? (
+                                                <>
+                                                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                                    <span>Registering...</span>
+                                                </>
+                                            ) : (
+                                                <span>Create Laboratory</span>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div className="space-y-5 py-4">
+                                    <div className="text-center space-y-2">
+                                        <span className="text-4xl">🎉</span>
+                                        <h4 className="text-sm font-bold text-success font-display">Laboratory Registered Successfully!</h4>
+                                        <p className="text-[11px] text-textMuted">The laboratory profile has been created. Use the credentials below to connect the client instance.</p>
+                                    </div>
+
+                                    <div className="bg-[#060814] border border-cardBorder rounded-lg p-4 space-y-3">
+                                        <div>
+                                            <span className="text-[10px] text-textMuted uppercase font-bold tracking-wider">Assigned Lab ID (Internal)</span>
+                                            <p className="text-white font-mono text-sm font-bold mt-0.5">{registrationResult.labId}</p>
+                                        </div>
+                                        <div className="border-t border-cardBorder/50 pt-3">
+                                            <span className="text-[10px] text-textMuted uppercase font-bold tracking-wider">Generated License Key</span>
+                                            <div className="flex items-center space-x-2 mt-1">
+                                                <input
+                                                    type="text"
+                                                    readOnly
+                                                    value={registrationResult.licenseKey}
+                                                    className="flex-1 bg-[#060814] border border-cardBorder text-white font-mono text-xs rounded-lg px-3 py-2 select-all focus:outline-none"
+                                                />
+                                                <button
+                                                    onClick={copyLicenseKey}
+                                                    className="px-3 py-2 bg-brandSecondary/25 border border-brandSecondary/30 hover:bg-brandSecondary/40 text-brandPrimary rounded-lg font-bold transition-all text-xs"
+                                                >
+                                                    {copied ? 'Copied ✓' : 'Copy'}
+                                                </button>
+                                            </div>
+                                            <p className="text-[9px] text-amber-400 mt-2 font-medium">⚠️ Important: This key is only shown once. Make sure to copy it now!</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t border-cardBorder flex justify-center">
+                                        <button
+                                            onClick={() => setShowRegisterModal(false)}
+                                            className="px-8 py-2 bg-brandPrimary text-white font-bold rounded-lg hover:bg-brandPrimary/80 transition-all text-xs"
+                                        >
+                                            Done
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showEditInfoModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-[#0b0c16] border border-cardBorder rounded-xl max-w-lg w-full flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+                        {/* Header */}
+                        <div className="p-5 border-b border-cardBorder flex justify-between items-center bg-cardBg/30">
+                            <div className="flex items-center space-x-2">
+                                <span className="text-lg">✏️</span>
+                                <h3 className="text-md font-bold text-white font-display">Edit Laboratory Info</h3>
+                            </div>
+                            <button 
+                                onClick={() => setShowEditInfoModal(false)}
+                                className="text-textSecondary hover:text-white transition-colors"
+                            >
+                                <span className="text-xl">&times;</span>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 overflow-y-auto max-h-[75vh] space-y-4 text-xs text-textSecondary font-sans">
+                            {editInfoError && (
+                                <div className="p-3 bg-red-950/20 border border-red-800 text-red-400 rounded-lg">
+                                    {editInfoError}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleEditInfoSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Laboratory Name *</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={editLabName}
+                                        onChange={e => setEditLabName(e.target.value)}
+                                        placeholder="e.g. ABC Diagnostics"
+                                        className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Contact Person</label>
+                                        <input
+                                            type="text"
+                                            value={editContactPerson}
+                                            onChange={e => setEditContactPerson(e.target.value)}
+                                            placeholder="e.g. John Doe"
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Phone Number</label>
+                                        <input
+                                            type="text"
+                                            value={editPhone}
+                                            onChange={e => setEditPhone(e.target.value)}
+                                            placeholder="e.g. +91 98765 43210"
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        value={editEmail}
+                                        onChange={e => setEditEmail(e.target.value)}
+                                        placeholder="e.g. contact@laboratory.com"
+                                        className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                    />
+                                </div>
+
+                                <div className="pt-4 border-t border-cardBorder flex justify-end space-x-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEditInfoModal(false)}
+                                        className="px-4 py-2 border border-cardBorder text-white rounded-lg hover:bg-cardBg transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={updatingInfo}
+                                        className="px-5 py-2 bg-brandPrimary text-white font-bold rounded-lg hover:bg-brandPrimary/80 transition-all flex items-center space-x-2"
+                                    >
+                                        {updatingInfo ? (
+                                            <>
+                                                <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                                <span>Saving...</span>
+                                            </>
+                                        ) : (
+                                            <span>Save Changes</span>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showLicenseModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-[#0b0c16] border border-cardBorder rounded-xl max-w-lg w-full flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+                        {/* Header */}
+                        <div className="p-5 border-b border-cardBorder flex justify-between items-center bg-cardBg/30">
+                            <div className="flex items-center space-x-2">
+                                <span className="text-lg">🔑</span>
+                                <h3 className="text-md font-bold text-white font-display">Manage License Parameters</h3>
+                            </div>
+                            <button 
+                                onClick={() => setShowLicenseModal(false)}
+                                className="text-textSecondary hover:text-white transition-colors"
+                            >
+                                <span className="text-xl">&times;</span>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 overflow-y-auto max-h-[75vh] space-y-4 text-xs text-textSecondary font-sans">
+                            {licenseError && (
+                                <div className="p-3 bg-red-950/20 border border-red-800 text-red-400 rounded-lg">
+                                    {licenseError}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleLicenseSubmit} className="space-y-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">License Type</label>
+                                        <select
+                                            value={licenseType}
+                                            onChange={e => setLicenseType(e.target.value)}
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        >
+                                            <option value="Commercial">Commercial</option>
+                                            <option value="Trial">Trial</option>
+                                            <option value="Educational">Educational</option>
+                                            <option value="Internal">Internal</option>
+                                            <option value="Partner">Partner</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">License Status</label>
+                                        <select
+                                            value={licenseStatus}
+                                            onChange={e => setLicenseStatus(e.target.value)}
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        >
+                                            <option value="Active">Active</option>
+                                            <option value="Suspended">Suspended / Blocked</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Maximum Branches</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={maximumBranches}
+                                            onChange={e => setMaximumBranches(Math.max(1, parseInt(e.target.value) || 1))}
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Expiry Date</label>
+                                        <input
+                                            type="date"
+                                            value={expiryDate}
+                                            onChange={e => setExpiryDate(e.target.value)}
+                                            className="w-full bg-[#060814] border border-cardBorder text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-brandPrimary"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Enabled Features</label>
+                                    <div className="grid grid-cols-2 gap-2 bg-[#060814] p-3 rounded-lg border border-cardBorder">
+                                        {['WhatsApp', 'Diagnostics', 'Cloud Backup', 'OTA Updates', 'Referral Module', 'Inventory'].map(feature => (
+                                            <label key={feature} className="flex items-center space-x-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={enabledFeatures.includes(feature)}
+                                                    onChange={() => toggleLicenseFeature(feature)}
+                                                    className="rounded border-cardBorder bg-inputBackground text-brandPrimary focus:ring-brandPrimary"
+                                                />
+                                                <span className="text-white text-xs">{feature}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-cardBorder flex justify-end space-x-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowLicenseModal(false)}
+                                        className="px-4 py-2 border border-cardBorder text-white rounded-lg hover:bg-cardBg transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={updatingLicense}
+                                        className="px-5 py-2 bg-brandPrimary text-white font-bold rounded-lg hover:bg-brandPrimary/80 transition-all flex items-center space-x-2"
+                                    >
+                                        {updatingLicense ? (
+                                            <>
+                                                <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                                <span>Saving...</span>
+                                            </>
+                                        ) : (
+                                            <span>Save Parameters</span>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showKeyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-[#0b0c16] border border-cardBorder rounded-xl max-w-lg w-full flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+                        {/* Header */}
+                        <div className="p-5 border-b border-cardBorder flex justify-between items-center bg-cardBg/30">
+                            <div className="flex items-center space-x-2">
+                                <span className="text-lg">🔑</span>
+                                <h3 className="text-md font-bold text-white font-display">New License Key Generated</h3>
+                            </div>
+                            <button 
+                                onClick={() => setShowKeyModal(false)}
+                                className="text-textSecondary hover:text-white transition-colors"
+                            >
+                                <span className="text-xl">&times;</span>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 space-y-4 text-xs text-textSecondary font-sans">
+                            <div className="text-center space-y-2">
+                                <span className="text-4xl">⚡</span>
+                                <h4 className="text-sm font-bold text-brandPrimary font-display">License Key Rolled Successfully</h4>
+                                <p className="text-[11px] text-textMuted">The old license key has been immediately invalidated. The client software must be updated with the key below to continue communicating.</p>
+                            </div>
+
+                            <div className="bg-[#060814] border border-cardBorder rounded-lg p-4 space-y-3">
+                                <div>
+                                    <span className="text-[10px] text-textMuted uppercase font-bold tracking-wider">New License Key</span>
+                                    <div className="flex items-center space-x-2 mt-1">
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={newLicenseKey}
+                                            className="flex-1 bg-[#060814] border border-cardBorder text-white font-mono text-xs rounded-lg px-3 py-2 select-all focus:outline-none"
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(newLicenseKey);
+                                                setKeyCopied(true);
+                                                setTimeout(() => setKeyCopied(false), 2000);
+                                            }}
+                                            className="px-3 py-2 bg-brandSecondary/25 border border-brandSecondary/30 hover:bg-brandSecondary/40 text-brandPrimary rounded-lg font-bold transition-all text-xs"
+                                        >
+                                            {keyCopied ? 'Copied ✓' : 'Copy'}
+                                        </button>
+                                    </div>
+                                    <p className="text-[9px] text-amber-400 mt-2 font-medium">⚠️ Important: This key is only shown once. Make sure to copy it now!</p>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-cardBorder flex justify-center">
+                                <button
+                                    onClick={() => setShowKeyModal(false)}
+                                    className="px-8 py-2 bg-brandPrimary text-white font-bold rounded-lg hover:bg-brandPrimary/80 transition-all text-xs"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

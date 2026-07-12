@@ -51,6 +51,81 @@ using SynOS.Services.Time; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    ((IConfigurationBuilder)builder.Configuration).Add(new SynOS.Services.Security.DbConfigurationSource(connectionString, builder.Environment.IsDevelopment()));
+}
+
+// Production Secret Validation & Cryptographic Key check
+var isDevelopment = builder.Environment.IsDevelopment();
+
+var isConfigured = false;
+if (!string.IsNullOrEmpty(connectionString) && !connectionString.Contains("YOUR_SERVER"))
+{
+    try
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<SynOS.Data.SynOSDbContext>();
+        optionsBuilder.UseSqlServer(connectionString);
+        using var context = new SynOS.Data.SynOSDbContext(optionsBuilder.Options);
+        if (context.Database.CanConnect() && context.LabProfiles.Any())
+        {
+            isConfigured = true;
+        }
+    }
+    catch
+    {
+        // Not configured or migrated yet
+    }
+}
+
+if (isConfigured)
+{
+    var jwtSecret = builder.Configuration["Jwt:Secret"];
+    if (string.IsNullOrWhiteSpace(jwtSecret))
+    {
+        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: JWT Secret is missing in configuration.");
+    }
+
+    var middlewareApiKey = builder.Configuration["Middleware:ApiKey"];
+    if (string.IsNullOrWhiteSpace(middlewareApiKey))
+    {
+        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Middleware API Key is missing in configuration.");
+    }
+
+    var backupKey = builder.Configuration["Backup:EncryptionKey"];
+    if (string.IsNullOrWhiteSpace(backupKey))
+    {
+        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Backup encryption key is missing in configuration.");
+    }
+
+    var diagnosticsKey = builder.Configuration["Diagnostics:EncryptionKey"];
+    if (string.IsNullOrWhiteSpace(diagnosticsKey))
+    {
+        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Diagnostics encryption key is missing in configuration.");
+    }
+
+    if (!isDevelopment)
+    {
+        if (jwtSecret == "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET" || jwtSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET"))
+        {
+            throw new InvalidOperationException("Production Secret Validation Failed: JWT Secret is using default/placeholder value in non-Development environment.");
+        }
+        if (middlewareApiKey == "TBZ-LAB-KEY-12345")
+        {
+            throw new InvalidOperationException("Production Secret Validation Failed: Middleware API Key is using default/placeholder value in non-Development environment.");
+        }
+        if (backupKey == "TBZ-BACKUP-KEY-12345-67890" || backupKey.Contains("TBZ-BACKUP-KEY"))
+        {
+            throw new InvalidOperationException("Production Secret Validation Failed: Backup Encryption Key is using default/placeholder value in non-Development environment.");
+        }
+        if (diagnosticsKey == "TBZ-DIAGNOSTICS-KEY-12345-67890" || diagnosticsKey.Contains("TBZ-DIAGNOSTICS-KEY"))
+        {
+            throw new InvalidOperationException("Production Secret Validation Failed: Diagnostics Encryption Key is using default/placeholder value in non-Development environment.");
+        }
+    }
+}
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = 524288000; // 500 MB
@@ -138,10 +213,16 @@ builder.Services.AddSwaggerGen(option =>
 
 // Configure DbContext
 builder.Services.AddDbContext<SynOSDbContext>(options =>
+{
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor())
-           .EnableSensitiveDataLogging()
-           .EnableDetailedErrors());
+           .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor());
+
+    if (isDevelopment)
+    {
+        options.EnableSensitiveDataLogging()
+               .EnableDetailedErrors();
+    }
+});
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -321,6 +402,7 @@ builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, S
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
+builder.Services.AddSingleton<ITrustedKeyStore, TrustedKeyStore>();
 builder.Services.AddScoped<IUpdateService, UpdateService>();
 builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddSingleton<IRestoreStateCoordinator, RestoreStateCoordinator>();
@@ -533,6 +615,17 @@ app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseCors("AllowFrontend");
 
+// Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
+    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none';";
+    await next();
+});
+
 app.UseAuthentication();
 app.UseMiddleware<SessionValidationMiddleware>();
 app.UseAuthorization();
@@ -545,9 +638,13 @@ app.MapHub<SynOS.Api.Hubs.CollaborationHub>("/collaborationHub");
 app.MapHub<SynOS.Api.Hubs.CollaborationHub>("/radiologyCollaborationHub");
 
 // Validate Branch Configuration
-using (var scope = app.Services.CreateScope())
+var isMigrationTool = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name?.Equals("ef", StringComparison.OrdinalIgnoreCase) ?? false;
+if (!isMigrationTool)
+{
+    using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+    context.Database.Migrate();
     DbInitializer.Initialize(context);
 
     var misconfiguredBranches = context.Branches
@@ -677,6 +774,7 @@ using (var scope = app.Services.CreateScope())
             }
         }
     }
+}
 }
 
 app.Run();

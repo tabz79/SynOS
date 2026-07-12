@@ -32,15 +32,23 @@ namespace SynOS.Services
             _logger = logger;
         }
 
+        private string GetWorkingDirectory()
+        {
+            var path = _configuration["Working:Directory"];
+            return string.IsNullOrEmpty(path) ? AppContext.BaseDirectory : path;
+        }
+
         public async Task<Guid> GenerateDiagnosticBundleAsync(string triggerType, string? correlationId = null, string? supportTicketId = null, string? crashId = null)
         {
+            var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var labId = labProfile?.LabId ?? "LAB001";
             var bundleId = Guid.NewGuid();
             var corrId = correlationId ?? Guid.NewGuid().ToString();
             _logger.LogInformation("Generating diagnostic bundle {BundleId} for trigger: {TriggerType}", bundleId, triggerType);
 
             // Determine temporary path for bundle staging
-            var baseDir = AppContext.BaseDirectory;
-            var tempStagingPath = Path.Combine(baseDir, $"temp_bundle_{bundleId}");
+            var baseDir = GetWorkingDirectory();
+            var tempStagingPath = Path.Combine(baseDir, "Diagnostics", $"temp_bundle_{bundleId}");
             Directory.CreateDirectory(tempStagingPath);
 
             try
@@ -71,7 +79,7 @@ namespace SynOS.Services
                     CorrelationId = corrId,
                     SupportTicketId = supportTicketId,
                     CrashId = crashId,
-                    LabId = "LAB001"
+                    LabId = labId
                 };
                 await File.WriteAllTextAsync(Path.Combine(tempStagingPath, "bundle_manifest.json"), JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
 
@@ -264,14 +272,30 @@ namespace SynOS.Services
             try
             {
                 // Today's log file path
-                var logFilePattern = $"logs/synos-api-{DateTime.UtcNow:yyyyMMdd}.txt";
-                var baseDir = AppContext.BaseDirectory;
-                var fullLogPath = Path.Combine(baseDir, logFilePattern);
+                var logFilePattern = $"synos-api-{DateTime.UtcNow:yyyyMMdd}.txt";
+                var baseDir = GetWorkingDirectory();
+                var fullLogPath = Path.Combine(baseDir, "logs", logFilePattern);
 
                 if (!File.Exists(fullLogPath))
                 {
-                    // Fall back to any log files in logs directory
+                    fullLogPath = Path.Combine(AppContext.BaseDirectory, "logs", logFilePattern);
+                }
+
+                if (!File.Exists(fullLogPath))
+                {
                     var logsDir = Path.Combine(baseDir, "logs");
+                    if (Directory.Exists(logsDir))
+                    {
+                        var logFiles = Directory.GetFiles(logsDir, "synos-api-*.txt")
+                            .OrderByDescending(f => f)
+                            .FirstOrDefault();
+                        if (logFiles != null) fullLogPath = logFiles;
+                    }
+                }
+
+                if (!File.Exists(fullLogPath))
+                {
+                    var logsDir = Path.Combine(AppContext.BaseDirectory, "logs");
                     if (Directory.Exists(logsDir))
                     {
                         var logFiles = Directory.GetFiles(logsDir, "synos-api-*.txt")
@@ -317,36 +341,58 @@ namespace SynOS.Services
             // 2. Redact Phone Numbers (e.g., cell, phone, cellCell, +91, 10-digit formats)
             content = Regex.Replace(content, @"(\+?[0-9]{1,3}[-.\s]?)?[0-9]{3}[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}", "[REDACTED_PHONE]");
 
-            // 3. Redact DB Passwords / Connection Credentials / API Keys
-            content = Regex.Replace(content, @"(Password|pwd|pwd\s*=\s*|secret|key|ApiKey|token)\s*[:=]\s*[^\s;]+", "$1=[REDACTED_CREDENTIALS]", RegexOptions.IgnoreCase);
+            // 3. Redact DB Passwords / Connection Credentials / API Keys / Secrets
+            content = Regex.Replace(content, @"(Password|pwd|pwd\s*=\s*|secret|key|ApiKey|token|API[-_]?Key|ClientSecret)\s*[:=]\s*[^\s;]+", "$1=[REDACTED_SECRET]", RegexOptions.IgnoreCase);
 
             // 4. Redact Patient MRNs (e.g., MRN-1234567, PAT-0012)
             content = Regex.Replace(content, @"\b(MRN|PAT|PATIENT|VISIT)[-:][a-zA-Z0-9\-]+\b", "$1-[REDACTED_ID]", RegexOptions.IgnoreCase);
+
+            // 5. Redact Authorization Headers and JWT Tokens
+            content = Regex.Replace(content, @"Authorization\s*:\s*Bearer\s+[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+", "Authorization: Bearer [REDACTED_JWT]", RegexOptions.IgnoreCase);
+            content = Regex.Replace(content, @"bearer\s+[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+", "Bearer [REDACTED_JWT]", RegexOptions.IgnoreCase);
+            content = Regex.Replace(content, @"\b[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]+\.[a-zA-Z0-9\-_]{50,}\b", "[REDACTED_JWT_OR_SIGNATURE]");
+
+            // 6. Redact Private/Public PEM keys and Signatures
+            content = Regex.Replace(content, @"-----BEGIN [A-Z ]+-----[\s\S]*?-----END [A-Z ]+-----", "[REDACTED_PEM_KEY]");
+            content = Regex.Replace(content, @"(Signature|DigitalSignature|Ciphertext|EncryptedKey)\s*[:=]\s*[a-zA-Z0-9+/=]{40,}", "$1=[REDACTED_SIG_OR_KEY]", RegexOptions.IgnoreCase);
 
             return content;
         }
 
         private async Task EncryptDiagnosticBundleAsync(string sourcePath, string destPath)
         {
-            // Placeholder/mock GCM-like AES encryption for Phase 2, to be replaced by dynamic certificate signing in Phase 3
-            var key = SHA256.HashData(Encoding.UTF8.GetBytes("TBZ-DIAGNOSTICS-KEY-12345-67890"));
-            var iv = new byte[16];
-            Array.Copy(key, iv, 16);
+            var configKey = _configuration["Diagnostics:EncryptionKey"];
+            if (string.IsNullOrEmpty(configKey))
+            {
+                throw new CryptographicException("CRITICAL CONFIGURATION ERROR: Diagnostics encryption key is missing in configuration.");
+            }
+            var keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(configKey));
 
-            using var aes = Aes.Create();
-            aes.Key = key;
-            aes.IV = iv;
+            var plaintext = await File.ReadAllBytesAsync(sourcePath);
+            var iv = new byte[12];
+            RandomNumberGenerator.Fill(iv);
 
-            using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
-            using var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write);
-            using var encryptor = aes.CreateEncryptor();
-            using var cryptoStream = new CryptoStream(destStream, encryptor, CryptoStreamMode.Write);
+            var ciphertext = new byte[plaintext.Length];
+            var tag = new byte[16];
 
-            await sourceStream.CopyToAsync(cryptoStream);
+            using (var aesGcm = new AesGcm(keyBytes, 16))
+            {
+                aesGcm.Encrypt(iv, plaintext, ciphertext, tag);
+            }
+
+            using (var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write))
+            {
+                await destStream.WriteAsync(iv, 0, iv.Length);
+                await destStream.WriteAsync(tag, 0, tag.Length);
+                await destStream.WriteAsync(ciphertext, 0, ciphertext.Length);
+            }
         }
 
         private async Task QueueBundleInOutboxAsync(Guid bundleId, string encFilePath, string correlationId)
         {
+            var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var labId = labProfile?.LabId ?? "LAB001";
+
             var bytes = await File.ReadAllBytesAsync(encFilePath);
             var base64Data = Convert.ToBase64String(bytes);
 
@@ -376,7 +422,7 @@ namespace SynOS.Services
                     EventType = "DiagnosticsBundleChunk",
                     AggregateType = "Diagnostics",
                     AggregateId = bundleId.ToString(),
-                    LabId = "LAB001",
+                    LabId = labId,
                     BranchId = null,
                     PayloadJson = JsonSerializer.Serialize(payload),
                     CreatedAt = DateTime.UtcNow,

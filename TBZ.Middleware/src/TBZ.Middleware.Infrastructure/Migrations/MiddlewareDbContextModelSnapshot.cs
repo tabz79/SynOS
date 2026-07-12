@@ -537,11 +537,31 @@ namespace TBZ.Middleware.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("BranchCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DotNetVersion")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("EnabledFeatures")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpiryDate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("GeographicalRegion")
@@ -565,8 +585,24 @@ namespace TBZ.Middleware.Infrastructure.Migrations
                     b.Property<DateTime?>("LastSeenAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("LicenseType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Professional");
+
+                    b.Property<int>("MaximumBranches")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1);
+
                     b.Property<string>("OSVersion")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RolloutRing")
@@ -581,6 +617,66 @@ namespace TBZ.Middleware.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Labs", (string)null);
+                });
+
+            modelBuilder.Entity("TBZ.Middleware.Domain.MiddlewareSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AllowedOrigins")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DiagnosticsEncryptionKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RateLimitPermitLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RateLimitQueueLimit")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("RateLimitWindowSeconds")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("WhatsAppAccessToken")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppActiveTemplateName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppAppSecret")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppBusinessAccountId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppGraphApiVersion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppPhoneNumberId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppPublicTunnelUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("WhatsAppVerifyToken")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MiddlewareSettings");
                 });
 
             modelBuilder.Entity("TBZ.Middleware.Domain.NotificationInbox", b =>

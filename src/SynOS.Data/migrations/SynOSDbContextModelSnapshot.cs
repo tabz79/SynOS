@@ -64,6 +64,28 @@ namespace SynOS.Data.Migrations
                     b.ToTable("ReceivableFacts", "AR");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.AnalyzerListener", b =>
+                {
+                    b.Property<Guid>("AnalyzerListenerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AnalyzerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Protocol")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("AnalyzerListenerId");
+
+                    b.ToTable("AnalyzerListeners");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.AnalyzerParameterMap", b =>
                 {
                     b.Property<Guid>("MapId")
@@ -2710,6 +2732,9 @@ namespace SynOS.Data.Migrations
                     b.Property<bool>("BackupEnabled")
                         .HasColumnType("bit");
 
+                    b.Property<string>("BackupEncryptionKey")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BackupFrequency")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -2725,11 +2750,18 @@ namespace SynOS.Data.Migrations
                     b.Property<decimal>("DefaultTaxPercent")
                         .HasColumnType("decimal(5, 2)");
 
+                    b.Property<string>("DiagnosticsEncryptionKey")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("EnableQrPayment")
                         .HasColumnType("bit");
+
+                    b.Property<string>("EnabledFeatures")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FooterDisclaimer")
                         .HasColumnType("nvarchar(max)");
@@ -2743,20 +2775,63 @@ namespace SynOS.Data.Migrations
                     b.Property<string>("HeaderLogoUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("InventoryValuationMethod")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("InvoicePrefix")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("JwtExpiryMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("JwtRefreshTokenExpiryDays")
+                        .HasColumnType("int");
 
                     b.Property<string>("LabCity")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("LabId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("LabPincode")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("LicenseExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicenseType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaintenanceDay")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaintenanceEndHour")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaintenanceStartHour")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaximumBranches")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
+                    b.Property<string>("MiddlewareApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MiddlewareApiUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -2771,7 +2846,25 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("OtaChannel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OtaPolicy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PacsMaxInstancesPerSeriesInSeriesTree")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PacsMaxTotalInstancesPerStudyInSeriesTree")
+                        .HasColumnType("int");
+
                     b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("ReferralEconomicsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ReportStorageFolder")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("ShowDigitalSignatures")
@@ -2840,6 +2933,9 @@ namespace SynOS.Data.Migrations
                     b.Property<string>("WhatsAppGatewayUrl")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("WorkingDirectory")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("LabProfileId");
 

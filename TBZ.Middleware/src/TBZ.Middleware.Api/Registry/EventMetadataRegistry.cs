@@ -73,6 +73,30 @@ namespace TBZ.Middleware.Api.Registry
             { 
                 "SupportTicketStatusUpdated", 
                 new EventMetadata { EventType = "SupportTicketStatusUpdated", Icon = "🎫", Category = "Triage", Severity = "Info", DefaultDescription = "Ticket status updated to: {Status}." } 
+            },
+            { 
+                "LaboratoryInformationUpdated", 
+                new EventMetadata { EventType = "LaboratoryInformationUpdated", Icon = "🧪", Category = "License", Severity = "Info", DefaultDescription = "Laboratory contact information updated." } 
+            },
+            { 
+                "LicenseUpdated", 
+                new EventMetadata { EventType = "LicenseUpdated", Icon = "🔑", Category = "License", Severity = "Info", DefaultDescription = "License properties updated: Type={LicenseType}, MaxBranches={MaximumBranches}." } 
+            },
+            { 
+                "LicenseKeyRegenerated", 
+                new EventMetadata { EventType = "LicenseKeyRegenerated", Icon = "🔑", Category = "License", Severity = "Warning", DefaultDescription = "License API key was regenerated." } 
+            },
+            { 
+                "LicenseTrialExtended", 
+                new EventMetadata { EventType = "LicenseTrialExtended", Icon = "⏱️", Category = "License", Severity = "Info", DefaultDescription = "Trial period extended. New Expiry: {NewExpiry}." } 
+            },
+            { 
+                "LicenseDeactivated", 
+                new EventMetadata { EventType = "LicenseDeactivated", Icon = "🔒", Category = "License", Severity = "Warning", DefaultDescription = "License status set to: {Status}." } 
+            },
+            { 
+                "LicenseActivated", 
+                new EventMetadata { EventType = "LicenseActivated", Icon = "🔓", Category = "License", Severity = "Info", DefaultDescription = "License successfully activated." } 
             }
         };
 

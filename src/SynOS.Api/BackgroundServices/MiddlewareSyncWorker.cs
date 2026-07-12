@@ -83,6 +83,10 @@ namespace SynOS.Api.BackgroundServices
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
 
+                var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
+                var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
+                var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+
                 // Fetch up to 100 pending or failed events ordered by CreatedAt
                 var events = await dbContext.OutboxEvents
                     .Where(e => e.Status == "Pending" || e.Status == "Failed")
@@ -117,7 +121,7 @@ namespace SynOS.Api.BackgroundServices
                         };
 
                         var json = JsonSerializer.Serialize(payload);
-                        var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
+                        var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
                         {
                             Content = new StringContent(json, Encoding.UTF8, "application/json")
                         };
@@ -126,7 +130,7 @@ namespace SynOS.Api.BackgroundServices
                         var deadLetterCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "DeadLetter", stoppingToken);
 
                         request.Headers.Add("X-Lab-Id", evt.LabId);
-                        request.Headers.Add("X-Api-Key", _apiKey);
+                        request.Headers.Add("X-Api-Key", apiKey);
                         request.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
                         request.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());
 
@@ -208,13 +212,25 @@ namespace SynOS.Api.BackgroundServices
             }
             catch {}
 
+            int branchCount = 1;
+            try
+            {
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                    branchCount = await db.Branches.CountAsync();
+                }
+            }
+            catch {}
+
             var payload = new
             {
                 CpuUsagePercent = Math.Round(cpuPercent, 1),
                 MemoryUsageMB = Math.Round(memoryMb, 1),
                 DiskFreeSpaceGB = Math.Round(freeGb, 1),
                 OSVersion = Environment.OSVersion.ToString(),
-                DotNetVersion = Environment.Version.ToString()
+                DotNetVersion = Environment.Version.ToString(),
+                BranchCount = branchCount
             };
 
             return JsonSerializer.Serialize(payload);
@@ -224,49 +240,53 @@ namespace SynOS.Api.BackgroundServices
         {
             try
             {
-                var payload = customPayload ?? await GetLiveTelemetryPayloadAsync();
-                var heartbeatEvent = new
-                {
-                    eventId = Guid.NewGuid(),
-                    eventType = "Heartbeat",
-                    aggregateType = "Lab",
-                    aggregateId = Guid.Empty,
-                    labId = "LAB001",
-                    branchId = Guid.Empty,
-                    payloadJson = payload,
-                    occurredAt = DateTimeOffset.UtcNow
-                };
-
-                var json = JsonSerializer.Serialize(heartbeatEvent);
-                var request = new HttpRequestMessage(HttpMethod.Post, _apiUrl)
-                {
-                    Content = new StringContent(json, Encoding.UTF8, "application/json")
-                };
-
-                request.Headers.Add("X-Lab-Id", "LAB001");
-                request.Headers.Add("X-Api-Key", _apiKey);
-                
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                    var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
+                    var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
+                    var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+                    var labId = string.IsNullOrWhiteSpace(profile?.LabId) ? "LAB001" : profile.LabId;
+
+                    var payload = customPayload ?? await GetLiveTelemetryPayloadAsync();
+                    var heartbeatEvent = new
+                    {
+                        eventId = Guid.NewGuid(),
+                        eventType = "Heartbeat",
+                        aggregateType = "Lab",
+                        aggregateId = Guid.Empty,
+                        labId = labId,
+                        branchId = Guid.Empty,
+                        payloadJson = payload,
+                        occurredAt = DateTimeOffset.UtcNow
+                    };
+
+                    var json = JsonSerializer.Serialize(heartbeatEvent);
+                    var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+
                     var pendingCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "Pending" || e.Status == "Failed", stoppingToken);
                     var deadLetterCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "DeadLetter", stoppingToken);
 
+                    request.Headers.Add("X-Lab-Id", labId);
+                    request.Headers.Add("X-Api-Key", apiKey);
                     request.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
                     request.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());
-                }
 
-                _logger.LogDebug("[INTEGRATION DEB] OutboxWorker POST heartbeat to /api/events.");
-                var response = await _httpClient.SendAsync(request, stoppingToken);
+                    _logger.LogDebug("[INTEGRATION DEB] OutboxWorker POST heartbeat to /api/events.");
+                    var response = await _httpClient.SendAsync(request, stoppingToken);
 
-                if (response.StatusCode == System.Net.HttpStatusCode.OK || 
-                    response.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
-                {
-                    _logger.LogDebug("[INTEGRATION DEB] Heartbeat sent successfully to Middleware API.");
-                }
-                else
-                {
-                    _logger.LogWarning("[INTEGRATION DEB] Heartbeat failed. Middleware API returned: {StatusCode}", response.StatusCode);
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK || 
+                        response.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
+                    {
+                        _logger.LogDebug("[INTEGRATION DEB] Heartbeat sent successfully to Middleware API.");
+                    }
+                    else
+                    {
+                        _logger.LogWarning("[INTEGRATION DEB] Heartbeat failed. Middleware API returned: {StatusCode}", response.StatusCode);
+                    }
                 }
             }
             catch (Exception ex)
@@ -279,53 +299,57 @@ namespace SynOS.Api.BackgroundServices
         {
             try
             {
-                var pendingUrl = _apiUrl.Replace("/api/events", "/api/commands/pending") + "?labId=LAB001";
-                var request = new HttpRequestMessage(HttpMethod.Get, pendingUrl);
-                request.Headers.Add("X-Lab-Id", "LAB001");
-                request.Headers.Add("X-Api-Key", _apiKey);
-
-                var response = await _httpClient.SendAsync(request, stoppingToken);
-                if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    _logger.LogWarning("Failed to poll pending commands. Middleware API returned: {StatusCode}", response.StatusCode);
-                    return;
-                }
+                    var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                    var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
+                    var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
+                    var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+                    var labId = string.IsNullOrWhiteSpace(profile?.LabId) ? "LAB001" : profile.LabId;
 
-                var content = await response.Content.ReadAsStringAsync(stoppingToken);
-                using var doc = JsonDocument.Parse(content);
-                if (doc.RootElement.ValueKind != JsonValueKind.Array)
-                {
-                    return;
-                }
+                    var pendingUrl = apiUrl.Replace("/api/events", "/api/commands/pending") + $"?labId={Uri.EscapeDataString(labId)}";
+                    var request = new HttpRequestMessage(HttpMethod.Get, pendingUrl);
+                    request.Headers.Add("X-Lab-Id", labId);
+                    request.Headers.Add("X-Api-Key", apiKey);
 
-                foreach (var cmd in doc.RootElement.EnumerateArray())
-                {
-                    var commandId = cmd.GetProperty("id").GetGuid();
-                    var commandType = cmd.GetProperty("commandType").GetString();
-                    var payloadJson = cmd.GetProperty("payloadJson").GetString();
-
-                    _logger.LogInformation("Processing command {CommandId} of type {CommandType}", commandId, commandType);
-
-                    bool success = false;
-                    string? errorMessage = null;
-                    try
+                    var response = await _httpClient.SendAsync(request, stoppingToken);
+                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        if (commandType == "UpdateTicketStatus")
-                        {
-                            using var payloadDoc = JsonDocument.Parse(payloadJson);
-                            var root = payloadDoc.RootElement;
-                            var ticketId = root.GetProperty("TicketId").GetGuid();
-                            var ticketStatus = root.GetProperty("Status").GetString();
-                            var statusMessage = root.TryGetProperty("StatusMessage", out var msg) && msg.ValueKind != JsonValueKind.Null ? msg.GetString() : null;
-                            var updatedAt = root.TryGetProperty("UpdatedAt", out var ut) && ut.ValueKind != JsonValueKind.Null ? ut.GetDateTime() : DateTime.UtcNow;
+                        _logger.LogWarning("Failed to poll pending commands. Middleware API returned: {StatusCode}", response.StatusCode);
+                        return;
+                    }
 
-                            using (var scope = _serviceProvider.CreateScope())
+                    var content = await response.Content.ReadAsStringAsync(stoppingToken);
+                    using var doc = JsonDocument.Parse(content);
+                    if (doc.RootElement.ValueKind != JsonValueKind.Array)
+                    {
+                        return;
+                    }
+
+                    foreach (var cmd in doc.RootElement.EnumerateArray())
+                    {
+                        var commandId = cmd.GetProperty("id").GetGuid();
+                        var commandType = cmd.GetProperty("commandType").GetString();
+                        var payloadJson = cmd.GetProperty("payloadJson").GetString();
+
+                        _logger.LogInformation("Processing command {CommandId} of type {CommandType}", commandId, commandType);
+
+                        bool success = false;
+                        string? errorMessage = null;
+                        try
+                        {
+                            if (commandType == "UpdateTicketStatus")
                             {
-                                var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                                using var payloadDoc = JsonDocument.Parse(payloadJson);
+                                var root = payloadDoc.RootElement;
+                                var ticketId = root.GetProperty("TicketId").GetGuid();
+                                var ticketStatus = root.GetProperty("Status").GetString();
+                                var statusMessage = root.TryGetProperty("StatusMessage", out var msg) && msg.ValueKind != JsonValueKind.Null ? msg.GetString() : null;
+                                var updatedAt = root.TryGetProperty("UpdatedAt", out var ut) && ut.ValueKind != JsonValueKind.Null ? ut.GetDateTime() : DateTime.UtcNow;
+
                                 var ticket = await dbContext.SupportTickets.FindAsync(ticketId);
                                 if (ticket != null)
                                 {
-                                    // Idempotency check: only update if status differs or update timestamp is newer
                                     if (ticket.Status != ticketStatus || ticket.UpdatedAt == null || ticket.UpdatedAt < updatedAt)
                                     {
                                         ticket.Status = ticketStatus;
@@ -339,84 +363,78 @@ namespace SynOS.Api.BackgroundServices
                                 else
                                 {
                                     _logger.LogWarning("Local support ticket {TicketId} not found for update command.", ticketId);
-                                    success = true; // Acknowledge so it's not stuck
+                                    success = true;
                                 }
                             }
-                        }
-                        else if (commandType == "GenerateDiagnostics")
-                        {
-                            using (var scope = _serviceProvider.CreateScope())
+                            else if (commandType == "GenerateDiagnostics")
                             {
                                 var diagnosticsService = scope.ServiceProvider.GetRequiredService<IDiagnosticsService>();
                                 var bundleId = await diagnosticsService.GenerateDiagnosticBundleAsync("RemoteTrigger");
                                 _logger.LogInformation("Successfully generated diagnostic bundle {BundleId} via remote command", bundleId);
                                 success = true;
                             }
-                        }
-                        else if (commandType == "ScheduleBackup")
-                        {
-                            using (var scope = _serviceProvider.CreateScope())
+                            else if (commandType == "ScheduleBackup")
                             {
                                 var backupService = scope.ServiceProvider.GetRequiredService<IBackupService>();
                                 var backupId = await backupService.ExecuteBackupAsync("Full");
                                 _logger.LogInformation("Successfully completed backup {BackupId} via remote command", backupId);
                                 success = true;
                             }
+                            else if (commandType == "RequestHealthSnapshot")
+                            {
+                                var payload = await GetLiveTelemetryPayloadAsync();
+                                await SendHeartbeatAsync(stoppingToken, payload);
+                                _logger.LogInformation("Successfully sent health snapshot via remote command");
+                                success = true;
+                            }
+                            else if (commandType == "RefreshFeatureFlags" || commandType == "RefreshLicense" || commandType == "RestartBackgroundWorkers")
+                            {
+                                _logger.LogWarning("Command type {CommandType} is not implemented.", commandType);
+                                success = false;
+                                errorMessage = $"Command type {commandType} is not implemented.";
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Unsupported command type {CommandType} received.", commandType);
+                                success = false;
+                                errorMessage = $"Unsupported command type {commandType} received.";
+                            }
                         }
-                        else if (commandType == "RequestHealthSnapshot")
+                        catch (Exception ex)
                         {
-                            var payload = await GetLiveTelemetryPayloadAsync();
-                            await SendHeartbeatAsync(stoppingToken, payload);
-                            _logger.LogInformation("Successfully sent health snapshot via remote command");
-                            success = true;
-                        }
-                        else if (commandType == "RefreshFeatureFlags" || commandType == "RefreshLicense" || commandType == "RestartBackgroundWorkers")
-                        {
-                            _logger.LogWarning("Command type {CommandType} is not implemented.", commandType);
+                            _logger.LogError(ex, "Error executing command {CommandId}", commandId);
                             success = false;
-                            errorMessage = $"Command type {commandType} is not implemented.";
-                        }
-                        else
-                        {
-                            _logger.LogWarning("Unsupported command type {CommandType} received.", commandType);
-                            success = false;
-                            errorMessage = $"Unsupported command type {commandType} received.";
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error executing command {CommandId}", commandId);
-                        success = false;
-                        errorMessage = ex.Message;
-                    }
-
-                    // Acknowledge the command status back to the Middleware
-                    try
-                    {
-                        var statusVal = success ? "Executed" : "Failed";
-                        var statusUrl = _apiUrl.Replace("/api/events", "/api/commands/status") + $"?commandId={commandId}&status={statusVal}";
-                        if (!success && !string.IsNullOrEmpty(errorMessage))
-                        {
-                            statusUrl += $"&error={Uri.EscapeDataString(errorMessage)}";
+                            errorMessage = ex.Message;
                         }
 
-                        var ackRequest = new HttpRequestMessage(HttpMethod.Post, statusUrl);
-                        ackRequest.Headers.Add("X-Lab-Id", "LAB001");
-                        ackRequest.Headers.Add("X-Api-Key", _apiKey);
+                        // Acknowledge the command status back to the Middleware
+                        try
+                        {
+                            var statusVal = success ? "Executed" : "Failed";
+                            var statusUrl = apiUrl.Replace("/api/events", "/api/commands/status") + $"?commandId={commandId}&status={statusVal}";
+                            if (!success && !string.IsNullOrEmpty(errorMessage))
+                            {
+                                statusUrl += $"&error={Uri.EscapeDataString(errorMessage)}";
+                            }
 
-                        var ackResponse = await _httpClient.SendAsync(ackRequest, stoppingToken);
-                        if (ackResponse.StatusCode == System.Net.HttpStatusCode.OK)
-                        {
-                            _logger.LogInformation("Acknowledged command {CommandId} status as {Status} to Middleware.", commandId, statusVal);
+                            var ackRequest = new HttpRequestMessage(HttpMethod.Post, statusUrl);
+                            ackRequest.Headers.Add("X-Lab-Id", labId);
+                            ackRequest.Headers.Add("X-Api-Key", apiKey);
+
+                            var ackResponse = await _httpClient.SendAsync(ackRequest, stoppingToken);
+                            if (ackResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                            {
+                                _logger.LogInformation("Acknowledged command {CommandId} status as {Status} to Middleware.", commandId, statusVal);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("Failed to acknowledge command {CommandId}. Middleware returned: {StatusCode}", commandId, ackResponse.StatusCode);
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            _logger.LogWarning("Failed to acknowledge command {CommandId}. Middleware returned: {StatusCode}", commandId, ackResponse.StatusCode);
+                            _logger.LogError(ex, "Failed to send acknowledgment for command {CommandId}.", commandId);
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to send acknowledgment for command {CommandId}.", commandId);
                     }
                 }
             }

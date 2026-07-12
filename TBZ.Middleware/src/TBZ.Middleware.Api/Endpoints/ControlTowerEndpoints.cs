@@ -799,6 +799,14 @@ namespace TBZ.Middleware.Api.Endpoints
                         l.Id,
                         l.LabCode,
                         l.LabName,
+                        l.ContactPerson,
+                        l.Email,
+                        l.Phone,
+                        l.LicenseType,
+                        l.MaximumBranches,
+                        l.BranchCount,
+                        l.ExpiryDate,
+                        l.EnabledFeatures,
                         l.GeographicalRegion,
                         l.ActiveVersion,
                         l.OSVersion,
@@ -806,6 +814,7 @@ namespace TBZ.Middleware.Api.Endpoints
                         l.LastSeenAt,
                         l.RolloutRing,
                         Status = l.LastSeenAt.HasValue && l.LastSeenAt >= DateTime.UtcNow.AddMinutes(-5) ? "Online" : "Offline",
+                        LicenseStatus = l.Status,
                         LatestSnapshot = latestSnapshot != null ? new
                         {
                             latestSnapshot.CpuUsagePercent,
@@ -823,6 +832,78 @@ namespace TBZ.Middleware.Api.Endpoints
             .WithName("GetLabsList")
             .WithOpenApi();
 
+            // POST /api/controltower/labs
+            app.MapPost("/api/controltower/labs", async (RegisterLabDto dto, MiddlewareDbContext db) =>
+            {
+                if (string.IsNullOrWhiteSpace(dto.LabName))
+                {
+                    return Results.BadRequest(new { error = "Laboratory Name is required." });
+                }
+
+                // Generate a unique sequential Lab ID
+                var prefix = "LAB";
+                var lastLabs = await db.Labs
+                    .Where(l => l.Id.StartsWith(prefix))
+                    .ToListAsync();
+                
+                int maxSuffix = 1;
+                foreach (var l in lastLabs)
+                {
+                    if (int.TryParse(l.Id.Substring(prefix.Length), out var suffix))
+                    {
+                        if (suffix > maxSuffix) maxSuffix = suffix;
+                    }
+                }
+                var nextLabId = $"{prefix}{(maxSuffix + 1):D3}";
+
+                // Generate raw secure license key
+                var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                var random = new Random();
+                var parts = new string[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    var segment = new char[4];
+                    for (int j = 0; j < 4; j++)
+                    {
+                        segment[j] = chars[random.Next(chars.Length)];
+                    }
+                    parts[i] = new string(segment);
+                }
+                var rawLicenseKey = $"TBZ-{string.Join("-", parts)}";
+                var hashedKey = ApiKeyHasher.Hash(rawLicenseKey);
+
+                var newLab = new Lab
+                {
+                    Id = nextLabId,
+                    LabCode = nextLabId,
+                    LabName = dto.LabName,
+                    ContactPerson = dto.ContactPerson,
+                    Email = dto.Email,
+                    Phone = dto.Phone,
+                    ApiKeyHash = hashedKey,
+                    Status = "Active",
+                    RolloutRing = "Production",
+                    LicenseType = dto.LicenseType ?? "Commercial",
+                    MaximumBranches = dto.MaximumBranches ?? 1,
+                    BranchCount = 0,
+                    ExpiryDate = dto.ExpiryDate,
+                    EnabledFeatures = dto.EnabledFeatures ?? new List<string>(),
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                db.Labs.Add(newLab);
+                await db.SaveChangesAsync();
+
+                return Results.Ok(new
+                {
+                    success = true,
+                    labId = nextLabId,
+                    licenseKey = rawLicenseKey
+                });
+            })
+            .WithName("RegisterLaboratory")
+            .WithOpenApi();
+
             // PUT /api/controltower/labs/{id}/rollout-ring
             app.MapPut("/api/controltower/labs/{id}/rollout-ring", async (string id, UpdateLabRolloutRingDto dto, MiddlewareDbContext db) =>
             {
@@ -835,12 +916,193 @@ namespace TBZ.Middleware.Api.Endpoints
                     return Results.BadRequest(new { error = "Invalid rollout ring. Allowed values: Canary, Early, Production, Disabled, or empty." });
                 }
 
+                var oldRing = lab.RolloutRing;
                 lab.RolloutRing = ring;
+
+                db.StoredEvents.Add(new StoredEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = Guid.NewGuid(),
+                    LabId = id,
+                    EventType = "RolloutRingChanged",
+                    PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        LabId = id,
+                        OldRolloutRing = oldRing,
+                        NewRolloutRing = ring
+                    }),
+                    OccurredAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                });
+
                 await db.SaveChangesAsync();
 
                 return Results.Ok(new { success = true, labId = id, rolloutRing = ring });
             })
             .WithName("UpdateLabRolloutRing")
+            .WithOpenApi();
+
+            // PUT /api/controltower/labs/{id}/properties
+            app.MapPut("/api/controltower/labs/{id}/properties", async (string id, UpdateLabPropertiesDto dto, MiddlewareDbContext db) =>
+            {
+                var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == id);
+                if (lab == null) return Results.NotFound(new { error = "Laboratory not found." });
+
+                if (!string.IsNullOrWhiteSpace(dto.LabName))
+                {
+                    lab.LabName = dto.LabName;
+                }
+                lab.ContactPerson = dto.ContactPerson;
+                lab.Email = dto.Email;
+                lab.Phone = dto.Phone;
+
+                db.StoredEvents.Add(new StoredEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = Guid.NewGuid(),
+                    LabId = id,
+                    EventType = "LaboratoryInformationUpdated",
+                    PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        LabId = id,
+                        LabName = lab.LabName,
+                        ContactPerson = lab.ContactPerson,
+                        Email = lab.Email,
+                        Phone = lab.Phone
+                    }),
+                    OccurredAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                });
+
+                await db.SaveChangesAsync();
+                return Results.Ok(new { success = true, labId = id });
+            })
+            .WithName("UpdateLabProperties")
+            .WithOpenApi();
+
+            // PUT /api/controltower/labs/{id}/license
+            app.MapPut("/api/controltower/labs/{id}/license", async (string id, ManageLicenseDto dto, MiddlewareDbContext db) =>
+            {
+                var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == id);
+                if (lab == null) return Results.NotFound(new { error = "Laboratory not found." });
+
+                if (dto.LicenseType != null) lab.LicenseType = dto.LicenseType;
+                if (dto.MaximumBranches.HasValue) lab.MaximumBranches = dto.MaximumBranches.Value;
+                lab.ExpiryDate = dto.ExpiryDate;
+                if (dto.EnabledFeatures != null) lab.EnabledFeatures = dto.EnabledFeatures;
+
+                if (!string.IsNullOrEmpty(dto.Status) && lab.Status != dto.Status)
+                {
+                    var oldStatus = lab.Status;
+                    lab.Status = dto.Status;
+
+                    var statusEvent = dto.Status == "Active" ? "LicenseActivated" : "LicenseDeactivated";
+                    db.StoredEvents.Add(new StoredEvent
+                    {
+                        Id = Guid.NewGuid(),
+                        EventId = Guid.NewGuid(),
+                        LabId = id,
+                        EventType = statusEvent,
+                        PayloadJson = System.Text.Json.JsonSerializer.Serialize(new { Status = dto.Status, OldStatus = oldStatus }),
+                        OccurredAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow
+                    });
+                }
+
+                db.StoredEvents.Add(new StoredEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = Guid.NewGuid(),
+                    LabId = id,
+                    EventType = "LicenseUpdated",
+                    PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        LicenseType = lab.LicenseType,
+                        MaximumBranches = lab.MaximumBranches,
+                        ExpiryDate = lab.ExpiryDate,
+                        EnabledFeatures = lab.EnabledFeatures
+                    }),
+                    OccurredAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                });
+
+                await db.SaveChangesAsync();
+                return Results.Ok(new { success = true, labId = id });
+            })
+            .WithName("ManageLicense")
+            .WithOpenApi();
+
+            // POST /api/controltower/labs/{id}/extend-trial
+            app.MapPost("/api/controltower/labs/{id}/extend-trial", async (string id, ExtendTrialDto dto, MiddlewareDbContext db) =>
+            {
+                var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == id);
+                if (lab == null) return Results.NotFound(new { error = "Laboratory not found." });
+
+                var days = dto.DaysToExtend <= 0 ? 7 : dto.DaysToExtend;
+                var currentExpiry = lab.ExpiryDate ?? DateTime.UtcNow;
+                var newExpiry = currentExpiry.AddDays(days);
+                lab.ExpiryDate = newExpiry;
+
+                db.StoredEvents.Add(new StoredEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = Guid.NewGuid(),
+                    LabId = id,
+                    EventType = "LicenseTrialExtended",
+                    PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                    {
+                        DaysExtended = days,
+                        NewExpiry = newExpiry.ToString("o")
+                    }),
+                    OccurredAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                });
+
+                await db.SaveChangesAsync();
+                return Results.Ok(new { success = true, labId = id, newExpiry = newExpiry });
+            })
+            .WithName("ExtendTrial")
+            .WithOpenApi();
+
+            // POST /api/controltower/labs/{id}/regenerate-key
+            app.MapPost("/api/controltower/labs/{id}/regenerate-key", async (string id, MiddlewareDbContext db) =>
+            {
+                var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == id);
+                if (lab == null) return Results.NotFound(new { error = "Laboratory not found." });
+
+                // Generate new raw secure license key
+                var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                var random = new Random();
+                var parts = new string[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    var segment = new char[4];
+                    for (int j = 0; j < 4; j++)
+                    {
+                        segment[j] = chars[random.Next(chars.Length)];
+                    }
+                    parts[i] = new string(segment);
+                }
+                var rawLicenseKey = $"TBZ-{string.Join("-", parts)}";
+                var hashedKey = ApiKeyHasher.Hash(rawLicenseKey);
+
+                lab.ApiKeyHash = hashedKey;
+
+                db.StoredEvents.Add(new StoredEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = Guid.NewGuid(),
+                    LabId = id,
+                    EventType = "LicenseKeyRegenerated",
+                    PayloadJson = "{}",
+                    OccurredAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                });
+
+                await db.SaveChangesAsync();
+                return Results.Ok(new { success = true, licenseKey = rawLicenseKey });
+            })
+            .WithName("RegenerateLabLicenseKey")
             .WithOpenApi();
 
             // 30. GET /api/controltower/labs/{id}/timeline
@@ -1118,6 +1380,41 @@ namespace TBZ.Middleware.Api.Endpoints
                         RollbackThresholdPercentage = 5.0
                     };
                     db.DeploymentPolicies.Add(policy);
+
+                    db.StoredEvents.Add(new StoredEvent
+                    {
+                        Id = Guid.NewGuid(),
+                        EventId = Guid.NewGuid(),
+                        LabId = "SYSTEM",
+                        EventType = "OTAPackageUploaded",
+                        PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            ReleaseId = release.Id,
+                            Version = version,
+                            TargetArchitecture = targetArchitecture,
+                            PackageFileName = packageFileName,
+                            ChecksumSha256 = sha256Hash
+                        }),
+                        OccurredAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow
+                    });
+
+                    db.StoredEvents.Add(new StoredEvent
+                    {
+                        Id = Guid.NewGuid(),
+                        EventId = Guid.NewGuid(),
+                        LabId = "SYSTEM",
+                        EventType = "ReleasePublished",
+                        PayloadJson = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            ReleaseId = release.Id,
+                            Version = version,
+                            Status = release.Status,
+                            RolloutRing = release.RolloutRing
+                        }),
+                        OccurredAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow
+                    });
 
                     await db.SaveChangesAsync();
 
@@ -1555,5 +1852,9 @@ namespace TBZ.Middleware.Api.Endpoints
     public record UpdateTicketStatusDto(string Status, string? StatusMessage);
     public record DeploymentEventDto(Guid DeploymentId, string EventType, string? PayloadJson);
     public record UpdateLabRolloutRingDto(string RolloutRing);
+    public record RegisterLabDto(string LabName, string? ContactPerson, string? Email, string? Phone, string? LicenseType, int? MaximumBranches, DateTime? ExpiryDate, List<string>? EnabledFeatures);
+    public record UpdateLabPropertiesDto(string? LabName, string? ContactPerson, string? Email, string? Phone);
+    public record ManageLicenseDto(string? LicenseType, int? MaximumBranches, DateTime? ExpiryDate, List<string>? EnabledFeatures, string? Status);
+    public record ExtendTrialDto(int DaysToExtend);
 }
 

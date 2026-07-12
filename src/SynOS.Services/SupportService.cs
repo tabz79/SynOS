@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.Entities;
@@ -25,6 +26,8 @@ namespace SynOS.Services
 
         public async Task<Guid> CreateTicketAsync(string title, string description, string priority, string category)
         {
+            var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var labId = profile?.LabId ?? "LAB001";
             var ticketId = Guid.NewGuid();
             _logger.LogInformation("Creating support ticket {TicketId}: {Title}", ticketId, title);
 
@@ -43,7 +46,7 @@ namespace SynOS.Services
             var payload = new
             {
                 TicketId = ticketId,
-                LabId = "LAB001",
+                LabId = labId,
                 Title = title,
                 Description = description,
                 Priority = priority,
@@ -56,7 +59,7 @@ namespace SynOS.Services
             var localTicket = new SupportTicket
             {
                 Id = ticketId,
-                LabId = "LAB001",
+                LabId = labId,
                 Title = title,
                 Description = description,
                 Priority = priority,
@@ -75,7 +78,7 @@ namespace SynOS.Services
                 EventType = "SupportTicketCreated",
                 AggregateType = "Support",
                 AggregateId = ticketId.ToString(),
-                LabId = "LAB001",
+                LabId = labId,
                 PayloadJson = JsonSerializer.Serialize(payload),
                 CreatedAt = DateTime.UtcNow,
                 Status = "Pending"
@@ -90,6 +93,8 @@ namespace SynOS.Services
 
         public async Task<Guid> ReportCrashAsync(string exceptionMessage, string stackTrace)
         {
+            var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var labId = profile?.LabId ?? "LAB001";
             var ticketId = Guid.NewGuid();
             _logger.LogError("Unhandled crash event intercepted. Registering Crash Ticket {TicketId}", ticketId);
 
@@ -106,7 +111,7 @@ namespace SynOS.Services
             var payload = new
             {
                 TicketId = ticketId,
-                LabId = "LAB001",
+                LabId = labId,
                 Title = $"Application Crash: {exceptionMessage.Split('\n')[0]}",
                 Description = $"Exception: {exceptionMessage}\nStack Trace: {stackTrace}",
                 Priority = "Critical",
@@ -119,7 +124,7 @@ namespace SynOS.Services
             var localTicket = new SupportTicket
             {
                 Id = ticketId,
-                LabId = "LAB001",
+                LabId = labId,
                 Title = $"Application Crash: {exceptionMessage.Split('\n')[0]}",
                 Description = $"Exception: {exceptionMessage}\nStack Trace: {stackTrace}",
                 Priority = "Critical",
@@ -137,7 +142,7 @@ namespace SynOS.Services
                 EventType = "SupportTicketCreated",
                 AggregateType = "Support",
                 AggregateId = ticketId.ToString(),
-                LabId = "LAB001",
+                LabId = labId,
                 PayloadJson = JsonSerializer.Serialize(payload),
                 CreatedAt = DateTime.UtcNow,
                 Status = "Pending"

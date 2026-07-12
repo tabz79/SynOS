@@ -6,8 +6,57 @@ using TBZ.Middleware.Infrastructure;
 using TBZ.Middleware.Application;
 using TBZ.Middleware.Application.Interfaces;
 using TBZ.Middleware.Application.Events;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var bootstrapConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(bootstrapConnectionString))
+{
+    string GetSourceDir([System.Runtime.CompilerServices.CallerFilePath] string? path = null) => Path.GetDirectoryName(path) ?? "";
+    var sourceDir = GetSourceDir();
+    var resolvedDbPath = Path.Combine(sourceDir, "MiddlewareDb.db");
+    bootstrapConnectionString = $"Data Source={resolvedDbPath}";
+}
+((IConfigurationBuilder)builder.Configuration).Add(new TBZ.Middleware.Infrastructure.Security.DbConfigurationSource(bootstrapConnectionString));
+
+// Production Secret Validation & Cryptographic Key check
+var isDevelopment = builder.Environment.IsDevelopment();
+
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: JWT Secret is missing in configuration.");
+}
+
+var middlewareApiKey = builder.Configuration["Middleware:ApiKey"];
+if (string.IsNullOrWhiteSpace(middlewareApiKey))
+{
+    throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Middleware API Key is missing in configuration.");
+}
+
+var diagnosticsKey = builder.Configuration["Diagnostics:EncryptionKey"];
+if (string.IsNullOrWhiteSpace(diagnosticsKey))
+{
+    throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Diagnostics encryption key is missing in configuration.");
+}
+
+if (!isDevelopment)
+{
+    if (jwtSecret == "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET" || jwtSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET"))
+    {
+        throw new InvalidOperationException("Production Secret Validation Failed: JWT Secret is using default/placeholder value in non-Development environment.");
+    }
+    if (middlewareApiKey == "TBZ-LAB-KEY-12345")
+    {
+        throw new InvalidOperationException("Production Secret Validation Failed: Middleware API Key is using default/placeholder value in non-Development environment.");
+    }
+    if (diagnosticsKey == "TBZ-DIAGNOSTICS-KEY-12345-67890" || diagnosticsKey.Contains("TBZ-DIAGNOSTICS-KEY"))
+    {
+        throw new InvalidOperationException("Production Secret Validation Failed: Diagnostics Encryption Key is using default/placeholder value in non-Development environment.");
+    }
+}
 
 // Register MiddlewareDbContext with SQLite
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -72,15 +121,134 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    var rateLimitConfig = builder.Configuration.GetSection("RateLimit");
+    var permitLimit = rateLimitConfig.GetValue<int>("PermitLimit", 100);
+    var windowSeconds = rateLimitConfig.GetValue<int>("WindowSeconds", 60);
+    var queueLimit = rateLimitConfig.GetValue<int>("QueueLimit", 10);
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers["X-Api-Key"].ToString() ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = permitLimit,
+                Window = TimeSpan.FromSeconds(windowSeconds),
+                QueueLimit = queueLimit,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }));
 });
 
 var app = builder.Build();
 
 app.UseCors();
+
+// Security Headers Middleware
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer";
+    context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
+    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none';";
+    await next();
+});
+
+app.UseRateLimiter();
+
+// Custom Authentication and Authorization Middleware
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? "";
+
+    // 1. Exclude public endpoints (like WhatsApp Webhooks and Swagger)
+    if (path.StartsWith("/api/webhooks/whatsapp", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/api/labs/validate", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/index.html", StringComparison.OrdinalIgnoreCase))
+    {
+        await next();
+        return;
+    }
+
+    // 2. Check for X-Api-Key authentication (used by SynOS client endpoints)
+    if (context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
+    {
+        var apiKey = apiKeyValues.ToString();
+        var configuredApiKey = app.Configuration["Middleware:ApiKey"] ?? "TBZ-LAB-KEY-12345";
+        if (apiKey == configuredApiKey)
+        {
+            await next();
+            return;
+        }
+
+        // Check if tenant-specific license key matches in the database
+        if (context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues))
+        {
+            var labId = labIdValues.ToString();
+            using (var scope = context.RequestServices.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<MiddlewareDbContext>();
+                var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == labId);
+                if (lab != null && lab.Status == "Active" && ApiKeyHasher.Verify(apiKey, lab.ApiKeyHash))
+                {
+                    await next();
+                    return;
+                }
+            }
+        }
+    }
+
+    // 3. Check for Bearer JWT token authentication (used by Control Tower web app)
+    if (context.Request.Headers.TryGetValue("Authorization", out var authHeaders))
+    {
+        var authHeader = authHeaders.ToString();
+        if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            var token = authHeader.Substring(7).Trim();
+            var jwtSettings = app.Configuration.GetSection("Jwt");
+            var secret = jwtSettings["Secret"] ?? "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET";
+            try
+            {
+                var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var key = System.Text.Encoding.UTF8.GetBytes(secret);
+                tokenHandler.ValidateToken(token, new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                }, out Microsoft.IdentityModel.Tokens.SecurityToken validatedToken);
+
+                await next();
+                return;
+            }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsJsonAsync(new { error = "Invalid token: " + ex.Message });
+                return;
+            }
+        }
+    }
+
+    // 4. Deny access if neither authentication succeeds
+    context.Response.StatusCode = 401;
+    await context.Response.WriteAsJsonAsync(new { error = "Unauthorized access. Valid API Key or JWT token required." });
+});
 
 // Subscribe to HeartbeatReceivedEvent on the OperationalEventBus
 var eventBusService = app.Services.GetRequiredService<IOperationalEventBus>();
@@ -109,6 +277,8 @@ eventBusService.Subscribe<HeartbeatReceivedEvent>(async @event =>
                         lab.OSVersion = osProp.GetString() ?? string.Empty;
                     if (root.TryGetProperty("DotNetVersion", out var dnProp))
                         lab.DotNetVersion = dnProp.GetString() ?? string.Empty;
+                    if (root.TryGetProperty("BranchCount", out var bcProp) && bcProp.TryGetInt32(out var bcVal))
+                        lab.BranchCount = bcVal;
                 }
             }
 
@@ -280,7 +450,10 @@ eventBusService.Subscribe<TBZ.Middleware.Application.Events.SupportTicketCreated
 });
 
 // Auto-migrate and seed default tenant
-using (var scope = app.Services.CreateScope())
+var isMigrationTool = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name?.Equals("ef", StringComparison.OrdinalIgnoreCase) ?? false;
+if (!isMigrationTool)
+{
+    using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MiddlewareDbContext>();
     db.Database.Migrate();
@@ -300,6 +473,10 @@ using (var scope = app.Services.CreateScope())
             LabName = "TBZ Labs Core On-Prem",
             ApiKeyHash = hashedKey,
             Status = "Active",
+            LicenseType = "Commercial",
+            MaximumBranches = 1,
+            ExpiryDate = DateTime.UtcNow.AddYears(1),
+            EnabledFeatures = new System.Collections.Generic.List<string> { "WhatsApp", "Diagnostics", "Backup" },
             CreatedAt = DateTime.UtcNow
         });
         db.SaveChanges();
@@ -307,6 +484,28 @@ using (var scope = app.Services.CreateScope())
     else if (existingLab.ApiKeyHash != hashedKey)
     {
         existingLab.ApiKeyHash = hashedKey;
+        db.SaveChanges();
+    }
+
+    var mSetting = db.MiddlewareSettings.FirstOrDefault();
+    if (mSetting == null)
+    {
+        db.MiddlewareSettings.Add(new TBZ.Middleware.Domain.MiddlewareSetting
+        {
+            AllowedOrigins = "http://localhost:5173",
+            RateLimitPermitLimit = 100,
+            RateLimitWindowSeconds = 60,
+            RateLimitQueueLimit = 10,
+            DiagnosticsEncryptionKey = "TBZ-DIAGNOSTICS-KEY-12345-67890",
+            WhatsAppGraphApiVersion = "v25.0",
+            WhatsAppAppSecret = "215160b4c9251805d723b4d4e48b4d42",
+            WhatsAppVerifyToken = "TBZLabsWebhook2026",
+            WhatsAppPhoneNumberId = "1264980080021563",
+            WhatsAppBusinessAccountId = "1052572960618226",
+            WhatsAppActiveTemplateName = "report_ready_v2",
+            WhatsAppPublicTunnelUrl = "https://sectors-explain-estate-controllers.trycloudflare.com",
+            WhatsAppAccessToken = "EAAS6edbZAxOgBR9wvZBRnuZBwgAg8p6O4NEV4lGOP4ZBraZAybUSMNqMnDmK7LChL6ZAGa5Xtln4rqZB9sqv8aZCqYyZC7jSFjrrc5BFNs4y81kdjWSgNsve5yZA2lXVSicC3CjRvD9vSRdJlUK9UWmBJyelX3iRlfPctBZAOJm0cURjNVW2hmmfBXtfz0J7i85JQZDZD"
+        });
         db.SaveChanges();
     }
 
@@ -399,6 +598,7 @@ using (var scope = app.Services.CreateScope())
     {
         // Suppress any parse/database error to prevent startup failure
     }
+}
 }
 
 if (app.Environment.IsDevelopment())
@@ -729,6 +929,48 @@ app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
 app.MapControlTowerEndpoints();
 app.MapWhatsAppWebhookEndpoints();
 app.MapWhatsAppManagementEndpoints();
+
+app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContext db) =>
+{
+    if (!context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
+    {
+        return Results.Json(new { error = "License Key header is missing" }, statusCode: StatusCodes.Status401Unauthorized);
+    }
+    
+    var apiKey = apiKeyValues.ToString();
+    var hashedKey = ApiKeyHasher.Hash(apiKey);
+    
+    var lab = await db.Labs.FirstOrDefaultAsync(l => l.ApiKeyHash == hashedKey);
+    if (lab == null)
+    {
+        return Results.Json(new { error = "Invalid License Key" }, statusCode: StatusCodes.Status401Unauthorized);
+    }
+
+    // Check expiration
+    if (lab.ExpiryDate.HasValue && lab.ExpiryDate.Value < DateTime.UtcNow)
+    {
+        lab.Status = "Expired";
+        await db.SaveChangesAsync();
+    }
+
+    if (lab.Status != "Active")
+    {
+        return Results.Json(new { error = $"License is inactive. Status: {lab.Status}" }, statusCode: StatusCodes.Status403Forbidden);
+    }
+    
+    return Results.Ok(new
+    {
+        LabId = lab.Id,
+        LabName = lab.LabName,
+        LicenseStatus = lab.Status,
+        LicenseType = lab.LicenseType,
+        MaximumBranches = lab.MaximumBranches,
+        ExpiryDate = lab.ExpiryDate,
+        EnabledFeatures = lab.EnabledFeatures
+    });
+})
+.WithName("ValidateLabApiKey")
+.WithOpenApi();
 
 // Proxy /r/ requests to SynOS.Api on port 59999 so that patient download links work seamlessly through the same Cloudflare tunnel
 app.MapGet("/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>

@@ -13,6 +13,7 @@ using System.Security.Claims;
 using SynOS.Models.Exceptions;
 using SynOS.Services.Payroll.Orchestration;
 
+#if DEBUG
 namespace SynOS.Api.Controllers.Admin
 {
     [ApiController]
@@ -434,3 +435,4 @@ namespace SynOS.Api.Controllers.Admin
         }
     }
 }
+#endif

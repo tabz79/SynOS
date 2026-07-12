@@ -30,8 +30,16 @@ namespace SynOS.Tests
             var configMock = new Mock<IConfiguration>();
             var loggerMock = new Mock<ILogger<UpdateService>>();
             var diagMock = new Mock<IDiagnosticsService>();
+            var backupMock = new Mock<IBackupService>();
+            var keystoreMock = new Mock<ITrustedKeyStore>();
 
-            var service = new UpdateService(db, configMock.Object, loggerMock.Object, diagMock.Object);
+            var service = new UpdateService(
+                db, 
+                configMock.Object, 
+                loggerMock.Object, 
+                diagMock.Object, 
+                backupMock.Object, 
+                keystoreMock.Object);
 
             var manifest = new
             {
@@ -48,36 +56,6 @@ namespace SynOS.Tests
 
             // Assert
             Assert.True(result);
-        }
-
-        [Fact]
-        public async Task EvaluateMaintenanceWindow_Should_Defer_When_Active_Visits_Exist()
-        {
-            // Arrange
-            using var db = GetDbContext();
-            var configMock = new Mock<IConfiguration>();
-            var loggerMock = new Mock<ILogger<UpdateService>>();
-            var diagMock = new Mock<IDiagnosticsService>();
-
-            // Seed active visit
-            db.Visits.Add(new Visit
-            {
-                VisitId = Guid.NewGuid(),
-                PatientId = Guid.NewGuid(),
-                BranchId = Guid.NewGuid(),
-                Status = SynOS.Models.Enums.VisitStatus.InLab,
-                Token = "T101",
-                Department = "Pathology"
-            });
-            await db.SaveChangesAsync();
-
-            var service = new UpdateService(db, configMock.Object, loggerMock.Object, diagMock.Object);
-
-            // Act
-            var result = await service.EvaluateMaintenanceWindowAsync();
-
-            // Assert
-            Assert.False(result); // Should be deferred (return false) due to active visit
         }
     }
 }

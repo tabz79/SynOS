@@ -42,6 +42,7 @@ namespace TBZ.Middleware.Infrastructure
         public DbSet<Deployment> Deployments => Set<Deployment>();
         public DbSet<DeploymentEvent> DeploymentEvents => Set<DeploymentEvent>();
         public DbSet<DeploymentPolicy> DeploymentPolicies => Set<DeploymentPolicy>();
+        public DbSet<MiddlewareSetting> MiddlewareSettings => Set<MiddlewareSetting>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -99,6 +100,22 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.LabName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.ApiKeyHash).IsRequired().HasMaxLength(256);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.LicenseType).IsRequired().HasMaxLength(50).HasDefaultValue("Professional");
+                entity.Property(e => e.MaximumBranches).HasDefaultValue(1);
+                entity.Property(e => e.BranchCount).HasDefaultValue(0);
+                entity.Property(e => e.ContactPerson).HasMaxLength(100);
+                entity.Property(e => e.Email).HasMaxLength(100);
+                entity.Property(e => e.Phone).HasMaxLength(50);
+                entity.Property(e => e.EnabledFeatures)
+                    .HasConversion(
+                        v => System.Text.Json.JsonSerializer.Serialize(v ?? new System.Collections.Generic.List<string>(), (System.Text.Json.JsonSerializerOptions)null!),
+                        v => ParseEnabledFeatures(v),
+                        new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<System.Collections.Generic.List<string>>(
+                            (c1, c2) => c1 != null && c2 != null ? c1.SequenceEqual(c2) : c1 == c2,
+                            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                            c => c.ToList()
+                        )
+                    );
             });
 
             modelBuilder.Entity<DeliveryQueueItem>(entity =>
@@ -383,6 +400,31 @@ namespace TBZ.Middleware.Infrastructure
                 entity.ToTable("DeploymentPolicies");
                 entity.HasKey(e => e.Id);
             });
+        }
+
+        private static System.Collections.Generic.List<string> ParseEnabledFeatures(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new System.Collections.Generic.List<string>();
+            }
+
+            value = value.Trim();
+            if (value.StartsWith("[") && value.EndsWith("]"))
+            {
+                try
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<string>>(value, (System.Text.Json.JsonSerializerOptions)null!) ?? new System.Collections.Generic.List<string>();
+                }
+                catch
+                {
+                    // Fall through to parse as comma-separated if JSON deserialization fails
+                }
+            }
+
+            return value.Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .ToList();
         }
     }
 }

@@ -18,5 +18,17 @@ namespace TBZ.Middleware.Domain
         public string OSVersion { get; set; } = string.Empty;
         public DateTime? LastSeenAt { get; set; }
         public string RolloutRing { get; set; } = "General"; // "Canary", "Early", "Production"
+
+        // Contact Details
+        public string? ContactPerson { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+
+        // Dynamic License Key Parameters
+        public string LicenseType { get; set; } = "Professional"; // "Trial", "Professional", "Enterprise"
+        public int MaximumBranches { get; set; } = 1;
+        public int BranchCount { get; set; } = 0;
+        public DateTime? ExpiryDate { get; set; }
+        public System.Collections.Generic.List<string> EnabledFeatures { get; set; } = new();
     }
 }

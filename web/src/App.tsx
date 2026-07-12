@@ -1,10 +1,9 @@
-// File: web/src/App.tsx
-// Author: Gemini
-// Date: 2025-11-13
-
+import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/Login';
+import SetupWizard from './pages/SetupWizard';
 import ProtectedRoute from './components/ProtectedRoute';
 import PatientSearchPage from './pages/PatientSearchPage';
 import PatientDetailPage from './pages/PatientDetailPage';
@@ -29,6 +28,30 @@ const UnauthorizedPage = () => <h2>403 - Unauthorized Access</h2>;
 function App() {
   const { isAuthenticated, user, logout, hasRole } = useAuth();
   const location = useLocation();
+  const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    axios.get('/api/v1/setup/status')
+      .then(res => {
+        setIsConfigured(res.data.isConfigured);
+      })
+      .catch(() => {
+        setIsConfigured(true);
+      });
+  }, []);
+
+  if (isConfigured === null) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center text-slate-400 font-display">
+        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-xs">Checking SynOS setup status...</p>
+      </div>
+    );
+  }
+
+  if (isConfigured === false) {
+    return <SetupWizard onSetupComplete={() => setIsConfigured(true)} />;
+  }
 
   if (location.pathname.startsWith('/controltower')) {
     return (

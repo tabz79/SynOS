@@ -54,22 +54,59 @@ namespace SynOS.Services
             var allowedMimeTypes = new List<string> { "image/jpeg", "image/png" };
             var maxFileSize = 512 * 1024; // 512 KB
 
-            // Capture old URL for cleanup and audit
-            var oldSignatureUrl = user.SignatureImageUrl;
+            if (signatureFile.Length > maxFileSize)
+            {
+                throw new ArgumentException($"File size exceeds the limit of {maxFileSize / 1024} KB.");
+            }
 
-            // GPT-5: Collision-proof and Cache-busting naming
-            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var guidFragment = Guid.NewGuid().ToString("N").Substring(0, 4);
-            var extension = Path.GetExtension(signatureFile.FileName);
-            var newFileName = $"{userId}_{timestamp}_{guidFragment}{extension}";
+            if (!allowedMimeTypes.Contains(signatureFile.ContentType.ToLowerInvariant()))
+            {
+                throw new ArgumentException("MIME type not allowed. Only image/jpeg and image/png are permitted.");
+            }
 
-            // Step 1: Save new file first
+            var extension = Path.GetExtension(signatureFile.FileName).ToLowerInvariant();
+            if (extension != ".png" && extension != ".jpg" && extension != ".jpeg")
+            {
+                throw new ArgumentException("File extension not allowed. Only .png, .jpg, and .jpeg are permitted.");
+            }
+
             byte[] fileBytes;
             using (var ms = new MemoryStream())
             {
                 await signatureFile.OpenReadStream().CopyToAsync(ms);
                 fileBytes = ms.ToArray();
             }
+
+            if (fileBytes.Length < 8)
+            {
+                throw new ArgumentException("Invalid file: File size is too small.");
+            }
+
+            bool isPng = fileBytes[0] == 0x89 && fileBytes[1] == 0x50 && fileBytes[2] == 0x4E && fileBytes[3] == 0x47 &&
+                         fileBytes[4] == 0x0D && fileBytes[5] == 0x0A && fileBytes[6] == 0x1A && fileBytes[7] == 0x0A;
+
+            bool isJpeg = fileBytes[0] == 0xFF && fileBytes[1] == 0xD8 && fileBytes[2] == 0xFF;
+
+            if (extension == ".png" && !isPng)
+            {
+                throw new ArgumentException("File signature verification failed: Expected a PNG file.");
+            }
+            if ((extension == ".jpg" || extension == ".jpeg") && !isJpeg)
+            {
+                throw new ArgumentException("File signature verification failed: Expected a JPEG file.");
+            }
+            if (!isPng && !isJpeg)
+            {
+                throw new ArgumentException("File signature verification failed: File is not a valid PNG or JPEG image.");
+            }
+
+            // Capture old URL for cleanup and audit
+            var oldSignatureUrl = user.SignatureImageUrl;
+
+            // GPT-5: Collision-proof and Cache-busting naming
+            var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var guidFragment = Guid.NewGuid().ToString("N").Substring(0, 4);
+            var newFileName = $"{userId}_{timestamp}_{guidFragment}{extension}";
             var newSignatureUrl = await _fileStorageService.SaveFileAsync(fileBytes, newFileName, "signatures");
 
             // Step 2: Update Database
@@ -160,16 +197,24 @@ namespace SynOS.Services
             user.IsActive = dto.IsActive;
             user.UpdatedAt = DateTime.UtcNow; // Corrected to DateTime.UtcNow
 
+            var oldRole = user.UserRoles.FirstOrDefault()?.Role?.Name;
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == dto.Role);
+            var roleChanged = false;
             if (role != null && (user.UserRoles.FirstOrDefault()?.RoleId != role.RoleId))
             {
                 _context.UserRoles.RemoveRange(_context.UserRoles.Where(ur => ur.UserId == user.UserId));
                 _context.UserRoles.Add(new UserRole { UserId = userId, RoleId = role.RoleId });
+                roleChanged = true;
             }
 
             await _context.SaveChangesAsync();
 
             await _auditService.LogAsync(actorUserId, "UpdateUser", "User", userId, new { Old = oldUser, New = user });
+
+            if (roleChanged && role != null)
+            {
+                await _auditService.LogAsync(actorUserId, "UserRoleChanged", "User", userId, new { OldRole = oldRole, NewRole = role.Name });
+            }
             return user;
         }
 

@@ -49,17 +49,24 @@ namespace SynOS.Services
                         user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
                     }
                     await _context.SaveChangesAsync();
+                    await _auditService.LogAsync(user.UserId, "LoginFailed", "User", user.UserId, new { Username = request.Username, IpAddress = ipAddress, Reason = "Invalid credentials" });
+                }
+                else
+                {
+                    await _auditService.LogAsync(Guid.Empty, "LoginFailed", "User", Guid.Empty, new { Username = request.Username, IpAddress = ipAddress, Reason = "User not found" });
                 }
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
             if (user.LockoutEnd > DateTime.UtcNow)
             {
+                await _auditService.LogAsync(user.UserId, "LoginFailed", "User", user.UserId, new { Username = request.Username, IpAddress = ipAddress, Reason = "Account locked" });
                 throw new UnauthorizedAccessException("Account is locked.");
             }
 
             if (!user.IsActive)
             {
+                await _auditService.LogAsync(user.UserId, "LoginFailed", "User", user.UserId, new { Username = request.Username, IpAddress = ipAddress, Reason = "Account deactivated" });
                 throw new UnauthorizedAccessException("Your account has been deactivated. Please contact your administrator.");
             }
 

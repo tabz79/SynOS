@@ -370,12 +370,15 @@ public class DeliveryService : IDeliveryService
 
         await _context.SaveChangesAsync();
 
+        var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+        var labId = profile?.LabId ?? "LAB001";
+
         // Enqueue ReportDeliveryRequestedEvent
         _outboxService.Enqueue(new ReportDeliveryRequestedEvent(
             reportId,
             report.VisitId,
             report.Visit.PatientId,
-            "LAB001",
+            labId,
             phone,
             secureLinkDto.Link,
             patientName,

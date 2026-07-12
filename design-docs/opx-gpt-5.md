@@ -1,291 +1,371 @@
-This is a **solid implementation plan**. I'd approve about **90% of it**, but I'd make a few changes before letting the agent code it.
+The agent is **very close**, but it's still thinking like a developer instead of a software company. You're designing a **licensing product**, not just APIs.
+
+Here's how I'd answer your three scenarios.
 
 ---
 
-# 👍 Keep
+# Scenario 1
 
-* `UpdateReadinessReport` model.
-* Separate `Warnings` from `HardBlockers`.
-* `/updates/assess` endpoint.
-* UI checklist before installation.
-* "Proceed Anyway" for warnings only.
-* "Proceed" disabled for hard blockers.
-* Verification plan.
+> I created a lab, generated the key, copied it, forgot it. Now the customer calls asking for the key.
 
-Those are all good architectural decisions.
+### Current architecture
 
----
+❌ Doesn't support this.
 
-# Change 1 — Rename it
+Because the raw key is shown **once** and then discarded.
 
-I don't like the name:
+Only the hash is stored.
 
-```csharp
-EvaluateMaintenanceWindowAsync()
+That's good security, but bad operations.
+
+## What should happen?
+
+You should **never try to recover the old key.**
+
+Instead:
+
 ```
-
-because that's no longer what it does.
-
-Rename it to:
-
-```csharp
-AssessUpdateReadinessAsync()
-```
-
-or
-
-```csharp
-RunUpdateReadinessAssessmentAsync()
-```
-
-The terminology now matches the behavior.
-
----
-
-# Change 2 — Rich objects instead of strings
-
-Instead of
-
-```csharp
-Warnings = [
-    "3 active visits"
-]
-```
-
-use
-
-```csharp
-class ReadinessCheck
-{
-    string Code;
-    string Title;
-    string Message;
-    ReadinessSeverity Severity;
-}
-```
-
-Example
-
-```json
-{
-  "code":"ACTIVE_VISITS",
-  "title":"Active Patient Visits",
-  "message":"3 active patient visits found.",
-  "severity":"Warning"
-}
-```
-
-Much easier to localize later.
-
-Much easier to render nice UI.
-
-Much easier to add icons.
-
----
-
-# Change 3 — Show PASS checks too
-
-Don't only return problems.
-
-Return every check.
-
-Example
-
-```json
-Database ✓
-
-Disk Space ✓
-
-Architecture ✓
-
-Backup ✓
-
-Internet ✓
-
-Package Signature ✓
-
-Active Visits ⚠
-
-Draft Reports ⚠
-```
-
-This gives the admin confidence.
-
-Otherwise they wonder
-
-> "Did it even check the database?"
-
----
-
-# Change 4 — Backup belongs in readiness
-
-Right now backup happens later.
-
-I'd actually assess
-
-```text
-Backup service available
-
-Destination writable
-
-Enough storage
-
-Backup folder exists
-```
-
-before installation starts.
-
-If backup can't run...
-
-that's a **hard blocker**.
-
----
-
-# Change 5 — Internet check
-
-Since OTA depends on Middleware.
-
-Check
-
-```text
-Middleware reachable
-```
-
-before installation.
-
-Otherwise they'll hit Install...
-
-wait...
-
-then discover Middleware is offline.
-
----
-
-# Change 6 — Package integrity should be a readiness step
-
-Currently your flow is
-
-Download
+ABC Diagnostics
 
 ↓
 
-Validate
+Regenerate License Key
 
 ↓
 
-Install
+Confirmation
 
-I'd expose that to the UI.
+↓
 
-Example
+Old key becomes invalid
 
-```text
-Downloading package...
+↓
 
-✓ Download complete
+New key generated
 
-✓ SHA256 verified
+↓
 
-✓ release.json verified
+Copy
 
-✓ Assemblies verified
+↓
 
-Ready to install
+Send to customer
 ```
 
-Much nicer UX.
+Exactly like resetting a password.
+
+You never recover the old password.
+
+You create a new one.
+
+**This is the correct design.**
 
 ---
 
-# Change 7 — Future-proof severity
+# Scenario 2
 
-Instead of
+Customer reinstalls SynOS.
 
-```csharp
-Warnings
+Needs the key again.
 
-HardBlockers
+Again...
+
+Exactly the same workflow.
+
+```
+Control Tower
+
+↓
+
+Regenerate License Key
+
+↓
+
+Customer enters new key
+
+↓
+
+Activate
+
+↓
+
+Done
 ```
 
-I'd use
+Perfect.
 
-```csharp
-enum ReadinessSeverity
-{
-    Information,
-    Warning,
-    Error
-}
-```
-
-Then the UI decides
-
-Blue
-
-Yellow
-
-Red
-
-instead of backend.
+No issues.
 
 ---
 
-# Change 8 — Don't call it "Proceed Anyway"
+# Scenario 3
 
-That's consumer software wording.
+This is where I think the agent is missing something.
 
-I'd rather use
+Let's say
 
-```text
-Cancel
+```
+Trial
 
-Install Update
+30 days
+
+1 Branch
 ```
 
-When warnings exist, display
+expires.
 
-> This update may interrupt laboratory operations.
+Customer pays.
 
-The admin already knows they're accepting the warning.
+You should NOT
 
-No need to dramatize it.
+```
+Delete Lab
+
+↓
+
+Create new Lab
+
+↓
+
+Generate new key
+```
+
+That's wrong.
+
+Instead
+
+```
+ABC Diagnostics
+
+↓
+
+Edit License
+
+License Type
+
+Commercial
+
+Maximum Branches
+
+3
+
+Expiry
+
+31 Dec 2027
+
+Features
+
+✓ WhatsApp
+
+✓ OTA
+
+✓ Diagnostics
+
+↓
+
+Save
+```
+
+Nothing changes for the customer.
+
+Their software continues working.
 
 ---
 
-# Change 9 — Future Maintenance Mode
+## BUT...
 
-Leave a TODO in the architecture.
+Suppose the customer leaked the key.
 
-Eventually you'll have
+Or emailed it to ten people.
 
-```text
-Enter Maintenance Mode
+Or you simply want to invalidate it.
 
-↓
+Then you click
 
-Stop new registrations
-
-↓
-
-Wait for current work
-
-↓
-
-Update
-
-↓
-
-Resume operations
+```
+Regenerate License Key
 ```
 
-Your readiness engine will naturally plug into that.
+Now...
+
+Old key
+
+↓
+
+Invalid
+
+New key
+
+↓
+
+Valid
+
+Customer activates again.
+
+Perfect.
 
 ---
 
-# Final verdict
+# I would actually add ONE MORE button.
 
-I'd send the agent this one additional instruction before implementation:
+This is missing.
 
-> **One architectural refinement:** Implement the readiness report as a collection of structured `ReadinessCheck` objects (with `Code`, `Title`, `Message`, and `Severity`) instead of plain warning/error strings. Return all checks (including passed checks), not just failures, so the UI can render a complete pre-installation checklist. Also rename `EvaluateMaintenanceWindowAsync()` to `AssessUpdateReadinessAsync()` to reflect its new responsibility. Keep the rest of the implementation plan unchanged.
+```
+ABC Diagnostics
 
-That change will make the OTA subsystem feel much more polished and extensible without requiring another redesign later.
+License
+
+Commercial
+
+Maximum Branches
+
+3
+
+Expiry
+
+31 Dec 2027
+
+--------------------------------
+
+[Edit License]
+
+[Regenerate License Key]
+
+[Deactivate License]
+
+[Extend Trial]
+```
+
+Notice
+
+**Extend Trial**
+
+That's incredibly useful.
+
+Customer says
+
+> Give me another 7 days.
+
+Click.
+
+```
+30 days
+
+↓
+
+37 days
+```
+
+Done.
+
+No new key.
+
+No new lab.
+
+No reinstall.
+
+---
+
+# Another missing feature
+
+History.
+
+```
+License History
+
+11 Jul
+
+Created
+
+------------
+
+20 Jul
+
+Trial extended
+
+------------
+
+05 Aug
+
+Upgraded to Commercial
+
+------------
+
+06 Aug
+
+Key regenerated
+
+------------
+
+10 Sep
+
+Expiry extended
+```
+
+When you have 200 labs, you'll thank yourself.
+
+---
+
+# My only change to the implementation plan
+
+I would NOT call it
+
+```
+Edit Lab
+```
+
+I'd call it
+
+```
+Manage License
+```
+
+Because 95% of what you're editing is licensing.
+
+Inside
+
+```
+Manage License
+
+License Type
+
+Maximum Branches
+
+Expiry
+
+Features
+
+Status
+
+Active
+
+Suspended
+
+Disabled
+```
+
+Then a separate section
+
+```
+Laboratory Information
+
+Name
+
+Contact Person
+
+Phone
+
+Email
+```
+
+Those are different responsibilities.
+
+---
+
+# My verdict
+
+I would tell the agent to implement **one more thing** before proceeding:
+
+> Split **Laboratory Information** from **License Management**. A lab's contact details and a lab's license are different concepts. The UI should reflect that.
+
+Everything else in the plan is exactly what your business will need in the real world. After that, I think your licensing architecture is complete enough to stop designing and start selling.

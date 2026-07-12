@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../services/apiClient';
 import dayjs from 'dayjs';
+import AdvancedSettingsTab from '../components/AdvancedSettingsTab';
 
 function formatFileSize(bytes: number) {
   if (bytes === undefined || bytes === null || isNaN(bytes)) return '';
@@ -47,6 +48,12 @@ interface LabProfile {
   backupFrequency: string;
   backupTime: string;
   backupPath: string;
+  labId?: string;
+  licenseType?: string;
+  maximumBranches?: number;
+  licenseStatus?: string;
+  licenseExpiryDate?: string;
+  enabledFeatures?: string[];
 }
 
 interface Role {
@@ -142,7 +149,7 @@ interface ReferralPartner {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'settings' | 'permissions' | 'departments' | 'pricing' | 'workspaces' | 'audit' | 'backup' | 'support' | 'about'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'advanced' | 'permissions' | 'departments' | 'pricing' | 'workspaces' | 'audit' | 'backup' | 'support' | 'about'>('settings');
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -169,6 +176,11 @@ export default function AdminDashboard() {
     RequiredDiskSpaceGB: 10,
     DatabaseVersion: "LocalDB v15.0"
   }, null, 2));
+
+  // License Key State
+  const [newLicenseKey, setNewLicenseKey] = useState('');
+  const [licenseUpdating, setLicenseUpdating] = useState(false);
+  const [licenseMsg, setLicenseMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Global Settings State
   const [settings, setSettings] = useState<LabProfile | null>(null);
@@ -550,10 +562,38 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleUpdateLicenseKey = async () => {
+    if (!newLicenseKey.trim()) {
+      setLicenseMsg({ type: 'error', text: 'Please enter a valid License Key.' });
+      return;
+    }
+    setLicenseUpdating(true);
+    setLicenseMsg(null);
+    try {
+      const response = await apiClient.post('/admin/settings/update-license-key', {
+        licenseKey: newLicenseKey.trim()
+      });
+      if (response.data.success) {
+        setLicenseMsg({ type: 'success', text: response.data.message || 'License key applied successfully.' });
+        setNewLicenseKey('');
+        loadSettings();
+      } else {
+        setLicenseMsg({ type: 'error', text: response.data.message || 'Failed to update license key.' });
+      }
+    } catch (err: any) {
+      setLicenseMsg({
+        type: 'error',
+        text: err.response?.data?.message || err.message || 'Failed to connect to backend server.'
+      });
+    } finally {
+      setLicenseUpdating(false);
+    }
+  };
+
   useEffect(() => {
     setSaveError(null);
     setSaveSuccess(null);
-    if (activeTab === 'settings') loadSettings();
+    if (activeTab === 'settings' || activeTab === 'about') loadSettings();
     if (activeTab === 'permissions') loadPermissions();
     if (activeTab === 'departments') loadDepartmentPolicies();
     if (activeTab === 'pricing') loadPricingData();
@@ -743,6 +783,7 @@ export default function AdminDashboard() {
         {(
           [
             { id: 'settings', label: 'System Configuration' },
+            { id: 'advanced', label: 'Advanced Settings & Diagnostics' },
             { id: 'permissions', label: 'Roles Matrix' },
             { id: 'departments', label: 'Department Hours' },
             { id: 'pricing', label: 'Pricing & Discounts' },
@@ -1176,6 +1217,11 @@ export default function AdminDashboard() {
               </button>
             </div>
           </form>
+        )}
+
+        {/* ADVANCED SETTINGS TAB */}
+        {activeTab === 'advanced' && (
+          <AdvancedSettingsTab />
         )}
 
         {/* ROLES & CAPABILITIES MATRIX TAB */}
@@ -2448,14 +2494,14 @@ export default function AdminDashboard() {
         {/* ABOUT & UPDATES TAB */}
         {activeTab === 'about' && !loading && (
           <div className="space-y-8 animate-fadeIn">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-elevated/20 p-6 rounded-2xl border border-border flex flex-col justify-between">
                 <div>
                   <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-4">
                     On-Prem Client Identity
                   </h4>
-                  <div className="text-3xl font-extrabold text-blue-400 mb-2">LAB001</div>
-                  <div className="text-xs text-textSecondary font-semibold">TBZ Labs Core On-Prem Node</div>
+                  <div className="text-3xl font-extrabold text-blue-400 mb-2">{settings?.labId || 'LAB001'}</div>
+                  <div className="text-xs text-textSecondary font-semibold">{settings?.name || 'TBZ Labs Core On-Prem Node'}</div>
                 </div>
               </div>
               <div className="bg-elevated/20 p-6 rounded-2xl border border-border flex flex-col justify-between">
@@ -2478,6 +2524,71 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+              <div className="bg-elevated/20 p-6 rounded-2xl border border-border flex flex-col justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-4">
+                    License Subscription
+                  </h4>
+                  <div className={`text-3xl font-extrabold mb-2 ${
+                    settings?.licenseStatus === 'Suspended' ? 'text-red-400' : 'text-emerald-400'
+                  }`}>
+                    {settings?.licenseType || 'Trial'}
+                  </div>
+                  <div className="text-xs text-textSecondary font-semibold">
+                    {settings?.licenseStatus === 'Suspended' ? '🔴 Suspended' : '🟢 Active'} 
+                    {settings?.licenseExpiryDate && ` • Exp: ${dayjs(settings.licenseExpiryDate).format('YYYY-MM-DD')}`}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-elevated/20 p-6 rounded-2xl border border-border">
+              <h4 className="text-sm font-bold text-textPrimary uppercase tracking-wider mb-4">
+                License Key Manager
+              </h4>
+              <p className="text-xs text-textSecondary mb-4">
+                Verify, update, or roll your local license key to refresh branch capacity and cloud synchronization.
+              </p>
+              {licenseMsg && (
+                <div className={`p-3 rounded-xl mb-4 text-xs font-semibold ${
+                  licenseMsg.type === 'success' ? 'bg-emerald-950/20 border border-emerald-800 text-emerald-400' : 'bg-red-950/20 border border-red-800 text-red-400'
+                }`}>
+                  {licenseMsg.text}
+                </div>
+              )}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  placeholder="Enter License Key (e.g. TBZ-XXXX-XXXX-XXXX-XXXX)"
+                  value={newLicenseKey}
+                  onChange={e => setNewLicenseKey(e.target.value)}
+                  className="flex-1 bg-inputBackground border border-border rounded-xl px-4 py-2.5 text-xs text-white placeholder-textMuted focus:outline-none focus:border-blue-500 font-mono"
+                />
+                <button
+                  onClick={handleUpdateLicenseKey}
+                  disabled={licenseUpdating}
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-600/50 text-white font-bold text-xs rounded-xl shadow-lg transition-all"
+                >
+                  {licenseUpdating ? 'Updating...' : 'Apply Key'}
+                </button>
+              </div>
+
+              {settings && (
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-card/40 p-4 rounded-xl border border-border text-xs">
+                  <div>
+                    <span className="text-textSecondary">Branch License Limit:</span>{' '}
+                    <span className="font-bold text-textPrimary">{settings.maximumBranches ?? 1} branch(es)</span>
+                  </div>
+                  <div>
+                    <span className="text-textSecondary">Enabled Features:</span>{' '}
+                    <span className="font-bold text-textPrimary">
+                      {settings.enabledFeatures && settings.enabledFeatures.length > 0 
+                        ? settings.enabledFeatures.join(', ') 
+                        : 'Core Diagnostic Platform'}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-elevated/20 p-6 rounded-2xl border border-border">

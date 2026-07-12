@@ -21,19 +21,28 @@ namespace SynOS.Services
         private readonly ILogger<UpdateService> _logger;
         private readonly IDiagnosticsService _diagnosticsService;
         private readonly IBackupService _backupService;
+        private readonly ITrustedKeyStore _keyStore;
 
         public UpdateService(
             SynOSDbContext context,
             IConfiguration configuration,
             ILogger<UpdateService> logger,
             IDiagnosticsService diagnosticsService,
-            IBackupService backupService)
+            IBackupService backupService,
+            ITrustedKeyStore keyStore)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
             _diagnosticsService = diagnosticsService;
             _backupService = backupService;
+            _keyStore = keyStore;
+        }
+
+        private string GetWorkingDirectory()
+        {
+            var path = _configuration["Working:Directory"];
+            return string.IsNullOrEmpty(path) ? AppContext.BaseDirectory : path;
         }
 
         public async Task<bool> RunPreflightChecksAsync(string manifestJson)
@@ -56,7 +65,7 @@ namespace SynOS.Services
                 // 2. Validate Prerequisites: Disk Space
                 if (root.TryGetProperty("requiredFreeSpaceBytes", out var spaceProp) && spaceProp.TryGetInt64(out var requiredSpace))
                 {
-                    var baseDir = AppContext.BaseDirectory;
+                    var baseDir = GetWorkingDirectory();
                     var drive = new DriveInfo(Path.GetPathRoot(baseDir) ?? "C:\\");
                     if (drive.IsReady && drive.AvailableFreeSpace < requiredSpace)
                     {
@@ -88,29 +97,27 @@ namespace SynOS.Services
             _logger.LogInformation("Assessing update readiness...");
             var report = new UpdateReadinessReport();
 
-            // 1. Manifest Validity Check
+            // 1. Manifest Validity & Signature Check
             var manifestCheck = new ReadinessCheck
             {
                 Code = "MANIFEST_VALIDITY",
-                Title = "Manifest Validity Check",
+                Title = "Manifest Validity & Signature Check",
                 Severity = ReadinessSeverity.Success,
-                Message = "Update manifest is valid."
+                Message = "Update manifest and signature are valid."
             };
             report.Checks.Add(manifestCheck);
 
-            JsonElement root = default;
-            try
-            {
-                using var doc = JsonDocument.Parse(manifestJson);
-                root = doc.RootElement.Clone();
-            }
-            catch (Exception ex)
+            var (success, validationError) = await VerifyUpdatePackageAndManifestAsync(manifestJson);
+            if (!success)
             {
                 manifestCheck.Severity = ReadinessSeverity.Error;
-                manifestCheck.Message = $"Invalid manifest JSON: {ex.Message}";
+                manifestCheck.Message = validationError;
                 report.CanInstall = false;
                 return report;
             }
+
+            using var doc = JsonDocument.Parse(manifestJson);
+            var root = doc.RootElement.Clone();
 
             // 2. Database Connectivity Check
             var dbCheck = new ReadinessCheck
@@ -167,7 +174,7 @@ namespace SynOS.Services
             report.Checks.Add(diskCheck);
             if (root.TryGetProperty("requiredFreeSpaceBytes", out var spaceProp) && spaceProp.TryGetInt64(out var requiredSpace))
             {
-                var baseDir = AppContext.BaseDirectory;
+                var baseDir = GetWorkingDirectory();
                 var drive = new DriveInfo(Path.GetPathRoot(baseDir) ?? "C:\\");
                 if (drive.IsReady)
                 {
@@ -343,10 +350,10 @@ namespace SynOS.Services
                 using var doc = JsonDocument.Parse(manifestJson);
                 var root = doc.RootElement;
 
-                if (root.TryGetProperty("deploymentId", out var depProp)) Guid.TryParse(depProp.GetString(), out deploymentId);
-                version = root.TryGetProperty("version", out var verProp) ? verProp.GetString() ?? "" : "";
-                var checksumSha256 = root.TryGetProperty("checksumSha256", out var checkProp) ? checkProp.GetString() ?? "" : "";
-                var downloadUrl = root.TryGetProperty("downloadUrl", out var urlProp) ? urlProp.GetString() ?? "" : "";
+                if (root.TryGetProperty("deploymentId", out var depProp) || root.TryGetProperty("DeploymentId", out depProp)) Guid.TryParse(depProp.GetString(), out deploymentId);
+                version = (root.TryGetProperty("version", out var verProp) || root.TryGetProperty("Version", out verProp)) ? verProp.GetString() ?? "" : "";
+                var checksumSha256 = (root.TryGetProperty("checksumSha256", out var checkProp) || root.TryGetProperty("ChecksumSha256", out checkProp)) ? checkProp.GetString() ?? "" : "";
+                var downloadUrl = (root.TryGetProperty("downloadUrl", out var urlProp) || root.TryGetProperty("DownloadUrl", out urlProp)) ? urlProp.GetString() ?? "" : "";
 
                 // 1 & 2. Run Readiness Assessment Safety Gate
                 var readinessReport = await AssessUpdateReadinessAsync(manifestJson);
@@ -387,7 +394,7 @@ namespace SynOS.Services
                 }
 
                 // 3. Download package
-                var tempDir = Path.Combine(AppContext.BaseDirectory, "temp_downloads");
+                var tempDir = Path.Combine(GetWorkingDirectory(), "Temp");
                 Directory.CreateDirectory(tempDir);
                 var targetZipPath = Path.Combine(tempDir, $"v{version}.zip");
                 var stateFilePath = Path.Combine(tempDir, "download_state.json");
@@ -405,7 +412,7 @@ namespace SynOS.Services
                 }
 
                 // 4. Staging Validation
-                var stageDir = Path.Combine(AppContext.BaseDirectory, "updates", $"v{version}");
+                var stageDir = Path.Combine(GetWorkingDirectory(), "Updates", $"v{version}");
                 var stageSuccess = await StageAndValidatePackageAsync(targetZipPath, stageDir, version, deploymentId);
                 if (!stageSuccess)
                 {
@@ -420,7 +427,7 @@ namespace SynOS.Services
                     DeploymentId = deploymentId,
                     Version = version,
                     BackupId = backupId,
-                    BackupFilePath = Path.Combine(AppContext.BaseDirectory, "Backups", $"backup_{backupId}.zip.enc"),
+                    BackupFilePath = Path.Combine(GetWorkingDirectory(), "Backup", $"backup_{backupId}.zip.enc"),
                     Status = "Installing"
                 };
                 await File.WriteAllTextAsync(transactionStatePath, JsonSerializer.Serialize(transactionState));
@@ -598,6 +605,154 @@ namespace SynOS.Services
                 _logger.LogError(ex, "Package validation stage failed.");
                 return false;
             }
+        }
+
+        private bool VerifyManifestSignature(string manifestJson, out string error)
+        {
+            error = "";
+            try
+            {
+                using var doc = JsonDocument.Parse(manifestJson);
+                var root = doc.RootElement;
+                
+                if (!root.TryGetProperty("KeyId", out var keyIdProp) || string.IsNullOrEmpty(keyIdProp.GetString()))
+                {
+                    error = "Missing KeyId in manifest.";
+                    return false;
+                }
+                var keyId = keyIdProp.GetString()!;
+
+                if (!root.TryGetProperty("Signature", out var sigProp) || string.IsNullOrEmpty(sigProp.GetString()))
+                {
+                    error = "Missing Signature in manifest.";
+                    return false;
+                }
+                var signatureBase64 = sigProp.GetString()!;
+                var signatureBytes = Convert.FromBase64String(signatureBase64);
+
+                var pem = _keyStore.GetPublicKeyPem(keyId);
+                if (string.IsNullOrEmpty(pem))
+                {
+                    error = $"KeyId '{keyId}' is not trusted or not found in KeyStore.";
+                    return false;
+                }
+
+                var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(manifestJson);
+                if (dict == null)
+                {
+                    error = "Failed to deserialize manifest for signature verification.";
+                    return false;
+                }
+                dict.Remove("Signature");
+
+                var canonicalJson = JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = false });
+                var signedBytes = Encoding.UTF8.GetBytes(canonicalJson);
+
+                if (pem.Contains("EC PRIVATE") || pem.Contains("EC PUBLIC") || pem.Contains("ECDSA"))
+                {
+                    using var ecdsa = ECDsa.Create();
+                    ecdsa.ImportFromPem(pem);
+                    return ecdsa.VerifyData(signedBytes, signatureBytes, HashAlgorithmName.SHA256);
+                }
+                else
+                {
+                    using var rsa = RSA.Create();
+                    rsa.ImportFromPem(pem);
+                    return rsa.VerifyData(signedBytes, signatureBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                }
+            }
+            catch (Exception ex)
+            {
+                error = $"Signature verification exception: {ex.Message}";
+                return false;
+            }
+        }
+
+        private async Task<(bool Success, string Error)> VerifyUpdatePackageAndManifestAsync(string manifestJson)
+        {
+            if (!VerifyManifestSignature(manifestJson, out var sigError))
+            {
+                return (false, $"Manifest signature verification failed: {sigError}");
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(manifestJson);
+                var root = doc.RootElement;
+
+                // Rollback Protection and Minimum Supported Version
+                var targetVersionStr = root.TryGetProperty("Version", out var verProp) ? verProp.GetString() ?? "" : "";
+                if (string.IsNullOrEmpty(targetVersionStr))
+                {
+                    return (false, "Manifest is missing target Version.");
+                }
+
+                if (!Version.TryParse(targetVersionStr, out var targetVersion))
+                {
+                    return (false, $"Invalid target Version format: '{targetVersionStr}'.");
+                }
+
+                var currentVersionObj = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+                var currentVersion = currentVersionObj ?? new Version("1.2.0");
+
+                if (root.TryGetProperty("MinimumSupportedVersion", out var minProp) && !string.IsNullOrEmpty(minProp.GetString()))
+                {
+                    var minVersionStr = minProp.GetString()!;
+                    if (Version.TryParse(minVersionStr, out var minVersion))
+                    {
+                        if (currentVersion < minVersion)
+                        {
+                            return (false, $"Current version {currentVersion} is lower than the minimum supported version {minVersion} for this release.");
+                        }
+                    }
+                }
+
+                var allowRollback = root.TryGetProperty("AllowRollback", out var rollbackProp) && rollbackProp.GetBoolean();
+                if (targetVersion < currentVersion && !allowRollback)
+                {
+                    return (false, $"Downgrade detected: Current version is {currentVersion}, target version is {targetVersion}. Rollback is not allowed.");
+                }
+
+                // Check Replay Protection: Nonce, Timestamp, ReleaseId
+                if (!root.TryGetProperty("Nonce", out var nonceProp) || string.IsNullOrEmpty(nonceProp.GetString()))
+                {
+                    return (false, "Missing Nonce in manifest for replay protection.");
+                }
+                var nonce = nonceProp.GetString()!;
+
+                if (!root.TryGetProperty("Timestamp", out var timeProp) || string.IsNullOrEmpty(timeProp.GetString()))
+                {
+                    return (false, "Missing Timestamp in manifest for replay protection.");
+                }
+                var timestampStr = timeProp.GetString()!;
+                if (!DateTime.TryParse(timestampStr, out var timestamp))
+                {
+                    return (false, "Invalid Timestamp format in manifest.");
+                }
+
+                var diff = DateTime.UtcNow - timestamp.ToUniversalTime();
+                if (Math.Abs(diff.TotalMinutes) > 15) // Allow slightly larger window for clocks skew
+                {
+                    return (false, $"Request expired: Timestamp is {timestamp.ToUniversalTime():u}, but current client time is {DateTime.UtcNow:u}. Max age is 15 minutes.");
+                }
+
+                var nonceFilePath = Path.Combine(GetWorkingDirectory(), "processed_nonces.txt");
+                if (File.Exists(nonceFilePath))
+                {
+                    var nonces = await File.ReadAllLinesAsync(nonceFilePath);
+                    if (nonces.Contains(nonce))
+                    {
+                        return (false, $"Replay detected: Nonce '{nonce}' has already been processed.");
+                    }
+                }
+                await File.AppendAllTextAsync(nonceFilePath, nonce + Environment.NewLine);
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Manifest validation exception: {ex.Message}");
+            }
+
+            return (true, "");
         }
 
         private async Task ReportProgressAsync(Guid deploymentId, string eventType, string? payloadJson = null)

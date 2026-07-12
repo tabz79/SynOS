@@ -40,6 +40,20 @@ namespace SynOS.Data
             var pendingEvents = _outboxService.GetPendingEvents();
             if (pendingEvents.Count == 0) return;
 
+            string labId = "LAB001";
+            try
+            {
+                var profile = LabProfiles.AsNoTracking().FirstOrDefault();
+                if (profile != null && !string.IsNullOrEmpty(profile.LabId))
+                {
+                    labId = profile.LabId;
+                }
+            }
+            catch
+            {
+                // Fallback to default
+            }
+
             foreach (var evt in pendingEvents)
             {
                 var outboxEvt = new OutboxEvent
@@ -49,7 +63,7 @@ namespace SynOS.Data
                     EventType = evt.EventType,
                     AggregateType = evt.AggregateType,
                     AggregateId = evt.AggregateId,
-                    LabId = "LAB001",
+                    LabId = labId,
                     BranchId = evt.BranchId?.ToString(),
                     PayloadJson = System.Text.Json.JsonSerializer.Serialize(evt, evt.GetType(), new System.Text.Json.JsonSerializerOptions
                     {
@@ -267,6 +281,7 @@ namespace SynOS.Data
 
         // NEW: Branding & Identity (GPT-5 Mandate)
         public DbSet<LabProfile> LabProfiles { get; set; } = null!;
+        public DbSet<AnalyzerListener> AnalyzerListeners { get; set; } = null!;
         public DbSet<RoleDepartmentConfig> RoleDepartmentConfigs { get; set; } = null!;
 
         // DbSets for Referral System
@@ -435,6 +450,21 @@ namespace SynOS.Data
                 entity.Property(e => e.LabId).HasMaxLength(50);
                 entity.Property(e => e.BranchId).HasMaxLength(50);
                 entity.Property(e => e.Status).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<LabProfile>(entity =>
+            {
+                entity.Property(e => e.MaximumBranches).HasDefaultValue(1);
+                entity.Property(e => e.EnabledFeatures)
+                    .HasConversion(
+                        v => System.Text.Json.JsonSerializer.Serialize(v ?? new System.Collections.Generic.List<string>(), (System.Text.Json.JsonSerializerOptions)null!),
+                        v => ParseEnabledFeatures(v),
+                        new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<System.Collections.Generic.List<string>>(
+                            (c1, c2) => c1 != null && c2 != null ? c1.SequenceEqual(c2) : c1 == c2,
+                            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                            c => c.ToList()
+                        )
+                    );
             });
 
             // Support Tickets Configuration
@@ -1765,6 +1795,31 @@ modelBuilder.Entity<ReceivableFact>(entity =>
                       .HasForeignKey(e => e.SupersededReportId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
+        }
+
+        private static System.Collections.Generic.List<string> ParseEnabledFeatures(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return new System.Collections.Generic.List<string>();
+            }
+
+            value = value.Trim();
+            if (value.StartsWith("[") && value.EndsWith("]"))
+            {
+                try
+                {
+                    return System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.List<string>>(value, (System.Text.Json.JsonSerializerOptions)null!) ?? new System.Collections.Generic.List<string>();
+                }
+                catch
+                {
+                    // Fall through to parse as comma-separated if JSON deserialization fails
+                }
+            }
+
+            return value.Split(new[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s => s.Trim())
+                        .ToList();
         }
     }
 }

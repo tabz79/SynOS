@@ -705,6 +705,15 @@ export interface RemoteLab {
   lastSeenAt: string | null;
   status: 'Online' | 'Offline' | 'Degraded';
   rolloutRing: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  licenseType?: string;
+  licenseStatus?: string;
+  maximumBranches?: number;
+  branchCount?: number;
+  expiryDate?: string;
+  enabledFeatures?: string[];
   latestSnapshot?: {
     cpuUsagePercent: number;
     memoryUsageMB: number;
@@ -754,8 +763,51 @@ export const fetchRemoteLabs = async (): Promise<RemoteLab[]> => {
   return res.data;
 };
 
+export const registerLaboratory = async (lab: {
+  labName: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  licenseType: string;
+  maximumBranches?: number;
+  expiryDate?: string;
+  enabledFeatures: string[];
+}): Promise<{ success: boolean; labId: string; licenseKey: string }> => {
+  const res = await controlTowerClient.post('/labs', lab);
+  return res.data;
+};
+
 export const updateLabRolloutRing = async (labId: string, ring: string): Promise<void> => {
   await controlTowerClient.put(`/labs/${labId}/rollout-ring`, { rolloutRing: ring });
+};
+
+export const updateLabProperties = async (labId: string, properties: {
+  labName?: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+}): Promise<void> => {
+  await controlTowerClient.put(`/labs/${labId}/properties`, properties);
+};
+
+export const manageLabLicense = async (labId: string, license: {
+  licenseType?: string;
+  maximumBranches?: number;
+  expiryDate?: string;
+  enabledFeatures?: string[];
+  status?: string;
+}): Promise<void> => {
+  await controlTowerClient.put(`/labs/${labId}/license`, license);
+};
+
+export const extendLabTrial = async (labId: string, daysToExtend: number): Promise<{ success: boolean; newExpiry: string }> => {
+  const res = await controlTowerClient.post(`/labs/${labId}/extend-trial`, { daysToExtend });
+  return res.data;
+};
+
+export const regenerateLabLicenseKey = async (labId: string): Promise<{ success: boolean; licenseKey: string }> => {
+  const res = await controlTowerClient.post(`/labs/${labId}/regenerate-key`);
+  return res.data;
 };
 
 export const fetchLabTimeline = async (labId: string): Promise<TimelineEvent[]> => {

@@ -121,6 +121,13 @@ namespace SynOS.Services.Admin
 
             _context.UserBranchRoles.Add(assignment);
             await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(
+                _userContext.CurrentUserId,
+                "AssignBranchRole",
+                "User",
+                userId,
+                new { BranchId = branchId, RoleId = roleId.Value });
         }
 
         public async Task RemoveBranchRoleAsync(Guid userId, Guid branchId, Guid roleId)
@@ -132,6 +139,13 @@ namespace SynOS.Services.Admin
             {
                 _context.UserBranchRoles.Remove(assignment);
                 await _context.SaveChangesAsync();
+
+                await _auditService.LogAsync(
+                    _userContext.CurrentUserId,
+                    "RemoveBranchRole",
+                    "User",
+                    userId,
+                    new { BranchId = branchId, RoleId = roleId });
             }
         }
 
@@ -186,6 +200,15 @@ namespace SynOS.Services.Admin
 
         public async Task<Branch> CreateBranchAsync(string code, string name, string? address = null, string? phone = null, string? email = null)
         {
+            // Enforce branch license limit
+            var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var maxBranches = profile?.MaximumBranches ?? 1;
+            var currentCount = await _context.Branches.CountAsync();
+            if (currentCount >= maxBranches)
+            {
+                throw new InvalidOperationException($"Branch creation limit reached. Your license allows a maximum of {maxBranches} branches.");
+            }
+
             var upperCode = code.Trim().ToUpperInvariant();
             if (await _context.Branches.AnyAsync(b => b.Code == upperCode))
             {

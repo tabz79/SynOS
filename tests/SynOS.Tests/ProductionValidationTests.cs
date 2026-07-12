@@ -69,6 +69,7 @@ namespace SynOS.Tests
             var configMock = new Mock<IConfiguration>();
             configMock.Setup(c => c["FileStorage:BasePath"]).Returns("C:\\SynOS_Files");
             configMock.Setup(c => c["Inventory:ValuationMethod"]).Returns("FIFO");
+            configMock.Setup(c => c["Backup:EncryptionKey"]).Returns("TBZ-BACKUP-KEY-12345-67890");
             
             var sectionMock = new Mock<IConfigurationSection>();
             sectionMock.Setup(s => s.Value).Returns("true");
