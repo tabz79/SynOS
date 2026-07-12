@@ -248,7 +248,7 @@ namespace SynOS.Api.Controllers.Admin
         [HttpGet("settings")]
         public async Task<IActionResult> GetGlobalThermalSettings()
         {
-            var path = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "thermal_settings.json");
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "thermal_settings.json");
             if (!System.IO.File.Exists(path))
             {
                 var defaultSettings = new
@@ -278,7 +278,7 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("settings")]
         public async Task<IActionResult> SaveGlobalThermalSettings([FromBody] System.Text.Json.JsonElement settings)
         {
-            var path = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "thermal_settings.json");
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "thermal_settings.json");
             var json = settings.ToString();
             await System.IO.File.WriteAllTextAsync(path, json);
 

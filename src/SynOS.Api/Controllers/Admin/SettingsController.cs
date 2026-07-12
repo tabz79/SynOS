@@ -903,7 +903,7 @@ namespace SynOS.Api.Controllers.Admin
             {
                 if (System.IO.File.Exists(path)) return path;
             }
-            return Path.Combine(Directory.GetCurrentDirectory(), "src", "SynOS.Api", "appsettings.json");
+            return Path.Combine(AppContext.BaseDirectory, "appsettings.json");
         }
 
         private string FindMiddlewareAppSettingsPath()
@@ -918,7 +918,7 @@ namespace SynOS.Api.Controllers.Admin
             {
                 if (System.IO.File.Exists(path)) return path;
             }
-            return Path.Combine(Directory.GetCurrentDirectory(), "TBZ.Middleware", "src", "TBZ.Middleware.Api", "appsettings.json");
+            return Path.Combine(AppContext.BaseDirectory, "TBZ.Middleware", "src", "TBZ.Middleware.Api", "appsettings.json");
         }
 
         private string FindMiddlewareDbPath()
@@ -934,7 +934,7 @@ namespace SynOS.Api.Controllers.Admin
             {
                 if (System.IO.File.Exists(path)) return path;
             }
-            return Path.Combine(Directory.GetCurrentDirectory(), "TBZ.Middleware", "src", "TBZ.Middleware.Api", "MiddlewareDb.db");
+            return Path.Combine(AppContext.BaseDirectory, "MiddlewareDb.db");
         }
 
         private void SetNodeValue(JsonNode root, string path, JsonNode? value)

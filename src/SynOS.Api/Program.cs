@@ -50,6 +50,7 @@ using SynOS.Services.Inventory; // ADDED
 using SynOS.Services.Time; // ADDED
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseWindowsService();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (!string.IsNullOrEmpty(connectionString))
@@ -586,6 +587,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 // Configure static files
 var fileStorageBasePath = app.Configuration["FileStorage:BasePath"];
@@ -777,4 +779,5 @@ if (!isMigrationTool)
 }
 }
 
+app.MapFallbackToFile("index.html");
 app.Run();

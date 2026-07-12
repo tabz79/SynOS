@@ -413,7 +413,7 @@ namespace SynOS.Api.Controllers.Admin
             {
                 if (System.IO.File.Exists(path)) return path;
             }
-            return Path.Combine(Directory.GetCurrentDirectory(), "src", "SynOS.Api", "appsettings.json");
+            return Path.Combine(AppContext.BaseDirectory, "appsettings.json");
         }
 
         private void SetNodeValue(JsonNode root, string path, JsonNode? value)
