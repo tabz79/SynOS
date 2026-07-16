@@ -96,13 +96,16 @@ namespace SynOS.Tests
             var configMock = new Mock<IConfiguration>();
             configMock.Setup(c => c["FileStorage:BasePath"]).Returns("C:\\SynOS_Files");
             configMock.Setup(c => c["Inventory:ValuationMethod"]).Returns("FIFO");
-            configMock.Setup(c => c["Backup:EncryptionKey"]).Returns("TBZ-BACKUP-KEY-12345-67890");
             
             var sectionMock = new Mock<IConfigurationSection>();
             sectionMock.Setup(s => s.Value).Returns("true");
             configMock.Setup(c => c.GetSection("Features:ReferralEconomics:Enabled")).Returns(sectionMock.Object);
 
-            var service = new BackupService(db, configMock.Object, _backupLoggerMock.Object);
+            var keyProviderMock = new Mock<IBackupKeyProvider>();
+            keyProviderMock.Setup(kp => kp.GetEncryptionKey()).Returns("TBZ-BACKUP-KEY-12345-67890");
+            keyProviderMock.Setup(kp => kp.GetKeyId()).Returns("default-machine-key-v1");
+
+            var service = new BackupService(db, configMock.Object, _backupLoggerMock.Object, null, null, keyProviderMock.Object);
 
             // Act: 1. Backup
             var backupId = await service.ExecuteBackupAsync("Full");

@@ -15,6 +15,127 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var patientId = dto.Patient.PatientId;
+                    var visitId = dto.VisitId;
+
+                    // 1. PatientIntelligenceFact
+                    var patientFact = db.PatientIntelligenceFacts.Local.FirstOrDefault(p => p.PatientId == patientId)
+                                      ?? await db.PatientIntelligenceFacts.FirstOrDefaultAsync(p => p.PatientId == patientId);
+                    
+                    var resolvedGender = "Unknown";
+                    if (!string.IsNullOrEmpty(dto.Patient.Gender))
+                    {
+                        var lower = dto.Patient.Gender.ToLowerInvariant();
+                        if (lower == "m" || lower == "male") resolvedGender = "Male";
+                        else if (lower == "f" || lower == "female") resolvedGender = "Female";
+                    }
+
+                    var resolvedReferrer = "Direct Walk-In";
+                    if (!string.IsNullOrEmpty(dto.Referral.DoctorName)) resolvedReferrer = dto.Referral.DoctorName;
+                    else if (!string.IsNullOrEmpty(dto.Financials.CorporateName)) resolvedReferrer = dto.Financials.CorporateName;
+
+                    bool isNewPatient = patientFact == null;
+                    if (isNewPatient)
+                    {
+                        patientFact = new PatientIntelligenceFact
+                        {
+                            PatientId = patientId,
+                            LabId = dto.LabId,
+                            MRN = "MRN-" + patientId.ToString().Substring(0, 8).ToUpper(),
+                            PatientName = dto.Patient.Name,
+                            DateOfBirth = DateTime.UtcNow.AddYears(-dto.Patient.Age),
+                            Gender = resolvedGender,
+                            MobileNumber = dto.Patient.Mobile,
+                            ReferringDoctorOrPartner = resolvedReferrer,
+                            ReferringDoctorId = dto.Referral.DoctorId != Guid.Empty ? dto.Referral.DoctorId : null,
+                            ReferralPartnerId = dto.Financials.CorporateId,
+                            LastVisitedBranchId = dto.BranchId?.ToString() ?? string.Empty,
+                            TotalVisits = 1,
+                            FirstVisitDate = dto.VisitDate,
+                            LastVisitDate = dto.VisitDate,
+                            LifetimeRevenue = dto.Financials.PaidAmount,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        db.PatientIntelligenceFacts.Add(patientFact);
+                    }
+                    else
+                    {
+                        patientFact.PatientName = dto.Patient.Name;
+                        patientFact.Gender = resolvedGender;
+                        patientFact.MobileNumber = dto.Patient.Mobile;
+                        patientFact.ReferringDoctorOrPartner = resolvedReferrer;
+                        patientFact.ReferringDoctorId = dto.Referral.DoctorId != Guid.Empty ? dto.Referral.DoctorId : null;
+                        patientFact.ReferralPartnerId = dto.Financials.CorporateId;
+                        patientFact.LastVisitedBranchId = dto.BranchId?.ToString() ?? string.Empty;
+                        patientFact.LastVisitDate = dto.VisitDate;
+                        
+                        var alreadyVisited = await db.PatientVisitFacts.AnyAsync(v => v.PatientId == patientId && v.VisitId != visitId);
+                        if (!alreadyVisited)
+                        {
+                            patientFact.TotalVisits = 1;
+                            patientFact.FirstVisitDate = dto.VisitDate;
+                        }
+                        else
+                        {
+                            var dbVisitsCount = await db.PatientVisitFacts.CountAsync(v => v.PatientId == patientId && v.VisitId != visitId);
+                            patientFact.TotalVisits = dbVisitsCount + 1;
+                        }
+                        
+                        var dbPaid = await db.PatientVisitFacts.Where(v => v.PatientId == patientId && v.VisitId != visitId).SumAsync(v => v.AmountPaid);
+                        patientFact.LifetimeRevenue = dbPaid + dto.Financials.PaidAmount;
+                        patientFact.UpdatedAt = DateTime.UtcNow;
+                    }
+
+                    // 2. PatientVisitFact
+                    var visitFact = db.PatientVisitFacts.Local.FirstOrDefault(v => v.VisitId == visitId)
+                                    ?? await db.PatientVisitFacts.FirstOrDefaultAsync(v => v.VisitId == visitId);
+                    
+                    var token = visitId.ToString().Substring(0, 8).ToUpper();
+
+                    bool isNewVisit = visitFact == null;
+                    if (isNewVisit)
+                    {
+                        visitFact = new PatientVisitFact
+                        {
+                            VisitId = visitId,
+                            PatientId = patientId,
+                            LabId = dto.LabId,
+                            Token = token,
+                            VisitDate = dto.VisitDate,
+                            ReferringDoctorOrPartner = resolvedReferrer,
+                            ReferringDoctorId = dto.Referral.DoctorId != Guid.Empty ? dto.Referral.DoctorId : null,
+                            ReferralPartnerId = dto.Financials.CorporateId,
+                            AmountPaid = dto.Financials.PaidAmount,
+                            TestsJson = JsonSerializer.Serialize(dto.Investigations.Select(i => i.TestCode).ToList()),
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        db.PatientVisitFacts.Add(visitFact);
+                    }
+                    else
+                    {
+                        visitFact.ReferringDoctorOrPartner = resolvedReferrer;
+                        visitFact.ReferringDoctorId = dto.Referral.DoctorId != Guid.Empty ? dto.Referral.DoctorId : null;
+                        visitFact.ReferralPartnerId = dto.Financials.CorporateId;
+                        visitFact.AmountPaid = dto.Financials.PaidAmount;
+                        visitFact.TestsJson = JsonSerializer.Serialize(dto.Investigations.Select(i => i.TestCode).ToList());
+                        visitFact.UpdatedAt = DateTime.UtcNow;
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "PatientRegistered" &&
                 storedEvent.EventType != "BillCreated" &&
                 storedEvent.EventType != "PaymentReceived" &&

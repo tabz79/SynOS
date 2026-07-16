@@ -48,6 +48,27 @@ namespace TBZ.Middleware.Projections
 
             switch (storedEvent.EventType)
             {
+                case "ReleasedVisit":
+                    try
+                    {
+                        var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                        if (dto != null)
+                        {
+                            fact.PatientsRegistered++;
+                            fact.BillsCreated++;
+                            fact.RevenueCollected += dto.Financials.PaidAmount;
+                            fact.PaymentsCount++;
+                            fact.SamplesCollected += dto.Investigations.Count;
+                            fact.ReportsSigned += dto.Reports.Count;
+                            fact.ReportsDelivered += dto.Reports.Count;
+                            factUpdated = true;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                    break;
+
                 case "PatientRegistered":
                     fact.PatientsRegistered++;
                     factUpdated = true;

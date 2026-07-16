@@ -13,6 +13,58 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto != null)
+                    {
+                        var releasedFact = await db.WorkflowFacts.FindAsync(dto.VisitId);
+                        bool isNewReleased = false;
+                        if (releasedFact == null)
+                        {
+                            isNewReleased = true;
+                            releasedFact = new WorkflowFact
+                            {
+                                VisitId = dto.VisitId,
+                                LabId = dto.LabId,
+                                BranchId = dto.BranchId?.ToString(),
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            };
+                        }
+                        else
+                        {
+                            releasedFact.UpdatedAt = DateTime.UtcNow;
+                        }
+
+                        releasedFact.PatientId = dto.Patient.PatientId;
+                        releasedFact.PatientRegisteredAt = dto.VisitDate;
+                        releasedFact.VisitCreatedAt = dto.VisitDate;
+                        releasedFact.PaymentReceivedAt = dto.VisitDate;
+                        releasedFact.SampleCollectedAt = dto.VisitDate;
+                        releasedFact.ProcessingStartedAt = dto.VisitDate;
+
+                        var firstReport = dto.Reports.FirstOrDefault();
+                        if (firstReport != null)
+                        {
+                            releasedFact.ReportSignedAt = firstReport.SignedAt;
+                            releasedFact.ReportDeliveredAt = firstReport.SignedAt;
+                        }
+
+                        if (isNewReleased)
+                        {
+                            db.WorkflowFacts.Add(releasedFact);
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             Guid? visitId = null;
             Guid? patientId = null;
 

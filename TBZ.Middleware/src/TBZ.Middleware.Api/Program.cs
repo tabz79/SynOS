@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TBZ.Middleware.Api.DTOs;
+using TBZ.Middleware.Domain.DTOs;
 using TBZ.Middleware.Api.Endpoints;
 using TBZ.Middleware.Domain;
 using TBZ.Middleware.Infrastructure;
@@ -121,7 +122,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5173", "http://localhost:5174" };
         policy.WithOrigins(allowedOrigins)
               .AllowAnyMethod()
               .AllowAnyHeader()
@@ -152,20 +153,26 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
-app.UseCors();
-
-// Security Headers Middleware
+// Custom CORS and Preflight Short-circuiting Middleware
 app.Use(async (context, next) =>
 {
-    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
-    context.Response.Headers["X-Frame-Options"] = "DENY";
-    context.Response.Headers["Referrer-Policy"] = "no-referrer";
-    context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
-    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none';";
+    var origin = context.Request.Headers["Origin"].ToString();
+    if (!string.IsNullOrEmpty(origin))
+    {
+        context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+        context.Response.Headers["Access-Control-Allow-Headers"] = "*";
+        context.Response.Headers["Access-Control-Allow-Methods"] = "*";
+        context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+    }
+
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 204;
+        return;
+    }
+
     await next();
 });
-
-app.UseRateLimiter();
 
 // Custom Authentication and Authorization Middleware
 app.Use(async (context, next) =>
@@ -897,6 +904,119 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
 .WithName("IngestEvent")
 .WithOpenApi();
 
+app.MapPost("/api/v2/visits/release", async (HttpContext context, ReleasedVisitDto dto, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options, IOperationalEventBus eventBus) =>
+{
+    app.Logger.LogInformation("[INTEGRATION DEB] /api/v2/visits/release started. DocumentId: {DocumentId}, VisitId: {VisitId}", dto?.DocumentId, dto?.VisitId);
+
+    // 1. Extract authentication headers
+    if (!context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues) ||
+        !context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
+    {
+        return Results.Json(new { error = "Missing auth headers X-Lab-Id or X-Api-Key" }, statusCode: StatusCodes.Status401Unauthorized);
+    }
+
+    var labId = labIdValues.ToString();
+    var apiKey = apiKeyValues.ToString();
+
+    // 2. Fetch tenant lab details
+    var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == labId);
+    if (lab == null || lab.Status != "Active" || !ApiKeyHasher.Verify(apiKey, lab.ApiKeyHash))
+    {
+        return Results.Json(new { error = "Unauthorized tenant credentials" }, statusCode: StatusCodes.Status401Unauthorized);
+    }
+
+    // Validate payload tenant against HTTP headers
+    if (dto == null || dto.LabId != labId)
+    {
+        return Results.Json(new { error = "Lab ID in payload does not match authenticated header Lab ID" }, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    // 3. Deduplication Check (Idempotency)
+    var alreadyExists = await db.StoredEvents.AnyAsync(e => e.EventId == dto.DocumentId);
+    if (alreadyExists)
+    {
+        return Results.Json(new { message = "Duplicate document skipped", documentId = dto.DocumentId }, statusCode: StatusCodes.Status208AlreadyReported);
+    }
+
+    // 4. Save to Event Store
+    var storedEvent = new StoredEvent
+    {
+        Id = Guid.NewGuid(),
+        EventId = dto.DocumentId,
+        LabId = dto.LabId,
+        BranchId = dto.BranchId?.ToString(),
+        EventType = "ReleasedVisit",
+        AggregateType = "Visit",
+        AggregateId = dto.VisitId.ToString(),
+        PayloadJson = System.Text.Json.JsonSerializer.Serialize(dto),
+        OccurredAt = dto.VisitDate,
+        ReceivedAt = DateTime.UtcNow
+    };
+
+    db.StoredEvents.Add(storedEvent);
+    await db.SaveChangesAsync();
+
+    // 5. Trigger WhatsApp immediately if delivery channel is WhatsApp
+    if (dto.Delivery?.RequestedChannel == "WhatsApp" && !string.IsNullOrEmpty(dto.Patient.Mobile))
+    {
+        foreach (var report in dto.Reports)
+        {
+            try
+            {
+                var secureReportUrl = report.SecureDownloadUrl;
+
+                // Rewrite domain to configured PublicTunnelUrl if available
+                var publicTunnel = options.Value.PublicTunnelUrl;
+                if (!string.IsNullOrEmpty(publicTunnel) && !string.IsNullOrEmpty(secureReportUrl))
+                {
+                    try
+                    {
+                        var uri = new Uri(secureReportUrl);
+                        var uriBuilder = new UriBuilder(publicTunnel.TrimEnd('/'));
+                        uriBuilder.Path = uri.AbsolutePath;
+                        uriBuilder.Query = uri.Query;
+                        secureReportUrl = uriBuilder.ToString();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[WARNING] Failed to rewrite secure report URL: {ex.Message}");
+                    }
+                }
+
+                var activeTemplate = !string.IsNullOrEmpty(options.Value.ActiveTemplateName) ? options.Value.ActiveTemplateName : "report_ready";
+                
+                var investigationSummary = string.Join(", ", dto.Investigations.Select(i => i.TestName));
+                if (string.IsNullOrEmpty(investigationSummary))
+                {
+                    investigationSummary = "Laboratory Reports";
+                }
+
+                await notificationService.EnqueueNotificationAsync(new TBZ.Middleware.Application.DTOs.NotificationRequest
+                {
+                    Recipient = dto.Patient.Mobile,
+                    TemplateName = activeTemplate,
+                    Variables = new Dictionary<string, string>
+                    {
+                        { "PatientName", dto.Patient.Name },
+                        { "DownloadLink", secureReportUrl },
+                        { "InvestigationSummary", investigationSummary }
+                    },
+                    CorrelationId = report.ReportId.ToString(),
+                    LabId = dto.LabId
+                });
+            }
+            catch (Exception ex)
+            {
+                app.Logger.LogError(ex, "Failed to queue WhatsApp notification for released visit report {ReportId}.", report.ReportId);
+            }
+        }
+    }
+
+    return Results.Ok(new { success = true, documentId = dto.DocumentId });
+})
+.WithName("ReleaseVisit")
+.WithOpenApi();
+
 app.MapPost("/api/projections/reset", async (MiddlewareDbContext db) =>
 {
     using var transaction = await db.Database.BeginTransactionAsync();
@@ -958,6 +1078,7 @@ app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContex
         return Results.Json(new { error = $"License is inactive. Status: {lab.Status}" }, statusCode: StatusCodes.Status403Forbidden);
     }
     
+    var clearReminder = lab.Status == "Active" && (!lab.ExpiryDate.HasValue || lab.ExpiryDate.Value > DateTime.UtcNow.AddDays(30));
     return Results.Ok(new
     {
         LabId = lab.Id,
@@ -966,7 +1087,9 @@ app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContex
         LicenseType = lab.LicenseType,
         MaximumBranches = lab.MaximumBranches,
         ExpiryDate = lab.ExpiryDate,
-        EnabledFeatures = lab.EnabledFeatures
+        EnabledFeatures = lab.EnabledFeatures,
+        ClearReminder = clearReminder,
+        ServerUtc = DateTime.UtcNow
     });
 })
 .WithName("ValidateLabApiKey")
@@ -1018,7 +1141,18 @@ app.MapGet("/api/v1/public/reports/download-package/{token}", async (string toke
     {
         context.Response.Headers[header.Key] = header.Value.ToArray();
     }
-    await response.Content.CopyToAsync(context.Response.Body);
+});
+
+app.MapGet("/", () =>
+{
+    var version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "1.0.0";
+    return Results.Ok(new
+    {
+        service = "TBZ Middleware",
+        status = "Healthy",
+        version = version,
+        utcTime = DateTime.UtcNow.ToString("o")
+    });
 });
 
 app.Run();

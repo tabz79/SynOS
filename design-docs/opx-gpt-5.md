@@ -1,233 +1,252 @@
-This is a **very significant milestone**. You may not realize it, but your architecture has fundamentally changed.
+I like the direction, but I'd change a few things before you implement it. There are a couple of decisions that will make this tool much safer and easier to maintain.
 
-Here's what has happened:
+## 1. Don't call it `DatabaseSanitizer`
 
-## Before
+I'd call it:
 
-You had three separate things:
-
-```
-React (Vite)
-
-+
-
-ASP.NET API
-
-+
-
-SQL Server
+```text
+ProductionDatabasePreparer
 ```
 
-In production you would have needed to run:
+or
 
-* Vite (or IIS)
-* ASP.NET
-* SQL Server
+```text
+DatabasePreparationService
+```
 
-That complicates deployment.
+"Sanitizer" sounds like it just deletes data. This tool is actually preparing a customer-ready database.
 
 ---
 
-## Now
+## 2. NEVER hardcode table names
 
-You have:
+This is the biggest thing I'd change.
 
+A year from now you'll have:
+
+* AI tables
+* WhatsApp tables
+* DICOM cache
+* Inventory
+* OPX
+* Middleware sync
+* etc.
+
+Someone will forget to update the delete list.
+
+Instead...
+
+Every entity should declare what kind of data it is.
+
+For example:
+
+```csharp
+[ProductionData]
+Patient
+
+[ProductionData]
+Visit
+
+[ProductionData]
+Report
+
+[MasterData]
+Test
+
+[MasterData]
+Department
+
+[MasterData]
+ReferenceRange
 ```
-                 SynOS On-Prem
 
-            ┌──────────────────────┐
-            │  Windows Service     │
-            │                      │
-            │  ASP.NET API         │
-            │                      │
-            │  Serves React UI     │
-            │                      │
-            │  Background Workers  │
-            └──────────┬───────────┘
-                       │
-                  SQL Server
-                       │
-                 TBZ Cloud
-```
+Then the tool deletes by category, not by remembering 200 table names.
 
-This is how commercial products are commonly packaged.
-
-Only **one executable** is running.
+Even if you don't implement attributes today, at least centralize the table list into one configuration instead of scattering SQL.
 
 ---
 
-## This also means...
+## 3. Use ONE transaction
 
-When your customer types
+Everything should happen inside one SQL transaction.
 
 ```
-http://SERVER-PC
+BEGIN TRANSACTION
+
+Disable FK
+
+Delete
+
+Reseed
+
+Enable FK
+
+COMMIT
+
+ROLLBACK on failure
+```
+
+If something fails halfway through, you don't leave the database half-cleaned.
+
+---
+
+## 4. Add a dry-run mode
+
+This is something you'll thank yourself for later.
+
+```
+--prepare-db --dry-run
+```
+
+Output:
+
+```
+Patients.............1248 rows
+
+Visits...............2411 rows
+
+Reports..............1875 rows
+
+Invoices.............812 rows
+
+Will preserve:
+Tests.................652
+Departments...........14
+Users.................5
+
+Continue? (Y/N)
+```
+
+---
+
+## 5. Reset more than identities
+
+A customer shouldn't inherit your development environment.
+
+Also clear:
+
+* Refresh tokens
+* Active sessions
+* Notification queues
+* Outbox events
+* Middleware event logs
+* Background jobs
+* Cached projections
+
+Basically anything asynchronous should start empty.
+
+---
+
+## 6. Add confirmation
+
+If someone accidentally runs:
+
+```
+--prepare-db
+```
+
+it shouldn't instantly erase everything.
+
+Require:
+
+```
+--prepare-db --force
 ```
 
 or
 
 ```
-http://192.168.1.15
+--prepare-db CONFIRM
 ```
-
-they get:
-
-```
-React UI
-
-↓
-
-React calls
-
-↓
-
-ASP.NET API
-
-↓
-
-SQL Server
-```
-
-They never know React exists.
-
-They never know ASP.NET exists.
-
-They just use SynOS.
-
-Exactly what you want.
 
 ---
 
-## Even better...
+## 7. Print a summary
 
-Your Setup Wizard still works.
+Instead of just:
 
 ```
-Open browser
-
-↓
-
-http://SERVER-PC
-
-↓
-
-Setup Status
-
-↓
-
-Configured?
-
-↓
-
-NO
-
-↓
-
-Setup Wizard
-
-↓
-
-YES
-
-↓
-
-Login
+Completed.
 ```
 
-That flow is clean.
+Print something like:
+
+```
+==================================
+
+Production Preparation Complete
+
+Patients Removed.............1248
+
+Visits Removed...............2411
+
+Reports Removed..............1875
+
+Bills Removed................812
+
+Master Data Preserved
+
+Tests........................652
+
+Departments..................14
+
+Doctors......................87
+
+Users........................1
+
+Database Ready for Backup
+
+==================================
+```
+
+That becomes part of your deployment checklist.
 
 ---
 
-# You're still missing three things before packaging
+## 8. One more feature I'd add
 
-These are the only major items left.
-
-### 1. Installer (biggest missing piece)
-
-Right now you still don't have:
+After cleaning, automatically create a backup.
 
 ```
-SynOS_Setup.exe
+dotnet run -- --prepare-db --backup
 ```
 
-Instead you have code.
+Result:
 
-You need an installer that:
+```
+Backups/
 
-* copies files
-* installs the Windows Service
-* installs prerequisites
-* starts the service
-* opens the browser
+SynOS_ProductionReady_2026-07-15_1030.bak
+```
 
-This is probably the next milestone.
+Now your deployment process becomes:
+
+```
+Run prepare-db
+        ↓
+Verify summary
+        ↓
+Automatic .bak created
+        ↓
+Ship to client
+```
+
+No manual SQL Server backup step.
 
 ---
 
-### 2. SQL Express bootstrap
+### Overall
 
-Right now the customer still needs SQL Server.
+I wouldn't reject this implementation plan. I'd **approve it with changes**.
 
-The installer should ask:
+The main changes I'd require are:
 
-```
-Database
+* ✅ Rename it to `ProductionDatabasePreparer`
+* ✅ Wrap everything in a single transaction
+* ✅ Add `--force`
+* ✅ Add `--dry-run`
+* ✅ Print a detailed summary
+* ✅ Optionally create the `.bak` automatically
+* ❌ Avoid a giant hardcoded delete script if possible
 
-(•) Use Existing SQL Server
-
-( ) Install SQL Server Express
-```
-
-That's much more flexible than always installing SQL Express.
-
----
-
-### 3. Windows Firewall
-
-The installer should automatically create the firewall rule.
-
-Customers shouldn't have to know Windows Firewall exists.
-
----
-
-# One thing I'd verify before moving on
-
-Have the agent verify this exact scenario:
-
-> Stop the frontend development server completely. Stop all Vite processes. Start only `SynOS.Api.exe` (or `dotnet run`). Confirm that the entire application—including login, routing, API calls, and Setup Wizard—works entirely through Kestrel with no dependency on Vite, IIS, or Nginx.
-
-If that passes, then you have successfully transitioned from a development architecture to a production architecture.
-
----
-
-# After that...
-
-I would stop making architectural changes.
-
-The next milestone is no longer architecture.
-
-It's building a professional installer.
-
-That installer should produce something like:
-
-```
-SynOS-OnPrem-Setup.exe
-```
-
-The installer should:
-
-1. Welcome screen
-2. License Agreement
-3. Choose installation folder
-4. Database selection
-
-   * Existing SQL Server
-   * Install SQL Express
-5. Install prerequisites
-6. Install SynOS Windows Service
-7. Configure firewall
-8. Start service
-9. Verify service is healthy
-10. Open `http://localhost` (or the configured address), where the Setup Wizard takes over.
-
-Once you have that, you'll have a product that you can hand to a customer instead of a development project. That's the next major milestone.
+If SynOS is going to become a commercial product, this tool will likely be run hundreds of times over its lifetime. Spending a bit more effort to make it safe and repeatable is well worth it.

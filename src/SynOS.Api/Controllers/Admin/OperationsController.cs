@@ -39,6 +39,20 @@ namespace SynOS.Api.Controllers.Admin
             _httpClientFactory = httpClientFactory;
         }
 
+        private string GetWorkingDirectory()
+        {
+            var path = _configuration["Working:Directory"];
+            if (string.IsNullOrEmpty(path))
+            {
+                if (AppContext.BaseDirectory.Contains("Program Files", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "C:\\SynOS_Files";
+                }
+                return AppContext.BaseDirectory;
+            }
+            return path;
+        }
+
         // ==========================================
         // 1. BACKUP & RESTORE ENDPOINTS
         // ==========================================
@@ -48,7 +62,7 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                var baseDir = AppContext.BaseDirectory;
+                var baseDir = GetWorkingDirectory();
                 var backupFolder = Path.Combine(baseDir, "Backups");
 
                 if (!Directory.Exists(backupFolder))
@@ -56,7 +70,9 @@ namespace SynOS.Api.Controllers.Admin
                     return Ok(Array.Empty<object>());
                 }
 
-                var files = Directory.GetFiles(backupFolder, "*.zip.enc")
+                var allowedExtensions = new[] { ".zip", ".enc", ".bak" };
+                var files = Directory.GetFiles(backupFolder)
+                    .Where(file => allowedExtensions.Any(ext => file.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
                     .Select(file =>
                     {
                         var info = new FileInfo(file);
@@ -103,7 +119,7 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                var baseDir = AppContext.BaseDirectory;
+                var baseDir = GetWorkingDirectory();
                 var backupFilePath = Path.Combine(baseDir, "Backups", fileName);
 
                 if (!System.IO.File.Exists(backupFilePath))
@@ -119,6 +135,45 @@ namespace SynOS.Api.Controllers.Admin
                 return StatusCode(500, new { message = ex.Message });
             }
         }
+
+        [HttpPost("backups/upload")]
+        public async Task<IActionResult> UploadBackup(Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { message = "No file uploaded." });
+                }
+
+                var ext = Path.GetExtension(file.FileName).ToLower();
+                var allowedExtensions = new[] { ".zip", ".enc", ".bak", ".mdf", ".ldf" };
+                if (!allowedExtensions.Contains(ext) && !file.FileName.EndsWith(".zip.enc", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new { message = "Invalid file type. Only backup files (.zip.enc, .zip, .bak, .mdf, .ldf) are allowed." });
+                }
+
+                var baseDir = GetWorkingDirectory();
+                var backupFolder = Path.Combine(baseDir, "Backups");
+                if (!Directory.Exists(backupFolder))
+                {
+                    Directory.CreateDirectory(backupFolder);
+                }
+
+                var filePath = Path.Combine(backupFolder, file.FileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                return Ok(new { success = true, fileName = file.FileName, message = "Backup uploaded successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
 
         // ==========================================
         // 2. SUPPORT & TICKETS ENDPOINTS

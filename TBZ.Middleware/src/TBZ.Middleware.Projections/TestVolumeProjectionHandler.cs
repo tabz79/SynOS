@@ -13,6 +13,62 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto != null)
+                    {
+                        var dateOnly = storedEvent.OccurredAt.Date;
+                        foreach (var investigation in dto.Investigations)
+                        {
+                            var testCode = investigation.TestCode;
+                            var department = investigation.Department;
+                            var resolvedDept = department ?? "Unknown";
+
+                            var fact = db.TestVolumeFacts.Local.FirstOrDefault(f => 
+                                f.LabId == storedEvent.LabId && 
+                                f.Date == dateOnly && 
+                                f.TestCode == testCode);
+
+                            if (fact == null)
+                            {
+                                fact = await db.TestVolumeFacts.FirstOrDefaultAsync(f => 
+                                    f.LabId == storedEvent.LabId && 
+                                    f.Date == dateOnly && 
+                                    f.TestCode == testCode);
+                            }
+
+                            if (fact == null)
+                            {
+                                fact = new TestVolumeFact
+                                {
+                                    Id = Guid.NewGuid(),
+                                    LabId = storedEvent.LabId,
+                                    Date = dateOnly,
+                                    TestCode = testCode,
+                                    Department = resolvedDept,
+                                    VolumeCount = 1,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
+                                db.TestVolumeFacts.Add(fact);
+                            }
+                            else
+                            {
+                                fact.VolumeCount++;
+                                fact.UpdatedAt = DateTime.UtcNow;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "ProcessingStarted")
             {
                 return;

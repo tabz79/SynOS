@@ -7,12 +7,28 @@ export function AuthProvider({ children }) {
     const [token, setToken] = useState(localStorage.getItem('synos_jwt'));
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isConfigured, setIsConfigured] = useState(true);
     const [activeOversightBranchId, setActiveOversightBranchId] = useState(localStorage.getItem('synos_oversight_branch_id'));
 
     const setOversightBranch = (branchId) => {
         localStorage.setItem('synos_oversight_branch_id', branchId);
         setActiveOversightBranchId(branchId);
     };
+
+    useEffect(() => {
+        const checkSetup = async () => {
+            try {
+                const res = await fetch('/api/v1/setup/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    setIsConfigured(data.isConfigured);
+                }
+            } catch (err) {
+                console.error("Setup check failed:", err);
+            }
+        };
+        checkSetup();
+    }, []);
 
     useEffect(() => {
         let timer;
@@ -122,6 +138,8 @@ export function AuthProvider({ children }) {
             login,
             logout,
             isLoading,
+            isConfigured,
+            setIsConfigured,
             isAuthenticated: !!user,
             activeOversightBranchId,
             setOversightBranch

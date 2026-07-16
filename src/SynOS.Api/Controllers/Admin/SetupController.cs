@@ -25,15 +25,24 @@ namespace SynOS.Api.Controllers.Admin
     public class SetupController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly Microsoft.Extensions.Hosting.IHostApplicationLifetime _lifetime;
 
-        public SetupController(IConfiguration configuration)
+        public SetupController(IConfiguration configuration, Microsoft.Extensions.Hosting.IHostApplicationLifetime lifetime)
         {
             _configuration = configuration;
+            _lifetime = lifetime;
         }
 
         [HttpGet("status")]
         public async Task<IActionResult> GetSetupStatus()
         {
+            var isSetupProcess = System.Environment.GetCommandLineArgs().Contains("--setup");
+            if (isSetupProcess)
+            {
+                var isConfigured = CheckIsConfiguredViaStateFile();
+                return Ok(new { isConfigured });
+            }
+
             try
             {
                 var isConfigured = await CheckIsConfiguredInternal();
@@ -42,6 +51,81 @@ namespace SynOS.Api.Controllers.Admin
             catch
             {
                 return Ok(new { isConfigured = false });
+            }
+        }
+
+        private string GetSetupStatePath()
+        {
+            var configDir = @"C:\ProgramData\TBZ Labs\SynOS\Config";
+            if (!Directory.Exists(configDir))
+            {
+                Directory.CreateDirectory(configDir);
+            }
+            return Path.Combine(configDir, "setup_state.json");
+        }
+
+        private bool CheckIsConfiguredViaStateFile()
+        {
+            try
+            {
+                var path = GetSetupStatePath();
+                if (!System.IO.File.Exists(path))
+                {
+                    return false;
+                }
+                var text = System.IO.File.ReadAllText(path);
+                var state = JsonSerializer.Deserialize<SetupStateDto>(text);
+                return state?.Completed ?? false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        [HttpGet("progress")]
+        public IActionResult GetSetupProgress()
+        {
+            var path = GetSetupStatePath();
+            if (!System.IO.File.Exists(path))
+            {
+                return Ok(new { currentStep = 1, licenseActivated = false });
+            }
+            try
+            {
+                var text = System.IO.File.ReadAllText(path);
+                var state = JsonSerializer.Deserialize<SetupStateDto>(text);
+                return Ok(state);
+            }
+            catch
+            {
+                return Ok(new { currentStep = 1, licenseActivated = false });
+            }
+        }
+
+        [HttpPost("progress")]
+        public IActionResult SaveSetupProgress([FromBody] SetupStateDto dto)
+        {
+            if (dto == null) return BadRequest();
+            try
+            {
+                var path = GetSetupStatePath();
+                var state = new SetupStateDto
+                {
+                    CurrentStep = dto.CurrentStep,
+                    LicenseActivated = dto.LicenseActivated,
+                    DatabaseServer = dto.DatabaseServer,
+                    DatabaseName = dto.DatabaseName,
+                    AdminUsername = dto.AdminUsername,
+                    Completed = dto.Completed
+                };
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                System.IO.File.WriteAllText(path, JsonSerializer.Serialize(state, options));
+                return Ok(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
@@ -56,7 +140,7 @@ namespace SynOS.Api.Controllers.Admin
             try
             {
                 // Lock down: if already configured, reject
-                if (await CheckIsConfiguredInternal())
+                if (CheckIsConfiguredViaStateFile())
                 {
                     return BadRequest(new { message = "System is already configured and locked down." });
                 }
@@ -66,24 +150,195 @@ namespace SynOS.Api.Controllers.Admin
                 {
                     DataSource = dto.DatabaseServer,
                     InitialCatalog = dto.DatabaseName,
-                    UserID = dto.DatabaseUser,
-                    Password = dto.DatabasePassword,
                     TrustServerCertificate = true,
                     MultipleActiveResultSets = true,
                     Encrypt = true
                 };
+
+                if (string.IsNullOrEmpty(dto.DatabaseUser))
+                {
+                    connBuilder.IntegratedSecurity = true;
+                }
+                else
+                {
+                    connBuilder.UserID = dto.DatabaseUser;
+                    connBuilder.Password = dto.DatabasePassword;
+                }
+
                 var connStr = connBuilder.ConnectionString;
 
-                // Validate Connection & Run Migrations
+                // Explicitly check and create target database using master connection first
+                var masterBuilder = new SqlConnectionStringBuilder(connStr)
+                {
+                    InitialCatalog = "master"
+                };
+                try
+                {
+                    Serilog.Log.Information("[Setup] Connecting to master...");
+                    using (var masterConn = new SqlConnection(masterBuilder.ConnectionString))
+                    {
+                        await masterConn.OpenAsync();
+                        Serilog.Log.Information("[Setup] Connected successfully.");
+
+                        Serilog.Log.Information($"[Setup] Checking if database '{dto.DatabaseName}' exists...");
+                        var checkCmdText = "SELECT COUNT(*) FROM sys.databases WHERE name = @dbName";
+                        var dbExists = false;
+                        using (var checkCmd = new SqlCommand(checkCmdText, masterConn))
+                        {
+                            checkCmd.Parameters.AddWithValue("@dbName", dto.DatabaseName);
+                            var count = (int)await checkCmd.ExecuteScalarAsync();
+                            dbExists = count > 0;
+                        }
+
+                        Serilog.Log.Information($"[Setup] Database exists = {dbExists}");
+
+                        if (!dbExists)
+                        {
+                            Serilog.Log.Information("[Setup] Creating database...");
+                            var builder = new SqlCommandBuilder();
+                            var escapedDbName = builder.QuoteIdentifier(dto.DatabaseName);
+                            var createCmdText = $"CREATE DATABASE {escapedDbName}";
+                            using (var createCmd = new SqlCommand(createCmdText, masterConn))
+                            {
+                                await createCmd.ExecuteNonQueryAsync();
+                            }
+                            Serilog.Log.Information("[Setup] Database created successfully.");
+                        }
+
+                        // Ensure NT AUTHORITY\SYSTEM has a login on SQL Server
+                        if (connStr.Contains("Integrated Security=true", StringComparison.OrdinalIgnoreCase) || 
+                            connStr.Contains("Integrated Security=SSPI", StringComparison.OrdinalIgnoreCase) ||
+                            connStr.Contains("Trusted_Connection=true", StringComparison.OrdinalIgnoreCase))
+                        {
+                            try
+                            {
+                                Serilog.Log.Information("[Setup] Creating SQL Server login for NT AUTHORITY\\SYSTEM...");
+                                var loginQuery = @"
+                                    IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'NT AUTHORITY\SYSTEM')
+                                    BEGIN
+                                        CREATE LOGIN [NT AUTHORITY\SYSTEM] FROM WINDOWS;
+                                    END;";
+                                using (var loginCmd = new SqlCommand(loginQuery, masterConn))
+                                {
+                                    await loginCmd.ExecuteNonQueryAsync();
+                                }
+                                Serilog.Log.Information("[Setup] SQL Server login created successfully.");
+                            }
+                            catch (Exception ex)
+                            {
+                                Serilog.Log.Warning($"[Setup] Non-fatal: Failed to create login for NT AUTHORITY\\SYSTEM: {ex.Message}");
+                            }
+                        }
+                    }
+                }
+                catch (SqlException sqlEx)
+                {
+                    Serilog.Log.Error($"[Setup] SQL Exception: Number={sqlEx.Number}, State={sqlEx.State}, Message={sqlEx.Message}");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error($"[Setup] Exception: Message={ex.Message}");
+                    throw;
+                }
+
+                // Validate Connection & Run Migrations targeting the new database
                 var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
                 optionsBuilder.UseSqlServer(connStr);
                 using var context = new SynOSDbContext(optionsBuilder.Options);
 
-                // Run migration
-                await context.Database.MigrateAsync();
+                try
+                {
+                    Serilog.Log.Information("[Setup] Running EF migrations...");
+                    await context.Database.MigrateAsync();
+                    Serilog.Log.Information("[Setup] Migrations completed.");
+
+                    Serilog.Log.Information("[Setup] Applying manual schema adjustments (v7, v8, v9)...");
+                    var manualQueries = new[]
+                    {
+                        // v7: DefaultInterpretation
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'DefaultInterpretation' AND Object_ID = OBJECT_ID(N'Catalog_Tests'))
+                          BEGIN
+                              ALTER TABLE [Catalog_Tests] ADD [DefaultInterpretation] nvarchar(max) NULL;
+                              ALTER TABLE [Catalog_Tests] ADD [DefaultInterpretationLastUpdatedAt] datetimeoffset NULL;
+                              ALTER TABLE [Catalog_Tests] ADD [DefaultInterpretationLastUpdatedBy] uniqueidentifier NULL;
+                          END",
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'DefaultInterpretation' AND Object_ID = OBJECT_ID(N'Tests'))
+                          BEGIN
+                              ALTER TABLE [Tests] ADD [DefaultInterpretation] nvarchar(max) NULL;
+                              ALTER TABLE [Tests] ADD [DefaultInterpretationLastUpdatedAt] datetimeoffset NULL;
+                              ALTER TABLE [Tests] ADD [DefaultInterpretationLastUpdatedBy] uniqueidentifier NULL;
+                          END",
+                        // v8: ReportTitle
+                        @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tests') AND name = 'ReportTitle')
+                          BEGIN
+                              ALTER TABLE Tests ADD ReportTitle NVARCHAR(200) NULL;
+                          END",
+                        @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Catalog_Tests') AND name = 'ReportTitle')
+                          BEGIN
+                              ALTER TABLE Catalog_Tests ADD ReportTitle NVARCHAR(200) NULL;
+                          END",
+                        // v9: ParameterNarrative
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'NarrativeTemplate' AND Object_ID = OBJECT_ID(N'Catalog_Parameters'))
+                          BEGIN
+                              ALTER TABLE [Catalog_Parameters] ADD [NarrativeTemplate] nvarchar(max) NULL;
+                          END",
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'ShowNarrative' AND Object_ID = OBJECT_ID(N'Catalog_Parameters'))
+                          BEGIN
+                              ALTER TABLE [Catalog_Parameters] ADD [ShowNarrative] bit NOT NULL DEFAULT 0;
+                          END",
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'NarrativeTemplate' AND Object_ID = OBJECT_ID(N'Parameters'))
+                          BEGIN
+                              ALTER TABLE [Parameters] ADD [NarrativeTemplate] nvarchar(max) NULL;
+                          END",
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'ShowNarrative' AND Object_ID = OBJECT_ID(N'Parameters'))
+                          BEGIN
+                              ALTER TABLE [Parameters] ADD [ShowNarrative] bit NOT NULL DEFAULT 0;
+                          END"
+                    };
+
+                    foreach (var query in manualQueries)
+                    {
+                        await context.Database.ExecuteSqlRawAsync(query);
+                    }
+                    Serilog.Log.Information("[Setup] Manual schema adjustments applied successfully.");
+                }
+                catch (SqlException sqlEx)
+                {
+                    Serilog.Log.Error($"[Setup] SQL Exception during migrations: Number={sqlEx.Number}, State={sqlEx.State}, Message={sqlEx.Message}");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error($"[Setup] Exception during migrations: Message={ex.Message}");
+                    throw;
+                }
 
                 // Seed Base Tables
                 DbInitializer.Initialize(context);
+
+                // Ensure NT AUTHORITY\SYSTEM is db_owner on the database context
+                if (connStr.Contains("Integrated Security=true", StringComparison.OrdinalIgnoreCase) || 
+                    connStr.Contains("Integrated Security=SSPI", StringComparison.OrdinalIgnoreCase) ||
+                    connStr.Contains("Trusted_Connection=true", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        Serilog.Log.Information("[Setup] Granting db_owner permissions to NT AUTHORITY\\SYSTEM...");
+                        var dbUserQuery = @"
+                            IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'NT AUTHORITY\SYSTEM')
+                            BEGIN
+                                CREATE USER [NT AUTHORITY\SYSTEM] FOR LOGIN [NT AUTHORITY\SYSTEM];
+                            END;
+                            ALTER ROLE [db_owner] ADD MEMBER [NT AUTHORITY\SYSTEM];";
+                        await context.Database.ExecuteSqlRawAsync(dbUserQuery);
+                        Serilog.Log.Information("[Setup] Permissions granted successfully.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Serilog.Log.Warning($"[Setup] Non-fatal: Failed to grant database permissions to NT AUTHORITY\\SYSTEM: {ex.Message}");
+                    }
+                }
 
                 // Create or Update LabProfile with directories & parameters
                 var profile = await context.LabProfiles.FirstOrDefaultAsync();
@@ -117,7 +372,6 @@ namespace SynOS.Api.Controllers.Admin
                 profile.InventoryValuationMethod = "FIFO";
 
                 // Generate secure JWT secret, Backup Encryption Key, and Diagnostics Encryption key automatically
-                profile.BackupEncryptionKey = GenerateSecureKey(32);
                 profile.DiagnosticsEncryptionKey = GenerateSecureKey(32);
 
                 // Initialize JWT Lifetime settings
@@ -143,15 +397,17 @@ namespace SynOS.Api.Controllers.Admin
                     return StatusCode(500, new { message = "Seeded Admin role not found. Please contact support." });
                 }
 
-                var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == dto.AdminUsername.ToLower());
+                User newUser = null;
+                var adminUsernameClean = dto.AdminUsername.Contains("@") ? dto.AdminUsername.Split('@')[0] : dto.AdminUsername;
+                var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == adminUsernameClean.ToLower() || u.Email.ToLower() == dto.AdminUsername.ToLower());
                 if (existingUser == null)
                 {
                     var userId = Guid.NewGuid();
-                    var newUser = new User
+                    newUser = new User
                     {
                         UserId = userId,
-                        Username = dto.AdminUsername,
-                        Email = $"{dto.AdminUsername}@synos-lab.internal",
+                        Username = adminUsernameClean,
+                        Email = dto.AdminUsername,
                         Name = "Administrator",
                         PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
                         IsActive = true,
@@ -162,7 +418,7 @@ namespace SynOS.Api.Controllers.Admin
                     };
                     context.Users.Add(newUser);
 
-                    // Add role assignment
+                    // Add role assignment in UserBranchRoles
                     var defaultBranch = await context.Branches.FirstOrDefaultAsync();
                     var branchId = defaultBranch?.BranchId ?? Guid.Empty;
                     context.UserBranchRoles.Add(new UserBranchRole
@@ -173,7 +429,26 @@ namespace SynOS.Api.Controllers.Admin
                         RoleId = adminRole.RoleId
                     });
 
-                    // Add Employee record to align dual provisioning
+                    // Add role assignment in UserRoles
+                    context.UserRoles.Add(new UserRole
+                    {
+                        UserId = userId,
+                        RoleId = adminRole.RoleId
+                    });
+
+                    // Grant access to all workspaces
+                    var workspaces = await context.Workspaces.ToListAsync();
+                    foreach (var ws in workspaces)
+                    {
+                        context.UserWorkspaceAccesses.Add(new UserWorkspaceAccess
+                        {
+                            UserWorkspaceAccessId = Guid.NewGuid(),
+                            UserId = userId,
+                            WorkspaceId = ws.WorkspaceId
+                        });
+                    }
+
+                    // Add Employee record with all required fields to align dual provisioning
                     context.Employees.Add(new Employee
                     {
                         EmployeeId = Guid.NewGuid(),
@@ -181,7 +456,13 @@ namespace SynOS.Api.Controllers.Admin
                         FirstName = "Admin",
                         LastName = "User",
                         Email = newUser.Email,
-                        IsActive = true
+                        IsActive = true,
+                        JobTitle = "Administrator",
+                        Department = "GENERAL",
+                        JoinDate = DateTimeOffset.UtcNow,
+                        BaseSalary = 50000,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
                     });
                 }
                 else
@@ -196,11 +477,55 @@ namespace SynOS.Api.Controllers.Admin
                     var defaultSeedAdmin = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == "admin");
                     if (defaultSeedAdmin != null)
                     {
+                        var targetUserId = newUser?.UserId ?? existingUser?.UserId ?? Guid.Empty;
+                        
+                        // Re-assign report templates CreatedBy
+                        var templates = await context.ReportTemplates
+                            .Where(t => t.CreatedBy == defaultSeedAdmin.UserId)
+                            .ToListAsync();
+                        foreach (var template in templates)
+                        {
+                            template.CreatedBy = targetUserId;
+                        }
+
+                        // Remove related UserWorkspaceAccesses
+                        var uwa = await context.UserWorkspaceAccesses
+                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
+                            .ToListAsync();
+                        context.UserWorkspaceAccesses.RemoveRange(uwa);
+
+                        // Remove related UserRoles
+                        var ur = await context.UserRoles
+                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
+                            .ToListAsync();
+                        context.UserRoles.RemoveRange(ur);
+
+                        // Remove related UserBranchRoles
+                        var ubr = await context.UserBranchRoles
+                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
+                            .ToListAsync();
+                        context.UserBranchRoles.RemoveRange(ubr);
+
+                        // Remove related Employees
+                        var emp = await context.Employees
+                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
+                            .ToListAsync();
+                        context.Employees.RemoveRange(emp);
+
                         context.Users.Remove(defaultSeedAdmin);
                     }
                 }
 
-                await context.SaveChangesAsync();
+                try
+                {
+                    await context.SaveChangesAsync();
+                }
+                catch (DbUpdateException dbUpdateEx)
+                {
+                    var innerMessage = dbUpdateEx.InnerException?.Message ?? dbUpdateEx.Message;
+                    Serilog.Log.Error($"[Setup] DbUpdateException during save: {innerMessage}");
+                    return StatusCode(500, new { message = $"Database save failed: {innerMessage}" });
+                }
 
                 // Save connection string and generated JWT signing secret to client appsettings.json
                 var clientPath = FindAppSettingsPath();
@@ -228,7 +553,79 @@ namespace SynOS.Api.Controllers.Admin
                     }
                 }
 
-                return Ok(new { success = true, message = "System initialized and configured successfully." });
+                SynOS.Api.Services.SystemSetupState.IsConfigured = true;
+
+                // 1. Mark setup as completed in setup_state.json
+                try
+                {
+                    var statePath = GetSetupStatePath();
+                    var state = new SetupStateDto
+                    {
+                        CurrentStep = 3,
+                        LicenseActivated = true,
+                        DatabaseServer = dto.DatabaseServer,
+                        DatabaseName = dto.DatabaseName,
+                        AdminUsername = dto.AdminUsername,
+                        Completed = true
+                    };
+                    var options = new JsonSerializerOptions { WriteIndented = true };
+                    System.IO.File.WriteAllText(statePath, JsonSerializer.Serialize(state, options));
+                }
+                catch {}
+
+                // 2. Start the Windows Service
+                try
+                {
+                    Serilog.Log.Information("[Setup] Starting Windows Service (TBZSynOSService)...");
+                    using var sc = new System.ServiceProcess.ServiceController("TBZSynOSService");
+                    if (sc.Status != System.ServiceProcess.ServiceControllerStatus.Running && sc.Status != System.ServiceProcess.ServiceControllerStatus.StartPending)
+                    {
+                        try
+                        {
+                            sc.Start();
+                            Serilog.Log.Information("[Setup] Windows Service start command issued successfully.");
+                        }
+                        catch (Exception serviceEx)
+                        {
+                            Serilog.Log.Warning($"[Setup] Standard service start failed ({serviceEx.Message}). Attempting elevated startup...");
+                            // Fallback: Start the service via an elevated cmd process (triggers UAC if not elevated)
+                            var psi = new System.Diagnostics.ProcessStartInfo
+                            {
+                                FileName = "cmd.exe",
+                                Arguments = "/c net start TBZSynOSService",
+                                Verb = "runas",
+                                UseShellExecute = true,
+                                WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                            };
+                            using (var p = System.Diagnostics.Process.Start(psi))
+                            {
+                                if (p != null)
+                                {
+                                    await p.WaitForExitAsync();
+                                }
+                            }
+                            Serilog.Log.Information("[Setup] Elevated service start command completed.");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error($"[Setup] Failed to start Windows Service: {ex.Message}");
+                }
+
+                // 3. Trigger self-termination after 1 second
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(1000);
+                    _lifetime.StopApplication();
+                });
+
+                var host = Request.Host.Host ?? "localhost";
+                var servicePort = SynOS.Api.Services.SystemSetupState.ServicePort;
+                var serviceStatusUrl = $"http://{host}:{servicePort}/api/v1/setup/status";
+                var loginUrl = $"http://{host}:{servicePort}/login";
+
+                return Ok(new { success = true, serviceStatusUrl = serviceStatusUrl, loginUrl = loginUrl });
             }
             catch (Exception ex)
             {
@@ -239,7 +636,7 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("test-db")]
         public async Task<IActionResult> TestDbConnection([FromBody] DbConnectionDto dto)
         {
-            if (await CheckIsConfiguredInternal())
+            if (CheckIsConfiguredViaStateFile())
             {
                 return BadRequest(new { message = "System is already configured." });
             }
@@ -249,13 +646,22 @@ namespace SynOS.Api.Controllers.Admin
                 var connBuilder = new SqlConnectionStringBuilder
                 {
                     DataSource = dto.Server,
-                    InitialCatalog = dto.Database,
-                    UserID = dto.User,
-                    Password = dto.Password,
+                    InitialCatalog = "master",
                     TrustServerCertificate = true,
                     MultipleActiveResultSets = true,
                     Encrypt = true
                 };
+
+                if (string.IsNullOrEmpty(dto.User))
+                {
+                    connBuilder.IntegratedSecurity = true;
+                }
+                else
+                {
+                    connBuilder.UserID = dto.User;
+                    connBuilder.Password = dto.Password;
+                }
+
                 using var conn = new SqlConnection(connBuilder.ConnectionString);
                 await conn.OpenAsync();
                 return Ok(new { success = true, message = "Database connection test successful." });
@@ -269,7 +675,7 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("test-path")]
         public async Task<IActionResult> TestPathPermissions([FromBody] PathDto dto)
         {
-            if (await CheckIsConfiguredInternal())
+            if (CheckIsConfiguredViaStateFile())
             {
                 return BadRequest(new { message = "System is already configured." });
             }
@@ -297,7 +703,7 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("test-middleware")]
         public async Task<IActionResult> TestMiddlewareConnection([FromBody] MiddlewareDto dto)
         {
-            if (await CheckIsConfiguredInternal())
+            if (CheckIsConfiguredViaStateFile())
             {
                 return BadRequest(new { message = "System is already configured." });
             }
@@ -370,6 +776,57 @@ namespace SynOS.Api.Controllers.Admin
             }
         }
 
+        [HttpGet("defaults")]
+        public async Task<IActionResult> GetConfigDefaults()
+        {
+            if (CheckIsConfiguredViaStateFile())
+            {
+                return BadRequest(new { message = "System is already configured." });
+            }
+
+            try
+            {
+                var connStr = _configuration.GetConnectionString("DefaultConnection");
+                var server = "localhost";
+                var database = "SynOSDb";
+                var user = "sa";
+                var password = "";
+
+                if (!string.IsNullOrEmpty(connStr))
+                {
+                    try
+                    {
+                        var builder = new SqlConnectionStringBuilder(connStr);
+                        server = builder.DataSource;
+                        database = builder.InitialCatalog;
+                        user = builder.UserID;
+                        password = builder.Password;
+                    }
+                    catch { }
+                }
+
+                var pacsFolder = _configuration["Pacs:RootPath"] ?? "C:\\SynOS_Files\\PACS";
+                var docFolder = _configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
+                var workingDir = "C:\\SynOS_Working";
+
+                return Ok(new
+                {
+                    databaseServer = server,
+                    databaseName = database,
+                    databaseUser = user,
+                    databasePassword = password,
+                    pacsStorageFolder = pacsFolder,
+                    documentStorageFolder = docFolder,
+                    workingDirectory = workingDir,
+                    middlewareApiUrl = "https://cloud.tbzlabs.in/api/events"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
         private async Task<bool> CheckIsConfiguredInternal()
         {
             var clientPath = FindAppSettingsPath();
@@ -394,6 +851,56 @@ namespace SynOS.Api.Controllers.Admin
             {
                 return false;
             }
+
+            // Diagnostics Instrumenting
+            string queriedDbName = "Unknown";
+            string queriedServerName = "Unknown";
+            string maskedConnStr = "Unknown";
+            string configuredServer = "Unknown";
+            string configuredDb = "Unknown";
+            bool tableExists = false;
+            try
+            {
+                var connBuilder = new SqlConnectionStringBuilder(connStr);
+                configuredServer = connBuilder.DataSource;
+                configuredDb = connBuilder.InitialCatalog;
+                if (!string.IsNullOrEmpty(connBuilder.Password))
+                {
+                    connBuilder.Password = "******";
+                }
+                maskedConnStr = connBuilder.ConnectionString;
+
+                var conn = context.Database.GetDbConnection();
+                var wasClosed = conn.State == System.Data.ConnectionState.Closed;
+                if (wasClosed) await conn.OpenAsync();
+
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "SELECT DB_NAME(), @@SERVERNAME, (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='LabProfiles')";
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            queriedDbName = reader.IsDBNull(0) ? "NULL" : reader.GetString(0);
+                            queriedServerName = reader.IsDBNull(1) ? "NULL" : reader.GetString(1);
+                            var val = reader.GetValue(2);
+                            if (val != null && val != DBNull.Value)
+                            {
+                                tableExists = Convert.ToInt32(val) > 0;
+                            }
+                        }
+                    }
+                }
+
+                if (wasClosed) conn.Close();
+            }
+            catch (Exception dbEx)
+            {
+                Serilog.Log.Error($"[Setup-Diag] Failed to query DB_NAME() / @@SERVERNAME: {dbEx.Message}");
+            }
+
+            Serilog.Log.Information($"[Setup-Diag] Before LabProfiles check. ConnectionString='{maskedConnStr}', ConfiguredServer='{configuredServer}', ConfiguredDatabase='{configuredDb}', RealDBName='{queriedDbName}', RealServerName='{queriedServerName}'");
+            Serilog.Log.Information($"[Setup-Diag] LabProfilesExists = {tableExists}");
 
             var hasProfile = await context.LabProfiles.AnyAsync();
             var hasUsers = await context.Users.AnyAsync();
@@ -487,5 +994,15 @@ namespace SynOS.Api.Controllers.Admin
 
         public string AdminUsername { get; set; } = null!;
         public string AdminPassword { get; set; } = null!;
+    }
+
+    public class SetupStateDto
+    {
+        public int CurrentStep { get; set; }
+        public bool LicenseActivated { get; set; }
+        public string? DatabaseServer { get; set; }
+        public string? DatabaseName { get; set; }
+        public string? AdminUsername { get; set; }
+        public bool Completed { get; set; }
     }
 }

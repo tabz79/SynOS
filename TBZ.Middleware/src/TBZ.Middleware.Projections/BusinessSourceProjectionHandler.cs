@@ -14,6 +14,116 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var patientId = dto.Patient.PatientId;
+                    var visitId = dto.VisitId;
+
+                    bool hasPriorVisit = await db.WorkflowFacts.AnyAsync(w => 
+                        w.PatientId == patientId && 
+                        w.VisitId != visitId && 
+                        w.VisitCreatedAt != null && 
+                        w.VisitCreatedAt < storedEvent.OccurredAt);
+                    bool isFirstVisit = !hasPriorVisit;
+
+                    var resolvedDoctorId = string.IsNullOrEmpty(dto.Referral.DoctorId.ToString()) || dto.Referral.DoctorId == Guid.Empty ? null : dto.Referral.DoctorId.ToString();
+                    var resolvedPartnerId = string.IsNullOrEmpty(dto.Financials.CorporateId.ToString()) || dto.Financials.CorporateId == Guid.Empty ? null : dto.Financials.CorporateId.ToString();
+
+                    BusinessSourceType sourceType;
+                    string sourceId;
+                    string sourceName;
+
+                    if (!string.IsNullOrEmpty(resolvedDoctorId))
+                    {
+                        sourceType = BusinessSourceType.Doctor;
+                        sourceId = resolvedDoctorId;
+                        sourceName = !string.IsNullOrEmpty(dto.Referral.DoctorName) ? dto.Referral.DoctorName : "Unknown Doctor";
+                    }
+                    else if (!string.IsNullOrEmpty(resolvedPartnerId))
+                    {
+                        sourceType = BusinessSourceType.ReferralPartner;
+                        sourceId = resolvedPartnerId;
+                        sourceName = !string.IsNullOrEmpty(dto.Financials.CorporateName) ? dto.Financials.CorporateName : "Unknown Partner";
+                    }
+                    else
+                    {
+                        sourceType = BusinessSourceType.WalkIn;
+                        sourceId = "Direct";
+                        sourceName = "Direct";
+                    }
+
+                    var dateOnly = storedEvent.OccurredAt.Date;
+
+                    var fact = db.BusinessSourceFacts.Local.FirstOrDefault(f =>
+                        f.LabId == storedEvent.LabId &&
+                        f.Date == dateOnly &&
+                        f.SourceType == sourceType &&
+                        f.SourceId == sourceId &&
+                        f.IsFirstVisit == isFirstVisit);
+
+                    if (fact == null)
+                    {
+                        fact = await db.BusinessSourceFacts.FirstOrDefaultAsync(f =>
+                            f.LabId == storedEvent.LabId &&
+                            f.Date == dateOnly &&
+                            f.SourceType == sourceType &&
+                            f.SourceId == sourceId &&
+                            f.IsFirstVisit == isFirstVisit);
+                    }
+
+                    bool isNew = false;
+                    if (fact == null)
+                    {
+                        isNew = true;
+                        fact = new BusinessSourceFact
+                        {
+                            Id = Guid.NewGuid(),
+                            LabId = storedEvent.LabId,
+                            Date = dateOnly,
+                            SourceType = sourceType,
+                            SourceId = sourceId,
+                            SourceName = sourceName,
+                            IsFirstVisit = isFirstVisit,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                    }
+                    else
+                    {
+                        if (sourceId != "Direct")
+                        {
+                            if (sourceType == BusinessSourceType.Doctor && sourceName != "Unknown Doctor" && fact.SourceName != sourceName)
+                            {
+                                fact.SourceName = sourceName;
+                            }
+                            else if (sourceType == BusinessSourceType.ReferralPartner && sourceName != "Unknown Partner" && fact.SourceName != sourceName)
+                            {
+                                fact.SourceName = sourceName;
+                            }
+                        }
+                    }
+
+                    fact.PatientCount++;
+                    fact.RevenueGenerated += dto.Financials.PaidAmount;
+                    fact.TestCount += dto.Investigations.Count;
+                    fact.UpdatedAt = DateTime.UtcNow;
+
+                    if (isNew)
+                    {
+                        db.BusinessSourceFacts.Add(fact);
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
                 storedEvent.EventType != "ProcessingStarted")

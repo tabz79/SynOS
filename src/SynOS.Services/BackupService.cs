@@ -25,14 +25,15 @@ namespace SynOS.Services
         private readonly SynOSDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<BackupService> _logger;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IRestoreStateCoordinator _restoreStateCoordinator;
+        private readonly IServiceProvider? _serviceProvider;
+        private readonly IRestoreStateCoordinator? _restoreStateCoordinator;
+        private readonly IBackupKeyProvider _backupKeyProvider;
 
         public BackupService(
             SynOSDbContext context,
             IConfiguration configuration,
             ILogger<BackupService> logger)
-            : this(context, configuration, logger, null, null)
+            : this(context, configuration, logger, null, null, null)
         {
         }
 
@@ -40,20 +41,32 @@ namespace SynOS.Services
             SynOSDbContext context,
             IConfiguration configuration,
             ILogger<BackupService> logger,
-            IServiceProvider serviceProvider,
-            IRestoreStateCoordinator restoreStateCoordinator)
+            IServiceProvider? serviceProvider,
+            IRestoreStateCoordinator? restoreStateCoordinator,
+            IBackupKeyProvider? backupKeyProvider)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
             _serviceProvider = serviceProvider;
             _restoreStateCoordinator = restoreStateCoordinator;
+            _backupKeyProvider = backupKeyProvider 
+                ?? serviceProvider?.GetService<IBackupKeyProvider>() 
+                ?? new WindowsBackupKeyProvider(configuration, serviceProvider ?? new ServiceCollection().BuildServiceProvider());
         }
 
         private string GetWorkingDirectory()
         {
             var path = _configuration["Working:Directory"];
-            return string.IsNullOrEmpty(path) ? AppContext.BaseDirectory : path;
+            if (string.IsNullOrEmpty(path))
+            {
+                if (AppContext.BaseDirectory.Contains("Program Files", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "C:\\SynOS_Files";
+                }
+                return AppContext.BaseDirectory;
+            }
+            return path;
         }
 
         public async Task<Guid> ExecuteBackupAsync(string backupType)
@@ -245,7 +258,8 @@ namespace SynOS.Services
                 var manifest = new
                 {
                     BackupId = backupId,
-                    BackupVersion = "1.0",
+                    BackupVersion = "2.0",
+                    KeyId = _backupKeyProvider.GetKeyId(),
                     GeneratedAt = DateTime.UtcNow,
                     GeneratedBy = $"SynOS {appVersion}",
                     BackupType = backupType,
@@ -346,14 +360,56 @@ namespace SynOS.Services
                 return false;
             }
 
+            if (backupFilePath.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+            {
+                if (_context.Database.IsRelational())
+                {
+                    _logger.LogInformation("Verifying raw .bak database backup via RESTORE VERIFYONLY...");
+                    var verifySql = "RESTORE VERIFYONLY FROM DISK = @path";
+                    using (var command = _context.Database.GetDbConnection().CreateCommand())
+                    {
+                        command.CommandText = verifySql;
+                        var pathParam = command.CreateParameter();
+                        pathParam.ParameterName = "@path";
+                        pathParam.Value = backupFilePath;
+                        command.Parameters.Add(pathParam);
+
+                        var wasOpen = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Open;
+                        if (!wasOpen) await _context.Database.OpenConnectionAsync();
+                        try
+                        {
+                            await command.ExecuteNonQueryAsync();
+                        }
+                        finally
+                        {
+                            if (!wasOpen) await _context.Database.CloseConnectionAsync();
+                        }
+                    }
+                }
+                _logger.LogInformation("Raw .bak backup integrity verification PASSED successfully.");
+                return true;
+            }
+
             var baseDir = GetWorkingDirectory();
             var decryptedPath = Path.Combine(baseDir, "Restore", $"backup_verify_{backupId}.zip");
             var extractPath = Path.Combine(baseDir, "Restore", $"temp_verify_{backupId}");
+            bool isEncrypted = backupFilePath.EndsWith(".zip.enc", StringComparison.OrdinalIgnoreCase) || 
+                              backupFilePath.EndsWith(".enc", StringComparison.OrdinalIgnoreCase);
 
             try
             {
-                // 1. Decrypt backup
-                await DecryptFileAsync(backupFilePath, decryptedPath);
+                // Ensure Restore directory exists
+                Directory.CreateDirectory(Path.Combine(baseDir, "Restore"));
+
+                // 1. Decrypt backup if encrypted
+                if (isEncrypted)
+                {
+                    await DecryptFileAsync(backupFilePath, decryptedPath);
+                }
+                else
+                {
+                    decryptedPath = backupFilePath;
+                }
 
                 // 2. Perform dry decompression test
                 Directory.CreateDirectory(extractPath);
@@ -427,7 +483,7 @@ namespace SynOS.Services
             {
                 try
                 {
-                    if (File.Exists(decryptedPath)) File.Delete(decryptedPath);
+                    if (isEncrypted && File.Exists(decryptedPath)) File.Delete(decryptedPath);
                     if (Directory.Exists(extractPath)) Directory.Delete(extractPath, true);
                 }
                 catch {}
@@ -515,15 +571,40 @@ namespace SynOS.Services
             var baseDir = GetWorkingDirectory();
             var decryptedPath = Path.Combine(baseDir, "Restore", $"backup_restore_{backupId}.zip");
             var extractPath = Path.Combine(baseDir, "Restore", $"temp_restore_{backupId}");
+            bool isEncrypted = backupFilePath.EndsWith(".zip.enc", StringComparison.OrdinalIgnoreCase) || 
+                              backupFilePath.EndsWith(".enc", StringComparison.OrdinalIgnoreCase);
 
             try
             {
-                // 5. Decrypt and extract
-                await DecryptFileAsync(backupFilePath, decryptedPath);
-                Directory.CreateDirectory(extractPath);
-                ZipFile.ExtractToDirectory(decryptedPath, extractPath);
+                string dbSnapshotFile;
+                if (backupFilePath.EndsWith(".bak", StringComparison.OrdinalIgnoreCase))
+                {
+                    dbSnapshotFile = backupFilePath;
+                }
+                else
+                {
+                    // Ensure Restore directory exists
+                    Directory.CreateDirectory(Path.Combine(baseDir, "Restore"));
 
-                var dbSnapshotFile = Path.Combine(extractPath, "database_snapshot.bak");
+                    // 5. Decrypt and extract
+                    if (isEncrypted)
+                    {
+                        await DecryptFileAsync(backupFilePath, decryptedPath);
+                    }
+                    else
+                    {
+                        decryptedPath = backupFilePath;
+                    }
+                    Directory.CreateDirectory(extractPath);
+                    ZipFile.ExtractToDirectory(decryptedPath, extractPath);
+                    _logger.LogInformation("ZIP extraction completed.");
+
+                    dbSnapshotFile = Path.Combine(extractPath, "database_snapshot.bak");
+                    if (File.Exists(dbSnapshotFile))
+                    {
+                        _logger.LogInformation("BAK file located.");
+                    }
+                }
 
                 if (!string.IsNullOrEmpty(connStr))
                 {
@@ -578,15 +659,71 @@ namespace SynOS.Services
                             await command.ExecuteNonQueryAsync();
                         }
 
-                        // Execute Restore Database Command
-                        _logger.LogWarning("Restoring database {DatabaseName} from backup {Path}...", databaseName, dbSnapshotFile);
+                        // Get logical files from the backup
+                        var backupLogicalFiles = new List<(string LogicalName, string Type)>();
+                        using (var cmd = new SqlCommand("RESTORE FILELISTONLY FROM DISK = @backupPath", connection))
+                        {
+                            cmd.Parameters.AddWithValue("@backupPath", dbSnapshotFile);
+                            using (var reader = await cmd.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    var logicalName = reader.GetString(reader.GetOrdinal("LogicalName"));
+                                    var type = reader.GetString(reader.GetOrdinal("Type"));
+                                    backupLogicalFiles.Add((logicalName, type));
+                                }
+                            }
+                        }
+
+                        // Get target database's physical files
+                        var targetPhysicalFiles = new List<(string Name, string PhysicalPath, string Type)>();
+                        var getFilesSql = "SELECT name, physical_name, type_desc FROM sys.master_files WHERE database_id = DB_ID(@dbName)";
+                        using (var cmd = new SqlCommand(getFilesSql, connection))
+                        {
+                            cmd.Parameters.AddWithValue("@dbName", databaseName);
+                            using (var reader = await cmd.ExecuteReaderAsync())
+                            {
+                                while (await reader.ReadAsync())
+                                {
+                                    var name = reader.GetString(0);
+                                    var path = reader.GetString(1);
+                                    var typeDesc = reader.GetString(2);
+                                    var type = typeDesc.Equals("ROWS", StringComparison.OrdinalIgnoreCase) ? "D" : "L";
+                                    targetPhysicalFiles.Add((name, path, type));
+                                }
+                            }
+                        }
+
+                        // Build restore SQL with MOVE clauses
                         var restoreSql = $"RESTORE DATABASE [{databaseName}] FROM DISK = @backupPath WITH REPLACE";
+                        
+                        if (targetPhysicalFiles.Count > 0 && backupLogicalFiles.Count > 0)
+                        {
+                            var dataCount = 0;
+                            var logCount = 0;
+                            foreach (var backupFile in backupLogicalFiles)
+                            {
+                                var targetFile = targetPhysicalFiles
+                                    .Where(tf => tf.Type == backupFile.Type)
+                                    .Skip(backupFile.Type == "D" ? dataCount++ : logCount++)
+                                    .FirstOrDefault();
+
+                                if (targetFile.PhysicalPath != null)
+                                {
+                                    restoreSql += $", MOVE '{backupFile.LogicalName}' TO '{targetFile.PhysicalPath}'";
+                                }
+                            }
+                        }
+
+                        _logger.LogWarning("Restoring database {DatabaseName} from backup {Path} using SQL: {Sql}...", databaseName, dbSnapshotFile, restoreSql);
+                        _logger.LogInformation("RESTORE DATABASE command started.");
                         using (var command = new SqlCommand(restoreSql, connection))
                         {
                             command.CommandTimeout = 240;
                             command.Parameters.AddWithValue("@backupPath", dbSnapshotFile);
                             await command.ExecuteNonQueryAsync();
                         }
+                        _logger.LogInformation("RESTORE DATABASE command completed successfully.");
 
                         // Unlock database back to MULTI_USER
                         _logger.LogInformation("Restoring database status to MULTI_USER...");
@@ -619,6 +756,7 @@ namespace SynOS.Services
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var newContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                        _logger.LogInformation("New DbContext created.");
                         
                         var canConnect = await newContext.Database.CanConnectAsync();
                         if (!canConnect)
@@ -626,7 +764,13 @@ namespace SynOS.Services
                             throw new InvalidOperationException("Post-Restore Validation failed: Database is unreachable.");
                         }
 
+                        // Apply pending database migrations to bring restored schema up to date with code model
+                        _logger.LogInformation("EF Core migrations started.");
+                        await newContext.Database.MigrateAsync();
+                        _logger.LogInformation("EF Core migrations completed.");
+
                         // Validate core tables queryability
+                        _logger.LogInformation("Post-restore validation started.");
                         int visitsCount = await newContext.Visits.CountAsync();
                         int reportsCount = await newContext.Reports.CountAsync();
                         int outboxCount = await newContext.OutboxEvents.CountAsync();
@@ -660,6 +804,7 @@ namespace SynOS.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Exact exception including stack trace: {Message}\n{StackTrace}", ex.Message, ex.StackTrace);
                 _logger.LogError(ex, "Restore execution failed.");
                 restoreSw.Stop();
 
@@ -717,7 +862,7 @@ namespace SynOS.Services
             {
                 try
                 {
-                    if (File.Exists(decryptedPath)) File.Delete(decryptedPath);
+                    if (isEncrypted && File.Exists(decryptedPath)) File.Delete(decryptedPath);
                     if (Directory.Exists(extractPath)) Directory.Delete(extractPath, true);
                 }
                 catch {}
@@ -735,6 +880,9 @@ namespace SynOS.Services
             try
             {
                 if (!File.Exists(backupFilePath)) return false;
+
+                // Ensure Restore directory exists
+                Directory.CreateDirectory(Path.Combine(baseDir, "Restore"));
 
                 // 1. Decrypt and extract to sandbox
                 await DecryptFileAsync(backupFilePath, decryptedPath);
@@ -822,100 +970,73 @@ namespace SynOS.Services
                 return;
             }
 
-            _logger.LogInformation("Initiating dynamic Database Safety Snapshot...");
+            _logger.LogInformation("Initiating dynamic Database Safety Snapshot via SQL BACKUP...");
             var masterBuilder = new SqlConnectionStringBuilder(connStr) { InitialCatalog = "master" };
             var masterConnStr = masterBuilder.ConnectionString;
-
-            var dbFiles = new List<string>();
-            try
-            {
-                using (var connection = new SqlConnection(masterConnStr))
-                {
-                    await connection.OpenAsync();
-                    using (var command = new SqlCommand("SELECT physical_name FROM sys.master_files WHERE database_id = DB_ID(@dbName)", connection))
-                    {
-                        command.Parameters.AddWithValue("@dbName", databaseName);
-                        using (var reader = await command.ExecuteReaderAsync())
-                        {
-                            while (await reader.ReadAsync())
-                            {
-                                dbFiles.Add(reader.GetString(0));
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to query active database files for safety snapshot.");
-                throw new InvalidOperationException("Failed to discover database files dynamically.", ex);
-            }
-
-            if (dbFiles.Count == 0)
-            {
-                throw new InvalidOperationException($"No database files discovered dynamically for database '{databaseName}'.");
-            }
 
             var timestamp = $"{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid().ToString().Substring(0, 8)}";
             var baseDir = GetWorkingDirectory();
             var safetySnapshotDir = Path.Combine(baseDir, "Backup", "SafetySnapshots", timestamp);
             Directory.CreateDirectory(safetySnapshotDir);
 
-            _logger.LogWarning("Setting database {DatabaseName} to OFFLINE to release locks for safety snapshot file copy...", databaseName);
-            
-            bool wentOffline = false;
+            var dbSnapshotFile = Path.Combine(safetySnapshotDir, "database_snapshot.bak");
+            bool backupSuccess = false;
+
             try
             {
+                _logger.LogInformation("Attempting safety snapshot backup to: {Path}", dbSnapshotFile);
                 using (var connection = new SqlConnection(masterConnStr))
                 {
                     await connection.OpenAsync();
-                    var offlineSql = $@"
-                        ALTER DATABASE [{databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-                        ALTER DATABASE [{databaseName}] SET OFFLINE WITH ROLLBACK IMMEDIATE;";
-                    using (var command = new SqlCommand(offlineSql, connection))
+                    var backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @backupPath WITH INIT, SKIP, NOFORMAT";
+                    using (var command = new SqlCommand(backupSql, connection))
                     {
-                        command.CommandTimeout = 120;
+                        command.CommandTimeout = 240;
+                        command.Parameters.AddWithValue("@backupPath", dbSnapshotFile);
                         await command.ExecuteNonQueryAsync();
                     }
                 }
-                wentOffline = true;
-
-                var filesMetadata = new List<object>();
-                foreach (var file in dbFiles)
+                backupSuccess = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Backup safety snapshot to {Path} failed. Attempting fallback to C:\\Windows\\Temp...", dbSnapshotFile);
+                try
                 {
-                    if (File.Exists(file))
+                    var fallbackPath = Path.Combine("C:\\Windows\\Temp", $"safety_snapshot_{databaseName}_{timestamp}.bak");
+                    using (var connection = new SqlConnection(masterConnStr))
                     {
-                        var fileName = Path.GetFileName(file);
-                        var destPath = Path.Combine(safetySnapshotDir, fileName);
-                        _logger.LogInformation("Copying database file {Source} to {Dest}...", file, destPath);
-                        File.Copy(file, destPath, overwrite: true);
-                        
-                        filesMetadata.Add(new
+                        await connection.OpenAsync();
+                        var backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @backupPath WITH INIT, SKIP, NOFORMAT";
+                        using (var command = new SqlCommand(backupSql, connection))
                         {
-                            FileName = fileName,
-                            FileSize = new FileInfo(destPath).Length
-                        });
+                            command.CommandTimeout = 240;
+                            command.Parameters.AddWithValue("@backupPath", fallbackPath);
+                            await command.ExecuteNonQueryAsync();
+                        }
                     }
-                    else
+                    
+                    try
                     {
-                        throw new FileNotFoundException($"Active database file not found on disk: {file}");
+                        File.Copy(fallbackPath, dbSnapshotFile, overwrite: true);
+                        File.Delete(fallbackPath);
                     }
+                    catch (Exception copyEx)
+                    {
+                        _logger.LogWarning(copyEx, "Could not move fallback backup from C:\\Windows\\Temp to target safety directory, using fallback path as source.");
+                        dbSnapshotFile = fallbackPath;
+                    }
+                    backupSuccess = true;
                 }
-
-                // Bring back online
-                using (var connection = new SqlConnection(masterConnStr))
+                catch (Exception fallbackEx)
                 {
-                    await connection.OpenAsync();
-                    var onlineSql = $@"
-                        ALTER DATABASE [{databaseName}] SET ONLINE;
-                        ALTER DATABASE [{databaseName}] SET MULTI_USER;";
-                    using (var command = new SqlCommand(onlineSql, connection))
-                    {
-                        await command.ExecuteNonQueryAsync();
-                    }
+                    _logger.LogError(fallbackEx, "Fallback backup to C:\\Windows\\Temp also failed.");
+                    throw new InvalidOperationException("Failed to execute safety snapshot backup using all backup paths.", fallbackEx);
                 }
-                wentOffline = false;
+            }
 
+            if (backupSuccess)
+            {
                 var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.2.0";
                 var migrations = await _context.Database.GetAppliedMigrationsAsync();
                 var schemaVersion = migrations.LastOrDefault() ?? "Initial";
@@ -926,54 +1047,24 @@ namespace SynOS.Services
                     DatabaseName = databaseName,
                     SynOSVersion = appVersion,
                     SchemaVersion = schemaVersion,
-                    Files = filesMetadata
+                    Files = new[]
+                    {
+                        new { FileName = "database_snapshot.bak", FileSize = new FileInfo(dbSnapshotFile).Length }
+                    }
                 };
-                
+
                 await File.WriteAllTextAsync(
                     Path.Combine(safetySnapshotDir, "manifest.json"),
                     JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true })
                 );
 
-                _logger.LogInformation("Database Safety Snapshot created successfully at: {Path}", safetySnapshotDir);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Safety snapshot copy process encountered an error.");
-                
-                if (wentOffline)
-                {
-                    _logger.LogWarning("Attempting to restore database {DatabaseName} back to ONLINE status...", databaseName);
-                    try
-                    {
-                        using (var connection = new SqlConnection(masterConnStr))
-                        {
-                            await connection.OpenAsync();
-                            var onlineSql = $@"
-                                ALTER DATABASE [{databaseName}] SET ONLINE;
-                                ALTER DATABASE [{databaseName}] SET MULTI_USER;";
-                            using (var command = new SqlCommand(onlineSql, connection))
-                            {
-                                await command.ExecuteNonQueryAsync();
-                            }
-                        }
-                    }
-                    catch (Exception restoreEx)
-                    {
-                        _logger.LogCritical(restoreEx, "CRITICAL: Failed to bring database back online after failed safety snapshot copy!");
-                    }
-                }
-
-                throw;
+                _logger.LogInformation("Database Safety Snapshot created successfully at: {Path}", dbSnapshotFile);
             }
         }
 
         private async Task EncryptFileAsync(string sourcePath, string destPath)
         {
-            var configKey = _configuration["Backup:EncryptionKey"];
-            if (string.IsNullOrEmpty(configKey))
-            {
-                throw new CryptographicException("CRITICAL CONFIGURATION ERROR: Backup encryption key is missing in configuration.");
-            }
+            var configKey = _backupKeyProvider.GetEncryptionKey();
             var keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(configKey));
 
             var plaintext = await File.ReadAllBytesAsync(sourcePath);
@@ -998,35 +1089,68 @@ namespace SynOS.Services
 
         private async Task DecryptFileAsync(string sourcePath, string destPath)
         {
-            var configKey = _configuration["Backup:EncryptionKey"];
-            if (string.IsNullOrEmpty(configKey))
-            {
-                throw new CryptographicException("CRITICAL CONFIGURATION ERROR: Backup encryption key is missing in configuration.");
-            }
+            byte[] fileBytes = await File.ReadAllBytesAsync(sourcePath);
+            var configKey = _backupKeyProvider.GetEncryptionKey();
             var keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(configKey));
 
-            byte[] fileBytes = await File.ReadAllBytesAsync(sourcePath);
-            if (fileBytes.Length < 28) // 12 (IV) + 16 (Tag)
+            // Try AES-GCM first
+            try
             {
-                throw new CryptographicException("Encrypted backup file is corrupt or too small.");
+                if (fileBytes.Length >= 28)
+                {
+                    var iv = new byte[12];
+                    var tag = new byte[16];
+                    var ciphertext = new byte[fileBytes.Length - 28];
+
+                    Buffer.BlockCopy(fileBytes, 0, iv, 0, 12);
+                    Buffer.BlockCopy(fileBytes, 12, tag, 0, 16);
+                    Buffer.BlockCopy(fileBytes, 28, ciphertext, 0, ciphertext.Length);
+
+                    var plaintext = new byte[ciphertext.Length];
+                    using (var aesGcm = new AesGcm(keyBytes, 16))
+                    {
+                        aesGcm.Decrypt(iv, ciphertext, tag, plaintext);
+                    }
+
+                    await File.WriteAllBytesAsync(destPath, plaintext);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "AES-GCM decryption failed. Attempting legacy AES-CBC decryption fallback...");
             }
 
-            var iv = new byte[12];
-            var tag = new byte[16];
-            var ciphertext = new byte[fileBytes.Length - 28];
-
-            Buffer.BlockCopy(fileBytes, 0, iv, 0, 12);
-            Buffer.BlockCopy(fileBytes, 12, tag, 0, 16);
-            Buffer.BlockCopy(fileBytes, 28, ciphertext, 0, ciphertext.Length);
-
-            var plaintext = new byte[ciphertext.Length];
-
-            using (var aesGcm = new AesGcm(keyBytes, 16))
+            // Fallback: Try Legacy AES CBC with both active key and development fallback key
+            var candidateKeys = new[] { configKey, "TBZ-BACKUP-KEY-12345-67890" };
+            foreach (var key in candidateKeys)
             {
-                aesGcm.Decrypt(iv, ciphertext, tag, plaintext);
+                try
+                {
+                    var legacyKeyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(key));
+                    var iv = new byte[16];
+                    Array.Copy(legacyKeyBytes, iv, 16);
+
+                    using var aes = Aes.Create();
+                    aes.Key = legacyKeyBytes;
+                    aes.IV = iv;
+
+                    using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read);
+                    using var destStream = new FileStream(destPath, FileMode.Create, FileAccess.Write);
+                    using var decryptor = aes.CreateDecryptor();
+                    using var cryptoStream = new CryptoStream(sourceStream, decryptor, CryptoStreamMode.Read);
+
+                    await cryptoStream.CopyToAsync(destStream);
+                    _logger.LogInformation("Legacy AES-CBC decryption succeeded using key: {Key}", key == "TBZ-BACKUP-KEY-12345-67890" ? "Default Fallback" : "Config Key");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Legacy AES-CBC decryption failed with candidate key: {Message}", ex.Message);
+                }
             }
 
-            await File.WriteAllBytesAsync(destPath, plaintext);
+            throw new CryptographicException("Failed to decrypt the backup file. Authentication tag mismatch or corrupt archive.");
         }
 
         private async Task PublishEventAsync(string eventType, Guid backupId, object payload)

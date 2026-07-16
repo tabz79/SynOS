@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -10,8 +10,14 @@ export function LoginPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [authData, setAuthData] = useState(null); // Stores intermediate requirements (modes/branches)
     const [selectedMode, setSelectedMode] = useState(null);
-    const { login, user } = useAuth();
+    const { login, user, isConfigured } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isConfigured) {
+            navigate('/activate', { replace: true });
+        }
+    }, [isConfigured, navigate]);
 
     const handleInitialSubmit = async (e) => {
         e.preventDefault();

@@ -2804,6 +2804,9 @@ namespace SynOS.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<DateTime?>("LastLicenseValidationUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("LicenseExpiryDate")
                         .HasColumnType("datetime2");
 

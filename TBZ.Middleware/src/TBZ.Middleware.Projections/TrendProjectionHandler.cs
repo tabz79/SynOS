@@ -14,6 +14,43 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var dateOnly = storedEvent.OccurredAt.Date;
+
+                    var resolvedDoctorId = string.IsNullOrEmpty(dto.Referral.DoctorId.ToString()) || dto.Referral.DoctorId == Guid.Empty ? "Direct" : dto.Referral.DoctorId.ToString();
+                    var resolvedPartnerId = string.IsNullOrEmpty(dto.Financials.CorporateId.ToString()) || dto.Financials.CorporateId == Guid.Empty ? "Direct" : dto.Financials.CorporateId.ToString();
+
+                    await UpdateTrendFactAsync(db, storedEvent.LabId, dateOnly, "Doctor", resolvedDoctorId, 1, dto.Financials.PaidAmount);
+                    await UpdateTrendFactAsync(db, storedEvent.LabId, dateOnly, "ReferralPartner", resolvedPartnerId, 1, dto.Financials.PaidAmount);
+
+                    foreach (var investigation in dto.Investigations)
+                    {
+                        var testCode = investigation.TestCode;
+                        var department = investigation.Department;
+
+                        if (!string.IsNullOrEmpty(testCode))
+                        {
+                            await UpdateTrendFactAsync(db, storedEvent.LabId, dateOnly, "Test", testCode, 1, 0);
+                        }
+
+                        if (!string.IsNullOrEmpty(department))
+                        {
+                            await UpdateTrendFactAsync(db, storedEvent.LabId, dateOnly, "Department", department, 1, 0);
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
                 storedEvent.EventType != "ProcessingStarted")

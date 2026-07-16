@@ -9,6 +9,7 @@ import {
     manageLabLicense,
     extendLabTrial,
     regenerateLabLicenseKey,
+    renewLabSubscription,
     RemoteLab,
     TimelineEvent
 } from '../../repositories/controlTowerRepository';
@@ -58,6 +59,18 @@ const RemoteOpsTab: React.FC = () => {
     const [showKeyModal, setShowKeyModal] = useState(false);
     const [newLicenseKey, setNewLicenseKey] = useState('');
     const [keyCopied, setKeyCopied] = useState(false);
+
+    // Renew Subscription Modal States
+    const [showRenewModal, setShowRenewModal] = useState(false);
+    const [renewing, setRenewing] = useState(false);
+
+    const formatDateFriendly = (date: Date) => {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const d = date.getDate();
+        const m = months[date.getMonth()];
+        const y = date.getFullYear();
+        return `${d} ${m} ${y}`;
+    };
 
     const toggleFeature = (featureName: string) => {
         setRegisterEnabledFeatures(prev => 
@@ -259,6 +272,27 @@ const RemoteOpsTab: React.FC = () => {
         }
     };
 
+    const handleRenewSubscriptionClick = () => {
+        if (!selectedLab) return;
+        setShowRenewModal(true);
+    };
+
+    const handleConfirmRenewSubscription = async () => {
+        if (!selectedLab) return;
+        setRenewing(true);
+        try {
+            const res = await renewLabSubscription(selectedLab.id);
+            alert(`Subscription renewed successfully! New Expiry Date: ${formatDateFriendly(new Date(res.newExpiry))}`);
+            setShowRenewModal(false);
+            await loadLabs();
+        } catch (err: any) {
+            console.error('Failed to renew subscription', err);
+            alert(err.response?.data?.error || 'Failed to renew subscription');
+        } finally {
+            setRenewing(false);
+        }
+    };
+
     useEffect(() => {
         loadLabs();
         const interval = setInterval(() => {
@@ -449,6 +483,12 @@ const RemoteOpsTab: React.FC = () => {
                                                 className="text-[9px] px-2 py-0.5 bg-red-950/20 border border-red-800 hover:bg-red-900/20 text-red-400 rounded transition-colors font-semibold"
                                             >
                                                 🔄 Regenerate Key
+                                            </button>
+                                            <button
+                                                onClick={handleRenewSubscriptionClick}
+                                                className="text-[9px] px-2 py-0.5 bg-emerald-950/20 border border-emerald-800 hover:bg-emerald-900/20 text-emerald-400 rounded transition-colors font-semibold"
+                                            >
+                                                📅 Renew Subscription
                                             </button>
                                         </div>
                                     </div>
@@ -1081,6 +1121,86 @@ const RemoteOpsTab: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {showRenewModal && selectedLab && (() => {
+                const currentExpiryDate = selectedLab.expiryDate ? new Date(selectedLab.expiryDate) : new Date();
+                const newExpiryDate = new Date(currentExpiryDate.getTime());
+                newExpiryDate.setFullYear(newExpiryDate.getFullYear() + 1);
+
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                        <div className="bg-[#0b0c16] border border-cardBorder rounded-xl max-w-lg w-full flex flex-col shadow-2xl overflow-hidden animate-fadeIn">
+                            {/* Header */}
+                            <div className="p-5 border-b border-cardBorder flex justify-between items-center bg-cardBg/30">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-lg">📅</span>
+                                    <h3 className="text-md font-bold text-white font-display">Renew Subscription</h3>
+                                </div>
+                                <button 
+                                    onClick={() => setShowRenewModal(false)}
+                                    className="text-textSecondary hover:text-white transition-colors"
+                                    disabled={renewing}
+                                >
+                                    <span className="text-xl">&times;</span>
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6 space-y-4 text-xs text-textSecondary font-sans">
+                                <div className="text-center space-y-2 mb-4">
+                                    <span className="text-4xl">💰</span>
+                                    <h4 className="text-sm font-bold text-emerald-400 font-display">Extend Subscription Plan</h4>
+                                    <p className="text-[11px] text-textMuted">This will extend the laboratory's active license validity by exactly 1 year and generate a new secure connection key.</p>
+                                </div>
+
+                                <div className="bg-[#060814] border border-cardBorder rounded-lg p-4 space-y-4">
+                                    <div className="grid grid-cols-2 gap-4 text-center">
+                                        <div className="bg-[#04060c] border border-cardBorder/50 p-3 rounded-lg">
+                                            <span className="text-[9px] text-textMuted uppercase font-bold tracking-wider font-mono">Current Expiry</span>
+                                            <p className="text-sm font-bold text-red-400 mt-1 font-display">
+                                                {selectedLab.expiryDate ? formatDateFriendly(currentExpiryDate) : 'Not Set / Expired'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-[#04060c] border border-cardBorder/50 p-3 rounded-lg">
+                                            <span className="text-[9px] text-textMuted uppercase font-bold tracking-wider font-mono">New Expiry</span>
+                                            <p className="text-sm font-bold text-emerald-400 mt-1 font-display">
+                                                {formatDateFriendly(newExpiryDate)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="text-[11px] text-amber-400 border border-amber-950/40 bg-amber-950/10 p-3 rounded-lg flex items-start space-x-2">
+                                        <span className="text-sm">⚠️</span>
+                                        <div>
+                                            <p className="font-semibold">Important Notice</p>
+                                            <p className="text-[10px] text-textMuted mt-0.5">Renewing generates a brand new license key immediately. The client must replace their old key with the new key on their local SynOS server to resume synchronization.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-cardBorder flex justify-end space-x-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowRenewModal(false)}
+                                        className="px-4 py-2 border border-cardBorder hover:bg-cardBg/30 text-white rounded-lg transition-all text-xs"
+                                        disabled={renewing}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleConfirmRenewSubscription}
+                                        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-all text-xs flex items-center space-x-2"
+                                        disabled={renewing}
+                                    >
+                                        {renewing ? 'Renewing...' : 'Renew Subscription'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 };

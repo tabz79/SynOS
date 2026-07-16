@@ -14,6 +14,72 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var partnerId = string.IsNullOrEmpty(dto.Financials.CorporateId.ToString()) || dto.Financials.CorporateId == Guid.Empty ? "Direct" : dto.Financials.CorporateId.ToString();
+                    var partnerName = partnerId == "Direct" ? "Direct" : (string.IsNullOrEmpty(dto.Financials.CorporateName) ? "Unknown Partner" : dto.Financials.CorporateName);
+                    var partnerLocation = "Unknown Location";
+
+                    var dateOnly = storedEvent.OccurredAt.Date;
+
+                    var fact = db.ReferralPartnerFacts.Local.FirstOrDefault(f =>
+                        f.LabId == storedEvent.LabId &&
+                        f.Date == dateOnly &&
+                        f.ReferralPartnerId == partnerId);
+
+                    if (fact == null)
+                    {
+                        fact = await db.ReferralPartnerFacts.FirstOrDefaultAsync(f =>
+                            f.LabId == storedEvent.LabId &&
+                            f.Date == dateOnly &&
+                            f.ReferralPartnerId == partnerId);
+                    }
+
+                    bool isNew = false;
+                    if (fact == null)
+                    {
+                        isNew = true;
+                        fact = new ReferralPartnerFact
+                        {
+                            Id = Guid.NewGuid(),
+                            LabId = storedEvent.LabId,
+                            Date = dateOnly,
+                            ReferralPartnerId = partnerId,
+                            ReferralPartnerName = partnerName,
+                            ReferralPartnerLocation = partnerLocation,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                    }
+                    else
+                    {
+                        if (partnerId != "Direct" && partnerName != "Unknown Partner" && fact.ReferralPartnerName != partnerName)
+                        {
+                            fact.ReferralPartnerName = partnerName;
+                        }
+                    }
+
+                    fact.PatientCount++;
+                    fact.RevenueGenerated += dto.Financials.PaidAmount;
+                    fact.TestCount += dto.Investigations.Count;
+                    fact.UpdatedAt = DateTime.UtcNow;
+
+                    if (isNew)
+                    {
+                        db.ReferralPartnerFacts.Add(fact);
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
                 storedEvent.EventType != "ProcessingStarted")

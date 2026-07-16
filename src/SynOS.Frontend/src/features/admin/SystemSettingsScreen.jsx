@@ -79,6 +79,14 @@ export function SystemSettingsScreen() {
   const [backups, setBackups] = useState([]);
   const [runningBackup, setRunningBackup] = useState(false);
   const [restoringBackupId, setRestoringBackupId] = useState(null);
+  const [uploadingBackup, setUploadingBackup] = useState(false);
+
+  // Reset Operational Data State
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetSuccess, setResetSuccess] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   // Support Tickets State
   const [tickets, setTickets] = useState([]);
@@ -668,6 +676,53 @@ export function SystemSettingsScreen() {
       setSaveError(err.message || 'Failed to restore database.');
     } finally {
       setRestoringBackupId(null);
+    }
+  };
+
+  const handleUploadBackup = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingBackup(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await apiClient.post('/api/v1/admin/operations/backups/upload', formData);
+      setSaveSuccess(res?.message || 'Backup uploaded successfully.');
+      loadBackups();
+    } catch (err) {
+      setSaveError(err.message || 'Failed to upload backup.');
+    } finally {
+      setUploadingBackup(false);
+      e.target.value = ''; // Reset input to allow uploading the same file again
+    }
+  };
+
+  const handleResetOperationalData = async (e) => {
+    e.preventDefault();
+    if (!resetPassword) {
+      setResetError('Password is required');
+      return;
+    }
+    setResetting(true);
+    setResetError('');
+    setResetSuccess('');
+    try {
+      const res = await apiClient.post('/api/v1/admin/settings/reset-operational-data', {
+        password: resetPassword
+      });
+      setResetSuccess(res?.message || 'Operational data successfully reset.');
+      setShowResetDialog(false);
+      setResetPassword('');
+      alert(`Success: ${res?.message || 'Operational data successfully reset.'}\nBackup ID: ${res?.backupId}`);
+    } catch (err) {
+      setResetError(err.response?.data?.error || err.message || 'Failed to reset operational data.');
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -3582,14 +3637,31 @@ export function SystemSettingsScreen() {
                 <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest">
                   Available Encrypted Backups
                 </h4>
-                <button
-                  type="button"
-                  onClick={handleRunBackup}
-                  disabled={runningBackup}
-                  className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                >
-                  {runningBackup ? '⏳ Running...' : '💾 Execute Manual Backup Now'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="file"
+                    id="backup-file-upload"
+                    accept=".zip.enc,.zip,.bak,.mdf,.ldf"
+                    onChange={handleUploadBackup}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('backup-file-upload').click()}
+                    disabled={uploadingBackup}
+                    className="h-10 px-6 bg-zinc-600 hover:bg-zinc-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    {uploadingBackup ? '⏳ Uploading...' : '📤 Upload Backup File'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRunBackup}
+                    disabled={runningBackup}
+                    className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    {runningBackup ? '⏳ Running...' : '💾 Execute Manual Backup Now'}
+                  </button>
+                </div>
               </div>
 
               <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl">
@@ -3635,6 +3707,25 @@ export function SystemSettingsScreen() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* System Reset & Maintenance */}
+              <div className="bg-red-50 dark:bg-red-955/10 p-6 rounded-2xl border border-red-200 dark:border-red-900/30 mt-8 space-y-4">
+                <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest flex items-center gap-2">
+                  ⚠️ System Maintenance
+                </h3>
+                <p className="text-xxs text-red-650/80 dark:text-red-400/85 font-semibold leading-relaxed">
+                  Purge all transactional data, reports, billing, and patient records from the system while preserving static configurations. This action is irreversible.
+                </p>
+                <div className="flex justify-start">
+                  <button
+                    type="button"
+                    onClick={() => setShowResetDialog(true)}
+                    className="h-10 px-6 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    Reset Operational Data
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -3782,7 +3873,8 @@ export function SystemSettingsScreen() {
 
         {/* ADVANCED SUPER ADMIN CONFIG TAB */}
         {activeTab === 'advanced' && advancedSettings && !loading && (
-          <form onSubmit={handleAdvancedSettingsSubmit} className="space-y-8 animate-fadeIn text-xs">
+          <>
+            <form onSubmit={handleAdvancedSettingsSubmit} className="space-y-8 animate-fadeIn text-xs">
             {/* Section 1: Host & Database Connection */}
             <div>
               <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
@@ -4084,6 +4176,26 @@ export function SystemSettingsScreen() {
               </button>
             </div>
           </form>
+
+          {/* System Reset & Maintenance */}
+          <div className="bg-red-50 dark:bg-red-950/10 p-6 rounded-2xl border border-red-200 dark:border-red-900/30 mt-8 space-y-4">
+            <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest flex items-center gap-2">
+              ⚠️ System Maintenance
+            </h3>
+            <p className="text-xxs text-red-600/80 dark:text-red-400/80 font-semibold leading-relaxed">
+              Purge all transactional data, reports, billing, and patient records from the system while preserving static configurations. This action is irreversible.
+            </p>
+            <div className="flex justify-start">
+              <button
+                type="button"
+                onClick={() => setShowResetDialog(true)}
+                className="h-10 px-6 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              >
+                Reset Operational Data
+              </button>
+            </div>
+          </div>
+          </>
         )}
 
         {/* ABOUT & UPDATES TAB */}
@@ -4131,7 +4243,7 @@ export function SystemSettingsScreen() {
                   </div>
                   <div className="text-xxs text-zinc-450 dark:text-zinc-400 font-semibold mt-1">
                     {settings?.licenseStatus === 'Suspended' ? '🔴 Suspended' : '🟢 Active'} 
-                    {settings?.licenseExpiryDate && ` • Exp: ${dayjs(settings.licenseExpiryDate).format('YYYY-MM-DD')}`}
+                    {settings?.licenseExpiryDate && ` • Exp: ${formatDateInput(settings.licenseExpiryDate)}`}
                   </div>
                 </div>
               </div>
@@ -4428,6 +4540,75 @@ export function SystemSettingsScreen() {
                         Done & Close
                       </button>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Reset Operational Data Confirmation Dialog */}
+              {showResetDialog && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
+                    <h3 className="text-sm font-bold flex items-center gap-2 text-red-600 dark:text-red-400 uppercase tracking-wider">
+                      ⚠️ Reset Operational Data
+                    </h3>
+                    
+                    <div className="space-y-2 text-xs text-zinc-650 dark:text-zinc-400">
+                      <p className="font-semibold text-zinc-800 dark:text-zinc-200">This operation will:</p>
+                      <ul className="list-disc list-inside space-y-1.5 pl-2 font-medium">
+                        <li>Automatically create a complete database backup before making any changes.</li>
+                        <li>Remove all operational data (patients, visits, reports, billing, results, operational logs, etc.).</li>
+                        <li>Preserve all master data (tests, pricing, departments, users, roles, settings, templates, reference ranges, branches, license, etc.).</li>
+                      </ul>
+                      
+                      <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl">
+                        <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-0.5">Backup Location</span>
+                        <code className="text-xxs font-mono font-bold text-synos-primary">C:\ProgramData\TBZ Labs\SynOS\Backups\</code>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleResetOperationalData} className="space-y-4 pt-2">
+                      {resetError && (
+                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xxs font-semibold text-red-600 dark:text-red-450">
+                          {resetError}
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5">
+                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wider">
+                          Confirm Administrator Password
+                        </label>
+                        <input
+                          type="password"
+                          required
+                          placeholder="Enter your password"
+                          value={resetPassword}
+                          onChange={e => setResetPassword(e.target.value)}
+                          className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-red-500 transition-colors text-zinc-800 dark:text-zinc-200 shadow-sm"
+                        />
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowResetDialog(false);
+                            setResetPassword('');
+                            setResetError('');
+                          }}
+                          disabled={resetting}
+                          className="flex-1 h-10 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-150 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xxs tracking-wider rounded-xl transition-colors flex items-center justify-center"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={resetting}
+                          className="flex-1 h-10 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        >
+                          {resetting ? 'Backing up & Resetting...' : 'Backup & Reset'}
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               )}

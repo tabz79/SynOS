@@ -1,79 +1,4 @@
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project TBZ.Middleware/src/TBZ.Middleware.Api/TBZ.Middleware.Api.csproj --urls http://localhost:5069
-Building...
-[DATABASE AUDIT] API SQLite Database absolute path: D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api\MiddlewareDb.db
-info: Microsoft.EntityFrameworkCore.Migrations[20405]
-      No migrations were applied. The database is already up to date.
-warn: Microsoft.EntityFrameworkCore.Query[10103]
-      The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
-info: TBZ.Middleware.Api.Services.DiagnosticsReassemblyWorker[0]
-      DiagnosticsReassemblyWorker starting background reassembly execution.
-info: TBZ.Middleware.Api.Services.DiagnosticsReassemblyWorker[0]
-      Starting periodic purge task for processed diagnostics chunks and folder bundles older than 30 days.
-fail: Microsoft.Extensions.Hosting.Internal.Host[11]
-      Hosting failed to start
-      System.IO.IOException: Failed to bind to address http://127.0.0.1:5069: address already in use.
-       ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
-       ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-         at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-         at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-         at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-         --- End of inner exception stack trace ---
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-         at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
-      --- End of stack trace from previous location ---
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-         --- End of inner exception stack trace ---
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-         at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-         at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-         at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-fail: Microsoft.Extensions.Hosting.Internal.Host[9]
-      BackgroundService failed
-      System.Threading.Tasks.TaskCanceledException: A task was canceled.
-         at TBZ.Middleware.Api.Services.DiagnosticsReassemblyWorker.ExecuteAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api\Services\DiagnosticsReassemblyWorker.cs:line 53
-         at Microsoft.Extensions.Hosting.Internal.Host.TryExecuteBackgroundServiceAsync(BackgroundService backgroundService)
-Unhandled exception. System.IO.IOException: Failed to bind to address http://127.0.0.1:5069: address already in use.
- ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
- ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
---- End of stack trace from previous location ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.LocalhostListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
-   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api\Program.cs:line 1024
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>
-
-
+PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> $env:ASPNETCORE_ENVIRONMENT="Development"
 PS D:\Projects\SynOS-Synthesized-Lab-Intelligence> dotnet run --project src\SynOS.Api\SynOS.Api.csproj --urls http://127.0.0.1:59999
 D:\Projects\SynOS-Synthesized-Lab-Intelligence\
 src\SynOS.Services\SynOS.Services.csproj : warn
@@ -87,98 +12,149 @@ src\SynOS.Services\SynOS.Services.csproj : warn
 ing NU1902: Package 'NCalcSync' 5.12.0 has a kn
 own moderate severity vulnerability, https://gi
 thub.com/advisories/GHSA-3w5p-95mh-gq75
-[12:48:39 WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
-[12:48:41 INF] Mononym database cleanup executed successfully.
-[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.
-[12:49:09 INF] Database seeding completed successfully.
-[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.
-[12:49:29 INF] Notification Worker Service running.
-[12:49:29 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
-[12:49:29 INF] Worker: Running Consistency Check and Catch-up...
-[12:49:29 INF] MiddlewareSyncWorker is starting. Target API: http://localhost:5069/api/events
-[12:49:29 WRN] The query uses the 'First'/'FirstOrDefault' operator without 'OrderBy' and filter operators. This may lead to unpredictable results.
-[12:49:29 INF] Worker: Catch-up complete. Awaiting real-time events...
-[12:49:29 INF] DraftVisitCleanupService is starting.
-[12:49:29 ERR] Hosting failed to start
-System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
- ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
- ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+[06:42:43 WRN] Sensitive data logging is enabled. Log entries and exception messages may include sensitive application data; this mode should only be enabled during development.
+[06:42:43 INF] Mononym database cleanup executed successfully.
+[DbInitializer] SEEDED DEFAULT BRANCH
+[DbInitializer] CREATED NEW ROLE: Admin
+[DbInitializer] CREATED NEW ROLE: Receptionist
+[DbInitializer] CREATED NEW ROLE: Phlebotomist
+[DbInitializer] CREATED NEW ROLE: Pathologist
+[DbInitializer] CREATED NEW ROLE: Technician
+[DbInitializer] CREATED NEW ROLE: XRayTech
+[DbInitializer] CREATED NEW ROLE: MriTech
+[DbInitializer] CREATED NEW ROLE: CTTech
+[DbInitializer] CREATED NEW ROLE: USTech
+[DbInitializer] CREATED NEW ROLE: Radiologist
+[DbInitializer] CREATED NEW ROLE: DeliveryDesk
+[DbInitializer] CREATED NEW ROLE: Typist
+[DbInitializer] CREATED NEW ROLE: LabTech
+[DbInitializer] CREATED NEW ROLE: InventoryManager
+[DbInitializer] CREATED NEW ROLE: Finance
+[DbInitializer] PROVISIONED STAFF RECORD FOR: bio.tech@synos.lab
+[DbInitializer] PROVISIONED STAFF RECORD FOR: inventory@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: delivery@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: finance@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: admin@synos.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: pathologist@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: xray@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: pathologist2@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: hemtech@synos.lab
+[DbInitializer] PROVISIONED STAFF RECORD FOR: phlebo@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: radiologist@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: mri@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: reception@lab.com
+[DbInitializer] PROVISIONED STAFF RECORD FOR: typist1@lab.com
+[DbInitializer] SEEDED WORKSPACE: Reception (/reception)
+[DbInitializer] SEEDED WORKSPACE: Phlebotomy (/phlebotomist)
+[DbInitializer] SEEDED WORKSPACE: Reports Typing (/typist)
+[DbInitializer] SEEDED WORKSPACE: Pathology (/pathologist)
+[DbInitializer] SEEDED WORKSPACE: Lab Workbench (/workbench)
+[DbInitializer] SEEDED WORKSPACE: Radiology (/radiology)
+[DbInitializer] SEEDED WORKSPACE: Inventory (/inventory)
+[DbInitializer] SEEDED WORKSPACE: Finance (/finance)
+[DbInitializer] SEEDED WORKSPACE: X-Ray Technician (/xraytech)
+[DbInitializer] SEEDED WORKSPACE: MRI Technician (/mritech)
+[DbInitializer] SEEDED WORKSPACE: CT Technician (/cttech)
+[DbInitializer] SEEDED WORKSPACE: Ultrasound Technician (/ustech)
+[DbInitializer] SEEDED WORKSPACE: Radiologist Console (/radiologist)
+[DbInitializer] SEEDED USER ACCESS: biotech -> Lab Workbench
+[DbInitializer] SEEDED USER ACCESS: inventory -> Inventory
+[DbInitializer] SEEDED USER ACCESS: finance -> Finance
+[DbInitializer] SEEDED USER ACCESS: admin -> X-Ray Technician
+[DbInitializer] SEEDED USER ACCESS: admin -> MRI Technician
+[DbInitializer] SEEDED USER ACCESS: admin -> Inventory
+[DbInitializer] SEEDED USER ACCESS: admin -> Pathology
+[DbInitializer] SEEDED USER ACCESS: admin -> Reports Typing
+[DbInitializer] SEEDED USER ACCESS: admin -> Ultrasound Technician
+[DbInitializer] SEEDED USER ACCESS: admin -> Radiology
+[DbInitializer] SEEDED USER ACCESS: admin -> Phlebotomy
+[DbInitializer] SEEDED USER ACCESS: admin -> Reception
+[DbInitializer] SEEDED USER ACCESS: admin -> CT Technician
+[DbInitializer] SEEDED USER ACCESS: admin -> Finance
+[DbInitializer] SEEDED USER ACCESS: admin -> Lab Workbench
+[DbInitializer] SEEDED USER ACCESS: admin -> Radiologist Console
+[DbInitializer] SEEDED USER ACCESS: pathologist -> Pathology
+[DbInitializer] SEEDED USER ACCESS: pathologist -> Reports Typing
+[DbInitializer] SEEDED USER ACCESS: xray -> X-Ray Technician
+[DbInitializer] SEEDED USER ACCESS: sarah -> Pathology
+[DbInitializer] SEEDED USER ACCESS: sarah -> Reports Typing
+[DbInitializer] SEEDED USER ACCESS: hemtech -> Lab Workbench
+[DbInitializer] SEEDED USER ACCESS: phlebo -> Phlebotomy
+[DbInitializer] SEEDED USER ACCESS: radiologist -> Radiologist Console
+[DbInitializer] SEEDED USER ACCESS: mri -> MRI Technician
+[DbInitializer] SEEDED USER ACCESS: reception -> Reception
+[DbInitializer] SEEDED USER ACCESS: reception -> Phlebotomy
+[DbInitializer] SEEDED USER ACCESS: typist1 -> Reports Typing
+[CatalogSeedService] Seeded 2 NEW ProcessingDepartments: PATHOLOGY, RADIOLOGY
+[CatalogSeedService] Seeded 7 NEW SpecimenTypes: BLOOD, SERUM, PLASMA, URINE, STOOL, SWAB, NO_SPECIMEN
+[CatalogSeedService] Seeded 5 NEW TubeTypes: EDTA, SST, FLUORIDE, CITRATE, PLAIN
+[06:42:52 ERR] Failed executing DbCommand (8ms) [Parameters=[@__legacyDeptId_0='99f8d2bd-3b7c-4188-840a-2f647aad6454' (Nullable = true)], CommandType='Text', CommandTimeout='30']
+SELECT [t].[TestId], [t].[Category], [t].[CreatedAt], [t].[DefaultInterpretation], [t].[DefaultInterpretationLastUpdatedAt], [t].[DefaultInterpretationLastUpdatedBy], [t].[DepartmentId], [t].[ExtraInfo], [t].[IsActive], [t].[IsOutsourced], [t].[IsProfile], [t].[ModalityId], [t].[ReportTemplateId], [t].[ReportTitle], [t].[SpecialInstructions], [t].[SpecimenTypeCode], [t].[TAT_Hours], [t].[TestCode], [t].[TestName], [t].[UpdatedAt]
+FROM [Tests] AS [t]
+WHERE [t].[DepartmentId] = @__legacyDeptId_0 OR [t].[TestCode] = N'ABD' OR [t].[TestCode] = N'AORTOGRAM'
+[06:42:52 ERR] An exception occurred while iterating over the results of a query for context type 'SynOS.Data.SynOSDbContext'.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultInterpretation'.
+Invalid column name 'DefaultInterpretationLastUpdatedAt'.
+Invalid column name 'DefaultInterpretationLastUpdatedBy'.
+Invalid column name 'ReportTitle'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
 --- End of stack trace from previous location ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-Unhandled exception. [System.IO.IOException: Failed to bind to address http://127.0.0.1:59999: address already in use.
- ---> Microsoft.AspNetCore.Connections.AddressInUseException: Only one usage of each socket address (protocol/network address/port) is normally permitted.
- ---> System.Net.Sockets.SocketException (10048): Only one usage of each socket address (protocol/network address/port) is normally permitted.
-   at System.Net.Sockets.Socket.UpdateStatusAfterSocketErrorAndThrowException(SocketError error, Boolean disconnectOnFailure, String callerName)
-   at System.Net.Sockets.Socket.DoBind(EndPoint endPointSnapshot, SocketAddress socketAddress)
-   at System.Net.Sockets.Socket.Bind(EndPoint localEP)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions.CreateDefaultBoundListenSocket(EndPoint endpoint)
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketConnectionListener.Bind()
-   at Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.BindAsync(EndPoint endpoint, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TransportManager.BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig endpointConfig, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.<>c__DisplayClass28_0`1.<<StartAsync>g__OnBind|0>d.MoveNext()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
 --- End of stack trace from previous location ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   --- End of inner exception stack trace ---
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindEndpointAsync(ListenOptions endpoint, AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.AddressesStrategy.BindAsync(AddressBindContext context, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.AddressBinder.BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func`2 useHttps, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.BindAsync(CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerImpl.StartAsync[TContext](IHttpApplication`1 application, CancellationToken cancellationToken)
-   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__15_1(IHostedService service, CancellationToken token)
-   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
-   at Microsoft.Extensions.Hosting.Internal.Host.StartAsync(CancellationToken cancellationToken)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.RunAsync(IHost host, CancellationToken token)
-   at Microsoft.Extensions.Hosting.HostingAbstractionsHostExtensions.Run(IHost host)
-   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs:line 780
-   at Program.<Main>(String[] args)
-12:49:30 ERR] An error occurred using the connection to database 'SynOSDb' on server '(localdb)\MSSQLLocalDB'.
-[12:49:30 INF] DraftVisitCleanupService is stopping.
-[12:49:30 INF] OperationalStatsProjectionWorker is stopping.
-[12:49:30 ERR] Failed to send heartbeat to Middleware API.
-System.Threading.Tasks.TaskCanceledException: A task was canceled.
-   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenInternalAsync(Boolean errorsExpected, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Storage.RelationalConnection.OpenAsync(CancellationToken cancellationToken, Boolean errorsExpected)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
    at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
-   at SynOS.Api.BackgroundServices.MiddlewareSyncWorker.SendHeartbeatAsync(CancellationToken stoppingToken, String customPayload) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\MiddlewareSyncWorker.cs:line 271
-[12:49:30 INF] Notification Worker Service stopping gracefully.
-[12:49:31 ERR] Error in PollAndProcessCommandsAsync
-System.ObjectDisposedException: Cannot access a disposed object.
-Object name: 'IServiceProvider'.
-   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ThrowHelper.ThrowObjectDisposedException()
-   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService(IServiceProvider provider, Type serviceType)
-   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService[T](IServiceProvider provider)
-   at Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(IServiceProvider provider)
-   at SynOS.Api.BackgroundServices.MiddlewareSyncWorker.PollAndProcessCommandsAsync(CancellationToken stoppingToken) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\BackgroundServices\MiddlewareSyncWorker.cs:line 302
-[12:49:31 INF] MiddlewareSyncWorker is stopping.
-PS D:\Projects\SynOS-Synthesized-Lab-Intelligence>
+ClientConnectionId:647b1174-6aba-460e-a6ec-02545024f652
+Error Number:207,State:1,Class:16
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultInterpretation'.
+Invalid column name 'DefaultInterpretationLastUpdatedAt'.
+Invalid column name 'DefaultInterpretationLastUpdatedBy'.
+Invalid column name 'ReportTitle'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+ClientConnectionId:647b1174-6aba-460e-a6ec-02545024f652
+Error Number:207,State:1,Class:16
+[06:42:52 ERR] An error occurred while seeding the database.
+Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid column name 'DefaultInterpretation'.
+Invalid column name 'DefaultInterpretationLastUpdatedAt'.
+Invalid column name 'DefaultInterpretationLastUpdatedBy'.
+Invalid column name 'ReportTitle'.
+   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__209_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location ---
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.SqlServer.Storage.Internal.SqlServerExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+   at SynOS.Data.CatalogSeedService.SeedModalityMastersAsync(SynOSDbContext context) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\CatalogSeedService.cs:line 380
+   at SynOS.Data.DbInitializer.Initialize(SynOSDbContext context) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Data\DbInitializer.cs:line 144
+   at Program.<Main>$(String[] args) in D:\Projects\SynOS-Synthesized-Lab-Intelligence\src\SynOS.Api\Program.cs:line 512
+ClientConnectionId:647b1174-6aba-460e-a6ec-02545024f652
+Error Number:207,State:1,Class:16
+[06:42:52 INF] Notification Worker Service running.
+[06:42:52 INF] OperationalStatsProjectionWorker is starting in Event-Driven Mode.
+[06:42:52 INF] MiddlewareSyncWorker is starting. Target API: http://localhost:5069/api/events
+[06:42:52 INF] DraftVisitCleanupService is starting.
+[06:43:28 WRN] Failed to determine the https port for redirect.

@@ -37,7 +37,7 @@ namespace SynOS.Services
             var user = await _context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-                .SingleOrDefaultAsync(u => u.Username == request.Username);
+                .SingleOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
@@ -62,6 +62,40 @@ namespace SynOS.Services
             {
                 await _auditService.LogAsync(user.UserId, "LoginFailed", "User", user.UserId, new { Username = request.Username, IpAddress = ipAddress, Reason = "Account locked" });
                 throw new UnauthorizedAccessException("Account is locked.");
+            }
+
+            // Check subscription restriction
+            var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            if (profile != null)
+            {
+                bool isRestricted = false;
+                if (profile.LicenseStatus == "Suspended")
+                {
+                    isRestricted = true;
+                }
+                else if (profile.LicenseExpiryDate.HasValue && DateTime.UtcNow > profile.LicenseExpiryDate.Value.AddDays(7))
+                {
+                    isRestricted = true;
+                }
+
+                if (isRestricted)
+                {
+                    var isAdmin = user.UserRoles.Any(ur => ur.Role.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase) || ur.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+                    if (!isAdmin)
+                    {
+                        var tempBranchRoles = await _context.UserBranchRoles
+                            .Include(ubr => ubr.Role)
+                            .Where(ubr => ubr.UserId == user.UserId)
+                            .ToListAsync();
+                        
+                        var isBranchAdmin = tempBranchRoles.Any(ubr => ubr.Role.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase) || ubr.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+                        
+                        if (!isBranchAdmin)
+                        {
+                            throw new UnauthorizedAccessException("The system subscription has expired. Operational access is locked. Please contact your system administrator.");
+                        }
+                    }
+                }
             }
 
             if (!user.IsActive)

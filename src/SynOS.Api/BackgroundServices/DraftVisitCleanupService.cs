@@ -36,6 +36,19 @@ namespace SynOS.Api.BackgroundServices
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
+                    try
+                    {
+                        if (!SynOS.Api.Services.SystemSetupState.IsConfigured)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                            continue;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+
                     if (_restoreStateCoordinator != null && _restoreStateCoordinator.IsRestoreInProgress)
                     {
                         _logger.LogInformation("Database restore in progress. Pausing DraftVisitCleanupService execution...");

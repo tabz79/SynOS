@@ -14,6 +14,70 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var resolvedDoctorId = string.IsNullOrEmpty(dto.Referral.DoctorId.ToString()) || dto.Referral.DoctorId == Guid.Empty ? "Direct" : dto.Referral.DoctorId.ToString();
+                    var resolvedDoctorName = resolvedDoctorId == "Direct" ? "Self-Referral" : (string.IsNullOrEmpty(dto.Referral.DoctorName) ? "Unknown Doctor" : dto.Referral.DoctorName);
+
+                    var dateOnly = storedEvent.OccurredAt.Date;
+
+                    var fact = db.DoctorReferralFacts.Local.FirstOrDefault(f =>
+                        f.LabId == storedEvent.LabId &&
+                        f.Date == dateOnly &&
+                        f.DoctorId == resolvedDoctorId);
+
+                    if (fact == null)
+                    {
+                        fact = await db.DoctorReferralFacts.FirstOrDefaultAsync(f =>
+                            f.LabId == storedEvent.LabId &&
+                            f.Date == dateOnly &&
+                            f.DoctorId == resolvedDoctorId);
+                    }
+
+                    bool isNew = false;
+                    if (fact == null)
+                    {
+                        isNew = true;
+                        fact = new DoctorReferralFact
+                        {
+                            Id = Guid.NewGuid(),
+                            LabId = storedEvent.LabId,
+                            Date = dateOnly,
+                            DoctorId = resolvedDoctorId,
+                            DoctorName = resolvedDoctorName,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                    }
+                    else
+                    {
+                        if (resolvedDoctorId != "Direct" && resolvedDoctorName != "Unknown Doctor" && fact.DoctorName != resolvedDoctorName)
+                        {
+                            fact.DoctorName = resolvedDoctorName;
+                        }
+                    }
+
+                    fact.PatientCount++;
+                    fact.RevenueGenerated += dto.Financials.PaidAmount;
+                    fact.TestCount += dto.Investigations.Count;
+                    fact.UpdatedAt = DateTime.UtcNow;
+
+                    if (isNew)
+                    {
+                        db.DoctorReferralFacts.Add(fact);
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
                 storedEvent.EventType != "ProcessingStarted")

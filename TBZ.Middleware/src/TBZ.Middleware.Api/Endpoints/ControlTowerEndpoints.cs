@@ -1105,6 +1105,37 @@ namespace TBZ.Middleware.Api.Endpoints
             .WithName("RegenerateLabLicenseKey")
             .WithOpenApi();
 
+            // POST /api/controltower/labs/{id}/renew-subscription
+            app.MapPost("/api/controltower/labs/{id}/renew-subscription", async (string id, MiddlewareDbContext db) =>
+            {
+                var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == id);
+                if (lab == null) return Results.NotFound(new { error = "Laboratory not found." });
+
+                // Extend ExpiryDate by exactly one year from current ExpiryDate, or from UtcNow if null/past
+                var baseDate = (lab.ExpiryDate.HasValue && lab.ExpiryDate.Value > DateTime.UtcNow)
+                    ? lab.ExpiryDate.Value
+                    : DateTime.UtcNow;
+                var newExpiry = baseDate.AddYears(1);
+                lab.ExpiryDate = newExpiry;
+                lab.Status = "Active"; // Ensure status is Active upon renewal
+
+                db.StoredEvents.Add(new StoredEvent
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = Guid.NewGuid(),
+                    LabId = id,
+                    EventType = "SubscriptionRenewed",
+                    PayloadJson = System.Text.Json.JsonSerializer.Serialize(new { NewExpiry = newExpiry }),
+                    OccurredAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                });
+
+                await db.SaveChangesAsync();
+                return Results.Ok(new { success = true, newExpiry = newExpiry });
+            })
+            .WithName("RenewLabSubscription")
+            .WithOpenApi();
+
             // 30. GET /api/controltower/labs/{id}/timeline
             app.MapGet("/api/controltower/labs/{id}/timeline", async (string id, MiddlewareDbContext db) =>
             {

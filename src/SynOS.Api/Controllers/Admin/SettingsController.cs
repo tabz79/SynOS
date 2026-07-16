@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.Entities;
 using SynOS.Services;
@@ -26,6 +27,9 @@ namespace SynOS.Api.Controllers.Admin
         private readonly IBackupService _backupService;
         private readonly IDiagnosticsService _diagnosticsService;
         private readonly IConfiguration _configuration;
+        private readonly ProductionDatabasePreparer _databasePreparer;
+        private readonly ILogger<SettingsController> _logger;
+        private readonly IBackupKeyProvider _backupKeyProvider;
 
         public SettingsController(
             SynOSDbContext context,
@@ -33,7 +37,10 @@ namespace SynOS.Api.Controllers.Admin
             IUserContext userContext,
             IBackupService backupService,
             IDiagnosticsService diagnosticsService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ProductionDatabasePreparer databasePreparer,
+            ILogger<SettingsController> logger,
+            IBackupKeyProvider backupKeyProvider)
         {
             _context = context;
             _auditService = auditService;
@@ -41,6 +48,9 @@ namespace SynOS.Api.Controllers.Admin
             _backupService = backupService;
             _diagnosticsService = diagnosticsService;
             _configuration = configuration;
+            _databasePreparer = databasePreparer;
+            _logger = logger;
+            _backupKeyProvider = backupKeyProvider;
         }
 
         [HttpGet]
@@ -243,7 +253,7 @@ namespace SynOS.Api.Controllers.Admin
                     dto.OtaMaintenanceEndHour = profile.MaintenanceEndHour;
 
                     // Secrets Status Metadata
-                    dto.BackupKeyStatus = string.IsNullOrEmpty(profile.BackupEncryptionKey) ? "Not Configured" : "Configured";
+                    dto.BackupKeyStatus = _backupKeyProvider.IsKeyConfigured() ? "Configured" : "Not Configured";
                     dto.DiagnosticsKeyStatus = string.IsNullOrEmpty(profile.DiagnosticsEncryptionKey) ? "Not Configured" : "Configured";
                 }
 
@@ -360,8 +370,7 @@ namespace SynOS.Api.Controllers.Admin
                     if (dto.MiddlewareApiKey != null && dto.MiddlewareApiKey != "********")
                         profile.MiddlewareApiKey = dto.MiddlewareApiKey;
 
-                    if (dto.BackupEncryptionKey != null && dto.BackupEncryptionKey != "********")
-                        profile.BackupEncryptionKey = dto.BackupEncryptionKey;
+                    // BackupEncryptionKey is deprecated on database profile
 
                     if (dto.DiagnosticsEncryptionKey != null && dto.DiagnosticsEncryptionKey != "********")
                         profile.DiagnosticsEncryptionKey = dto.DiagnosticsEncryptionKey;
@@ -734,8 +743,7 @@ namespace SynOS.Api.Controllers.Admin
                 }
                 else if (dto.SecretType.Equals("backup", StringComparison.OrdinalIgnoreCase))
                 {
-                    profile.BackupEncryptionKey = newSecret;
-                    await _context.SaveChangesAsync();
+                    return BadRequest(new { success = false, message = "Dynamic Backup Encryption Key rotation is not supported." });
                 }
                 else if (dto.SecretType.Equals("diagnostics", StringComparison.OrdinalIgnoreCase))
                 {
@@ -965,6 +973,55 @@ namespace SynOS.Api.Controllers.Admin
             }
             return current;
         }
+
+        [HttpPost("reset-operational-data")]
+        public async Task<IActionResult> ResetOperationalData([FromBody] ResetOperationalDataDto dto)
+        {
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Password))
+            {
+                return BadRequest(new { error = "Password is required" });
+            }
+
+            var userId = _userContext.CurrentUserId;
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            {
+                return BadRequest(new { error = "Invalid administrator password" });
+            }
+
+            // 1. Execute SQL backup first
+            Guid backupId;
+            try
+            {
+                backupId = await _backupService.ExecuteBackupAsync("SystemMaintenanceReset");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create database backup before operational reset.");
+                return StatusCode(500, new { error = $"Database backup failed: {ex.Message}. Operation aborted." });
+            }
+
+            // 2. Execute database preparer (purge transactional data)
+            try
+            {
+                await _databasePreparer.PrepareDatabaseAsync(isDryRun: false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to purge database during operational reset. Backup ID: {BackupId}", backupId);
+                return StatusCode(500, new { error = $"Database reset failed: {ex.Message}. A backup was created with ID {backupId}." });
+            }
+
+            // 3. Log Audit
+            await _auditService.LogAsync(userId, "ResetOperationalData", "Settings", Guid.Empty, new { BackupId = backupId });
+
+            return Ok(new { success = true, message = "Operational data successfully reset.", backupId = backupId });
+        }
+    }
+
+    public class ResetOperationalDataDto
+    {
+        public string Password { get; set; } = string.Empty;
     }
 
     public class AdvancedSettingsDto

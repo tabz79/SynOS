@@ -13,6 +13,52 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto != null)
+                    {
+                        foreach (var report in dto.Reports)
+                        {
+                            var reportFact = await db.DeliveryFacts.FindAsync(report.ReportId);
+                            bool isNewFact = false;
+                            if (reportFact == null)
+                            {
+                                isNewFact = true;
+                                reportFact = new DeliveryFact
+                                {
+                                    ReportId = report.ReportId,
+                                    Status = "Delivered",
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
+                            }
+                            else
+                            {
+                                reportFact.Status = "Delivered";
+                                reportFact.UpdatedAt = DateTime.UtcNow;
+                            }
+
+                            reportFact.PatientId = dto.Patient.PatientId;
+                            reportFact.DeliveryMethod = dto.Delivery?.RequestedChannel ?? "Print";
+                            reportFact.RequestedAt = report.SignedAt;
+                            reportFact.DeliveredAt = report.SignedAt;
+
+                            if (isNewFact)
+                            {
+                                db.DeliveryFacts.Add(reportFact);
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "WhatsappDeliveryRequested" && 
                 storedEvent.EventType != "ReportDeliveryRequestedEvent" &&
                 storedEvent.EventType != "ReportDelivered")

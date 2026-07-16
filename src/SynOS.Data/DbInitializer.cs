@@ -18,6 +18,98 @@ namespace SynOS.Data
         // Define a static DefaultBranchId for seeding purposes
         public static readonly Guid DefaultBranchId = Guid.Parse("A0000000-0000-0000-0000-000000000001"); // Example GUID
 
+        public static void EnsureTablesAndColumnsCreated(SynOSDbContext context)
+        {
+            var sql = @"
+-- 1. Create tables if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'BranchOperationalStats' AND type = 'U')
+BEGIN
+    CREATE TABLE [BranchOperationalStats] (
+        [BranchId] uniqueidentifier NOT NULL,
+        [Date] datetime2 NOT NULL,
+        [PendingReportsCount] int NOT NULL,
+        [LastUpdated] datetime2 NOT NULL,
+        CONSTRAINT [PK_BranchOperationalStats] PRIMARY KEY ([BranchId], [Date])
+    );
+END
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProcessedProjectionEvents' AND type = 'U')
+BEGIN
+    CREATE TABLE [ProcessedProjectionEvents] (
+        [EventId] uniqueidentifier NOT NULL,
+        [ProjectionName] nvarchar(100) NOT NULL,
+        [ProcessedAt] datetime2 NOT NULL,
+        CONSTRAINT [PK_ProcessedProjectionEvents] PRIMARY KEY ([EventId], [ProjectionName])
+    );
+END
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'UserOperationalStats' AND type = 'U')
+BEGIN
+    CREATE TABLE [UserOperationalStats] (
+        [UserId] uniqueidentifier NOT NULL,
+        [BranchId] uniqueidentifier NOT NULL,
+        [Date] datetime2 NOT NULL,
+        [WalkInsCount] int NOT NULL,
+        [PaymentsTotal] decimal(18,2) NOT NULL,
+        [ReportTatTotalMinutes] float NOT NULL,
+        [ReportTatCount] int NOT NULL,
+        [LastUpdated] datetime2 NOT NULL,
+        CONSTRAINT [PK_UserOperationalStats] PRIMARY KEY ([UserId], [BranchId], [Date])
+    );
+END
+
+-- 2. Add columns to ReferralPartners if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('ReferralPartners') AND name = 'PaymentCollectionModel')
+BEGIN
+    ALTER TABLE [ReferralPartners] ADD [PaymentCollectionModel] nvarchar(50) NOT NULL DEFAULT '';
+END
+
+-- 3. Add columns to Patients if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Patients') AND name = 'DisplayName')
+BEGIN
+    ALTER TABLE [Patients] ADD [DisplayName] nvarchar(256) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Patients') AND name = 'IsDateOfBirthKnown')
+BEGIN
+    ALTER TABLE [Patients] ADD [IsDateOfBirthKnown] bit NOT NULL DEFAULT 0;
+END
+
+-- 4. Add columns to DiscountMasters if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
+BEGIN
+    ALTER TABLE [DiscountMasters] ADD [Code] nvarchar(50) NOT NULL DEFAULT '';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'EffectiveFrom')
+BEGIN
+    ALTER TABLE [DiscountMasters] ADD [EffectiveFrom] datetime2 NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'EffectiveTo')
+BEGIN
+    ALTER TABLE [DiscountMasters] ADD [EffectiveTo] datetime2 NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Value')
+BEGIN
+    ALTER TABLE [DiscountMasters] ADD [Value] decimal(18,2) NOT NULL DEFAULT 0.0;
+END
+
+-- 5. Add columns to BranchOperationalEvents if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('BranchOperationalEvents') AND name = 'SourceId')
+BEGIN
+    ALTER TABLE [BranchOperationalEvents] ADD [SourceId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('BranchOperationalEvents') AND name = 'SourceType')
+BEGIN
+    ALTER TABLE [BranchOperationalEvents] ADD [SourceType] nvarchar(max) NULL;
+END
+";
+            context.Database.ExecuteSqlRaw(sql);
+        }
+
         public static void Initialize(SynOSDbContext context)
         {
             // context.Database.EnsureCreated();
@@ -535,10 +627,10 @@ namespace SynOS.Data
                 LabCity = "Khammam",
                 LabPincode = "507001",
                 MiddlewareApiUrl = "http://localhost:5069/api/events",
-                MiddlewareApiKey = "TBZ-LAB-KEY-12345",
+                MiddlewareApiKey = "TBZ-LAB-KEY-INITIAL-PROD-SECURE-2026-v1",
                 LabId = "LAB001",
-                BackupEncryptionKey = "TBZ-BACKUP-KEY-12345-67890",
-                DiagnosticsEncryptionKey = "TBZ-DIAGNOSTICS-KEY-12345-67890",
+                BackupEncryptionKey = "TBZ-INITIAL-SECURE-DB-BACKUP-ENCRYPTION-SECRET-KEY",
+                DiagnosticsEncryptionKey = "TBZ-INITIAL-SECURE-DIAGNOSTICS-ENCRYPTION-SECRET-KEY",
                 PacsMaxInstancesPerSeriesInSeriesTree = 5000,
                 PacsMaxTotalInstancesPerStudyInSeriesTree = 20000,
                 ReferralEconomicsEnabled = true,

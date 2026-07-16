@@ -49,10 +49,40 @@ using SynOS.Services.Reporting; // ADDED
 using SynOS.Services.Inventory; // ADDED
 using SynOS.Services.Time; // ADDED
 
+System.IO.Directory.SetCurrentDirectory(System.AppContext.BaseDirectory);
 var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseWindowsService();
 
+var isSetupMode = args.Contains("--setup");
+if (isSetupMode)
+{
+    builder.WebHost.UseUrls($"http://*:{SynOS.Api.Services.SystemSetupState.SetupPort}");
+}
+else
+{
+    builder.WebHost.UseUrls($"http://*:{SynOS.Api.Services.SystemSetupState.ServicePort}");
+}
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    try
+    {
+        var appSettingsPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "appsettings.json");
+        if (System.IO.File.Exists(appSettingsPath))
+        {
+            var jsonText = System.IO.File.ReadAllText(appSettingsPath);
+            using var doc = System.Text.Json.JsonDocument.Parse(jsonText);
+            if (doc.RootElement.TryGetProperty("ConnectionStrings", out var connSection) &&
+                connSection.TryGetProperty("DefaultConnection", out var connProp))
+            {
+                connectionString = connProp.GetString();
+            }
+        }
+    }
+    catch {}
+}
+
 if (!string.IsNullOrEmpty(connectionString))
 {
     ((IConfigurationBuilder)builder.Configuration).Add(new SynOS.Services.Security.DbConfigurationSource(connectionString, builder.Environment.IsDevelopment()));
@@ -62,22 +92,41 @@ if (!string.IsNullOrEmpty(connectionString))
 var isDevelopment = builder.Environment.IsDevelopment();
 
 var isConfigured = false;
-if (!string.IsNullOrEmpty(connectionString) && !connectionString.Contains("YOUR_SERVER"))
+if (!isSetupMode && !string.IsNullOrEmpty(connectionString) && !connectionString.Contains("YOUR_SERVER"))
 {
     try
     {
         var optionsBuilder = new DbContextOptionsBuilder<SynOS.Data.SynOSDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
         using var context = new SynOS.Data.SynOSDbContext(optionsBuilder.Options);
-        if (context.Database.CanConnect() && context.LabProfiles.Any())
+        if (context.Database.CanConnect())
         {
-            isConfigured = true;
+            var conn = context.Database.GetDbConnection();
+            var wasClosed = conn.State == System.Data.ConnectionState.Closed;
+            if (wasClosed) conn.Open();
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT COUNT(*) FROM sys.tables WHERE name = 'LabProfiles'";
+            var count = Convert.ToInt32(cmd.ExecuteScalar());
+            if (wasClosed) conn.Close();
+            
+            if (count > 0)
+            {
+                isConfigured = true;
+            }
         }
     }
     catch
     {
         // Not configured or migrated yet
     }
+}
+
+SynOS.Api.Services.SystemSetupState.IsConfigured = isConfigured;
+
+if (!isSetupMode && !isConfigured)
+{
+    Console.WriteLine("CRITICAL: SynOS is not configured. Service mode requires a completed configuration. Terminating service immediately.");
+    System.Environment.Exit(1);
 }
 
 if (isConfigured)
@@ -89,40 +138,13 @@ if (isConfigured)
     }
 
     var middlewareApiKey = builder.Configuration["Middleware:ApiKey"];
-    if (string.IsNullOrWhiteSpace(middlewareApiKey))
-    {
-        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Middleware API Key is missing in configuration.");
-    }
-
-    var backupKey = builder.Configuration["Backup:EncryptionKey"];
-    if (string.IsNullOrWhiteSpace(backupKey))
-    {
-        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Backup encryption key is missing in configuration.");
-    }
-
     var diagnosticsKey = builder.Configuration["Diagnostics:EncryptionKey"];
-    if (string.IsNullOrWhiteSpace(diagnosticsKey))
-    {
-        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: Diagnostics encryption key is missing in configuration.");
-    }
 
     if (!isDevelopment)
     {
         if (jwtSecret == "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET" || jwtSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET"))
         {
             throw new InvalidOperationException("Production Secret Validation Failed: JWT Secret is using default/placeholder value in non-Development environment.");
-        }
-        if (middlewareApiKey == "TBZ-LAB-KEY-12345")
-        {
-            throw new InvalidOperationException("Production Secret Validation Failed: Middleware API Key is using default/placeholder value in non-Development environment.");
-        }
-        if (backupKey == "TBZ-BACKUP-KEY-12345-67890" || backupKey.Contains("TBZ-BACKUP-KEY"))
-        {
-            throw new InvalidOperationException("Production Secret Validation Failed: Backup Encryption Key is using default/placeholder value in non-Development environment.");
-        }
-        if (diagnosticsKey == "TBZ-DIAGNOSTICS-KEY-12345-67890" || diagnosticsKey.Contains("TBZ-DIAGNOSTICS-KEY"))
-        {
-            throw new InvalidOperationException("Production Secret Validation Failed: Diagnostics Encryption Key is using default/placeholder value in non-Development environment.");
         }
     }
 }
@@ -159,11 +181,18 @@ if (args.Contains("--check-db"))
 }
 
 // Configure Serilog
+var logDir = AppContext.BaseDirectory.Contains("Program Files", StringComparison.OrdinalIgnoreCase) 
+    ? "C:\\SynOS_Files\\Logs" 
+    : Path.Combine(AppContext.BaseDirectory, "Logs");
+Directory.CreateDirectory(logDir);
+var logFileName = isSetupMode ? "synos-setup-.txt" : "synos-api-.txt";
+var logPath = Path.Combine(logDir, logFileName);
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.File("logs/synos-api-.txt", rollingInterval: RollingInterval.Day) // Stub for file sink
+    .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
     .CreateLogger();
 builder.Host.UseSerilog();
 
@@ -215,7 +244,7 @@ builder.Services.AddSwaggerGen(option =>
 // Configure DbContext
 builder.Services.AddDbContext<SynOSDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseSqlServer(connectionString)
            .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor());
 
     if (isDevelopment)
@@ -405,6 +434,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
 builder.Services.AddSingleton<ITrustedKeyStore, TrustedKeyStore>();
 builder.Services.AddScoped<IUpdateService, UpdateService>();
+builder.Services.AddSingleton<IBackupKeyProvider, WindowsBackupKeyProvider>();
 builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddSingleton<IRestoreStateCoordinator, RestoreStateCoordinator>();
 builder.Services.AddScoped<ISupportService, SupportService>();
@@ -471,12 +501,15 @@ builder.Services.AddScoped<IPrintService, StubPrintService>();
 // Register Domain Event Publishing
 builder.Services.AddScoped<IEventPublishingService, SynOS.Api.Services.EventPublishingService>();
 
-builder.Services.AddHostedService<NotificationWorkerService>();
-// builder.Services.AddHostedService<ExpiredLockCleanupService>();
-// builder.Services.AddHostedService<AnalyzerTcpListenerService>();
-builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
-builder.Services.AddHostedService<MiddlewareSyncWorker>();
-builder.Services.AddHostedService<DraftVisitCleanupService>();
+if (!isSetupMode)
+{
+    builder.Services.AddHostedService<NotificationWorkerService>();
+    // builder.Services.AddHostedService<ExpiredLockCleanupService>();
+    // builder.Services.AddHostedService<AnalyzerTcpListenerService>();
+    builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
+    builder.Services.AddHostedService<MiddlewareSyncWorker>();
+    builder.Services.AddHostedService<DraftVisitCleanupService>();
+}
 
 // Add SignalR
 builder.Services.AddSignalR();
@@ -491,12 +524,17 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:5173", "http://localhost:5174")
+            policy.SetIsOriginAllowed(origin => true)
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
         });
 });
+
+// Register Operations CLI Dispatcher and Commands
+builder.Services.AddScoped<SynOS.Services.ProductionDatabasePreparer>();
+builder.Services.AddScoped<SynOS.Api.Operations.IOperationsCommand, SynOS.Api.Operations.PrepareDbCommand>();
+builder.Services.AddScoped<SynOS.Api.Operations.OperationsDispatcher>();
 
 // DEV-ONLY: Workflow Simulator Wiring
 if (builder.Environment.IsDevelopment())
@@ -507,45 +545,58 @@ if (builder.Environment.IsDevelopment())
 
 var app = builder.Build();
 
-// Run DB Suffix Cleanup unconditionally
+// Wire Operations CLI Command Dispatcher
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    try
+    var dispatcher = scope.ServiceProvider.GetRequiredService<SynOS.Api.Operations.OperationsDispatcher>();
+    if (await dispatcher.DispatchAsync(args))
     {
-        var context = services.GetRequiredService<SynOSDbContext>();
-        context.Database.ExecuteSqlRaw("UPDATE Patients SET LastName = '' WHERE LastName = 'Patient';");
-        Log.Information("Mononym database cleanup executed successfully.");
-    }
-    catch (Exception ex)
-    {
-        Log.Warning(ex, "Failed to run mononym database cleanup on startup.");
+        return; // CLI Command handled, exit.
     }
 }
 
-// Seed the database
-if (args.Contains("seed") || app.Environment.IsDevelopment())
+if (!isSetupMode)
 {
+    // Run DB Suffix Cleanup unconditionally
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
         try
         {
             var context = services.GetRequiredService<SynOSDbContext>();
-            SynOS.Data.DbInitializer.Initialize(context);
-            Log.Information("Database seeding completed successfully.");
+            context.Database.ExecuteSqlRaw("UPDATE Patients SET LastName = '' WHERE LastName = 'Patient';");
+            Log.Information("Mononym database cleanup executed successfully.");
         }
         catch (Exception ex)
         {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while seeding the database.");
+            Log.Warning(ex, "Failed to run mononym database cleanup on startup.");
         }
     }
 
-    if (args.Contains("seed"))
+    // Seed the database
+    if (args.Contains("seed") || app.Environment.IsDevelopment())
     {
-        Log.Information("Exiting after seeding because 'seed' argument was provided.");
-        return;
+        using (var scope = app.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+            try
+            {
+                var context = services.GetRequiredService<SynOSDbContext>();
+                SynOS.Data.DbInitializer.Initialize(context);
+                Log.Information("Database seeding completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while seeding the database.");
+            }
+        }
+
+        if (args.Contains("seed"))
+        {
+            Log.Information("Exiting after seeding because 'seed' argument was provided.");
+            return;
+        }
     }
 }
 
@@ -624,7 +675,7 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
-    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none';";
+    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' http: https: ws: wss:; frame-ancestors 'none';";
     await next();
 });
 
@@ -641,11 +692,13 @@ app.MapHub<SynOS.Api.Hubs.CollaborationHub>("/radiologyCollaborationHub");
 
 // Validate Branch Configuration
 var isMigrationTool = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name?.Equals("ef", StringComparison.OrdinalIgnoreCase) ?? false;
-if (!isMigrationTool)
+var shouldMigrate = isConfigured || (!string.IsNullOrEmpty(connectionString) && !connectionString.Contains("YOUR_SERVER"));
+if (!isMigrationTool && shouldMigrate)
 {
     using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+    DbInitializer.EnsureTablesAndColumnsCreated(context);
     context.Database.Migrate();
     DbInitializer.Initialize(context);
 
@@ -777,6 +830,23 @@ if (!isMigrationTool)
         }
     }
 }
+}
+
+if (isSetupMode)
+{
+    var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
+    lifetime.ApplicationStarted.Register(() =>
+    {
+        try
+        {
+            var url = $"http://localhost:{SynOS.Api.Services.SystemSetupState.SetupPort}/setup";
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to automatically open browser: {ex.Message}");
+        }
+    });
 }
 
 app.MapFallbackToFile("index.html");

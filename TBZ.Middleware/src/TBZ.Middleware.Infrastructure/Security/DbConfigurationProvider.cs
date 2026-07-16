@@ -42,22 +42,43 @@ namespace TBZ.Middleware.Infrastructure.Security
                 var setting = context.MiddlewareSettings.AsNoTracking().FirstOrDefault();
                 if (setting != null)
                 {
-                    Data = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { "AllowedOrigins:0", setting.AllowedOrigins }, // SQLite mapping for string[] section entry 0
-                        { "RateLimit:PermitLimit", setting.RateLimitPermitLimit.ToString() },
-                        { "RateLimit:WindowSeconds", setting.RateLimitWindowSeconds.ToString() },
-                        { "RateLimit:QueueLimit", setting.RateLimitQueueLimit.ToString() },
-                        { "Diagnostics:EncryptionKey", setting.DiagnosticsEncryptionKey },
-                        { "WhatsApp:GraphApiVersion", setting.WhatsAppGraphApiVersion },
-                        { "WhatsApp:AppSecret", setting.WhatsAppAppSecret },
-                        { "WhatsApp:VerifyToken", setting.WhatsAppVerifyToken },
-                        { "WhatsApp:PhoneNumberId", setting.WhatsAppPhoneNumberId },
-                        { "WhatsApp:BusinessAccountId", setting.WhatsAppBusinessAccountId },
-                        { "WhatsApp:ActiveTemplateName", setting.WhatsAppActiveTemplateName },
-                        { "WhatsApp:PublicTunnelUrl", setting.WhatsAppPublicTunnelUrl },
-                        { "WhatsApp:AccessToken", setting.WhatsAppAccessToken }
-                    };
+                    var dataDict = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+                    if (!string.IsNullOrEmpty(setting.AllowedOrigins))
+                        dataDict["AllowedOrigins:0"] = setting.AllowedOrigins;
+
+                    dataDict["RateLimit:PermitLimit"] = setting.RateLimitPermitLimit.ToString();
+                    dataDict["RateLimit:WindowSeconds"] = setting.RateLimitWindowSeconds.ToString();
+                    dataDict["RateLimit:QueueLimit"] = setting.RateLimitQueueLimit.ToString();
+
+                    if (!string.IsNullOrEmpty(setting.DiagnosticsEncryptionKey))
+                        dataDict["Diagnostics:EncryptionKey"] = setting.DiagnosticsEncryptionKey;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppGraphApiVersion))
+                        dataDict["WhatsApp:GraphApiVersion"] = setting.WhatsAppGraphApiVersion;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppAppSecret))
+                        dataDict["WhatsApp:AppSecret"] = setting.WhatsAppAppSecret;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppVerifyToken))
+                        dataDict["WhatsApp:VerifyToken"] = setting.WhatsAppVerifyToken;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppPhoneNumberId))
+                        dataDict["WhatsApp:PhoneNumberId"] = setting.WhatsAppPhoneNumberId;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppBusinessAccountId))
+                        dataDict["WhatsApp:BusinessAccountId"] = setting.WhatsAppBusinessAccountId;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppActiveTemplateName))
+                        dataDict["WhatsApp:ActiveTemplateName"] = setting.WhatsAppActiveTemplateName;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppPublicTunnelUrl))
+                        dataDict["WhatsApp:PublicTunnelUrl"] = setting.WhatsAppPublicTunnelUrl;
+
+                    if (!string.IsNullOrEmpty(setting.WhatsAppAccessToken))
+                        dataDict["WhatsApp:AccessToken"] = setting.WhatsAppAccessToken;
+
+                    Data = dataDict;
                     loaded = true;
                 }
             }

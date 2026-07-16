@@ -810,6 +810,11 @@ export const regenerateLabLicenseKey = async (labId: string): Promise<{ success:
   return res.data;
 };
 
+export const renewLabSubscription = async (labId: string): Promise<{ success: boolean; newExpiry: string }> => {
+  const res = await controlTowerClient.post(`/labs/${labId}/renew-subscription`);
+  return res.data;
+};
+
 export const fetchLabTimeline = async (labId: string): Promise<TimelineEvent[]> => {
   const res = await controlTowerClient.get(`/labs/${labId}/timeline`);
   return res.data;

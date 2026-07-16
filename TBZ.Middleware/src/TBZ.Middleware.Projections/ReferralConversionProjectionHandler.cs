@@ -14,6 +14,62 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var partnerId = string.IsNullOrEmpty(dto.Financials.CorporateId.ToString()) || dto.Financials.CorporateId == Guid.Empty ? null : dto.Financials.CorporateId.ToString();
+                    if (string.IsNullOrEmpty(partnerId)) return;
+
+                    var dateOnly = storedEvent.OccurredAt.Date;
+
+                    var fact = db.ReferralConversionFacts.Local.FirstOrDefault(f =>
+                        f.LabId == storedEvent.LabId &&
+                        f.Date == dateOnly &&
+                        f.ReferralPartnerId == partnerId);
+
+                    if (fact == null)
+                    {
+                        fact = await db.ReferralConversionFacts.FirstOrDefaultAsync(f =>
+                            f.LabId == storedEvent.LabId &&
+                            f.Date == dateOnly &&
+                            f.ReferralPartnerId == partnerId);
+                    }
+
+                    bool isNew = false;
+                    if (fact == null)
+                    {
+                        isNew = true;
+                        fact = new ReferralConversionFact
+                        {
+                            Id = Guid.NewGuid(),
+                            LabId = storedEvent.LabId,
+                            Date = dateOnly,
+                            ReferralPartnerId = partnerId,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                    }
+
+                    fact.TotalReferredVisits++;
+                    fact.Revenue += dto.Financials.PaidAmount;
+                    fact.ConvertedVisits++;
+                    fact.UpdatedAt = DateTime.UtcNow;
+
+                    if (isNew)
+                    {
+                        db.ReferralConversionFacts.Add(fact);
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
                 storedEvent.EventType != "ReportSigned")

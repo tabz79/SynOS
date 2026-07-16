@@ -14,6 +14,90 @@ namespace TBZ.Middleware.Projections
 
         public async Task ProjectEventAsync(StoredEvent storedEvent, MiddlewareDbContext db)
         {
+            if (storedEvent.EventType == "ReleasedVisit")
+            {
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<TBZ.Middleware.Domain.DTOs.ReleasedVisitDto>(storedEvent.PayloadJson);
+                    if (dto == null) return;
+
+                    var gender = dto.Patient.Gender;
+                    var patientLocation = dto.Patient.Area;
+                    var patientPincode = dto.Patient.Pincode;
+
+                    var resolvedGender = "Unknown";
+                    if (!string.IsNullOrEmpty(gender))
+                    {
+                        var lower = gender.ToLower();
+                        if (lower == "m" || lower == "male") resolvedGender = "Male";
+                        else if (lower == "f" || lower == "female") resolvedGender = "Female";
+                    }
+                    var resolvedLocation = string.IsNullOrEmpty(patientLocation) ? "NotCaptured" : patientLocation;
+                    var resolvedPincode = string.IsNullOrEmpty(patientPincode) ? "NotCaptured" : patientPincode;
+
+                    var age = dto.Patient.Age;
+                    var ageGroup = "Unknown";
+                    if (age <= 18) ageGroup = "0-18";
+                    else if (age <= 35) ageGroup = "19-35";
+                    else if (age <= 50) ageGroup = "36-50";
+                    else if (age <= 65) ageGroup = "51-65";
+                    else ageGroup = "66+";
+
+                    var dateOnly = storedEvent.OccurredAt.Date;
+
+                    var fact = db.PatientDemographicFacts.Local.FirstOrDefault(f =>
+                        f.LabId == storedEvent.LabId &&
+                        f.Date == dateOnly &&
+                        f.AgeGroup == ageGroup &&
+                        f.Gender == resolvedGender &&
+                        f.PatientLocation == resolvedLocation &&
+                        f.PatientPincode == resolvedPincode);
+
+                    if (fact == null)
+                    {
+                        fact = await db.PatientDemographicFacts.FirstOrDefaultAsync(f =>
+                            f.LabId == storedEvent.LabId &&
+                            f.Date == dateOnly &&
+                            f.AgeGroup == ageGroup &&
+                            f.Gender == resolvedGender &&
+                            f.PatientLocation == resolvedLocation &&
+                            f.PatientPincode == resolvedPincode);
+                    }
+
+                    bool isNew = false;
+                    if (fact == null)
+                    {
+                        isNew = true;
+                        fact = new PatientDemographicFact
+                        {
+                            Id = Guid.NewGuid(),
+                            LabId = storedEvent.LabId,
+                            Date = dateOnly,
+                            AgeGroup = ageGroup,
+                            Gender = resolvedGender,
+                            PatientLocation = resolvedLocation,
+                            PatientPincode = resolvedPincode,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                    }
+
+                    fact.PatientCount++;
+                    fact.Revenue += dto.Financials.PaidAmount;
+                    fact.TestCount += dto.Investigations.Count;
+                    fact.UpdatedAt = DateTime.UtcNow;
+
+                    if (isNew)
+                    {
+                        db.PatientDemographicFacts.Add(fact);
+                    }
+                }
+                catch
+                {
+                }
+                return;
+            }
+
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
                 storedEvent.EventType != "ProcessingStarted")

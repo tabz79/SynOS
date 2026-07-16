@@ -6,6 +6,7 @@ import { ReceptionScreen } from '@/features/reception/ReceptionScreen'
 import { PhlebotomyScreen } from '@/features/phlebotomy/PhlebotomyScreen'
 import { DepartmentWorkbenchScreen } from '@/features/processing/DepartmentWorkbenchScreen'
 import { LoginPage } from '@/pages/LoginPage'
+import { FirstRunWizard } from '@/pages/FirstRunWizard'
 import { PathologistTerminal } from '@/features/pathology/PathologistTerminal'
 import { TypistTerminal } from '@/features/typing/TypistTerminal'
 import { DeliveryTerminal } from '@/features/delivery/DeliveryTerminal'
@@ -43,15 +44,18 @@ import { RadiologistTerminal } from '@/features/radiology/RadiologistTerminal'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isConfigured } = useAuth();
   const role = user?.role;
   const isAdmin = Array.isArray(role) ? role.includes('Admin') : role === 'Admin';
 
   console.info('[RootRedirect] Evaluating redirect:', { 
     isAuthenticated, 
     role, 
-    isAdmin
+    isAdmin,
+    isConfigured
   });
+
+  if (!isConfigured) return <Navigate to="/setup" replace />;
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   
@@ -108,6 +112,7 @@ function App() {
           <Routes>
             {/* Public Route */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/setup" element={<FirstRunWizard />} />
 
             {/* Document Engine (Decoupled Print Pipeline) */}
             <Route path="/print/report/:id" element={<DocumentPrinter />} />

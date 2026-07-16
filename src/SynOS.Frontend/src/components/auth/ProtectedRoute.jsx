@@ -2,8 +2,12 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
 export function ProtectedRoute({ allowedRoles = [] }) {
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, isConfigured } = useAuth();
     const location = useLocation();
+
+    if (!isConfigured) {
+        return <Navigate to="/activate" replace />;
+    }
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />;

@@ -24,6 +24,7 @@ namespace SynOS.Api.BackgroundServices
         private readonly string _apiUrl;
         private readonly string _apiKey;
         private readonly IRestoreStateCoordinator _restoreStateCoordinator;
+        private DateTime _lastLicenseCheck = DateTime.MinValue;
 
         public MiddlewareSyncWorker(
             ILogger<MiddlewareSyncWorker> logger,
@@ -48,6 +49,19 @@ namespace SynOS.Api.BackgroundServices
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
+                    try
+                    {
+                        if (!SynOS.Api.Services.SystemSetupState.IsConfigured)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                            continue;
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+
                     if (_restoreStateCoordinator != null && _restoreStateCoordinator.IsRestoreInProgress)
                     {
                         _logger.LogInformation("Database restore in progress. Pausing MiddlewareSyncWorker execution...");
@@ -60,6 +74,17 @@ namespace SynOS.Api.BackgroundServices
                         await SyncPendingEventsAsync(stoppingToken);
                         await SendHeartbeatAsync(stoppingToken);
                         await PollAndProcessCommandsAsync(stoppingToken);
+
+                        if (DateTime.UtcNow - _lastLicenseCheck > TimeSpan.FromHours(24))
+                        {
+                            using (var scope = _serviceProvider.CreateScope())
+                            {
+                                var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                                var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
+                                await SynchronizeLicenseInfoAsync(dbContext, profile, stoppingToken);
+                            }
+                            _lastLicenseCheck = DateTime.UtcNow;
+                        }
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
                     {
@@ -121,7 +146,15 @@ namespace SynOS.Api.BackgroundServices
                         };
 
                         var json = JsonSerializer.Serialize(payload);
-                        var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+                        var targetUrl = apiUrl;
+
+                        if (evt.EventType == "ReleasedVisit")
+                        {
+                            json = evt.PayloadJson;
+                            targetUrl = apiUrl.Replace("/api/events", "/api/v2/visits/release");
+                        }
+
+                        var request = new HttpRequestMessage(HttpMethod.Post, targetUrl)
                         {
                             Content = new StringContent(json, Encoding.UTF8, "application/json")
                         };
@@ -178,8 +211,20 @@ namespace SynOS.Api.BackgroundServices
             }
         }
 
-        private async Task<string> GetLiveTelemetryPayloadAsync()
+        private async Task<string> GetLiveTelemetryPayloadAsync(bool detailed = false)
         {
+            var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.2.0";
+
+            if (!detailed)
+            {
+                var minimalPayload = new
+                {
+                    Status = "Healthy",
+                    Version = appVersion
+                };
+                return JsonSerializer.Serialize(minimalPayload);
+            }
+
             double cpuPercent = 5.0;
             try
             {
@@ -230,7 +275,9 @@ namespace SynOS.Api.BackgroundServices
                 DiskFreeSpaceGB = Math.Round(freeGb, 1),
                 OSVersion = Environment.OSVersion.ToString(),
                 DotNetVersion = Environment.Version.ToString(),
-                BranchCount = branchCount
+                BranchCount = branchCount,
+                Version = appVersion,
+                Status = "Healthy"
             };
 
             return JsonSerializer.Serialize(payload);
@@ -248,7 +295,7 @@ namespace SynOS.Api.BackgroundServices
                     var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
                     var labId = string.IsNullOrWhiteSpace(profile?.LabId) ? "LAB001" : profile.LabId;
 
-                    var payload = customPayload ?? await GetLiveTelemetryPayloadAsync();
+                    var payload = customPayload ?? await GetLiveTelemetryPayloadAsync(detailed: false);
                     var heartbeatEvent = new
                     {
                         eventId = Guid.NewGuid(),
@@ -382,7 +429,7 @@ namespace SynOS.Api.BackgroundServices
                             }
                             else if (commandType == "RequestHealthSnapshot")
                             {
-                                var payload = await GetLiveTelemetryPayloadAsync();
+                                var payload = await GetLiveTelemetryPayloadAsync(detailed: true);
                                 await SendHeartbeatAsync(stoppingToken, payload);
                                 _logger.LogInformation("Successfully sent health snapshot via remote command");
                                 success = true;
@@ -441,6 +488,96 @@ namespace SynOS.Api.BackgroundServices
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in PollAndProcessCommandsAsync");
+            }
+        }
+
+        private async Task SynchronizeLicenseInfoAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken)
+        {
+            try
+            {
+                var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
+                var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+
+                if (string.IsNullOrWhiteSpace(apiKey) || 
+                    apiKey.Equals("LAB001_SECRET_API_KEY", StringComparison.OrdinalIgnoreCase) || 
+                    apiKey.Equals("TBZ-LAB-KEY-12345", StringComparison.OrdinalIgnoreCase))
+                {
+                    return; // Ignore fallback dev keys
+                }
+
+                var validateUrl = apiUrl.Replace("/api/events", "/api/labs/validate");
+                using var request = new HttpRequestMessage(HttpMethod.Post, validateUrl);
+                request.Headers.Add("X-Api-Key", apiKey);
+
+                var response = await _httpClient.SendAsync(request, stoppingToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
+                    using var doc = JsonDocument.Parse(responseBody);
+                    var root = doc.RootElement;
+                    
+                    var licenseStatus = root.TryGetProperty("licenseStatus", out var licProp) ? licProp.GetString() : null;
+                    var licenseType = root.TryGetProperty("licenseType", out var typeProp) ? typeProp.GetString() : null;
+                    int maximumBranches = 1;
+                    if (root.TryGetProperty("maximumBranches", out var maxProp) && maxProp.TryGetInt32(out var mv))
+                        maximumBranches = mv;
+                    else if (root.TryGetProperty("MaximumBranches", out var maxProp2) && maxProp2.TryGetInt32(out var mv2))
+                        maximumBranches = mv2;
+                    var expiryDate = root.TryGetProperty("expiryDate", out var expProp) && expProp.ValueKind != JsonValueKind.Null ? expProp.GetString() : null;
+
+                    var enabledFeatures = new System.Collections.Generic.List<string>();
+                    if (root.TryGetProperty("enabledFeatures", out var featProp) && featProp.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var item in featProp.EnumerateArray())
+                        {
+                            var str = item.GetString();
+                            if (str != null) enabledFeatures.Add(str);
+                        }
+                    }
+
+                    var dbProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
+                    if (dbProfile != null)
+                    {
+                        bool changed = false;
+                        
+                        var targetStatus = licenseStatus ?? "Active";
+                        if (dbProfile.LicenseStatus != targetStatus) { dbProfile.LicenseStatus = targetStatus; changed = true; }
+                        if (dbProfile.LicenseType != licenseType) { dbProfile.LicenseType = licenseType; changed = true; }
+                        if (dbProfile.MaximumBranches != maximumBranches) { dbProfile.MaximumBranches = maximumBranches; changed = true; }
+                        
+                        DateTime? parsedExp = null;
+                        if (!string.IsNullOrEmpty(expiryDate) && DateTime.TryParse(expiryDate, out var exp))
+                            parsedExp = exp;
+                            
+                        if (dbProfile.LicenseExpiryDate != parsedExp) { dbProfile.LicenseExpiryDate = parsedExp; changed = true; }
+
+                        var currentFeatures = dbProfile.EnabledFeatures ?? new System.Collections.Generic.List<string>();
+                        if (!currentFeatures.SequenceEqual(enabledFeatures))
+                        {
+                            dbProfile.EnabledFeatures = enabledFeatures;
+                            changed = true;
+                        }
+
+                        // Update validation timestamp
+                        dbProfile.LastLicenseValidationUtc = DateTime.UtcNow;
+                        changed = true;
+
+                        if (changed)
+                        {
+                            dbProfile.UpdatedAt = DateTimeOffset.UtcNow;
+                            await dbContext.SaveChangesAsync(stoppingToken);
+                            _logger.LogInformation("Successfully synchronized and updated local license profile cache from Middleware.");
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Middleware validation returned status code {StatusCode}. Continuing to operate offline on local cache.", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Middleware validation service is offline or unreachable. Continuing to operate normally on offline cache.");
             }
         }
     }

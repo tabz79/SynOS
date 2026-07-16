@@ -224,4 +224,83 @@ namespace SynOS.Models.Events
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
         public object Payload => this;
     }
+
+    public record ReleasedVisit(
+        Guid DocumentId,
+        string LabId,
+        Guid? BranchId,
+        Guid VisitId,
+        DateTime VisitDate,
+        int Version,
+        string ReleaseType,
+        ReleasedVisitDelivery Delivery,
+        ReleasedVisitPatient Patient,
+        ReleasedVisitFinancials Financials,
+        ReleasedVisitReferral Referral,
+        System.Collections.Generic.List<ReleasedVisitInvestigation> Investigations,
+        System.Collections.Generic.List<ReleasedVisitReport> Reports
+    ) : IDomainEvent
+    {
+        public Guid EventId => DocumentId;
+        public string EventType => "ReleasedVisit";
+        public string AggregateType => "Visit";
+        public string AggregateId => VisitId.ToString();
+        public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        public object Payload => this;
+    }
+
+    public record ReleasedVisitDelivery(
+        System.Collections.Generic.List<string> AvailableChannels,
+        string RequestedChannel
+    );
+
+    public record ReleasedVisitPatient(
+        Guid PatientId,
+        string Name,
+        string Mobile,
+        int Age,
+        string Gender,
+        string? Area = null,
+        string? Pincode = null,
+        string? Email = null
+    );
+
+    public record ReleasedVisitFinancials(
+        string InvoiceNumber,
+        decimal GrossAmount,
+        decimal DiscountAmount,
+        decimal NetAmount,
+        decimal PaidAmount,
+        decimal OutstandingAmount,
+        string PaymentMode,
+        string? PricingTier = null,
+        Guid? CorporateId = null,
+        string? CorporateName = null,
+        string? InsuranceProvider = null,
+        string? InsurancePolicyNumber = null,
+        decimal PrepaidUsed = 0
+    );
+
+    public record ReleasedVisitReferral(
+        Guid DoctorId,
+        string DoctorName,
+        string? DoctorPhone = null,
+        string? ReferralType = null,
+        decimal CommissionAmount = 0,
+        bool CommissionSettled = false
+    );
+
+    public record ReleasedVisitInvestigation(
+        string TestCode,
+        string TestName,
+        string Department,
+        decimal BasePrice = 0,
+        string? InstrumentId = null
+    );
+
+    public record ReleasedVisitReport(
+        Guid ReportId,
+        string SecureDownloadUrl,
+        DateTime SignedAt
+    );
 }

@@ -65,7 +65,7 @@ public class DeliveryService : IDeliveryService
     public async Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status)
     {
         var query = _context.Reports
-            .Where(r => r.Status == "Signed"); // Assuming 'Signed' is the final status before delivery
+            .Where(r => r.Status == "Signed" || r.Status == "ManualVerified");
 
         // Conditionally include related entities based on SourceType
         // For 'Order' (pathology) reports
@@ -274,6 +274,8 @@ public class DeliveryService : IDeliveryService
         };
         _context.DeliveryLogs.Add(deliveryLog);
 
+        bool isFirstRelease = !report.Delivered;
+
         // Update Report State to Delivered
         report.Delivered = true;
         report.DeliveredAt = DateTimeOffset.UtcNow;
@@ -291,6 +293,10 @@ public class DeliveryService : IDeliveryService
             report.Visit?.BranchId
         ));
 
+        if (isFirstRelease)
+        {
+            await EnqueueReleasedVisitAsync(reportId, "Print");
+        }
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} queued for printing by User {UserId}. LogId: {LogId}", reportId, userId, deliveryLog.LogId);
@@ -363,6 +369,8 @@ public class DeliveryService : IDeliveryService
         };
         _context.DeliveryLogs.Add(deliveryLog);
 
+        bool isFirstRelease = !report.Delivered;
+
         // Update Report State to Delivered
         report.Delivered = true;
         report.DeliveredAt = DateTimeOffset.UtcNow;
@@ -386,6 +394,10 @@ public class DeliveryService : IDeliveryService
             report.Visit?.BranchId
         ));
 
+        if (isFirstRelease)
+        {
+            await EnqueueReleasedVisitAsync(reportId, "WhatsApp", phone);
+        }
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} WhatsApp delivery queued for {Phone} by User {UserId}. LogId: {LogId}", reportId, phone, userId, deliveryLog.LogId);
@@ -460,6 +472,8 @@ public class DeliveryService : IDeliveryService
         };
         _context.DeliveryLogs.Add(deliveryLog);
 
+        bool isFirstRelease = !report.Delivered;
+
         // Update Report State to Delivered
         report.Delivered = true;
         report.DeliveredAt = DateTimeOffset.UtcNow;
@@ -477,6 +491,10 @@ public class DeliveryService : IDeliveryService
             Status = NotificationStatus.Pending
         };
         _context.NotificationQueues.Add(notificationQueue);
+        if (isFirstRelease)
+        {
+            await EnqueueReleasedVisitAsync(reportId, "SMS", phone);
+        }
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} SMS delivery queued for {Phone} by User {UserId}. LogId: {LogId}", reportId, phone, userId, deliveryLog.LogId);
@@ -567,6 +585,8 @@ public class DeliveryService : IDeliveryService
         };
         _context.DeliveryLogs.Add(deliveryLog);
 
+        bool isFirstRelease = !report.Delivered;
+
         // Update Report State to Delivered
         report.Delivered = true;
         report.DeliveredAt = DateTimeOffset.UtcNow;
@@ -584,6 +604,10 @@ public class DeliveryService : IDeliveryService
             Status = NotificationStatus.Pending
         };
         _context.NotificationQueues.Add(notificationQueue);
+        if (isFirstRelease)
+        {
+            await EnqueueReleasedVisitAsync(reportId, "Email");
+        }
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} Email delivery queued for {Email} by User {UserId}. LogId: {LogId}", reportId, email, userId, deliveryLog.LogId);
@@ -750,6 +774,13 @@ public class DeliveryService : IDeliveryService
         };
         _context.DeliveryLogs.Add(deliveryLog);
 
+        bool isFirstRelease = !report.Delivered;
+
+        // Update Report State to Delivered
+        report.Delivered = true;
+        report.DeliveredAt = DateTimeOffset.UtcNow;
+        report.Status = "Delivered";
+
         // Enqueue ReportDeliveredEvent
         _outboxService.Enqueue(new ReportDeliveredEvent(
             report.ReportId,
@@ -762,6 +793,10 @@ public class DeliveryService : IDeliveryService
             report.Visit?.BranchId
         ));
 
+        if (isFirstRelease)
+        {
+            await EnqueueReleasedVisitAsync(reportId, "HandedOver");
+        }
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Report {ReportId} marked as handed over by User {UserId}. LogId: {LogId}", reportId, userId, deliveryLog.LogId);
@@ -1087,5 +1122,162 @@ public class DeliveryService : IDeliveryService
 
         memoryStream.Position = 0; // Reset stream position for reading
         return memoryStream;
+    }
+
+    private async Task EnqueueReleasedVisitAsync(Guid reportId, string requestedChannel, string? phone = null)
+    {
+        try
+        {
+            var report = await _context.Reports
+                .Include(r => r.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(r => r.Visit)
+                    .ThenInclude(v => v.Referrer)
+                .Include(r => r.Visit)
+                    .ThenInclude(v => v.ReferralPartner)
+                .Include(r => r.Visit)
+                    .ThenInclude(v => v.Invoices)
+                        .ThenInclude(i => i.Payments)
+                .FirstOrDefaultAsync(r => r.ReportId == reportId);
+
+            if (report == null || report.Visit == null) return;
+
+            var visit = report.Visit;
+            var patient = visit.Patient;
+
+            // Generate secure link for the report
+            var secureLink = await GenerateSecureLinkInternalAsync(reportId, report.SignedByUserId ?? Guid.Empty);
+
+            // Fetch investigations / tests for this visit
+            var investigations = new System.Collections.Generic.List<ReleasedVisitInvestigation>();
+            var orders = await _context.Orders
+                .Include(o => o.Test)
+                .Where(o => o.VisitId == visit.VisitId)
+                .ToListAsync();
+
+            foreach (var order in orders)
+            {
+                investigations.Add(new ReleasedVisitInvestigation(
+                    order.TestCode,
+                    order.Test?.TestName ?? order.TestCode,
+                    order.Department ?? "General",
+                    order.Price,
+                    order.Test?.ModalityId?.ToString()
+                ));
+            }
+
+            // Financials
+            var invoice = visit.Invoices.FirstOrDefault();
+            var gross = invoice?.GrossAmount ?? 0;
+            var discount = invoice?.DiscountAmount ?? 0;
+            var net = invoice?.NetAmount ?? 0;
+            var paid = invoice?.Payments?.Sum(p => p.Amount) ?? 0;
+            var outstanding = net - paid;
+            var paymentMode = invoice?.Payments?.FirstOrDefault()?.Method ?? "Cash";
+            var invoiceNumber = invoice?.Payments?.FirstOrDefault()?.ReceiptNo ?? (invoice != null ? invoice.InvoiceId.ToString().Substring(0, 8).ToUpper() : string.Empty);
+
+            // Referral Doctor details
+            var referrerId = visit.ReferrerId ?? Guid.Empty;
+            var referrerName = visit.Referrer?.ProviderName ?? visit.ReferrerText ?? "Self-Referral";
+            var doctorPhone = visit.Referrer?.Phone;
+            var commission = visit.ReferralPartner != null ? (visit.ReferralPartner.DefaultCommissionPercentage / 100m) * net : 0m;
+
+            var releasedPatient = new ReleasedVisitPatient(
+                patient.PatientId,
+                $"{patient.FirstName} {patient.LastName}",
+                phone ?? patient.CurrentPhoneNumber,
+                CalculateAge(patient.DateOfBirth),
+                patient.Gender,
+                null,
+                null,
+                null
+            );
+
+            var releasedFinancials = new ReleasedVisitFinancials(
+                invoiceNumber,
+                gross,
+                discount,
+                net,
+                paid,
+                outstanding,
+                paymentMode,
+                null,
+                visit.ReferralPartnerId,
+                visit.ReferralPartner?.Name,
+                null,
+                null,
+                0
+            );
+
+            var releasedReferral = new ReleasedVisitReferral(
+                referrerId,
+                referrerName,
+                doctorPhone,
+                null,
+                commission,
+                false
+            );
+
+            var reportsList = new System.Collections.Generic.List<ReleasedVisitReport>
+            {
+                new ReleasedVisitReport(
+                    report.ReportId,
+                    secureLink.Link,
+                    (report.SignedAt ?? DateTimeOffset.UtcNow).UtcDateTime
+                )
+            };
+
+            var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var labId = profile?.LabId ?? "LAB001";
+
+            var releaseType = report.IsPhysicallyVerified ? "PhysicalVerified" : "DigitalSigned";
+            var availableChannels = new System.Collections.Generic.List<string> { "Print", "WhatsApp", "SMS", "Email" };
+            var deliveryInfo = new ReleasedVisitDelivery(availableChannels, requestedChannel);
+
+            var releasedVisitDoc = new ReleasedVisit(
+                Guid.NewGuid(),
+                labId,
+                visit.BranchId,
+                visit.VisitId,
+                visit.TokenDate,
+                report.CurrentVersion == 0 ? 1 : report.CurrentVersion,
+                releaseType,
+                deliveryInfo,
+                releasedPatient,
+                releasedFinancials,
+                releasedReferral,
+                investigations,
+                reportsList
+            );
+
+            // Serialize and write to OutboxEvents
+            var outboxEvent = new OutboxEvent
+            {
+                Id = releasedVisitDoc.DocumentId,
+                EventVersion = 1,
+                EventType = "ReleasedVisit",
+                AggregateType = "Visit",
+                AggregateId = visit.VisitId.ToString(),
+                LabId = labId,
+                PayloadJson = System.Text.Json.JsonSerializer.Serialize(releasedVisitDoc),
+                CreatedAt = DateTime.UtcNow,
+                Status = "Pending"
+            };
+
+            _context.OutboxEvents.Add(outboxEvent);
+            await _context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to build and enqueue ReleasedVisit document for report {ReportId}.", reportId);
+        }
+    }
+
+    private int CalculateAge(DateTime dob)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - dob.Year;
+        if (dob.Date > today.AddYears(-age)) age--;
+        return age;
     }
 }

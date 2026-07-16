@@ -38,10 +38,13 @@ export function ControlTowerDashboard() {
     // Strategy A Switcher State
     const [isConsolidated, setIsConsolidated] = useState(true);
     const [branches, setBranches] = useState([]);
+    const [licenseInfo, setLicenseInfo] = useState(null);
+    const [copiedId, setCopiedId] = useState(false);
 
     useEffect(() => {
         if (isAdmin) {
             loadBranches();
+            loadLicenseInfo();
         }
     }, [isAdmin]);
 
@@ -51,6 +54,24 @@ export function ControlTowerDashboard() {
             setBranches(data || []);
         } catch (e) {
             console.error("Failed to load branches for Control Tower", e);
+        }
+    };
+
+    const loadLicenseInfo = async () => {
+        try {
+            const token = localStorage.getItem('synos_jwt');
+            const response = await fetch('/api/v1/admin/settings', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setLicenseInfo({
+                    licenseExpiryDate: data.licenseExpiryDate,
+                    licenseStatus: data.licenseStatus
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load license settings for banner", e);
         }
     };
 
@@ -137,6 +158,68 @@ export function ControlTowerDashboard() {
                     <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
                     <p className="text-xs text-zinc-500 font-medium mt-1">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
                 </div>
+
+                {/* Clean Subscription Reminder Card */}
+                {isAdmin && licenseInfo && (() => {
+                    if (!licenseInfo.licenseExpiryDate) return null;
+                    const expiryDate = new Date(licenseInfo.licenseExpiryDate);
+                    const today = new Date();
+                    
+                    const diffTime = expiryDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays <= 15) {
+                        const isExpired = diffDays <= 0;
+                        const graceExpiryDate = new Date(expiryDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                        
+                        const formatDateStr = (date) => {
+                            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                        };
+
+                        const handleCopyLabId = () => {
+                            navigator.clipboard.writeText(licenseInfo.labId || "LAB001");
+                            setCopiedId(true);
+                            setTimeout(() => setCopiedId(false), 2000);
+                        };
+
+                        return (
+                            <div className="bg-white dark:bg-zinc-900 border border-black/[0.08] dark:border-white/[0.08] rounded-2xl p-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.03)] flex flex-row items-center justify-between gap-4 w-full md:w-[380px] text-left animate-fadeIn">
+                                <div className="space-y-1">
+                                    <div className="text-[11px] font-black uppercase tracking-wider text-zinc-450 dark:text-zinc-500">
+                                        Annual Subscription
+                                    </div>
+                                    <div className="text-xs text-zinc-650 dark:text-zinc-350 leading-relaxed font-medium">
+                                        {isExpired ? (
+                                            <>
+                                                <p>Your subscription expired <strong className="font-extrabold">{Math.abs(diffDays)} day(s) ago</strong>.</p>
+                                                <p>SynOS is operating within the <strong className="font-extrabold text-synos-primary">7-day grace period</strong>.</p>
+                                                <p>Renew before <strong className="font-extrabold text-zinc-800 dark:text-white">{formatDateStr(graceExpiryDate)}</strong> to avoid service interruption.</p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p>Your annual subscription expires {diffDays === 1 ? <strong className="font-extrabold">tomorrow</strong> : <>in <strong className="font-extrabold">{diffDays} days</strong></>}.</p>
+                                                <p>Renew before <strong className="font-extrabold text-zinc-850 dark:text-zinc-200">{formatDateStr(expiryDate)}</strong> to continue uninterrupted operation.</p>
+                                            </>
+                                        )}
+                                        <p className="text-[10px] font-bold text-zinc-450 dark:text-zinc-550 mt-1">Expiry: {formatDateStr(expiryDate)}</p>
+                                    </div>
+                                    <div className="pt-1">
+                                        <a href="mailto:tabrez.ataher@gmail.com" className="text-[10px] font-extrabold text-synos-primary hover:underline uppercase tracking-wider">
+                                            Contact TBZ Labs
+                                        </a>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={handleCopyLabId} 
+                                    className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[10px] font-black text-zinc-650 dark:text-zinc-450 hover:bg-zinc-50 dark:hover:bg-zinc-850/50 hover:text-zinc-850 dark:hover:text-zinc-200 transition-all shadow-xs uppercase tracking-wider shrink-0"
+                                >
+                                    {copiedId ? "Copied!" : "Copy Lab ID"}
+                                </button>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
 
                 {isAdmin && (
                     <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">

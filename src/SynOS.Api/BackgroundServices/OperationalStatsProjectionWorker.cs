@@ -32,6 +32,18 @@ namespace SynOS.Api.BackgroundServices
         {
             _logger.LogInformation("OperationalStatsProjectionWorker is starting in Event-Driven Mode.");
 
+            try
+            {
+                while (!SynOS.Api.Services.SystemSetupState.IsConfigured)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
             // Wait if database restore is in progress before doing initial catch-up
             while (_restoreStateCoordinator != null && _restoreStateCoordinator.IsRestoreInProgress)
             {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -18,7 +18,6 @@ namespace SynOS.Data.Migrations
                 maxLength: 500,
                 nullable: true);
 
-            /*
             migrationBuilder.AddColumn<string>(
                 name: "PaymentCollectionModel",
                 table: "ReferralPartners",
@@ -26,9 +25,7 @@ namespace SynOS.Data.Migrations
                 maxLength: 50,
                 nullable: false,
                 defaultValue: "");
-            */
 
-            /*
             migrationBuilder.AddColumn<string>(
                 name: "DisplayName",
                 table: "Patients",
@@ -81,9 +78,7 @@ namespace SynOS.Data.Migrations
                 table: "BranchOperationalEvents",
                 type: "nvarchar(max)",
                 nullable: true);
-            */
 
-            /*
             migrationBuilder.CreateTable(
                 name: "BranchOperationalStats",
                 columns: table => new
@@ -128,7 +123,6 @@ namespace SynOS.Data.Migrations
                 {
                     table.PrimaryKey("PK_UserOperationalStats", x => new { x.UserId, x.BranchId, x.Date });
                 });
-            */
 
             migrationBuilder.CreateIndex(
                 name: "IX_ReferralPayableFacts_SourceVisitId",
@@ -136,7 +130,6 @@ namespace SynOS.Data.Migrations
                 column: "SourceVisitId",
                 unique: true);
 
-            /*
             migrationBuilder.CreateIndex(
                 name: "IX_BranchOperationalStats_BranchId_Date",
                 table: "BranchOperationalStats",
@@ -151,7 +144,6 @@ namespace SynOS.Data.Migrations
                 name: "IX_UserOperationalStats_UserId_BranchId_Date",
                 table: "UserOperationalStats",
                 columns: new[] { "UserId", "BranchId", "Date" });
-            */
         }
 
         /// <inheritdoc />

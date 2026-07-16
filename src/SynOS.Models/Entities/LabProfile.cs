@@ -104,6 +104,7 @@ namespace SynOS.Models.Entities
         public DateTime? LicenseExpiryDate { get; set; }
         public string? LicenseStatus { get; set; }
         public System.Collections.Generic.List<string> EnabledFeatures { get; set; } = new();
+        public DateTime? LastLicenseValidationUtc { get; set; }
         public string? BackupEncryptionKey { get; set; }
         public string? DiagnosticsEncryptionKey { get; set; }
         public int PacsMaxInstancesPerSeriesInSeriesTree { get; set; } = 5000;
