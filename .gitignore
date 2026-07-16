@@ -116,3 +116,8 @@ SYNOS_SUPERADMIN_CONTROL_TOWER.md
 TBZLABS_WHATSAPP_DELIVERY_MANAGER.md
 TBZLABS_HYBRID_INFRASTRUCTURE_ARCHITECTURE.md
 TBZLABS-Middleware-understanding.md
+
+# ========================================
+# Installer
+# ========================================
+*.exe
