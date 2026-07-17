@@ -9,7 +9,7 @@ param (
     [bool]$RemoveBackups = $false,
     [string]$AppDir = "",
     [string]$LogFile = "",
-    [string]$InstanceName = "SQLEXPRESS"
+    [string]$InstanceName = "SYNOS"
 )
 
 # Resolve directories

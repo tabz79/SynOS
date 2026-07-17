@@ -14,7 +14,7 @@ DefaultDirName={commonpf}\TBZ Labs\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v122_patched
+OutputBaseFilename=SynOS_Setup_v122_patched_v2
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -98,6 +98,10 @@ var
   UseExistingRadio, InstallExpressRadio: TRadioButton;
   cbInstances: TNewComboBox;
   SelectedInstanceName: String;
+
+  SqlPrereqPage: TWizardPage;
+  lblSqlPrereqTitle, lblSqlPrereqDesc, lblSqlStatus: TLabel;
+  btnDownloadSql, btnCheckSql: TNewButton;
   
   DbConfigPage: TWizardPage;
   txtDbName, txtUser, txtPass: TEdit;
@@ -394,12 +398,109 @@ begin
   lblDbSetupDesc.Visible := False;
 end;
 
+function IsSqlInstanceInstalled(InstanceName: String): Boolean;
+var
+  Names: TArrayOfString;
+  I: Integer;
+begin
+  Result := False;
+  if RegGetValueNames(HKLM, 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL', Names) then
+  begin
+    for I := 0 to GetArrayLength(Names) - 1 do
+    begin
+      if CompareText(Names[I], InstanceName) = 0 then
+      begin
+        Result := True;
+        exit;
+      end;
+    end;
+  end;
+end;
+
+procedure DownloadSqlBtnClick(Sender: TObject);
+var
+  ErrorCode: Integer;
+begin
+  ShellExec('open', 'https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SQLEXPR_x64_ENU.exe', '', '', SW_SHOWNORMAL, ewNoWait, ErrorCode);
+end;
+
+procedure UpdateSqlPrereqStatus;
+begin
+  if IsSqlInstanceInstalled('SYNOS') then
+  begin
+    lblSqlStatus.Caption := 'Status: SQL Server instance ''SYNOS'' DETECTED successfully!';
+    lblSqlStatus.Font.Color := clGreen;
+  end
+  else
+  begin
+    lblSqlStatus.Caption := 'Status: SQL Server instance ''SYNOS'' NOT detected.';
+    lblSqlStatus.Font.Color := clRed;
+  end;
+end;
+
+procedure CheckSqlBtnClick(Sender: TObject);
+begin
+  UpdateSqlPrereqStatus;
+end;
+
+procedure CreateSqlPrereqPage;
+begin
+  SqlPrereqPage := CreateCustomPage(DbSetupPage.ID, 'SQL Server Prerequisite', 'Install SQL Server 2022 Express on your system.');
+
+  lblSqlPrereqTitle := TLabel.Create(SqlPrereqPage);
+  lblSqlPrereqTitle.Parent := SqlPrereqPage.Surface;
+  lblSqlPrereqTitle.Font.Style := [fsBold];
+  lblSqlPrereqTitle.Caption := 'SQL Server 2022 Express Instance Required';
+  lblSqlPrereqTitle.Top := ScaleY(10);
+  lblSqlPrereqTitle.Left := ScaleX(10);
+
+  lblSqlPrereqDesc := TLabel.Create(SqlPrereqPage);
+  lblSqlPrereqDesc.Parent := SqlPrereqPage.Surface;
+  lblSqlPrereqDesc.WordWrap := True;
+  lblSqlPrereqDesc.Width := SqlPrereqPage.SurfaceWidth - ScaleX(20);
+  lblSqlPrereqDesc.Top := lblSqlPrereqTitle.Top + ScaleY(25);
+  lblSqlPrereqDesc.Left := ScaleX(10);
+  lblSqlPrereqDesc.Caption := 'A dedicated SQL Server 2022 Express database instance named ''SYNOS'' is required.' + #13#10#13#10 +
+                              '1. Click the button below to download the official Microsoft installer.' + #13#10 +
+                              '2. Run the downloaded file, select "Custom" installation, and specify the instance name as SYNOS.' + #13#10 +
+                              '3. Keep the default Windows Authentication configuration.' + #13#10#13#10 +
+                              'Once the SQL Server installation is complete, click "Verify Status" to proceed.';
+
+  btnDownloadSql := TNewButton.Create(SqlPrereqPage);
+  btnDownloadSql.Parent := SqlPrereqPage.Surface;
+  btnDownloadSql.Caption := 'Download SQL Server 2022 Express';
+  btnDownloadSql.Top := lblSqlPrereqDesc.Top + ScaleY(100);
+  btnDownloadSql.Left := ScaleX(10);
+  btnDownloadSql.Width := ScaleX(230);
+  btnDownloadSql.Height := ScaleY(25);
+  btnDownloadSql.OnClick := @DownloadSqlBtnClick;
+
+  lblSqlStatus := TLabel.Create(SqlPrereqPage);
+  lblSqlStatus.Parent := SqlPrereqPage.Surface;
+  lblSqlStatus.Font.Style := [fsBold];
+  lblSqlStatus.Top := btnDownloadSql.Top + ScaleY(40);
+  lblSqlStatus.Left := ScaleX(10);
+  lblSqlStatus.Width := SqlPrereqPage.SurfaceWidth - ScaleX(20);
+  
+  btnCheckSql := TNewButton.Create(SqlPrereqPage);
+  btnCheckSql.Parent := SqlPrereqPage.Surface;
+  btnCheckSql.Caption := 'Verify Status';
+  btnCheckSql.Top := lblSqlStatus.Top + ScaleY(25);
+  btnCheckSql.Left := ScaleX(10);
+  btnCheckSql.Width := ScaleX(100);
+  btnCheckSql.Height := ScaleY(25);
+  btnCheckSql.OnClick := @CheckSqlBtnClick;
+
+  // Initial check
+  UpdateSqlPrereqStatus;
+end;
+
 // RC3: SQL Authentication & DB Naming Page
 procedure CreateDbConfigPage;
 var
   lblTitle, lblDb, lblAuth: TLabel;
 begin
-  DbConfigPage := CreateCustomPage(DbSetupPage.ID, 'Database Configuration', 'Configure connection credentials for your SQL Server instance.');
+  DbConfigPage := CreateCustomPage(SqlPrereqPage.ID, 'Database Configuration', 'Configure connection credentials for your SQL Server instance.');
 
   lblTitle := TLabel.Create(DbConfigPage);
   lblTitle.Parent := DbConfigPage.Surface;
@@ -516,6 +617,7 @@ begin
   CreateInstallTypePage;
   CreateImportConfigPage;
   CreateDbSetupPage;
+  CreateSqlPrereqPage;
   CreateDbConfigPage;
   CreatePacsFolderPage;
 end;
@@ -528,14 +630,14 @@ begin
   // If Upgrade or Repair installation type is selected, skip directory/database configurations
   if (InstallTypeVal = 1) or (InstallTypeVal = 2) then
   begin
-    if (PageID = wpLicense) or (PageID = wpSelectDir) or (PageID = ImportConfigPage.ID) or (PageID = DbSetupPage.ID) or (PageID = DbConfigPage.ID) or (PageID = PacsFolderPage.ID) then
+    if (PageID = wpLicense) or (PageID = wpSelectDir) or (PageID = ImportConfigPage.ID) or (PageID = DbSetupPage.ID) or (PageID = SqlPrereqPage.ID) or (PageID = DbConfigPage.ID) or (PageID = PacsFolderPage.ID) then
       Result := True;
   end;
 
   // RC4: Skip database setups if configuration import is selected
   if (InstallTypeVal = 0) and ImportConfigVal then
   begin
-    if (PageID = DbSetupPage.ID) or (PageID = DbConfigPage.ID) or (PageID = PacsFolderPage.ID) then
+    if (PageID = DbSetupPage.ID) or (PageID = SqlPrereqPage.ID) or (PageID = DbConfigPage.ID) or (PageID = PacsFolderPage.ID) then
       Result := True;
   end;
 
@@ -543,6 +645,13 @@ begin
   if (InstallTypeVal = 0) and (not ImportConfigVal) and (PageID = DbConfigPage.ID) and (not UseExistingRadio.Checked) then
   begin
     Result := True;
+  end;
+
+  // Skip SQL Prerequisite page if using existing SQL instance or if SYNOS instance is already installed
+  if PageID = SqlPrereqPage.ID then
+  begin
+    if UseExistingRadio.Checked or IsSqlInstanceInstalled('SYNOS') then
+      Result := True;
   end;
 end;
 
@@ -574,6 +683,17 @@ begin
       SelectedInstanceName := cbInstances.Items[cbInstances.ItemIndex];
     end;
   end;
+
+  if CurPageID = SqlPrereqPage.ID then
+  begin
+    if not IsSqlInstanceInstalled('SYNOS') then
+    begin
+      MsgBox('The SQL Server instance ''SYNOS'' was not detected on this machine.' + #13#10 +
+             'Please download and install SQL Server 2022 Express, naming the instance ''SYNOS'', and verify the status before clicking Next.', mbError, MB_OK);
+      Result := False;
+      exit;
+    end;
+  end;
   Result := True;
 end;
 
@@ -592,8 +712,7 @@ var
   ExitCode: Integer;
   AppPath: String;
   VerifyScript, DecomScript, ConfigScript, ImportScript: String;
-  PrereqParams, DecomParams, ConfigParams, ImportParams: String;
-  LocalPkg, TmpPrereqScript: String;
+  DecomParams, ConfigParams, ImportParams: String;
   DbAuthType, DbUser, DbPass: String;
 begin
   if CurStep = ssInstall then
@@ -602,32 +721,8 @@ begin
     Exec('sc.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     Sleep(2000);
 
-    // Run SQL Server Prerequisite Setup (Skip if Upgrade/Repair, importing config, or using existing SQL)
-    if (InstallTypeVal = 0) and (not ImportConfigVal) and (not UseExistingRadio.Checked) then
-    begin
-      WizardForm.StatusLabel.Caption := 'Installing database prerequisites (SQL Server)...';
-      
-      // Extract prerequisite scripts to {tmp} for early execution
-      ExtractTemporaryFile('install-prereqs.ps1');
-      ExtractTemporaryFile('installer-config.ps1');
-      
-      LocalPkg := ExpandConstant('{tmp}\SQLEXPR_x64_ENU.exe');
-      #if InstallerType == "Offline"
-      ExtractTemporaryFile('SQLEXPR_x64_ENU.exe');
-      #endif
-      
-      if FileExists(LocalPkg) then
-        PrereqParams := '-UseExistingSql $false -InstanceName "SQLEXPRESS" -LocalPackagePath "' + LocalPkg + '" -LogFile "C:\ProgramData\TBZ Labs\SynOS\Logs\install.log"'
-      else
-        PrereqParams := '-UseExistingSql $false -InstanceName "SQLEXPRESS" -LogFile "C:\ProgramData\TBZ Labs\SynOS\Logs\install.log"';
-        
-      TmpPrereqScript := ExpandConstant('{tmp}\install-prereqs.ps1');
-      RunPowerShellScript(TmpPrereqScript, PrereqParams, ExitCode);
-      if ExitCode <> 0 then
-      begin
-        RaiseException('Database prerequisite installation failed. SQL Server Express setup did not complete successfully. See C:\ProgramData\TBZ Labs\SynOS\Logs\install.log for details.');
-      end;
-    end;
+    // SQL Server is now verified manually during the wizard phase before files are copied.
+    // Silent installation script execution has been removed.
   end;
 
   if CurStep = ssPostInstall then
@@ -667,7 +762,7 @@ begin
       end
       else
       begin
-        ConfigParams := '-AppDir "' + AppPath + '" -DbName "SynOSDb" -InstanceName "SQLEXPRESS" -AuthType "Windows" -PacsDir "' + PacsFolderPage.Values[0] + '"';
+        ConfigParams := '-AppDir "' + AppPath + '" -DbName "SynOSDb" -InstanceName "SYNOS" -AuthType "Windows" -PacsDir "' + PacsFolderPage.Values[0] + '"';
       end;
 
       RunPowerShellScript(ConfigScript, ConfigParams, ExitCode);

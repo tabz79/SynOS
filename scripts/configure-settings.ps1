@@ -4,7 +4,7 @@
 param (
     [string]$AppDir = "",
     [string]$DbName = "SynOSDb",
-    [string]$InstanceName = "SQLEXPRESS",
+    [string]$InstanceName = "SYNOS",
     [string]$AuthType = "Windows",
     [string]$Username = "",
     [string]$Password = "",
@@ -108,7 +108,18 @@ try {
         }
     }
 
-    # 2. Update PACS storage path
+    # 2. Update PACS storage path and grant permissions
+    $filesParentDir = "C:\SynOS_Files"
+    if (-not (Test-Path $filesParentDir)) {
+        New-Item -Path $filesParentDir -ItemType Directory -Force | Out-Null
+    }
+    try {
+        icacls.exe $filesParentDir /grant "Everyone:(OI)(CI)F" /T /Q
+        Log-Message "SUCCESS: Granted full permission on $filesParentDir to Everyone."
+    } catch {
+        Log-Message "WARNING: Failed to grant permissions on ${filesParentDir}: $_"
+    }
+
     if (-not (Test-Path $PacsDir)) {
         New-Item -Path $PacsDir -ItemType Directory -Force | Out-Null
         Log-Message "Created PACS storage directory: $PacsDir"

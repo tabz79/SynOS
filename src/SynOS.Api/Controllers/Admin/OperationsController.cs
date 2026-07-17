@@ -127,7 +127,10 @@ namespace SynOS.Api.Controllers.Admin
                     return NotFound(new { message = "Backup file not found on disk." });
                 }
 
-                var success = await _backupService.ExecuteRestoreAsync(backupId, backupFilePath, Guid.Empty);
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                Guid.TryParse(userIdClaim, out var initiatedByUserId);
+
+                var success = await _backupService.ExecuteRestoreAsync(backupId, backupFilePath, initiatedByUserId);
                 return Ok(new { success = success, message = success ? "Database restore completed successfully" : "Database restore failed" });
             }
             catch (Exception ex)

@@ -4,8 +4,8 @@
 
 param (
     [string]$LogFile = "",
-    [bool]$UseExistingSql = $false,
-    [string]$InstanceName = "SQLEXPRESS",
+    [string]$UseExistingSql = "false",
+    [string]$InstanceName = "SYNOS",
     [string]$LocalPackagePath = ""
 )
 
@@ -43,7 +43,12 @@ Log-Message "=================================================="
 Log-Message "Prerequisite Checker Started."
 Log-Message "Target SQL Instance: $InstanceName"
 
-if ($UseExistingSql) {
+$useExisting = $false
+if ($UseExistingSql -eq "true" -or $UseExistingSql -eq "1" -or $UseExistingSql -eq "$true") {
+    $useExisting = $true
+}
+
+if ($useExisting) {
     Log-Message "User selected: Use Existing SQL Server ($InstanceName). Skipping database installation."
     Log-Message "Prerequisite check completed successfully."
     exit 0
@@ -93,27 +98,16 @@ if (-not $sqlInstalled) {
             Log-Message "Offline installation mode: Using bundled local database package at: $LocalPackagePath"
             $sqlPackagePath = $LocalPackagePath
         } else {
-            Log-Message "Online installation mode: Downloading Microsoft SQL Server Express Bootstrapper..."
-            $downloadUrl = "https://download.microsoft.com/download/7/c/1/7c14e92e-bdcb-4f89-b7cf-93543e471222/SQL2022-SSEI-Expr.exe"
+            Log-Message "Online installation mode: Downloading Microsoft SQL Server Express Core offline installer package directly..."
+            $downloadUrl = "https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SQLEXPR_x64_ENU.exe"
             Log-Message "Source URL: $downloadUrl"
-            Invoke-WebRequest -Uri $downloadUrl -OutFile $installerPath -ErrorAction Stop
-            Log-Message "Download completed successfully."
-
-            Log-Message "Extracting and downloading SQL Server Express media files silently..."
-            $downloadArgs = "/Action=Download /MediaType=ExpressAdv /Language=ENU /Quiet /TargetDir=""$downloadTargetDir"""
-            $process = Start-Process -FilePath $installerPath -ArgumentList $downloadArgs -Wait -PassThru -NoNewWindow
+            $sqlPackagePath = Join-Path $tempDir "SQLEXPR_x64_ENU.exe"
             
-            if ($process.ExitCode -ne 0) {
-                Log-Message "ERROR: Bootstrapper media download failed with exit code: $($process.ExitCode)"
-                exit 1
-            }
+            Log-Message "Using System.Net.WebClient for non-interactive download..."
+            $webClient = New-Object System.Net.WebClient
+            $webClient.DownloadFile($downloadUrl, $sqlPackagePath)
             
-            $sqlPackage = Get-ChildItem -Path $downloadTargetDir -Filter "SQLEXPR_x64_ENU.exe" -Recurse | Select-Object -First 1
-            if (-not $sqlPackage) {
-                Log-Message "ERROR: Could not locate SQLEXPR_x64_ENU.exe in downloaded media."
-                exit 1
-            }
-            $sqlPackagePath = $sqlPackage.FullName
+            Log-Message "Download completed successfully to: $sqlPackagePath"
         }
         
         Log-Message "Installing SQL Server Express $InstanceName instance silently..."

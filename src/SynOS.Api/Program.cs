@@ -696,11 +696,11 @@ var shouldMigrate = isConfigured || (!string.IsNullOrEmpty(connectionString) && 
 if (!isMigrationTool && shouldMigrate)
 {
     using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
-    DbInitializer.EnsureTablesAndColumnsCreated(context);
-    context.Database.Migrate();
-    DbInitializer.Initialize(context);
+    {
+        var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+        context.Database.Migrate();
+        DbInitializer.EnsureTablesAndColumnsCreated(context);
+        DbInitializer.Initialize(context);
 
     var misconfiguredBranches = context.Branches
         .Where(b => string.IsNullOrEmpty(b.Code))

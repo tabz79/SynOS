@@ -106,6 +106,44 @@ IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('BranchOper
 BEGIN
     ALTER TABLE [BranchOperationalEvents] ADD [SourceType] nvarchar(max) NULL;
 END
+
+-- 6. Add columns to Tests if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tests') AND name = 'DefaultInterpretation')
+BEGIN
+    ALTER TABLE [Tests] ADD [DefaultInterpretation] nvarchar(max) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tests') AND name = 'DefaultInterpretationLastUpdatedAt')
+BEGIN
+    ALTER TABLE [Tests] ADD [DefaultInterpretationLastUpdatedAt] datetimeoffset NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tests') AND name = 'DefaultInterpretationLastUpdatedBy')
+BEGIN
+    ALTER TABLE [Tests] ADD [DefaultInterpretationLastUpdatedBy] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Tests') AND name = 'ReportTitle')
+BEGIN
+    ALTER TABLE [Tests] ADD [ReportTitle] nvarchar(max) NULL;
+END
+
+-- 7. Add columns to ReportTemplates if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('ReportTemplates') AND name = 'BranchId')
+BEGIN
+    ALTER TABLE [ReportTemplates] ADD [BranchId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('ReportTemplates') AND name = 'ModalityId')
+BEGIN
+    ALTER TABLE [ReportTemplates] ADD [ModalityId] uniqueidentifier NULL;
+END
+
+-- 8. Add columns to RadiologyStudies if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyStudies') AND name = 'ModalityId')
+BEGIN
+    ALTER TABLE [RadiologyStudies] ADD [ModalityId] uniqueidentifier NULL;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }

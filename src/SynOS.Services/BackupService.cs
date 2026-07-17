@@ -151,54 +151,91 @@ namespace SynOS.Services
                 var dbSnapshotFile = Path.Combine(tempStagingPath, "database_snapshot.bak");
                 backupSw.Start();
 
-                if (_context.Database.IsRelational())
-                {
-                    _logger.LogInformation("Backing up SQL Server database {DatabaseName} to {Path}...", databaseName, dbSnapshotFile);
-                    var backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @path WITH INIT, COMPRESSION, CHECKSUM";
                     try
                     {
-                        using (var command = _context.Database.GetDbConnection().CreateCommand())
+                        _logger.LogInformation("Backing up SQL Server database {DatabaseName} to {Path}...", databaseName, dbSnapshotFile);
+                        var backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @path WITH INIT, COMPRESSION, CHECKSUM";
+                        try
                         {
-                            command.CommandText = backupSql;
-                            var pathParam = command.CreateParameter();
-                            pathParam.ParameterName = "@path";
-                            pathParam.Value = dbSnapshotFile;
-                            command.Parameters.Add(pathParam);
+                            using (var command = _context.Database.GetDbConnection().CreateCommand())
+                            {
+                                command.CommandText = backupSql;
+                                var pathParam = command.CreateParameter();
+                                pathParam.ParameterName = "@path";
+                                pathParam.Value = dbSnapshotFile;
+                                command.Parameters.Add(pathParam);
 
-                            var wasOpen = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Open;
-                            if (!wasOpen) await _context.Database.OpenConnectionAsync();
-                            try
-                            {
-                                await command.ExecuteNonQueryAsync();
+                                var wasOpen = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Open;
+                                if (!wasOpen) await _context.Database.OpenConnectionAsync();
+                                try
+                                {
+                                    await command.ExecuteNonQueryAsync();
+                                }
+                                finally
+                                {
+                                    if (!wasOpen) await _context.Database.CloseConnectionAsync();
+                                }
                             }
-                            finally
+                        }
+                        catch (SqlException ex) when (ex.Number == 1844 || ex.Message.Contains("COMPRESSION") || ex.Message.Contains("supported"))
+                        {
+                            _logger.LogWarning("SQL Server backup with COMPRESSION is not supported on this edition. Retrying without COMPRESSION...");
+                            backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @path WITH INIT, CHECKSUM";
+                            using (var command = _context.Database.GetDbConnection().CreateCommand())
                             {
-                                if (!wasOpen) await _context.Database.CloseConnectionAsync();
+                                command.CommandText = backupSql;
+                                var pathParam = command.CreateParameter();
+                                pathParam.ParameterName = "@path";
+                                pathParam.Value = dbSnapshotFile;
+                                command.Parameters.Add(pathParam);
+
+                                var wasOpen = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Open;
+                                if (!wasOpen) await _context.Database.OpenConnectionAsync();
+                                try
+                                {
+                                    await command.ExecuteNonQueryAsync();
+                                }
+                                finally
+                                {
+                                    if (!wasOpen) await _context.Database.CloseConnectionAsync();
+                                }
                             }
                         }
                     }
-                    catch (SqlException ex) when (ex.Number == 1844 || ex.Message.Contains("COMPRESSION") || ex.Message.Contains("supported"))
+                    catch (Exception backupEx)
                     {
-                        _logger.LogWarning("SQL Server backup with COMPRESSION is not supported on this edition. Retrying without COMPRESSION...");
-                        backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @path WITH INIT, CHECKSUM";
-                        using (var command = _context.Database.GetDbConnection().CreateCommand())
+                        _logger.LogWarning(backupEx, "Backup to staging path {Path} failed. Attempting fallback to C:\\Windows\\Temp...", dbSnapshotFile);
+                        var fallbackPath = Path.Combine("C:\\Windows\\Temp", $"backup_{databaseName}_{backupId}.bak");
+                        try
                         {
-                            command.CommandText = backupSql;
-                            var pathParam = command.CreateParameter();
-                            pathParam.ParameterName = "@path";
-                            pathParam.Value = dbSnapshotFile;
-                            command.Parameters.Add(pathParam);
+                            var backupSql = $"BACKUP DATABASE [{databaseName}] TO DISK = @path WITH INIT, CHECKSUM";
+                            using (var command = _context.Database.GetDbConnection().CreateCommand())
+                            {
+                                command.CommandText = backupSql;
+                                var pathParam = command.CreateParameter();
+                                pathParam.ParameterName = "@path";
+                                pathParam.Value = fallbackPath;
+                                command.Parameters.Add(pathParam);
 
-                            var wasOpen = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Open;
-                            if (!wasOpen) await _context.Database.OpenConnectionAsync();
-                            try
-                            {
-                                await command.ExecuteNonQueryAsync();
+                                var wasOpen = _context.Database.GetDbConnection().State == System.Data.ConnectionState.Open;
+                                if (!wasOpen) await _context.Database.OpenConnectionAsync();
+                                try
+                                {
+                                    await command.ExecuteNonQueryAsync();
+                                }
+                                finally
+                                {
+                                    if (!wasOpen) await _context.Database.CloseConnectionAsync();
+                                }
                             }
-                            finally
-                            {
-                                if (!wasOpen) await _context.Database.CloseConnectionAsync();
-                            }
+                            
+                            File.Copy(fallbackPath, dbSnapshotFile, overwrite: true);
+                            File.Delete(fallbackPath);
+                        }
+                        catch (Exception fallbackEx)
+                        {
+                            _logger.LogError(fallbackEx, "Fallback backup to C:\\Windows\\Temp also failed.");
+                            throw new InvalidOperationException("Failed to execute database backup using all backup paths.", fallbackEx);
                         }
                     }
                     backupSw.Stop();
@@ -350,6 +387,39 @@ namespace SynOS.Services
             }
         }
 
+        private void GrantFileAccessToAll(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    var fileInfo = new FileInfo(path);
+                    var security = fileInfo.GetAccessControl();
+                    security.AddAccessRule(new FileSystemAccessRule(
+                        new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                        FileSystemRights.FullControl,
+                        AccessControlType.Allow));
+                    fileInfo.SetAccessControl(security);
+                }
+                else if (Directory.Exists(path))
+                {
+                    var dirInfo = new DirectoryInfo(path);
+                    var security = dirInfo.GetAccessControl();
+                    security.AddAccessRule(new FileSystemAccessRule(
+                        new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                        FileSystemRights.FullControl,
+                        InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
+                        PropagationFlags.None,
+                        AccessControlType.Allow));
+                    dirInfo.SetAccessControl(security);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to set ACL permissions on {Path}", path);
+            }
+        }
+
         public async Task<bool> VerifyBackupAsync(Guid backupId, string backupFilePath)
         {
             _logger.LogInformation("Verifying backup archive integrity for {Path}...", backupFilePath);
@@ -399,12 +469,15 @@ namespace SynOS.Services
             try
             {
                 // Ensure Restore directory exists
-                Directory.CreateDirectory(Path.Combine(baseDir, "Restore"));
+                var restoreFolder = Path.Combine(baseDir, "Restore");
+                Directory.CreateDirectory(restoreFolder);
+                GrantFileAccessToAll(restoreFolder);
 
                 // 1. Decrypt backup if encrypted
                 if (isEncrypted)
                 {
                     await DecryptFileAsync(backupFilePath, decryptedPath);
+                    GrantFileAccessToAll(decryptedPath);
                 }
                 else
                 {
@@ -413,6 +486,7 @@ namespace SynOS.Services
 
                 // 2. Perform dry decompression test
                 Directory.CreateDirectory(extractPath);
+                GrantFileAccessToAll(extractPath);
                 ZipFile.ExtractToDirectory(decryptedPath, extractPath);
 
                 // 3. Verify manifest contents and check checksum
@@ -428,6 +502,7 @@ namespace SynOS.Services
                     _logger.LogError("Verification Fail: database_snapshot.bak missing from archive.");
                     return false;
                 }
+                GrantFileAccessToAll(dbSnapshotFile);
 
                 string calculatedHash;
                 using (var sha256 = SHA256.Create())
@@ -496,6 +571,32 @@ namespace SynOS.Services
             _logger.LogWarning("System entering maintenance/lockdown state for restore execution...");
 
             _restoreStateCoordinator?.BeginRestore();
+
+            User restoringUser = null;
+            List<UserRole> restoringUserRoles = null;
+            List<UserBranchRole> restoringUserBranchRoles = null;
+            List<UserWorkspaceAccess> restoringUserWorkspaceAccesses = null;
+            Employee restoringEmployee = null;
+
+            if (initiatedByUserId != Guid.Empty && _context.Database.IsRelational())
+            {
+                try
+                {
+                    restoringUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == initiatedByUserId);
+                    if (restoringUser != null)
+                    {
+                        restoringUserRoles = await _context.UserRoles.AsNoTracking().Where(ur => ur.UserId == initiatedByUserId).ToListAsync();
+                        restoringUserBranchRoles = await _context.UserBranchRoles.AsNoTracking().Where(ubr => ubr.UserId == initiatedByUserId).ToListAsync();
+                        restoringUserWorkspaceAccesses = await _context.UserWorkspaceAccesses.AsNoTracking().Where(uwa => uwa.UserId == initiatedByUserId).ToListAsync();
+                        restoringEmployee = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.UserId == initiatedByUserId);
+                        _logger.LogInformation("Successfully cached credentials and profile for restoring user: {Username}", restoringUser.Username);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to load restoring user details for preservation before restore.");
+                }
+            }
 
             var connStr = "";
             var databaseName = "SynOSDb";
@@ -675,6 +776,46 @@ namespace SynOS.Services
                             }
                         }
 
+                        // Resolve default SQL Server data/log directories dynamically
+                        var defaultDataPath = "";
+                        var defaultLogPath = "";
+                        try
+                        {
+                            using (var cmd = new SqlCommand("SELECT ServerProperty('InstanceDefaultDataPath'), ServerProperty('InstanceDefaultLogPath')", connection))
+                            {
+                                using (var reader = await cmd.ExecuteReaderAsync())
+                                {
+                                    if (await reader.ReadAsync())
+                                    {
+                                        defaultDataPath = reader.IsDBNull(0) ? "" : reader.GetString(0);
+                                        defaultLogPath = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                                    }
+                                }
+                            }
+                            if (string.IsNullOrEmpty(defaultDataPath))
+                            {
+                                using (var cmd = new SqlCommand("SELECT top 1 physical_name FROM sys.master_files WHERE database_id = 1", connection))
+                                {
+                                    var masterPath = (string?)await cmd.ExecuteScalarAsync();
+                                    if (!string.IsNullOrEmpty(masterPath))
+                                    {
+                                        defaultDataPath = Path.GetDirectoryName(masterPath) ?? "";
+                                        defaultLogPath = defaultDataPath;
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception pathEx)
+                        {
+                            _logger.LogWarning(pathEx, "Failed to dynamically query default SQL Server paths.");
+                        }
+
+                        if (string.IsNullOrEmpty(defaultDataPath))
+                        {
+                            defaultDataPath = @"C:\Program Files\Microsoft SQL Server\MSSQL16.SYNOS\MSSQL\DATA";
+                            defaultLogPath = defaultDataPath;
+                        }
+
                         // Get target database's physical files
                         var targetPhysicalFiles = new List<(string Name, string PhysicalPath, string Type)>();
                         var getFilesSql = "SELECT name, physical_name, type_desc FROM sys.master_files WHERE database_id = DB_ID(@dbName)";
@@ -694,6 +835,12 @@ namespace SynOS.Services
                             }
                         }
 
+                        if (targetPhysicalFiles.Count == 0)
+                        {
+                            targetPhysicalFiles.Add((databaseName, Path.Combine(defaultDataPath, $"{databaseName}.mdf"), "D"));
+                            targetPhysicalFiles.Add(($"{databaseName}_log", Path.Combine(defaultLogPath, $"{databaseName}_log.ldf"), "L"));
+                        }
+
                         // Build restore SQL with MOVE clauses
                         var restoreSql = $"RESTORE DATABASE [{databaseName}] FROM DISK = @backupPath WITH REPLACE";
                         
@@ -708,10 +855,15 @@ namespace SynOS.Services
                                     .Skip(backupFile.Type == "D" ? dataCount++ : logCount++)
                                     .FirstOrDefault();
 
-                                if (targetFile.PhysicalPath != null)
+                                var targetPath = targetFile.PhysicalPath;
+                                if (string.IsNullOrEmpty(targetPath))
                                 {
-                                    restoreSql += $", MOVE '{backupFile.LogicalName}' TO '{targetFile.PhysicalPath}'";
+                                    var suffix = backupFile.Type == "D" ? ".mdf" : "_log.ldf";
+                                    var dir = backupFile.Type == "D" ? defaultDataPath : defaultLogPath;
+                                    targetPath = Path.Combine(dir, $"{databaseName}_{backupFile.LogicalName}{suffix}");
                                 }
+
+                                restoreSql += $", MOVE '{backupFile.LogicalName}' TO '{targetPath}'";
                             }
                         }
 
@@ -768,6 +920,105 @@ namespace SynOS.Services
                         _logger.LogInformation("EF Core migrations started.");
                         await newContext.Database.MigrateAsync();
                         _logger.LogInformation("EF Core migrations completed.");
+
+                        if (restoringUser != null)
+                        {
+                            _logger.LogInformation("Preserving restoring user credentials into the restored database...");
+                            try
+                            {
+                                var existingUser = await newContext.Users.FirstOrDefaultAsync(u => u.UserId == restoringUser.UserId || u.Username.ToLower() == restoringUser.Username.ToLower());
+                                if (existingUser != null)
+                                {
+                                    // Update existing user details to preserve username, password hash, email, designation, active status
+                                    existingUser.Username = restoringUser.Username;
+                                    existingUser.PasswordHash = restoringUser.PasswordHash;
+                                    existingUser.Email = restoringUser.Email;
+                                    existingUser.Name = restoringUser.Name;
+                                    existingUser.Designation = restoringUser.Designation;
+                                    existingUser.IsActive = restoringUser.IsActive;
+                                    existingUser.IsDefaultSignatory = restoringUser.IsDefaultSignatory;
+                                    existingUser.CanUseOperationalMode = restoringUser.CanUseOperationalMode;
+                                    existingUser.CanUseOversightMode = restoringUser.CanUseOversightMode;
+                                    newContext.Users.Update(existingUser);
+                                }
+                                else
+                                {
+                                    // Add the restoring user
+                                    newContext.Users.Add(restoringUser);
+                                }
+
+                                // Ensure correct roles/permissions for the restoring user in the restored database
+                                if (restoringUserRoles != null)
+                                {
+                                    foreach (var role in restoringUserRoles)
+                                    {
+                                        var roleExists = await newContext.UserRoles.AnyAsync(ur => ur.UserId == role.UserId && ur.RoleId == role.RoleId);
+                                        if (!roleExists)
+                                        {
+                                            newContext.UserRoles.Add(role);
+                                        }
+                                    }
+                                }
+
+                                if (restoringUserBranchRoles != null)
+                                {
+                                    foreach (var ubr in restoringUserBranchRoles)
+                                    {
+                                        var ubrExists = await newContext.UserBranchRoles.AnyAsync(x => x.UserId == ubr.UserId && x.BranchId == ubr.BranchId && x.RoleId == ubr.RoleId);
+                                        if (!ubrExists)
+                                        {
+                                            // Ensure the branch exists in the restored database, otherwise fallback to the default branch
+                                            var branchExists = await newContext.Branches.AnyAsync(b => b.BranchId == ubr.BranchId);
+                                            if (branchExists)
+                                            {
+                                                newContext.UserBranchRoles.Add(ubr);
+                                            }
+                                            else
+                                            {
+                                                var defaultBranch = await newContext.Branches.FirstOrDefaultAsync();
+                                                if (defaultBranch != null)
+                                                {
+                                                    ubr.BranchId = defaultBranch.BranchId;
+                                                    newContext.UserBranchRoles.Add(ubr);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (restoringUserWorkspaceAccesses != null)
+                                {
+                                    foreach (var uwa in restoringUserWorkspaceAccesses)
+                                    {
+                                        var uwaExists = await newContext.UserWorkspaceAccesses.AnyAsync(x => x.UserId == uwa.UserId && x.WorkspaceId == uwa.WorkspaceId);
+                                        if (!uwaExists)
+                                        {
+                                            var workspaceExists = await newContext.Workspaces.AnyAsync(w => w.WorkspaceId == uwa.WorkspaceId);
+                                            if (workspaceExists)
+                                            {
+                                                newContext.UserWorkspaceAccesses.Add(uwa);
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (restoringEmployee != null)
+                                {
+                                    var employeeExists = await newContext.Employees.AnyAsync(e => e.UserId == restoringEmployee.UserId);
+                                    if (!employeeExists)
+                                    {
+                                        newContext.Employees.Add(restoringEmployee);
+                                    }
+                                }
+
+                                await newContext.SaveChangesAsync();
+                                _logger.LogInformation("Restoring user credentials merged and saved successfully.");
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to preserve/merge restoring user credentials.");
+                            }
+                        }
 
                         // Validate core tables queryability
                         _logger.LogInformation("Post-restore validation started.");
