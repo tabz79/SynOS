@@ -323,10 +323,21 @@ export function FirstRunWizard() {
                     }
                 }
             } catch (err) {
-                // Ignore connection errors and keep polling
+                // Fallback: Check setup status on current origin
+                try {
+                    const currentRes = await fetch('/api/v1/setup/status');
+                    if (currentRes.ok) {
+                        const currentData = await currentRes.json();
+                        if (currentData.isConfigured) {
+                            clearInterval(intervalId);
+                            window.location.href = '/login';
+                            return;
+                        }
+                    }
+                } catch(e) {}
             }
 
-            if (Date.now() - startTime > 20000) {
+            if (Date.now() - startTime > 5000) {
                 setShowRecoveryPanel(true);
             }
         };
@@ -372,6 +383,15 @@ export function FirstRunWizard() {
                             </div>
                             
                             <div className="grid grid-cols-2 gap-2 text-[10px]">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        window.location.href = '/login';
+                                    }}
+                                    className="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-lg font-bold transition-all text-center shadow-lg"
+                                >
+                                    Proceed to Login →
+                                </button>
                                 <button
                                     type="button"
                                     onClick={async () => {

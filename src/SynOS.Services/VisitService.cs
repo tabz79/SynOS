@@ -126,6 +126,14 @@ namespace SynOS.Services
                 if (!partner.IsActive) throw new InvalidOperationException($"Referral partner '{partner.Name}' is inactive.");
             }
 
+            Guid? validUserId = null;
+            if (actorUserId != Guid.Empty && await _context.Users.AnyAsync(u => u.UserId == actorUserId))
+            {
+                validUserId = actorUserId;
+            }
+
+            var fallbackUserId = validUserId ?? await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+
             var visit = new Visit
             {
                 VisitId = Guid.NewGuid(),
@@ -141,8 +149,8 @@ namespace SynOS.Services
                 ReferrerId = visitDto.ReferrerId,
                 PaymentCollectionModel = visitDto.PaymentCollectionModel,
                 ReferrerText = visitDto.ReferrerText,
-                CreatedByUserId = actorUserId != Guid.Empty ? actorUserId : (Guid?)null,
-                AssignedReceptionistId = actorUserId != Guid.Empty ? actorUserId : (Guid?)null
+                CreatedByUserId = validUserId ?? fallbackUserId,
+                AssignedReceptionistId = validUserId ?? fallbackUserId
             };
 
             _context.Visits.Add(visit);
@@ -222,7 +230,7 @@ namespace SynOS.Services
                     Method = "PartnerAccount",
                     ReceiptNo = $"SYS-{visit.Token}",
                     ReceivedAt = DateTime.UtcNow,
-                    ReceivedByUserId = actorUserId
+                    ReceivedByUserId = fallbackUserId
                 };
                 _context.Payments.Add(payment);
                 invoice.Status = "Paid";

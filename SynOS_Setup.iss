@@ -8,13 +8,13 @@
 
 [Setup]
 AppName=SynOS
-AppVersion=1.2.2
+AppVersion=1.3.9
 AppPublisher=TBZ Labs
 DefaultDirName={commonpf}\TBZ Labs\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v122_patched_v2
+OutputBaseFilename=SynOS_Setup_v139_final
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -917,6 +917,7 @@ begin
   btnOK.OnClick := @LogUninstallSelection;
 
   UninstallForm.ActiveControl := btnOK;
+  UninstallForm.FormStyle := fsStayOnTop;
   UninstallForm.ShowModal;
 
   Result := True;

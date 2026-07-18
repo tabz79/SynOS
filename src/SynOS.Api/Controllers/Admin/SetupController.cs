@@ -355,9 +355,9 @@ namespace SynOS.Api.Controllers.Admin
 
                 profile.ReportStorageFolder = dto.DocumentStorageFolder;
                 profile.WorkingDirectory = dto.WorkingDirectory;
-                profile.MiddlewareApiUrl = dto.MiddlewareApiUrl;
-                profile.MiddlewareApiKey = dto.MiddlewareApiKey;
-                profile.LabId = dto.LabId ?? "LAB001";
+                profile.MiddlewareApiUrl = !string.IsNullOrWhiteSpace(dto.MiddlewareApiUrl) ? dto.MiddlewareApiUrl : (_configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events");
+                profile.MiddlewareApiKey = !string.IsNullOrWhiteSpace(dto.MiddlewareApiKey) ? dto.MiddlewareApiKey : _configuration["Middleware:ApiKey"];
+                profile.LabId = !string.IsNullOrWhiteSpace(dto.LabId) ? dto.LabId : (_configuration["Middleware:LabId"] ?? "LAB002");
                 profile.LicenseType = dto.LicenseType;
                 profile.MaximumBranches = dto.MaximumBranches ?? 1;
                 profile.LicenseStatus = dto.LicenseStatus;
@@ -710,8 +710,27 @@ namespace SynOS.Api.Controllers.Admin
 
             try
             {
-                using var client = new System.Net.Http.HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(5);
+                var handler = new System.Net.Http.SocketsHttpHandler
+                {
+                    ConnectCallback = async (context, cancellationToken) =>
+                    {
+                        var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+                        var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+                        socket.NoDelay = true;
+                        try
+                        {
+                            await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
+                            return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                        }
+                        catch
+                        {
+                            socket.Dispose();
+                            throw;
+                        }
+                    }
+                };
+                using var client = new System.Net.Http.HttpClient(handler);
                 
                 var testUrl = dto.ApiUrl?.Replace("/api/events", "/api/labs/validate") ?? "http://localhost:5069/api/labs/validate";
                 

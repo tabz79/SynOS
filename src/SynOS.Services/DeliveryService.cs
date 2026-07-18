@@ -32,6 +32,7 @@ public class DeliveryService : IDeliveryService
     private readonly string _publicBaseUrl;
     private readonly IFileStorageService _fileStorageService; // Inject IFileStorageService
     private readonly IMiddlewareOutboxService _outboxService;
+    private readonly IConfiguration _configuration;
 
     public DeliveryService(
         SynOSDbContext context,
@@ -56,6 +57,7 @@ public class DeliveryService : IDeliveryService
         _emailSender = emailSender;
         _printService = printService;
         _logger = logger;
+        _configuration = configuration;
         _secureLinkBaseUrl = configuration["SecureLink:BaseUrl"] ?? throw new ArgumentNullException("SecureLink:BaseUrl not configured.");
         _publicBaseUrl = configuration["SecureLink:PublicBaseUrl"] ?? "http://127.0.0.1:59999";
         _fileStorageService = fileStorageService;
@@ -379,7 +381,7 @@ public class DeliveryService : IDeliveryService
         await _context.SaveChangesAsync();
 
         var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
-        var labId = profile?.LabId ?? "LAB001";
+        var labId = !string.IsNullOrWhiteSpace(profile?.LabId) ? profile.LabId : (_configuration["Middleware:LabId"] ?? "LAB001");
 
         // Enqueue ReportDeliveryRequestedEvent
         _outboxService.Enqueue(new ReportDeliveryRequestedEvent(

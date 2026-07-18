@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TBZ.Middleware.Infrastructure\TBZ.Middleware.Infrastructure.csproj" />
     <ProjectReference Include="..\TBZ.Middleware.Domain\TBZ.Middleware.Domain.csproj" />
+    <ProjectReference Include="..\TBZ.Middleware.Workers\TBZ.Middleware.Workers.csproj" />
   </ItemGroup>
 
 </Project>

@@ -127,7 +127,7 @@ namespace SynOS.Api.Controllers.Admin
                     return NotFound(new { message = "Backup file not found on disk." });
                 }
 
-                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 Guid.TryParse(userIdClaim, out var initiatedByUserId);
 
                 var success = await _backupService.ExecuteRestoreAsync(backupId, backupFilePath, initiatedByUserId);

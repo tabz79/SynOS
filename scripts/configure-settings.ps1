@@ -79,7 +79,10 @@ try {
     Log-Message "Connection string updated: Server=$dbServer;Database=$DbName"
 
     # Grant SQL Server login/role permissions to Windows Service accounts if using Windows Auth on local server
-    if ($AuthType -eq "Windows" -and ($serverName -eq "." -or $serverName -eq "localhost" -or $serverName -eq "127.0.0.1" -or $serverName -like "*$env:COMPUTERNAME*")) {
+    $isLocalServer = ($serverName -eq "." -or $serverName -eq "localhost" -or $serverName -eq "127.0.0.1" -or 
+                      $serverName -like ".\*" -or $serverName -like "localhost\*" -or $serverName -like "127.0.0.1\*" -or 
+                      $serverName -like "*$env:COMPUTERNAME*")
+    if ($AuthType -eq "Windows" -and $isLocalServer) {
         Log-Message "Granting SQL Server permissions to Windows service accounts..."
         try {
             $sqlConnStr = "Server=$serverName;Database=master;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True"

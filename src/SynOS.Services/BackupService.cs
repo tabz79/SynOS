@@ -17,6 +17,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.SqlClient;
 using SynOS.Data;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.HR;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace SynOS.Services
 {
@@ -151,6 +154,8 @@ namespace SynOS.Services
                 var dbSnapshotFile = Path.Combine(tempStagingPath, "database_snapshot.bak");
                 backupSw.Start();
 
+                if (_context.Database.IsRelational())
+                {
                     try
                     {
                         _logger.LogInformation("Backing up SQL Server database {DatabaseName} to {Path}...", databaseName, dbSnapshotFile);
@@ -577,6 +582,7 @@ namespace SynOS.Services
             List<UserBranchRole> restoringUserBranchRoles = null;
             List<UserWorkspaceAccess> restoringUserWorkspaceAccesses = null;
             Employee restoringEmployee = null;
+            var roleIdToNameMap = new Dictionary<Guid, string>();
 
             if (initiatedByUserId != Guid.Empty && _context.Database.IsRelational())
             {
@@ -589,6 +595,13 @@ namespace SynOS.Services
                         restoringUserBranchRoles = await _context.UserBranchRoles.AsNoTracking().Where(ubr => ubr.UserId == initiatedByUserId).ToListAsync();
                         restoringUserWorkspaceAccesses = await _context.UserWorkspaceAccesses.AsNoTracking().Where(uwa => uwa.UserId == initiatedByUserId).ToListAsync();
                         restoringEmployee = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.UserId == initiatedByUserId);
+                        
+                        var roles = await _context.Roles.AsNoTracking().ToListAsync();
+                        foreach (var role in roles)
+                        {
+                            roleIdToNameMap[role.RoleId] = role.Name;
+                        }
+                        
                         _logger.LogInformation("Successfully cached credentials and profile for restoring user: {Username}", restoringUser.Username);
                     }
                 }
@@ -926,6 +939,8 @@ namespace SynOS.Services
                             _logger.LogInformation("Preserving restoring user credentials into the restored database...");
                             try
                             {
+                                var restoredRolesMap = await newContext.Roles.AsNoTracking().ToDictionaryAsync(r => r.Name.ToLower(), r => r.RoleId);
+                                
                                 var existingUser = await newContext.Users.FirstOrDefaultAsync(u => u.UserId == restoringUser.UserId || u.Username.ToLower() == restoringUser.Username.ToLower());
                                 if (existingUser != null)
                                 {
@@ -952,10 +967,21 @@ namespace SynOS.Services
                                 {
                                     foreach (var role in restoringUserRoles)
                                     {
-                                        var roleExists = await newContext.UserRoles.AnyAsync(ur => ur.UserId == role.UserId && ur.RoleId == role.RoleId);
-                                        if (!roleExists)
+                                        Guid targetRoleId = role.RoleId;
+                                        if (roleIdToNameMap.TryGetValue(role.RoleId, out var roleName) && restoredRolesMap.TryGetValue(roleName.ToLower(), out var newRoleId))
                                         {
-                                            newContext.UserRoles.Add(role);
+                                            targetRoleId = newRoleId;
+                                        }
+
+                                        var roleExists = await newContext.Roles.AnyAsync(r => r.RoleId == targetRoleId);
+                                        if (roleExists)
+                                        {
+                                            var userRoleExists = await newContext.UserRoles.AnyAsync(ur => ur.UserId == role.UserId && ur.RoleId == targetRoleId);
+                                            if (!userRoleExists)
+                                            {
+                                                role.RoleId = targetRoleId;
+                                                newContext.UserRoles.Add(role);
+                                            }
                                         }
                                     }
                                 }
@@ -964,23 +990,52 @@ namespace SynOS.Services
                                 {
                                     foreach (var ubr in restoringUserBranchRoles)
                                     {
-                                        var ubrExists = await newContext.UserBranchRoles.AnyAsync(x => x.UserId == ubr.UserId && x.BranchId == ubr.BranchId && x.RoleId == ubr.RoleId);
-                                        if (!ubrExists)
+                                        Guid targetRoleId = ubr.RoleId;
+                                        if (roleIdToNameMap.TryGetValue(ubr.RoleId, out var roleName) && restoredRolesMap.TryGetValue(roleName.ToLower(), out var newRoleId))
                                         {
-                                            // Ensure the branch exists in the restored database, otherwise fallback to the default branch
-                                            var branchExists = await newContext.Branches.AnyAsync(b => b.BranchId == ubr.BranchId);
-                                            if (branchExists)
+                                            targetRoleId = newRoleId;
+                                        }
+
+                                        // Ensure the Role exists in the restored database
+                                        var roleExists = await newContext.Roles.AnyAsync(r => r.RoleId == targetRoleId);
+                                        if (!roleExists)
+                                        {
+                                            // Fallback: try to find any administrator or fallback role in the restored database
+                                            if (restoredRolesMap.TryGetValue("administrator", out var adminRoleId))
                                             {
-                                                newContext.UserBranchRoles.Add(ubr);
+                                                targetRoleId = adminRoleId;
                                             }
                                             else
                                             {
-                                                var defaultBranch = await newContext.Branches.FirstOrDefaultAsync();
-                                                if (defaultBranch != null)
+                                                var anyRole = await newContext.Roles.FirstOrDefaultAsync();
+                                                if (anyRole != null)
                                                 {
-                                                    ubr.BranchId = defaultBranch.BranchId;
-                                                    newContext.UserBranchRoles.Add(ubr);
+                                                    targetRoleId = anyRole.RoleId;
                                                 }
+                                            }
+                                        }
+
+                                        var roleExistsFinal = await newContext.Roles.AnyAsync(r => r.RoleId == targetRoleId);
+                                        if (roleExistsFinal)
+                                        {
+                                            var ubrExists = await newContext.UserBranchRoles.AnyAsync(x => x.UserId == ubr.UserId && x.BranchId == ubr.BranchId && x.RoleId == targetRoleId);
+                                            if (!ubrExists)
+                                            {
+                                                // Ensure the branch exists in the restored database, otherwise fallback to the default branch
+                                                var branchExists = await newContext.Branches.AnyAsync(b => b.BranchId == ubr.BranchId);
+                                                Guid targetBranchId = ubr.BranchId;
+                                                if (!branchExists)
+                                                {
+                                                    var defaultBranch = await newContext.Branches.FirstOrDefaultAsync();
+                                                    if (defaultBranch != null)
+                                                    {
+                                                        targetBranchId = defaultBranch.BranchId;
+                                                    }
+                                                }
+
+                                                ubr.RoleId = targetRoleId;
+                                                ubr.BranchId = targetBranchId;
+                                                newContext.UserBranchRoles.Add(ubr);
                                             }
                                         }
                                     }

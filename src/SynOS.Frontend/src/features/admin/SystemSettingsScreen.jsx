@@ -4015,6 +4015,16 @@ export function SystemSettingsScreen() {
                   />
                 </div>
                 <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Lab ID</label>
+                  <input
+                    type="text"
+                    value={advancedSettings.labId || ''}
+                    onChange={e => setAdvancedSettings({ ...advancedSettings, labId: e.target.value })}
+                    placeholder="e.g. LAB002"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
                   <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Middleware API Key / Secret</label>
                   <div className="flex items-center gap-2">
                     <div className={`flex-1 h-10 px-3 border rounded-xl text-xs font-mono flex items-center select-none shadow-sm ${
@@ -4505,113 +4515,114 @@ export function SystemSettingsScreen() {
                   </button>
                 </div>
               </div>
-              {/* One-time Copy Key Dialog */}
-              {showKeyDialog && oneTimeKey && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
-                    <h3 className="text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-                      ⚠️ One-Time Generated Key
-                    </h3>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                      This is the new Middleware API Key. For absolute security, this key is never displayed again. Please copy it immediately:
-                    </p>
-                    <div className="bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 p-3 rounded-xl font-mono text-xs text-synos-primary break-all select-all flex justify-between items-center">
-                      <span>{oneTimeKey}</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          navigator.clipboard.writeText(oneTimeKey);
-                          alert('Copied to clipboard!');
-                        }}
-                        className="ml-2 px-2.5 py-1 bg-synos-primary hover:bg-synos-primary/95 text-[10px] font-bold rounded-lg text-white shadow-sm transition-all"
-                      >
-                        Copy
-                      </button>
-                    </div>
-                    <div className="pt-2 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowKeyDialog(false);
-                          setOneTimeKey(null);
-                        }}
-                        className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-semibold rounded-xl transition-all text-zinc-700 dark:text-zinc-300"
-                      >
-                        Done & Close
-                      </button>
-                    </div>
-                  </div>
+            </div>
+          </div>
+        )}
+
+        {/* One-time Copy Key Dialog */}
+        {showKeyDialog && oneTimeKey && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                ⚠️ One-Time Generated Key
+              </h3>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                This is the new Middleware API Key. For absolute security, this key is never displayed again. Please copy it immediately:
+              </p>
+              <div className="bg-zinc-100 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 p-3 rounded-xl font-mono text-xs text-synos-primary break-all select-all flex justify-between items-center">
+                <span>{oneTimeKey}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(oneTimeKey);
+                    alert('Copied to clipboard!');
+                  }}
+                  className="ml-2 px-2.5 py-1 bg-synos-primary hover:bg-synos-primary/95 text-[10px] font-bold rounded-lg text-white shadow-sm transition-all"
+                >
+                  Copy
+                </button>
+              </div>
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowKeyDialog(false);
+                    setOneTimeKey(null);
+                  }}
+                  className="px-4 py-2 bg-zinc-200 hover:bg-zinc-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-xs font-semibold rounded-xl transition-all text-zinc-700 dark:text-zinc-300"
+                >
+                  Done & Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reset Operational Data Confirmation Dialog */}
+        {showResetDialog && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-red-600 dark:text-red-400 uppercase tracking-wider">
+                ⚠️ Reset Operational Data
+              </h3>
+              
+              <div className="space-y-2 text-xs text-zinc-650 dark:text-zinc-400">
+                <p className="font-semibold text-zinc-800 dark:text-zinc-200">This operation will:</p>
+                <ul className="list-disc list-inside space-y-1.5 pl-2 font-medium">
+                  <li>Automatically create a complete database backup before making any changes.</li>
+                  <li>Remove all operational data (patients, visits, reports, billing, results, operational logs, etc.).</li>
+                  <li>Preserve all master data (tests, pricing, departments, users, roles, settings, templates, reference ranges, branches, license, etc.).</li>
+                </ul>
+                
+                <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl">
+                  <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-0.5">Backup Location</span>
+                  <code className="text-xxs font-mono font-bold text-synos-primary">C:\ProgramData\TBZ Labs\SynOS\Backups\</code>
                 </div>
-              )}
+              </div>
 
-              {/* Reset Operational Data Confirmation Dialog */}
-              {showResetDialog && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-                  <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
-                    <h3 className="text-sm font-bold flex items-center gap-2 text-red-600 dark:text-red-400 uppercase tracking-wider">
-                      ⚠️ Reset Operational Data
-                    </h3>
-                    
-                    <div className="space-y-2 text-xs text-zinc-650 dark:text-zinc-400">
-                      <p className="font-semibold text-zinc-800 dark:text-zinc-200">This operation will:</p>
-                      <ul className="list-disc list-inside space-y-1.5 pl-2 font-medium">
-                        <li>Automatically create a complete database backup before making any changes.</li>
-                        <li>Remove all operational data (patients, visits, reports, billing, results, operational logs, etc.).</li>
-                        <li>Preserve all master data (tests, pricing, departments, users, roles, settings, templates, reference ranges, branches, license, etc.).</li>
-                      </ul>
-                      
-                      <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl">
-                        <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-0.5">Backup Location</span>
-                        <code className="text-xxs font-mono font-bold text-synos-primary">C:\ProgramData\TBZ Labs\SynOS\Backups\</code>
-                      </div>
-                    </div>
-
-                    <form onSubmit={handleResetOperationalData} className="space-y-4 pt-2">
-                      {resetError && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xxs font-semibold text-red-600 dark:text-red-450">
-                          {resetError}
-                        </div>
-                      )}
-
-                      <div className="space-y-1.5">
-                        <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wider">
-                          Confirm Administrator Password
-                        </label>
-                        <input
-                          type="password"
-                          required
-                          placeholder="Enter your password"
-                          value={resetPassword}
-                          onChange={e => setResetPassword(e.target.value)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-red-500 transition-colors text-zinc-800 dark:text-zinc-200 shadow-sm"
-                        />
-                      </div>
-
-                      <div className="flex gap-3 pt-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowResetDialog(false);
-                            setResetPassword('');
-                            setResetError('');
-                          }}
-                          disabled={resetting}
-                          className="flex-1 h-10 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-150 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xxs tracking-wider rounded-xl transition-colors flex items-center justify-center"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={resetting}
-                          className="flex-1 h-10 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                        >
-                          {resetting ? 'Backing up & Resetting...' : 'Backup & Reset'}
-                        </button>
-                      </div>
-                    </form>
+              <form onSubmit={handleResetOperationalData} className="space-y-4 pt-2">
+                {resetError && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xxs font-semibold text-red-600 dark:text-red-450">
+                    {resetError}
                   </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wider">
+                    Confirm Administrator Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Enter your password"
+                    value={resetPassword}
+                    onChange={e => setResetPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-red-500 transition-colors text-zinc-800 dark:text-zinc-200 shadow-sm"
+                  />
                 </div>
-              )}
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResetDialog(false);
+                      setResetPassword('');
+                      setResetError('');
+                    }}
+                    disabled={resetting}
+                    className="flex-1 h-10 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-150 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xxs tracking-wider rounded-xl transition-colors flex items-center justify-center"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetting}
+                    className="flex-1 h-10 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {resetting ? 'Backing up & Resetting...' : 'Backup & Reset'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

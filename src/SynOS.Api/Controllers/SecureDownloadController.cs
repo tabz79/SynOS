@@ -23,6 +23,7 @@ public class SecureDownloadController : ControllerBase
     }
 
     [HttpGet("/r/{token}")]
+    [HttpGet("/secure/r/{token}")]
     public async Task<IActionResult> LandingPage(string token)
     {
         // Simple HTML landing page (Premium look)

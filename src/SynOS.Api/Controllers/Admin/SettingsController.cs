@@ -356,6 +356,15 @@ namespace SynOS.Api.Controllers.Admin
                 if (dto.TrustedKey2026v1 != null)
                     SetNodeValue(clientRoot, "TrustedKeys:key-2026-v1", JsonValue.Create(dto.TrustedKey2026v1));
 
+                if (dto.LabId != null)
+                    SetNodeValue(clientRoot, "Middleware:LabId", JsonValue.Create(dto.LabId));
+
+                if (dto.MiddlewareApiUrl != null)
+                    SetNodeValue(clientRoot, "Middleware:ApiUrl", JsonValue.Create(dto.MiddlewareApiUrl));
+
+                if (dto.MiddlewareApiKey != null && dto.MiddlewareApiKey != "********")
+                    SetNodeValue(clientRoot, "Middleware:ApiKey", JsonValue.Create(dto.MiddlewareApiKey));
+
                 var writeOptions = new JsonSerializerOptions { WriteIndented = true };
                 var updatedClientJson = JsonSerializer.Serialize(clientRoot, writeOptions);
                 await System.IO.File.WriteAllTextAsync(clientPath, updatedClientJson);
@@ -364,6 +373,9 @@ namespace SynOS.Api.Controllers.Admin
                 var profile = await _context.LabProfiles.FirstOrDefaultAsync();
                 if (profile != null)
                 {
+                    if (dto.LabId != null)
+                        profile.LabId = dto.LabId;
+
                     if (dto.MiddlewareApiUrl != null)
                         profile.MiddlewareApiUrl = dto.MiddlewareApiUrl;
 
@@ -602,8 +614,27 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                using var client = new System.Net.Http.HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(5);
+                var handler = new System.Net.Http.SocketsHttpHandler
+                {
+                    ConnectCallback = async (context, cancellationToken) =>
+                    {
+                        var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+                        var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+                        socket.NoDelay = true;
+                        try
+                        {
+                            await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
+                            return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                        }
+                        catch
+                        {
+                            socket.Dispose();
+                            throw;
+                        }
+                    }
+                };
+                using var client = new System.Net.Http.HttpClient(handler);
                 if (!string.IsNullOrEmpty(dto.ApiKey))
                 {
                     client.DefaultRequestHeaders.Add("X-Api-Key", dto.ApiKey);
@@ -787,8 +818,27 @@ namespace SynOS.Api.Controllers.Admin
 
             try
             {
-                using var client = new System.Net.Http.HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(5);
+                var handler = new System.Net.Http.SocketsHttpHandler
+                {
+                    ConnectCallback = async (context, cancellationToken) =>
+                    {
+                        var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+                        var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+                        socket.NoDelay = true;
+                        try
+                        {
+                            await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
+                            return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                        }
+                        catch
+                        {
+                            socket.Dispose();
+                            throw;
+                        }
+                    }
+                };
+                using var client = new System.Net.Http.HttpClient(handler);
 
                 var apiUrl = string.IsNullOrWhiteSpace(profile.MiddlewareApiUrl) ? "http://localhost:5069/api/events" : profile.MiddlewareApiUrl;
                 var validateUrl = apiUrl.Replace("/api/events", "/api/labs/validate");
@@ -984,9 +1034,25 @@ namespace SynOS.Api.Controllers.Admin
 
             var userId = _userContext.CurrentUserId;
             var user = await _context.Users.FindAsync(userId);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            if (user == null)
             {
-                return BadRequest(new { error = "Invalid administrator password" });
+                var usernameClaim = User.FindFirst("username")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+                if (!string.IsNullOrEmpty(usernameClaim))
+                {
+                    user = await _context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == usernameClaim.ToLower());
+                }
+            }
+
+            if (user == null)
+            {
+                _logger.LogWarning("ResetOperationalData: Active user context not found. UserId={UserId}", userId);
+                return BadRequest(new { error = "Invalid administrator user context." });
+            }
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            {
+                _logger.LogWarning("ResetOperationalData: Invalid password provided for user {Username}", user.Username);
+                return BadRequest(new { error = "Invalid administrator password." });
             }
 
             // 1. Execute SQL backup first

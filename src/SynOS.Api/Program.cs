@@ -501,7 +501,7 @@ builder.Services.AddScoped<IPrintService, StubPrintService>();
 // Register Domain Event Publishing
 builder.Services.AddScoped<IEventPublishingService, SynOS.Api.Services.EventPublishingService>();
 
-if (!isSetupMode)
+if (!isSetupMode || isConfigured)
 {
     builder.Services.AddHostedService<NotificationWorkerService>();
     // builder.Services.AddHostedService<ExpiredLockCleanupService>();

@@ -35,10 +35,31 @@ namespace SynOS.Api.BackgroundServices
             _logger = logger;
             _serviceProvider = serviceProvider;
             _restoreStateCoordinator = restoreStateCoordinator;
-            _httpClient = new HttpClient();
             
-            _apiUrl = configuration["Middleware:ApiUrl"] ?? "http://localhost:5000/api/events";
-            _apiKey = configuration["Middleware:ApiKey"] ?? "LAB001_SECRET_API_KEY";
+            var handler = new SocketsHttpHandler
+            {
+                ConnectCallback = async (context, cancellationToken) =>
+                {
+                    var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
+                    var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                    var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+                    socket.NoDelay = true;
+                    try
+                    {
+                        await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
+                        return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
+                    }
+                    catch
+                    {
+                        socket.Dispose();
+                        throw;
+                    }
+                }
+            };
+            _httpClient = new HttpClient(handler);
+            
+            _apiUrl = configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events";
+            _apiKey = configuration["Middleware:ApiKey"] ?? "";
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -162,7 +183,8 @@ namespace SynOS.Api.BackgroundServices
                         var pendingCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "Pending" || e.Status == "Failed", stoppingToken);
                         var deadLetterCount = await dbContext.OutboxEvents.CountAsync(e => e.Status == "DeadLetter", stoppingToken);
 
-                        request.Headers.Add("X-Lab-Id", evt.LabId);
+                        var effectiveLabId = !string.IsNullOrWhiteSpace(profile?.LabId) ? profile.LabId : (!string.IsNullOrWhiteSpace(evt.LabId) && evt.LabId != "LAB001" ? evt.LabId : "LAB002");
+                        request.Headers.Add("X-Lab-Id", effectiveLabId);
                         request.Headers.Add("X-Api-Key", apiKey);
                         request.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
                         request.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());

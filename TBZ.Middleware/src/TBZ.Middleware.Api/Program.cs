@@ -118,6 +118,21 @@ builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.EntityContextServ
 builder.Services.AddScoped<TBZ.Middleware.Api.Services.Context.ContextService>();
 builder.Services.AddHostedService<TBZ.Middleware.Api.Services.DiagnosticsReassemblyWorker>();
 
+// Host the background outbox, delivery, and projection workers directly in the API process
+builder.Services.AddHostedService<TBZ.Middleware.Workers.NotificationOutboxWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.WhatsappDeliveryWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.DailyOperationsProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.TestVolumeProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.WorkflowProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.DeliveryProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.PatientDemographicProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.DoctorReferralProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.ReferralPartnerProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.TrendProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.ReferralConversionProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.BusinessSourceProjectionWorker>();
+builder.Services.AddHostedService<TBZ.Middleware.Workers.PatientIntelligenceProjectionWorker>();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -179,9 +194,12 @@ app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? "";
 
-    // 1. Exclude public endpoints (like WhatsApp Webhooks and Swagger)
+    // 1. Exclude public endpoints (like WhatsApp Webhooks, Swagger, and patient report downloads)
     if (path.StartsWith("/api/webhooks/whatsapp", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/api/labs/validate", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/r/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/secure/r/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/api/v1/public/reports/", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/index.html", StringComparison.OrdinalIgnoreCase))
@@ -510,7 +528,7 @@ if (!isMigrationTool)
             WhatsAppPhoneNumberId = "1264980080021563",
             WhatsAppBusinessAccountId = "1052572960618226",
             WhatsAppActiveTemplateName = "report_ready_v2",
-            WhatsAppPublicTunnelUrl = "https://sectors-explain-estate-controllers.trycloudflare.com",
+            WhatsAppPublicTunnelUrl = "https://cloud.tbzlabs.in",
             WhatsAppAccessToken = "EAAS6edbZAxOgBR9wvZBRnuZBwgAg8p6O4NEV4lGOP4ZBraZAybUSMNqMnDmK7LChL6ZAGa5Xtln4rqZB9sqv8aZCqYyZC7jSFjrrc5BFNs4y81kdjWSgNsve5yZA2lXVSicC3CjRvD9vSRdJlUK9UWmBJyelX3iRlfPctBZAOJm0cURjNVW2hmmfBXtfz0J7i85JQZDZD"
         });
         db.SaveChanges();
@@ -709,6 +727,14 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
                         var uriBuilder = new UriBuilder(publicTunnel.TrimEnd('/'));
                         uriBuilder.Path = uri.AbsolutePath;
                         uriBuilder.Query = uri.Query;
+                        if (uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) && uriBuilder.Port == 443)
+                        {
+                            uriBuilder.Port = -1;
+                        }
+                        if (uriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) && uriBuilder.Port == 80)
+                        {
+                            uriBuilder.Port = -1;
+                        }
                         secureReportUrl = uriBuilder.ToString();
                     }
                     catch (Exception ex)
@@ -975,6 +1001,14 @@ app.MapPost("/api/v2/visits/release", async (HttpContext context, ReleasedVisitD
                         var uriBuilder = new UriBuilder(publicTunnel.TrimEnd('/'));
                         uriBuilder.Path = uri.AbsolutePath;
                         uriBuilder.Query = uri.Query;
+                        if (uriBuilder.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase) && uriBuilder.Port == 443)
+                        {
+                            uriBuilder.Port = -1;
+                        }
+                        if (uriBuilder.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase) && uriBuilder.Port == 80)
+                        {
+                            uriBuilder.Port = -1;
+                        }
                         secureReportUrl = uriBuilder.ToString();
                     }
                     catch (Exception ex)
@@ -1095,11 +1129,20 @@ app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContex
 .WithName("ValidateLabApiKey")
 .WithOpenApi();
 
-// Proxy /r/ requests to SynOS.Api on port 59999 so that patient download links work seamlessly through the same Cloudflare tunnel
-app.MapGet("/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+// Helper to proxy requests to SynOS.Api with port 59999 / 59998 fallback
+async Task ProxyToSynOS(string path, HttpContext context, IHttpClientFactory httpClientFactory)
 {
     var client = httpClientFactory.CreateClient();
-    var response = await client.GetAsync($"http://127.0.0.1:59999/r/{token}{context.Request.QueryString}");
+    HttpResponseMessage response;
+    try
+    {
+        response = await client.GetAsync($"http://127.0.0.1:59999{path}{context.Request.QueryString}");
+    }
+    catch
+    {
+        response = await client.GetAsync($"http://127.0.0.1:59998{path}{context.Request.QueryString}");
+    }
+
     context.Response.StatusCode = (int)response.StatusCode;
     foreach (var header in response.Headers)
     {
@@ -1109,38 +1152,28 @@ app.MapGet("/r/{token}", async (string token, HttpContext context, IHttpClientFa
     {
         context.Response.Headers[header.Key] = header.Value.ToArray();
     }
+    context.Response.Headers.Remove("transfer-encoding");
     await response.Content.CopyToAsync(context.Response.Body);
+}
+
+app.MapGet("/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    await ProxyToSynOS($"/r/{token}", context, httpClientFactory);
+});
+
+app.MapGet("/secure/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    await ProxyToSynOS($"/secure/r/{token}", context, httpClientFactory);
 });
 
 app.MapGet("/api/v1/public/reports/download/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
 {
-    var client = httpClientFactory.CreateClient();
-    var response = await client.GetAsync($"http://127.0.0.1:59999/api/v1/public/reports/download/{token}{context.Request.QueryString}");
-    context.Response.StatusCode = (int)response.StatusCode;
-    foreach (var header in response.Headers)
-    {
-        context.Response.Headers[header.Key] = header.Value.ToArray();
-    }
-    foreach (var header in response.Content.Headers)
-    {
-        context.Response.Headers[header.Key] = header.Value.ToArray();
-    }
-    await response.Content.CopyToAsync(context.Response.Body);
+    await ProxyToSynOS($"/api/v1/public/reports/download/{token}", context, httpClientFactory);
 });
 
 app.MapGet("/api/v1/public/reports/download-package/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
 {
-    var client = httpClientFactory.CreateClient();
-    var response = await client.GetAsync($"http://127.0.0.1:59999/api/v1/public/reports/download-package/{token}{context.Request.QueryString}");
-    context.Response.StatusCode = (int)response.StatusCode;
-    foreach (var header in response.Headers)
-    {
-        context.Response.Headers[header.Key] = header.Value.ToArray();
-    }
-    foreach (var header in response.Content.Headers)
-    {
-        context.Response.Headers[header.Key] = header.Value.ToArray();
-    }
+    await ProxyToSynOS($"/api/v1/public/reports/download-package/{token}", context, httpClientFactory);
 });
 
 app.MapGet("/", () =>

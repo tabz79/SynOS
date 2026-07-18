@@ -25,7 +25,8 @@ namespace SynOS.Services.Security
         {
             get
             {
-                var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                  ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
                 return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
             }
         }

@@ -103,7 +103,7 @@ namespace TBZ.Middleware.Infrastructure.Security
                     { "WhatsApp:PhoneNumberId", "1264980080021563" },
                     { "WhatsApp:BusinessAccountId", "1052572960618226" },
                     { "WhatsApp:ActiveTemplateName", "report_ready_v2" },
-                    { "WhatsApp:PublicTunnelUrl", "https://sectors-explain-estate-controllers.trycloudflare.com" },
+                    { "WhatsApp:PublicTunnelUrl", "https://cloud.tbzlabs.in" },
                     { "WhatsApp:AccessToken", "EAAS6edbZAxOgBR9wvZBRnuZBwgAg8p6O4NEV4lGOP4ZBraZAybUSMNqMnDmK7LChL6ZAGa5Xtln4rqZB9sqv8aZCqYyZC7jSFjrrc5BFNs4y81kdjWSgNsve5yZA2lXVSicC3CjRvD9vSRdJlUK9UWmBJyelX3iRlfPctBZAOJm0cURjNVW2hmmfBXtfz0J7i85JQZDZD" }
                 };
             }
