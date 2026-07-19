@@ -15,7 +15,9 @@ import {
     XCircle,
     Zap,
     Plus,
-    X
+    X,
+    Download,
+    Upload
 } from 'lucide-react'
 import { SignalRService } from '@/lib/signalr'
 import { cn } from '@/lib/utils'
@@ -274,13 +276,14 @@ const InventoryDashboard = ({ isConsolidated, setIsConsolidated, selectedBranchI
     );
 };
 
-const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBranchId, setSelectedBranchId, branches, isAdmin }) => {
+const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBranchId, setSelectedBranchId, branches, isAdmin, onAddExistingStock }) => {
     const [stock, setStock] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
     const [lots, setLots] = useState([]);
     const [isLotsLoading, setIsLotsLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const load = async () => {
         try {
@@ -324,10 +327,32 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
 
     return (
         <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-white/5">
+            <QuickItemModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onCreated={() => load()} 
+            />
+
             <div className="flex-1 flex flex-col min-h-0 p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-6 shrink-0">
-                    <h2 className="text-xl font-bold dark:text-white">Stock Ledger</h2>
+                    <h2 className="text-xl font-bold dark:text-white">Inventory</h2>
                     <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex items-center gap-2 text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                New Inventory Item
+                            </button>
+                            <button 
+                                onClick={onAddExistingStock}
+                                className="flex items-center gap-2 text-[10px] font-semibold uppercase text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-200 dark:border-white/5 hover:scale-105 active:scale-95 transition-all"
+                            >
+                                <Package className="w-3.5 h-3.5" />
+                                Add Existing Stock
+                            </button>
+                        </div>
                         {isAdmin && (
                             <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">
                                 <button
@@ -530,14 +555,13 @@ const ReceiveStock = ({ prefilledItem }) => {
     const [suppliers, setSuppliers] = useState([]);
     const [isLoadingItems, setIsLoadingItems] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         itemId: prefilledItem?.itemId || "",
         quantity: "",
         batchNumber: "",
         expiryDate: "",
         unitCost: "0",
-        branchId: prefilledItem?.branchId || "a0000000-0000-0000-0000-000000000001", // Default to Main
+        branchId: prefilledItem?.branchId || "a0000000-0000-0000-0000-000000000001",
         supplierId: ""
     });
 
@@ -566,7 +590,7 @@ const ReceiveStock = ({ prefilledItem }) => {
             setFormData(prev => ({ 
                 ...prev, 
                 itemId: prefilledItem.itemId,
-                branchId: prefilledItem.branchId
+                branchId: prefilledItem.branchId || "a0000000-0000-0000-0000-000000000001"
             }));
         }
     }, [prefilledItem]);
@@ -598,31 +622,14 @@ const ReceiveStock = ({ prefilledItem }) => {
         }
     };
 
-    const handleItemCreated = (newItem) => {
-        setItems(prev => [...prev, newItem].sort((a, b) => a.name.localeCompare(b.name)));
-        setFormData(prev => ({ ...prev, itemId: newItem.itemId }));
-    };
-
     return (
         <div className="flex-1 flex flex-col min-h-0 max-w-2xl mx-auto w-full py-10">
-            <QuickItemModal 
-                isOpen={isModalOpen} 
-                onClose={() => setIsModalOpen(false)} 
-                onCreated={handleItemCreated} 
-            />
 
             <div className="mb-8 flex items-end justify-between px-2">
                 <div>
-                    <h2 className="text-2xl font-semibold dark:text-white mb-2 tracking-tight">Receive Stock</h2>
+                    <h2 className="text-2xl font-semibold dark:text-white mb-2 tracking-tight">Goods Received</h2>
                     <p className="text-zinc-500 font-semibold uppercase text-[10px] tracking-[0.2em]">Goods Received Note (GRN) Entry</p>
                 </div>
-                <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
-                >
-                    <Plus className="w-3 h-3" />
-                    New Item Identity
-                </button>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-white/5 p-10 shadow-2xl flex flex-col gap-8">
@@ -978,7 +985,7 @@ const MovementHistory = () => {
 };
 
 export function InventoryTerminal() {
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState('ledger');
     const [prefilledItem, setPrefilledItem] = useState(null);
     const [serverTime, setServerTime] = useState(new Date().toISOString());
     const [connectionStatus, setConnectionStatus] = useState("Not Synced");
@@ -1023,13 +1030,11 @@ export function InventoryTerminal() {
     };
 
     const tabs = [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { id: 'ledger', label: 'Stock Ledger', icon: ListFilter },
-        { id: 'receive', label: 'Receive Stock', icon: PlusCircle },
-        { id: 'requests', label: 'Requests Queue', icon: ClipboardList },
-        { id: 'procurement', label: 'Procurement', icon: ShoppingCart },
-        { id: 'history', label: 'Movement History', icon: History },
-        { id: 'onboarding', label: 'Add Existing Stock', icon: Package },
+        { id: 'ledger', label: 'Inventory', icon: Package },
+        { id: 'procurement', label: 'Purchase Orders', icon: ShoppingCart },
+        { id: 'receive', label: 'Goods Received', icon: Download },
+        { id: 'requests', label: 'Stock Requests', icon: Upload },
+        { id: 'history', label: 'Stock History', icon: History },
     ];
 
     return (
@@ -1070,7 +1075,7 @@ export function InventoryTerminal() {
                     
                     <nav className="flex-1 overflow-y-auto p-4 pt-8 space-y-2 relative z-10">
                         <div className="px-3 mb-6">
-                            <span className="type-section-header transition-colors">Inventory Ops</span>
+                            <span className="type-section-header transition-colors">Inventory</span>
                         </div>
                         <div className="space-y-1">
                             {tabs.map(tab => (
@@ -1120,6 +1125,7 @@ export function InventoryTerminal() {
                                 selectedBranchId={activeOversightBranchId || user?.branchId} 
                                 branches={branches} 
                                 isAdmin={isAdmin} 
+                                onAddExistingStock={() => setActiveTab('onboarding')}
                             />
                         )}
                         {activeTab === 'receive' && <ReceiveStock prefilledItem={prefilledItem} />}

@@ -105,5 +105,32 @@ namespace SynOS.Api.Controllers
             return Ok(newMap);
         }
 
+        [HttpGet("tubes")]
+        public async Task<IActionResult> GetAllTubes()
+        {
+            var tubes = await _context.ImsTubeMasters.Where(t => t.IsActive).ToListAsync();
+            return Ok(tubes);
+        }
+
+        [HttpGet("tubes/test-map/{testId}")]
+        public async Task<IActionResult> GetTestTubeMappings(Guid testId)
+        {
+            var mappings = await _context.ImsTestTubeMaps
+                .Where(m => m.TestId == testId)
+                .Include(m => m.Tube)
+                .ToListAsync();
+            return Ok(mappings);
+        }
+
+        [HttpDelete("tubes/test-map/{mapId}")]
+        public async Task<IActionResult> DeleteTestTubeMapping(Guid mapId)
+        {
+            var mapping = await _context.ImsTestTubeMaps.FindAsync(mapId);
+            if (mapping == null) return NotFound();
+
+            _context.ImsTestTubeMaps.Remove(mapping);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }

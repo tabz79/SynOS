@@ -141,7 +141,8 @@ namespace SynOS.Tests
 
             var resultServiceMock = new Mock<SynOS.Services.IResultService>();
             var outboxServiceMock = new Mock<SynOS.Models.Events.IMiddlewareOutboxService>();
-            var service = new ProcessingService(db, userContextMock.Object, notifierMock.Object, resultServiceMock.Object, loggerMock.Object, outboxServiceMock.Object);
+            var imsConsumptionMock = new Mock<SynOS.Services.Inventory.IImsConsumptionService>();
+            var service = new ProcessingService(db, userContextMock.Object, notifierMock.Object, resultServiceMock.Object, imsConsumptionMock.Object, loggerMock.Object, outboxServiceMock.Object);
 
             // Act
             var detail = await service.GetAssignmentDetailAsync(assignmentId);

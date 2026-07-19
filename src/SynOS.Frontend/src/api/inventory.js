@@ -120,5 +120,35 @@ export const InventoryApi = {
 
     getSuppliers: async () => {
         return apiClient.get(`${API_BASE}/suppliers`);
+    },
+
+    // Test to Consumable Mappings (TestGovernanceController)
+    getTestConsumables: async (testId) => {
+        return apiClient.get(`/api/v1/governance/tests/${testId}/consumables`);
+    },
+
+    addTestConsumable: async (testId, dto) => {
+        return apiClient.post(`/api/v1/governance/tests/${testId}/consumables`, dto);
+    },
+
+    removeTestConsumable: async (testId, mapId) => {
+        return apiClient.delete(`/api/v1/governance/tests/${testId}/consumables/${mapId}`);
+    },
+
+    // Test to Collection Tube Mappings (IMSTubeAdminController)
+    getTubes: async () => {
+        return apiClient.get(`/api/v1/ims/tubes`);
+    },
+
+    getTestTubes: async (testId) => {
+        return apiClient.get(`/api/v1/ims/tubes/test-map/${testId}`);
+    },
+
+    addTestTube: async (mapDto) => {
+        return apiClient.post(`/api/v1/ims/tubes/test-map`, mapDto);
+    },
+
+    removeTestTube: async (mapId) => {
+        return apiClient.delete(`/api/v1/ims/tubes/test-map/${mapId}`);
     }
 };

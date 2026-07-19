@@ -127,7 +127,7 @@ namespace SynOS.Services
             return po;
         }
 
-        public async Task<ImsConsumableLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId)
+        public async Task<ImsInventoryLot> ReceiveStockAsync(Guid poItemId, ReceiveStockDto dto, Guid userId)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -141,10 +141,10 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Purchase Order Item with ID '{poItemId}' not found.");
             }
             
-            var consumable = await _context.ImsConsumables.FirstOrDefaultAsync(c => c.LegacyTubeId == poItem.TubeId);
-            if (consumable == null)
+            var inventoryItem = await _context.ImsInventoryItems.FindAsync(poItem.TubeId);
+            if (inventoryItem == null)
             {
-                throw new InvalidOperationException($"Could not find a matching Consumable for the legacy TubeId '{poItem.TubeId}' on POItem '{poItemId}'.");
+                throw new InvalidOperationException("Inventory item master record not found for PO item.");
             }
 
             if ((poItem.ReceivedQuantity + dto.Quantity) > poItem.OrderedQuantity)
@@ -152,25 +152,26 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Receiving {dto.Quantity} units would exceed the ordered quantity of {poItem.OrderedQuantity}. {poItem.ReceivedQuantity} units have already been received.");
             }
 
-            var newLot = new ImsConsumableLot
+            var newLot = new ImsInventoryLot
             {
                 LotId = Guid.NewGuid(),
-                ConsumableId = consumable.ConsumableId,
+                ItemId = inventoryItem.ItemId,
                 BranchId = dto.BranchId,
                 BatchNumber = dto.BatchNumber,
                 ExpiryDate = dto.ExpiryDate ?? DateTimeOffset.MaxValue,
-                Quantity = (int)dto.Quantity,
+                ContainerSize = dto.Quantity,
+                CurrentQuantity = dto.Quantity,
+                UnitCostSnapshot = poItem.UnitPrice,
                 ReceivedAt = DateTimeOffset.UtcNow,
-                IsActive = true,
-                CostPerUnit = poItem.UnitPrice
+                IsActive = true
             };
 
             var movement = new ImsStockMovement
             {
                 MovementId = Guid.NewGuid(),
-                ConsumableId = consumable.ConsumableId,
-                ConsumableLotId = newLot.LotId,
-                Quantity = newLot.Quantity,
+                ConsumableId = inventoryItem.ItemId,
+                InventoryLotId = newLot.LotId,
+                Quantity = (int)dto.Quantity,
                 MovementType = StockMovementType.Receive,
                 ReferenceType = MovementReferenceType.Manual,
                 ReferenceId = poItem.POId.ToString(),
@@ -180,7 +181,7 @@ namespace SynOS.Services
 
             poItem.ReceivedQuantity += (int)dto.Quantity;
             
-            await _context.ImsConsumableLots.AddAsync(newLot);
+            await _context.ImsInventoryLots.AddAsync(newLot);
             await _context.ImsStockMovements.AddAsync(movement);
 
             // REMOVED: SpendFact emission here to prevent double-counting.

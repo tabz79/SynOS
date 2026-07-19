@@ -11,6 +11,10 @@ using SynOS.Data;
 using SynOS.Models.Entities;
 using SynOS.Models.Enums;
 using SynOS.Services;
+using SynOS.Models.Entities.IMS;
+using SynOS.Models.Enums.IMS;
+using SynOS.Models.DTOs.IMS;
+using SynOS.Services.Inventory;
 using Xunit;
 
 namespace SynOS.Tests
@@ -21,6 +25,7 @@ namespace SynOS.Tests
         {
             var options = new DbContextOptionsBuilder<SynOSDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
                 .Options;
             return new SynOSDbContext(options);
         }
@@ -144,6 +149,150 @@ namespace SynOS.Tests
             // Assert: verify zero connection dropouts
             var successCount = results.Count(r => r);
             Assert.Equal(1000, successCount);
+        }
+
+        [Fact]
+        public async Task Unified_Inventory_Lot_Fulfillment_Pipeline_Succeeds()
+        {
+            // Arrange
+            using var db = GetDbContext();
+            
+            // Seed a branch
+            var branchId = Guid.NewGuid();
+            var branch = new Branch
+            {
+                BranchId = branchId,
+                Name = "Main Branch",
+                Code = "MB-01",
+                Address = "123 Main St",
+                IsActive = true
+            };
+            db.Branches.Add(branch);
+
+            // Seed a user
+            var userId = Guid.NewGuid();
+            var user = new User
+            {
+                UserId = userId,
+                Username = "testuser",
+                Name = "Test User",
+                PasswordHash = "dummy",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.Users.Add(user);
+
+            // Seed supplier
+            var supplierId = Guid.NewGuid();
+            var supplier = new ImsSupplier
+            {
+                SupplierId = supplierId,
+                Name = "Global Supplies",
+                IsActive = true
+            };
+            db.ImsSuppliers.Add(supplier);
+
+            // Seed ImsInventoryItem (Modern)
+            var itemId = Guid.NewGuid();
+            var inventoryItem = new ImsInventoryItem
+            {
+                ItemId = itemId,
+                ItemCode = "ITEM-01",
+                Name = "Sterilized Syringe 5ml"
+            };
+            db.ImsInventoryItems.Add(inventoryItem);
+
+            // Seed ImsConsumable (Legacy/Standard - shares key value with ItemId)
+            var consumable = new ImsConsumable
+            {
+                ConsumableId = itemId,
+                Code = "ITEM-01",
+                Name = "Sterilized Syringe 5ml",
+                Category = "Consumable",
+                UnitOfMeasure = "pcs",
+                IsActive = true
+            };
+            db.ImsConsumables.Add(consumable);
+
+            // Seed PO and POItem referencing our InventoryItem
+            var poId = Guid.NewGuid();
+            var po = new ImsPurchaseOrder
+            {
+                POId = poId,
+                SupplierId = supplierId,
+                CreatedAt = DateTimeOffset.UtcNow,
+                Status = PurchaseOrderStatus.Approved
+            };
+            db.ImsPurchaseOrders.Add(po);
+
+            var poItemId = Guid.NewGuid();
+            var poItem = new ImsPOItem
+            {
+                POItemId = poItemId,
+                POId = poId,
+                TubeId = itemId, // references ImsInventoryItem.ItemId
+                OrderedQuantity = 100,
+                ReceivedQuantity = 0,
+                UnitPrice = 1.50m
+            };
+            db.ImsPOItems.Add(poItem);
+
+            await db.SaveChangesAsync();
+
+            // Instantiate services
+            var purchasingService = new PurchasingService(db);
+            var requestService = new ImsRequestService(db);
+
+            // Act 1: Receive Stock via PO
+            var receiveDto = new ReceiveStockDto
+            {
+                BranchId = branchId,
+                BatchNumber = "BATCH-A12",
+                Quantity = 50,
+                ExpiryDate = DateTimeOffset.UtcNow.AddYears(1)
+            };
+
+            var lot = await purchasingService.ReceiveStockAsync(poItemId, receiveDto, userId);
+
+            // Assert 1: Lot was created in ImsInventoryLots (unified/canonical table)
+            Assert.NotNull(lot);
+            Assert.Equal(itemId, lot.ItemId);
+            Assert.Equal(50, lot.CurrentQuantity);
+            Assert.Equal("BATCH-A12", lot.BatchNumber);
+
+            var lotInDb = await db.ImsInventoryLots.FindAsync(lot.LotId);
+            Assert.NotNull(lotInDb);
+            Assert.Equal(50, lotInDb.CurrentQuantity);
+
+            // Ensure NO lot was written to the dead-end ImsConsumableLots table
+            var deadEndLot = await db.ImsConsumableLots.FindAsync(lot.LotId);
+            Assert.Null(deadEndLot);
+
+            // Act 2: Create a Stock Request for the same consumable
+            var requestDto = new CreateStockRequestDto
+            {
+                ConsumableId = itemId,
+                Quantity = 20,
+                BranchId = branchId
+            };
+            var requestId = await requestService.CreateRequestAsync(requestDto, userId);
+
+            // Act 3: Fulfill the Stock Request
+            await requestService.FulfillRequestAsync(requestId, userId);
+
+            // Assert 3: Quantity deducted from the exact lot created by PO
+            var updatedLot = await db.ImsInventoryLots.FindAsync(lot.LotId);
+            Assert.NotNull(updatedLot);
+            Assert.Equal(30, updatedLot.CurrentQuantity); // 50 - 20 = 30
+
+            // Assert 4: Fulfill movement references the correct InventoryLotId
+            var movement = await db.ImsStockMovements
+                .FirstOrDefaultAsync(m => m.ReferenceId == requestId.ToString());
+            Assert.NotNull(movement);
+            Assert.Equal(20, movement.Quantity);
+            Assert.Equal(lot.LotId, movement.InventoryLotId);
+            Assert.Null(movement.ConsumableLotId);
         }
     }
 }

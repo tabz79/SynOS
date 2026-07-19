@@ -525,15 +525,22 @@ END
 
         private static void SeedAppointments(SynOSDbContext context)
         {
-            var patient = context.Patients.First(p => p.MRN == "A00001");
+            var patient1 = context.Patients.FirstOrDefault(p => p.MRN == "A00001");
+            var patient2 = context.Patients.FirstOrDefault(p => p.MRN == "A00002");
+
+            if (patient1 == null || patient2 == null)
+            {
+                return; // Seed patients not present, skip appointment seeding
+            }
+
             var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, _labTimeZone).Date;
 
             var appointments = new List<Appointment>
             {
-                new Appointment { PatientId = patient.PatientId, ScheduledFor = today.AddDays(1).AddHours(9),  Department = "Pathology", Status = AppointmentStatus.Booked },
-                new Appointment { PatientId = patient.PatientId, ScheduledFor = today.AddDays(2).AddHours(11), Department = "Radiology", Status = AppointmentStatus.Booked },
-                new Appointment { PatientId = context.Patients.First(p => p.MRN == "A00002").PatientId, ScheduledFor = today.AddHours(10), Department = "Pathology", Status = AppointmentStatus.Booked },
-                new Appointment { PatientId = context.Patients.First(p => p.MRN == "A00002").PatientId, ScheduledFor = today.AddHours(15), Department = "Radiology", Status = AppointmentStatus.Booked },
+                new Appointment { PatientId = patient1.PatientId, ScheduledFor = today.AddDays(1).AddHours(9),  Department = "Pathology", Status = AppointmentStatus.Booked },
+                new Appointment { PatientId = patient1.PatientId, ScheduledFor = today.AddDays(2).AddHours(11), Department = "Radiology", Status = AppointmentStatus.Booked },
+                new Appointment { PatientId = patient2.PatientId, ScheduledFor = today.AddHours(10), Department = "Pathology", Status = AppointmentStatus.Booked },
+                new Appointment { PatientId = patient2.PatientId, ScheduledFor = today.AddHours(15), Department = "Radiology", Status = AppointmentStatus.Booked },
             };
 
             context.Appointments.AddRange(appointments);

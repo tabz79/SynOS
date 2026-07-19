@@ -8,13 +8,13 @@
 
 [Setup]
 AppName=SynOS
-AppVersion=1.3.9
+AppVersion=1.4.1
 AppPublisher=TBZ Labs
 DefaultDirName={commonpf}\TBZ Labs\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v139_final
+OutputBaseFilename=SynOS_Setup_v141_final
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -27,8 +27,8 @@ VersionInfoCompany=TBZ Labs
 VersionInfoCopyright=© TBZ Labs
 VersionInfoDescription=Diagnostics Lab Operating System
 VersionInfoProductName=SynOS
-VersionInfoProductVersion=1.2.2
-VersionInfoVersion=1.2.2.0
+VersionInfoProductVersion=1.4.1
+VersionInfoVersion=1.4.1.0
 
 LicenseFile=scripts\eula.txt
 
