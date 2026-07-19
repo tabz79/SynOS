@@ -142,17 +142,17 @@ namespace SynOS.Services
             var activeLots = await query.ToListAsync();
             var quantityToConsume = tubeMap.QuantityPerSample;
 
-            if (!activeLots.Any() || activeLots.Sum(l => l.CurrentQuantity) < quantityToConsume)
+            var avail = activeLots.Sum(l => l.CurrentQuantity);
+            bool hasShortage = !activeLots.Any() || avail < quantityToConsume;
+
+            if (hasShortage)
             {
-                var avail = activeLots.Sum(l => l.CurrentQuantity);
-                _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Consumption aborted.",
+                _logger.LogWarning("Insufficient stock for Tube {TubeId} at Branch {BranchId}. Required: {Required}, Avail: {Available}. Proceeding with negative stock.",
                    tubeMap.TubeId, branchId, quantityToConsume, avail);
 
-                // Emit Warning Event and Notifier (Existing logic)
-                await _eventWriter.WriteEventAsync(BranchEventType.INVENTORY_SHORTAGE, branchId.ToString(), specimenId.ToString(), specimen.Visit?.Token ?? "UNKNOWN", $"INVENTORY ALERT: Insufficient stock for {tubeMap.TubeId}.", "System", null, false, specimenId, "Specimen");
+                // Emit Warning Event and Notifier (but do NOT abort!)
+                await _eventWriter.WriteEventAsync(BranchEventType.INVENTORY_SHORTAGE, branchId.ToString(), specimenId.ToString(), specimen.Visit?.Token ?? "UNKNOWN", $"INVENTORY ALERT: Insufficient stock for {tubeMap.TubeId}. Proceeding with negative stock.", "System", null, false, specimenId, "Specimen");
                 await _notifier.NotifyInventoryShortageAsync(branchId.ToString(), specimenId.ToString(), tubeMap.TubeId.ToString(), quantityToConsume, (int)avail);
-
-                return false;
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -207,11 +207,84 @@ namespace SynOS.Services
                                 OccurredAt = DateTimeOffset.UtcNow
                             };
 
-                            // We attribute the cost proportional to the total tests or as per policy?
-                            // For a shared tube, we usually attribute it once or split it.
-                            // The design doc says "Record cost based on selected lot prices".
-                            // Here we record it per deduction part.
                             await _factWriter.WriteUsageFactAsync(policyVersion, triggerEvent, unitCost, totalCost, accuracyFlag);
+                        }
+                    }
+                }
+
+                // If remaining is still > 0, deduct the rest from the first lot or create a new negative lot
+                if (remaining > 0)
+                {
+                    ImsTubeLot targetLot;
+                    if (activeLots.Any())
+                    {
+                        targetLot = activeLots.First();
+                    }
+                    else
+                    {
+                        // No active lots at all, find any lot or create one
+                        var anyLot = await _context.ImsTubeLots
+                            .FirstOrDefaultAsync(l => l.TubeId == tubeMap.TubeId && l.BranchId == branchId);
+                        
+                        if (anyLot != null)
+                        {
+                            targetLot = anyLot;
+                        }
+                        else
+                        {
+                            targetLot = new ImsTubeLot
+                            {
+                                LotId = Guid.NewGuid(),
+                                TubeId = tubeMap.TubeId,
+                                BranchId = branchId,
+                                LotNumber = "AUTO-NEG-" + DateTime.UtcNow.ToString("yyyyMMdd"),
+                                ExpiryDate = DateTimeOffset.UtcNow.AddYears(1),
+                                CurrentQuantity = 0,
+                                ReceivedAt = DateTimeOffset.UtcNow,
+                                CostPerUnit = 0.00m
+                            };
+                            await _context.ImsTubeLots.AddAsync(targetLot);
+                        }
+                    }
+
+                    targetLot.CurrentQuantity -= remaining;
+
+                    // Movement Log
+                    var movement = new ImsStockMovement
+                    {
+                        MovementId = Guid.NewGuid(),
+                        TubeId = tubeMap.TubeId,
+                        TubeLotId = targetLot.LotId,
+                        Quantity = remaining,
+                        MovementType = StockMovementType.Consumption,
+                        MovedAt = DateTimeOffset.UtcNow,
+                        RecordedByUserId = consumedByUserId,
+                        ReferenceType = MovementReferenceType.Sample,
+                        ReferenceId = specimenId.ToString()
+                    };
+                    await _context.ImsStockMovements.AddAsync(movement);
+
+                    // ATOMIC COST ATTRIBUTION: Create UsageFacts for each order in the specimen
+                    foreach (var order in specimen.Orders)
+                    {
+                        var policyVersion = await _policyResolver.ResolvePolicyVersionAsync(
+                            order.TestId,
+                            tubeMap.TubeId,
+                            branchId,
+                            DateTimeOffset.UtcNow);
+
+                        if (policyVersion != null)
+                        {
+                            var triggerEvent = new CostingTriggerEvent
+                            {
+                                SourceEventId = specimenId,
+                                SourceEventType = CostAttribution_SourceEventType.TestExecution,
+                                TestId = order.TestId,
+                                BranchId = branchId,
+                                OccurredAt = DateTimeOffset.UtcNow
+                            };
+
+                            await _factWriter.WriteUsageFactAsync(policyVersion, triggerEvent, targetLot.CostPerUnit ?? 0, (targetLot.CostPerUnit ?? 0) * remaining, targetLot.CostPerUnit.HasValue ? null : "Estimated");
                         }
                     }
                 }

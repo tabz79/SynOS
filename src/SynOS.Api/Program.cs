@@ -436,6 +436,7 @@ builder.Services.AddSingleton<ITrustedKeyStore, TrustedKeyStore>();
 builder.Services.AddScoped<IUpdateService, UpdateService>();
 builder.Services.AddSingleton<IBackupKeyProvider, WindowsBackupKeyProvider>();
 builder.Services.AddScoped<IBackupService, BackupService>();
+builder.Services.AddScoped<SynOS.Services.Inventory.IImsConsumptionService, SynOS.Services.Inventory.ImsConsumptionService>();
 builder.Services.AddSingleton<IRestoreStateCoordinator, RestoreStateCoordinator>();
 builder.Services.AddScoped<ISupportService, SupportService>();
 builder.Services.AddScoped<IReportingService, ReportingService>(); // New Reporting Engine

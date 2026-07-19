@@ -22,6 +22,7 @@ using SynOS.Models.ReadModels;
 using System.Text.Json;
 using SynOS.Services.Time;
 using SynOS.Models.Events;
+using SynOS.Services.Inventory;
 
 namespace SynOS.Services
 {
@@ -39,6 +40,7 @@ namespace SynOS.Services
         private readonly IVisitLifecyclePolicy _lifecyclePolicy; // ADDED
         private readonly ILabTimeProvider _labTimeProvider; // ADDED
         private readonly IMiddlewareOutboxService _outboxService;
+        private readonly IImsConsumptionService _consumptionService;
 
         public VisitService(
             SynOSDbContext context,
@@ -52,7 +54,8 @@ namespace SynOS.Services
             IRevenueEngine revenueEngine,
             ILabTimeProvider labTimeProvider,
             IVisitLifecyclePolicy lifecyclePolicy,
-            IMiddlewareOutboxService outboxService) // ADDED
+            IMiddlewareOutboxService outboxService,
+            IImsConsumptionService consumptionService) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -66,6 +69,7 @@ namespace SynOS.Services
             _labTimeProvider = labTimeProvider; // ADDED
             _lifecyclePolicy = lifecyclePolicy; // ADDED
             _outboxService = outboxService ?? throw new ArgumentNullException(nameof(outboxService));
+            _consumptionService = consumptionService;
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -332,6 +336,9 @@ namespace SynOS.Services
                 visit.PatientId // PatientId
             ));
             await _context.SaveChangesAsync();
+
+            // Auto-consume reception stationery/receipt rolls
+            await _consumptionService.ConsumeForVisitAsync(visit.VisitId, actorUserId);
 
             return visit;
         }

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration; // Added for IConfiguration // Added f
 using Microsoft.AspNetCore.Http; // Potentially needed for BadHttpRequestException, as observed previously
 using Microsoft.Extensions.Options;
 using SynOS.Models.Events;
+using SynOS.Services.Inventory;
 
 namespace SynOS.Services;
 
@@ -33,6 +34,7 @@ public class DeliveryService : IDeliveryService
     private readonly IFileStorageService _fileStorageService; // Inject IFileStorageService
     private readonly IMiddlewareOutboxService _outboxService;
     private readonly IConfiguration _configuration;
+    private readonly IImsConsumptionService _consumptionService;
 
     public DeliveryService(
         SynOSDbContext context,
@@ -46,7 +48,8 @@ public class DeliveryService : IDeliveryService
         ILogger<DeliveryService> logger,
         IConfiguration configuration, // Inject IConfiguration
         IFileStorageService fileStorageService,
-        IMiddlewareOutboxService outboxService) // Inject outbox service
+        IMiddlewareOutboxService outboxService,
+        IImsConsumptionService consumptionService) // Inject outbox service
     {
         _context = context;
         _reportService = reportService;
@@ -62,6 +65,7 @@ public class DeliveryService : IDeliveryService
         _publicBaseUrl = configuration["SecureLink:PublicBaseUrl"] ?? "http://127.0.0.1:59999";
         _fileStorageService = fileStorageService;
         _outboxService = outboxService;
+        _consumptionService = consumptionService;
     }
 
     public async Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status)
@@ -265,6 +269,9 @@ public class DeliveryService : IDeliveryService
 
         // Queue print
         await _printService.QueuePrintAsync(reportId, pdfUrl);
+
+        // Auto-consume print materials (paper, ink)
+        await _consumptionService.ConsumeForPrintAsync(report.VisitId, userId);
 
         // Create DeliveryLog
         var deliveryLog = new DeliveryLog

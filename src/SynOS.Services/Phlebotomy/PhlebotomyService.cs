@@ -12,6 +12,7 @@ using SynOS.Services.Operational;
 using SynOS.Services.Security;
 using SynOS.Models.DTOs.Phlebotomy;
 using SynOS.Models.Events;
+using SynOS.Services.Inventory;
 
 namespace SynOS.Services.Phlebotomy
 {
@@ -25,6 +26,7 @@ namespace SynOS.Services.Phlebotomy
         private readonly ISpecimenGroupingService _groupingService;
         private readonly IOperationalEventWriter _operationalEventWriter;
         private readonly ITubeConsumptionService _tubeConsumptionService;
+        private readonly IImsConsumptionService _consumptionService;
         private readonly ILogger<PhlebotomyService> _logger;
         private readonly IMiddlewareOutboxService _outboxService;
 
@@ -37,6 +39,7 @@ namespace SynOS.Services.Phlebotomy
             ISpecimenGroupingService groupingService,
             IOperationalEventWriter operationalEventWriter,
             ITubeConsumptionService tubeConsumptionService,
+            IImsConsumptionService consumptionService,
             ILogger<PhlebotomyService> logger,
             IMiddlewareOutboxService outboxService)
         {
@@ -48,6 +51,7 @@ namespace SynOS.Services.Phlebotomy
             _groupingService = groupingService;
             _operationalEventWriter = operationalEventWriter;
             _tubeConsumptionService = tubeConsumptionService;
+            _consumptionService = consumptionService;
             _logger = logger;
             _outboxService = outboxService;
         }
@@ -440,6 +444,7 @@ namespace SynOS.Services.Phlebotomy
                         if (specimenInstance != null)
                         {
                             await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimenInstance.SpecimenId, _userContext.CurrentUserId);
+                            await _consumptionService.ConsumeForSpecimenAsync(specimenInstance.SpecimenId, _userContext.CurrentUserId);
                         }
                     }
                 }

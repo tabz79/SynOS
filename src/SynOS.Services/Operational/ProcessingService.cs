@@ -13,6 +13,7 @@ using SynOS.Models.Entities.Operations;
 using SynOS.Models.Enums;
 using SynOS.Services.Security;
 using SynOS.Models.Events;
+using SynOS.Services.Inventory;
 
 namespace SynOS.Services.Operational
 {
@@ -24,12 +25,14 @@ namespace SynOS.Services.Operational
         private readonly IResultService _resultService;
         private readonly ILogger<ProcessingService> _logger;
         private readonly IMiddlewareOutboxService _outboxService;
+        private readonly IImsConsumptionService _consumptionService;
 
         public ProcessingService(
             SynOSDbContext db,
             IUserContext userContext,
             INotifier notifier,
             IResultService resultService,
+            IImsConsumptionService consumptionService,
             ILogger<ProcessingService> logger,
             IMiddlewareOutboxService outboxService)
         {
@@ -37,6 +40,7 @@ namespace SynOS.Services.Operational
             _userContext = userContext;
             _notifier = notifier;
             _resultService = resultService;
+            _consumptionService = consumptionService;
             _logger = logger;
             _outboxService = outboxService;
         }
@@ -296,10 +300,17 @@ namespace SynOS.Services.Operational
             try
             {
                 var ordersSw = System.Diagnostics.Stopwatch.StartNew();
-                await _db.Orders
+                var orders = await _db.Orders
                     .Where(o => o.SpecimenId == snapshot.SpecimenId && o.Department == snapshot.DepartmentCode && o.Status != OrderStatus.Cancelled)
-                    .ExecuteUpdateAsync(setters => setters.SetProperty(o => o.Status, OrderStatus.Completed));
-                _logger.LogInformation("Orders Updated ............. {Elapsed} ms", ordersSw.ElapsedMilliseconds);
+                    .ToListAsync();
+
+                foreach (var order in orders)
+                {
+                    order.Status = OrderStatus.Completed;
+                    await _consumptionService.ConsumeForTestAsync(order.OrderId, _userContext.CurrentUserId);
+                }
+                await _db.SaveChangesAsync();
+                _logger.LogInformation("Orders Updated and Reagents Consumed ............. {Elapsed} ms", ordersSw.ElapsedMilliseconds);
 
                 var verifySw = System.Diagnostics.Stopwatch.StartNew();
                 await _resultService.SubmitSpecimenForVerificationAsync(snapshot.SpecimenId, snapshot.DepartmentCode);
