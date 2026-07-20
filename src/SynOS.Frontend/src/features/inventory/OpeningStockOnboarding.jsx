@@ -19,6 +19,7 @@ import {
 import { InventoryApi } from '@/api/inventory';
 import { AdminApi } from '@/api/admin';
 import { useAuth } from '@/context/AuthContext';
+import { INVENTORY_SERVICE_AREAS, RADIOLOGY_MODALITIES } from '@/constants/inventoryConstants';
 
 const cardStyle = {
     background: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ=="), linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
@@ -33,8 +34,8 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
     const [dropdownStyles, setDropdownStyles] = useState({});
     const containerRef = useRef(null);
     const dropdownRef = useRef(null);
-    const [newItem, setNewItem] = useState({ name: '', code: '', unit: 'units', category: 'General' });
-    const [categories, setCategories] = useState(['Pathology', 'Radiology', 'Imaging', 'Consumable', 'Stationery', 'General']);
+    const [newItem, setNewItem] = useState({ name: '', code: '', unit: 'units', category: 'General', serviceArea: 'Laboratory', modality: '' });
+    const [categories, setCategories] = useState(['Pathology', 'Radiology', 'Imaging', 'Consumable', 'Stationery', 'General', 'Test Consumables', 'Tube Consumables']);
     const [isAddingCategory, setIsAddingCategory] = useState(false);
     const [newCategory, setNewCategory] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -106,12 +107,14 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
                 itemCode: newItem.code,
                 unitOfMeasure: newItem.unit,
                 category: newItem.category,
+                serviceArea: newItem.serviceArea,
+                modality: newItem.modality || null,
                 lowStockThreshold: 10
             });
             onChange(result.itemId);
             setIsAddingNew(false);
             setIsOpen(false);
-            setNewItem({ name: '', code: '', unit: 'units', category: 'General' });
+            setNewItem({ name: '', code: '', unit: 'units', category: 'General', serviceArea: 'Laboratory', modality: '' });
         } catch (err) {
             alert("Error: " + err.message);
         } finally {
@@ -196,55 +199,90 @@ const GravityDropdown = ({ items, value, onChange, placeholder = "Select Item...
                                     <input required value={newItem.unit} onChange={e => setNewItem({...newItem, unit: e.target.value})} placeholder="Unit (ml/box)" className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                                 </div>
                                 
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between px-1">
-                                        <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider">Category</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider px-1">Service Area</label>
+                                        <select 
+                                            value={newItem.serviceArea}
+                                            onChange={(e) => {
+                                                const sa = e.target.value;
+                                                setNewItem({
+                                                    ...newItem,
+                                                    serviceArea: sa,
+                                                    category: sa === 'Radiology' ? 'General' : newItem.category,
+                                                    modality: sa === 'Radiology' ? (newItem.modality || RADIOLOGY_MODALITIES[0]) : ''
+                                                });
+                                            }}
+                                            className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all"
+                                        >
+                                            {INVENTORY_SERVICE_AREAS.map(sa => (
+                                                <option key={sa} value={sa}>{sa}</option>
+                                            ))}
+                                        </select>
                                     </div>
-                                    <div className="relative">
-                                        {isAddingCategory ? (
-                                            <div className="flex gap-2">
-                                                <input 
-                                                    autoFocus
-                                                    value={newCategory}
-                                                    onChange={e => setNewCategory(e.target.value)}
-                                                    placeholder="Custom Category..."
-                                                    className="flex-1 bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all"
-                                                />
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (newCategory.trim()) {
-                                                            setCategories([...categories, newCategory.trim()]);
-                                                            setNewItem({...newItem, category: newCategory.trim()});
-                                                            setIsAddingCategory(false);
-                                                            setNewCategory('');
+
+                                    {newItem.serviceArea === 'Radiology' ? (
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider px-1">Radiology Modality</label>
+                                            <select 
+                                                required
+                                                value={newItem.modality}
+                                                onChange={(e) => setNewItem({...newItem, modality: e.target.value})}
+                                                className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all"
+                                            >
+                                                {RADIOLOGY_MODALITIES.map(m => (
+                                                    <option key={m} value={m}>{m}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[9px] font-semibold text-zinc-500 uppercase tracking-wider px-1">Category</label>
+                                            {isAddingCategory ? (
+                                                <div className="flex gap-1">
+                                                    <input 
+                                                        autoFocus
+                                                        value={newCategory}
+                                                        onChange={e => setNewCategory(e.target.value)}
+                                                        placeholder="Custom..."
+                                                        className="flex-1 bg-black/[0.02] border border-black/5 rounded-md px-2 py-1.5 text-xs focus:ring-1 ring-synos-primary outline-none transition-all"
+                                                    />
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (newCategory.trim()) {
+                                                                setCategories([...categories, newCategory.trim()]);
+                                                                setNewItem({...newItem, category: newCategory.trim()});
+                                                                setIsAddingCategory(false);
+                                                                setNewCategory('');
+                                                            }
+                                                        }}
+                                                        className="bg-synos-primary text-white p-1 rounded-md"
+                                                    >
+                                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button type="button" onClick={() => setIsAddingCategory(false)} className="bg-zinc-200 dark:bg-white/10 text-zinc-500 p-1 rounded-md">
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <select 
+                                                    value={newItem.category}
+                                                    onChange={(e) => {
+                                                        if (e.target.value === 'NEW') {
+                                                            setIsAddingCategory(true);
+                                                        } else {
+                                                            setNewItem({...newItem, category: e.target.value});
                                                         }
                                                     }}
-                                                    className="bg-synos-primary text-white p-2 rounded-lg"
+                                                    className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all cursor-pointer"
                                                 >
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                </button>
-                                                <button type="button" onClick={() => setIsAddingCategory(false)} className="bg-zinc-200 dark:bg-white/10 text-zinc-500 p-2 rounded-lg">
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <select 
-                                                value={newItem.category}
-                                                onChange={(e) => {
-                                                    if (e.target.value === 'NEW') {
-                                                        setIsAddingCategory(true);
-                                                    } else {
-                                                        setNewItem({...newItem, category: e.target.value});
-                                                    }
-                                                }}
-                                                className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all cursor-pointer"
-                                            >
-                                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                                <option value="NEW" className="text-synos-primary font-semibold">+ ADD NEW CATEGORY</option>
-                                            </select>
-                                        )}
-                                    </div>
+                                                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                                    <option value="NEW" className="text-synos-primary font-semibold">+ ADD NEW CATEGORY</option>
+                                                </select>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

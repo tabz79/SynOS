@@ -49,6 +49,9 @@ namespace SynOS.Models.DTOs.IMS
         public string BranchName { get; set; }
         public Guid BranchId { get; set; }
         public string Status { get; set; } // Healthy, Low, Critical
+        public string Category { get; set; }
+        public string ServiceArea { get; set; }
+        public string? Modality { get; set; }
     }
 
     public class InventoryLotDto

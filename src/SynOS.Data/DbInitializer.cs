@@ -144,13 +144,24 @@ IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyS
 BEGIN
     ALTER TABLE [RadiologyStudies] ADD [ModalityId] uniqueidentifier NULL;
 END
+
+-- 9. Add columns to IMS_InventoryItems if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_InventoryItems') AND name = 'ServiceArea')
+BEGIN
+    ALTER TABLE [IMS_InventoryItems] ADD [ServiceArea] nvarchar(100) NOT NULL DEFAULT 'Laboratory';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_InventoryItems') AND name = 'Modality')
+BEGIN
+    ALTER TABLE [IMS_InventoryItems] ADD [Modality] nvarchar(100) NULL;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
 
         public static void Initialize(SynOSDbContext context)
         {
-            // context.Database.EnsureCreated();
+            EnsureTablesAndColumnsCreated(context);
             
             SeedBranches(context); // Seed branches first
             SeedRolesAndUsers(context);

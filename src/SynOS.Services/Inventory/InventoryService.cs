@@ -36,10 +36,13 @@ namespace SynOS.Services.Inventory
                                 item.ItemId, 
                                 item.ItemCode, 
                                 ItemName = item.Name, 
+                                item.ServiceArea,
+                                item.Modality,
                                 branch.BranchId, 
                                 BranchName = branch.Name, 
                                 meta.UnitOfMeasure, 
-                                meta.LowStockThreshold 
+                                meta.LowStockThreshold,
+                                meta.Category
                             } into g
                             select new InventoryStockDto
                             {
@@ -50,6 +53,9 @@ namespace SynOS.Services.Inventory
                                 Unit = g.Key.UnitOfMeasure ?? "units",
                                 BranchName = g.Key.BranchName,
                                 BranchId = g.Key.BranchId,
+                                Category = g.Key.Category ?? "General",
+                                ServiceArea = g.Key.ServiceArea ?? "Laboratory",
+                                Modality = g.Key.Modality,
                                 Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
                                          g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
                             };
@@ -71,8 +77,11 @@ namespace SynOS.Services.Inventory
                                 item.ItemId, 
                                 item.ItemCode, 
                                 ItemName = item.Name, 
+                                item.ServiceArea,
+                                item.Modality,
                                 meta.UnitOfMeasure, 
-                                meta.LowStockThreshold 
+                                meta.LowStockThreshold,
+                                meta.Category
                             } into g
                             select new InventoryStockDto
                             {
@@ -83,6 +92,9 @@ namespace SynOS.Services.Inventory
                                 Unit = g.Key.UnitOfMeasure ?? "units",
                                 BranchName = "All Branches",
                                 BranchId = emptyGuid,
+                                Category = g.Key.Category ?? "General",
+                                ServiceArea = g.Key.ServiceArea ?? "Laboratory",
+                                Modality = g.Key.Modality,
                                 Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
                                          g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
                             };
@@ -121,6 +133,33 @@ namespace SynOS.Services.Inventory
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                ImsPOItem? poItem = null;
+                ImsPurchaseOrder? purchaseOrder = null;
+
+                if (dto.POItemId.HasValue)
+                {
+                    poItem = await _context.ImsPOItems
+                        .Include(pi => pi.PurchaseOrder)
+                            .ThenInclude(po => po.Supplier)
+                        .FirstOrDefaultAsync(pi => pi.POItemId == dto.POItemId.Value);
+                }
+                else if (dto.POId.HasValue)
+                {
+                    poItem = await _context.ImsPOItems
+                        .Include(pi => pi.PurchaseOrder)
+                            .ThenInclude(po => po.Supplier)
+                        .FirstOrDefaultAsync(pi => pi.POId == dto.POId.Value && pi.TubeId == dto.ItemId);
+                }
+
+                if (poItem != null)
+                {
+                    purchaseOrder = poItem.PurchaseOrder;
+                    poItem.ReceivedQuantity += (int)dto.Quantity;
+                }
+
+                var supplierId = dto.SupplierId ?? purchaseOrder?.SupplierId;
+                var unitCost = dto.UnitCost > 0 ? dto.UnitCost : (poItem?.UnitPrice ?? 0);
+
                 // 1. Create a new Inventory Lot for this receipt
                 var lot = new ImsInventoryLot
                 {
@@ -129,7 +168,7 @@ namespace SynOS.Services.Inventory
                     BatchNumber = dto.BatchNumber,
                     CurrentQuantity = dto.Quantity,
                     ContainerSize = dto.Quantity,
-                    UnitCostSnapshot = dto.UnitCost,
+                    UnitCostSnapshot = unitCost,
                     ExpiryDate = dto.ExpiryDate,
                     BranchId = dto.BranchId,
                     ReceivedAt = DateTimeOffset.UtcNow,
@@ -148,25 +187,31 @@ namespace SynOS.Services.Inventory
                     MovedAt = DateTimeOffset.UtcNow,
                     RecordedByUserId = recordedByUserId,
                     ReferenceType = MovementReferenceType.GRN,
-                    ReferenceId = lot.LotId.ToString() // Reference the lot we just created
+                    ReferenceId = purchaseOrder != null ? purchaseOrder.POId.ToString() : lot.LotId.ToString()
                 };
 
                 _context.ImsStockMovements.Add(movement);
 
                 // 3. CREATE VENDOR PAYABLE (Bridge to Finance)
-                if (dto.SupplierId.HasValue && dto.UnitCost > 0)
+                if (supplierId.HasValue && unitCost > 0)
                 {
-                    var supplier = await _context.ImsSuppliers.FindAsync(dto.SupplierId.Value);
-                    var totalAmount = dto.Quantity * dto.UnitCost;
+                    var supplierName = purchaseOrder?.Supplier?.Name;
+                    if (string.IsNullOrEmpty(supplierName))
+                    {
+                        var supplier = await _context.ImsSuppliers.FindAsync(supplierId.Value);
+                        supplierName = supplier?.Name ?? "Unknown Supplier";
+                    }
+
+                    var totalAmount = dto.Quantity * unitCost;
 
                     var vendorPayable = new VendorPayable
                     {
                         VendorPayableId = Guid.NewGuid(),
-                        VendorId = dto.SupplierId,
-                        VendorName = supplier?.Name ?? "Unknown Supplier",
+                        VendorId = supplierId,
+                        VendorName = supplierName,
                         Amount = totalAmount,
-                        ReferenceType = "MANUAL-GRN",
-                        ReferenceId = lot.LotId,
+                        ReferenceType = purchaseOrder != null ? "PO" : "MANUAL-GRN",
+                        ReferenceId = purchaseOrder?.POId ?? lot.LotId,
                         Status = VendorPayableStatus.Pending,
                         CreatedAt = DateTime.UtcNow
                     };
@@ -323,7 +368,9 @@ namespace SynOS.Services.Inventory
             {
                 ItemId = Guid.NewGuid(),
                 ItemCode = string.IsNullOrWhiteSpace(dto.ItemCode) ? Guid.NewGuid().ToString().Substring(0, 8).ToUpper() : dto.ItemCode,
-                Name = dto.Name
+                Name = dto.Name,
+                ServiceArea = string.IsNullOrWhiteSpace(dto.ServiceArea) ? "Laboratory" : dto.ServiceArea,
+                Modality = string.IsNullOrWhiteSpace(dto.Modality) ? null : dto.Modality
             };
 
             _context.ImsInventoryItems.Add(item);

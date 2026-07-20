@@ -24,5 +24,9 @@ namespace SynOS.Models.DTOs.IMS
         public decimal UnitCost { get; set; }
         
         public Guid? SupplierId { get; set; }
+
+        public Guid? POId { get; set; }
+
+        public Guid? POItemId { get; set; }
     }
 }

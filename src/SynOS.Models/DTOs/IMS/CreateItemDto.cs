@@ -9,5 +9,7 @@ namespace SynOS.Models.DTOs.IMS
         public string UnitOfMeasure { get; set; }
         public decimal LowStockThreshold { get; set; }
         public string Category { get; set; }
+        public string ServiceArea { get; set; } = "Laboratory";
+        public string? Modality { get; set; }
     }
 }

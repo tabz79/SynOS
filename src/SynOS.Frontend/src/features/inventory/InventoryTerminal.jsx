@@ -22,11 +22,13 @@ import {
 import { SignalRService } from '@/lib/signalr'
 import { cn } from '@/lib/utils'
 import { InventoryApi } from '@/api/inventory'
+import { PurchasingApi } from '@/api/purchasing'
 import { OpeningStockOnboarding } from './OpeningStockOnboarding'
 import { ProcurementTerminal } from './ProcurementTerminal'
 import { ShoppingCart } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { AdminApi } from '@/api/admin'
+import { INVENTORY_SERVICE_AREAS, RADIOLOGY_MODALITIES } from '@/constants/inventoryConstants'
 
 const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
     const [formData, setFormData] = useState({
@@ -34,7 +36,9 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
         itemCode: '',
         unitOfMeasure: 'units',
         lowStockThreshold: 10,
-        category: 'General'
+        category: 'General',
+        serviceArea: 'Laboratory',
+        modality: ''
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -111,6 +115,58 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
                                     className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
                                 />
                             </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Service Area</label>
+                                <select 
+                                    value={formData.serviceArea}
+                                    onChange={(e) => {
+                                        const sa = e.target.value;
+                                        setFormData({
+                                            ...formData, 
+                                            serviceArea: sa,
+                                            category: sa === 'Radiology' ? 'General' : formData.category,
+                                            modality: sa === 'Radiology' ? (formData.modality || RADIOLOGY_MODALITIES[0]) : ''
+                                        });
+                                    }}
+                                    className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                >
+                                    {INVENTORY_SERVICE_AREAS.map(sa => (
+                                        <option key={sa} value={sa}>{sa}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {formData.serviceArea === 'Radiology' ? (
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Radiology Modality</label>
+                                    <select 
+                                        required
+                                        value={formData.modality}
+                                        onChange={(e) => setFormData({...formData, modality: e.target.value})}
+                                        className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                    >
+                                        {RADIOLOGY_MODALITIES.map(m => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Category</label>
+                                    <select 
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        className="bg-zinc-100 dark:bg-zinc-800/50 border-none rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                    >
+                                        <option value="General">General</option>
+                                        <option value="Test Consumables">Test Consumables</option>
+                                        <option value="Tube Consumables">Tube Consumables</option>
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -284,6 +340,12 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
     const [lots, setLots] = useState([]);
     const [isLotsLoading, setIsLotsLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedServiceArea, setSelectedServiceArea] = useState("All");
+    const [selectedModality, setSelectedModality] = useState("All");
+    const categories = ["All", "General", "Test Consumables", "Tube Consumables"];
+    const serviceAreas = ["All", ...INVENTORY_SERVICE_AREAS];
+    const modalities = ["All", ...RADIOLOGY_MODALITIES];
 
     const load = async () => {
         try {
@@ -321,8 +383,15 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
     };
 
     const filteredStock = stock.filter(s => {
-        return s.itemName.toLowerCase().includes(search.toLowerCase()) || 
-               s.itemCode.toLowerCase().includes(search.toLowerCase());
+        const matchesSearch = s.itemName.toLowerCase().includes(search.toLowerCase()) || 
+                              s.itemCode.toLowerCase().includes(search.toLowerCase());
+        const matchesCategory = selectedServiceArea === "Radiology" || selectedCategory === "All" || 
+                                (s.category || "General") === selectedCategory;
+        const matchesServiceArea = selectedServiceArea === "All" || 
+                                   (s.serviceArea || "Laboratory") === selectedServiceArea;
+        const matchesModality = selectedModality === "All" || 
+                                (s.modality || "") === selectedModality;
+        return matchesSearch && matchesCategory && matchesServiceArea && matchesModality;
     });
 
     return (
@@ -387,6 +456,73 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                             className="bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-4 py-2 text-sm focus:ring-1 ring-synos-primary w-64 outline-none"
                         />
                     </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mb-6 border-b border-zinc-100 dark:border-white/5 pb-4 shrink-0">
+                    <div className="flex items-center gap-2 overflow-x-auto">
+                        <span className="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider min-w-24">Service Area:</span>
+                        {serviceAreas.map(sa => (
+                            <button
+                                key={sa}
+                                onClick={() => {
+                                    setSelectedServiceArea(sa);
+                                    if (sa === 'Radiology') {
+                                        setSelectedCategory('All');
+                                    } else {
+                                        setSelectedModality('All');
+                                    }
+                                }}
+                                className={cn(
+                                    "px-3 py-1 text-xs font-bold transition-all border rounded-xl shrink-0",
+                                    selectedServiceArea === sa
+                                        ? "bg-synos-primary/10 border-synos-primary/30 text-synos-primary"
+                                        : "bg-transparent border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                {sa}
+                            </button>
+                        ))}
+                    </div>
+
+                    {selectedServiceArea === 'Radiology' && (
+                        <div className="flex items-center gap-2 overflow-x-auto">
+                            <span className="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider min-w-24">Modality:</span>
+                            {modalities.map(m => (
+                                <button
+                                    key={m}
+                                    onClick={() => setSelectedModality(m)}
+                                    className={cn(
+                                        "px-3 py-1 text-xs font-bold transition-all border rounded-xl shrink-0",
+                                        selectedModality === m
+                                            ? "bg-synos-primary/10 border-synos-primary/30 text-synos-primary"
+                                            : "bg-transparent border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    {m}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {selectedServiceArea !== 'Radiology' && (
+                        <div className="flex items-center gap-2 overflow-x-auto">
+                            <span className="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider min-w-24">Category:</span>
+                            {categories.map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={cn(
+                                        "px-3 py-1 text-xs font-bold transition-all border rounded-xl shrink-0",
+                                        selectedCategory === cat
+                                            ? "bg-synos-primary/10 border-synos-primary/30 text-synos-primary"
+                                            : "bg-transparent border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
@@ -553,6 +689,9 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
 const ReceiveStock = ({ prefilledItem }) => {
     const [items, setItems] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
+    const [purchaseOrders, setPurchaseOrders] = useState([]);
+    const [selectedPOId, setSelectedPOId] = useState("");
+    const [poItemsList, setPoItemsList] = useState([]);
     const [isLoadingItems, setIsLoadingItems] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
@@ -562,18 +701,22 @@ const ReceiveStock = ({ prefilledItem }) => {
         expiryDate: "",
         unitCost: "0",
         branchId: prefilledItem?.branchId || "a0000000-0000-0000-0000-000000000001",
-        supplierId: ""
+        supplierId: "",
+        poId: null,
+        poItemId: null
     });
 
     const loadData = async () => {
         setIsLoadingItems(true);
         try {
-            const [itemsData, suppliersData] = await Promise.all([
+            const [itemsData, suppliersData, poData] = await Promise.all([
                 InventoryApi.getInventoryItems(),
-                InventoryApi.getSuppliers()
+                InventoryApi.getSuppliers(),
+                PurchasingApi.getPurchaseOrders().catch(() => [])
             ]);
-            setItems(itemsData);
-            setSuppliers(suppliersData);
+            setItems(itemsData || []);
+            setSuppliers(suppliersData || []);
+            setPurchaseOrders(poData || []);
         } catch (e) {
             console.error(e);
         } finally {
@@ -595,6 +738,66 @@ const ReceiveStock = ({ prefilledItem }) => {
         }
     }, [prefilledItem]);
 
+    const handleSelectPO = async (poId) => {
+        setSelectedPOId(poId);
+        if (!poId) {
+            setPoItemsList([]);
+            setFormData(prev => ({
+                ...prev,
+                poId: null,
+                poItemId: null,
+                supplierId: "",
+                unitCost: "0"
+            }));
+            return;
+        }
+
+        const po = purchaseOrders.find(p => p.poId === poId);
+        try {
+            const poDetails = await PurchasingApi.getPurchaseOrder(poId);
+            const poItems = await PurchasingApi.getPOItems(poId);
+            setPoItemsList(poItems || []);
+
+            const suppId = poDetails?.supplierId || po?.supplierId || "";
+
+            if (poItems && poItems.length > 0) {
+                const first = poItems[0];
+                const remaining = Math.max(0, (first.orderedQuantity || 0) - (first.receivedQuantity || 0));
+                setFormData(prev => ({
+                    ...prev,
+                    poId: poId,
+                    poItemId: first.poItemId,
+                    itemId: first.tubeId || prev.itemId,
+                    supplierId: suppId || prev.supplierId,
+                    quantity: remaining > 0 ? remaining.toString() : prev.quantity,
+                    unitCost: (first.unitPrice || 0).toString()
+                }));
+            } else {
+                setFormData(prev => ({
+                    ...prev,
+                    poId: poId,
+                    poItemId: null,
+                    supplierId: suppId || prev.supplierId
+                }));
+            }
+        } catch (err) {
+            console.error("Failed to auto-populate PO details", err);
+        }
+    };
+
+    const handleSelectPOItem = (poItemId) => {
+        const poItem = poItemsList.find(i => i.poItemId === poItemId);
+        if (!poItem) return;
+        const remaining = Math.max(0, (poItem.orderedQuantity || 0) - (poItem.receivedQuantity || 0));
+        setFormData(prev => ({
+            ...prev,
+            poItemId: poItemId,
+            itemId: poItem.tubeId || prev.itemId,
+            quantity: remaining > 0 ? remaining.toString() : prev.quantity,
+            unitCost: (poItem.unitPrice || 0).toString()
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -603,9 +806,11 @@ const ReceiveStock = ({ prefilledItem }) => {
                 ...formData,
                 quantity: parseFloat(formData.quantity),
                 unitCost: parseFloat(formData.unitCost),
-                supplierId: formData.supplierId || null
+                supplierId: formData.supplierId || null,
+                poId: formData.poId || null,
+                poItemId: formData.poItemId || null
             });
-            alert("Stock received and logged successfully");
+            alert("Stock received and logged successfully. Vendor Payable created in Finance.");
             setFormData({
                 itemId: "",
                 quantity: "",
@@ -613,8 +818,12 @@ const ReceiveStock = ({ prefilledItem }) => {
                 expiryDate: "",
                 unitCost: "0",
                 branchId: formData.branchId,
-                supplierId: ""
+                supplierId: "",
+                poId: null,
+                poItemId: null
             });
+            setSelectedPOId("");
+            setPoItemsList([]);
         } catch (e) {
             alert(e.message);
         } finally {
@@ -634,6 +843,49 @@ const ReceiveStock = ({ prefilledItem }) => {
 
             <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900/50 rounded-[2.5rem] border border-zinc-200 dark:border-white/5 p-10 shadow-2xl flex flex-col gap-8">
                 <div className="grid grid-cols-1 gap-6">
+                    {/* PO Link Selector */}
+                    <div className="flex flex-col gap-2 p-4 bg-synos-primary/5 border border-synos-primary/20 rounded-2xl">
+                        <div className="flex items-center justify-between ml-2">
+                            <label className="text-[10px] font-bold uppercase text-synos-primary tracking-wider">Search / Select Purchase Order (Optional)</label>
+                            {selectedPOId && (
+                                <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md uppercase">✓ Auto-Populated from PO</span>
+                            )}
+                        </div>
+                        <select 
+                            value={selectedPOId}
+                            onChange={(e) => handleSelectPO(e.target.value)}
+                            className="bg-white dark:bg-zinc-800 border border-black/5 dark:border-white/10 rounded-xl px-5 py-3 text-sm font-semibold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                        >
+                            <option value="">Manual Entry (No PO Link)...</option>
+                            {purchaseOrders.map(po => {
+                                const poNum = `PO-${po.poId.substring(0, 8).toUpperCase()}`;
+                                const vendorName = po.supplier?.name || "Supplier";
+                                return (
+                                    <option key={po.poId} value={po.poId}>
+                                        {poNum} — {vendorName} ({po.status})
+                                    </option>
+                                );
+                            })}
+                        </select>
+
+                        {selectedPOId && poItemsList.length > 1 && (
+                            <div className="flex flex-col gap-1 mt-2">
+                                <label className="text-[9px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">PO Position / Line Item</label>
+                                <select 
+                                    value={formData.poItemId || ""}
+                                    onChange={(e) => handleSelectPOItem(e.target.value)}
+                                    className="bg-white dark:bg-zinc-800 border border-black/5 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs font-semibold focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white"
+                                >
+                                    {poItemsList.map(item => (
+                                        <option key={item.poItemId} value={item.poItemId}>
+                                            {item.tube?.name || "Item"} — Ordered: {item.orderedQuantity}, Received: {item.receivedQuantity} @ ₹{item.unitPrice}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="flex flex-col gap-2">
                         <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Item</label>
                         <select 

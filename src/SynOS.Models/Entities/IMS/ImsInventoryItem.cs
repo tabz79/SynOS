@@ -19,5 +19,12 @@ namespace SynOS.Models.Entities.IMS
         [Required]
         [StringLength(200)]
         public string Name { get; set; }
+
+        [Required]
+        [StringLength(100)]
+        public string ServiceArea { get; set; } = "Laboratory";
+
+        [StringLength(100)]
+        public string? Modality { get; set; }
     }
 }

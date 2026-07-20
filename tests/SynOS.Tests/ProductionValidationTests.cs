@@ -294,5 +294,139 @@ namespace SynOS.Tests
             Assert.Equal(lot.LotId, movement.InventoryLotId);
             Assert.Null(movement.ConsumableLotId);
         }
+
+        [Fact]
+        public async Task InventoryItem_Classification_ServiceArea_And_Modality_Persists_And_Projects()
+        {
+            var dbName = Guid.NewGuid().ToString();
+            var options = new DbContextOptionsBuilder<SynOSDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+
+            using var db = new SynOSDbContext(options);
+            var service = new InventoryService(db);
+
+            var dto = new CreateItemDto
+            {
+                Name = "MRI Contrast Agent 50ml",
+                ItemCode = "RAD-MRI-01",
+                UnitOfMeasure = "vial",
+                LowStockThreshold = 5,
+                Category = "General",
+                ServiceArea = "Radiology",
+                Modality = "MRI"
+            };
+
+            // Act: Create Item
+            var created = await service.CreateItemAsync(dto);
+
+            // Assert: Persisted directly on IMS_InventoryItems
+            Assert.NotNull(created);
+            Assert.Equal("Radiology", created.ServiceArea);
+            Assert.Equal("MRI", created.Modality);
+
+            var itemInDb = await db.ImsInventoryItems.FindAsync(created.ItemId);
+            Assert.NotNull(itemInDb);
+            Assert.Equal("Radiology", itemInDb.ServiceArea);
+            Assert.Equal("MRI", itemInDb.Modality);
+
+            // Seed a lot so it appears in GetStockLedgerAsync
+            db.ImsInventoryLots.Add(new ImsInventoryLot
+            {
+                LotId = Guid.NewGuid(),
+                ItemId = created.ItemId,
+                BranchId = Guid.NewGuid(),
+                BatchNumber = "BATCH-RAD-01",
+                CurrentQuantity = 10,
+                IsActive = true
+            });
+            await db.SaveChangesAsync();
+
+            // Act: Query Stock Ledger
+            var ledger = (await service.GetStockLedgerAsync(null)).ToList();
+
+            // Assert: Projected correctly into InventoryStockDto
+            var stockItem = ledger.FirstOrDefault(s => s.ItemId == created.ItemId);
+            Assert.NotNull(stockItem);
+            Assert.Equal("Radiology", stockItem.ServiceArea);
+            Assert.Equal("MRI", stockItem.Modality);
+        }
+
+        [Fact]
+        public async Task ReceiveStockAsync_With_POId_Updates_POItem_And_Generates_VendorPayable()
+        {
+            var dbName = Guid.NewGuid().ToString();
+            var options = new DbContextOptionsBuilder<SynOSDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
+                .Options;
+
+            using var db = new SynOSDbContext(options);
+            var service = new InventoryService(db);
+
+            var supplierId = Guid.NewGuid();
+            var supplier = new ImsSupplier
+            {
+                SupplierId = supplierId,
+                Name = "MedTech Corp",
+                IsActive = true
+            };
+            db.ImsSuppliers.Add(supplier);
+
+            var itemId = Guid.NewGuid();
+            db.ImsInventoryItems.Add(new ImsInventoryItem
+            {
+                ItemId = itemId,
+                Name = "Test Reagent",
+                ItemCode = "TR-01"
+            });
+
+            var poId = Guid.NewGuid();
+            var po = new ImsPurchaseOrder
+            {
+                POId = poId,
+                SupplierId = supplierId,
+                Status = PurchaseOrderStatus.Approved,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            db.ImsPurchaseOrders.Add(po);
+
+            var poItemId = Guid.NewGuid();
+            var poItem = new ImsPOItem
+            {
+                POItemId = poItemId,
+                POId = poId,
+                TubeId = itemId,
+                OrderedQuantity = 100,
+                ReceivedQuantity = 0,
+                UnitPrice = 50.00m
+            };
+            db.ImsPOItems.Add(poItem);
+            await db.SaveChangesAsync();
+
+            var dto = new ReceiveStockDto
+            {
+                ItemId = itemId,
+                Quantity = 100,
+                BatchNumber = "BATCH-PO-001",
+                BranchId = Guid.NewGuid(),
+                POId = poId,
+                POItemId = poItemId
+            };
+
+            // Act
+            await service.ReceiveStockAsync(dto, Guid.NewGuid());
+
+            // Assert
+            var updatedPoItem = await db.ImsPOItems.FindAsync(poItemId);
+            Assert.NotNull(updatedPoItem);
+            Assert.Equal(100, updatedPoItem.ReceivedQuantity);
+
+            var payable = await db.VendorPayables.FirstOrDefaultAsync(p => p.ReferenceId == poId);
+            Assert.NotNull(payable);
+            Assert.Equal("MedTech Corp", payable.VendorName);
+            Assert.Equal(5000.00m, payable.Amount);
+            Assert.Equal("PO", payable.ReferenceType);
+        }
     }
 }

@@ -294,6 +294,15 @@ namespace SynOS.Api.Controllers.Admin
                         @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'ShowNarrative' AND Object_ID = OBJECT_ID(N'Parameters'))
                           BEGIN
                               ALTER TABLE [Parameters] ADD [ShowNarrative] bit NOT NULL DEFAULT 0;
+                          END",
+                        // v10: IMS_InventoryItems ServiceArea and Modality
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'ServiceArea' AND Object_ID = OBJECT_ID(N'IMS_InventoryItems'))
+                          BEGIN
+                              ALTER TABLE [IMS_InventoryItems] ADD [ServiceArea] nvarchar(100) NOT NULL DEFAULT 'Laboratory';
+                          END",
+                        @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Modality' AND Object_ID = OBJECT_ID(N'IMS_InventoryItems'))
+                          BEGIN
+                              ALTER TABLE [IMS_InventoryItems] ADD [Modality] nvarchar(100) NULL;
                           END"
                     };
 
