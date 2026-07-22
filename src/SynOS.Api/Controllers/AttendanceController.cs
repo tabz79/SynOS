@@ -39,8 +39,39 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost("request-leave")]
-        public async Task<IActionResult> SubmitLeave([FromBody] SynOS.Models.Entities.Leave.LeaveRequest request, [FromServices] IHrmsOperationService opService)
+        public async Task<IActionResult> SubmitLeave([FromBody] SynOS.Models.Entities.Leave.LeaveRequest request, [FromServices] IHrmsOperationService opService, [FromServices] SynOS.Data.SynOSDbContext context)
         {
+            if (request.EmployeeId == Guid.Empty)
+            {
+                var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+                Guid.TryParse(userIdStr, out var userId);
+                var userName = User.FindFirst("username")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value;
+
+                var emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(context.Employees, e => e.UserId == userId || e.EmployeeId == userId);
+                if (emp == null && !string.IsNullOrEmpty(userName))
+                {
+                    var cleanName = userName.ToLower().Replace("dr.", "").Trim();
+                    emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                        context.Employees,
+                        e => (e.FirstName + " " + e.LastName).ToLower().Contains(cleanName) || e.JobTitle.ToLower().Contains(cleanName)
+                    );
+                }
+
+                if (emp != null)
+                {
+                    request.EmployeeId = emp.EmployeeId;
+                    if (emp.UserId == null && userId != Guid.Empty)
+                    {
+                        emp.UserId = userId;
+                        await context.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    request.EmployeeId = userId;
+                }
+            }
+
             var result = await opService.SubmitLeaveRequestAsync(request);
             return Ok(result);
         }
@@ -99,6 +130,99 @@ namespace SynOS.Api.Controllers
                 })
             );
             return Ok(pending);
+        }
+
+        [HttpGet("my-summary")]
+        public async Task<IActionResult> GetMySummary([FromServices] SynOS.Data.SynOSDbContext context, [FromQuery] string? month = null)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            Guid.TryParse(userIdStr, out var userId);
+            var userName = User.FindFirst("username")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value;
+
+            var emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(context.Employees, e => e.UserId == userId || e.EmployeeId == userId);
+            if (emp == null && !string.IsNullOrEmpty(userName))
+            {
+                var cleanName = userName.ToLower().Replace("dr.", "").Trim();
+                emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    context.Employees,
+                    e => (e.FirstName + " " + e.LastName).ToLower().Contains(cleanName) || e.JobTitle.ToLower().Contains(cleanName)
+                );
+            }
+
+            if (emp == null)
+            {
+                emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(context.Employees, e => e.IsActive);
+            }
+
+            if (emp == null) return NotFound("No employee profile found for active account.");
+
+            if (emp.UserId == null && userId != Guid.Empty)
+            {
+                emp.UserId = userId;
+                await context.SaveChangesAsync();
+            }
+
+            DateOnly targetMonth = DateOnly.FromDateTime(DateTime.UtcNow);
+            if (!string.IsNullOrEmpty(month))
+            {
+                if (DateOnly.TryParse(month, out var parsed))
+                {
+                    targetMonth = parsed;
+                }
+                else if (DateTime.TryParse(month, out var dtParsed))
+                {
+                    targetMonth = DateOnly.FromDateTime(dtParsed);
+                }
+            }
+
+            var summary = await _hrmsService.GetAttendanceLeaveSummaryAsync(emp.EmployeeId, targetMonth);
+            return Ok(new {
+                employeeId = emp.EmployeeId,
+                employeeName = $"{emp.FirstName} {emp.LastName}",
+                jobTitle = emp.JobTitle,
+                paidLeaveQuota = emp.MonthlyPaidLeaveQuota,
+                summary
+            });
+        }
+
+        [HttpGet("my-requests")]
+        public async Task<IActionResult> GetMyRequests([FromServices] SynOS.Data.SynOSDbContext context)
+        {
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            Guid.TryParse(userIdStr, out var userId);
+            var userName = User.FindFirst("username")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value;
+
+            var emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(context.Employees, e => e.UserId == userId || e.EmployeeId == userId);
+            if (emp == null && !string.IsNullOrEmpty(userName))
+            {
+                var cleanName = userName.ToLower().Replace("dr.", "").Trim();
+                emp = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    context.Employees,
+                    e => (e.FirstName + " " + e.LastName).ToLower().Contains(cleanName) || e.JobTitle.ToLower().Contains(cleanName)
+                );
+            }
+
+            var empId = emp?.EmployeeId ?? userId;
+
+            var requests = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
+                context.LeaveRequests
+                .Where(l => l.EmployeeId == empId)
+                .OrderByDescending(l => l.AppliedAt)
+                .Select(l => new {
+                    l.LeaveRequestId,
+                    l.EmployeeId,
+                    LeaveType = l.LeaveType.ToString(),
+                    l.StartDate,
+                    l.EndDate,
+                    l.Reason,
+                    l.Status,
+                    l.AppliedAt,
+                    ManagerNotes = l.SupervisorNote,
+                    ReviewedAt = l.ActionedAt
+                })
+            );
+
+            return Ok(requests);
         }
     }
 

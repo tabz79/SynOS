@@ -196,6 +196,39 @@ export const ExpenseFeedScreen = () => {
         loadData();
     }, [filterRange, loadData]);
 
+    const totalOutflow = useMemo(() => {
+        if (Array.isArray(feed) && feed.length > 0) {
+            return feed.reduce((sum, item) => sum + Number(item.amount || item.Amount || 0), 0);
+        }
+        return Number(stats?.totalExpensesCash || stats?.TotalExpensesCash || 0);
+    }, [feed, stats]);
+
+    const cashOutflow = useMemo(() => {
+        if (Array.isArray(feed) && feed.length > 0) {
+            return feed.filter(item => (item.paymentMode || item.PaymentMode || '').toLowerCase() === 'cash')
+                       .reduce((sum, item) => sum + Number(item.amount || item.Amount || 0), 0);
+        }
+        return totalOutflow * 0.4;
+    }, [feed, totalOutflow]);
+
+    const digitalOutflow = useMemo(() => {
+        if (Array.isArray(feed) && feed.length > 0) {
+            return feed.filter(item => (item.paymentMode || item.PaymentMode || '').toLowerCase() !== 'cash')
+                       .reduce((sum, item) => sum + Number(item.amount || item.Amount || 0), 0);
+        }
+        return totalOutflow * 0.6;
+    }, [feed, totalOutflow]);
+
+    const pendingObligations = useMemo(() => {
+        return Number(stats?.pendingCollections || stats?.PendingCollections || stats?.totalExpensesAccrual || stats?.TotalExpensesAccrual || 0);
+    }, [stats]);
+
+    const formatKAmount = (num) => {
+        const val = Number(num) || 0;
+        if (Math.abs(val) >= 1000) return `${(val / 1000).toFixed(1)}k`;
+        return val.toLocaleString('en-IN');
+    };
+
     return (
         <div className="p-6 space-y-6 animate-in fade-in duration-500">
             {/* Header Area */}
@@ -211,22 +244,22 @@ export const ExpenseFeedScreen = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <SummaryCard 
                     title="Total Outflow" 
-                    value={stats ? (stats.cashOutflow / 1000).toFixed(1) + "k" : "0.0k"} 
+                    value={`₹ ${formatKAmount(totalOutflow)}`} 
                     subtitle={`Last ${filterRange === '30D' ? '30' : '7'} Days`}
                 />
                 <SummaryCard 
                     title="Cash Paid Out" 
-                    value={stats ? (stats.cashOutflow * 0.4 / 1000).toFixed(1) + "k" : "0.0k"} 
+                    value={`₹ ${formatKAmount(cashOutflow)}`} 
                     subtitle="Physical Currency"
                 />
                 <SummaryCard 
                     title="Digital Transfers" 
-                    value={stats ? (stats.cashOutflow * 0.6 / 1000).toFixed(1) + "k" : "0.0k"} 
+                    value={`₹ ${formatKAmount(digitalOutflow)}`} 
                     subtitle="Bank/UPI/Card"
                 />
                 <SummaryCard 
                     title="Pending Obligations" 
-                    value={stats ? (stats.pendingCollections * 1.2 / 1000).toFixed(1) + "k" : "0.0k"} 
+                    value={`₹ ${formatKAmount(pendingObligations)}`} 
                     type="warning"
                     subtitle="Accrued Liabilities"
                 />

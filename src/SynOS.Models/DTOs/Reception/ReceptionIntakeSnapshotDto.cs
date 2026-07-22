@@ -27,6 +27,8 @@ namespace SynOS.Models.DTOs.Reception
         public string FullName { get; set; } = string.Empty;
         public string Gender { get; set; } = string.Empty; // M/F/O
         public int? Age { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public bool IsDateOfBirthKnown { get; set; } = true;
         public string Mobile { get; set; } = string.Empty;
         public DateTime? LastVisitDate { get; set; }
         public List<string> LastVisitTestCodes { get; set; } = new();

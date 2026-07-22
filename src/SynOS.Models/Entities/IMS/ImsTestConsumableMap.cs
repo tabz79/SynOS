@@ -21,7 +21,14 @@ namespace SynOS.Models.Entities.IMS
         public virtual ImsConsumable Consumable { get; set; }
 
         [Required]
-        public int QuantityPerTest { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal QuantityPerTest { get; set; } = 1m;
+
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal? DisplayQuantity { get; set; }
+
+        [MaxLength(50)]
+        public string? DisplayUnit { get; set; }
 
         [Required]
         public ConsumableUsageType UsageType { get; set; } = ConsumableUsageType.Consumption;

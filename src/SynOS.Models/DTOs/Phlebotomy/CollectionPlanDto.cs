@@ -17,6 +17,8 @@ namespace SynOS.Models.DTOs.Phlebotomy
         public string MRN { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public bool IsDateOfBirthKnown { get; set; } = true;
         public string Sex { get; set; } = string.Empty;
     }
 

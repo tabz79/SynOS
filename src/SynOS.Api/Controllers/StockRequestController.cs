@@ -27,36 +27,57 @@ namespace SynOS.Api.Controllers
         [HttpGet("all-items")]
         public async Task<ActionResult<IEnumerable<ConsumableSummaryDto>>> GetAllActiveItems()
         {
-            var items = await _context.ImsConsumables
+            var consumables = await _context.ImsConsumables
                 .Where(c => c.IsActive)
                 .Select(c => new ConsumableSummaryDto
                 {
                     ConsumableId = c.ConsumableId,
                     Code = c.Code,
                     Name = c.Name,
-                    Category = c.Category.ToString(),
+                    Category = c.Category,
+                    ServiceArea = "Laboratory",
+                    Modality = "",
+                    OriginType = "Custom",
+                    DerivedFromTestName = null,
                     UnitOfMeasure = c.UnitOfMeasure,
                     LowStockThreshold = c.LowStockThreshold,
                     IsActive = c.IsActive
                 })
                 .ToListAsync();
-            return Ok(items);
+
+            return Ok(consumables);
         }
 
         [HttpGet("allowed-items")]
         public async Task<ActionResult<IEnumerable<ConsumableSummaryDto>>> GetAllowedItems()
         {
-            // In a real scenario, we'd extract the RoleId from the user's claims
-            // For now, we'll assume the frontend passes the RoleId or we fetch it based on the user's roles.
-            // Simplified for MVP: returning items for the first role found in claims or a default.
             var roleIdClaim = User.FindFirst("RoleId")?.Value;
-            if (string.IsNullOrEmpty(roleIdClaim))
+            Guid roleId = Guid.Empty;
+
+            if (!string.IsNullOrEmpty(roleIdClaim) && Guid.TryParse(roleIdClaim, out var parsedRoleId))
             {
-                return BadRequest("User role context missing");
+                roleId = parsedRoleId;
+            }
+            else
+            {
+                var roleName = User.FindFirst(ClaimTypes.Role)?.Value ?? User.FindFirst("role")?.Value ?? "Admin";
+                var roleObj = await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+                if (roleObj != null)
+                {
+                    roleId = roleObj.RoleId;
+                }
             }
 
-            var items = await _requestService.GetAllowedItemsForRoleAsync(Guid.Parse(roleIdClaim));
-            return Ok(items);
+            if (roleId != Guid.Empty)
+            {
+                var items = await _requestService.GetAllowedItemsForRoleAsync(roleId);
+                if (items != null && items.Any())
+                {
+                    return Ok(items);
+                }
+            }
+
+            return await GetAllActiveItems();
         }
 
         [HttpGet("roles/{roleId}/mappings")]
@@ -86,7 +107,7 @@ namespace SynOS.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Guid>> CreateRequest(CreateStockRequestDto dto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized();
 
             var requestId = await _requestService.CreateRequestAsync(dto, Guid.Parse(userIdClaim));

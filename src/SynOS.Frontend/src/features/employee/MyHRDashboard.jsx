@@ -19,29 +19,34 @@ export function MyHRDashboard() {
     async function loadData() {
       try {
         setLoading(true);
-        // Fetch stats and logs from the API
-        // For now using mock data structure based on the new API endpoints
-        const audit = await AttendanceApi.getAudit(user.employeeId);
-        setRecentLogs(audit?.events || []);
-        
-        // Simple logic to count stats from audit
-        const present = audit?.events?.filter(e => e.status === 'Present' || e.status === 'PaidLeave').length || 0;
-        const absent = audit?.events?.filter(e => e.status === 'Absent' || e.status === 'UnpaidLeave').length || 0;
-        
+        const [summaryRes, requestsList] = await Promise.all([
+          AttendanceApi.getMySummary().catch(() => null),
+          AttendanceApi.getMyRequests().catch(() => [])
+        ]);
+
+        const summary = summaryRes?.summary || {};
+        const pendingCount = (requestsList || []).filter(r => r.status === 'Pending').length;
+        const approvedCount = (requestsList || []).filter(r => r.status === 'Approved').length;
+
         setStats({
-          presentDays: present,
-          absentDays: absent,
-          pendingLeaves: 0, // Need endpoint for this
-          approvedLeaves: 0
+          presentDays: summary.totalPresentDays || 0,
+          absentDays: summary.totalAbsentDays || 0,
+          pendingLeaves: pendingCount,
+          approvedLeaves: approvedCount
         });
+
+        if (summaryRes?.employeeId) {
+          const audit = await AttendanceApi.getAudit(summaryRes.employeeId).catch(() => null);
+          setRecentLogs(audit?.events || []);
+        }
       } catch (err) {
         console.error("Failed to load HR dashboard data:", err);
       } finally {
         setLoading(false);
       }
     }
-    if (user?.employeeId) loadData();
-  }, [user?.employeeId]);
+    loadData();
+  }, []);
 
   return (
     <div className="space-y-6">

@@ -428,5 +428,59 @@ namespace SynOS.Tests
             Assert.Equal(5000.00m, payable.Amount);
             Assert.Equal("PO", payable.ReferenceType);
         }
+
+        [Fact]
+        public async Task GetAllowedItems_Includes_AutoDerived_TestMaster_Items()
+        {
+            var dbName = Guid.NewGuid().ToString();
+            var options = new DbContextOptionsBuilder<SynOSDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .ConfigureWarnings(x => x.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
+                .Options;
+
+            using var db = new SynOSDbContext(options);
+            var requestService = new ImsRequestService(db);
+
+            var xrayRole = new Role { RoleId = Guid.NewGuid(), Name = "XRayTech" };
+            db.Roles.Add(xrayRole);
+
+            var filmItem = new ImsConsumable
+            {
+                ConsumableId = Guid.NewGuid(),
+                Name = "X-Ray Film 8x10",
+                Code = "XR-FLM",
+                Category = "General",
+                UnitOfMeasure = "sheet",
+                IsActive = true
+            };
+            db.ImsConsumables.Add(filmItem);
+
+            var xrayTest = new Test
+            {
+                TestId = Guid.NewGuid(),
+                TestCode = "XR-01",
+                TestName = "Chest X-Ray PA",
+                Category = "Radiology"
+            };
+            db.Tests.Add(xrayTest);
+
+            db.ImsTestConsumableMaps.Add(new ImsTestConsumableMap
+            {
+                MapId = Guid.NewGuid(),
+                TestId = xrayTest.TestId,
+                ConsumableId = filmItem.ConsumableId,
+                QuantityPerTest = 1
+            });
+            await db.SaveChangesAsync();
+
+            // Act
+            var allowedItems = (await requestService.GetAllowedItemsForRoleAsync(xrayRole.RoleId)).ToList();
+
+            // Assert
+            var filmMapped = allowedItems.FirstOrDefault(i => i.ConsumableId == filmItem.ConsumableId);
+            Assert.NotNull(filmMapped);
+            Assert.Equal("AutoDerived", filmMapped.OriginType);
+            Assert.Equal("Chest X-Ray PA", filmMapped.DerivedFromTestName);
+        }
     }
 }

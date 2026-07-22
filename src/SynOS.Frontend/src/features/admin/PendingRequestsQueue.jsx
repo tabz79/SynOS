@@ -129,8 +129,14 @@ export function PendingRequestsQueue() {
                                             </div>
                                             <div className="flex items-center gap-4 text-xs text-zinc-500">
                                                 <div className="flex items-center gap-1.5">
-                                                    <User className="h-3 w-3" />
-                                                    <span className="text-zinc-300 font-medium">{req.requestedByName}</span>
+                                                    <User className="h-3 w-3 text-emerald-400" />
+                                                    <span className="text-zinc-200 font-semibold">{req.requestedByUserName || req.requestedByName}</span>
+                                                    <span className="text-[10px] text-zinc-400">({req.requestedByUserRole || 'Admin'})</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-[10px] font-bold uppercase text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                                                        Screen: {req.requestedFromScreen || 'Reception'}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
                                                     <Clock className="h-3 w-3" />

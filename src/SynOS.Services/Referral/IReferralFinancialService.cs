@@ -7,5 +7,6 @@ namespace SynOS.Services.Referral
     {
         Task ProcessCommissionRecognitionAsync(Visit visit);
         Task ProcessRetroactiveCommissionsAsync(Guid partnerId, decimal commissionPercentage, Guid userId);
+        Task BackfillUnrecognizedCommissionsAsync();
     }
 }

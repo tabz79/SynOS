@@ -53,11 +53,13 @@ export const InventoryApi = {
         return apiClient.delete(`${API_BASE}/requests/roles/${roleId}/mappings/${consumableId}`);
     },
     
-    createRequest: async (consumableId, quantity, branchId) => {
+    createRequest: async (consumableId, quantity, branchId, requestedFromScreen, requesterRole) => {
         return apiClient.post(`${API_BASE}/requests`, {
             consumableId,
             quantity: parseInt(quantity),
-            branchId
+            branchId,
+            requestedFromScreen,
+            requesterRole
         });
     },
     
@@ -131,11 +133,11 @@ export const InventoryApi = {
         return apiClient.post(`/api/v1/governance/tests/${testId}/consumables`, dto);
     },
 
-    removeTestConsumable: async (testId, mapId) => {
-        return apiClient.delete(`/api/v1/governance/tests/${testId}/consumables/${mapId}`);
+    updateTestConsumable: async (testId, mapId, dto) => {
+        return apiClient.put(`/api/v1/governance/tests/${testId}/consumables/${mapId}`, dto);
     },
 
-    // Test to Collection Tube Mappings (IMSTubeAdminController)
+    // Test to Collection Tube Mappings (IMSTubeAdminController & TestGovernanceController)
     getTubes: async () => {
         return apiClient.get(`/api/v1/ims/tubes`);
     },
@@ -148,7 +150,15 @@ export const InventoryApi = {
         return apiClient.post(`/api/v1/ims/tubes/test-map`, mapDto);
     },
 
+    updateTestTube: async (testId, mapId, dto) => {
+        return apiClient.put(`/api/v1/governance/tests/${testId}/tubes/${mapId}`, dto);
+    },
+
     removeTestTube: async (mapId) => {
         return apiClient.delete(`/api/v1/ims/tubes/test-map/${mapId}`);
+    },
+
+    autoMapAllTests: async () => {
+        return apiClient.post(`/api/v1/governance/tests/auto-map-all`);
     }
 };

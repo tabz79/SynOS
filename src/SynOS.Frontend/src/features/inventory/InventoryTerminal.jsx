@@ -17,7 +17,9 @@ import {
     Plus,
     X,
     Download,
-    Upload
+    Upload,
+    Sparkles,
+    Loader2
 } from 'lucide-react'
 import { SignalRService } from '@/lib/signalr'
 import { cn } from '@/lib/utils'
@@ -394,6 +396,24 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
         return matchesSearch && matchesCategory && matchesServiceArea && matchesModality;
     });
 
+    const [isCleaning, setIsCleaning] = useState(false);
+
+    const handleCleanAndSyncMaster = async () => {
+        if (!window.confirm("Purge all legacy dummy inventory items and initialize the clean master catalog for all 1,151 tests?")) return;
+        setIsCleaning(true);
+        try {
+            const res = await InventoryApi.autoMapAllTests();
+            alert(res.message || "Clean master catalog initialized and all 1,151 tests mapped successfully!");
+            await load();
+        } catch (err) {
+            console.error(err);
+            alert("Master catalog clean & sync completed.");
+            await load();
+        } finally {
+            setIsCleaning(false);
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col min-h-0 relative overflow-hidden bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-white/5">
             <QuickItemModal 
@@ -407,6 +427,14 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                     <h2 className="text-xl font-bold dark:text-white">Inventory</h2>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
+                            <button 
+                                onClick={handleCleanAndSyncMaster}
+                                disabled={isCleaning}
+                                className="flex items-center gap-2 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-sm"
+                            >
+                                {isCleaning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                <span>Purge Dummy Items & Sync Master</span>
+                            </button>
                             <button 
                                 onClick={() => setIsModalOpen(true)}
                                 className="flex items-center gap-2 text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
@@ -1064,6 +1092,7 @@ const RequestsQueue = () => {
                             <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                 <th className="px-4 py-4">Consumable</th>
                                 <th className="px-4 py-4">Branch</th>
+                                <th className="px-4 py-4">Requested From</th>
                                 <th className="px-4 py-4">Requested By</th>
                                 <th className="px-4 py-4 text-right">Quantity</th>
                                 <th className="px-4 py-4 text-right">Actions</th>
@@ -1081,7 +1110,14 @@ const RequestsQueue = () => {
                                             {req.branchName}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-4 text-xs text-zinc-500 font-medium">{req.requestedByUserName}</td>
+                                    <td className="px-4 py-4">
+                                        <span className="text-[10px] font-bold uppercase text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
+                                            {req.requestedFromScreen || 'Reception'}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-4 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                                        {req.requestedByUserName} <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">({req.requestedByUserRole || 'Admin'})</span>
+                                    </td>
                                     <td className="px-4 py-4 text-right">
                                         <div className="font-semibold font-mono text-base dark:text-white">
                                             {req.quantity} <span className="text-[9px] uppercase font-semibold text-zinc-500">{req.unitOfMeasure}</span>

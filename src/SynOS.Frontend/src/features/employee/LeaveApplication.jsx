@@ -39,7 +39,7 @@ export function LeaveApplication() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="w-full space-y-6">
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Apply for Leave</h1>
         <p className="text-zinc-500">Submit your leave request for supervisor approval.</p>

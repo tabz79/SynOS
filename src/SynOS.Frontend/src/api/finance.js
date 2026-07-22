@@ -921,6 +921,20 @@ export const FinanceApi = {
             });
             if (!response.ok) throw new Error("Migration sync failed");
             return response.json();
+        },
+        exportProfitabilityPnl: async (start, end, branchId) => {
+            let url = `/api/v1/economics/export-pnl?start=${start || ''}&end=${end || ''}`;
+            if (branchId) url += `&branchId=${branchId}`;
+            const response = await fetch(url, { headers: FinanceApi.getHeaders() });
+            if (!response.ok) throw new Error("Failed to export P&L report");
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `SynOS_P&L_Statement_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         }
     }
 };

@@ -31,6 +31,8 @@ namespace SynOS.Models.DTOs
         public string LastName { get; set; }
 
         public DateTime DateOfBirth { get; set; }
+        public bool IsDateOfBirthKnown { get; set; } = true;
+        public int? Age { get; set; }
 
         [Required]
         [StringLength(10)]
@@ -51,6 +53,8 @@ namespace SynOS.Models.DTOs
         public string LastName { get; set; }
 
         public DateTime DateOfBirth { get; set; }
+        public bool IsDateOfBirthKnown { get; set; } = true;
+        public int? Age { get; set; }
 
         [Required]
         [StringLength(10)]

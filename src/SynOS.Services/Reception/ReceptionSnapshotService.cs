@@ -143,9 +143,11 @@ namespace SynOS.Services.Reception
                            ? visit.Patient.DisplayName 
                            : $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                 Gender = visit.Patient.Gender,
-                Age = visit.Patient.IsDateOfBirthKnown 
-                      ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year 
-                      : null, 
+                Age = visit.Patient.DateOfBirth > DateTime.MinValue && visit.Patient.DateOfBirth.Year > 1900
+                      ? Math.Max(0, (int)((DateTime.UtcNow - visit.Patient.DateOfBirth).TotalDays / 365.25))
+                      : null,
+                DateOfBirth = visit.Patient.DateOfBirth > DateTime.MinValue && visit.Patient.DateOfBirth.Year > 1900 ? visit.Patient.DateOfBirth : null,
+                IsDateOfBirthKnown = visit.Patient.IsDateOfBirthKnown,
                 Mobile = visit.Patient.CurrentPhoneNumber,
                 LastVisitDate = lastVisit?.TokenDate,
                 LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>()
@@ -316,9 +318,11 @@ namespace SynOS.Services.Reception
                            ? patient.DisplayName 
                            : $"{patient.FirstName} {patient.LastName}",
                 Gender = patient.Gender,
-                Age = patient.IsDateOfBirthKnown 
-                      ? DateTime.UtcNow.Year - patient.DateOfBirth.Year 
+                Age = patient.DateOfBirth > DateTime.MinValue && patient.DateOfBirth.Year > 1900
+                      ? Math.Max(0, (int)((DateTime.UtcNow - patient.DateOfBirth).TotalDays / 365.25))
                       : null,
+                DateOfBirth = patient.DateOfBirth > DateTime.MinValue && patient.DateOfBirth.Year > 1900 ? patient.DateOfBirth : null,
+                IsDateOfBirthKnown = patient.IsDateOfBirthKnown,
                 Mobile = patient.CurrentPhoneNumber,
                 LastVisitDate = lastVisit?.TokenDate,
                 LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>()

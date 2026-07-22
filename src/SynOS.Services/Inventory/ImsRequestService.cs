@@ -22,20 +22,101 @@ namespace SynOS.Services.Inventory
 
         public async Task<IEnumerable<ConsumableSummaryDto>> GetAllowedItemsForRoleAsync(Guid roleId)
         {
-            return await _context.ImsRoleItemMaps
+            var role = await _context.Roles.FindAsync(roleId);
+            var roleName = role?.Name ?? "";
+
+            // 1. Explicit Custom Role Mappings
+            var customMappings = await _context.ImsRoleItemMaps
                 .Where(m => m.RoleId == roleId)
                 .Include(m => m.Consumable)
-                .Select(m => new ConsumableSummaryDto
+                .ToListAsync();
+
+            var resultDict = new Dictionary<Guid, ConsumableSummaryDto>();
+
+            foreach (var m in customMappings)
+            {
+                if (m.Consumable == null) continue;
+                
+                var invItem = await _context.ImsInventoryItems.FirstOrDefaultAsync(i => i.ItemId == m.ConsumableId || i.ItemCode == m.Consumable.Code);
+
+                resultDict[m.ConsumableId] = new ConsumableSummaryDto
                 {
                     ConsumableId = m.ConsumableId,
                     Code = m.Consumable.Code,
                     Name = m.Consumable.Name,
                     Category = m.Consumable.Category.ToString(),
+                    ServiceArea = invItem?.ServiceArea ?? "Laboratory",
+                    Modality = invItem?.Modality ?? "",
+                    OriginType = "Custom",
+                    DerivedFromTestName = null,
                     UnitOfMeasure = m.Consumable.UnitOfMeasure,
                     LowStockThreshold = m.Consumable.LowStockThreshold,
                     IsActive = m.Consumable.IsActive
-                })
+                };
+            }
+
+
+
+            // 2. Auto-Derived Test Master Mappings
+            var testConsumables = await _context.ImsTestConsumableMaps
+                .Include(tc => tc.Test)
+                    .ThenInclude(t => t.DepartmentMaster)
+                .Include(tc => tc.Consumable)
                 .ToListAsync();
+
+            foreach (var tc in testConsumables)
+            {
+                if (tc.Consumable == null || tc.Test == null) continue;
+                if (resultDict.ContainsKey(tc.ConsumableId)) continue;
+
+                var deptName = tc.Test.DepartmentMaster?.Name ?? tc.Test.Category ?? "";
+                bool isRelevantRole = IsRoleRelevantForTest(roleName, deptName, tc.Test.TestName);
+                if (isRelevantRole)
+                {
+                    var invItem = await _context.ImsInventoryItems.FirstOrDefaultAsync(i => i.ItemId == tc.ConsumableId || i.ItemCode == tc.Consumable.Code);
+
+                    resultDict[tc.ConsumableId] = new ConsumableSummaryDto
+                    {
+                        ConsumableId = tc.ConsumableId,
+                        Code = tc.Consumable.Code,
+                        Name = tc.Consumable.Name,
+                        Category = tc.Consumable.Category.ToString(),
+                        ServiceArea = invItem?.ServiceArea ?? (deptName.Contains("Radiology") ? "Radiology" : "Laboratory"),
+                        Modality = invItem?.Modality ?? "",
+                        OriginType = "AutoDerived",
+                        DerivedFromTestName = tc.Test.TestName,
+                        UnitOfMeasure = tc.Consumable.UnitOfMeasure,
+                        LowStockThreshold = tc.Consumable.LowStockThreshold,
+                        IsActive = tc.Consumable.IsActive
+                    };
+                }
+            }
+
+            return resultDict.Values;
+        }
+
+        private static bool IsRoleRelevantForTest(string roleName, string department, string testName)
+        {
+            if (string.IsNullOrEmpty(roleName)) return true;
+
+            var r = roleName.ToLowerInvariant();
+            var d = (department ?? "").ToLowerInvariant();
+            var t = (testName ?? "").ToLowerInvariant();
+
+            if (r.Contains("admin") || r.Contains("manager") || r.Contains("owner")) return true;
+
+            if (r.Contains("xray") || r.Contains("x-ray")) return d.Contains("radiology") || t.Contains("x-ray") || t.Contains("xray");
+            if (r.Contains("mri")) return d.Contains("radiology") || t.Contains("mri");
+            if (r.Contains("ct")) return d.Contains("radiology") || t.Contains("ct");
+            if (r.Contains("us") || r.Contains("ultrasound")) return d.Contains("radiology") || t.Contains("ultrasound") || t.Contains("us");
+            if (r.Contains("radiolog")) return d.Contains("radiology");
+
+            if (r.Contains("lab") || r.Contains("patholog") || r.Contains("phlebotom") || r.Contains("technician"))
+            {
+                return !d.Contains("radiology");
+            }
+
+            return true;
         }
 
         public async Task AddMappingAsync(Guid roleId, Guid consumableId)
@@ -62,13 +143,25 @@ namespace SynOS.Services.Inventory
 
         public async Task<Guid> CreateRequestAsync(CreateStockRequestDto dto, Guid requestedByUserId)
         {
+            var requestingUser = await _context.Users.FirstOrDefaultAsync(u => u.UserId == requestedByUserId);
+            var targetBranchId = (dto.BranchId != Guid.Empty && await _context.Branches.AnyAsync(b => b.BranchId == dto.BranchId))
+                ? dto.BranchId
+                : (requestingUser?.DefaultBranchId ?? (await _context.Branches.Select(b => b.BranchId).FirstOrDefaultAsync()));
+
+            if (targetBranchId == Guid.Empty)
+            {
+                throw new InvalidOperationException("No valid branch found for stock request.");
+            }
+
             var request = new ImsStockRequest
             {
                 RequestId = Guid.NewGuid(),
                 ConsumableId = dto.ConsumableId,
                 Quantity = dto.Quantity,
-                BranchId = dto.BranchId,
+                BranchId = targetBranchId,
                 RequestedByUserId = requestedByUserId,
+                RequestedFromScreen = string.IsNullOrWhiteSpace(dto.RequestedFromScreen) ? "Reception" : dto.RequestedFromScreen,
+                RequesterRole = string.IsNullOrWhiteSpace(dto.RequesterRole) ? "Admin" : dto.RequesterRole,
                 RequestedAt = DateTimeOffset.UtcNow,
                 Status = ImsRequestStatus.Pending
             };
@@ -81,50 +174,64 @@ namespace SynOS.Services.Inventory
 
         public async Task<IEnumerable<StockRequestSummaryDto>> GetPendingRequestsAsync(Guid branchId)
         {
-            return await _context.ImsStockRequests
+            var rawList = await _context.ImsStockRequests
                 .Include(r => r.Consumable)
                 .Include(r => r.RequestedByUser)
+                    .ThenInclude(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
                 .Include(r => r.Branch)
                 .Where(r => r.BranchId == branchId && r.Status == ImsRequestStatus.Pending)
-                .Select(r => new StockRequestSummaryDto
-                {
-                    RequestId = r.RequestId,
-                    ConsumableId = r.ConsumableId,
-                    ConsumableName = r.Consumable.Name,
-                    UnitOfMeasure = r.Consumable.UnitOfMeasure,
-                    Quantity = r.Quantity,
-                    BranchId = r.BranchId,
-                    BranchName = r.Branch.Name,
-                    RequestedByUserId = r.RequestedByUserId,
-                    RequestedByUserName = r.RequestedByUser.Name,
-                    RequestedAt = r.RequestedAt,
-                    Status = r.Status
-                })
                 .ToListAsync();
+
+            return rawList.Select(r => new StockRequestSummaryDto
+            {
+                RequestId = r.RequestId,
+                ConsumableId = r.ConsumableId,
+                ConsumableName = r.Consumable?.Name ?? "Consumable Item",
+                UnitOfMeasure = r.Consumable?.UnitOfMeasure ?? "units",
+                Quantity = r.Quantity,
+                BranchId = r.BranchId,
+                BranchName = r.Branch?.Name ?? "Main Lab",
+                RequestedByUserId = r.RequestedByUserId,
+                RequestedByUserName = r.RequestedByUser?.Name ?? r.RequestedByUser?.Username ?? "Staff User",
+                RequestedByUserRole = !string.IsNullOrWhiteSpace(r.RequesterRole) 
+                    ? r.RequesterRole 
+                    : (r.RequestedByUser?.UserRoles?.FirstOrDefault()?.Role?.Name ?? "Admin"),
+                RequestedFromScreen = !string.IsNullOrWhiteSpace(r.RequestedFromScreen) ? r.RequestedFromScreen : "Reception",
+                RequestedAt = r.RequestedAt,
+                Status = r.Status
+            });
         }
 
         public async Task<IEnumerable<StockRequestSummaryDto>> GetAllPendingRequestsAsync()
         {
-            return await _context.ImsStockRequests
+            var rawList = await _context.ImsStockRequests
                 .Include(r => r.Consumable)
                 .Include(r => r.RequestedByUser)
+                    .ThenInclude(u => u.UserRoles)
+                        .ThenInclude(ur => ur.Role)
                 .Include(r => r.Branch)
                 .Where(r => r.Status == ImsRequestStatus.Pending)
-                .Select(r => new StockRequestSummaryDto
-                {
-                    RequestId = r.RequestId,
-                    ConsumableId = r.ConsumableId,
-                    ConsumableName = r.Consumable.Name,
-                    UnitOfMeasure = r.Consumable.UnitOfMeasure,
-                    Quantity = r.Quantity,
-                    BranchId = r.BranchId,
-                    BranchName = r.Branch.Name,
-                    RequestedByUserId = r.RequestedByUserId,
-                    RequestedByUserName = r.RequestedByUser.Name,
-                    RequestedAt = r.RequestedAt,
-                    Status = r.Status
-                })
                 .ToListAsync();
+
+            return rawList.Select(r => new StockRequestSummaryDto
+            {
+                RequestId = r.RequestId,
+                ConsumableId = r.ConsumableId,
+                ConsumableName = r.Consumable?.Name ?? "Consumable Item",
+                UnitOfMeasure = r.Consumable?.UnitOfMeasure ?? "units",
+                Quantity = r.Quantity,
+                BranchId = r.BranchId,
+                BranchName = r.Branch?.Name ?? "Main Lab",
+                RequestedByUserId = r.RequestedByUserId,
+                RequestedByUserName = r.RequestedByUser?.Name ?? r.RequestedByUser?.Username ?? "Staff User",
+                RequestedByUserRole = !string.IsNullOrWhiteSpace(r.RequesterRole) 
+                    ? r.RequesterRole 
+                    : (r.RequestedByUser?.UserRoles?.FirstOrDefault()?.Role?.Name ?? "Admin"),
+                RequestedFromScreen = !string.IsNullOrWhiteSpace(r.RequestedFromScreen) ? r.RequestedFromScreen : "Reception",
+                RequestedAt = r.RequestedAt,
+                Status = r.Status
+            });
         }
 
         public async Task FulfillRequestAsync(Guid requestId, Guid adminUserId)

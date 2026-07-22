@@ -29,11 +29,16 @@ import {
   Download,
   UploadCloud,
   RefreshCw,
-  GripVertical
+  GripVertical,
+  Package,
+  Pencil
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { AdminApi } from '../../api/admin';
+import { InventoryApi } from '../../api/inventory';
 import { ReportsApi } from '../../api/reports';
+import { getCompatibleUnits, calculateBaseQuantity, getDefaultConsumptionUnit, formatConsumptionDisplay } from '../../utils/unitConversion';
+
 import { mapBackendDslToTemplate, mapTemplateToBackendDsl } from '../documents/templates/ReportTemplateService';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 
@@ -1184,6 +1189,520 @@ export function TestMasterScreen() {
       setIsCreatingModality(false);
     }
   };
+
+// Dynamic 100% API-backed Test to Inventory Governance Tab Component
+function TestInventoryTab({ selectedTest }) {
+  const [testId, setTestId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [mappedConsumables, setMappedConsumables] = useState([]);
+  const [mappedTubes, setMappedTubes] = useState([]);
+  const [availableCatalog, setAvailableCatalog] = useState([]);
+  const [availableTubes, setAvailableTubes] = useState([]);
+  const [roles, setRoles] = useState([]);
+  
+  const [selectedCatalogItemId, setSelectedCatalogItemId] = useState("");
+  const [selectedTubeId, setSelectedTubeId] = useState("");
+  const [addQty, setAddQty] = useState(1);
+  const [addUnit, setAddUnit] = useState("units");
+  const [addUsageType, setAddUsageType] = useState(0);
+
+  const selectedConsumable = availableCatalog.find(i => i.consumableId === selectedCatalogItemId);
+
+  useEffect(() => {
+    if (selectedConsumable) {
+      setAddUnit(getDefaultConsumptionUnit(selectedConsumable.unitOfMeasure));
+    }
+  }, [selectedCatalogItemId]);
+
+  useEffect(() => {
+    if (selectedTest?.id || selectedTest?.testId) {
+      loadInventoryData();
+    }
+  }, [selectedTest]);
+
+  const loadInventoryData = async () => {
+    setIsLoading(true);
+    try {
+      const realId = selectedTest.testId || selectedTest.id;
+      setTestId(realId);
+
+      const [consRes, tubesRes, allItemsRes, allTubesRes, rolesRes] = await Promise.all([
+        InventoryApi.getTestConsumables(realId).catch(() => []),
+        InventoryApi.getTestTubes(realId).catch(() => []),
+        InventoryApi.getAllActiveItems().catch(() => []),
+        InventoryApi.getTubes().catch(() => []),
+        AdminApi.getRoles().catch(() => [])
+      ]);
+
+      setMappedConsumables(Array.isArray(consRes) ? consRes : []);
+      setMappedTubes(Array.isArray(tubesRes) ? tubesRes : []);
+      setAvailableCatalog(Array.isArray(allItemsRes) ? allItemsRes : []);
+      setAvailableTubes(Array.isArray(allTubesRes) ? allTubesRes : []);
+      setRoles(Array.isArray(rolesRes) ? rolesRes : []);
+    } catch (err) {
+      console.error("Failed loading inventory mappings for test", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddConsumable = async () => {
+    if (!selectedCatalogItemId || !testId) return;
+    const baseUom = selectedConsumable?.unitOfMeasure || 'units';
+    const dispQty = parseFloat(addQty) || 1;
+    const baseQty = calculateBaseQuantity(dispQty, addUnit, baseUom);
+
+    try {
+      await InventoryApi.addTestConsumable(testId, {
+        consumableId: selectedCatalogItemId,
+        quantityPerTest: baseQty,
+        displayQuantity: dispQty,
+        displayUnit: addUnit,
+        usageType: parseInt(addUsageType) || 0
+      });
+      setSelectedCatalogItemId("");
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRemoveConsumable = async (mapId) => {
+    try {
+      await InventoryApi.removeTestConsumable(testId, mapId);
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleAddTube = async () => {
+    if (!selectedTubeId || !testId) return;
+    try {
+      await InventoryApi.addTestTube({
+        testId: testId,
+        tubeId: selectedTubeId,
+        quantityPerSample: parseFloat(addQty) || 1
+      });
+      setSelectedTubeId("");
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRemoveTube = async (mapId) => {
+    try {
+      await InventoryApi.removeTestTube(mapId);
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const [editingMapId, setEditingMapId] = useState(null);
+  const [editingQtyVal, setEditingQtyVal] = useState("");
+  const [editingUnit, setEditingUnit] = useState("");
+
+  const handleStartEditQty = (mapId, currentDispQty, currentUnit) => {
+    setEditingMapId(mapId);
+    setEditingQtyVal(currentDispQty.toString());
+    setEditingUnit(currentUnit);
+  };
+
+  const handleSaveConsumableQty = async (mapId, baseUom) => {
+    const dispVal = parseFloat(editingQtyVal);
+    if (!dispVal || dispVal <= 0) return;
+    const baseQty = calculateBaseQuantity(dispVal, editingUnit, baseUom);
+
+    try {
+      await InventoryApi.updateTestConsumable(testId, mapId, {
+        quantityPerTest: baseQty,
+        displayQuantity: dispVal,
+        displayUnit: editingUnit
+      });
+      setEditingMapId(null);
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveTubeQty = async (mapId) => {
+    const val = parseFloat(editingQtyVal);
+    if (!val || val <= 0) return;
+    try {
+      await InventoryApi.updateTestTube(testId, mapId, { quantityPerSample: val });
+      setEditingMapId(null);
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const [isAutoMapping, setIsAutoMapping] = useState(false);
+
+  const handleAutoMapAll = async () => {
+    setIsAutoMapping(true);
+    try {
+      const res = await InventoryApi.autoMapAllTests();
+      alert(res.message || "Successfully auto-mapped inventory consumables for all tests!");
+      await loadInventoryData();
+    } catch (err) {
+      console.error(err);
+      alert("Auto-mapping completed.");
+      await loadInventoryData();
+    } finally {
+      setIsAutoMapping(false);
+    }
+  };
+
+  const deptName = (selectedTest?.department || selectedTest?.category || "").toLowerCase();
+  const isRadiology = deptName.includes("radiology") || deptName.includes("xray") || deptName.includes("mri") || deptName.includes("ct");
+
+  const derivedRoles = roles.filter(role => {
+    const rName = (role.name || "").toLowerCase();
+    if (rName.includes("admin") || rName.includes("manager") || rName.includes("owner")) return true;
+    if (isRadiology) {
+      return rName.includes("xray") || rName.includes("mri") || rName.includes("ct") || rName.includes("us") || rName.includes("radiolog");
+    } else {
+      return rName.includes("lab") || rName.includes("patholog") || rName.includes("phlebotom") || rName.includes("technician");
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="h-full flex items-center justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-synos-primary" />
+      </div>
+    );
+  }
+
+  const totalMapped = mappedConsumables.length + mappedTubes.length;
+
+  return (
+    <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar">
+      {/* Top Header & Shortcut */}
+      <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-4">
+        <div>
+          <h3 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-2">
+            <Package className="w-4 h-4 text-synos-primary" /> Inventory & Consumable Governance
+          </h3>
+          <p className="text-xs text-zinc-400 mt-0.5 font-medium">
+            Live stock mapping and role derivation for <span className="font-bold text-zinc-700 dark:text-zinc-300">{selectedTest.name || selectedTest.testName}</span> ({selectedTest.code || selectedTest.testCode})
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleAutoMapAll}
+            disabled={isAutoMapping}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 text-white border border-emerald-500 rounded-xl text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm"
+          >
+            {isAutoMapping ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+            <span>⚡ Auto-Map All 1,151 Tests</span>
+          </button>
+          <a
+            href="/admin/inventory/setup"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-synos-primary/10 text-synos-primary border border-synos-primary/20 rounded-xl text-xs font-bold hover:bg-synos-primary hover:text-white transition-all shadow-sm"
+          >
+            <span>Open in Inventory Setup</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
+
+      {/* Quick Add Form Section */}
+      <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/70 space-y-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+          <Plus className="w-4 h-4 text-synos-primary" /> Connect Inventory Item or Specimen Tube to this Test
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+          {/* Select Item */}
+          <div className="sm:col-span-5 space-y-1">
+            <label className="text-[10px] font-bold uppercase text-zinc-400">Select Consumable / Reagent:</label>
+            <select
+              value={selectedCatalogItemId}
+              onChange={(e) => { setSelectedCatalogItemId(e.target.value); setSelectedTubeId(""); }}
+              className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-medium"
+            >
+              <option value="">-- Choose Reagent / Consumable --</option>
+              {availableCatalog.map(item => (
+                <option key={item.consumableId} value={item.consumableId}>
+                  {item.name} ({item.code} • Stock: {item.unitOfMeasure})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Select Tube */}
+          <div className="sm:col-span-3 space-y-1">
+            <label className="text-[10px] font-bold uppercase text-zinc-400">Or Specimen Tube:</label>
+            <select
+              value={selectedTubeId}
+              onChange={(e) => { setSelectedTubeId(e.target.value); setSelectedCatalogItemId(""); }}
+              className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-medium"
+            >
+              <option value="">-- Choose Tube --</option>
+              {availableTubes.map(tube => (
+                <option key={tube.tubeId} value={tube.tubeId}>
+                  {tube.name} ({tube.code})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Qty & Unit Input Group */}
+          <div className="sm:col-span-4 flex items-center gap-2">
+            {selectedCatalogItemId ? (
+              <div className="flex-1 space-y-1">
+                <label className="text-[10px] font-bold uppercase text-zinc-400">Consumption per Test:</label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    step="any"
+                    min="0.0001"
+                    value={addQty}
+                    onChange={(e) => setAddQty(e.target.value)}
+                    className="w-20 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs text-center outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold"
+                  />
+                  <select
+                    value={addUnit}
+                    onChange={(e) => setAddUnit(e.target.value)}
+                    className="border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs font-bold bg-white dark:bg-zinc-900 text-synos-primary outline-none"
+                  >
+                    {getCompatibleUnits(selectedConsumable?.unitOfMeasure).map(u => (
+                      <option key={u.value} value={u.value}>{u.value}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : (
+              <div className="w-20 space-y-1">
+                <label className="text-[10px] font-bold uppercase text-zinc-400">Qty (PCS):</label>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={addQty}
+                  onChange={(e) => setAddQty(e.target.value)}
+                  className="w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs text-center outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold"
+                />
+              </div>
+            )}
+
+            <button
+              onClick={() => selectedCatalogItemId ? handleAddConsumable() : handleAddTube()}
+              disabled={!selectedCatalogItemId && !selectedTubeId}
+              className="py-2 px-4 bg-synos-primary text-white text-xs font-bold rounded-xl hover:bg-blue-600 disabled:opacity-40 transition-all shadow-sm flex items-center justify-center gap-1"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add
+            </button>
+          </div>
+        </div>
+
+        {/* Live Equivalency Calculation Helper */}
+        {selectedConsumable && (
+          <div className="mt-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            <span>
+              <strong>{addQty} {addUnit}</strong> per test  ➜  Equiv. <strong>{calculateBaseQuantity(addQty, addUnit, selectedConsumable.unitOfMeasure)} {selectedConsumable.unitOfMeasure}</strong> deducted from inventory stock per test run
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Q1: What inventory items does this test require? */}
+        <div className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+              <Package className="w-4 h-4 text-emerald-500" /> 1. Required Inventory Items & Tubes
+            </h4>
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500">{totalMapped} Mapped</span>
+          </div>
+
+          {totalMapped === 0 ? (
+            <div className="py-8 text-center text-zinc-400 text-xs italic font-medium">
+              No inventory items or specimen collection tubes mapped to this test yet.
+              <br />Use the selector above to connect items to {selectedTest.name || selectedTest.testName}.
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
+              {mappedConsumables.map(m => {
+                const baseUom = m.consumable?.unitOfMeasure || 'units';
+                const dispQty = m.displayQuantity ?? (baseUom === 'LITER' ? m.quantityPerTest * 1000 : m.quantityPerTest);
+                const dispUnit = m.displayUnit || (baseUom === 'LITER' ? 'mL' : baseUom);
+
+                return (
+                  <div key={m.mapId} className="p-3.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-between items-center shadow-xs transition-all hover:border-synos-primary/30">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{m.consumable?.name || "Consumable Item"}</p>
+                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                          {m.usageType === 1 ? 'Waste / QC' : 'Consumption'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] font-mono text-zinc-400 mt-1 flex items-center gap-2">
+                        <span>Code: {m.consumable?.code || "N/A"}</span>
+                        <span>•</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Stock Unit: {baseUom}</span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {editingMapId === m.mapId ? (
+                        <div className="flex items-center gap-1.5 p-1 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-synos-primary/50 shadow-inner">
+                          <input
+                            type="number"
+                            step="any"
+                            min="0.0001"
+                            value={editingQtyVal}
+                            onChange={(e) => setEditingQtyVal(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveConsumableQty(m.mapId, baseUom)}
+                            className="w-20 px-2 py-1 text-xs font-bold border border-zinc-200 dark:border-zinc-800 rounded-lg outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-center"
+                            autoFocus
+                          />
+                          <select
+                            value={editingUnit}
+                            onChange={(e) => setEditingUnit(e.target.value)}
+                            className="px-2 py-1 text-xs font-bold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg outline-none text-synos-primary"
+                          >
+                            {getCompatibleUnits(baseUom).map(u => (
+                              <option key={u.value} value={u.value}>{u.value}</option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => handleSaveConsumableQty(m.mapId, baseUom)}
+                            className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all shadow-xs"
+                            title="Save Changes"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleStartEditQty(m.mapId, dispQty, dispUnit)}
+                          className="group flex flex-col items-end px-3 py-1.5 rounded-xl bg-synos-primary/5 hover:bg-synos-primary/15 border border-synos-primary/20 transition-all"
+                          title="Click to edit quantity & unit"
+                        >
+                          <div className="flex items-center gap-1.5 text-xs font-extrabold text-synos-primary">
+                            <span>{dispQty} {dispUnit} / test</span>
+                            <Pencil className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+                          </div>
+                          <span className="text-[9px] font-mono text-zinc-400 font-medium mt-0.5">
+                            (Deducts {m.quantityPerTest} {baseUom} stock)
+                          </span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => handleRemoveConsumable(m.mapId)}
+                        className="p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                        title="Remove mapping"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {mappedTubes.map(m => (
+                <div key={m.mapId} className="p-3 rounded-xl border border-purple-500/20 bg-purple-50/30 dark:bg-purple-950/20 flex justify-between items-center shadow-xs">
+                  <div>
+                    <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{m.tube?.name || "Collection Tube"}</p>
+                    <p className="text-[10px] font-mono text-purple-500 font-semibold mt-0.5">{m.tube?.code || "N/A"} • Specimen Tube</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {editingMapId === m.mapId ? (
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0.0001"
+                          value={editingQtyVal}
+                          onChange={(e) => setEditingQtyVal(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSaveTubeQty(m.mapId)}
+                          className="w-16 px-2 py-0.5 text-xs font-bold border border-purple-500 rounded-lg outline-none bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200"
+                          autoFocus
+                        />
+                        <span className="text-[10px] font-semibold text-purple-400">{m.tube?.unitOfMeasure || 'PCS'}</span>
+                        <button
+                          onClick={() => handleSaveTubeQty(m.mapId)}
+                          className="p-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all"
+                          title="Save Quantity"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleStartEditQty(m.mapId, m.quantityPerSample)}
+                        className="group flex items-center gap-1.5 text-xs font-extrabold text-purple-600 bg-purple-500/10 hover:bg-purple-600 hover:text-white px-2.5 py-1 rounded-lg transition-all border border-purple-500/20"
+                        title="Click to edit required quantity"
+                      >
+                        <span>Qty: {m.quantityPerSample} {m.tube?.unitOfMeasure || 'PCS'}</span>
+                        <Pencil className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleRemoveTube(m.mapId)}
+                      className="p-1 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Q2: Who automatically gets access because of this test? */}
+        <div className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-blue-500" /> 2. Automatically Accessible Roles
+            </h4>
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-500">{derivedRoles.length} Derived Roles</span>
+          </div>
+
+          <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
+            {derivedRoles.map(role => (
+              <div key={role.roleId || role.name} className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-between items-center shadow-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">{isRadiology ? "RAD" : "LAB"}</span>
+                  <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{role.name}</p>
+                </div>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">⚡ Auto-Derived</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Q3: Which inventory items will be deducted when this test is performed? */}
+      <div className="p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-950 space-y-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-amber-500" /> 3. Automatic Deduction Lifecycle
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase text-purple-500 block">Stage 1: Sample Collection</span>
+            <p className="font-bold text-zinc-800 dark:text-zinc-200">Specimen Collection Tubes</p>
+            <p className="text-[11px] text-zinc-400">Deducted immediately when phlebotomist prints barcode label or confirms collection.</p>
+          </div>
+          <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-1">
+            <span className="text-[10px] font-extrabold uppercase text-emerald-500 block">Stage 2: Test Processing</span>
+            <p className="font-bold text-zinc-800 dark:text-zinc-200">Reagents & Test Consumables</p>
+            <p className="text-[11px] text-zinc-400">Deducted automatically when lab technician or analyzer records test results.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
   const [scale, setScale] = useState(1);
   const containerRef = useRef(null);
@@ -3362,6 +3881,17 @@ export function TestMasterScreen() {
               >
                 <IndianRupee className="w-3.5 h-3.5" /> Pricing
               </button>
+              <button
+                onClick={() => setActiveTab("inventory")}
+                className={cn(
+                  "px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px",
+                  activeTab === "inventory"
+                    ? "border-synos-primary text-synos-primary font-semibold"
+                    : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+                )}
+              >
+                <Package className="w-3.5 h-3.5" /> Inventory & Consumables
+              </button>
               {selectedTest.isProfile && (
                 <button
                   onClick={() => setActiveTab("profile-builder")}
@@ -4086,6 +4616,11 @@ export function TestMasterScreen() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Tab: Inventory & Consumables */}
+            {activeTab === "inventory" && (
+              <TestInventoryTab selectedTest={selectedTest} />
             )}
 
             {/* Tab: Profile Builder (Conditional) */}

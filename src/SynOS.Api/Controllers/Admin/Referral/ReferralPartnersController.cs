@@ -14,11 +14,16 @@ namespace SynOS.Api.Controllers.Admin.Referral
     public class ReferralPartnersController : ControllerBase
     {
         private readonly IReferralPartnerService _referralPartnerService;
+        private readonly IReferralFinancialService _referralFinancialService;
         private readonly IUserContext _userContext;
 
-        public ReferralPartnersController(IReferralPartnerService referralPartnerService, IUserContext userContext)
+        public ReferralPartnersController(
+            IReferralPartnerService referralPartnerService,
+            IReferralFinancialService referralFinancialService,
+            IUserContext userContext)
         {
             _referralPartnerService = referralPartnerService;
+            _referralFinancialService = referralFinancialService;
             _userContext = userContext;
         }
 
@@ -127,6 +132,8 @@ namespace SynOS.Api.Controllers.Admin.Referral
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> GetSummary([FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
         {
+            await _referralFinancialService.BackfillUnrecognizedCommissionsAsync();
+
             Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
             if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
             {

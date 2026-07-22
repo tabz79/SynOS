@@ -25,12 +25,14 @@ namespace SynOS.Services.Inventory
         {
             if (branchId.HasValue)
             {
-                var query = from lot in _context.ImsInventoryLots
-                            join item in _context.ImsInventoryItems on lot.ItemId equals item.ItemId
-                            join branch in _context.Branches on lot.BranchId equals branch.BranchId
+                var branch = await _context.Branches.FirstOrDefaultAsync(b => b.BranchId == branchId.Value);
+                var branchName = branch?.Name ?? "Branch";
+
+                var query = from item in _context.ImsInventoryItems
                             join consumable in _context.ImsConsumables on item.ItemCode equals consumable.Code into metaJoin
                             from meta in metaJoin.DefaultIfEmpty()
-                            where lot.IsActive && lot.BranchId == branchId.Value
+                            join lot in _context.ImsInventoryLots.Where(l => l.IsActive && l.BranchId == branchId.Value) on item.ItemId equals lot.ItemId into lotJoin
+                            from lot in lotJoin.DefaultIfEmpty()
                             group lot by new 
                             { 
                                 item.ItemId, 
@@ -38,8 +40,6 @@ namespace SynOS.Services.Inventory
                                 ItemName = item.Name, 
                                 item.ServiceArea,
                                 item.Modality,
-                                branch.BranchId, 
-                                BranchName = branch.Name, 
                                 meta.UnitOfMeasure, 
                                 meta.LowStockThreshold,
                                 meta.Category
@@ -49,15 +49,15 @@ namespace SynOS.Services.Inventory
                                 ItemId = g.Key.ItemId,
                                 ItemName = g.Key.ItemName,
                                 ItemCode = g.Key.ItemCode,
-                                TotalQuantity = g.Sum(l => l.CurrentQuantity),
-                                Unit = g.Key.UnitOfMeasure ?? "units",
-                                BranchName = g.Key.BranchName,
-                                BranchId = g.Key.BranchId,
+                                TotalQuantity = g.Sum(l => l != null ? l.CurrentQuantity : 0),
+                                Unit = g.Key.UnitOfMeasure ?? "PCS",
+                                BranchName = branchName,
+                                BranchId = branchId.Value,
                                 Category = g.Key.Category ?? "General",
                                 ServiceArea = g.Key.ServiceArea ?? "Laboratory",
                                 Modality = g.Key.Modality,
-                                Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
-                                         g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
+                                Status = g.Sum(l => l != null ? l.CurrentQuantity : 0) <= 0 ? "Critical" :
+                                         g.Sum(l => l != null ? l.CurrentQuantity : 0) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
                             };
 
                 return await query
@@ -67,11 +67,11 @@ namespace SynOS.Services.Inventory
             else
             {
                 var emptyGuid = Guid.Empty;
-                var query = from lot in _context.ImsInventoryLots
-                            join item in _context.ImsInventoryItems on lot.ItemId equals item.ItemId
+                var query = from item in _context.ImsInventoryItems
                             join consumable in _context.ImsConsumables on item.ItemCode equals consumable.Code into metaJoin
                             from meta in metaJoin.DefaultIfEmpty()
-                            where lot.IsActive
+                            join lot in _context.ImsInventoryLots.Where(l => l.IsActive) on item.ItemId equals lot.ItemId into lotJoin
+                            from lot in lotJoin.DefaultIfEmpty()
                             group lot by new 
                             { 
                                 item.ItemId, 
@@ -88,15 +88,15 @@ namespace SynOS.Services.Inventory
                                 ItemId = g.Key.ItemId,
                                 ItemName = g.Key.ItemName,
                                 ItemCode = g.Key.ItemCode,
-                                TotalQuantity = g.Sum(l => l.CurrentQuantity),
-                                Unit = g.Key.UnitOfMeasure ?? "units",
+                                TotalQuantity = g.Sum(l => l != null ? l.CurrentQuantity : 0),
+                                Unit = g.Key.UnitOfMeasure ?? "PCS",
                                 BranchName = "All Branches",
                                 BranchId = emptyGuid,
                                 Category = g.Key.Category ?? "General",
                                 ServiceArea = g.Key.ServiceArea ?? "Laboratory",
                                 Modality = g.Key.Modality,
-                                Status = g.Sum(l => l.CurrentQuantity) <= 0 ? "Critical" :
-                                         g.Sum(l => l.CurrentQuantity) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
+                                Status = g.Sum(l => l != null ? l.CurrentQuantity : 0) <= 0 ? "Critical" :
+                                         g.Sum(l => l != null ? l.CurrentQuantity : 0) <= g.Key.LowStockThreshold ? "Low" : "Healthy"
                             };
 
                 return await query

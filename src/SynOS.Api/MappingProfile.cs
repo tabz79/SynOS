@@ -165,7 +165,11 @@ namespace SynOS.Api
             CreateMap<User, UserManagementDto>()
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.UserRoles != null && src.UserRoles.Any() && src.UserRoles.FirstOrDefault() != null && src.UserRoles.FirstOrDefault()!.Role != null ? src.UserRoles.FirstOrDefault()!.Role!.Name : "Unknown"));
 
-            CreateMap<Patient, PatientDto>();
+            CreateMap<Patient, PatientDto>()
+                .ForMember(dest => dest.Age, opt => opt.MapFrom(src =>
+                    src.DateOfBirth > DateTime.MinValue && src.DateOfBirth.Year > 1900
+                        ? Math.Max(0, (int)((DateTime.UtcNow - src.DateOfBirth).TotalDays / 365.25))
+                        : 0));
 
             // Referral Mappings
             CreateMap<ReferralPartnerCreateDto, ReferralPartner>();

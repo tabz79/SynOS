@@ -244,5 +244,34 @@ namespace SynOS.Services.Referral
 
             return commission;
         }
+
+        public async Task BackfillUnrecognizedCommissionsAsync()
+        {
+            var unreconVisits = await _context.Visits
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices)
+                .Include(v => v.ReferralPartner)
+                .Where(v => v.IsReferred 
+                         && v.ReferralPartnerId != null 
+                         && !_context.ReferralPayableFacts.Any(f => f.SourceVisitId == v.VisitId)
+                         && !_context.ReceivableFacts.Any(f => f.SourceVisitId == v.VisitId))
+                .ToListAsync();
+
+            if (!unreconVisits.Any()) return;
+
+            _logger.LogInformation("Backfilling {Count} referred visits missing financial recognition...", unreconVisits.Count);
+
+            foreach (var visit in unreconVisits)
+            {
+                try
+                {
+                    await ProcessCommissionRecognitionAsync(visit);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Backfill error for Visit {VisitId}", visit.VisitId);
+                }
+            }
+        }
     }
 }

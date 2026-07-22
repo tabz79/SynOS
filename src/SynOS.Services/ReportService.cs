@@ -1691,9 +1691,9 @@ namespace SynOS.Services
                 
                 var patient = order?.Visit?.Patient;
                 var age = 0;
-                if (patient?.DateOfBirth != null && patient.DateOfBirth != default)
+                if (patient?.DateOfBirth != null && patient.DateOfBirth != default && patient.DateOfBirth.Year > 1900)
                 {
-                    age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+                    age = Math.Max(0, (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25));
                 }
 
                 return new ReportListItemDto
@@ -1924,9 +1924,9 @@ namespace SynOS.Services
                 
                 var patient = r.Visit?.Patient;
                 var age = 0;
-                if (patient?.DateOfBirth != null && patient.DateOfBirth != default)
+                if (patient?.DateOfBirth != null && patient.DateOfBirth != default && patient.DateOfBirth.Year > 1900)
                 {
-                    age = (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25);
+                    age = Math.Max(0, (int)((DateTime.Today - patient.DateOfBirth).TotalDays / 365.25));
                 }
 
                 string pdfUrl = "";

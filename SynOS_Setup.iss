@@ -32,6 +32,9 @@ VersionInfoVersion=1.4.1.0
 
 LicenseFile=scripts\eula.txt
 
+CloseApplications=force
+RestartApplications=no
+
 [Messages]
 SetupAppTitle=SynOS Setup
 WelcomeLabel1=Welcome to SynOS
@@ -48,7 +51,7 @@ Name: "C:\ProgramData\TBZ Labs\SynOS\CrashDumps"
 
 [Files]
 Source: "src\SynOS.Api\bin\Release\net8.0\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Permissions: everyone-modify
-Source: "src\SynOS.Api\bin\Release\net8.0\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion; Excludes: "appsettings.json"
+Source: "src\SynOS.Api\bin\Release\net8.0\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json"
 Source: "installer-assets\SynOS.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Copy verification, prerequisite, configuration, export/import and decommission scripts
@@ -717,12 +720,12 @@ var
 begin
   if CurStep = ssInstall then
   begin
-    // Stop the running service to unlock DLL files before replacing them
+    // Stop the running service and kill active processes to release DLL locks before replacing files
+    Exec('net.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     Exec('sc.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+    Exec('taskkill.exe', '/F /IM SynOS.Api.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+    Exec('taskkill.exe', '/F /IM SynOS.Updater.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     Sleep(2000);
-
-    // SQL Server is now verified manually during the wizard phase before files are copied.
-    // Silent installation script execution has been removed.
   end;
 
   if CurStep = ssPostInstall then

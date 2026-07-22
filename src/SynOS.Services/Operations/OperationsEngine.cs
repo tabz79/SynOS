@@ -468,13 +468,14 @@ namespace SynOS.Services.Operations
         {
             if (patient == null) return "N/A";
             
-            var age = patient.IsDateOfBirthKnown 
-                ? (DateTime.UtcNow.Year - patient.DateOfBirth.Year).ToString() 
-                : "?";
+            var calculatedAge = patient.DateOfBirth > DateTime.MinValue && patient.DateOfBirth.Year > 1900
+                ? Math.Max(0, (int)((DateTime.UtcNow - patient.DateOfBirth).TotalDays / 365.25))
+                : 0;
             
+            var ageStr = calculatedAge > 0 ? calculatedAge.ToString() : "-";
             var gender = !string.IsNullOrEmpty(patient.Gender) ? patient.Gender.Substring(0, 1).ToUpper() : "?";
             
-            return $"{age}y / {gender}";
+            return $"{ageStr}y / {gender}";
         }
 
         private string DerivePaymentDisplay(Visit visit, Invoice? invoice)

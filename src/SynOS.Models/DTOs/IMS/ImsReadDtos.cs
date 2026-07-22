@@ -34,6 +34,10 @@ namespace SynOS.Models.DTOs.IMS
         public string Code { get; set; }
         public string Name { get; set; }
         public string Category { get; set; }
+        public string ServiceArea { get; set; }
+        public string? Modality { get; set; }
+        public string OriginType { get; set; } = "Custom";
+        public string? DerivedFromTestName { get; set; }
         public string UnitOfMeasure { get; set; }
         public int LowStockThreshold { get; set; }
         public bool IsActive { get; set; }

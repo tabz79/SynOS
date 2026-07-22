@@ -892,6 +892,40 @@ namespace SynOS.Services
             return result;
         }
 
+        public Task<byte[]> ExportProfitabilityCsvAsync(SynOS.Models.DTOs.Economics.LabProfitabilitySummaryDto summary)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("SYN OS FINANCIAL & PROFITABILITY STATEMENT");
+            sb.AppendLine($"Reporting Period,{summary.StartDate:yyyy-MM-dd} to {summary.EndDate:yyyy-MM-dd}");
+            sb.AppendLine($"Currency,{summary.Currency}");
+            sb.AppendLine($"Generated At,{DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+            sb.AppendLine();
+            sb.AppendLine("METRIC,CATEGORY,AMOUNT (INR),PERCENTAGE / NOTES");
+
+            sb.AppendLine($"Gross Accrual Revenue,Revenue (Billed),{summary.TotalRevenueAccrual:F2},100.00%");
+            sb.AppendLine($"Net Cash Collections,Revenue (Collected),{summary.TotalRevenueCash:F2},Realized Collections");
+            sb.AppendLine($" - Cash Payments,Revenue (Cash),{summary.CashCollected:F2},Physical Cash");
+            sb.AppendLine($" - Digital / UPI / Card,Revenue (Digital),{summary.OnlineCollected:F2},Electronic Settlement");
+            sb.AppendLine($"Accounts Receivable (Outstanding Dues),Assets / Dues,{summary.PendingCollections:F2},Uncollected Patient/B2B Dues");
+            sb.AppendLine();
+            sb.AppendLine("Cost of Goods Sold (COGS),Direct Expenses,,");
+            sb.AppendLine($" - Consumables & Reagents,COGS,{summary.ConsumableCashOutflow:F2},Material & Test Kits");
+            sb.AppendLine($" - Outsourced / Send-out Tests,COGS,{summary.OutsourcedTestCashOutflow:F2},Reference Lab Charges");
+            sb.AppendLine();
+            sb.AppendLine("Operating Expenses (OPEX),Indirect Expenses,,");
+            sb.AppendLine($" - Workforce Payroll & Statutory Dues,Payroll,{summary.PayrollCashOutflow:F2},Salaries + PF + ESI + TDS");
+            sb.AppendLine($" - Referral & Partner Commissions,Commissions,{summary.ReferralCashOutflow:F2},Doctor & B2B Payouts");
+            sb.AppendLine($" - Facility Rent & Utility Overhead,Overhead,{summary.OverheadCashOutflow:F2},Rent + Utilities + Maintenance");
+            sb.AppendLine($"Total Cash Expenses,Expenses (Total),{summary.TotalExpensesCash:F2},All Outflows");
+            sb.AppendLine();
+            sb.AppendLine("PROFITABILITY & BOTTOM LINE,SUMMARY,,");
+            sb.AppendLine($"Net Cash Flow Position,Net Realized,{summary.NetCashPosition:F2},{summary.CashMarginPercentage:F1}% Net Realized Margin");
+            sb.AppendLine($"Net Accrual Operational Position,Net Operational,{summary.NetAccrualPosition:F2},{summary.AccrualMarginPercentage:F1}% Net Operational Margin");
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return Task.FromResult(bytes);
+        }
+
         private class ProfileMapRow
         {
             public int RowNumber { get; set; }
@@ -907,6 +941,7 @@ namespace SynOS.Services
         public string TestCode { get; set; }
         public string TestName { get; set; }
         public string Department { get; set; }
+
         public string Category { get; set; }
         public decimal? BasePrice { get; set; }
         public int? TAT_Hours { get; set; }

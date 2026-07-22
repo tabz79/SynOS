@@ -155,6 +155,30 @@ IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_Invent
 BEGIN
     ALTER TABLE [IMS_InventoryItems] ADD [Modality] nvarchar(100) NULL;
 END
+
+-- 10. Ensure IMS_TestConsumableMaps.QuantityPerTest is DECIMAL(18,4)
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_TestConsumableMaps') AND name = 'QuantityPerTest' AND system_type_id = 56)
+BEGIN
+    ALTER TABLE [IMS_TestConsumableMaps] ALTER COLUMN [QuantityPerTest] decimal(18,4) NOT NULL;
+END
+
+-- 11. Add DisplayQuantity and DisplayUnit to IMS_TestConsumableMaps
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_TestConsumableMaps') AND name = 'DisplayQuantity')
+BEGIN
+    ALTER TABLE [IMS_TestConsumableMaps] ADD [DisplayQuantity] decimal(18,4) NULL;
+    ALTER TABLE [IMS_TestConsumableMaps] ADD [DisplayUnit] nvarchar(50) NULL;
+END
+
+-- 12. Add RequestedFromScreen and RequesterRole to IMS_StockRequests
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_StockRequests') AND name = 'RequestedFromScreen')
+BEGIN
+    ALTER TABLE [IMS_StockRequests] ADD [RequestedFromScreen] nvarchar(100) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_StockRequests') AND name = 'RequesterRole')
+BEGIN
+    ALTER TABLE [IMS_StockRequests] ADD [RequesterRole] nvarchar(100) NULL;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
@@ -791,19 +815,53 @@ END
         {
             if (context.ImsConsumables.Any()) return;
 
-            var starterItems = new List<(string Name, string Code, string Category, string Unit, int Threshold)>
+            var starterItems = new List<(string Code, string Name, string Category, string ServiceArea, string? Modality, string Unit, int Threshold)>
             {
-                ("Syringe 5ml", "SYR-5ML", "Consumable", "pcs", 100),
-                ("Gloves Nitro Large", "GLV-L", "Consumable", "box", 10),
-                ("Cotton Roll", "CTN-R", "Consumable", "pcs", 5),
-                ("Alcohol Swabs", "ALC-S", "Consumable", "box", 20),
-                ("Blood Collection Tube (Purple)", "TUBE-EDTA", "Consumable", "pcs", 200),
-                ("Ball Point Pen (Blue)", "PEN-BL", "Stationery", "pcs", 50),
-                ("Printer Paper A4", "PPR-A4", "Stationery", "ream", 10),
-                ("Thermal Receipt Roll", "RCT-RL", "Stationery", "pcs", 30),
-                ("CT Scan Film 14x17", "CT-FLM", "Imaging", "box", 5),
-                ("MRI Contrast Agent", "MRI-CNT", "Imaging", "bottle", 10),
-                ("X-Ray Film 8x10", "XR-FLM", "Imaging", "box", 5)
+                // Laboratory - Tube Consumables
+                ("TUBE-PLAIN", "Plain Red Top Serum Tube", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("TUBE-EDTA", "EDTA K3 Purple Top Tube", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("TUBE-FLUO", "Fluoride Gray Top Tube", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("TUBE-HEPARIN", "Heparin Green Top Tube", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("TUBE-CITRATE", "Blue Top Sodium Citrate Tube", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("CONT-URINE", "Sterile Urine Container", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("CONT-STOOL", "Sterile Stool Container", "Tube Consumables", "Laboratory", null, "PCS", 50),
+                ("BOTTLE-BC-AER", "Aerobic Blood Culture Bottle", "Tube Consumables", "Laboratory", null, "BOTTLE", 20),
+                ("BOTTLE-BC-ANA", "Anaerobic Blood Culture Bottle", "Tube Consumables", "Laboratory", null, "BOTTLE", 20),
+                ("CONT-BIOPSY", "Biopsy Specimen Container with Formalin", "Tube Consumables", "Laboratory", null, "PCS", 30),
+
+                // Laboratory - Test Consumables (Hematology / Biochemistry / Serology / Microbiology / Histopathology)
+                ("REAG-CBC-DIL", "CBC Cell Pack Diluent", "Test Consumables", "Laboratory", null, "LITER", 10),
+                ("REAG-LYSE", "Lysing Agent 500ml", "Test Consumables", "Laboratory", null, "BOTTLE", 5),
+                ("REAG-CLEAN", "Hematology Analyzer Cell Cleaner 1L", "Test Consumables", "Laboratory", null, "BOTTLE", 5),
+                ("REAG-ESR", "ESR Pipette & Stand Kit", "Test Consumables", "Laboratory", null, "PCS", 20),
+                ("REAG-BIOCHEM", "Biochemistry Multi-Reagent Kit", "Test Consumables", "Laboratory", null, "KIT", 5),
+                ("REAG-ISE", "ISE Electrolyte Reagent Pack", "Test Consumables", "Laboratory", null, "PACK", 5),
+                ("KIT-DENGUE", "Dengue NS1/IgG/IgM Rapid Test Kit", "Test Consumables", "Laboratory", null, "BOX", 10),
+                ("KIT-HIV", "HIV 1&2 Rapid Test Kit", "Test Consumables", "Laboratory", null, "BOX", 10),
+                ("KIT-HBSAG", "HBsAg Hepatitis B Rapid Kit", "Test Consumables", "Laboratory", null, "BOX", 10),
+                ("KIT-MALARIA", "Malaria Ag Rapid Test Kit", "Test Consumables", "Laboratory", null, "BOX", 10),
+                ("STAIN-GRAM", "Gram Stain Kit 4x250ml", "Test Consumables", "Laboratory", null, "KIT", 5),
+                ("STAIN-AFB", "AFB Ziehl-Neelsen Stain Kit", "Test Consumables", "Laboratory", null, "KIT", 5),
+                ("MEDIA-AGAR", "Blood Agar / MacConkey Media Plates", "Test Consumables", "Laboratory", null, "BOX", 10),
+                ("STAIN-HE", "Hematoxylin & Eosin (H&E) Stain Kit", "Test Consumables", "Laboratory", null, "KIT", 5),
+                ("STAIN-PAP", "Papanicolaou (PAP) Cytology Stain Kit", "Test Consumables", "Laboratory", null, "KIT", 5),
+                ("SUP-SLIDES", "Microscope Glass Slides & Coverslips", "Test Consumables", "Laboratory", null, "BOX", 20),
+
+                // Laboratory - General Supplies
+                ("SUP-GLOVES", "Nitrile Gloves (Large)", "General", "Laboratory", null, "BOX", 20),
+                ("SUP-ALCOHOL", "Alcohol Swabs Box", "General", "Laboratory", null, "BOX", 20),
+                ("SUP-SWAB", "Sterile Cotton Swabs", "General", "Laboratory", null, "PACK", 20),
+                ("SUP-PAPER", "Thermal Printer Paper A4", "General", "Laboratory", null, "REAM", 10),
+
+                // Radiology - Test Consumables
+                ("XR-FLM-810", "X-Ray Film 8x10 Box", "Test Consumables", "Radiology", "X-Ray", "BOX", 10),
+                ("XR-FLM-1012", "X-Ray Film 10x12 Box", "Test Consumables", "Radiology", "X-Ray", "BOX", 10),
+                ("XR-FLM-1417", "X-Ray Film 14x17 Box", "Test Consumables", "Radiology", "X-Ray", "BOX", 10),
+                ("RAD-CNT-50", "CT/MRI Non-Ionic Contrast Medium 50ml", "Test Consumables", "Radiology", "CT", "BOTTLE", 10),
+                ("RAD-CNT-100", "CT/MRI Non-Ionic Contrast Medium 100ml", "Test Consumables", "Radiology", "CT", "BOTTLE", 10),
+                ("RAD-GAD-20", "MRI Gadolinium Contrast 20ml", "Test Consumables", "Radiology", "MRI", "BOTTLE", 5),
+                ("RAD-GEL", "Ultrasound Transmission Gel 5L", "Test Consumables", "Radiology", "Ultrasound", "CAN", 5),
+                ("RAD-PAPER", "Sony Thermal Print Film Box", "Test Consumables", "Radiology", "Ultrasound", "BOX", 10)
             };
 
             foreach (var item in starterItems)
@@ -824,29 +882,29 @@ END
                 {
                     ItemId = Guid.NewGuid(),
                     ItemCode = item.Code,
-                    Name = item.Name
+                    Name = item.Name,
+                    ServiceArea = item.ServiceArea,
+                    Modality = item.Modality
                 };
                 context.ImsInventoryItems.Add(inventoryItem);
 
-                // Seed some initial stock for the default branch
-                var lot = new ImsInventoryLot
+                if (item.Category == "Tube Consumables")
                 {
-                    LotId = Guid.NewGuid(),
-                    ItemId = inventoryItem.ItemId,
-                    BatchNumber = "SEED-2024-001",
-                    CurrentQuantity = item.Threshold * 2,
-                    ContainerSize = 1,
-                    UnitCostSnapshot = 0,
-                    BranchId = DefaultBranchId,
-                    ExpiryDate = DateTimeOffset.UtcNow.AddYears(1),
-                    IsActive = true,
-                    ReceivedAt = DateTimeOffset.UtcNow
-                };
-                context.ImsInventoryLots.Add(lot);
+                    var tube = new ImsTubeMaster
+                    {
+                        TubeId = Guid.NewGuid(),
+                        Code = item.Code,
+                        Name = item.Name,
+                        UnitOfMeasure = item.Unit,
+                        IsActive = true
+                    };
+                    context.ImsTubeMasters.Add(tube);
+                    consumable.LegacyTubeId = tube.TubeId;
+                }
             }
 
             context.SaveChanges();
-            Console.WriteLine("[DbInitializer] SEEDED IMS STARTER PACK");
+            Console.WriteLine("[DbInitializer] SEEDED CLEAN STANDARD IMS MASTER CATALOG");
         }
 
         private static void SeedEmployees(SynOSDbContext context)

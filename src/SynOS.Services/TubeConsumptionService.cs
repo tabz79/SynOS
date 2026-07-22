@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SynOS.Data;
@@ -155,7 +156,8 @@ namespace SynOS.Services
                 await _notifier.NotifyInventoryShortageAsync(branchId.ToString(), specimenId.ToString(), tubeMap.TubeId.ToString(), quantityToConsume, (int)avail);
             }
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            bool isNestedTx = _context.Database.CurrentTransaction != null;
+            IDbContextTransaction? transaction = isNestedTx ? null : await _context.Database.BeginTransactionAsync();
             try
             {
                 // 6. Deduction with Cost Attribution
@@ -192,9 +194,10 @@ namespace SynOS.Services
                     {
                         var policyVersion = await _policyResolver.ResolvePolicyVersionAsync(
                             order.TestId,
-                            tubeMap.TubeId, // Assuming TubeId maps to InventoryItemId for these facts
+                            tubeMap.TubeId,
                             branchId,
-                            DateTimeOffset.UtcNow);
+                            DateTimeOffset.UtcNow
+                        );
 
                         if (policyVersion != null)
                         {
@@ -212,7 +215,7 @@ namespace SynOS.Services
                     }
                 }
 
-                // If remaining is still > 0, deduct the rest from the first lot or create a new negative lot
+                // If lot deduction did not fulfill entire quantity, deduct remaining from fallback lot
                 if (remaining > 0)
                 {
                     ImsTubeLot targetLot;
@@ -271,7 +274,8 @@ namespace SynOS.Services
                             order.TestId,
                             tubeMap.TubeId,
                             branchId,
-                            DateTimeOffset.UtcNow);
+                            DateTimeOffset.UtcNow
+                        );
 
                         if (policyVersion != null)
                         {
@@ -290,14 +294,20 @@ namespace SynOS.Services
                 }
 
                 await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                if (!isNestedTx && transaction != null)
+                {
+                    await transaction.CommitAsync();
+                }
                 _logger.LogInformation("Consumed {Quantity} tubes for Specimen {SpecimenId}", quantityToConsume, specimenId);
                 return true;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to consume stock for Specimen {SpecimenId} due to an error. Transaction rolled back.", specimenId);
+                if (!isNestedTx && transaction != null)
+                {
+                    await transaction.RollbackAsync();
+                }
+                _logger.LogError(ex, "Failed to consume stock for Specimen {SpecimenId} due to an error.", specimenId);
                 return false;
             }
         }

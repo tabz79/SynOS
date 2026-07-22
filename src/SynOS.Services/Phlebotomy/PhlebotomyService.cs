@@ -144,7 +144,9 @@ namespace SynOS.Services.Phlebotomy
                     PatientId = visit.PatientId,
                     MRN = visit.Patient.MRN,
                     Name = !string.IsNullOrEmpty(visit.Patient.DisplayName) ? visit.Patient.DisplayName : $"{visit.Patient.FirstName} {visit.Patient.LastName}",
-                    Age = visit.Patient.IsDateOfBirthKnown ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year : 0,
+                    Age = visit.Patient.DateOfBirth > DateTime.MinValue ? Math.Max(0, DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year) : 0,
+                    DateOfBirth = visit.Patient.DateOfBirth > DateTime.MinValue ? visit.Patient.DateOfBirth : null,
+                    IsDateOfBirthKnown = visit.Patient.IsDateOfBirthKnown,
                     Sex = visit.Patient.Gender
                 },
                 Instructions = plan.Select(p => {
@@ -613,7 +615,9 @@ namespace SynOS.Services.Phlebotomy
                     PatientId = visit.PatientId,
                     MRN = visit.Patient.MRN,
                     Name = !string.IsNullOrEmpty(visit.Patient.DisplayName) ? visit.Patient.DisplayName : $"{visit.Patient.FirstName} {visit.Patient.LastName}",
-                    Age = visit.Patient.IsDateOfBirthKnown ? DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year : 0,
+                    Age = visit.Patient.DateOfBirth > DateTime.MinValue ? Math.Max(0, DateTime.UtcNow.Year - visit.Patient.DateOfBirth.Year) : 0,
+                    DateOfBirth = visit.Patient.DateOfBirth > DateTime.MinValue ? visit.Patient.DateOfBirth : null,
+                    IsDateOfBirthKnown = visit.Patient.IsDateOfBirthKnown,
                     Sex = visit.Patient.Gender
                 },
                 Specimens = specimens.Select(s => new CollectedSpecimenDto

@@ -1,15 +1,24 @@
 import { apiClient as client } from './client';
 
 export const AttendanceApi = {
+  getSummary: (employeeId, month) =>
+    client.get(`/api/v1/attendance/summary/${employeeId}?month=${month || ''}`),
+
+  getMySummary: (month) =>
+    client.get(`/api/v1/attendance/my-summary${month ? `?month=${month}` : ''}`),
+
+  getMyRequests: () =>
+    client.get('/api/v1/attendance/my-requests'),
+
   getAudit: (employeeId) => 
-    client.get(`/attendance/audit/${employeeId}`).then(res => res.data),
+    client.get(`/api/v1/attendance/audit/${employeeId}`),
     
   submitLeave: (request) => 
-    client.post('/attendance/request-leave', request).then(res => res.data),
+    client.post('/api/v1/attendance/request-leave', request),
     
   reviewLeave: (review) => 
-    client.post('/attendance/review-leave', review).then(res => res.data),
+    client.post('/api/v1/attendance/review-leave', review),
     
   markException: (exception) => 
-    client.post('/attendance/exception', exception).then(res => res.data)
+    client.post('/api/v1/attendance/exception', exception)
 };

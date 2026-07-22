@@ -90,5 +90,19 @@ namespace SynOS.Api.Controllers
             var result = await _economicsService.GetExpenseFactsAsync(start, end);
             return Ok(result);
         }
+
+        [HttpGet("export-pnl")]
+        public async Task<IActionResult> ExportProfitability([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] Guid? branchId, [FromServices] SynOS.Services.ICsvService csvService)
+        {
+            if (start == default) start = DateTime.UtcNow.AddDays(-30);
+            if (end == default) end = DateTime.UtcNow;
+
+            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
+            var summary = await _economicsService.GetLabProfitabilitySummaryAsync(start, end, effectiveBranchId);
+            
+            var csvBytes = await csvService.ExportProfitabilityCsvAsync(summary);
+            var fileName = $"SynOS_Profitability_Statement_{start:yyyyMMdd}_to_{end:yyyyMMdd}.csv";
+            return File(csvBytes, "text/csv", fileName);
+        }
     }
 }

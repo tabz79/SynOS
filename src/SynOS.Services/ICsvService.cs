@@ -12,6 +12,7 @@ namespace SynOS.Services
         Task<byte[]> ExportTestsToCsvAsync();
         Task<CsvImportResultDto> ImportTestsFromCsvAsync(Stream csvStream, Guid userId, CancellationToken cancellationToken = default);
         Task<CsvImportResultDto> ImportTestsFromExcelAsync(Stream fileStream, Guid userId, CancellationToken cancellationToken = default);
+        Task<byte[]> ExportProfitabilityCsvAsync(SynOS.Models.DTOs.Economics.LabProfitabilitySummaryDto summary);
     }
 
     public class CsvImportResult

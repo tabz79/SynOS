@@ -48,13 +48,24 @@ namespace SynOS.Services
 
             var newMrn = await GenerateNextMrnAsync();
 
+            DateTime calculatedDob = patientDto.DateOfBirth > DateTime.MinValue && patientDto.DateOfBirth.Year > 1900
+                ? patientDto.DateOfBirth
+                : (patientDto.Age.HasValue && patientDto.Age.Value > 0
+                    ? DateTime.UtcNow.AddYears(-patientDto.Age.Value)
+                    : DateTime.MinValue);
+
+            bool isDobKnown = patientDto.DateOfBirth > DateTime.MinValue && patientDto.DateOfBirth.Year > 1900
+                ? patientDto.IsDateOfBirthKnown
+                : false;
+
             var patient = new Patient
             {
                 PatientId = Guid.NewGuid(),
                 MRN = newMrn,
                 FirstName = patientDto.FirstName,
                 LastName = patientDto.LastName,
-                DateOfBirth = patientDto.DateOfBirth,
+                DateOfBirth = calculatedDob,
+                IsDateOfBirthKnown = isDobKnown,
                 Gender = patientDto.Gender,
                 CurrentPhoneNumber = patientDto.CurrentPhoneNumber ?? string.Empty,
                 CreatedAt = DateTime.UtcNow,

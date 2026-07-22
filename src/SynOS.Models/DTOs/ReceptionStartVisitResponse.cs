@@ -24,6 +24,8 @@ namespace SynOS.Models.DTOs
         public string Name { get; set; } = string.Empty;
         public string Sex { get; set; } = string.Empty;
         public int Age { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public bool IsDateOfBirthKnown { get; set; } = true;
     }
 
     public class ReferralDraftDto

@@ -1,10 +1,18 @@
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 
-export const calculateDetailedAge = (dobString) => {
+export const calculateDetailedAge = (dobString, fallbackAge) => {
+    if (!dobString && fallbackAge && fallbackAge > 0) {
+        return { text: `${fallbackAge} Yrs`, category: fallbackAge < 18 ? "Child" : "Adult" };
+    }
     if (!dobString) return { text: "-", category: "Adult" };
     const dob = new Date(dobString);
-    if (isNaN(dob.getTime())) return { text: "-", category: "Adult" };
+    if (isNaN(dob.getTime()) || dob.getFullYear() <= 1900) {
+        if (fallbackAge && fallbackAge > 0) {
+            return { text: `${fallbackAge} Yrs`, category: fallbackAge < 18 ? "Child" : "Adult" };
+        }
+        return { text: "-", category: "Adult" };
+    }
     
     const today = new Date();
     const timeDiff = today - dob;
@@ -49,13 +57,13 @@ export const calculateDetailedAge = (dobString) => {
         return { text: parts.join(' '), category: "Child" };
     }
     
-    return { text: `${years} Years`, category: "Adult" };
+    return { text: `${years} Yrs`, category: "Adult" };
 };
 
 export const formatPatientDob = (dobString, isDobKnown) => {
     if (!dobString) return "";
     const dob = new Date(dobString);
-    if (isNaN(dob.getTime())) return "";
+    if (isNaN(dob.getTime()) || dob.getFullYear() <= 1900) return "";
     
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const day = String(dob.getDate()).padStart(2, '0');
@@ -74,9 +82,10 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
     const mrn = p.mrn || p.MRN || "—";
     
     const dob = p.dateOfBirth || p.DateOfBirth || p.dob || p.Dob;
+    const fallbackAge = p.age !== undefined ? p.age : p.Age;
     const isDobKnown = p.isDateOfBirthKnown !== undefined ? p.isDateOfBirthKnown : (p.IsDateOfBirthKnown !== undefined ? p.IsDateOfBirthKnown : true);
 
-    const detailedAge = calculateDetailedAge(dob);
+    const detailedAge = calculateDetailedAge(dob, fallbackAge);
     const dobText = formatPatientDob(dob, isDobKnown);
 
     // Normalize Gender (Handle: Male, male, M, m, etc)
@@ -156,12 +165,6 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
                     <span className="px-2 py-0.5 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 font-medium text-xs">
                         Age: {detailedAge.text}
                     </span>
-                    {/* DOB */}
-                    {dobText && (
-                        <span className="px-2 py-0.5 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 font-medium text-xs">
-                            DOB: {dobText}
-                        </span>
-                    )}
                     {/* Gender */}
                     <span className="w-6 h-6 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 flex items-center justify-center font-medium text-xs">
                         {genderInitial}

@@ -6,6 +6,7 @@ import {
     MoreHorizontal, 
     UserPlus,
     Building2,
+    Layers,
     ShieldCheck,
     AlertCircle,
     X
@@ -357,31 +358,46 @@ const PartnerFormModal = ({ partner, onClose, onSave }) => {
                         </div>
 
                         <div className="col-span-2 space-y-2">
-                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Payment Collection Model</label>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between ml-1">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">DEFAULT PAYMENT COLLECTION MODEL</label>
+                                <span className="text-[9px] text-zinc-400 font-medium">Can be toggled per visit at Reception</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
                                 <button 
                                     type="button"
                                     onClick={() => setFormData({...formData, paymentCollectionModel: 'LabCollects'})}
-                                    className={cn("px-4 py-4 rounded-2xl border text-xs font-bold transition-all flex flex-col items-center gap-2", 
+                                    className={cn("px-3 py-3 rounded-2xl border text-xs font-bold transition-all flex flex-col items-center gap-1.5 text-center", 
                                         formData.paymentCollectionModel === 'LabCollects' 
                                         ? "bg-synos-primary/10 border-synos-primary text-synos-primary shadow-lg shadow-synos-primary/10" 
                                         : "bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 text-zinc-400 opacity-60")}
                                 >
-                                    <Building2 size={20} />
+                                    <Building2 size={18} />
                                     LAB COLLECTS
-                                    <span className="text-[9px] font-medium opacity-70">Patient pays at the counter</span>
+                                    <span className="text-[8.5px] font-medium opacity-70 leading-tight">Patient pays at counter</span>
                                 </button>
                                 <button 
                                     type="button"
                                     onClick={() => setFormData({...formData, paymentCollectionModel: 'PartnerCollects'})}
-                                    className={cn("px-4 py-4 rounded-2xl border text-xs font-bold transition-all flex flex-col items-center gap-2", 
+                                    className={cn("px-3 py-3 rounded-2xl border text-xs font-bold transition-all flex flex-col items-center gap-1.5 text-center", 
                                         formData.paymentCollectionModel === 'PartnerCollects' 
                                         ? "bg-amber-500/10 border-amber-500 text-amber-500 shadow-lg shadow-amber-500/10" 
                                         : "bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 text-zinc-400 opacity-60")}
                                 >
-                                    <Users size={20} />
+                                    <Users size={18} />
                                     PARTNER COLLECTS
-                                    <span className="text-[9px] font-medium opacity-70">Payment collected by partner</span>
+                                    <span className="text-[8.5px] font-medium opacity-70 leading-tight">Prepaid at clinic</span>
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={() => setFormData({...formData, paymentCollectionModel: 'Both'})}
+                                    className={cn("px-3 py-3 rounded-2xl border text-xs font-bold transition-all flex flex-col items-center gap-1.5 text-center", 
+                                        (formData.paymentCollectionModel === 'Both' || formData.paymentCollectionModel === 'Hybrid') 
+                                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-lg shadow-emerald-500/10" 
+                                        : "bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 text-zinc-400 opacity-60")}
+                                >
+                                    <Layers size={18} />
+                                    BOTH (HYBRID)
+                                    <span className="text-[8.5px] font-medium opacity-70 leading-tight">Supports counter & prepaid</span>
                                 </button>
                             </div>
                         </div>

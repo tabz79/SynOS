@@ -33,6 +33,12 @@ namespace SynOS.Models.Entities.IMS
 
         public DateTimeOffset RequestedAt { get; set; } = DateTimeOffset.UtcNow;
 
+        [MaxLength(100)]
+        public string? RequestedFromScreen { get; set; }
+
+        [MaxLength(100)]
+        public string? RequesterRole { get; set; }
+
         [Required]
         public ImsRequestStatus Status { get; set; } = ImsRequestStatus.Pending;
 

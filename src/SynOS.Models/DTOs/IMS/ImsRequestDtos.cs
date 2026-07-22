@@ -8,6 +8,8 @@ namespace SynOS.Models.DTOs.IMS
         public Guid ConsumableId { get; set; }
         public int Quantity { get; set; }
         public Guid BranchId { get; set; }
+        public string? RequestedFromScreen { get; set; }
+        public string? RequesterRole { get; set; }
     }
 
     public class StockRequestSummaryDto
@@ -21,6 +23,8 @@ namespace SynOS.Models.DTOs.IMS
         public string BranchName { get; set; }
         public Guid RequestedByUserId { get; set; }
         public string RequestedByUserName { get; set; }
+        public string? RequestedByUserRole { get; set; }
+        public string? RequestedFromScreen { get; set; }
         public DateTimeOffset RequestedAt { get; set; }
         public ImsRequestStatus Status { get; set; }
     }

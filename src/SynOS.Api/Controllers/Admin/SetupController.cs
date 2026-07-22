@@ -303,6 +303,27 @@ namespace SynOS.Api.Controllers.Admin
                         @"IF NOT EXISTS(SELECT * FROM sys.columns WHERE Name = N'Modality' AND Object_ID = OBJECT_ID(N'IMS_InventoryItems'))
                           BEGIN
                               ALTER TABLE [IMS_InventoryItems] ADD [Modality] nvarchar(100) NULL;
+                          END",
+                        // v11: IMS_TestConsumableMaps QuantityPerTest DECIMAL(18,4)
+                        @"IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_TestConsumableMaps') AND name = 'QuantityPerTest' AND system_type_id = 56)
+                          BEGIN
+                              ALTER TABLE [IMS_TestConsumableMaps] ALTER COLUMN [QuantityPerTest] decimal(18,4) NOT NULL;
+                          END",
+                        // v12: IMS_TestConsumableMaps DisplayQuantity and DisplayUnit
+                        @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_TestConsumableMaps') AND name = 'DisplayQuantity')
+                          BEGIN
+                              ALTER TABLE [IMS_TestConsumableMaps] ADD [DisplayQuantity] decimal(18,4) NULL;
+                              ALTER TABLE [IMS_TestConsumableMaps] ADD [DisplayUnit] nvarchar(50) NULL;
+                          END",
+                        // v13: IMS_StockRequests RequestedFromScreen
+                        @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_StockRequests') AND name = 'RequestedFromScreen')
+                          BEGIN
+                              ALTER TABLE [IMS_StockRequests] ADD [RequestedFromScreen] nvarchar(100) NULL;
+                          END",
+                        // v14: IMS_StockRequests RequesterRole
+                        @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_StockRequests') AND name = 'RequesterRole')
+                          BEGIN
+                              ALTER TABLE [IMS_StockRequests] ADD [RequesterRole] nvarchar(100) NULL;
                           END"
                     };
 

@@ -779,33 +779,22 @@ namespace SynOS.Services
                 }
                 // ----------------------------------------
 
-                // --- DOMAIN EVENT TRIGGER (Temporary Location) ---
-                // The following logic responds to the "Payment Committed" domain event.
-                // It is placed here for now but should eventually be moved to a dedicated
-                // event handler or messaging subscriber for better decoupling.
-                if (_configuration.GetValue<bool>("Features:ReferralEconomics:Enabled") && visit.IsReferred)
+                // --- REFERRAL FINANCIAL COMMISSION RECOGNITION ---
+                if (visit.IsReferred || visit.ReferralPartnerId != null)
                 {
                     try
                     {
-                        // Idempotency Check: Ensure commission for this specific payment hasn't already been processed.
-                        var commissionAlreadyProcessed = await _context.PayableFacts.AnyAsync(pf => pf.SourcePaymentId == payment.PaymentId);
-                        if (!commissionAlreadyProcessed)
+                        var fullVisitDetails = await _visitService.GetVisitDetailsAsync(visit.VisitId);
+                        if (fullVisitDetails != null)
                         {
-                            // We must reload the full visit aggregate to ensure the service has all necessary data.
-                            var fullVisitDetails = await _visitService.GetVisitDetailsAsync(visit.VisitId);
-                            if (fullVisitDetails != null)
-                            {
-                                await _referralFinancialService.ProcessCommissionRecognitionAsync(fullVisitDetails);
-                            }
+                            await _referralFinancialService.ProcessCommissionRecognitionAsync(fullVisitDetails);
                         }
                     }
                     catch (Exception ex)
                     {
                         var partnerName = visit.ReferralPartner?.Name ?? "Unknown";
-                        _logger.LogError(ex, "Failed to process referral commission for VisitId {VisitId} (Partner: {PartnerName}) and PaymentId {PaymentId}. Root Cause: {Message}", 
-                            visit.VisitId, partnerName, payment.PaymentId, ex.Message);
-                        // The exception is intentionally swallowed to guarantee the payment operation succeeds for the user,
-                        // leaving the failed commission recognition for offline reconciliation.
+                        _logger.LogError(ex, "Failed to process referral commission for VisitId {VisitId} (Partner: {PartnerName}). Root Cause: {Message}", 
+                            visit.VisitId, partnerName, ex.Message);
                     }
                 }
 
@@ -975,7 +964,11 @@ namespace SynOS.Services
                     Mrn = visit.Patient.MRN,
                     Name = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                     Sex = visit.Patient.Gender,
-                    Age = (int)((DateTime.Today - visit.Patient.DateOfBirth).TotalDays / 365.25)
+                    DateOfBirth = visit.Patient.DateOfBirth > DateTime.MinValue && visit.Patient.DateOfBirth.Year > 1900 ? visit.Patient.DateOfBirth : null,
+                    IsDateOfBirthKnown = visit.Patient.IsDateOfBirthKnown,
+                    Age = visit.Patient.DateOfBirth > DateTime.MinValue && visit.Patient.DateOfBirth.Year > 1900
+                        ? Math.Max(0, (int)((DateTime.Today - visit.Patient.DateOfBirth).TotalDays / 365.25))
+                        : 0
                 },
                 Orders = visit.Orders.Select(o => new OrderSummaryDto
                 {
