@@ -139,6 +139,11 @@ BEGIN
     ALTER TABLE [ReportTemplates] ADD [ModalityId] uniqueidentifier NULL;
 END
 
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('ReportTemplates') AND name = 'SnapshotMetadataJson')
+BEGIN
+    ALTER TABLE [ReportTemplates] ADD [SnapshotMetadataJson] nvarchar(2000) NULL;
+END
+
 -- 8. Add columns to RadiologyStudies if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyStudies') AND name = 'ModalityId')
 BEGIN
@@ -273,6 +278,11 @@ END
                     context.SaveChanges();
                     Console.WriteLine("[DbInitializer] Self-healed ReportTemplates: Set Pathology_Standard_1Column as IsDefault=true.");
                 }
+
+                // Unconditionally backfill SnapshotMetadataJson for all existing templates
+                context.Database.ExecuteSqlRaw(@"
+                    UPDATE ReportTemplates 
+                    SET SnapshotMetadataJson = '{\""VisibleColumns\"":[\""Parameter\"",\""Value\"",\""Unit\"",\""ReferenceRange\""],\""ColumnWeights\"":[4,2,2,3]}'");
                 return;
             }
 
@@ -375,6 +385,10 @@ END
                     UpdatedAt = DateTimeOffset.UtcNow
                 }
             };
+            foreach (var t in templates)
+            {
+                t.SnapshotMetadataJson = SynOS.Models.Helpers.ReportTemplateMetadataHelper.DeriveSnapshotMetadataJson(t.TemplateJson);
+            }
             context.ReportTemplates.AddRange(templates);
             context.SaveChanges();
         }

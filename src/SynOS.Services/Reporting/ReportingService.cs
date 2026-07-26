@@ -11,6 +11,7 @@ using SynOS.Models.DTOs.Reporting;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Catalog;
 using SynOS.Models.Domain;
+using SynOS.Models.Helpers;
 
 namespace SynOS.Services.Reporting
 {
@@ -200,92 +201,154 @@ namespace SynOS.Services.Reporting
                 var connection = _context.Database.GetDbConnection();
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
+                    var connSw = System.Diagnostics.Stopwatch.StartNew();
                     await connection.OpenAsync();
+                    connSw.Stop();
+                    _logger.LogInformation("[FINE INSTRUMENTATION] Connection Open took {Elapsed} ms", connSw.ElapsedMilliseconds);
                 }
 
+                var debugSw = System.Diagnostics.Stopwatch.StartNew();
                 using (var cmd = connection.CreateCommand())
                 {
                     cmd.CommandText = "SELECT Name, Modality, IsDefault, IsDeleted FROM ReportTemplates";
-                    using (var reader = await cmd.ExecuteReaderAsync())
+                    var debugExecSw = System.Diagnostics.Stopwatch.StartNew();
+                    using (var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SequentialAccess))
                     {
+                        debugExecSw.Stop();
+                        _logger.LogInformation("[FINE INSTRUMENTATION] Debug List ExecuteReaderAsync took {Elapsed} ms", debugExecSw.ElapsedMilliseconds);
+                        var debugReadSw = System.Diagnostics.Stopwatch.StartNew();
                         while (await reader.ReadAsync())
                         {
                             _logger.LogInformation("CS Resolve Template Row: Name={Name}, Modality={Modality}, IsDefault={IsDefault}, IsDeleted={IsDeleted}",
                                 reader.GetString(0), reader.GetString(1), reader.GetBoolean(2), reader.GetBoolean(3));
                         }
+                        debugReadSw.Stop();
+                        _logger.LogInformation("[FINE INSTRUMENTATION] Debug List Read Loop took {Elapsed} ms", debugReadSw.ElapsedMilliseconds);
                     }
                 }
+                debugSw.Stop();
+                _logger.LogInformation("[FINE INSTRUMENTATION] Total Debug List Query took {Elapsed} ms", debugSw.ElapsedMilliseconds);
 
-                string templateJson = null;
-                var rawQuery1Sw = System.Diagnostics.Stopwatch.StartNew();
+                // STEP 1: Query SnapshotMetadataJson FIRST (Two-Query Rule)
+                string? snapshotMetadataJson = null;
+                var metadataQuerySw = System.Diagnostics.Stopwatch.StartNew();
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = "SELECT TOP(1) TemplateJson FROM ReportTemplates WHERE Modality = @Modality AND IsDefault = 1 AND IsDeleted = 0";
+                    cmd.CommandText = "SELECT TOP(1) SnapshotMetadataJson FROM ReportTemplates WHERE Modality = @Modality AND IsDefault = 1 AND IsDeleted = 0";
                     var param = cmd.CreateParameter();
                     param.ParameterName = "@Modality";
                     param.Value = modality;
                     cmd.Parameters.Add(param);
 
-                    using (var reader = await cmd.ExecuteReaderAsync())
+                    var q1ExecSw = System.Diagnostics.Stopwatch.StartNew();
+                    using (var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SequentialAccess))
                     {
-                        if (await reader.ReadAsync())
+                        q1ExecSw.Stop();
+                        _logger.LogInformation("[FINE INSTRUMENTATION] Metadata Query 1 ExecuteReaderAsync took {Elapsed} ms", q1ExecSw.ElapsedMilliseconds);
+                        var q1ReadSw = System.Diagnostics.Stopwatch.StartNew();
+                        var hasRow = await reader.ReadAsync();
+                        q1ReadSw.Stop();
+                        _logger.LogInformation("[FINE INSTRUMENTATION] Metadata Query 1 ReadAsync took {Elapsed} ms (HasRow={HasRow})", q1ReadSw.ElapsedMilliseconds, hasRow);
+
+                        if (hasRow && !reader.IsDBNull(0))
                         {
-                            templateJson = reader.GetString(0);
+                            var q1GetSw = System.Diagnostics.Stopwatch.StartNew();
+                            snapshotMetadataJson = reader.GetString(0);
+                            q1GetSw.Stop();
+                            _logger.LogInformation("[FINE INSTRUMENTATION] Metadata Query 1 GetString(0) took {Elapsed} ms (Length={Length})", q1GetSw.ElapsedMilliseconds, snapshotMetadataJson?.Length ?? 0);
                         }
                     }
                 }
-                rawQuery1Sw.Stop();
-                _logger.LogInformation("CS Resolve: Raw DbCommand Query 1 (Modality) took {Elapsed} ms. String Length: {Length}", 
-                    rawQuery1Sw.ElapsedMilliseconds, templateJson?.Length ?? 0);
 
-                if (templateJson == null)
+                // Fallback Metadata Query 1b (Default template) if modality didn't match
+                if (string.IsNullOrWhiteSpace(snapshotMetadataJson))
                 {
-                    var rawQuery2Sw = System.Diagnostics.Stopwatch.StartNew();
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.CommandText = "SELECT TOP(1) SnapshotMetadataJson FROM ReportTemplates WHERE IsDefault = 1 AND IsDeleted = 0";
+                        var q2ExecSw = System.Diagnostics.Stopwatch.StartNew();
+                        using (var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SequentialAccess))
+                        {
+                            q2ExecSw.Stop();
+                            _logger.LogInformation("[FINE INSTRUMENTATION] Metadata Query 2 ExecuteReaderAsync took {Elapsed} ms", q2ExecSw.ElapsedMilliseconds);
+                            var q2ReadSw = System.Diagnostics.Stopwatch.StartNew();
+                            var hasRow = await reader.ReadAsync();
+                            q2ReadSw.Stop();
+                            _logger.LogInformation("[FINE INSTRUMENTATION] Metadata Query 2 ReadAsync took {Elapsed} ms (HasRow={HasRow})", q2ReadSw.ElapsedMilliseconds, hasRow);
+
+                            if (hasRow && !reader.IsDBNull(0))
+                            {
+                                var q2GetSw = System.Diagnostics.Stopwatch.StartNew();
+                                snapshotMetadataJson = reader.GetString(0);
+                                q2GetSw.Stop();
+                                _logger.LogInformation("[FINE INSTRUMENTATION] Metadata Query 2 GetString(0) took {Elapsed} ms (Length={Length})", q2GetSw.ElapsedMilliseconds, snapshotMetadataJson?.Length ?? 0);
+                            }
+                        }
+                    }
+                }
+                metadataQuerySw.Stop();
+                _logger.LogInformation("CS Resolve: SnapshotMetadataJson query took {Elapsed} ms. Metadata Length: {Length}", metadataQuerySw.ElapsedMilliseconds, snapshotMetadataJson?.Length ?? 0);
+
+                // STEP 2: Process Metadata if present
+                bool metadataResolved = false;
+                if (!string.IsNullOrWhiteSpace(snapshotMetadataJson))
+                {
+                    try
+                    {
+                        var metadataDto = JsonSerializer.Deserialize<SnapshotMetadataDto>(snapshotMetadataJson);
+                        if (metadataDto?.VisibleColumns != null && metadataDto.VisibleColumns.Any())
+                        {
+                            var mapColumnsSw = System.Diagnostics.Stopwatch.StartNew();
+                            domainState.ColumnDefinitions = metadataDto.VisibleColumns.Select((col, idx) => new ColumnDefinitionState
+                            {
+                                Code = col,
+                                Title = col == "Parameter" ? "Test Name" :
+                                        col == "Value" ? "Results" :
+                                        col == "Unit" ? "Unit" :
+                                        col == "ReferenceRange" ? "Normal Range" : col,
+                                Weight = metadataDto.ColumnWeights != null && idx < metadataDto.ColumnWeights.Count ? metadataDto.ColumnWeights[idx] : 1,
+                                Align = col == "Parameter" ? "Left" :
+                                        col == "Value" ? "Center" :
+                                        col == "Unit" ? "Center" : "Right",
+                                HighlightRule = "None"
+                            }).ToList();
+                            mapColumnsSw.Stop();
+                            metadataResolved = true;
+                            _logger.LogInformation("CS Resolve: Map columns from SnapshotMetadataJson took {Elapsed} ms", mapColumnsSw.ElapsedMilliseconds);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to parse SnapshotMetadataJson. Will attempt fallback to TemplateJson.");
+                    }
+                }
+
+                // STEP 3: SECONDARY FALLBACK (Only if SnapshotMetadataJson was NULL / missing)
+                if (!metadataResolved)
+                {
+                    _logger.LogInformation("CS Resolve: SnapshotMetadataJson is NULL/empty. Executing Secondary Fallback Query for TemplateJson...");
+                    string templateJson = null;
                     using (var cmd = connection.CreateCommand())
                     {
                         cmd.CommandText = "SELECT TOP(1) TemplateJson FROM ReportTemplates WHERE IsDefault = 1 AND IsDeleted = 0";
-                        using (var reader = await cmd.ExecuteReaderAsync())
+                        using (var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SequentialAccess))
                         {
-                            if (await reader.ReadAsync())
+                            if (await reader.ReadAsync() && !reader.IsDBNull(0))
                             {
                                 templateJson = reader.GetString(0);
                             }
                         }
                     }
-                    rawQuery2Sw.Stop();
-                    _logger.LogInformation("CS Resolve: Raw DbCommand Query 2 (Default fallback) took {Elapsed} ms. String Length: {Length}", 
-                        rawQuery2Sw.ElapsedMilliseconds, templateJson?.Length ?? 0);
-                }
 
-                if (templateJson != null)
-                {
-                    var allocationSw = System.Diagnostics.Stopwatch.StartNew();
-                    var jsonText = templateJson;
-                    var jsonLength = jsonText?.Length ?? 0;
-                    allocationSw.Stop();
-                    _logger.LogInformation("CS Resolve: JSON String retrieval/allocation took {Elapsed} ms (Length: {Length} chars)", allocationSw.ElapsedMilliseconds, jsonLength);
-
-                    var deserializeModelSw = System.Diagnostics.Stopwatch.StartNew();
-                    var templateModel = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(jsonText);
-                    deserializeModelSw.Stop();
-                    _logger.LogInformation("CS Resolve: Deserialize template model took {Elapsed} ms", deserializeModelSw.ElapsedMilliseconds);
-
-                    if (templateModel?.Sections != null)
+                    if (templateJson != null)
                     {
-                        var sectionFindSw = System.Diagnostics.Stopwatch.StartNew();
-                        var parameterTableSection = templateModel.Sections
-                            .FirstOrDefault(s => s.Type == "ParameterTable");
-                        _logger.LogInformation("CS Resolve: ParameterTable section lookup took {Elapsed} ms", sectionFindSw.ElapsedMilliseconds);
-
+                        var templateModel = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(templateJson);
+                        var parameterTableSection = templateModel?.Sections?.FirstOrDefault(s => s.Type == "ParameterTable");
                         if (parameterTableSection != null)
                         {
-                            var deserializeConfigSw = System.Diagnostics.Stopwatch.StartNew();
                             var tableConfig = JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.ParameterTableConfig>(parameterTableSection.Config.GetRawText());
-                            _logger.LogInformation("CS Resolve: Deserialize table config took {Elapsed} ms", deserializeConfigSw.ElapsedMilliseconds);
-
                             if (tableConfig != null && tableConfig.VisibleColumns != null)
                             {
-                                var mapColumnsSw = System.Diagnostics.Stopwatch.StartNew();
                                 domainState.ColumnDefinitions = tableConfig.VisibleColumns.Select((col, idx) => new ColumnDefinitionState
                                 {
                                     Code = col,
@@ -299,7 +362,6 @@ namespace SynOS.Services.Reporting
                                             col == "Unit" ? "Center" : "Right",
                                     HighlightRule = "None"
                                 }).ToList();
-                                _logger.LogInformation("CS Resolve: Map columns took {Elapsed} ms", mapColumnsSw.ElapsedMilliseconds);
                             }
                         }
                     }

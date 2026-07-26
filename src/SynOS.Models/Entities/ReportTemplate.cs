@@ -28,6 +28,9 @@ namespace SynOS.Models.Entities
         [Required]
         public string TemplateJson { get; set; }
 
+        [StringLength(2000)]
+        public string? SnapshotMetadataJson { get; set; }
+
         [Required]
         public int Version { get; set; } = 1;
 

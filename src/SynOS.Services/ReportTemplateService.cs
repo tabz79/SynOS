@@ -40,6 +40,7 @@ namespace SynOS.Services
             ValidateTemplateJson(createDto.TemplateJson);
 
             var reportTemplate = _mapper.Map<ReportTemplate>(createDto);
+            reportTemplate.SnapshotMetadataJson = SynOS.Models.Helpers.ReportTemplateMetadataHelper.DeriveSnapshotMetadataJson(createDto.TemplateJson);
             reportTemplate.CreatedAt = DateTimeOffset.UtcNow;
             reportTemplate.UpdatedAt = DateTimeOffset.UtcNow;
             reportTemplate.Version = 1;
@@ -84,6 +85,7 @@ namespace SynOS.Services
             ValidateTemplateJson(updateDto.TemplateJson);
 
             _mapper.Map(updateDto, template);
+            template.SnapshotMetadataJson = SynOS.Models.Helpers.ReportTemplateMetadataHelper.DeriveSnapshotMetadataJson(updateDto.TemplateJson);
             template.UpdatedAt = DateTimeOffset.UtcNow;
             template.Version++;
 
