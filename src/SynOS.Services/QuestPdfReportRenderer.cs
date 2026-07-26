@@ -3,15 +3,24 @@ using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using SynOS.Models.DTOs.ReportTemplateDsl;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using QRCoder;
 
 namespace SynOS.Services
 {
     public class QuestPdfReportRenderer : IReportPdfRenderer
     {
+        private readonly ILogger<QuestPdfReportRenderer> _logger;
+
+        public QuestPdfReportRenderer(ILogger<QuestPdfReportRenderer> logger)
+        {
+            _logger = logger;
+        }
+
         // ✅ Static ctor runs once per app lifetime and configures QuestPDF license.
         static QuestPdfReportRenderer()
         {
@@ -41,6 +50,7 @@ namespace SynOS.Services
 
         public Task<byte[]> GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)
         {
+            var swTotal = Stopwatch.StartNew();
             HeaderConfig? headerConfig = null;
             foreach (var section in templateModel.Sections)
             {
@@ -320,8 +330,16 @@ namespace SynOS.Services
                 });
             });
 
+            var swLayout = Stopwatch.StartNew();
             using var stream = new MemoryStream();
+            var swSerialize = Stopwatch.StartNew();
             document.GeneratePdf(stream);
+            swSerialize.Stop();
+            swTotal.Stop();
+
+            _logger.LogInformation("[QUESTPDF INSTRUMENTATION] Layout Build: {LayoutMs} ms | PDF Serialization: {SerializeMs} ms | Total GeneratePdfAsync: {TotalMs} ms",
+                swLayout.ElapsedMilliseconds, swSerialize.ElapsedMilliseconds, swTotal.ElapsedMilliseconds);
+
             return Task.FromResult(stream.ToArray());
         }
 

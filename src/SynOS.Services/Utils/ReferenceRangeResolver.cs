@@ -7,6 +7,33 @@ using SynOS.Models.Entities;
 
 namespace SynOS.Services.Utils
 {
+    public class ResolverInstrumentationScope : IDisposable
+    {
+        private static readonly System.Threading.AsyncLocal<ResolverInstrumentationScope?> _currentScope = new();
+        public static ResolverInstrumentationScope? Current => _currentScope.Value;
+
+        public System.Collections.Generic.HashSet<string> Parameters { get; } = new();
+        public int InvocationCount { get; set; }
+        public double TotalDurationMs { get; set; }
+
+        public ResolverInstrumentationScope()
+        {
+            _currentScope.Value = this;
+        }
+
+        public void Record(string parameterCode, double durationMs)
+        {
+            Parameters.Add(parameterCode);
+            InvocationCount++;
+            TotalDurationMs += durationMs;
+        }
+
+        public void Dispose()
+        {
+            if (_currentScope.Value == this) _currentScope.Value = null;
+        }
+    }
+
     public static class ReferenceRangeResolver
     {
         public static string DetermineAgeCategory(DateTime dob, DateTime referenceDate)
@@ -42,6 +69,7 @@ namespace SynOS.Services.Utils
 
         public static async Task<ReferenceRange?> ResolveRangeEntityAsync(SynOSDbContext context, string parameterCode, string gender, DateTime dob, DateTime referenceDate)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             string patientAgeGroup = DetermineAgeCategory(dob, referenceDate);
             var ageInYears = CalculateAge(dob, referenceDate);
 
@@ -49,6 +77,9 @@ namespace SynOS.Services.Utils
             var ranges = await context.ReferenceRanges
                 .Where(r => r.Parameter.ParameterCode == parameterCode && r.IsActive)
                 .ToListAsync();
+
+            sw.Stop();
+            ResolverInstrumentationScope.Current?.Record(parameterCode, sw.Elapsed.TotalMilliseconds);
 
             if (!ranges.Any())
             {
