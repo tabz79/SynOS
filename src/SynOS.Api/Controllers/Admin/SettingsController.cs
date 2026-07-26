@@ -30,6 +30,7 @@ namespace SynOS.Api.Controllers.Admin
         private readonly ProductionDatabasePreparer _databasePreparer;
         private readonly ILogger<SettingsController> _logger;
         private readonly IBackupKeyProvider _backupKeyProvider;
+        private readonly ILicenseRecoveryService _licenseRecoveryService;
 
         public SettingsController(
             SynOSDbContext context,
@@ -40,7 +41,8 @@ namespace SynOS.Api.Controllers.Admin
             IConfiguration configuration,
             ProductionDatabasePreparer databasePreparer,
             ILogger<SettingsController> logger,
-            IBackupKeyProvider backupKeyProvider)
+            IBackupKeyProvider backupKeyProvider,
+            ILicenseRecoveryService licenseRecoveryService)
         {
             _context = context;
             _auditService = auditService;
@@ -51,6 +53,7 @@ namespace SynOS.Api.Controllers.Admin
             _databasePreparer = databasePreparer;
             _logger = logger;
             _backupKeyProvider = backupKeyProvider;
+            _licenseRecoveryService = licenseRecoveryService;
         }
 
         [HttpGet]
@@ -362,8 +365,7 @@ namespace SynOS.Api.Controllers.Admin
                 if (dto.MiddlewareApiUrl != null)
                     SetNodeValue(clientRoot, "Middleware:ApiUrl", JsonValue.Create(dto.MiddlewareApiUrl));
 
-                if (dto.MiddlewareApiKey != null && dto.MiddlewareApiKey != "********")
-                    SetNodeValue(clientRoot, "Middleware:ApiKey", JsonValue.Create(dto.MiddlewareApiKey));
+                // Middleware ApiKey is no longer persisted in appsettings.json in plaintext
 
                 var writeOptions = new JsonSerializerOptions { WriteIndented = true };
                 var updatedClientJson = JsonSerializer.Serialize(clientRoot, writeOptions);
@@ -379,8 +381,7 @@ namespace SynOS.Api.Controllers.Admin
                     if (dto.MiddlewareApiUrl != null)
                         profile.MiddlewareApiUrl = dto.MiddlewareApiUrl;
 
-                    if (dto.MiddlewareApiKey != null && dto.MiddlewareApiKey != "********")
-                        profile.MiddlewareApiKey = dto.MiddlewareApiKey;
+                    // Middleware ApiKey is no longer persisted in database in plaintext
 
                     // BackupEncryptionKey is deprecated on database profile
 
@@ -548,6 +549,13 @@ namespace SynOS.Api.Controllers.Admin
                 }
             }
 
+            var versionObj = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+            var currentVersion = versionObj != null ? $"{versionObj.Major}.{versionObj.Minor}.{versionObj.Build}" : "1.4.9";
+            if (currentVersion == "1.0.0" || currentVersion == "0.0.0")
+            {
+                currentVersion = "1.4.9";
+            }
+
             return Ok(new {
                 database = dbStatus,
                 middleware = middlewareStatus,
@@ -555,7 +563,7 @@ namespace SynOS.Api.Controllers.Admin
                 storageFreeSpaceBytes = freeSpace,
                 lastBackup = lastBackupStr,
                 cloudSync = "Connected",
-                currentVersion = "1.2.0-Enterprise",
+                currentVersion = currentVersion + "-Enterprise",
                 license = "Enterprise Active (Expires: 2027-12-31)",
                 updateStatus = "Up to date"
             });
@@ -614,38 +622,25 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
-                var handler = new System.Net.Http.SocketsHttpHandler
+                var profile = await _context.LabProfiles.FirstOrDefaultAsync();
+                bool success;
+                if (!string.IsNullOrWhiteSpace(dto.ApiKey) && dto.ApiKey != "********")
                 {
-                    ConnectCallback = async (context, cancellationToken) =>
-                    {
-                        var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
-                        var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-                        socket.NoDelay = true;
-                        try
-                        {
-                            await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
-                            return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
-                        }
-                        catch
-                        {
-                            socket.Dispose();
-                            throw;
-                        }
-                    }
-                };
-                using var client = new System.Net.Http.HttpClient(handler);
-                if (!string.IsNullOrEmpty(dto.ApiKey))
-                {
-                    client.DefaultRequestHeaders.Add("X-Api-Key", dto.ApiKey);
+                    success = await _licenseRecoveryService.ValidateKeyAndSyncProfileAsync(dto.ApiKey, _context, profile);
                 }
-                var testUrl = dto.ApiUrl?.Replace("/api/events", "/health") ?? "http://localhost:5069/health";
-                var response = await client.GetAsync(testUrl);
-                if (response.IsSuccessStatusCode)
+                else
                 {
-                    return Ok(new { success = true, message = "Middleware connection test successful." });
+                    success = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(_context, profile);
                 }
-                return Ok(new { success = false, message = $"Middleware returned status code: {response.StatusCode}" });
+
+                if (success)
+                {
+                    return Ok(new { success = true, message = "Middleware connection & license validation successful." });
+                }
+                else
+                {
+                    return Ok(new { success = false, message = SynOS.Services.Security.MiddlewareSyncHealth.LastError ?? "License validation or connection test failed." });
+                }
             }
             catch (Exception ex)
             {
@@ -783,10 +778,7 @@ namespace SynOS.Api.Controllers.Admin
                 }
                 else if (dto.SecretType.Equals("middleware", StringComparison.OrdinalIgnoreCase))
                 {
-                    profile.MiddlewareApiKey = newSecret;
-                    await _context.SaveChangesAsync();
-                    await _auditService.LogAsync(_userContext.CurrentUserId, "SecretRotated", "Settings", profile.LabProfileId, new { SecretType = dto.SecretType });
-                    return Ok(new { success = true, key = newSecret, message = "Middleware API Key rotated successfully." });
+                    return BadRequest(new { success = false, message = "Middleware API Key rotation is not supported. Use the License Key manager to activate or refresh your credentials." });
                 }
                 else
                 {
@@ -818,119 +810,22 @@ namespace SynOS.Api.Controllers.Admin
 
             try
             {
-                var handler = new System.Net.Http.SocketsHttpHandler
+                var success = await _licenseRecoveryService.ValidateKeyAndSyncProfileAsync(dto.LicenseKey, _context, profile);
+                if (success)
                 {
-                    ConnectCallback = async (context, cancellationToken) =>
-                    {
-                        var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
-                        var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-                        socket.NoDelay = true;
-                        try
-                        {
-                            await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
-                            return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
-                        }
-                        catch
-                        {
-                            socket.Dispose();
-                            throw;
-                        }
-                    }
-                };
-                using var client = new System.Net.Http.HttpClient(handler);
-
-                var apiUrl = string.IsNullOrWhiteSpace(profile.MiddlewareApiUrl) ? "http://localhost:5069/api/events" : profile.MiddlewareApiUrl;
-                var validateUrl = apiUrl.Replace("/api/events", "/api/labs/validate");
-
-                var request = new HttpRequestMessage(HttpMethod.Post, validateUrl);
-                request.Headers.Add("X-Api-Key", dto.LicenseKey);
-
-                var response = await client.SendAsync(request);
-                var responseBody = await response.Content.ReadAsStringAsync();
-
-                if (response.IsSuccessStatusCode)
-                {
-                    using var doc = JsonDocument.Parse(responseBody);
-                    var root = doc.RootElement;
-                    var labId = root.TryGetProperty("labId", out var idProp) ? idProp.GetString() : null;
-                    var labName = root.TryGetProperty("labName", out var nameProp) ? nameProp.GetString() : null;
-                    var licenseStatus = root.TryGetProperty("licenseStatus", out var licProp) ? licProp.GetString() : null;
-                    var licenseType = root.TryGetProperty("licenseType", out var typeProp) ? typeProp.GetString() : null;
-                    int maximumBranches = 1;
-                    if (root.TryGetProperty("maximumBranches", out var maxProp) && maxProp.TryGetInt32(out var mv))
-                        maximumBranches = mv;
-                    else if (root.TryGetProperty("MaximumBranches", out var maxProp2) && maxProp2.TryGetInt32(out var mv2))
-                        maximumBranches = mv2;
-                    var expiryDate = root.TryGetProperty("expiryDate", out var expProp) && expProp.ValueKind != JsonValueKind.Null ? expProp.GetString() : null;
-
-                    var enabledFeatures = new System.Collections.Generic.List<string>();
-                    if (root.TryGetProperty("enabledFeatures", out var featProp) && featProp.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var item in featProp.EnumerateArray())
-                        {
-                            var str = item.GetString();
-                            if (str != null) enabledFeatures.Add(str);
-                        }
-                    }
-
-                    // Save to local database
-                    profile.MiddlewareApiKey = dto.LicenseKey;
-                    if (!string.IsNullOrEmpty(labId)) profile.LabId = labId;
-                    if (!string.IsNullOrEmpty(licenseType)) profile.LicenseType = licenseType;
-                    profile.MaximumBranches = maximumBranches;
-                    if (!string.IsNullOrEmpty(licenseStatus)) profile.LicenseStatus = licenseStatus;
-                    profile.EnabledFeatures = enabledFeatures;
-                    if (!string.IsNullOrEmpty(expiryDate) && DateTime.TryParse(expiryDate, out var parsedExp))
-                    {
-                        profile.LicenseExpiryDate = parsedExp;
-                    }
-                    else
-                    {
-                        profile.LicenseExpiryDate = null;
-                    }
-                    profile.UpdatedAt = DateTimeOffset.UtcNow;
-
-                    await _context.SaveChangesAsync();
-
-                    // Save to appsettings.json
-                    var clientPath = FindAppSettingsPath();
-                    if (System.IO.File.Exists(clientPath))
-                    {
-                        var jsonText = await System.IO.File.ReadAllTextAsync(clientPath);
-                        var settingsNode = JsonNode.Parse(jsonText)?.AsObject();
-                        if (settingsNode != null)
-                        {
-                            SetNodeValue(settingsNode, "Middleware:ApiKey", JsonValue.Create(dto.LicenseKey));
-                            if (!string.IsNullOrEmpty(labId))
-                            {
-                                SetNodeValue(settingsNode, "Middleware:LabId", JsonValue.Create(labId));
-                            }
-                            var writeOptions = new JsonSerializerOptions { WriteIndented = true };
-                            await System.IO.File.WriteAllTextAsync(clientPath, JsonSerializer.Serialize(settingsNode, writeOptions));
-                        }
-                    }
-
-                    // Reload configurations
-                    if (_configuration is IConfigurationRoot configRoot)
-                    {
-                        configRoot.Reload();
-                    }
-
-                    await _auditService.LogAsync(_userContext.CurrentUserId, "LicenseUpdated", "Settings", profile.LabProfileId, new { LicenseKey = dto.LicenseKey, LicenseType = licenseType });
-
+                    await _auditService.LogAsync(_userContext.CurrentUserId, "LicenseUpdated", "Settings", profile.LabProfileId, new { LicenseType = profile.LicenseType });
                     return Ok(new 
                     { 
                         success = true, 
                         message = "License key updated successfully.",
-                        licenseType = licenseType,
-                        maximumBranches = maximumBranches,
-                        expiryDate = expiryDate
+                        licenseType = profile.LicenseType,
+                        maximumBranches = profile.MaximumBranches,
+                        expiryDate = profile.LicenseExpiryDate
                     });
                 }
                 else
                 {
-                    return Ok(new { success = false, message = $"Verification failed: Middleware returned status code: {response.StatusCode}" });
+                    return Ok(new { success = false, message = SynOS.Services.Security.MiddlewareSyncHealth.LastError ?? "License key verification failed." });
                 }
             }
             catch (Exception ex)

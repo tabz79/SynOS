@@ -127,6 +127,8 @@ namespace SynOS.Models.Entities
         public string? MaintenanceStartHour { get; set; } = "02:00";
         public string? MaintenanceEndHour { get; set; } = "04:00";
 
+        public string? LicenseKey { get; set; }
+
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
     }
 }

@@ -8,13 +8,13 @@
 
 [Setup]
 AppName=SynOS
-AppVersion=1.4.1
+AppVersion=1.5.1
 AppPublisher=TBZ Labs
-DefaultDirName={commonpf}\TBZ Labs\SynOS
+DefaultDirName=C:\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v141_final
+OutputBaseFilename=SynOS_Setup_v151_final
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -27,8 +27,8 @@ VersionInfoCompany=TBZ Labs
 VersionInfoCopyright=© TBZ Labs
 VersionInfoDescription=Diagnostics Lab Operating System
 VersionInfoProductName=SynOS
-VersionInfoProductVersion=1.4.1
-VersionInfoVersion=1.4.1.0
+VersionInfoProductVersion=1.5.1
+VersionInfoVersion=1.5.1.0
 
 LicenseFile=scripts\eula.txt
 
@@ -49,9 +49,13 @@ Name: "C:\ProgramData\TBZ Labs\SynOS\Config"
 Name: "C:\ProgramData\TBZ Labs\SynOS\Temp"
 Name: "C:\ProgramData\TBZ Labs\SynOS\CrashDumps"
 
+[InstallDelete]
+Type: files; Name: "{app}\wwwroot\assets\index-*.js"
+Type: files; Name: "{app}\wwwroot\assets\index-*.css"
+
 [Files]
 Source: "src\SynOS.Api\bin\Release\net8.0\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Permissions: everyone-modify
-Source: "src\SynOS.Api\bin\Release\net8.0\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json"
+Source: "src\SynOS.Api\bin\Release\net8.0\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json, Logs\*"
 Source: "installer-assets\SynOS.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Copy verification, prerequisite, configuration, export/import and decommission scripts
@@ -77,7 +81,9 @@ Name: "{group}\SynOS"; Filename: "http://localhost:59999/admin"; IconFilename: "
 Name: "{group}\Uninstall SynOS"; Filename: "{uninstallexe}"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
 
 [Run]
-Filename: "{app}\SynOS.Api.exe"; Parameters: "--setup"; Description: "Configure and Launch SynOS"; Flags: postinstall nowait runhidden
+Filename: "net.exe"; Parameters: "start TBZSynOSService"; Flags: runhidden
+Filename: "{app}\SynOS.Api.exe"; Parameters: "--setup"; Description: "Configure and Launch SynOS Setup"; Flags: postinstall nowait runhidden; Check: NeedsFirstRunSetup
+Filename: "http://localhost:59999/admin"; Description: "Launch SynOS in Web Browser"; Flags: postinstall shellexec skipifsilent; Check: not NeedsFirstRunSetup
 
 [UninstallRun]
 ; Run decommission script before removing application files
@@ -118,6 +124,11 @@ var
   RemoveDbVal, RemoveReportsVal, RemovePacsVal, RemoveBackupsVal: Boolean;
   InstallSuccess: Boolean;
   InstallErrorMsg: String;
+
+function NeedsFirstRunSetup: Boolean;
+begin
+  Result := not FileExists('C:\ProgramData\TBZ Labs\SynOS\Config\setup_state.json');
+end;
 
 // Helper getters for uninstall options
 function GetRemoveDb(Param: String): String;
@@ -606,7 +617,7 @@ begin
   if IsServiceInstalled('TBZSynOSService') then
   begin
     UpgradeResult := MsgBox('An existing installation of SynOS was detected.' + #13#10 + #13#10 +
-      'Do you want to perform an upgrade to Version 1.2.1? (Your database and uploads will be preserved).',
+      'Do you want to perform an upgrade to Version ' + ExpandConstant('{#SetupSetting("AppVersion")}') + '? (Your database and uploads will be preserved).',
       mbConfirmation, MB_YESNO);
     if UpgradeResult <> IDYES then
     begin

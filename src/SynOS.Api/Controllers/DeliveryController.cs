@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SynOS.Models.DTOs;
 using SynOS.Models.Enums;
 using SynOS.Services;
@@ -31,6 +32,26 @@ public class DeliveryController : ControllerBase
             throw new UnauthorizedAccessException("User ID not found in claims.");
         }
         return parsedUserId;
+    }
+
+    [HttpGet("status")]
+    public async Task<IActionResult> GetGatewayStatus([FromServices] SynOS.Data.SynOSDbContext dbContext)
+    {
+        var pendingCount = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(dbContext.OutboxEvents, e => e.Status == "Pending" || e.Status == "Failed");
+        var deadLetterCount = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.CountAsync(dbContext.OutboxEvents, e => e.Status == "DeadLetter");
+        var profile = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(dbContext.LabProfiles.AsNoTracking());
+
+        return Ok(new
+        {
+            isHealthy = SynOS.Services.Security.MiddlewareSyncHealth.IsHealthy,
+            statusMessage = SynOS.Services.Security.MiddlewareSyncHealth.StatusMessage,
+            lastSyncTime = SynOS.Services.Security.MiddlewareSyncHealth.LastSyncTime,
+            lastError = SynOS.Services.Security.MiddlewareSyncHealth.LastError,
+            pendingOutboxCount = pendingCount,
+            deadLetterCount = deadLetterCount,
+            labId = profile?.LabId ?? "LAB002",
+            middlewareUrl = profile?.MiddlewareApiUrl ?? "https://cloud.tbzlabs.in/api/events"
+        });
     }
 
     [HttpGet("queue")]

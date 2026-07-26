@@ -291,7 +291,11 @@ namespace SynOS.Services
                     }
                 }
 
-                var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.2.0";
+                var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.4.9";
+                if (appVersion == "1.0.0.0" || appVersion == "0.0.0.0")
+                {
+                    appVersion = "1.4.9";
+                }
                 var labProfile = await _context.LabProfiles.FirstOrDefaultAsync();
                 var labId = labProfile?.LabId ?? _configuration["Middleware:LabId"] ?? "LAB001";
                 long backupFileSize = new FileInfo(dbSnapshotFile).Length;
@@ -582,32 +586,49 @@ namespace SynOS.Services
             List<UserBranchRole> restoringUserBranchRoles = null;
             List<UserWorkspaceAccess> restoringUserWorkspaceAccesses = null;
             Employee restoringEmployee = null;
+            LabProfile restoringLabProfile = null;
             var roleIdToNameMap = new Dictionary<Guid, string>();
 
-            if (initiatedByUserId != Guid.Empty && _context.Database.IsRelational())
+            if (_context.Database.IsRelational())
             {
                 try
                 {
-                    restoringUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == initiatedByUserId);
-                    if (restoringUser != null)
+                    restoringLabProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+                    if (restoringLabProfile != null)
                     {
-                        restoringUserRoles = await _context.UserRoles.AsNoTracking().Where(ur => ur.UserId == initiatedByUserId).ToListAsync();
-                        restoringUserBranchRoles = await _context.UserBranchRoles.AsNoTracking().Where(ubr => ubr.UserId == initiatedByUserId).ToListAsync();
-                        restoringUserWorkspaceAccesses = await _context.UserWorkspaceAccesses.AsNoTracking().Where(uwa => uwa.UserId == initiatedByUserId).ToListAsync();
-                        restoringEmployee = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.UserId == initiatedByUserId);
-                        
-                        var roles = await _context.Roles.AsNoTracking().ToListAsync();
-                        foreach (var role in roles)
-                        {
-                            roleIdToNameMap[role.RoleId] = role.Name;
-                        }
-                        
-                        _logger.LogInformation("Successfully cached credentials and profile for restoring user: {Username}", restoringUser.Username);
+                        _logger.LogInformation("Successfully cached active LabProfile licensing and middleware details (LabId: {LabId})", restoringLabProfile.LabId);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to load restoring user details for preservation before restore.");
+                    _logger.LogWarning(ex, "Failed to load active LabProfile settings for preservation before restore.");
+                }
+
+                if (initiatedByUserId != Guid.Empty)
+                {
+                    try
+                    {
+                        restoringUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == initiatedByUserId);
+                        if (restoringUser != null)
+                        {
+                            restoringUserRoles = await _context.UserRoles.AsNoTracking().Where(ur => ur.UserId == initiatedByUserId).ToListAsync();
+                            restoringUserBranchRoles = await _context.UserBranchRoles.AsNoTracking().Where(ubr => ubr.UserId == initiatedByUserId).ToListAsync();
+                            restoringUserWorkspaceAccesses = await _context.UserWorkspaceAccesses.AsNoTracking().Where(uwa => uwa.UserId == initiatedByUserId).ToListAsync();
+                            restoringEmployee = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.UserId == initiatedByUserId);
+                            
+                            var roles = await _context.Roles.AsNoTracking().ToListAsync();
+                            foreach (var role in roles)
+                            {
+                                roleIdToNameMap[role.RoleId] = role.Name;
+                            }
+                            
+                            _logger.LogInformation("Successfully cached credentials and profile for restoring user: {Username}", restoringUser.Username);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to load restoring user details for preservation before restore.");
+                    }
                 }
             }
 
@@ -933,6 +954,37 @@ namespace SynOS.Services
                         _logger.LogInformation("EF Core migrations started.");
                         await newContext.Database.MigrateAsync();
                         _logger.LogInformation("EF Core migrations completed.");
+
+                        if (restoringLabProfile != null)
+                        {
+                            _logger.LogInformation("Restoring active LabProfile licensing and middleware settings...");
+                            try
+                            {
+                                var existingProfile = await newContext.LabProfiles.FirstOrDefaultAsync();
+                                if (existingProfile != null)
+                                {
+                                    existingProfile.LabId = restoringLabProfile.LabId;
+                                    existingProfile.MiddlewareApiUrl = restoringLabProfile.MiddlewareApiUrl;
+                                    existingProfile.MiddlewareApiKey = restoringLabProfile.MiddlewareApiKey;
+                                    existingProfile.LicenseKey = restoringLabProfile.LicenseKey;
+                                    existingProfile.LicenseType = restoringLabProfile.LicenseType;
+                                    existingProfile.LicenseExpiryDate = restoringLabProfile.LicenseExpiryDate;
+                                    existingProfile.LicenseStatus = restoringLabProfile.LicenseStatus;
+                                    existingProfile.MaximumBranches = restoringLabProfile.MaximumBranches;
+                                    existingProfile.EnabledFeatures = restoringLabProfile.EnabledFeatures;
+                                    newContext.LabProfiles.Update(existingProfile);
+                                }
+                                else
+                                {
+                                    newContext.LabProfiles.Add(restoringLabProfile);
+                                }
+                                await newContext.SaveChangesAsync();
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed to restore LabProfile configurations.");
+                            }
+                        }
 
                         if (restoringUser != null)
                         {
@@ -1343,7 +1395,11 @@ namespace SynOS.Services
 
             if (backupSuccess)
             {
-                var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.2.0";
+                var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.4.9";
+                if (appVersion == "1.0.0.0" || appVersion == "0.0.0.0")
+                {
+                    appVersion = "1.4.9";
+                }
                 var migrations = await _context.Database.GetAppliedMigrationsAsync();
                 var schemaVersion = migrations.LastOrDefault() ?? "Initial";
 

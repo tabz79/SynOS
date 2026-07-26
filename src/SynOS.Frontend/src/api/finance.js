@@ -20,8 +20,9 @@ export const FinanceApi = {
     /**
      * Fetches profitability summary from the Economics Intelligence Service.
      */
-    getProfitabilitySummary: async (start, end, branchId, isConsolidated) => {
+    getProfitabilitySummary: async (start, end, branchId, isConsolidated, preset) => {
         const q = [];
+        if (preset) q.push(`preset=${preset}`);
         if (start) q.push(`start=${start}`);
         if (end) q.push(`end=${end}`);
         if (branchId) q.push(`branchId=${branchId}`);
@@ -36,6 +37,24 @@ export const FinanceApi = {
         });
         if (!response.ok) throw new Error("Failed to load profitability summary");
         return response.json();
+    },
+
+    exportProfitabilityPnl: async (preset = 'month', isConsolidated = true, branchId = null, start = '', end = '') => {
+        let url = `/api/v1/economics/export-pnl?isConsolidated=${isConsolidated ? 'true' : 'false'}`;
+        if (preset) url += `&preset=${preset}`;
+        if (start) url += `&start=${encodeURIComponent(start)}`;
+        if (end) url += `&end=${encodeURIComponent(end)}`;
+        if (branchId) url += `&branchId=${branchId}`;
+        const response = await fetch(url, { headers: FinanceApi.getHeaders() });
+        if (!response.ok) throw new Error("Failed to export P&L report");
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `SynOS_P&L_Statement_${preset || 'custom'}_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
     },
 
     /**
@@ -921,20 +940,6 @@ export const FinanceApi = {
             });
             if (!response.ok) throw new Error("Migration sync failed");
             return response.json();
-        },
-        exportProfitabilityPnl: async (start, end, branchId) => {
-            let url = `/api/v1/economics/export-pnl?start=${start || ''}&end=${end || ''}`;
-            if (branchId) url += `&branchId=${branchId}`;
-            const response = await fetch(url, { headers: FinanceApi.getHeaders() });
-            if (!response.ok) throw new Error("Failed to export P&L report");
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = `SynOS_P&L_Statement_${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
         }
     }
 };

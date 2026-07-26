@@ -35,6 +35,7 @@ public class DeliveryService : IDeliveryService
     private readonly IMiddlewareOutboxService _outboxService;
     private readonly IConfiguration _configuration;
     private readonly IImsConsumptionService _consumptionService;
+    private readonly IReportPdfRenderer _reportPdfRenderer;
 
     public DeliveryService(
         SynOSDbContext context,
@@ -49,7 +50,8 @@ public class DeliveryService : IDeliveryService
         IConfiguration configuration, // Inject IConfiguration
         IFileStorageService fileStorageService,
         IMiddlewareOutboxService outboxService,
-        IImsConsumptionService consumptionService) // Inject outbox service
+        IImsConsumptionService consumptionService,
+        IReportPdfRenderer reportPdfRenderer) // Inject report PDF renderer
     {
         _context = context;
         _reportService = reportService;
@@ -66,6 +68,7 @@ public class DeliveryService : IDeliveryService
         _fileStorageService = fileStorageService;
         _outboxService = outboxService;
         _consumptionService = consumptionService;
+        _reportPdfRenderer = reportPdfRenderer;
     }
 
     public async Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status)
@@ -385,7 +388,7 @@ public class DeliveryService : IDeliveryService
         report.DeliveredAt = DateTimeOffset.UtcNow;
         report.Status = "Delivered";
 
-        await _context.SaveChangesAsync();
+        await EnsureReportPdfAsync(report);
 
         var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
         var labId = !string.IsNullOrWhiteSpace(profile?.LabId) ? profile.LabId : (_configuration["Middleware:LabId"] ?? "LAB001");
@@ -741,26 +744,15 @@ public class DeliveryService : IDeliveryService
             await _context.SaveChangesAsync();
         }
 
-        // Fetch the report’s PDF as a Stream
-        string? pdfPath = null;
-        var latestReportVersion = downloadLink.Report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
-        if (latestReportVersion != null && !string.IsNullOrEmpty(latestReportVersion.PdfPath))
-        {
-            pdfPath = latestReportVersion.PdfPath;
-        }
-        else if (!string.IsNullOrEmpty(downloadLink.Report.PdfUrl))
-        {
-            pdfPath = downloadLink.Report.PdfUrl;
-        }
+        // Fetch or auto-generate the report’s PDF as a Stream
+        string pdfPath = await EnsureReportPdfAsync(downloadLink.Report);
 
-        if (string.IsNullOrEmpty(pdfPath))
-        {
-            _logger.LogError("PDF path missing for report {ReportId} associated with token {Token}", downloadLink.ReportId, token);
-            throw new BadHttpRequestException("Report PDF not available for download.", 404);
-        }
-
-        // Assuming _fileStorageService can provide a Stream for a given path
         return await _fileStorageService.GetFileStreamAsync(pdfPath);
+    }
+
+    private async Task<string> EnsureReportPdfAsync(Report report)
+    {
+        return await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
     }
 
     public async Task<DeliveryResultDto> MarkHandedOverAsync(Guid reportId, Guid userId)

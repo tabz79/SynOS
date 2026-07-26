@@ -2509,7 +2509,9 @@ export default function AdminDashboard() {
                   <h4 className="text-xs font-bold text-textSecondary uppercase tracking-wider mb-4">
                     Active Suite Version
                   </h4>
-                  <div className="text-3xl font-extrabold text-indigo-400 mb-2">v1.2.0</div>
+                  <div className="text-3xl font-extrabold text-indigo-400 mb-2">
+                    {systemInfo?.version || systemInfo?.Version || 'v1.4.9'}
+                  </div>
                   <div className="text-xs text-emerald-400 font-bold">✓ Stable release ring</div>
                 </div>
               </div>

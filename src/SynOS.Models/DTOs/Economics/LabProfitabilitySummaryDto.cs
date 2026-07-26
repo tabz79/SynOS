@@ -41,5 +41,31 @@ namespace SynOS.Models.DTOs.Economics
         public decimal AccrualMarginPercentage => TotalRevenueAccrual > 0 ? (NetAccrualPosition / TotalRevenueAccrual) * 100 : 0;
 
         public string Currency { get; set; } = "INR";
+        public System.Collections.Generic.List<DepartmentProfitabilityDto> DepartmentProfitability { get; set; } = new System.Collections.Generic.List<DepartmentProfitabilityDto>();
+        public System.Collections.Generic.List<PartnerRoiDto> TopPartnerRoi { get; set; } = new System.Collections.Generic.List<PartnerRoiDto>();
+    }
+
+    public class PartnerRoiDto
+    {
+        public Guid PartnerId { get; set; }
+        public string PartnerName { get; set; } = string.Empty;
+        public decimal TotalRevenueGenerated { get; set; }
+        public decimal TotalCommissionEarned { get; set; }
+        public int PatientCount { get; set; }
+        public decimal GrowthPercentage { get; set; }
+    }
+
+    public class DepartmentProfitabilityDto
+    {
+        public string DepartmentName { get; set; } = string.Empty;
+        public decimal BilledRevenue { get; set; }
+        public decimal CashCollected { get; set; }
+        public decimal DirectCost { get; set; }
+        public decimal NetProfit => CashCollected > 0 ? (CashCollected - DirectCost) : (BilledRevenue - DirectCost);
+        public decimal MarginPercentage => (CashCollected > 0 ? CashCollected : BilledRevenue) > 0 
+            ? (NetProfit / (CashCollected > 0 ? CashCollected : BilledRevenue)) * 100 
+            : 0;
+        public decimal ProfitMultiplier { get; set; } = 1.0m;
+        public int TotalTestsCompleted { get; set; }
     }
 }

@@ -179,6 +179,12 @@ IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_StockR
 BEGIN
     ALTER TABLE [IMS_StockRequests] ADD [RequesterRole] nvarchar(100) NULL;
 END
+
+-- 13. Add LicenseKey to LabProfiles if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseKey')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LicenseKey] nvarchar(max) NULL;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
@@ -247,14 +253,26 @@ END
 
         private static void SeedReportTemplates(SynOSDbContext context)
         {
-            // Our seeded admin user uses "admin@synos.com", not "admin@lab.com".
-            // Fall back to any user if somehow that one is missing.
             var adminUser = context.Users.FirstOrDefault(u => u.Email == "admin@synos.com")
                             ?? context.Users.FirstOrDefault();
 
             if (adminUser == null)
             {
                 Console.WriteLine("[DbInitializer] WARNING: No users found. Skipping report template seeding.");
+                return;
+            }
+
+            if (context.ReportTemplates.Any())
+            {
+                var twoCol = context.ReportTemplates.FirstOrDefault(t => t.Name == "Pathology_Detailed_2Column");
+                var oneCol = context.ReportTemplates.FirstOrDefault(t => t.Name == "Pathology_Standard_1Column");
+                if (twoCol != null && twoCol.IsDefault)
+                {
+                    twoCol.IsDefault = false;
+                    if (oneCol != null) oneCol.IsDefault = true;
+                    context.SaveChanges();
+                    Console.WriteLine("[DbInitializer] Self-healed ReportTemplates: Set Pathology_Standard_1Column as IsDefault=true.");
+                }
                 return;
             }
 
@@ -707,7 +725,7 @@ END
                 LabCity = "Khammam",
                 LabPincode = "507001",
                 MiddlewareApiUrl = "http://localhost:5069/api/events",
-                MiddlewareApiKey = "TBZ-LAB-KEY-INITIAL-PROD-SECURE-2026-v1",
+                MiddlewareApiKey = null,
                 LabId = "LAB001",
                 BackupEncryptionKey = "TBZ-INITIAL-SECURE-DB-BACKUP-ENCRYPTION-SECRET-KEY",
                 DiagnosticsEncryptionKey = "TBZ-INITIAL-SECURE-DIAGNOSTICS-ENCRYPTION-SECRET-KEY",

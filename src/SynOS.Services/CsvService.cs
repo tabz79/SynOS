@@ -922,6 +922,16 @@ namespace SynOS.Services
             sb.AppendLine($"Net Cash Flow Position,Net Realized,{summary.NetCashPosition:F2},{summary.CashMarginPercentage:F1}% Net Realized Margin");
             sb.AppendLine($"Net Accrual Operational Position,Net Operational,{summary.NetAccrualPosition:F2},{summary.AccrualMarginPercentage:F1}% Net Operational Margin");
 
+            if (summary.DepartmentProfitability != null && summary.DepartmentProfitability.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("DEPARTMENT PROFITABILITY & UNIT ECONOMICS,DEPARTMENT,REVENUE (INR),DIRECT MATERIAL COST (INR),NET PROFIT (INR),MARGIN %,PROFIT MULTIPLIER");
+                foreach (var d in summary.DepartmentProfitability)
+                {
+                    sb.AppendLine($"\"{d.DepartmentName}\",Department,{d.BilledRevenue:F2},{d.DirectCost:F2},{d.NetProfit:F2},{d.MarginPercentage:F1}%,{d.ProfitMultiplier:F1}x");
+                }
+            }
+
             var bytes = Encoding.UTF8.GetBytes(sb.ToString());
             return Task.FromResult(bytes);
         }

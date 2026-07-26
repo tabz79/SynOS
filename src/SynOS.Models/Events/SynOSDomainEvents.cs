@@ -20,6 +20,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Patient";
         public string AggregateId => PatientId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -51,6 +52,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Invoice";
         public string AggregateId => InvoiceId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -80,6 +82,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Payment";
         public string AggregateId => PaymentId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -98,6 +101,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Specimen";
         public string AggregateId => SpecimenId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -127,6 +131,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Order";
         public string AggregateId => OrderId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -155,6 +160,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Report";
         public string AggregateId => ReportId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -183,6 +189,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Report";
         public string AggregateId => ReportId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -202,6 +209,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Report";
         public string AggregateId => ReportId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -222,6 +230,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Report";
         public string AggregateId => ReportId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 
@@ -246,6 +255,7 @@ namespace SynOS.Models.Events
         public string AggregateType => "Visit";
         public string AggregateId => VisitId.ToString();
         public DateTime OccurredAt { get; } = DateTime.UtcNow;
+        [System.Text.Json.Serialization.JsonIgnore]
         public object Payload => this;
     }
 

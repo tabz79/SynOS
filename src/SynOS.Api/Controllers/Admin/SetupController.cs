@@ -26,11 +26,16 @@ namespace SynOS.Api.Controllers.Admin
     {
         private readonly IConfiguration _configuration;
         private readonly Microsoft.Extensions.Hosting.IHostApplicationLifetime _lifetime;
+        private readonly ILicenseRecoveryService _licenseRecoveryService;
 
-        public SetupController(IConfiguration configuration, Microsoft.Extensions.Hosting.IHostApplicationLifetime lifetime)
+        public SetupController(
+            IConfiguration configuration,
+            Microsoft.Extensions.Hosting.IHostApplicationLifetime lifetime,
+            ILicenseRecoveryService licenseRecoveryService)
         {
             _configuration = configuration;
             _lifetime = lifetime;
+            _licenseRecoveryService = licenseRecoveryService;
         }
 
         [HttpGet("status")]
@@ -324,6 +329,11 @@ namespace SynOS.Api.Controllers.Admin
                         @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('IMS_StockRequests') AND name = 'RequesterRole')
                           BEGIN
                               ALTER TABLE [IMS_StockRequests] ADD [RequesterRole] nvarchar(100) NULL;
+                          END",
+                        // v15: LabProfiles LicenseKey
+                        @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseKey')
+                          BEGIN
+                              ALTER TABLE [LabProfiles] ADD [LicenseKey] nvarchar(max) NULL;
                           END"
                     };
 
@@ -386,7 +396,8 @@ namespace SynOS.Api.Controllers.Admin
                 profile.ReportStorageFolder = dto.DocumentStorageFolder;
                 profile.WorkingDirectory = dto.WorkingDirectory;
                 profile.MiddlewareApiUrl = !string.IsNullOrWhiteSpace(dto.MiddlewareApiUrl) ? dto.MiddlewareApiUrl : (_configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events");
-                profile.MiddlewareApiKey = !string.IsNullOrWhiteSpace(dto.MiddlewareApiKey) ? dto.MiddlewareApiKey : _configuration["Middleware:ApiKey"];
+                profile.LicenseKey = LicenseKeyProtector.Protect(!string.IsNullOrWhiteSpace(dto.MiddlewareApiKey) ? dto.MiddlewareApiKey : _configuration["Middleware:ApiKey"]);
+                profile.MiddlewareApiKey = null;
                 profile.LabId = !string.IsNullOrWhiteSpace(dto.LabId) ? dto.LabId : (_configuration["Middleware:LabId"] ?? "LAB002");
                 profile.LicenseType = dto.LicenseType;
                 profile.MaximumBranches = dto.MaximumBranches ?? 1;
@@ -576,7 +587,7 @@ namespace SynOS.Api.Controllers.Admin
                         SetNodeValue(root, "SecureLink:PublicBaseUrl", JsonValue.Create("http://localhost:59999/secure"));
                         SetNodeValue(root, "Middleware:LabId", JsonValue.Create(dto.LabId ?? "LAB001"));
                         SetNodeValue(root, "Middleware:ApiUrl", JsonValue.Create(dto.MiddlewareApiUrl));
-                        SetNodeValue(root, "Middleware:ApiKey", JsonValue.Create(dto.MiddlewareApiKey));
+                        SetNodeValue(root, "Middleware:ApiKey", JsonValue.Create(string.Empty));
 
                         var writeOptions = new JsonSerializerOptions { WriteIndented = true };
                         await System.IO.File.WriteAllTextAsync(clientPath, JsonSerializer.Serialize(root, writeOptions));
@@ -584,6 +595,11 @@ namespace SynOS.Api.Controllers.Admin
                 }
 
                 SynOS.Api.Services.SystemSetupState.IsConfigured = true;
+
+                if (_configuration is IConfigurationRoot configRoot)
+                {
+                    configRoot.Reload();
+                }
 
                 // 1. Mark setup as completed in setup_state.json
                 try
@@ -643,11 +659,12 @@ namespace SynOS.Api.Controllers.Admin
                     Serilog.Log.Error($"[Setup] Failed to start Windows Service: {ex.Message}");
                 }
 
-                // 3. Trigger self-termination after 1 second
+                // 3. Trigger self-termination after 1.5 seconds to ensure clean handover
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(1000);
-                    _lifetime.StopApplication();
+                    await Task.Delay(1500);
+                    Serilog.Log.Information("[Setup] Terminating setup server instance to force service handover...");
+                    Environment.Exit(0);
                 });
 
                 var host = Request.Host.Host ?? "localhost";
@@ -740,83 +757,37 @@ namespace SynOS.Api.Controllers.Admin
 
             try
             {
-                var handler = new System.Net.Http.SocketsHttpHandler
+                var connStr = _configuration.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrWhiteSpace(connStr))
                 {
-                    ConnectCallback = async (context, cancellationToken) =>
-                    {
-                        var ipAddresses = await System.Net.Dns.GetHostAddressesAsync(context.DnsEndPoint.Host, cancellationToken);
-                        var ipv4Address = ipAddresses.FirstOrDefault(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-                        socket.NoDelay = true;
-                        try
-                        {
-                            await socket.ConnectAsync(new System.Net.IPEndPoint(ipv4Address ?? ipAddresses.First(), context.DnsEndPoint.Port), cancellationToken);
-                            return new System.Net.Sockets.NetworkStream(socket, ownsSocket: true);
-                        }
-                        catch
-                        {
-                            socket.Dispose();
-                            throw;
-                        }
-                    }
-                };
-                using var client = new System.Net.Http.HttpClient(handler);
-                
-                var testUrl = dto.ApiUrl?.Replace("/api/events", "/api/labs/validate") ?? "http://localhost:5069/api/labs/validate";
-                
-                var request = new HttpRequestMessage(HttpMethod.Post, testUrl);
-                if (!string.IsNullOrEmpty(dto.ApiKey))
-                {
-                    request.Headers.Add("X-Api-Key", dto.ApiKey);
+                    return BadRequest(new { success = false, message = "DefaultConnection configuration string is missing." });
                 }
 
-                var response = await client.SendAsync(request);
-                var responseBody = await response.Content.ReadAsStringAsync();
-                
-                if (response.IsSuccessStatusCode)
-                {
-                    using var doc = JsonDocument.Parse(responseBody);
-                    var root = doc.RootElement;
-                    var labId = root.TryGetProperty("labId", out var idProp) ? idProp.GetString() : null;
-                    var labName = root.TryGetProperty("labName", out var nameProp) ? nameProp.GetString() : null;
-                    var licenseStatus = root.TryGetProperty("licenseStatus", out var licProp) ? licProp.GetString() : null;
-                    var licenseType = root.TryGetProperty("licenseType", out var typeProp) ? typeProp.GetString() : null;
-                    int maximumBranches = 1;
-                    if (root.TryGetProperty("maximumBranches", out var maxProp) && maxProp.TryGetInt32(out var mv))
-                        maximumBranches = mv;
-                    else if (root.TryGetProperty("MaximumBranches", out var maxProp2) && maxProp2.TryGetInt32(out var mv2))
-                        maximumBranches = mv2;
-                    var expiryDate = root.TryGetProperty("expiryDate", out var expProp) && expProp.ValueKind != JsonValueKind.Null ? expProp.GetString() : null;
-                    
-                    var enabledFeatures = new System.Collections.Generic.List<string>();
-                    if (root.TryGetProperty("enabledFeatures", out var featProp) && featProp.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var item in featProp.EnumerateArray())
-                        {
-                            var str = item.GetString();
-                            if (str != null) enabledFeatures.Add(str);
-                        }
-                    }
+                var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
+                optionsBuilder.UseSqlServer(connStr);
+                using var context = new SynOSDbContext(optionsBuilder.Options);
 
+                var profile = await context.LabProfiles.FirstOrDefaultAsync();
+                var success = await _licenseRecoveryService.ValidateKeyAndSyncProfileAsync(dto.ApiKey, context, profile);
+
+                if (success)
+                {
+                    var updatedProfile = await context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
                     return Ok(new 
                     { 
                         success = true, 
                         message = "License activation successful.",
-                        labId = labId,
-                        labName = labName,
-                        licenseStatus = licenseStatus,
-                        licenseType = licenseType,
-                        maximumBranches = maximumBranches,
-                        expiryDate = expiryDate,
-                        enabledFeatures = enabledFeatures
+                        labId = updatedProfile?.LabId,
+                        licenseStatus = updatedProfile?.LicenseStatus,
+                        licenseType = updatedProfile?.LicenseType,
+                        maximumBranches = updatedProfile?.MaximumBranches,
+                        expiryDate = updatedProfile?.LicenseExpiryDate,
+                        enabledFeatures = updatedProfile?.EnabledFeatures
                     });
                 }
                 else
                 {
-                    using var doc = JsonDocument.Parse(responseBody);
-                    var root = doc.RootElement;
-                    var error = root.TryGetProperty("error", out var errProp) ? errProp.GetString() : "Middleware returned failure.";
-                    return Ok(new { success = false, message = error });
+                    return Ok(new { success = false, message = SynOS.Services.Security.MiddlewareSyncHealth.LastError ?? "License activation failed." });
                 }
             }
             catch (Exception ex)

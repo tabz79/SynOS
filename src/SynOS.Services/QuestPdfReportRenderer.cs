@@ -106,13 +106,46 @@ namespace SynOS.Services
                             {
                                 try
                                 {
-                                    var base64Data = headerConfig.BackgroundPath;
-                                    if (base64Data.Contains(","))
+                                    var bgPath = headerConfig.BackgroundPath.Trim();
+                                    byte[]? imageBytes = null;
+
+                                    if (bgPath.StartsWith("data:image", StringComparison.OrdinalIgnoreCase) || (!bgPath.Contains("/") && !bgPath.Contains("\\") && bgPath.Length > 200))
                                     {
-                                        base64Data = base64Data.Split(',')[1];
+                                        var base64Data = bgPath;
+                                        if (base64Data.Contains(","))
+                                        {
+                                            base64Data = base64Data.Split(',')[1];
+                                        }
+                                        imageBytes = Convert.FromBase64String(base64Data);
                                     }
-                                    var imageBytes = Convert.FromBase64String(base64Data);
-                                    bgContainer.Image(imageBytes).FitArea();
+                                    else
+                                    {
+                                        var basePath = "C:\\SynOS_Files";
+                                        var wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
+                                        
+                                        string fullPath = bgPath;
+                                        if (!Path.IsPathRooted(fullPath))
+                                        {
+                                            if (File.Exists(Path.Combine(wwwrootPath, bgPath)))
+                                            {
+                                                fullPath = Path.Combine(wwwrootPath, bgPath);
+                                            }
+                                            else if (File.Exists(Path.Combine(basePath, bgPath)))
+                                            {
+                                                fullPath = Path.Combine(basePath, bgPath);
+                                            }
+                                        }
+
+                                        if (File.Exists(fullPath))
+                                        {
+                                            imageBytes = File.ReadAllBytes(fullPath);
+                                        }
+                                    }
+
+                                    if (imageBytes != null && imageBytes.Length > 0)
+                                    {
+                                        bgContainer.Image(imageBytes).FitArea();
+                                    }
                                 }
                                 catch (Exception ex)
                                 {

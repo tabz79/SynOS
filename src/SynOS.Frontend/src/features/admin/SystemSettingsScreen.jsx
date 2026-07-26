@@ -4024,24 +4024,28 @@ export function SystemSettingsScreen() {
                     className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Middleware API Key / Secret</label>
-                  <div className="flex items-center gap-2">
-                    <div className={`flex-1 h-10 px-3 border rounded-xl text-xs font-mono flex items-center select-none shadow-sm ${
-                      advancedSettings.middlewareApiKey 
-                        ? 'bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400' 
-                        : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50 text-red-500'
-                    }`}>
-                      {advancedSettings.middlewareApiKey ? '••••••••••••••••' : 'Missing'}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => rotateSecret('middleware')}
-                      className="h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center"
-                    >
-                      {advancedSettings.middlewareApiKey ? 'Regenerate' : 'Generate'}
-                    </button>
-                  </div>
+                <div className="md:col-span-2 pt-2 flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/v1/delivery/status', {
+                          headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                        });
+                        const data = await res.json();
+                        if (data.isHealthy) {
+                          alert(`✅ WhatsApp Gateway Connected & Authorized!\n\nLab ID: ${data.labId}\nEndpoint: ${data.middlewareUrl}\nPending Events: ${data.pendingOutboxCount}`);
+                        } else {
+                          alert(`❌ WhatsApp Gateway Connection Error: ${data.statusMessage || data.lastError}\n\nFix Instructions:\nPlease verify or update your License Key in System Settings.`);
+                        }
+                      } catch (err) {
+                        alert(`❌ Test failed: ${err.message}`);
+                      }
+                    }}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-md active:scale-95 transition-all flex items-center gap-2"
+                  >
+                    Test WhatsApp Gateway Connection
+                  </button>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-xxs font-bold text-zinc-400 mb-2 uppercase tracking-wide">Middleware CORS Allowed Origins</label>
@@ -4226,7 +4230,9 @@ export function SystemSettingsScreen() {
                   <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
                     Active Suite Version
                   </h4>
-                  <div className="text-2xl font-bold text-synos-primary">v1.2.0</div>
+                  <div className="text-2xl font-bold text-synos-primary">
+                    {systemInfo?.version || systemInfo?.Version || 'v1.4.9'}
+                  </div>
                   <div className="text-xxs text-emerald-500 font-bold mt-1">✓ Running stable release ring</div>
                 </div>
               </div>

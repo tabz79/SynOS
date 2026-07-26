@@ -50,7 +50,7 @@ namespace SynOS.Services.Security
                     Data = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
                     {
                         { "Middleware:ApiUrl", string.IsNullOrWhiteSpace(profile.MiddlewareApiUrl) ? "http://localhost:5069/api/events" : profile.MiddlewareApiUrl },
-                        { "Middleware:ApiKey", string.IsNullOrWhiteSpace(profile.MiddlewareApiKey) ? "TBZ-LAB-KEY-12345" : profile.MiddlewareApiKey },
+                        { "Middleware:ApiKey", string.IsNullOrWhiteSpace(profile.LicenseKey) ? string.Empty : LicenseKeyProtector.Unprotect(profile.LicenseKey) },
                         { "Middleware:LabId", string.IsNullOrWhiteSpace(profile.LabId) ? "LAB001" : profile.LabId },
                         { "License:Type", string.IsNullOrWhiteSpace(profile.LicenseType) ? "Commercial" : profile.LicenseType },
                         { "License:MaximumBranches", profile.MaximumBranches.ToString() },
@@ -87,7 +87,7 @@ namespace SynOS.Services.Security
                 Data = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
                 {
                     { "Middleware:ApiUrl", "http://localhost:5069/api/events" },
-                    { "Middleware:ApiKey", "TBZ-LAB-KEY-12345" },
+                    { "Middleware:ApiKey", string.Empty },
                     { "Middleware:LabId", "LAB001" },
                     { "License:Type", "Enterprise" },
                     { "License:ExpiryDate", "" },

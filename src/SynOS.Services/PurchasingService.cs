@@ -202,6 +202,20 @@ namespace SynOS.Services
             };
             await _context.VendorPayables.AddAsync(vendorPayable);
 
+            // CREATE OVERHEAD PAYABLE FACT for Finance Expense Feed
+            var overheadPayable = new SynOS.Models.Entities.Payables.OverheadPayableFact
+            {
+                OverheadPayableId = Guid.NewGuid(),
+                Category = SynOS.Models.Enums.Payables.OverheadExpenseCategory.Logistics,
+                AmountDue = spendAmount,
+                Description = $"Stock Receipt: {inventoryItem.Name} (PO #{poItem.POId.ToString().Substring(0, 8)}) - {poItem.PurchaseOrder?.Supplier?.Name ?? "Supplier"}",
+                DueDate = DateTime.UtcNow.AddDays(30),
+                Status = VendorPayableStatus.Pending,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = userId
+            };
+            await _context.OverheadPayableFacts.AddAsync(overheadPayable);
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
             

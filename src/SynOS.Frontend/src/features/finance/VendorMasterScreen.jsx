@@ -101,7 +101,7 @@ export const VendorMasterScreen = () => {
     );
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="p-8 w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header Area */}
             <div className="flex items-end justify-between">
                 <div>

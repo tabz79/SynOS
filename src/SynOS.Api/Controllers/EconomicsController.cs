@@ -38,18 +38,45 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("profitability")]
-        public async Task<IActionResult> GetProfitability([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
+        public async Task<IActionResult> GetProfitability([FromQuery] DateTime? start = null, [FromQuery] DateTime? end = null, [FromQuery] Guid? branchId = null, [FromQuery] bool isConsolidated = false, [FromQuery] string? preset = null)
         {
-            if (start == default) start = DateTime.UtcNow.AddDays(-30);
-            if (end == default) end = DateTime.UtcNow;
+            var now = DateTime.UtcNow;
+            DateTime startDate = start ?? default;
+            DateTime endDate = end ?? default;
 
-            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
-            if (isConsolidated && (_userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin"))
+            if (!string.IsNullOrEmpty(preset))
             {
-                effectiveBranchId = null;
+                var p = preset.ToLower();
+                if (p == "today")
+                {
+                    startDate = now.Date;
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "mtd" || p == "month")
+                {
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    endDate = now;
+                }
+                else if (p == "q3" || p == "quarter")
+                {
+                    var quarter = (now.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    startDate = new DateTime(now.Year, qStartMonth, 1);
+                    endDate = now;
+                }
+                else if (p == "fy" || p == "year")
+                {
+                    var fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                    startDate = new DateTime(fyStartYear, 4, 1);
+                    endDate = now;
+                }
             }
 
-            var result = await _economicsService.GetLabProfitabilitySummaryAsync(start, end, effectiveBranchId);
+            if (startDate == default) startDate = DateTime.UtcNow.AddDays(-30);
+            if (endDate == default) endDate = DateTime.UtcNow;
+
+            Guid? effectiveBranchId = isConsolidated ? null : (branchId ?? _userContext.CurrentBranchId);
+            var result = await _economicsService.GetLabProfitabilitySummaryAsync(startDate, endDate, effectiveBranchId);
             return Ok(result);
         }
 
@@ -82,26 +109,58 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("expense-facts")]
-        public async Task<IActionResult> GetExpenseFacts([FromQuery] DateTime start, [FromQuery] DateTime end)
+        public async Task<IActionResult> GetExpenseFacts([FromQuery] DateTime? start = null, [FromQuery] DateTime? end = null)
         {
-            if (start == default) start = DateTime.UtcNow.AddDays(-30);
-            if (end == default) end = DateTime.UtcNow;
+            DateTime startDate = start ?? DateTime.UtcNow.AddDays(-30);
+            DateTime endDate = end ?? DateTime.UtcNow;
 
-            var result = await _economicsService.GetExpenseFactsAsync(start, end);
+            var result = await _economicsService.GetExpenseFactsAsync(startDate, endDate);
             return Ok(result);
         }
 
         [HttpGet("export-pnl")]
-        public async Task<IActionResult> ExportProfitability([FromQuery] DateTime start, [FromQuery] DateTime end, [FromQuery] Guid? branchId, [FromServices] SynOS.Services.ICsvService csvService)
+        public async Task<IActionResult> ExportProfitability([FromQuery] DateTime? start = null, [FromQuery] DateTime? end = null, [FromQuery] Guid? branchId = null, [FromQuery] bool isConsolidated = false, [FromQuery] string? preset = null, [FromServices] SynOS.Services.ICsvService csvService = null!)
         {
-            if (start == default) start = DateTime.UtcNow.AddDays(-30);
-            if (end == default) end = DateTime.UtcNow;
+            var now = DateTime.UtcNow;
+            DateTime startDate = start ?? default;
+            DateTime endDate = end ?? default;
 
-            Guid? effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
-            var summary = await _economicsService.GetLabProfitabilitySummaryAsync(start, end, effectiveBranchId);
+            if (!string.IsNullOrEmpty(preset))
+            {
+                var p = preset.ToLower();
+                if (p == "today")
+                {
+                    startDate = now.Date;
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "mtd" || p == "month")
+                {
+                    startDate = new DateTime(now.Year, now.Month, 1);
+                    endDate = now;
+                }
+                else if (p == "q3" || p == "quarter")
+                {
+                    var quarter = (now.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    startDate = new DateTime(now.Year, qStartMonth, 1);
+                    endDate = now;
+                }
+                else if (p == "fy" || p == "year")
+                {
+                    var fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                    startDate = new DateTime(fyStartYear, 4, 1);
+                    endDate = now;
+                }
+            }
+
+            if (startDate == default) startDate = DateTime.UtcNow.AddDays(-30);
+            if (endDate == default) endDate = DateTime.UtcNow;
+
+            Guid? effectiveBranchId = isConsolidated ? null : (branchId ?? _userContext.CurrentBranchId);
+            var summary = await _economicsService.GetLabProfitabilitySummaryAsync(startDate, endDate, effectiveBranchId);
             
             var csvBytes = await csvService.ExportProfitabilityCsvAsync(summary);
-            var fileName = $"SynOS_Profitability_Statement_{start:yyyyMMdd}_to_{end:yyyyMMdd}.csv";
+            var fileName = $"SynOS_Profitability_Statement_{startDate:yyyyMMdd}_to_{endDate:yyyyMMdd}.csv";
             return File(csvBytes, "text/csv", fileName);
         }
     }

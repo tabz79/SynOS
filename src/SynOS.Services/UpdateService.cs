@@ -693,7 +693,11 @@ namespace SynOS.Services
                 }
 
                 var currentVersionObj = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
-                var currentVersion = currentVersionObj ?? new Version("1.2.0");
+                var currentVersion = currentVersionObj ?? new Version("1.4.9");
+                if (currentVersion == new Version("1.0.0") || currentVersion == new Version("0.0.0"))
+                {
+                    currentVersion = new Version("1.4.9");
+                }
 
                 if (root.TryGetProperty("MinimumSupportedVersion", out var minProp) && !string.IsNullOrEmpty(minProp.GetString()))
                 {

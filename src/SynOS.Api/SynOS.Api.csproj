@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>SynOS.ico</ApplicationIcon>
+    <Version>1.4.9</Version>
   </PropertyGroup>
 
   <ItemGroup>

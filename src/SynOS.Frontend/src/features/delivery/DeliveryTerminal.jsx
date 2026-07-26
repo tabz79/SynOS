@@ -39,6 +39,7 @@ export function DeliveryTerminal() {
     const [toast, setToast] = useState(null);
     const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
     const [deliveryPhone, setDeliveryPhone] = useState("");
+    const [gatewayStatus, setGatewayStatus] = useState(null);
 
     const showToast = (message, type = 'success') => {
         setToast({ message, type });
@@ -46,6 +47,26 @@ export function DeliveryTerminal() {
     };
 
     const { template, loading: templateLoading } = useTemplateForReport(reportData);
+
+    const fetchGatewayStatus = async () => {
+        try {
+            const res = await fetch('/api/v1/delivery/status', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setGatewayStatus(data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch gateway status:", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchGatewayStatus();
+        const interval = setInterval(fetchGatewayStatus, 10000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         fetchWorklist();
@@ -361,8 +382,35 @@ export function DeliveryTerminal() {
                             <Smartphone className="w-8 h-8" />
                         </div>
                         <h3 className="text-xl font-semibold uppercase tracking-tight mb-2 dark:text-white">WhatsApp Softcopy</h3>
-                        <p className="text-sm text-zinc-550 mb-6 font-medium leading-tight">Send secure report link to patient.</p>
+                        <p className="text-sm text-zinc-550 mb-4 font-medium leading-tight">Send secure report link to patient.</p>
                         
+                        {gatewayStatus && (
+                            <div className={`mb-6 p-4 rounded-2xl border text-xs font-semibold flex flex-col gap-2 transition-all ${
+                                gatewayStatus.isHealthy 
+                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                    : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'
+                            }`}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-2.5 h-2.5 rounded-full ${gatewayStatus.isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                                        <span>{gatewayStatus.statusMessage || (gatewayStatus.isHealthy ? "Gateway Connected" : "Gateway Offline")}</span>
+                                    </div>
+                                    {gatewayStatus.pendingOutboxCount > 0 && (
+                                        <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono text-[10px]">
+                                            {gatewayStatus.pendingOutboxCount} Syncing...
+                                        </span>
+                                    )}
+                                </div>
+                                {!gatewayStatus.isHealthy && gatewayStatus.lastError && (
+                                    <div className="pt-2 border-t border-rose-500/20 text-left">
+                                        <p className="text-[11px] font-normal text-rose-500 leading-normal">
+                                            {gatewayStatus.lastError}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <div className="space-y-6">
                             {/* Option 1: Registered Number */}
                             {reportStructure?.patient?.phone ? (

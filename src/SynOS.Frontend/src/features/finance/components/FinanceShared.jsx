@@ -34,7 +34,7 @@ export const SectionHeader = ({ title }) => (
 );
 
 export const DepartmentOverview = ({ title, description, stats, activity, shortcuts }) => (
-  <div className="p-8 max-w-7xl mx-auto space-y-4">
+  <div className="p-8 w-full space-y-4">
     <div className="flex flex-col gap-1 mb-6">
       <h1 className="text-2xl font-bold dark:text-white text-zinc-900">{title}</h1>
       <p className="text-sm text-zinc-500">{description}</p>

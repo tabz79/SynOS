@@ -18,6 +18,8 @@ using SynOS.Services.Storage;
 using SynOS.Services.Forensic;
 using SynOS.Models.Domain;
 
+using Microsoft.Extensions.Configuration;
+
 namespace SynOS.Services
 {
     public class ReportService : IReportService
@@ -33,6 +35,7 @@ namespace SynOS.Services
         private readonly IUserContext _userContext;
         private readonly IOperationsEngine _operationsEngine;
         private readonly Reporting.IReportingService _reportingService;
+        private readonly IConfiguration _configuration;
 
         public ReportService(
             SynOSDbContext context, 
@@ -45,7 +48,8 @@ namespace SynOS.Services
             IOperationalEventWriter operationalEventWriter,
             IUserContext userContext,
             IOperationsEngine operationsEngine,
-            Reporting.IReportingService reportingService)
+            Reporting.IReportingService reportingService,
+            IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
@@ -58,6 +62,7 @@ namespace SynOS.Services
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _operationsEngine = operationsEngine ?? throw new ArgumentNullException(nameof(operationsEngine));
             _reportingService = reportingService ?? throw new ArgumentNullException(nameof(reportingService));
+            _configuration = configuration;
         }
 
         public async Task SubmitForVerificationAsync(Guid reportId, Guid userId, bool isManualFlow = false)
@@ -142,37 +147,7 @@ namespace SynOS.Services
                 if (reportData != null)
                 {
                     var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
-                    var modality = order?.Department ?? "General";
-                    
-                    var normModality = (modality ?? "").ToLower().Trim();
-                    var isRad = normModality.Contains("rad");
-                    var targetModality = isRad ? "Radiology" : "Pathology";
-
-                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && t.IsDefault && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => !t.IsDeleted);
-                    
-                    if (template != null)
-                    {
-                        var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
-                        var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
-                        var fileName = $"{report.ReportId}_manual.pdf";
-                        var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
-
-                        // Update current version with PDF path
-                        var reportVersion = await _context.ReportVersions
-                            .OrderByDescending(rv => rv.VersionNumber)
-                            .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId);
-
-                        if (reportVersion != null)
-                        {
-                            reportVersion.PdfPath = relativePath;
-                            report.PdfUrl = relativePath;
-                            await _context.SaveChangesAsync();
-                        }
-                    }
+                    await EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
                 }
             }
             catch (Exception ex)
@@ -462,47 +437,18 @@ namespace SynOS.Services
             }
             // --- END FLOW B ---
 
-            // 7. Generate PDF
+            // 7. Generate PDF via Unified Pipeline
             try
             {
-                // ❌ FIX: Passing report.ReportId instead of VisitId
-            var reportData = await GetReportDataForPdfAsync(report.ReportId);
-                if (reportData != null)
+                await EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
+
+                var reportVersion = await _context.ReportVersions
+                    .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == requestedVersion);
+                if (reportVersion != null)
                 {
-                    var modality = order.Department ?? "General";
-                    var normModality = (modality ?? "").ToLower().Trim();
-                    var isRad = normModality.Contains("rad");
-                    var targetModality = isRad ? "Radiology" : "Pathology";
-
-                    var template = await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && t.IsDefault && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.Modality == targetModality && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => t.IsDefault && !t.IsDeleted)
-                                ?? await _context.ReportTemplates.FirstOrDefaultAsync(t => !t.IsDeleted);
-                    if (template != null)
-                    {
-                        var templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson);
-                        var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
-                        var fileName = $"{report.ReportId}_v{requestedVersion}.pdf";
-                        var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
-
-                        // Find existing version created at submission and update it
-                        var reportVersion = await _context.ReportVersions
-                            .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == requestedVersion);
-
-                        if (reportVersion != null)
-                        {
-                            reportVersion.PdfPath = relativePath;
-                            report.PdfUrl = relativePath;
-                            reportVersion.SignedByUserId = signedByUserId;
-                            reportVersion.SignedAt = timestamp;
-                            await _context.SaveChangesAsync();
-                        }
-                        else
-                        {
-                            _logger.LogWarning("Existing ReportVersion {Version} not found for report {ReportId} during sign-off.", requestedVersion, report.ReportId);
-                        }
-                    }
+                    reportVersion.SignedByUserId = signedByUserId;
+                    reportVersion.SignedAt = timestamp;
+                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -781,6 +727,121 @@ namespace SynOS.Services
 
             // 2. LIVE TRUTH FACTORY (For Drafts or Corrupted Snapshots)
             return await BuildReportDataModelV2Async(report, order, forceLive);
+        }
+
+        public async Task<string> EnsureAndRenderReportPdfAsync(Guid reportId, bool forceReRender = false)
+        {
+            var report = await _context.Reports
+                .Include(r => r.ReportVersions)
+                .FirstOrDefaultAsync(r => r.ReportId == reportId);
+
+            if (report == null)
+            {
+                _logger.LogError("Report {ReportId} not found during PDF rendering.", reportId);
+                throw new BadHttpRequestException("Report not found for PDF rendering.", 404);
+            }
+
+            var latestReportVersion = report.ReportVersions?.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
+            string? existingPath = latestReportVersion?.PdfPath ?? report.PdfUrl;
+            var basePath = _configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
+
+            if (!forceReRender && !string.IsNullOrEmpty(existingPath))
+            {
+                var fullPath = Path.Combine(basePath, existingPath);
+                if (File.Exists(fullPath))
+                {
+                    return existingPath;
+                }
+            }
+
+            _logger.LogInformation("Rendering PDF for ReportId: {ReportId} (ForceReRender: {ForceReRender})...", reportId, forceReRender);
+
+            var reportData = await GetReportDataForPdfAsync(reportId, forceLive: false);
+            if (reportData == null)
+            {
+                _logger.LogError("Unable to build ReportDataModel for ReportId: {ReportId}", reportId);
+                throw new BadHttpRequestException("Report data not found for PDF generation.", 404);
+            }
+
+            Order? order = null;
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var study = await _context.RadiologyStudies.AsNoTracking().FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                if (study != null)
+                {
+                    order = await _context.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                }
+            }
+            else
+            {
+                order = await _context.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+            }
+
+            ReportTemplate? template = null;
+
+            // 1. Check if report has a ReportTemplateId explicitly assigned
+            if (report.ReportTemplateId.HasValue && report.ReportTemplateId.Value != Guid.Empty)
+            {
+                template = await _context.ReportTemplates.AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.TemplateId == report.ReportTemplateId.Value && !t.IsDeleted);
+            }
+
+            // 2. Check if Test Master has a ReportTemplateId assigned for this Test
+            if (template == null && order != null)
+            {
+                var testId = order.TestId;
+                var testCode = order.TestCode;
+
+                var testEntity = await _context.Tests.AsNoTracking()
+                    .FirstOrDefaultAsync(t => (testId != Guid.Empty && t.TestId == testId) || (!string.IsNullOrEmpty(testCode) && t.TestCode == testCode));
+
+                if (testEntity?.ReportTemplateId.HasValue == true && testEntity.ReportTemplateId.Value != Guid.Empty)
+                {
+                    template = await _context.ReportTemplates.AsNoTracking()
+                        .FirstOrDefaultAsync(t => t.TemplateId == testEntity.ReportTemplateId.Value && !t.IsDeleted);
+                }
+            }
+
+            // 3. Fallback to Department/Modality default template if no test-specific template was assigned in Test Master
+            if (template == null)
+            {
+                var modality = order?.Department ?? (report.SourceType == "RadiologyStudy" ? "Radiology" : "General");
+                var normModality = (modality ?? "").ToLower().Trim();
+                var isRad = normModality.Contains("rad");
+                var targetModality = isRad ? "Radiology" : "Pathology";
+
+                template = await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == targetModality && t.IsDefault && !t.IsDeleted)
+                            ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == modality && t.IsDefault && !t.IsDeleted)
+                            ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == targetModality && !t.IsDeleted)
+                            ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.IsDefault && !t.IsDeleted)
+                            ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => !t.IsDeleted);
+            }
+
+            SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel templateModel;
+            if (template != null && !string.IsNullOrEmpty(template.TemplateJson))
+            {
+                templateModel = System.Text.Json.JsonSerializer.Deserialize<SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel>(template.TemplateJson)
+                    ?? new SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel();
+            }
+            else
+            {
+                templateModel = new SynOS.Models.DTOs.ReportTemplateDsl.TemplateModel();
+            }
+
+            var pdfBytes = await _reportPdfRenderer.GeneratePdfAsync(reportData, templateModel);
+            var requestedVersion = latestReportVersion?.VersionNumber ?? 1;
+            var fileName = $"{report.ReportId}_v{requestedVersion}.pdf";
+            var relativePath = await _fileStorageService.SaveFileAsync(pdfBytes, fileName, "reports");
+
+            if (latestReportVersion != null)
+            {
+                latestReportVersion.PdfPath = relativePath;
+            }
+            report.PdfUrl = relativePath;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully rendered and saved PDF for ReportId: {ReportId} at path: {Path}", reportId, relativePath);
+            return relativePath;
         }
 
         private async Task<ReportDataModel> MapDomainToReportDataModelAsync(ClinicalReportState domain, Report report, Order order)

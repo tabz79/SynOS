@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.Entities;
 using SynOS.Services;
+using SynOS.Services.Security;
 
 namespace SynOS.Api.BackgroundServices
 {
@@ -20,21 +21,26 @@ namespace SynOS.Api.BackgroundServices
     {
         private readonly ILogger<MiddlewareSyncWorker> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IRestoreStateCoordinator _restoreStateCoordinator;
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
+        private readonly ILicenseRecoveryService _licenseRecoveryService;
         private readonly string _apiUrl;
         private readonly string _apiKey;
-        private readonly IRestoreStateCoordinator _restoreStateCoordinator;
         private DateTime _lastLicenseCheck = DateTime.MinValue;
 
         public MiddlewareSyncWorker(
             ILogger<MiddlewareSyncWorker> logger,
             IServiceProvider serviceProvider,
             IConfiguration configuration,
-            IRestoreStateCoordinator restoreStateCoordinator)
+            IRestoreStateCoordinator restoreStateCoordinator,
+            ILicenseRecoveryService licenseRecoveryService)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
             _restoreStateCoordinator = restoreStateCoordinator;
+            _configuration = configuration;
+            _licenseRecoveryService = licenseRecoveryService;
             
             var handler = new SocketsHttpHandler
             {
@@ -130,8 +136,8 @@ namespace SynOS.Api.BackgroundServices
                 var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
 
                 var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
-                var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
-                var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+                var apiUrl = GetEffectiveApiUrl(profile);
+                var apiKey = GetEffectiveApiKey(profile);
 
                 // Fetch up to 100 pending or failed events ordered by CreatedAt
                 var events = await dbContext.OutboxEvents
@@ -196,10 +202,53 @@ namespace SynOS.Api.BackgroundServices
                             response.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
                         {
                             isSuccess = true;
+                            MiddlewareSyncHealth.IsHealthy = true;
+                            MiddlewareSyncHealth.StatusMessage = "Cloud WhatsApp Gateway Connected & Authorized";
+                            MiddlewareSyncHealth.LastSyncTime = DateTime.UtcNow;
+                            MiddlewareSyncHealth.LastError = null;
                             _logger.LogDebug("[INTEGRATION DEB] Hop 1 Success: OutboxWorker POST completed successfully for Event {EventId} (Status: {Status}).", evt.Id, response.StatusCode);
+                        }
+                        else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            _logger.LogWarning("[INTEGRATION DEB] Hop 1 Fail: Unauthorized response from Middleware. Attempting automatic self-healing recovery...");
+                            var healed = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, profile, stoppingToken);
+                            if (healed)
+                            {
+                                // Retry immediately with updated credentials
+                                var newApiKey = GetEffectiveApiKey(profile);
+                                var retryRequest = new HttpRequestMessage(HttpMethod.Post, targetUrl)
+                                {
+                                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                                };
+                                retryRequest.Headers.Add("X-Lab-Id", !string.IsNullOrWhiteSpace(profile?.LabId) ? profile.LabId : effectiveLabId);
+                                retryRequest.Headers.Add("X-Api-Key", newApiKey);
+                                retryRequest.Headers.Add("X-Pending-Outbox-Count", pendingCount.ToString());
+                                retryRequest.Headers.Add("X-Dead-Letter-Count", deadLetterCount.ToString());
+
+                                var retryResponse = await _httpClient.SendAsync(retryRequest, stoppingToken);
+                                if (retryResponse.StatusCode == System.Net.HttpStatusCode.OK || retryResponse.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
+                                {
+                                    isSuccess = true;
+                                    MiddlewareSyncHealth.IsHealthy = true;
+                                    MiddlewareSyncHealth.StatusMessage = "Cloud WhatsApp Gateway Connected & Authorized";
+                                    MiddlewareSyncHealth.LastSyncTime = DateTime.UtcNow;
+                                    MiddlewareSyncHealth.LastError = null;
+                                    _logger.LogInformation("Successfully self-healed and sent pending event {EventId}.", evt.Id);
+                                }
+                                else
+                                {
+                                    MiddlewareSyncHealth.IsHealthy = false;
+                                    MiddlewareSyncHealth.StatusMessage = "Cloud Gateway Unauthorized (401)";
+                                    MiddlewareSyncHealth.LastError = $"Retry after self-healing failed with status: {retryResponse.StatusCode}";
+                                    _logger.LogWarning("[INTEGRATION DEB] Hop 1 Retry Fail: Middleware returned status {StatusCode}.", retryResponse.StatusCode);
+                                }
+                            }
                         }
                         else
                         {
+                            MiddlewareSyncHealth.IsHealthy = false;
+                            MiddlewareSyncHealth.StatusMessage = $"Gateway Error ({response.StatusCode})";
+                            MiddlewareSyncHealth.LastError = $"Middleware API returned status code {response.StatusCode}.";
                             _logger.LogWarning("[INTEGRATION DEB] Hop 1 Fail: Middleware API returned status code {StatusCode} for Event {EventId}.", response.StatusCode, evt.Id);
                         }
                     }
@@ -235,7 +284,11 @@ namespace SynOS.Api.BackgroundServices
 
         private async Task<string> GetLiveTelemetryPayloadAsync(bool detailed = false)
         {
-            var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.2.0";
+            var appVersion = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString() ?? "1.4.9";
+            if (appVersion == "1.0.0.0" || appVersion == "0.0.0.0")
+            {
+                appVersion = "1.4.9";
+            }
 
             if (!detailed)
             {
@@ -313,8 +366,8 @@ namespace SynOS.Api.BackgroundServices
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
                     var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
-                    var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
-                    var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+                    var apiUrl = GetEffectiveApiUrl(profile);
+                    var apiKey = GetEffectiveApiKey(profile);
                     var labId = string.IsNullOrWhiteSpace(profile?.LabId) ? "LAB001" : profile.LabId;
 
                     var payload = customPayload ?? await GetLiveTelemetryPayloadAsync(detailed: false);
@@ -347,9 +400,21 @@ namespace SynOS.Api.BackgroundServices
                     _logger.LogDebug("[INTEGRATION DEB] OutboxWorker POST heartbeat to /api/events.");
                     var response = await _httpClient.SendAsync(request, stoppingToken);
 
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        _logger.LogWarning("[INTEGRATION DEB] Heartbeat returned 401 Unauthorized. Triggering licensing self-healing...");
+                        var dbProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
+                        await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, dbProfile, stoppingToken);
+                        return;
+                    }
+
                     if (response.StatusCode == System.Net.HttpStatusCode.OK || 
                         response.StatusCode == System.Net.HttpStatusCode.AlreadyReported)
                     {
+                        MiddlewareSyncHealth.IsHealthy = true;
+                        MiddlewareSyncHealth.StatusMessage = "Cloud WhatsApp Gateway Connected & Authorized";
+                        MiddlewareSyncHealth.LastSyncTime = DateTime.UtcNow;
+                        MiddlewareSyncHealth.LastError = null;
                         _logger.LogDebug("[INTEGRATION DEB] Heartbeat sent successfully to Middleware API.");
                     }
                     else
@@ -372,8 +437,8 @@ namespace SynOS.Api.BackgroundServices
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
                     var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
-                    var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
-                    var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
+                    var apiUrl = GetEffectiveApiUrl(profile);
+                    var apiKey = GetEffectiveApiKey(profile);
                     var labId = string.IsNullOrWhiteSpace(profile?.LabId) ? "LAB001" : profile.LabId;
 
                     var pendingUrl = apiUrl.Replace("/api/events", "/api/commands/pending") + $"?labId={Uri.EscapeDataString(labId)}";
@@ -382,6 +447,13 @@ namespace SynOS.Api.BackgroundServices
                     request.Headers.Add("X-Api-Key", apiKey);
 
                     var response = await _httpClient.SendAsync(request, stoppingToken);
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        _logger.LogWarning("Poll commands returned 401 Unauthorized. Triggering licensing self-healing...");
+                        var dbProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
+                        await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, dbProfile, stoppingToken);
+                        return;
+                    }
                     if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     {
                         _logger.LogWarning("Failed to poll pending commands. Middleware API returned: {StatusCode}", response.StatusCode);
@@ -515,92 +587,27 @@ namespace SynOS.Api.BackgroundServices
 
         private async Task SynchronizeLicenseInfoAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken)
         {
-            try
+            if (profile == null) return;
+            await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, profile, stoppingToken);
+        }
+
+        private string GetEffectiveApiKey(LabProfile? profile)
+        {
+            return _licenseRecoveryService.GetEffectiveLicenseKey(profile);
+        }
+
+        private string GetEffectiveApiUrl(LabProfile? profile)
+        {
+            var confUrl = _configuration["Middleware:ApiUrl"];
+            if (!string.IsNullOrWhiteSpace(confUrl))
             {
-                var apiUrl = string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? _apiUrl : profile.MiddlewareApiUrl;
-                var apiKey = string.IsNullOrWhiteSpace(profile?.MiddlewareApiKey) ? _apiKey : profile.MiddlewareApiKey;
-
-                if (string.IsNullOrWhiteSpace(apiKey) || 
-                    apiKey.Equals("LAB001_SECRET_API_KEY", StringComparison.OrdinalIgnoreCase) || 
-                    apiKey.Equals("TBZ-LAB-KEY-12345", StringComparison.OrdinalIgnoreCase))
-                {
-                    return; // Ignore fallback dev keys
-                }
-
-                var validateUrl = apiUrl.Replace("/api/events", "/api/labs/validate");
-                using var request = new HttpRequestMessage(HttpMethod.Post, validateUrl);
-                request.Headers.Add("X-Api-Key", apiKey);
-
-                var response = await _httpClient.SendAsync(request, stoppingToken);
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
-                    using var doc = JsonDocument.Parse(responseBody);
-                    var root = doc.RootElement;
-                    
-                    var licenseStatus = root.TryGetProperty("licenseStatus", out var licProp) ? licProp.GetString() : null;
-                    var licenseType = root.TryGetProperty("licenseType", out var typeProp) ? typeProp.GetString() : null;
-                    int maximumBranches = 1;
-                    if (root.TryGetProperty("maximumBranches", out var maxProp) && maxProp.TryGetInt32(out var mv))
-                        maximumBranches = mv;
-                    else if (root.TryGetProperty("MaximumBranches", out var maxProp2) && maxProp2.TryGetInt32(out var mv2))
-                        maximumBranches = mv2;
-                    var expiryDate = root.TryGetProperty("expiryDate", out var expProp) && expProp.ValueKind != JsonValueKind.Null ? expProp.GetString() : null;
-
-                    var enabledFeatures = new System.Collections.Generic.List<string>();
-                    if (root.TryGetProperty("enabledFeatures", out var featProp) && featProp.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var item in featProp.EnumerateArray())
-                        {
-                            var str = item.GetString();
-                            if (str != null) enabledFeatures.Add(str);
-                        }
-                    }
-
-                    var dbProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
-                    if (dbProfile != null)
-                    {
-                        bool changed = false;
-                        
-                        var targetStatus = licenseStatus ?? "Active";
-                        if (dbProfile.LicenseStatus != targetStatus) { dbProfile.LicenseStatus = targetStatus; changed = true; }
-                        if (dbProfile.LicenseType != licenseType) { dbProfile.LicenseType = licenseType; changed = true; }
-                        if (dbProfile.MaximumBranches != maximumBranches) { dbProfile.MaximumBranches = maximumBranches; changed = true; }
-                        
-                        DateTime? parsedExp = null;
-                        if (!string.IsNullOrEmpty(expiryDate) && DateTime.TryParse(expiryDate, out var exp))
-                            parsedExp = exp;
-                            
-                        if (dbProfile.LicenseExpiryDate != parsedExp) { dbProfile.LicenseExpiryDate = parsedExp; changed = true; }
-
-                        var currentFeatures = dbProfile.EnabledFeatures ?? new System.Collections.Generic.List<string>();
-                        if (!currentFeatures.SequenceEqual(enabledFeatures))
-                        {
-                            dbProfile.EnabledFeatures = enabledFeatures;
-                            changed = true;
-                        }
-
-                        // Update validation timestamp
-                        dbProfile.LastLicenseValidationUtc = DateTime.UtcNow;
-                        changed = true;
-
-                        if (changed)
-                        {
-                            dbProfile.UpdatedAt = DateTimeOffset.UtcNow;
-                            await dbContext.SaveChangesAsync(stoppingToken);
-                            _logger.LogInformation("Successfully synchronized and updated local license profile cache from Middleware.");
-                        }
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("Middleware validation returned status code {StatusCode}. Continuing to operate offline on local cache.", response.StatusCode);
-                }
+                return confUrl;
             }
-            catch (Exception ex)
+            if (profile != null && !string.IsNullOrWhiteSpace(profile.MiddlewareApiUrl))
             {
-                _logger.LogError(ex, "Middleware validation service is offline or unreachable. Continuing to operate normally on offline cache.");
+                return profile.MiddlewareApiUrl;
             }
+            return "https://cloud.tbzlabs.in/api/events";
         }
     }
 }

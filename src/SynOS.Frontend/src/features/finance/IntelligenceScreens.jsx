@@ -42,13 +42,13 @@ const MetricCard = ({ title, value, subtext, icon: Icon, trend, color }) => (
 export const IntelligenceDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [dateRange, setDateRange] = useState('30d');
+    const [dateRange, setDateRange] = useState('month');
 
     useEffect(() => {
         const load = async () => {
             try {
                 setLoading(true);
-                const data = await FinanceApi.getProfitabilitySummary();
+                const data = await FinanceApi.getProfitabilitySummary(null, null, null, false, dateRange);
                 setStats(data);
             } catch (err) {
                 console.error(err);
@@ -61,114 +61,144 @@ export const IntelligenceDashboard = () => {
 
     if (loading || !stats) return <LoadingState />;
 
+    const cashCollected = Number(stats.totalRevenueCash || stats.cashInflow) || 0;
+    const totalBilled = Number(stats.totalRevenueAccrual) || cashCollected;
+    const doctorPayouts = Number(stats.referralCashOutflow) || 0;
+    const materialCosts = Number(stats.consumableCashOutflow) || 0;
+    const payrollCosts = Number(stats.payrollCashOutflow) || 0;
+    const totalExpenses = Number(stats.totalExpensesCash) || 0;
+    const actualProfit = Number(stats.netCashPosition) || 0;
+
+    const handleExportPnl = () => {
+        FinanceApi.exportProfitabilityPnl(dateRange, true);
+    };
+
     return (
-        <div className="p-8 space-y-8 animate-in fade-in duration-500">
-            <div className="flex justify-between items-end">
+        <div className="p-8 space-y-8 animate-in fade-in duration-500 w-full">
+            {/* HEADER WITH SIMPLE TIME SWITCHER */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Economics Intelligence</h1>
-                    <p className="text-sm text-zinc-500 font-medium">Strategic operational position derived from hardened truth ledger.</p>
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Lab Business Brain</h1>
+                    <p className="text-sm text-zinc-500 font-medium">Real-time profitability, test margins, and expense breakdowns.</p>
                 </div>
-                <div className="flex items-center gap-2 p-1 bg-zinc-100 dark:bg-zinc-900/50 rounded-xl">
-                    {['7d', '30d', '90d', '1y'].map(r => (
-                        <button 
-                            key={r} onClick={() => setDateRange(r)}
-                            className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${dateRange === r ? 'bg-white dark:bg-zinc-800 shadow-sm text-synos-primary' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}
-                        >
-                            {r}
-                        </button>
-                    ))}
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-900/50 rounded-2xl border border-black/5 dark:border-white/5">
+                        {[
+                            { id: 'today', label: 'Today' },
+                            { id: 'month', label: 'This Month' },
+                            { id: 'quarter', label: 'This Quarter' },
+                            { id: 'year', label: 'This Year' }
+                        ].map(r => (
+                            <button 
+                                key={r.id} onClick={() => setDateRange(r.id)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${dateRange === r.id ? 'bg-white dark:bg-zinc-800 shadow-sm text-synos-primary' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}
+                            >
+                                {r.label}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={handleExportPnl}
+                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                        Download P&L (CSV)
+                    </button>
                 </div>
             </div>
 
-            {/* Top Level Position */}
+            {/* EXECUTIVE PLAIN-ENGLISH NARRATIVE BANNER */}
+            <div className="p-6 rounded-2xl bg-gradient-to-r from-synos-primary/10 via-emerald-500/10 to-blue-500/10 border border-synos-primary/20 shadow-sm space-y-2">
+                <div className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-synos-primary" />
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-synos-primary">Owner Executive Briefing ({dateRange === 'today' ? 'Today' : dateRange === 'year' ? 'This Year' : dateRange === 'quarter' ? 'This Quarter' : 'This Month'})</h2>
+                </div>
+                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed">
+                    {dateRange === 'today' ? (
+                        <>Today your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString()}</strong> in cash. Doctor payouts owed today stand at <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString()}</strong>, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{(cashCollected - doctorPayouts).toLocaleString()}</strong> Actual Cash Profit for today's settlement.</>
+                    ) : (
+                        <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString()}</strong> in cash against <strong className="text-zinc-900 dark:text-white">₹{totalBilled.toLocaleString()}</strong> total bills created. You spent <strong className="text-amber-600">₹{materialCosts.toLocaleString()}</strong> on reagents/materials, <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString()}</strong> on doctor payouts, and <strong className="text-violet-500">₹{payrollCosts.toLocaleString()}</strong> on staff salaries, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{actualProfit.toLocaleString()}</strong> Actual Cash Profit.</>
+                    )}
+                </p>
+            </div>
+
+            {/* TOP LEVEL POSITION - SIMPLIFIED TERMINOLOGY */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <MetricCard 
-                    title="Cash Position" value={stats.netCashPosition} 
-                    subtext="Real-world money moved" icon={Wallet} color="bg-emerald-500" 
+                    title="Actual Cash Profit" value={actualProfit} 
+                    subtext="Real money left in hand" icon={Wallet} color="bg-emerald-500" 
                     trend={12.4} 
                 />
                 <MetricCard 
-                    title="Accrual Position" value={stats.netAccrualPosition} 
-                    subtext="Total economic obligation" icon={Activity} color="bg-synos-primary" 
+                    title="Money Collected (Cash)" value={cashCollected} 
+                    subtext="Bank & cash cleared" icon={TrendingUp} color="bg-blue-500" 
+                />
+                <MetricCard 
+                    title="Total Bills Created" value={totalBilled} 
+                    subtext="Total billed bookings" icon={Activity} color="bg-synos-primary" 
                     trend={8.1} 
                 />
                 <MetricCard 
-                    title="Cash Inflow" value={stats.totalRevenueCash} 
-                    subtext="Actual collections" icon={TrendingUp} color="bg-blue-500" 
-                />
-                <MetricCard 
-                    title="Cash Outflow" value={stats.totalExpensesCash} 
-                    subtext="Actual expenditures" icon={TrendingDown} color="bg-rose-500" 
+                    title="Total Expenses & Bills" value={totalExpenses} 
+                    subtext="All cash expenditures" icon={TrendingDown} color="bg-rose-500" 
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Margin Breakdown */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="p-8 rounded-3xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 shadow-sm">
-                        <div className="flex justify-between items-center mb-8">
-                            <div>
-                                <h3 className="text-sm font-bold dark:text-white text-zinc-900">Margin Efficiency</h3>
-                                <p className="text-xs text-zinc-500 mt-0.5">Comparative analysis of Cash vs Accrual efficiency.</p>
-                            </div>
-                            <div className="flex gap-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                    <span className="text-[10px] font-bold uppercase text-zinc-400">Cash Margin</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-synos-primary" />
-                                    <span className="text-[10px] font-bold uppercase text-zinc-400">Accrual Margin</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-8">
-                            <div>
-                                <div className="flex justify-between items-end mb-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Realized Cash Margin</span>
-                                    <span className="text-sm font-bold text-emerald-500">{((stats.netCashPosition / stats.totalRevenueCash) * 100).toFixed(1)}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden">
-                                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${(stats.netCashPosition / stats.totalRevenueCash) * 100}%` }} />
-                                </div>
-                            </div>
-
-                            <div>
-                                <div className="flex justify-between items-end mb-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Projected Accrual Margin</span>
-                                    <span className="text-sm font-bold text-synos-primary">{((stats.netAccrualPosition / stats.totalRevenueAccrual) * 100).toFixed(1)}%</span>
-                                </div>
-                                <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-900 rounded-full overflow-hidden">
-                                    <div className="h-full bg-synos-primary rounded-full transition-all duration-1000" style={{ width: `${(stats.netAccrualPosition / stats.totalRevenueAccrual) * 100}%` }} />
-                                </div>
-                            </div>
-                        </div>
+            {/* VISUAL FINANCIAL FLOW WATERFALL */}
+            <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 shadow-sm space-y-6">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h3 className="text-sm font-bold dark:text-white text-zinc-900">Visual Financial Flow</h3>
+                        <p className="text-xs text-zinc-500 mt-0.5">How revenue flows into Net Cash Profit after expenses.</p>
                     </div>
+                    <span className="text-xs font-bold text-emerald-500">{((actualProfit / Math.max(1, cashCollected)) * 100).toFixed(1)}% Profit Margin</span>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Top Cost Centers</h3>
-                            <div className="space-y-4">
-                                {['Consumables', 'Payroll', 'Overhead', 'Outsourcing'].map(c => (
-                                    <div key={c} className="flex justify-between items-center group">
-                                        <span className="text-xs font-medium dark:text-zinc-300 group-hover:text-synos-primary transition-colors cursor-default">{c}</span>
-                                        <span className="text-xs font-bold">₹{Math.floor(Math.random() * 50000).toLocaleString()}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 text-center">
+                    <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">1. Money Collected</p>
+                        <p className="text-lg font-black text-blue-600 dark:text-blue-400 mt-1">₹{cashCollected.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                        <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase">− Reagents & Materials</p>
+                        <p className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">₹{materialCosts.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-synos-primary/10 border border-synos-primary/20">
+                        <p className="text-[10px] font-bold text-synos-primary uppercase">− Doctor Payouts</p>
+                        <p className="text-lg font-black text-synos-primary mt-1">₹{doctorPayouts.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                        <p className="text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase">− Salaries & Rent</p>
+                        <p className="text-lg font-black text-violet-600 dark:text-violet-400 mt-1">₹{payrollCosts.toLocaleString()}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                        <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">= Actual Cash Profit</p>
+                        <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{actualProfit.toLocaleString()}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* BOTTOM SECTION: PARTNER ROI & ECONOMIC HEALTH */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 shadow-sm space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Doctor & Clinic Partner ROI</h3>
+                    <div className="space-y-4">
+                        {stats.topPartnerRoi && stats.topPartnerRoi.length > 0 ? (
+                            stats.topPartnerRoi.map((p, idx) => (
+                                <div key={p.partnerId || idx} className="flex justify-between items-center group py-2 border-b border-zinc-100 dark:border-zinc-900 last:border-0">
+                                    <div className="flex flex-col gap-0.5">
+                                        <span className="text-xs font-bold dark:text-zinc-300">{p.partnerName}</span>
+                                        <span className="text-[10px] text-zinc-500 font-medium">
+                                            {p.patientCount} Patients • ₹{Number(p.totalRevenueGenerated || 0).toLocaleString()} Billed • ₹{Number(p.totalCommissionEarned || 0).toLocaleString()} Payout
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-4">Partner ROI</h3>
-                            <div className="space-y-4">
-                                {['LifeCare Clinic', 'Dr. Smith', 'HealthFirst'].map(p => (
-                                    <div key={p} className="flex justify-between items-center group">
-                                        <span className="text-xs font-medium dark:text-zinc-300 group-hover:text-synos-primary transition-colors cursor-default">{p}</span>
-                                        <span className="text-xs font-bold text-emerald-500">+{(Math.random() * 20 + 10).toFixed(1)}%</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                    <span className={`text-xs font-bold ${p.growthPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                        {p.growthPercentage >= 0 ? `+${p.growthPercentage}% Margin` : `${p.growthPercentage}% Margin`}
+                                    </span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-xs text-zinc-500 italic py-4">No active doctor/clinic partner referrals for this period.</p>
+                        )}
                     </div>
                 </div>
 
@@ -196,8 +226,8 @@ export const IntelligenceDashboard = () => {
                         </div>
                     </div>
 
-                    <button className="w-full py-4 rounded-2xl bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all active:scale-[0.98]">
-                        <Calendar size={16} /> GENERATE AUDIT REPORT
+                    <button onClick={handleExportPnl} className="w-full py-4 rounded-2xl bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] transition-all active:scale-[0.98]">
+                        <Calendar size={16} /> DOWNLOAD P&L STATEMENT (CSV)
                     </button>
                 </div>
             </div>

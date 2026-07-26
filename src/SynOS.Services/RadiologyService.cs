@@ -28,6 +28,7 @@ namespace SynOS.Services
         private readonly IOperationalEventWriter _eventWriter; // ADDED
         private readonly IConfiguration _configuration;
         private readonly IRadiologyImageSourceService _imageSourceService;
+        private readonly IReportService _reportService;
 
         public RadiologyService(
             SynOSDbContext context,
@@ -38,7 +39,8 @@ namespace SynOS.Services
             IFileStorageService fileStorageService,
             IOperationalEventWriter eventWriter, // ADDED
             IConfiguration configuration,
-            IRadiologyImageSourceService imageSourceService)
+            IRadiologyImageSourceService imageSourceService,
+            IReportService reportService)
         {
             _context = context;
             _mapper = mapper;
@@ -49,6 +51,7 @@ namespace SynOS.Services
             _eventWriter = eventWriter;
             _configuration = configuration;
             _imageSourceService = imageSourceService;
+            _reportService = reportService;
         }
 
         public async Task<ReportAttachmentDto> AddAttachmentToStudyAsync(
@@ -775,32 +778,7 @@ namespace SynOS.Services
                 }
             };
 
-            var templates = await _context.ReportTemplates.AsNoTracking()
-                .Where(t => !t.IsDeleted && t.IsPublished && t.IsDefault)
-                .ToListAsync();
-            var template = templates.FirstOrDefault(t => t.ModalityId == studyEntity.ModalityId) ??
-                           templates.FirstOrDefault(t => t.Modality == studyEntity.Modality) ??
-                           templates.FirstOrDefault(t => string.IsNullOrEmpty(t.Modality));
-
-            TemplateModel templateModel;
-            if (template != null && !string.IsNullOrEmpty(template.TemplateJson))
-            {
-                templateModel =
-                    System.Text.Json.JsonSerializer.Deserialize<TemplateModel>(template.TemplateJson);
-            }
-            else
-            {
-                templateModel = new TemplateModel { };
-            }
-
-            byte[] pdfBytes = await _pdfRenderer.GeneratePdfAsync(reportData, templateModel);
-
-            string fileName =
-                $"RadiologyReport_{studyEntity.Visit.Token}_{studyEntity.Order.Test.TestCode}_{DateTime.UtcNow:yyyyMMddHHmmss}.pdf"; // Corrected to Test.TestCode
-            string fileUrl = await _fileStorageService.SaveFileAsync(
-                pdfBytes,
-                fileName,
-                "radiology-reports");
+            string fileUrl = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
 
             if (string.Equals(studyEntity.Order.Test?.DepartmentMaster?.Name ?? studyEntity.Order.Department, "Radiology", StringComparison.OrdinalIgnoreCase))
             {

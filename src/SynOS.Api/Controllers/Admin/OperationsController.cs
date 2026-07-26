@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Services;
+using SynOS.Services.Security;
 
 namespace SynOS.Api.Controllers.Admin
 {
@@ -22,6 +23,7 @@ namespace SynOS.Api.Controllers.Admin
         private readonly IUpdateService _updateService;
         private readonly Microsoft.Extensions.Configuration.IConfiguration _configuration;
         private readonly System.Net.Http.IHttpClientFactory _httpClientFactory;
+        private readonly ILicenseRecoveryService _licenseRecoveryService;
 
         public OperationsController(
             SynOSDbContext context,
@@ -29,7 +31,8 @@ namespace SynOS.Api.Controllers.Admin
             ISupportService supportService,
             IUpdateService updateService,
             Microsoft.Extensions.Configuration.IConfiguration configuration,
-            System.Net.Http.IHttpClientFactory httpClientFactory)
+            System.Net.Http.IHttpClientFactory httpClientFactory,
+            ILicenseRecoveryService licenseRecoveryService)
         {
             _context = context;
             _backupService = backupService;
@@ -37,6 +40,7 @@ namespace SynOS.Api.Controllers.Admin
             _updateService = updateService;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _licenseRecoveryService = licenseRecoveryService;
         }
 
         private string GetWorkingDirectory()
@@ -239,9 +243,16 @@ namespace SynOS.Api.Controllers.Admin
         {
             try
             {
+                var versionObj = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
+                var currentVersion = versionObj != null ? $"{versionObj.Major}.{versionObj.Minor}.{versionObj.Build}" : "1.4.9";
+                if (currentVersion == "1.0.0" || currentVersion == "0.0.0")
+                {
+                    currentVersion = "1.4.9";
+                }
+
                 var systemInfo = new
                 {
-                    Version = "v1.2.0",
+                    Version = "v" + currentVersion,
                     Status = "Stable",
                     OS = Environment.OSVersion.ToString(),
                     DotNet = Environment.Version.ToString(),
@@ -265,15 +276,16 @@ namespace SynOS.Api.Controllers.Admin
             try
             {
                 var versionObj = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version;
-                var currentVersion = versionObj != null ? $"{versionObj.Major}.{versionObj.Minor}.{versionObj.Build}" : "1.2.0";
-                if (currentVersion == "1.0.0")
+                var currentVersion = versionObj != null ? $"{versionObj.Major}.{versionObj.Minor}.{versionObj.Build}" : "1.4.9";
+                if (currentVersion == "1.0.0" || currentVersion == "0.0.0")
                 {
-                    currentVersion = "1.2.0";
+                    currentVersion = "1.4.9";
                 }
 
-                var labId = _configuration["Middleware:LabId"] ?? "LAB001";
-                var apiUrl = _configuration["Middleware:ApiUrl"] ?? "http://localhost:5069/api/events";
-                var apiKey = _configuration["Middleware:ApiKey"] ?? "TBZ-LAB-KEY-12345";
+                var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+                var labId = !string.IsNullOrWhiteSpace(profile?.LabId) ? profile.LabId : (_configuration["Middleware:LabId"] ?? "LAB001");
+                var apiUrl = !string.IsNullOrWhiteSpace(profile?.MiddlewareApiUrl) ? profile.MiddlewareApiUrl : (_configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events");
+                var apiKey = _licenseRecoveryService.GetEffectiveLicenseKey(profile);
 
                 var baseUrl = apiUrl.Replace("/api/events", "/api/controltower");
                 var requestUrl = $"{baseUrl}/updates/check?labId={Uri.EscapeDataString(labId)}&currentVersion={Uri.EscapeDataString(currentVersion)}";
@@ -283,6 +295,20 @@ namespace SynOS.Api.Controllers.Admin
                 client.DefaultRequestHeaders.Add("X-Api-Key", apiKey);
 
                 var response = await client.GetAsync(requestUrl);
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    var healed = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(_context, profile);
+                    if (healed)
+                    {
+                        var updatedProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+                        var newApiKey = _licenseRecoveryService.GetEffectiveLicenseKey(updatedProfile);
+                        var retryClient = _httpClientFactory.CreateClient();
+                        retryClient.DefaultRequestHeaders.Add("X-Lab-Id", labId);
+                        retryClient.DefaultRequestHeaders.Add("X-Api-Key", newApiKey);
+                        response = await retryClient.GetAsync(requestUrl);
+                    }
+                }
+
                 if (!response.IsSuccessStatusCode)
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

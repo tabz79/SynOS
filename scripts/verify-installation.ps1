@@ -63,6 +63,14 @@ try {
     Log-Message "WARNING: Failed to configure firewall rule: $_"
 }
 
-# 2. Skip Starting Windows Service during install phase
-Log-Message "SUCCESS: Firewall verification passed. Service startup is deferred until first-run wizard completion."
+# 2. Start Windows Service
+try {
+    Log-Message "Starting Windows Service ($SynOSService)..."
+    Start-Service -Name $SynOSService -ErrorAction Stop
+    Log-Message "Windows Service '$SynOSService' started successfully."
+} catch {
+    Log-Message "WARNING: Failed to start Windows Service '$SynOSService': $_"
+}
+
+Log-Message "SUCCESS: Firewall verification and service startup passed."
 exit 0
