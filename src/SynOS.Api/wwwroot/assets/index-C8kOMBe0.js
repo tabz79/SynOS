@@ -20663,12 +20663,12 @@ Details: ${i.inner}`);
           })
         }),
         k ? a.jsx("div", {
-          className: "flex-1 flex justify-center items-center h-full px-4 min-w-0 pointer-events-none",
+          className: "flex-1 flex justify-center items-center h-full px-2 lg:px-4 min-w-0 pointer-events-none",
           children: a.jsxs("div", {
-            className: "h-full flex items-center gap-3 px-4 rounded-b-xl bg-zinc-950/95 border-x border-b border-amber-500/30 text-xs shadow-lg backdrop-blur-md transition-all hover:border-amber-500/60 pointer-events-auto",
+            className: "h-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 rounded-b-xl bg-zinc-950/95 border-x border-b border-amber-500/30 text-xs shadow-lg backdrop-blur-md transition-all hover:border-amber-500/60 pointer-events-auto",
             children: [
               a.jsxs("div", {
-                className: "flex items-center gap-2",
+                className: "flex items-center gap-1.5",
                 children: [
                   a.jsx(rh, {
                     className: "w-3.5 h-3.5 text-amber-400 shrink-0"
@@ -20676,7 +20676,11 @@ Details: ${i.inner}`);
                   a.jsxs("span", {
                     className: "text-[10px] font-mono uppercase tracking-widest text-zinc-300 whitespace-nowrap",
                     children: [
-                      "Role Takeover: ",
+                      a.jsx("span", {
+                        className: "hidden xl:inline",
+                        children: "Role "
+                      }),
+                      "Takeover: ",
                       a.jsx("span", {
                         className: "text-amber-400 font-bold",
                         children: S
@@ -20686,16 +20690,18 @@ Details: ${i.inner}`);
                 ]
               }),
               a.jsx("div", {
-                className: "w-px h-4 bg-zinc-700/60 shrink-0"
+                className: "w-px h-3.5 bg-zinc-700/60 shrink-0"
               }),
               a.jsxs("button", {
                 onClick: () => s("/admin"),
-                className: "flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors group cursor-pointer whitespace-nowrap",
+                className: "flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors group cursor-pointer whitespace-nowrap",
+                title: "Exit Role \u2192 Back to Control Tower",
                 children: [
                   a.jsx(dk, {
-                    className: "w-3 h-3 text-amber-400 group-hover:-translate-x-1 transition-transform"
+                    className: "w-3 h-3 text-amber-400 group-hover:-translate-x-0.5 transition-transform"
                   }),
                   a.jsxs("span", {
+                    className: "hidden lg:inline",
                     children: [
                       "Exit Role ",
                       a.jsx("span", {
@@ -20704,6 +20710,10 @@ Details: ${i.inner}`);
                       }),
                       " Back to Control Tower"
                     ]
+                  }),
+                  a.jsx("span", {
+                    className: "inline lg:hidden",
+                    children: "Exit"
                   })
                 ]
               })
@@ -21692,7 +21702,7 @@ Details: ${i.inner}`);
       className: Ye("flex flex-col space-y-4", g ? "w-full" : "h-full"),
       children: [
         g && a.jsxs("div", {
-          className: "animate-in fade-in slide-in-from-top-2 pt-4 px-4 space-y-4",
+          className: "animate-in fade-in slide-in-from-top-2 pt-2 xl:pt-4 px-3 xl:px-4 space-y-2 xl:space-y-4",
           children: [
             a.jsxs("div", {
               className: "flex items-center gap-2",
@@ -22892,7 +22902,7 @@ Details: ${i.inner}`);
           ]
         }),
         a.jsxs("div", {
-          className: Ye("space-y-2 p-4 rounded-lg border", ke.section),
+          className: Ye("space-y-1.5 xl:space-y-2 p-2.5 xl:p-4 rounded-lg border", ke.section),
           children: [
             a.jsx("h4", {
               className: "type-section-header",
@@ -23076,7 +23086,7 @@ Details: ${i.inner}`);
           ]
         }),
         a.jsxs("div", {
-          className: Ye("p-4 rounded-xl space-y-2", ke.section),
+          className: Ye("p-2.5 xl:p-4 rounded-xl space-y-1.5 xl:space-y-2", ke.section),
           children: [
             a.jsx("h4", {
               className: ke.sectionTitle,
@@ -24063,14 +24073,14 @@ Details: ${i.inner}`);
     let he = "Registration";
     return s && (he = "Resume Visit"), i && (he = "Visit Correction"), a.jsxs("div", {
       ref: n,
-      className: Ye("flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", K ? "absolute right-0 top-0 bottom-0 w-[780px] lg:w-[860px] xl:w-[940px] max-w-[calc(100vw-360px)]" : "absolute right-0 top-0 bottom-0 w-[480px] sm:w-[520px] max-w-full", L.panel),
+      className: Ye("flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", K ? "absolute right-0 top-0 bottom-0 w-[94vw] sm:w-[88vw] md:w-[78vw] lg:w-[68vw] xl:w-[56vw] max-w-[1020px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]", L.panel),
       children: [
         a.jsxs("div", {
-          className: Ye("h-16 flex items-center justify-between px-4 shrink-0", L.header),
+          className: Ye("h-14 xl:h-16 flex items-center justify-between px-4 shrink-0", L.header),
           children: [
             a.jsx("div", {
               children: a.jsx("h2", {
-                className: Ye("text-xl font-bold tracking-tight flex items-baseline gap-2", L.title),
+                className: Ye("text-lg xl:text-xl font-bold tracking-tight flex items-baseline gap-2", L.title),
                 children: he
               })
             }),
@@ -24109,7 +24119,7 @@ Details: ${i.inner}`);
                   onClearPatient: J
                 }),
                 (K || i) && a.jsxs("div", {
-                  className: Ye("px-4 pb-4 mt-6 animate-in fade-in duration-300", K ? "grid grid-cols-2 gap-6" : "flex flex-col gap-6", (g == null ? void 0 : g.patient) || i ? "" : "flex-1 min-h-0 overflow-y-auto"),
+                  className: Ye("px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-6 animate-in fade-in duration-300", K ? "grid grid-cols-2 gap-3 xl:gap-6" : "flex flex-col gap-3 xl:gap-6", (g == null ? void 0 : g.patient) || i ? "" : "flex-1 min-h-0 overflow-y-auto"),
                   children: [
                     a.jsx("div", {
                       className: K ? "flex flex-col gap-6" : "",
@@ -24596,7 +24606,7 @@ Details: ${i.inner}`);
                 })
               }),
               a.jsx("div", {
-                className: Ye("w-[300px] lg:w-[340px] xl:w-[380px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0", s || C ? "hidden" : "flex"),
+                className: Ye("w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0", s || C ? "hidden" : "flex"),
                 children: a.jsx(WT, {
                   serverTime: x
                 })

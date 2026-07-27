@@ -85,7 +85,7 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
 
             {/* LOCKED STATE (Patient Identified) */}
             {selectedPatient && (
-                <div className="animate-in fade-in slide-in-from-top-2 pt-4 px-4 space-y-4">
+                <div className="animate-in fade-in slide-in-from-top-2 pt-2 xl:pt-4 px-3 xl:px-4 space-y-2 xl:space-y-4">
                     {/* ... (Existing Locked View) ... */}
                     {/* NOTE: This uses RichPatientCard which handles its own locked state style */}
                     <div className="flex items-center gap-2">

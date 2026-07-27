@@ -364,7 +364,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             </div>
 
             {/* SECTION 2: VISIT CONTEXT (Phase 8 - Reordered Top) */}
-            <div className={cn("space-y-2 p-4 rounded-lg border", ui.section)}>
+            <div className={cn("space-y-1.5 xl:space-y-2 p-2.5 xl:p-4 rounded-lg border", ui.section)}>
                 <h4 className="type-section-header">Visit Context</h4>
 
                 {/* A. Prepaid Checkbox */}
@@ -536,7 +536,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
             </div>
 
             {/* SECTION 3: Test Selection (Reordered Down) */}
-            <div className={cn("p-4 rounded-xl space-y-2", ui.section)}>
+            <div className={cn("p-2.5 xl:p-4 rounded-xl space-y-1.5 xl:space-y-2", ui.section)}>
                 <h4 className={ui.sectionTitle}>Test Selection</h4>
                 {!isReadOnly && (
                     <div className="relative z-10">

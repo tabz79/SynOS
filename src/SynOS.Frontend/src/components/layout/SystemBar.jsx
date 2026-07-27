@@ -148,23 +148,25 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
       {/* MIDDLE — Dynamically Centered Role Takeover Notch */}
       {isTakeoverActive ? (
-        <div className="flex-1 flex justify-center items-center h-full px-4 min-w-0 pointer-events-none">
-          <div className="h-full flex items-center gap-3 px-4 rounded-b-xl bg-zinc-950/95 border-x border-b border-amber-500/30 text-xs shadow-lg backdrop-blur-md transition-all hover:border-amber-500/60 pointer-events-auto">
-            <div className="flex items-center gap-2">
+        <div className="flex-1 flex justify-center items-center h-full px-2 lg:px-4 min-w-0 pointer-events-none">
+          <div className="h-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 rounded-b-xl bg-zinc-950/95 border-x border-b border-amber-500/30 text-xs shadow-lg backdrop-blur-md transition-all hover:border-amber-500/60 pointer-events-auto">
+            <div className="flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-300 whitespace-nowrap">
-                Role Takeover: <span className="text-amber-400 font-bold">{takeoverRoleName}</span>
+                <span className="hidden xl:inline">Role </span>Takeover: <span className="text-amber-400 font-bold">{takeoverRoleName}</span>
               </span>
             </div>
             
-            <div className="w-px h-4 bg-zinc-700/60 shrink-0" />
+            <div className="w-px h-3.5 bg-zinc-700/60 shrink-0" />
 
             <button 
               onClick={() => navigate('/admin')}
-              className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors group cursor-pointer whitespace-nowrap"
+              className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors group cursor-pointer whitespace-nowrap"
+              title="Exit Role → Back to Control Tower"
             >
-              <ArrowLeft className="w-3 h-3 text-amber-400 group-hover:-translate-x-1 transition-transform" />
-              <span>Exit Role <span className="text-zinc-500">→</span> Back to Control Tower</span>
+              <ArrowLeft className="w-3 h-3 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+              <span className="hidden lg:inline">Exit Role <span className="text-zinc-500">→</span> Back to Control Tower</span>
+              <span className="inline lg:hidden">Exit</span>
             </button>
           </div>
         </div>

@@ -383,7 +383,7 @@ export function ReceptionScreen() {
 
                     {/* Activity Stream Column when Drawer is closed */}
                     <div className={cn(
-                        "w-[300px] lg:w-[340px] xl:w-[380px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0",
+                        "w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0",
                         (isIntentPanelOpen || isInventoryModalOpen) ? "hidden" : "flex"
                     )}>
                         <ActivityStream serverTime={serverTimeAnchor} />

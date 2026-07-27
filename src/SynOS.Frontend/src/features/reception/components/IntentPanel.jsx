@@ -333,14 +333,14 @@ export function IntentPanel() {
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", 
-                hasPatient ? "absolute right-0 top-0 bottom-0 w-[780px] lg:w-[860px] xl:w-[940px] max-w-[calc(100vw-360px)]" : "absolute right-0 top-0 bottom-0 w-[480px] sm:w-[520px] max-w-full",
+                hasPatient ? "absolute right-0 top-0 bottom-0 w-[94vw] sm:w-[88vw] md:w-[78vw] lg:w-[68vw] xl:w-[56vw] max-w-[1020px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
                 ui.panel
             )}
         >
             {/* Header */}
-            <div className={cn("h-16 flex items-center justify-between px-4 shrink-0", ui.header)}>
+            <div className={cn("h-14 xl:h-16 flex items-center justify-between px-4 shrink-0", ui.header)}>
                 <div>
-                    <h2 className={cn("text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
+                    <h2 className={cn("text-lg xl:text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
                         {panelTitle}
                     </h2>
                 </div>
@@ -372,8 +372,8 @@ export function IntentPanel() {
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
                         {(hasPatient || isCorrectionIntent) && (
                             <div className={cn(
-                                "px-4 pb-4 mt-6 animate-in fade-in duration-300",
-                                hasPatient ? "grid grid-cols-2 gap-6" : "flex flex-col gap-6",
+                                "px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-6 animate-in fade-in duration-300",
+                                hasPatient ? "grid grid-cols-2 gap-3 xl:gap-6" : "flex flex-col gap-3 xl:gap-6",
                                 (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
                             )}>
                                 <div className={hasPatient ? "flex flex-col gap-6" : ""}>
