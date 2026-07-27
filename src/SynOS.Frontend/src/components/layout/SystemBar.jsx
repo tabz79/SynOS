@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity, ShieldAlert, ArrowLeft } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -10,6 +10,7 @@ import { ReceptionApi } from '@/api/reception';
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
   const { user, logout, activeOversightBranchId, setOversightBranch } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -20,6 +21,30 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
   useFocusTrap(facilityRef, activeDropdown === 'facility', () => setActiveDropdown(null));
   useFocusTrap(roleRef, activeDropdown === 'role', () => setActiveDropdown(null));
+
+  const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
+                 (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
+
+  // Determine Role Takeover state for Admins navigating operational screens
+  const path = location.pathname;
+  const roleMap = {
+    '/reception': 'Reception',
+    '/phlebotomist': 'Phlebotomy',
+    '/workbench': 'Workbench',
+    '/pathologist': 'Pathologist',
+    '/typist': 'Typist',
+    '/delivery': 'Delivery Desk',
+    '/inventory': 'Inventory',
+    '/finance': 'Finance',
+    '/xraytech': 'X-Ray Tech',
+    '/mritech': 'MRI Tech',
+    '/cttech': 'CT Tech',
+    '/ustech': 'US Tech',
+    '/radiologist': 'Radiologist'
+  };
+
+  const takeoverRoleName = roleMap[path] || (path.startsWith('/patient') ? 'Patient Directory' : null);
+  const isTakeoverActive = isAdmin && Boolean(takeoverRoleName);
 
   useEffect(() => {
     if (serverTime) setCurrentTime(new Date(serverTime));
@@ -34,9 +59,6 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
   // Fetch branches for management view (Admins only)
   useEffect(() => {
-    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
-                   (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
-    
     if (isAdmin) {
       ReceptionApi.getBranches().then(branches => {
         setAvailableBranches(branches);
@@ -52,9 +74,6 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     logout();
     window.location.href = '/login';
   };
-
-  const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
-                 (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
 
   const currentBranchName = isAdmin
     ? (availableBranches.find(b => (b.id || b.branchId) === activeOversightBranchId)?.name || user?.branchName || "Select Branch...")
@@ -117,7 +136,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
       {/* LEFT — Identity (Single Brand Lockup) */}
       <div 
-        className="flex items-center ml-[36px] cursor-pointer"
+        className="flex items-center ml-[36px] cursor-pointer shrink-0"
         onClick={() => navigate('/')}
       >
         <img 
@@ -127,8 +146,34 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         />
       </div>
 
+      {/* MIDDLE — Dynamically Centered Role Takeover Notch */}
+      {isTakeoverActive ? (
+        <div className="flex-1 flex justify-center items-center h-full px-4 min-w-0 pointer-events-none">
+          <div className="h-full flex items-center gap-3 px-4 rounded-b-xl bg-zinc-950/95 border-x border-b border-amber-500/30 text-xs shadow-lg backdrop-blur-md transition-all hover:border-amber-500/60 pointer-events-auto">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-300 whitespace-nowrap">
+                Role Takeover: <span className="text-amber-400 font-bold">{takeoverRoleName}</span>
+              </span>
+            </div>
+            
+            <div className="w-px h-4 bg-zinc-700/60 shrink-0" />
+
+            <button 
+              onClick={() => navigate('/admin')}
+              className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors group cursor-pointer whitespace-nowrap"
+            >
+              <ArrowLeft className="w-3 h-3 text-amber-400 group-hover:-translate-x-1 transition-transform" />
+              <span>Exit Role <span className="text-zinc-500">→</span> Back to Control Tower</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1" />
+      )}
+
       {/* RIGHT — Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
 
         {/* Branch (Fake Frost Pill) */}
         <div className="relative">

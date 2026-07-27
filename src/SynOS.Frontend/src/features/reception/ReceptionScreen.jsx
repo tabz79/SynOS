@@ -11,7 +11,7 @@ import { ActivityStream } from '@/components/layout/ActivityStream'
 import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells'
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
-import { ReceptionApi } from '@/api/reception'
+import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -44,6 +44,9 @@ export function ReceptionScreen() {
 
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {
+        // Pre-warm master catalogs in background immediately on mount (< 1 ms start)
+        prewarmReceptionCatalogs();
+
         // 1. Initial Snapshot
         const loadInitial = async () => {
             try {
@@ -280,15 +283,11 @@ export function ReceptionScreen() {
 
             <SystemBar serverTime={serverTimeAnchor} syncStatus={connectionStatus} />
 
-            <div className="flex-1 p-4 overflow-hidden">
+            <div className="flex-1 p-4 overflow-hidden relative">
                 <div className="flex h-full gap-4">
-                    <div
-                        className={`
-                            flex flex-col min-h-0
-                            ${(isIntentPanelOpen || isInventoryModalOpen) ? 'w-[60%]' : 'w-[75%]'}
-                        `}
-                    >
-                        <div className={`flex flex-col h-full transition-all duration-500 ease-out ${(isIntentPanelOpen || isInventoryModalOpen) ? 'opacity-40 pointer-events-none scale-[0.99]' : 'opacity-100 scale-100'}`}>
+                    {/* Main Dashboard Panel - STABLE WIDTH, NO CONTRACTION/EXPANSION REF-LOW */}
+                    <div className="flex-1 flex flex-col min-h-0 min-w-0">
+                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
                             <div
                                 ref={summaryRef}
                                 className="mb-4 shrink-0"
@@ -317,7 +316,7 @@ export function ReceptionScreen() {
                                             <button
                                                 onClick={() => setShowHistory(false)}
                                                 className={cn(
-                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-colors",
                                                     !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
@@ -326,7 +325,7 @@ export function ReceptionScreen() {
                                             <button
                                                 onClick={() => setShowHistory(true)}
                                                 className={cn(
-                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
+                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-colors",
                                                     showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
@@ -339,7 +338,7 @@ export function ReceptionScreen() {
                                         <button
                                             onClick={() => navigate('/admin/patients')}
                                             className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
                                                 theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
                                             )}
                                         >
@@ -349,7 +348,7 @@ export function ReceptionScreen() {
                                         <button
                                             onClick={() => setIsInventoryModalOpen(true)}
                                             className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
                                                 theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
                                             )}
                                         >
@@ -359,7 +358,7 @@ export function ReceptionScreen() {
                                         <button
                                             onClick={openCreateIntent}
                                             className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
                                                 theme === 'dark' ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40" : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
                                             )}
                                         >
@@ -382,24 +381,20 @@ export function ReceptionScreen() {
                         </div>
                     </div>
 
-                    <div
-                        className={`
-                            flex flex-col min-h-0 transition-all duration-500 ease-out relative
-                            ${(isIntentPanelOpen || isInventoryModalOpen) ? 'w-[40%]' : 'w-[25%]'}
-                        `}
-                    >
-                        <IntentPanel />
-                        <StockRequestPanel
-                            isOpen={isInventoryModalOpen}
-                            onClose={() => setIsInventoryModalOpen(false)}
-                        />
-                        <div className={cn(
-                            "flex-1 flex flex-col min-h-0 transition-opacity duration-300",
-                            (isIntentPanelOpen || isInventoryModalOpen) ? "opacity-0 pointer-events-none" : "opacity-100"
-                        )}>
-                            <ActivityStream serverTime={serverTimeAnchor} />
-                        </div>
+                    {/* Activity Stream Column when Drawer is closed */}
+                    <div className={cn(
+                        "w-[300px] lg:w-[340px] xl:w-[380px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0",
+                        (isIntentPanelOpen || isInventoryModalOpen) ? "hidden" : "flex"
+                    )}>
+                        <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
+
+                    {/* GPU-Accelerated Registration Panel Drawer */}
+                    <IntentPanel />
+                    <StockRequestPanel
+                        isOpen={isInventoryModalOpen}
+                        onClose={() => setIsInventoryModalOpen(false)}
+                    />
                 </div>
             </div>
         </div>

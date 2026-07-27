@@ -97,7 +97,7 @@ function AdminProtectedWrapper({ children, roleName }) {
   return (
     <>
       {isAdmin && <RoleTakeoverBanner roleName={roleName} />}
-      <div className={isAdmin ? 'pt-10 h-full w-full' : 'h-full w-full'}>
+      <div className="h-full w-full">
         {children}
       </div>
     </>

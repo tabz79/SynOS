@@ -682,3 +682,62 @@ export const ReceptionApi = {
         return response.json();
     }
 };
+
+let cachedTestCatalogPromise = null;
+let cachedReferralPartnersPromise = null;
+let cachedReferenceLabsPromise = null;
+let cachedOutsourcedCatalogPromise = null;
+
+export const fetchTestCatalogCached = () => {
+    if (!cachedTestCatalogPromise) {
+        cachedTestCatalogPromise = ReceptionApi.getTestCatalog().catch(err => {
+            cachedTestCatalogPromise = null;
+            throw err;
+        });
+    }
+    return cachedTestCatalogPromise;
+};
+
+export const fetchReferralPartnersCached = () => {
+    if (!cachedReferralPartnersPromise) {
+        cachedReferralPartnersPromise = ReceptionApi.getReferralPartners().catch(err => {
+            cachedReferralPartnersPromise = null;
+            throw err;
+        });
+    }
+    return cachedReferralPartnersPromise;
+};
+
+export const fetchReferenceLabsCached = () => {
+    if (!cachedReferenceLabsPromise) {
+        cachedReferenceLabsPromise = ReceptionApi.getReferenceLabs().catch(err => {
+            cachedReferenceLabsPromise = null;
+            throw err;
+        });
+    }
+    return cachedReferenceLabsPromise;
+};
+
+export const fetchOutsourcedCatalogCached = () => {
+    if (!cachedOutsourcedCatalogPromise) {
+        cachedOutsourcedCatalogPromise = ReceptionApi.getOutsourcedTestCatalog().catch(err => {
+            cachedOutsourcedCatalogPromise = null;
+            throw err;
+        });
+    }
+    return cachedOutsourcedCatalogPromise;
+};
+
+export const prewarmReceptionCatalogs = () => {
+    fetchTestCatalogCached();
+    fetchReferralPartnersCached();
+    fetchReferenceLabsCached();
+    fetchOutsourcedCatalogCached();
+};
+
+export const clearReceptionMasterCaches = () => {
+    cachedTestCatalogPromise = null;
+    cachedReferralPartnersPromise = null;
+    cachedReferenceLabsPromise = null;
+    cachedOutsourcedCatalogPromise = null;
+};

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker, ShieldCheck } from 'lucide-react'
-import { ReceptionApi } from '@/api/reception'
+import { ReceptionApi, fetchTestCatalogCached, fetchReferralPartnersCached, fetchReferenceLabsCached, fetchOutsourcedCatalogCached } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 import ReferralDraftForm from './ReferralDraftForm'
@@ -120,39 +120,35 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     // Load Catalogs (Test + Referral) 
     // Load independently so one failure (e.g. 403 on Referrals) doesn't block the other (Tests).
     useEffect(() => {
+        let isMounted = true;
         const loadCatalogs = async () => {
-            // 1. Load Test Catalog (Critical)
-            try {
-                const testData = await ReceptionApi.getTestCatalog();
-                setCatalog(testData || []);
-            } catch (err) {
-                console.error("Failed to load test catalog", err);
-            }
+            const [testResult, referralResult, labsResult, outResult] = await Promise.allSettled([
+                fetchTestCatalogCached(),
+                fetchReferralPartnersCached(),
+                fetchReferenceLabsCached(),
+                fetchOutsourcedCatalogCached()
+            ]);
 
-            // 2. Load Referral Partners (Secondary - might be 403 for Receptionist)
-            try {
-                const referralData = await ReceptionApi.getReferralPartners();
-                setReferralPartners(referralData || []);
-            } catch (err) {
-                console.warn("Failed to load referral partners (likely permission)", err);
-            }
-            // 3. Load Reference Labs
-            try {
-                const labsData = await ReceptionApi.getReferenceLabs();
+            if (!isMounted) return;
+
+            if (testResult.status === 'fulfilled') setCatalog(testResult.value || []);
+            else console.error("Failed to load test catalog", testResult.reason);
+
+            if (referralResult.status === 'fulfilled') setReferralPartners(referralResult.value || []);
+            else console.warn("Failed to load referral partners", referralResult.reason);
+
+            if (labsResult.status === 'fulfilled') {
+                const labsData = labsResult.value;
                 setReferenceLabs(labsData?.data || labsData || []);
-            } catch (err) {
-                console.warn("Failed to load reference labs", err);
-            }
+            } else console.warn("Failed to load reference labs", labsResult.reason);
 
-            // 4. Load Outsourced Catalog
-            try {
-                const outCatalog = await ReceptionApi.getOutsourcedTestCatalog();
+            if (outResult.status === 'fulfilled') {
+                const outCatalog = outResult.value;
                 setOutsourcedCatalog(outCatalog?.data || outCatalog || []);
-            } catch (err) {
-                console.warn("Failed to load outsourced catalog", err);
-            }
+            } else console.warn("Failed to load outsourced catalog", outResult.reason);
         };
         loadCatalogs();
+        return () => { isMounted = false; };
     }, []);
 
     // COMMAND: Apply Referral (Step 5.4)

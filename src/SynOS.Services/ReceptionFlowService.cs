@@ -1542,6 +1542,17 @@ namespace SynOS.Services
             var cancellations = await _context.VisitCancellations.Where(c => c.VisitId == visitId).ToListAsync();
             _context.VisitCancellations.RemoveRange(cancellations);
 
+            // Purge Operational Events for this deleted visit token/id
+            var visitIdStr = visitId.ToString();
+            var tokenStr = visit.Token;
+            var opEvents = await _context.BranchOperationalEvents
+                .Where(e => e.VisitId == visitIdStr || (tokenStr != null && e.TokenId == tokenStr))
+                .ToListAsync();
+            if (opEvents.Any())
+            {
+                _context.BranchOperationalEvents.RemoveRange(opEvents);
+            }
+
             // Delete visit
             _context.Visits.Remove(visit);
 

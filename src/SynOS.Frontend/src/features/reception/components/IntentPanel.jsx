@@ -105,12 +105,27 @@ export function IntentPanel() {
     }, [isOpen, intent, drawerState?.visitId]);
 
     const loadSnapshot = async () => {
-        setIsLoading(true);
+        if (!snapshot) setIsLoading(true);
         try {
             // In Resume/Correct Mode, we primarily query by VisitId
             // In Create Mode, we query by PatientId first (after selection)
             const data = await ReceptionApi.getIntakeSnapshot(currentPatientId, currentVisitId);
-            setSnapshot(data);
+            
+            setSnapshot(prev => {
+                const mergedVisit = data?.visit || prev?.visit || {
+                    visitId: currentVisitId || null,
+                    paymentCollectionModel: 'LabCollects',
+                    tests: []
+                };
+                const mergedPatient = data?.patient || prev?.patient;
+                return {
+                    ...data,
+                    patient: mergedPatient,
+                    visit: mergedVisit,
+                    billing: data?.billing || prev?.billing || { netAmount: 0, totalPaid: 0, paymentStatus: 'PendingPayment' },
+                    uiState: data?.uiState || prev?.uiState || { canRegisterPatient: true }
+                };
+            });
 
             // Sync IDs from verified snapshot
             if (data?.visit?.id && data.visit.id !== currentVisitId) setCurrentVisitId(data.visit.id);
@@ -167,34 +182,49 @@ export function IntentPanel() {
     // Removed isResumeIntent/isCorrectionIntent from deps as they are derived from intent/drawerState which are already tracked via currentVisitId change.
 
     // HANDLERS
+    // HANDLERS
     const handleSelectPatient = async (patient) => {
         if (!patient?.id) return;
 
+        // INSTANT OPTIMISTIC SELECTION (< 1 ms): Render Visit Details immediately without full-screen spinner
+        const patientName = patient.fullName || patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
+        const optimisticPatient = {
+            patientId: patient.id,
+            mrn: patient.mrn || patient.MRN || patient.patientId,
+            fullName: patientName || "Patient",
+            gender: patient.gender || 'M',
+            age: patient.age,
+            mobile: patient.phone || patient.mobile || patient.currentPhoneNumber,
+            dateOfBirth: patient.dateOfBirth
+        };
+
+        setSnapshot(prev => ({
+            ...prev,
+            patient: optimisticPatient,
+            visit: prev?.visit || {
+                visitId: null,
+                paymentCollectionModel: 'LabCollects',
+                tests: []
+            },
+            uiState: { canRegisterPatient: true }
+        }));
+
         setCurrentPatientId(patient.id);
-        setIsLoading(true);
 
         try {
-            // IMMEDIATE VISIT CREATION (Enterprise Grade)
-            // Backend idempotent check ensures single draft.
-            // No payment model required at this stage.
             const payload = {
                 patientId: patient.id,
                 dept: "Pathology",
                 testCodes: [],
-                paymentCollectionModel: null, // "Undecided" aligned with backend Option A
+                paymentCollectionModel: null,
                 referralPartnerId: null
             };
 
             const { visitId } = await ReceptionApi.startVisit(payload);
             setCurrentVisitId(visitId);
-            // Snapshot will refresh automatically via signalR or effect dependency
         } catch (err) {
             console.error("Immediate Visit Creation Failed", err);
             setError("Failed to initialize visit: " + err.message);
-            // Revert selection on failure? 
-            // Better to keep patient selected but show error so user can retry or see what happened.
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -224,9 +254,6 @@ export function IntentPanel() {
             try {
                 await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
                 
-                // CRITICAL: We wait for the API to succeed before closing.
-                // The backend emits VISIT_FINALIZED which updates the snapshot and Action Queue.
-                
                 // CLEAR PANEL STATE
                 handleClearPatient(); 
                 closePanel(); 
@@ -241,12 +268,7 @@ export function IntentPanel() {
         if (canCheckout && !snapshot.billing.isLocked) {
             setIsLoading(true);
             try {
-                // Default Cash for now as per previous UI -> STAGE 2: Dynamic Method
                 await ReceptionApi.collectPayment(snapshot.visit.visitId, remainingDue, paymentMethod);
-
-                // DECOUPLED: Thermal Printing is now completely Event-Driven.
-                // The backend emits 'PrintThermalReceiptEvent' via SignalR, which is 
-                // intercepted and executed by the global PrintOrchestratorContext.
 
                 handleClearPatient();
                 closePanel();
@@ -257,8 +279,7 @@ export function IntentPanel() {
             return;
         }
 
-        // 3. GENERATE BILL (Wait, if paid?)
-        // If already paid (e.g. earlier flow), this might just be "Close"
+        // 3. GENERATE BILL
         if (snapshot.billing.paymentStatus === 'Paid' && !isCorrectionIntent) {
             handleClearPatient();
             closePanel();
@@ -284,8 +305,7 @@ export function IntentPanel() {
     let isActionEnabled = false;
 
     if (!hasVisit && hasPatient) {
-        // LOADING STATE HANDLED BY `isLoading`
-        mainActionLabel = "Initializing Visit...";
+        mainActionLabel = "Add Tests to Proceed";
         isActionEnabled = false;
     } else if (hasVisit) {
         if (isVisitFinalized && !isCorrectionIntent) {
@@ -293,28 +313,27 @@ export function IntentPanel() {
             isActionEnabled = true;
         } else if (canLockPrepaid) {
             mainActionLabel = "Prepaid Checkout";
-            // RELAXED RULE: Partner OR Draft
             isActionEnabled = Boolean(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft);
         } else if (canCheckout) {
             mainActionLabel = `Accept Payment (₹${remainingDue})`;
             isActionEnabled = true;
         } else {
             mainActionLabel = "Add Tests to Proceed";
-            isActionEnabled = false; // "Grayed out" until totals > 0
+            isActionEnabled = false;
         }
     }
 
     // Dynamic Title based on Intent
     let panelTitle = "Registration";
-    if (isResumeIntent) { panelTitle = "Resume Visit"; } // Keep Resume? Maybe "Resume Registration"?
+    if (isResumeIntent) { panelTitle = "Resume Visit"; }
     if (isCorrectionIntent) { panelTitle = "Visit Correction"; }
 
     return (
         <div 
             ref={panelRef} 
             className={cn(
-                "flex flex-col h-full overflow-hidden rounded-2xl transition-all duration-300 ease-out shadow-2xl", 
-                hasPatient ? "absolute right-0 top-0 bottom-0 w-[190%] lg:w-[195%] xl:w-[200%]" : "absolute right-0 top-0 bottom-0 w-full",
+                "flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", 
+                hasPatient ? "absolute right-0 top-0 bottom-0 w-[780px] lg:w-[860px] xl:w-[940px] max-w-[calc(100vw-360px)]" : "absolute right-0 top-0 bottom-0 w-[480px] sm:w-[520px] max-w-full",
                 ui.panel
             )}
         >
@@ -351,16 +370,16 @@ export function IntentPanel() {
                         />
 
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
-                        {hasVisit && (
+                        {(hasPatient || isCorrectionIntent) && (
                             <div className={cn(
-                                "px-4 pb-4 mt-6 animate-in fade-in duration-500",
+                                "px-4 pb-4 mt-6 animate-in fade-in duration-300",
                                 hasPatient ? "grid grid-cols-2 gap-6" : "flex flex-col gap-6",
                                 (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
                             )}>
                                 <div className={hasPatient ? "flex flex-col gap-6" : ""}>
                                     <VisitDetails
                                         snapshot={snapshot}
-                                        visitId={snapshot.visit.visitId || snapshot.visit.id || snapshot.visit.VisitId}
+                                        visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
                                         onVisitUpdated={loadSnapshot}
                                         isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
                                         setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
