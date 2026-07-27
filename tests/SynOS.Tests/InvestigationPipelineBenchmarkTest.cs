@@ -258,60 +258,32 @@ namespace SynOS.Tests
             {
                 var totalSignSw = Stopwatch.StartNew();
 
-                var swLoadRep = Stopwatch.StartNew();
-                var user = await dbContext.Users.FindAsync(adminUser.UserId);
-                var currentReport = await dbContext.Reports.FindAsync(report.ReportId);
-                swLoadRep.Stop();
-
-                var swBuildStruct = Stopwatch.StartNew();
-                var structure = await reportingService.GetReportStructureAsync(report.ReportId, forceFresh: true);
-                swBuildStruct.Stop();
-
-                var swRefRange = Stopwatch.StartNew();
-                double refRangeTimeMs = signResolverScope.TotalDurationMs;
-                swRefRange.Stop();
-
-                var swForensic = Stopwatch.StartNew();
-                var interpretation = await dbContext.ReportInterpretations.FirstOrDefaultAsync(ri => ri.ReportId == report.ReportId);
-                var forensicPayload = new ForensicPayload
-                {
-                    Ancillary = new AncillaryData { PatientId = report.PatientId.ToString() },
-                    Diagnostics = new DiagnosticData { Interpretation = interpretation?.Summary },
-                    Lineage = new LineageData { ReportVersion = 1 }
-                };
-                var hash = ForensicHasher.GenerateHash(forensicPayload);
-                swForensic.Stop();
-
-                var swSnapshotRes = Stopwatch.StartNew();
-                var reportVersion = await dbContext.ReportVersions.Include(rv => rv.Snapshot).FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId);
-                swSnapshotRes.Stop();
-
-                var swRenderPdfInBand = Stopwatch.StartNew();
-                await reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
-                swRenderPdfInBand.Stop();
-
-                var swDbSave = Stopwatch.StartNew();
-                await dbContext.SaveChangesAsync();
-                swDbSave.Stop();
+                var signResult = await reportService.SignReportAsync(report.ReportId, adminUser.UserId);
 
                 totalSignSw.Stop();
 
-                Print("\n--- STAGE TIMINGS BREAKDOWN ---");
-                Print($"   1. Load Report: {swLoadRep.ElapsedMilliseconds} ms");
-                Print($"   2. Build Clinical Structure: {swBuildStruct.ElapsedMilliseconds} ms");
-                Print($"   3. Reference Range Resolution: {refRangeTimeMs:F2} ms");
-                Print($"   4. Forensic Hash Generation: {swForensic.ElapsedMilliseconds} ms");
-                Print($"   5. Snapshot Resolution: {swSnapshotRes.ElapsedMilliseconds} ms");
-                Print($"   6. EnsureAndRenderReportPdfAsync (In-Band): {swRenderPdfInBand.ElapsedMilliseconds} ms");
-                Print($"   7. Database SaveChanges: {swDbSave.ElapsedMilliseconds} ms");
-                Print($"   TOTAL SignReportAsync Workflow Time: {totalSignSw.ElapsedMilliseconds} ms");
+                Print("\n--- SIGN REPORT ASYNC HTTP TIMINGS BREAKDOWN ---");
+                Print($"   ReportId: {signResult.ReportId}");
+                Print($"   Status: {signResult.Status}");
+                Print($"   ContentHash: {signResult.ContentHash}");
+                Print($"   TOTAL SignReportAsync HTTP Response Time: {totalSignSw.ElapsedMilliseconds} ms");
 
                 var sqlMetrics = signScope.GetMetrics();
-                Print("\n--- SQL COMMAND METRICS ---");
+                Print("\n--- SQL COMMAND METRICS (HTTP PATH) ---");
                 Print($"   Total SQL Command Count: {sqlMetrics.TotalCount}");
                 Print($"   Total SQL Execution Time: {sqlMetrics.TotalTimeMs:F2} ms");
                 Print($"   Average Query Duration: {sqlMetrics.AvgTimeMs:F2} ms");
                 Print($"   Reference Range Query Count: {sqlMetrics.ReferenceRangeCount}");
+
+                // Now measure Background PDF Generation via EnsureAndRenderReportPdfAsync
+                var swBgPdf = Stopwatch.StartNew();
+                var generatedPdfPath = await reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: false);
+                swBgPdf.Stop();
+
+                Print("\n--- BACKGROUND / LAZY PDF GENERATION PERFORMANCE ---");
+                Print($"   Generated PDF Relative Path: {generatedPdfPath}");
+                Print($"   Background PDF Generation Duration: {swBgPdf.ElapsedMilliseconds} ms");
+                Print($"   End-To-End Total Availability Duration: {totalSignSw.ElapsedMilliseconds + swBgPdf.ElapsedMilliseconds} ms");
 
                 Print("\n--- TOP 10 SLOWEST QUERIES ---");
                 int idx = 1;
@@ -329,7 +301,7 @@ namespace SynOS.Tests
     public class TestUserContext : IUserContext
     {
         public Guid CurrentUserId => Guid.Parse("00000000-0000-0000-0000-000000000001");
-        public Guid CurrentBranchId => Guid.Parse("00000000-0000-0000-0000-000000000001");
+        public Guid CurrentBranchId => Guid.Parse("a0000000-0000-0000-0000-000000000001");
         public Guid CurrentSessionId => Guid.NewGuid();
         public string CurrentRole => "Admin";
         public string CurrentMode => "Normal";

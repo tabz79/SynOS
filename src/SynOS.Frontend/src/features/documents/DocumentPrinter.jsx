@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ReportA4 } from './templates/ReportA4';
-import { useTemplateForReport } from './templates/hooks/useReportTemplates';
+import { useTemplateForReport, fetchTemplatesCached, fetchTestsCached } from './templates/hooks/useReportTemplates';
 import { useAuth } from '@/context/AuthContext';
 import { ReportsApi } from '@/api/reports';
 import { AdminApi } from '@/api/admin';
@@ -105,8 +105,8 @@ export const DocumentPrinter = () => {
           console.warn("Could not load sibling reports, rendering primary report only.", siblingErr);
         }
 
-        // 3. Fetch all templates
-        const templateDtos = await ReportsApi.getTemplates();
+        // 3. Fetch all templates (cached)
+        const templateDtos = await fetchTemplatesCached();
         const mappedTemplates = templateDtos.map(item => {
           let dsl = item.templateDsl;
           if (!dsl && item.templateJson) {
@@ -119,10 +119,10 @@ export const DocumentPrinter = () => {
           return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
         });
 
-        // 3.5 Fetch tests catalog for overrides
+        // 3.5 Fetch tests catalog for overrides (cached)
         let catalog = [];
         try {
-          catalog = await AdminApi.getTests();
+          catalog = await fetchTestsCached();
         } catch (catalogErr) {
           console.warn("Failed to load catalog for printing overrides", catalogErr);
         }

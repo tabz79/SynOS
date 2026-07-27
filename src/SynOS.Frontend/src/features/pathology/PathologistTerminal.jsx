@@ -518,25 +518,26 @@ export function PathologistTerminal() {
     const fetchReportDetail = async (reportId) => {
         setIsLoadingDetail(true);
         try {
-            const [fullRes, dataRes] = await Promise.all([
-                ReportsApi.getFullReport(reportId),
-                ReportsApi.getReportData(reportId, true) // Force live for verification phase
-            ]);
+            const contextRes = await ReportsApi.getFullReportContext(reportId, true);
 
-            setReportStructure(fullRes.report);
-            setReportData(dataRes);
+            setReportStructure(contextRes.report);
+            setReportData(contextRes.reportData);
             setInterpretation({
-                interpretation: fullRes.interpretation?.summary || "",
-                comments: fullRes.interpretation?.notes || ""
+                interpretation: contextRes.interpretation?.summary || "",
+                comments: contextRes.interpretation?.notes || ""
             });
             
             // Initialize results state for editing
             const initialResults = {};
-            fullRes.report.groups.forEach(g => {
-                g.parameters.forEach(p => {
-                    initialResults[p.parameterCode] = p.value;
+            if (contextRes.report?.groups) {
+                contextRes.report.groups.forEach(g => {
+                    if (g.parameters) {
+                        g.parameters.forEach(p => {
+                            initialResults[p.parameterCode] = p.value;
+                        });
+                    }
                 });
-            });
+            }
             setResultsState(initialResults);
             
             setLastSavedAt(null);
@@ -570,17 +571,13 @@ export function PathologistTerminal() {
                 await ReportsApi.saveResults(reportStructure.sourceId, resultsPayload);
             }
 
-            // 3. Hard Re-fetch (Force Live to bypass snapshot during verification)
-            // We fetch both the full structure (to refresh flags) and the PDF data
-            const [fullRes, freshData] = await Promise.all([
-                ReportsApi.getFullReport(selectedReportId),
-                ReportsApi.getReportData(selectedReportId, true)
-            ]);
+            // 3. Single-Pass Context Refresh
+            const contextRes = await ReportsApi.getFullReportContext(selectedReportId, true);
 
-            // 3. Guard
+            // 4. Guard
             if (currentRequestId === requestCounter.current) {
-                setReportStructure(fullRes.report);
-                setReportData(freshData);
+                setReportStructure(contextRes.report);
+                setReportData(contextRes.reportData);
                 setLastSavedAt(new Date());
                 setTimeout(() => setLastSavedAt(null), 3000);
             }

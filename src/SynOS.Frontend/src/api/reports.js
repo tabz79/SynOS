@@ -44,6 +44,14 @@ export const ReportsApi = {
         return await response.json();
     },
 
+    getFullReportContext: async (reportId, forceLive = true) => {
+        const response = await fetch(`/api/v1/reports/${reportId}/full-context?forceLive=${forceLive}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch full report context');
+        return await response.json();
+    },
+
     getFullReport: async (reportId) => {
         const response = await fetch(`/api/v1/reports/${reportId}/full`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }

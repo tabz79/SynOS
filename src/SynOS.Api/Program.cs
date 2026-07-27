@@ -512,6 +512,7 @@ if (!isSetupMode || isConfigured)
     builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
     builder.Services.AddHostedService<MiddlewareSyncWorker>();
     builder.Services.AddHostedService<DraftVisitCleanupService>();
+    builder.Services.AddHostedService<ReportPdfBackgroundWorker>();
 }
 
 // Add SignalR

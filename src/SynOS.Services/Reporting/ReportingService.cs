@@ -207,28 +207,6 @@ namespace SynOS.Services.Reporting
                     _logger.LogInformation("[FINE INSTRUMENTATION] Connection Open took {Elapsed} ms", connSw.ElapsedMilliseconds);
                 }
 
-                var debugSw = System.Diagnostics.Stopwatch.StartNew();
-                using (var cmd = connection.CreateCommand())
-                {
-                    cmd.CommandText = "SELECT Name, Modality, IsDefault, IsDeleted FROM ReportTemplates";
-                    var debugExecSw = System.Diagnostics.Stopwatch.StartNew();
-                    using (var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.SequentialAccess))
-                    {
-                        debugExecSw.Stop();
-                        _logger.LogInformation("[FINE INSTRUMENTATION] Debug List ExecuteReaderAsync took {Elapsed} ms", debugExecSw.ElapsedMilliseconds);
-                        var debugReadSw = System.Diagnostics.Stopwatch.StartNew();
-                        while (await reader.ReadAsync())
-                        {
-                            _logger.LogInformation("CS Resolve Template Row: Name={Name}, Modality={Modality}, IsDefault={IsDefault}, IsDeleted={IsDeleted}",
-                                reader.GetString(0), reader.GetString(1), reader.GetBoolean(2), reader.GetBoolean(3));
-                        }
-                        debugReadSw.Stop();
-                        _logger.LogInformation("[FINE INSTRUMENTATION] Debug List Read Loop took {Elapsed} ms", debugReadSw.ElapsedMilliseconds);
-                    }
-                }
-                debugSw.Stop();
-                _logger.LogInformation("[FINE INSTRUMENTATION] Total Debug List Query took {Elapsed} ms", debugSw.ElapsedMilliseconds);
-
                 // STEP 1: Query SnapshotMetadataJson FIRST (Two-Query Rule)
                 string? snapshotMetadataJson = null;
                 var metadataQuerySw = System.Diagnostics.Stopwatch.StartNew();
@@ -520,6 +498,7 @@ namespace SynOS.Services.Reporting
             if (order.Test != null && order.Test.IsProfile)
             {
                 var childMappings = await _context.ProfileMaps
+                    .Include(pm => pm.ChildTest)
                     .Where(pm => pm.ParentTestId == order.Test.TestId)
                     .OrderBy(pm => pm.Sequence)
                     .ToListAsync();
@@ -527,10 +506,9 @@ namespace SynOS.Services.Reporting
                 int seq = 1;
                 foreach (var mapping in childMappings)
                 {
-                    var childTest = await _context.Tests.FindAsync(mapping.ChildTestId);
-                    if (childTest != null)
+                    if (mapping.ChildTest != null)
                     {
-                        childTestSequences[childTest.TestCode] = seq++;
+                        childTestSequences[mapping.ChildTest.TestCode] = seq++;
                     }
                 }
             }
@@ -548,7 +526,23 @@ namespace SynOS.Services.Reporting
                 return 0; // Standalone or default
             }
 
-            // Iterate through catalog structure instead of flat results to support panels/placeholders
+            // Batch-fetch reference ranges for all parameters in 1 single query
+            var paramCodes = catalogParams.Select(cp => cp.ParameterCode).Distinct().ToList();
+            var refRangesList = await _context.ReferenceRanges
+                .Include(r => r.Parameter)
+                .Where(r => paramCodes.Contains(r.Parameter.ParameterCode) && r.IsActive)
+                .ToListAsync();
+
+            var refRangesMap = refRangesList
+                .GroupBy(r => r.Parameter.ParameterCode)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+
+            DateTime patientDob;
+            if (!DateTime.TryParse(dto.Patient.DateOfBirth, out patientDob))
+            {
+                patientDob = visit.TokenDate.AddYears(-dto.Patient.Age);
+            }
+
             var sortedCatalogParams = catalogParams
                 .OrderBy(cp => cp.DisplayGroupOrder)
                 .ThenBy(cp => GetTestSequence(cp.TestCode))
@@ -633,26 +627,48 @@ namespace SynOS.Services.Reporting
                     }
                 }
 
-                // Step 7: Add to Group (Minimal Fix: Always add all discovered parameters)
-                if (true) // FIX: Removed filter (paramDto.Value != null || paramDto.IsCalculated)
+                // Step 7: Add to Group (In-memory reference range calculation)
+                refRangesMap.TryGetValue(meta.ParameterCode, out var paramRefRanges);
+                paramRefRanges ??= new List<ReferenceRange>();
+
+                if (paramDto.Value != null)
                 {
-                    // Compute Flag/Range only if we have a value
-                    if (paramDto.Value != null)
+                    var rangeObj = Utils.ReferenceRangeResolver.ResolveRangeEntityFromList(paramRefRanges, dto.Patient.Gender, patientDob, visit.TokenDate);
+                    if (rangeObj != null)
                     {
-                        var resultObj = result ?? new Result { Value = paramDto.Value, ParameterCode = paramDto.ParameterCode };
-                        paramDto.Flag = await CalculateFlagAsync(resultObj, meta, dto.Patient, visit.TokenDate);
-                        paramDto.IsAbnormal = paramDto.Flag != "Normal";
-                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient, visit.TokenDate);
+                        if (decimal.TryParse(paramDto.Value, out var val))
+                        {
+                            if (rangeObj.CriticalLow.HasValue && val <= rangeObj.CriticalLow.Value) paramDto.Flag = "CriticalLow";
+                            else if (rangeObj.CriticalHigh.HasValue && val >= rangeObj.CriticalHigh.Value) paramDto.Flag = "CriticalHigh";
+                            else if (rangeObj.RefLow.HasValue && val < rangeObj.RefLow.Value) paramDto.Flag = "Low";
+                            else if (rangeObj.RefHigh.HasValue && val > rangeObj.RefHigh.Value) paramDto.Flag = "High";
+                            else paramDto.Flag = "Normal";
+                        }
+                        else
+                        {
+                            paramDto.Flag = "Normal";
+                        }
+
+                        paramDto.ReferenceRange = !string.IsNullOrEmpty(rangeObj.TextRange) 
+                            ? rangeObj.TextRange 
+                            : (rangeObj.RefLow.HasValue && rangeObj.RefHigh.HasValue ? $"{rangeObj.RefLow.Value:#.##} - {rangeObj.RefHigh.Value:#.##}" : string.Empty);
                     }
                     else
                     {
                         paramDto.Flag = "Normal";
-                        paramDto.IsAbnormal = false;
-                        paramDto.ReferenceRange = await GetFormattedRangeAsync(meta, dto.Patient, visit.TokenDate);
+                        paramDto.ReferenceRange = meta.ReferenceRange ?? string.Empty;
                     }
-
-                    groups[groupName].Parameters.Add(paramDto);
+                    paramDto.IsAbnormal = paramDto.Flag != "Normal";
                 }
+                else
+                {
+                    paramDto.Flag = "Normal";
+                    paramDto.IsAbnormal = false;
+                    paramDto.ReferenceRange = Utils.ReferenceRangeResolver.ResolveRangeFromList(paramRefRanges, dto.Patient.Gender, patientDob, visit.TokenDate);
+                    if (string.IsNullOrEmpty(paramDto.ReferenceRange)) paramDto.ReferenceRange = meta.ReferenceRange ?? string.Empty;
+                }
+
+                groups[groupName].Parameters.Add(paramDto);
             }
 
             // 8. FINAL PASS — SAFE CHAIN RESOLUTION (Max 2 Iterations)

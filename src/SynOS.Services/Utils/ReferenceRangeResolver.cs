@@ -134,6 +134,52 @@ namespace SynOS.Services.Utils
             return bestRange;
         }
 
+        public static ReferenceRange? ResolveRangeEntityFromList(List<ReferenceRange> parameterRanges, string gender, DateTime dob, DateTime referenceDate)
+        {
+            if (parameterRanges == null || !parameterRanges.Any()) return null;
+
+            string patientAgeGroup = DetermineAgeCategory(dob, referenceDate);
+            var ageInYears = CalculateAge(dob, referenceDate);
+
+            var genderMatchedRanges = parameterRanges
+                .Where(r => r.Sex == "ALL" || string.Equals(r.Sex, gender, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var matchedRanges = genderMatchedRanges.Where(r =>
+            {
+                if (r.AgeMin.HasValue || r.AgeMax.HasValue)
+                {
+                    if (r.AgeMin == 0 && r.AgeMax == 0) return patientAgeGroup == "Newborn";
+                    if (r.AgeMin == 0 && r.AgeMax == 1) return patientAgeGroup == "Infant";
+
+                    bool minOk = !r.AgeMin.HasValue || ageInYears >= r.AgeMin.Value;
+                    bool maxOk = !r.AgeMax.HasValue || ageInYears <= r.AgeMax.Value;
+                    return minOk && maxOk;
+                }
+
+                return r.AgeGroup == "ALL" || string.Equals(r.AgeGroup, patientAgeGroup, StringComparison.OrdinalIgnoreCase);
+            }).ToList();
+
+            if (!matchedRanges.Any()) return null;
+
+            return matchedRanges
+                .OrderByDescending(r => string.Equals(r.Sex, gender, StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(r => r.AgeMin.HasValue || r.AgeMax.HasValue || !string.Equals(r.AgeGroup, "ALL", StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+        }
+
+        public static string ResolveRangeFromList(List<ReferenceRange> parameterRanges, string gender, DateTime dob, DateTime referenceDate)
+        {
+            var range = ResolveRangeEntityFromList(parameterRanges, gender, dob, referenceDate);
+            if (range != null)
+            {
+                if (!string.IsNullOrEmpty(range.TextRange)) return range.TextRange;
+                if (range.RefLow.HasValue && range.RefHigh.HasValue) 
+                    return $"{range.RefLow.Value:#.##} - {range.RefHigh.Value:#.##}";
+            }
+            return string.Empty;
+        }
+
         public static async Task<string> ResolveRangeAsync(SynOSDbContext context, string parameterCode, string gender, DateTime dob, DateTime referenceDate)
         {
             var range = await ResolveRangeEntityAsync(context, parameterCode, gender, dob, referenceDate);

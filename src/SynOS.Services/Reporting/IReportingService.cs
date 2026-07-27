@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs.Reporting;
+using SynOS.Services.DTOs;
 
 namespace SynOS.Services.Reporting
 {
@@ -18,6 +19,7 @@ namespace SynOS.Services.Reporting
         /// </summary>
         Task<ReportStructureDto> PreviewReportStructureAsync(Guid reportId);
         
+
         /// <summary>
         /// Captures the current state of a report and stores it as an immutable snapshot.
         /// Usually called during the "Sign" process.

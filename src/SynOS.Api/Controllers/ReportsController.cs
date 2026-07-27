@@ -8,6 +8,7 @@ using SynOS.Models.DTOs;
 using SynOS.Models.DTOs.Reporting;
 using SynOS.Services;
 using SynOS.Services.Reporting;
+using SynOS.Services.DTOs;
 
 
 
@@ -224,6 +225,21 @@ namespace SynOS.Api.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{reportId}/full-context")]
+        [Authorize(Policy = "ReportingPolicy")]
+        public async Task<IActionResult> GetFullReportContext(Guid reportId, [FromQuery] bool forceLive = true)
+        {
+            try
+            {
+                var context = await _reportService.GetFullReportContextAsync(reportId, forceLive);
+                return Ok(context);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 

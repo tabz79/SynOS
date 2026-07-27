@@ -510,24 +510,20 @@ export function TypistTerminal() {
     const fetchReportDetail = async (reportId) => {
         setIsLoadingDetail(true);
         try {
-            // Fetch both structures in parallel for seamless mapping
-            const [structureRes, dataRes] = await Promise.all([
-                ReportsApi.getFullReport(reportId),
-                ReportsApi.getReportData(reportId, true) // forceLive=true for Typist Preview
-            ]);
+            const contextRes = await ReportsApi.getFullReportContext(reportId, true);
 
-            setReportStructure(structureRes.report);
-            setReportData(dataRes);
+            setReportStructure(contextRes.report);
+            setReportData(contextRes.reportData);
             
             setInterpretation({
-                interpretation: structureRes.interpretation?.summary || "",
-                comments: structureRes.interpretation?.notes || ""
+                interpretation: contextRes.interpretation?.summary || "",
+                comments: contextRes.interpretation?.notes || ""
             });
 
             // Initialize results state for editing
             const initialResults = {};
-            if (structureRes.report?.groups) {
-                structureRes.report.groups.forEach(g => {
+            if (contextRes.report?.groups) {
+                contextRes.report.groups.forEach(g => {
                     if (g.parameters) {
                         g.parameters.forEach(p => {
                             initialResults[p.parameterCode] = p.value;
@@ -569,19 +565,14 @@ export function TypistTerminal() {
                 interpretation.comments
             );
 
-            // 3. Hard Re-fetch (Rule 1: Backend is Truth, bypass snapshot in Draft)
-            const freshData = await ReportsApi.getReportData(selectedReportId, true);
+            // 3. Single-Pass Context Refresh
+            const contextRes = await ReportsApi.getFullReportContext(selectedReportId, true);
 
-            // 4. Race Condition Guard (GPT-5 Safeguard)
+            // 4. Race Condition Guard
             if (currentRequestId === requestCounter.current) {
-                setReportData(freshData);
-                // Also trigger re-fetch of full report structure to get updated values & flags in display
-                const fullRes = await ReportsApi.getFullReport(selectedReportId);
-                if (currentRequestId === requestCounter.current) {
-                    setReportStructure(fullRes.report);
-                }
+                setReportData(contextRes.reportData);
+                setReportStructure(contextRes.report);
                 setLastSavedAt(new Date());
-                // Auto-clear success message after 3s
                 setTimeout(() => setLastSavedAt(null), 3000);
             }
         } catch (err) {

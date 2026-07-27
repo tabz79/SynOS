@@ -16,6 +16,7 @@ using SynOS.Services.Operations;
 using SynOS.Services.Security;
 using SynOS.Services.Storage;
 using SynOS.Services.Forensic;
+using SynOS.Services.DTOs;
 using SynOS.Models.Domain;
 
 using Microsoft.Extensions.Configuration;
@@ -330,6 +331,8 @@ namespace SynOS.Services
 
                 if (reportVersion != null)
                 {
+                    reportVersion.SignedByUserId = signedByUserId;
+                    reportVersion.SignedAt = timestamp;
                     var domainState = structure.ToDomain();
                     domainState.Status = "Signed";
                     domainState.SignedAt = timestamp;
@@ -437,25 +440,7 @@ namespace SynOS.Services
             }
             // --- END FLOW B ---
 
-            // 7. Generate PDF via Unified Pipeline
-            try
-            {
-                await EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
-
-                var reportVersion = await _context.ReportVersions
-                    .FirstOrDefaultAsync(rv => rv.ReportId == report.ReportId && rv.VersionNumber == requestedVersion);
-                if (reportVersion != null)
-                {
-                    reportVersion.SignedByUserId = signedByUserId;
-                    reportVersion.SignedAt = timestamp;
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to generate and save PDF for Report {ReportId} after signing.", report.ReportId);
-            }
-            
+            // 7. Post-commit background PDF generation is handled asynchronously by ReportPdfBackgroundWorker reacting to REPORT_SIGNED event.
             return new ReportSignatureResponseDto
             {
                 ReportId = report.ReportId,
@@ -610,7 +595,7 @@ namespace SynOS.Services
             };
         }
 
-        public async Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false)
+        public async Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false, ReportStructureDto? existingStructure = null)
         {
             var report = await _context.Reports
                 .Include(r => r.PathologyReport)
@@ -726,7 +711,7 @@ namespace SynOS.Services
             }
 
             // 2. LIVE TRUTH FACTORY (For Drafts or Corrupted Snapshots)
-            return await BuildReportDataModelV2Async(report, order, forceLive);
+            return await BuildReportDataModelV2Async(report, order, forceLive, existingStructure);
         }
 
         public async Task<string> EnsureAndRenderReportPdfAsync(Guid reportId, bool forceReRender = false)
@@ -1037,7 +1022,7 @@ namespace SynOS.Services
             return model;
         }
 
-        private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order, bool forceLive = false)
+        private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order, bool forceLive = false, ReportStructureDto? existingStructure = null)
         {
             var patient = order.Visit!.Patient;
 
@@ -1212,7 +1197,7 @@ namespace SynOS.Services
                 return radModel;
             }
 
-            var structure = await _reportingService.GetReportStructureAsync(report.ReportId, forceLive);
+            var structure = existingStructure ?? await _reportingService.GetReportStructureAsync(report.ReportId, forceLive);
             
             // SINGLE TRUTH: Human input comes exclusively from ReportInterpretations
             var interpretationData = await _context.ReportInterpretations
@@ -1442,7 +1427,7 @@ namespace SynOS.Services
                     Gender = patient.Gender,
                     ContactInfo = patient.CurrentPhoneNumber ?? "N/A"
                 },
-                Results = structure.Groups.Select(g => new ResultGroup
+                Results = structure.Groups.Select((ReportGroupDto g) => new ResultGroup
                 {
                     GroupName = g.GroupName,
                     Sequence = g.Order,
@@ -1504,6 +1489,34 @@ namespace SynOS.Services
             }
 
             return model;
+        }
+
+        public async Task<FullReportContextDto> GetFullReportContextAsync(Guid reportId, bool forceLive = true)
+        {
+            var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
+            if (report == null) throw new KeyNotFoundException($"Report {reportId} not found.");
+
+            // 1. Single Assembly Pass
+            var structure = await _reportingService.GetReportStructureAsync(reportId, forceFresh: forceLive);
+
+            // 2. Single Interpretation Lookup
+            var interpretationData = await _context.ReportInterpretations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ri => ri.ReportId == reportId);
+
+            // 3. Project ReportDataModel over the exact same structure in memory (Zero Re-Assembly)
+            var reportDataModel = await GetReportDataForPdfAsync(reportId, forceLive: forceLive, existingStructure: structure);
+
+            return new FullReportContextDto
+            {
+                Report = structure,
+                ReportData = reportDataModel ?? new ReportDataModel(),
+                Interpretation = interpretationData != null ? new InterpretationDto
+                {
+                    Summary = interpretationData.Summary ?? string.Empty,
+                    Notes = interpretationData.Notes ?? string.Empty
+                } : null
+            };
         }
 
         private ReportDataModel MapLegacyToV2(LegacyReportDataModel v1, Report report, Order order)

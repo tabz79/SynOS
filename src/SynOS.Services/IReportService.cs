@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs;
 using SynOS.Models.DTOs.Reporting;
+using SynOS.Services.DTOs;
 
 namespace SynOS.Services
 {
@@ -14,7 +15,8 @@ namespace SynOS.Services
         Task SaveFinalResultsAsync(Guid orderId, SaveFinalResultsRequestDto request);
         Task<FinalReportDto> GetFinalReportAsync(Guid orderId);
         Task MarkReportAsDeliveredAsync(Guid orderId);
-        Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false);
+        Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false, ReportStructureDto? existingStructure = null);
+        Task<FullReportContextDto> GetFullReportContextAsync(Guid reportId, bool forceLive = true);
         Task<string> EnsureAndRenderReportPdfAsync(Guid reportId, bool forceReRender = false);
         Task<IEnumerable<ReportListItemDto>> GetReportsByStatusAsync(string status, bool excludeManualFlow = false, string? department = null, bool includeHistory = false);
         Task ClaimReportAsync(Guid reportId, Guid userId); // NEW: Supports Pool Pattern

@@ -4,6 +4,34 @@ import { AdminApi } from '../../../../api/admin';
 import { DEFAULT_TEMPLATES, sanitizeTemplates } from '../defaultTemplates';
 import { mapBackendDslToTemplate } from '../ReportTemplateService';
 
+let cachedTemplatesPromise = null;
+let cachedTestsPromise = null;
+
+export function fetchTemplatesCached() {
+  if (!cachedTemplatesPromise) {
+    cachedTemplatesPromise = ReportsApi.getTemplates().catch(err => {
+      cachedTemplatesPromise = null;
+      throw err;
+    });
+  }
+  return cachedTemplatesPromise;
+}
+
+export function fetchTestsCached() {
+  if (!cachedTestsPromise) {
+    cachedTestsPromise = AdminApi.getTests().catch(err => {
+      cachedTestsPromise = null;
+      throw err;
+    });
+  }
+  return cachedTestsPromise;
+}
+
+export function clearTemplateCaches() {
+  cachedTemplatesPromise = null;
+  cachedTestsPromise = null;
+}
+
 // React hook to fetch and resolve the active template for a given report
 export function useTemplateForReport(reportData) {
   const modality = reportData?.modality || reportData?.Modality;
@@ -53,7 +81,7 @@ export function useTemplateForReport(reportData) {
     return found;
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !template);
 
   useEffect(() => {
     if (!modality) {
@@ -65,7 +93,7 @@ export function useTemplateForReport(reportData) {
 
     async function load() {
       try {
-        const list = await ReportsApi.getTemplates();
+        const list = await fetchTemplatesCached();
         if (!isMounted) return;
 
         // Map DTOs to visual templates
@@ -92,7 +120,7 @@ export function useTemplateForReport(reportData) {
         // 2. Check catalog settings override directly from API to avoid localStorage
         if (!found && testCode) {
           try {
-            const catalog = await AdminApi.getTests();
+            const catalog = await fetchTestsCached();
             const test = catalog.find(t => (t.testCode || t.TestCode || t.code || "").toUpperCase() === (testCode || "").toUpperCase());
             const templateId = test?.reportTemplateId || test?.ReportTemplateId || test?.templateId;
             if (templateId) {
@@ -131,7 +159,7 @@ export function useTemplateForReport(reportData) {
           }) || localTemplates[0];
         }
 
-        if (isMounted) {
+        if (isMounted && found) {
           setTemplate(found);
         }
       } catch (err) {
