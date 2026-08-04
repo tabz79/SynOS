@@ -588,7 +588,7 @@ export function PacsArchiveScreen() {
 
             {/* View DICOM Modal Viewer */}
             {viewerStudy && (
-                <div className="fixed inset-0 z-[100] bg-zinc-950 flex flex-col animate-in fade-in duration-200">
+                <div className="fixed top-[48px] inset-x-0 bottom-0 z-[40] bg-zinc-950 flex flex-col animate-in fade-in duration-200">
                     <div className="px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between text-white">
                         <div className="flex items-center space-x-3">
                             <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-400">

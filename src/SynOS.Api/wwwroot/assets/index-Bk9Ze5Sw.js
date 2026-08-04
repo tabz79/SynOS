@@ -220232,7 +220232,7 @@ Input: ` + this.err.str);
           ]
         }),
         G && a.jsxs("div", {
-          className: "fixed inset-0 z-[100] bg-zinc-950 flex flex-col animate-in fade-in duration-200",
+          className: "fixed top-[48px] inset-x-0 bottom-0 z-[40] bg-zinc-950 flex flex-col animate-in fade-in duration-200",
           children: [
             a.jsxs("div", {
               className: "px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between text-white",
