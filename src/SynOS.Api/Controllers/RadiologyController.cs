@@ -43,6 +43,14 @@ namespace SynOS.Api.Controllers
             return Ok(queue);
         }
 
+        [HttpGet("studies/archive")]
+        [Authorize(Roles = "Admin,SuperAdmin,Technician,XRayTech,MriTech,CTTech,USTech,Radiologist,Typist,Pathologist,LabTech,Phlebotomist")]
+        public async Task<IActionResult> GetPacsMasterArchive()
+        {
+            var archive = await _radiologyService.GetPacsMasterArchiveAsync();
+            return Ok(archive);
+        }
+
         [HttpPost("studies/assign")]
         [Authorize(Roles = "Admin,Technician,XRayTech,MriTech,CTTech,USTech")]
         

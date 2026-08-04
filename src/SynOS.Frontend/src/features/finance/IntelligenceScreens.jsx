@@ -16,7 +16,7 @@ import { FinanceApi } from '@/api/finance';
 // --- SHARED COMPONENTS ---
 
 const MetricCard = ({ title, value, subtext, icon: Icon, trend, color }) => (
-    <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden relative group">
+    <div className="p-6 rounded-2xl synos-card-elevated overflow-hidden relative group">
         <div className={`absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 opacity-[0.03] group-hover:opacity-[0.08] transition-all ${color}`}>
             <Icon size={96} />
         </div>
@@ -61,22 +61,28 @@ export const IntelligenceDashboard = () => {
 
     if (loading || !stats) return <LoadingState />;
 
-    const cashCollected = Number(stats.totalRevenueCash || stats.cashInflow) || 0;
-    const totalBilled = Number(stats.totalRevenueAccrual) || cashCollected;
-    const doctorPayouts = Number(stats.referralCashOutflow) || 0;
-    const materialCosts = Number(stats.consumableCashOutflow) || 0;
-    const payrollCosts = Number(stats.payrollCashOutflow) || 0;
-    const totalExpenses = Number(stats.totalExpensesCash) || 0;
-    const actualProfit = Number(stats.netCashPosition) || 0;
+    const totalBilled = Number(stats.billedRevenue || 0);
+    const cashCollected = Number(stats.moneyCollectedCash || 0);
+    const materialCosts = Number(stats.materialCost || 0);
+    const doctorPayouts = Number(stats.doctorPayouts || 0);
+    const payrollCosts = Number(stats.payrollSalary || 0);
+    const overheadCosts = Number(stats.monthlyOverheads || 0);
+    const totalExpenses = materialCosts + doctorPayouts + payrollCosts + overheadCosts;
+    const actualProfit = Number(stats.netCashProfit || (cashCollected - totalExpenses));
 
-    const handleExportPnl = () => {
-        FinanceApi.exportProfitabilityPnl(dateRange, true);
+    const handleExportPnl = async () => {
+        try {
+            await FinanceApi.downloadPnlReport(dateRange);
+        } catch {
+            alert("Failed to download P&L Statement");
+        }
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in duration-500 w-full">
-            {/* HEADER WITH SIMPLE TIME SWITCHER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-8 space-y-8 w-full pb-24 animate-in fade-in duration-500">
+            
+            {/* TOP HEADER / ACTION BAR */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex flex-col gap-1">
                     <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Lab Business Brain</h1>
                     <p className="text-sm text-zinc-500 font-medium">Real-time profitability, test margins, and expense breakdowns.</p>
@@ -107,7 +113,7 @@ export const IntelligenceDashboard = () => {
             </div>
 
             {/* EXECUTIVE PLAIN-ENGLISH NARRATIVE BANNER */}
-            <div className="p-6 rounded-2xl bg-gradient-to-r from-synos-primary/10 via-emerald-500/10 to-blue-500/10 border border-synos-primary/20 shadow-sm space-y-2">
+            <div className="p-6 rounded-2xl synos-card-elevated space-y-2">
                 <div className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-synos-primary" />
                     <h2 className="text-sm font-bold uppercase tracking-wider text-synos-primary">Owner Executive Briefing ({dateRange === 'today' ? 'Today' : dateRange === 'year' ? 'This Year' : dateRange === 'quarter' ? 'This Quarter' : 'This Month'})</h2>
@@ -144,7 +150,7 @@ export const IntelligenceDashboard = () => {
             </div>
 
             {/* VISUAL FINANCIAL FLOW WATERFALL */}
-            <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 shadow-sm space-y-6">
+            <div className="p-6 rounded-2xl synos-card-elevated space-y-6">
                 <div className="flex justify-between items-center">
                     <div>
                         <h3 className="text-sm font-bold dark:text-white text-zinc-900">Visual Financial Flow</h3>
@@ -179,7 +185,7 @@ export const IntelligenceDashboard = () => {
 
             {/* BOTTOM SECTION: PARTNER ROI & ECONOMIC HEALTH */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 p-6 rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 shadow-sm space-y-4">
+                <div className="lg:col-span-2 p-6 rounded-2xl synos-card-elevated space-y-4">
                     <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Doctor & Clinic Partner ROI</h3>
                     <div className="space-y-4">
                         {stats.topPartnerRoi && stats.topPartnerRoi.length > 0 ? (
@@ -204,7 +210,7 @@ export const IntelligenceDashboard = () => {
 
                 {/* Economic Health Check */}
                 <div className="space-y-6">
-                    <div className="p-8 rounded-3xl border dark:border-zinc-800 border-zinc-200 bg-synos-primary/5 dark:bg-synos-primary/5 border-synos-primary/10 relative overflow-hidden">
+                    <div className="p-8 rounded-3xl synos-card-elevated relative overflow-hidden">
                         <Zap className="absolute -bottom-6 -right-6 w-32 h-32 text-synos-primary opacity-[0.05]" />
                         <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-4">Economic Health</h3>
                         

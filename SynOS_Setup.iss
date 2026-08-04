@@ -14,7 +14,7 @@ DefaultDirName=C:\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v152_final
+OutputBaseFilename=SynOS_Setup_v178_dicom_viewer_prop_fix
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -54,8 +54,9 @@ Type: files; Name: "{app}\wwwroot\assets\index-*.js"
 Type: files; Name: "{app}\wwwroot\assets\index-*.css"
 
 [Files]
-Source: "src\SynOS.Api\bin\Release\net8.0\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Permissions: everyone-modify
-Source: "src\SynOS.Api\bin\Release\net8.0\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json, Logs\*"
+Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Permissions: everyone-modify
+Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json, Logs\*"
+Source: "src\SynOS.ServerManager\bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}\ServerManager"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace
 Source: "installer-assets\SynOS.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Copy verification, prerequisite, configuration, export/import and decommission scripts
@@ -74,16 +75,19 @@ Source: "prerequisites\SQLEXPR_x64_ENU.exe"; DestDir: "{tmp}"; Flags: deleteafte
 #endif
 
 [Icons]
-Name: "{userdesktop}\SynOS"; Filename: "http://localhost:59999/admin"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
-Name: "{commondesktop}\SynOS"; Filename: "http://localhost:59999/admin"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
-; Start Menu Shortcut
-Name: "{group}\SynOS"; Filename: "http://localhost:59999/admin"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
+Name: "{userdesktop}\SynOS"; Filename: "http://localhost:59999/login"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
+Name: "{commondesktop}\SynOS"; Filename: "http://localhost:59999/login"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
+Name: "{userdesktop}\SynOS Server Manager"; Filename: "{app}\ServerManager\SynOS.ServerManager.exe"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
+; Start Menu Shortcuts
+Name: "{group}\SynOS"; Filename: "http://localhost:59999/login"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
+Name: "{group}\SynOS Server Manager"; Filename: "{app}\ServerManager\SynOS.ServerManager.exe"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
 Name: "{group}\Uninstall SynOS"; Filename: "{uninstallexe}"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
 
 [Run]
 Filename: "net.exe"; Parameters: "start TBZSynOSService"; Flags: runhidden
 Filename: "{app}\SynOS.Api.exe"; Parameters: "--setup"; Description: "Configure and Launch SynOS Setup"; Flags: postinstall nowait runhidden; Check: NeedsFirstRunSetup
-Filename: "http://localhost:59999/admin"; Description: "Launch SynOS in Web Browser"; Flags: postinstall shellexec skipifsilent; Check: not NeedsFirstRunSetup
+Filename: "http://localhost:59999/login"; Description: "Launch SynOS in Web Browser"; Flags: postinstall shellexec skipifsilent; Check: not NeedsFirstRunSetup
+Filename: "{app}\ServerManager\SynOS.ServerManager.exe"; Description: "Launch SynOS Server Manager (Operations Console)"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 ; Run decommission script before removing application files
@@ -788,17 +792,20 @@ begin
       end;
     end;
 
-    // 3. Register Windows Service (Phase 4: Professional service naming)
+    // 3. Register Windows Service with SQL Dependency & Recovery Policy
     if (InstallTypeVal = 0) or (InstallTypeVal = 2) then
     begin
       WizardForm.StatusLabel.Caption := 'Registering TBZ Labs - SynOS service...';
-      Exec('sc.exe', 'create TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS"', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      Exec('sc.exe', 'create TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS" depend= MSSQL$SYNOS', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
       if (ExitCode <> 0) and (ExitCode <> 1073) then
       begin
         InstallSuccess := False;
         InstallErrorMsg := 'Failed to register the Windows Service (TBZSynOSService).';
         exit;
       end;
+
+      // Configure Windows Service Recovery (Auto-restart on 1st, 2nd, and subsequent crashes after 60s)
+      Exec('sc.exe', 'failure TBZSynOSService reset= 86400 actions= restart/60000/restart/60000/restart/60000', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     end;
 
     // 4. Run Firewall Setup, Service Startup & Health check verification

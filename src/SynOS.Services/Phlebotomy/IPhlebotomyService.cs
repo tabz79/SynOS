@@ -14,6 +14,7 @@ namespace SynOS.Services.Phlebotomy
         Task<CollectResult> CollectAssignmentAsync(Guid assignmentId);
         Task<CollectionPlanDto?> GetCollectionPlanAsync(Guid visitId);
         Task<CollectionSummaryDto?> GetCollectionSummaryAsync(Guid visitId);
+        Task<System.Collections.Generic.List<SynOS.Models.DTOs.Dashboard.ActionQueueRowDto>> GetPhlebotomyQueueAsync(bool includeHistory = false);
     }
 
     public enum ClaimResult

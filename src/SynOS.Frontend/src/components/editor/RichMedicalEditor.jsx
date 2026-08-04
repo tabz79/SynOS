@@ -603,10 +603,10 @@ export function RichMedicalEditor({
 
             {/* Editor Area (Dynamically auto-growing or filling parent height) */}
             <div 
-                className="p-4 outline-none prose dark:prose-invert max-w-none text-sm leading-relaxed dark:text-zinc-200 text-zinc-800 transition-all cursor-text flex-1 overflow-y-auto min-h-0"
+                className="p-4 outline-none prose dark:prose-invert max-w-none text-sm leading-relaxed dark:text-zinc-200 text-zinc-800 transition-all cursor-text flex-1 overflow-y-auto min-h-0 flex flex-col"
                 onContextMenu={handleContextMenu}
             >
-                <EditorContent editor={editor} className="outline-none min-h-full h-full" />
+                <EditorContent editor={editor} className="outline-none min-h-full h-full flex-1 flex flex-col" />
             </div>
 
             {/* Bottom Workstation Status Bar */}

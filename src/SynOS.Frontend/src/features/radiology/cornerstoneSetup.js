@@ -19,6 +19,16 @@ cornerstone.volumeLoader.registerVolumeLoader(
   cornerstoneStreamingImageVolumeLoader
 );
 
+// Configure beforeSend HTTP headers to include JWT token for DICOM streaming
+cornerstoneDICOMImageLoader.configure({
+  beforeSend: function(xhr) {
+    const token = localStorage.getItem('synos_jwt');
+    if (token) {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    }
+  }
+});
+
 // Configure WADO loader Web Workers for high-performance multithreaded decoding
 cornerstoneDICOMImageLoader.webWorkerManager.initialize({
   maxWebWorkers: Math.min(navigator.hardwareConcurrency || 4, 4),

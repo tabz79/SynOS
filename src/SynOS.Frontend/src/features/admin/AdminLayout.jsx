@@ -20,6 +20,7 @@ import {
     Eye,
     Activity,
     Archive,
+    FolderArchive,
     MessageSquare
 } from 'lucide-react';
 import { SystemBar } from '@/components/layout/SystemBar';
@@ -56,6 +57,7 @@ export function AdminLayout() {
     const standaloneItems = [
         { name: "Patient Directory", icon: Users, path: "/admin/patients" },
         { name: "Report Archive", icon: Archive, path: "/admin/report-archive" },
+        { name: "PACS Archive", icon: FolderArchive, path: "/admin/pacs" },
         { name: "Test Master", icon: Settings2, path: "/admin/test-master" },
         { name: "Report Templates", icon: Layout, path: "/admin/report-templates" },
         { name: "Inventory Setup", icon: Box, path: "/admin/inventory/setup" },
@@ -104,16 +106,16 @@ export function AdminLayout() {
                     {/* Interior Highlighting (Edge Refraction) */}
                     <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
                     
-                    <nav className="flex-1 overflow-y-auto p-4 pt-8 space-y-8 relative z-10">
+                    <nav className="flex-1 overflow-y-auto p-3 pt-6 space-y-6 relative z-10">
                         {sidebarGroups.map((group, idx) => (
-                            <div key={idx} className="space-y-2">
+                            <div key={idx} className="space-y-1">
                                 <div className="px-3 flex items-center justify-between group cursor-default">
                                     <span className="type-section-header group-hover:text-synos-primary transition-colors">
                                         {group.title}
                                     </span>
-                                    <ChevronDown className="w-3 h-3 text-zinc-300 dark:text-zinc-700" />
+                                    <ChevronDown className="w-3 h-3 text-zinc-400 dark:text-zinc-600" />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-0.5">
                                     {group.items.map((item) => (
                                         <SidebarLink key={item.name} item={item} />
                                     ))}
@@ -121,7 +123,7 @@ export function AdminLayout() {
                             </div>
                         ))}
 
-                        <div className="space-y-1 pt-4 border-t dark:border-zinc-900 border-zinc-200">
+                        <div className="space-y-0.5 pt-3 border-t dark:border-zinc-900 border-zinc-200">
                             {standaloneItems.map((item) => (
                                 <SidebarLink key={item.name} item={item} />
                             ))}
@@ -129,10 +131,10 @@ export function AdminLayout() {
                     </nav>
 
                     {/* User Footer */}
-                    <div className="p-4 border-t dark:border-zinc-900 border-zinc-200">
-                        <div className="flex items-center justify-between dark:bg-zinc-900/50 bg-white p-3 rounded-xl border dark:border-zinc-800 border-zinc-200 shadow-sm">
-                            <div className="flex items-center gap-3 overflow-hidden">
-                                <div className="w-8 h-8 shrink-0 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-[10px] font-bold dark:text-zinc-400 text-zinc-600 border dark:border-zinc-700 border-zinc-300">
+                    <div className="p-3 border-t dark:border-zinc-900 border-zinc-200">
+                        <div className="flex items-center justify-between dark:bg-zinc-900/50 bg-white p-2.5 rounded-xl border dark:border-zinc-800 border-zinc-200 shadow-sm">
+                            <div className="flex items-center gap-2.5 overflow-hidden">
+                                <div className="w-8 h-8 shrink-0 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-xs font-bold dark:text-zinc-300 text-zinc-700 border dark:border-zinc-700 border-zinc-300">
                                     {user?.name?.substring(0, 2).toUpperCase() || "AD"}
                                 </div>
                                 <div className="overflow-hidden">
@@ -158,9 +160,9 @@ export function AdminLayout() {
 function SidebarLink({ item }) {
     if (item.disabled) {
         return (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-md text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50 select-none">
+            <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-md text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50 select-none">
                 <item.icon className="w-4 h-4 shrink-0" />
-                <span className="type-label">{item.name}</span>
+                <span className="text-xs font-medium">{item.name}</span>
             </div>
         );
     }
@@ -170,17 +172,17 @@ function SidebarLink({ item }) {
             to={item.path}
             end={item.exact}
             className={({ isActive }) => `
-                flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group border
+                flex items-center gap-2.5 px-3 py-1.5 rounded-md transition-all duration-150 group border
                 ${isActive 
-                    ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 font-medium' 
-                    : 'text-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-900 hover:bg-zinc-200/50 hover:text-zinc-900 border-transparent'
+                    ? 'bg-synos-primary/10 text-synos-primary dark:text-white dark:border-synos-primary/30 border-synos-primary/30 font-semibold shadow-xs' 
+                    : 'text-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-900/80 hover:bg-zinc-100 hover:text-zinc-900 border-transparent font-medium'
                 }
             `}
         >
             {({ isActive }) => (
                 <>
                     <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-synos-primary' : 'text-zinc-400 dark:text-zinc-500 group-hover:text-synos-primary'}`} />
-                    <span className={`type-label transition-colors ${isActive ? 'text-synos-primary dark:text-white font-medium' : 'text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200'}`}>{item.name}</span>
+                    <span className={`text-xs leading-tight transition-colors ${isActive ? 'text-synos-primary dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white font-medium'}`}>{item.name}</span>
                 </>
             )}
         </NavLink>

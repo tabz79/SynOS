@@ -1158,71 +1158,70 @@ export function PathologistTerminal() {
                                         <div className="flex items-center justify-between" style={{ marginTop: 'var(--ws-footer-pt)' }}>
                                             <div className="flex items-center gap-2">
                                                 {!isReadOnly ? (
-                                                    <div className="flex flex-col gap-2">
+                                                    <div className="flex flex-col w-full gap-1.5">
                                                         {lastSavedAt && (
                                                             <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5 self-start">
                                                                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                                                                 Live Preview Synced
                                                             </span>
                                                         )}
-                                                        <div className="flex items-center gap-3">
+                                                        <div className="flex items-center gap-2 w-full pt-1 shrink-0">
+                                                            {/* Update Report */}
                                                             <button 
                                                                 onClick={handleSaveInterpretation}
                                                                 disabled={isSaving}
-                                                                className="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 font-bold text-xs px-6 rounded-xl transition-all active:scale-95 disabled:opacity-40"
-                                                                style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
+                                                                className="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 transition-all shadow-sm shrink-0 active:scale-95 disabled:opacity-40 uppercase tracking-tight"
                                                             >
                                                                 {isSaving ? "Syncing..." : "Update Report"}
                                                             </button>
+
+                                                            {/* Reject to Typist (If submitted by typist) */}
                                                             {reportStructure?.status === 'ReadyForVerification' && (
                                                                 <button 
                                                                     onClick={handleReopen}
-                                                                    className="text-red-500 hover:bg-red-50 font-bold text-xs px-6 rounded-xl transition-all border border-transparent hover:border-red-100"
-                                                                    style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
+                                                                    className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all uppercase tracking-tight shrink-0"
                                                                 >
                                                                     Reject to Typist
                                                                 </button>
                                                             )}
+
+                                                            {/* Print Review */}
+                                                            <button 
+                                                                onClick={handlePrint}
+                                                                className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 transition-all shadow-sm shrink-0 flex items-center gap-1.5 uppercase tracking-tight"
+                                                                title="Print Review"
+                                                            >
+                                                                <Printer className="w-3.5 h-3.5" />
+                                                                Print Review
+                                                            </button>
+
+                                                            {/* Verify & Sign Digitally (MAIN PATHOLOGIST CTA - Always Visible) */}
+                                                            <button 
+                                                                onClick={handleSign}
+                                                                disabled={isSigning || !selectedReportId || !isIdentityComplete}
+                                                                className="flex-1 px-6 py-2 rounded-xl text-xs font-black bg-synos-primary text-white hover:bg-synos-primary/95 shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-wider shrink-0"
+                                                            >
+                                                                {isSigning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Signature className="w-3.5 h-3.5" />}
+                                                                Verify & Sign Digitally
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center gap-3 text-emerald-600 bg-emerald-500/10 px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
-                                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                        {reportStructure?.status === 'ManualVerified' ? "Report Manually Verified (Audit Locked)" : "Digital Signature Active (Immutable Trace)"}
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <div className="flex items-center gap-3 text-emerald-600 bg-emerald-500/10 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
+                                                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                            {reportStructure?.status === 'ManualVerified' ? "Report Manually Verified (Audit Locked)" : "Digital Signature Active (Immutable Trace)"}
+                                                        </div>
+                                                        <button 
+                                                            onClick={handlePrint}
+                                                            className="bg-synos-primary text-white hover:opacity-90 px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-wider"
+                                                        >
+                                                            <Printer className="w-3.5 h-3.5" />
+                                                            Print Final Report
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
-                                            {reportStructure?.status === 'ReadyForVerification' && !isReadOnly && (
-                                                <div className="flex gap-4">
-                                                    <button 
-                                                        onClick={handlePrint}
-                                                        className="bg-zinc-100 hover:bg-zinc-200 text-zinc-900 px-6 rounded-2xl font-bold text-sm transition-all active:scale-95 flex items-center gap-2"
-                                                        style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
-                                                    >
-                                                        <Printer className="w-4 h-4" />
-                                                        Print Review
-                                                    </button>
-                                                    <button 
-                                                        onClick={handleSign}
-                                                        disabled={isSigning || !selectedReportId || !isIdentityComplete}
-                                                        className="bg-slate-900 text-white hover:bg-black px-8 rounded-2xl font-bold text-sm shadow-xl shadow-black/10 transition-all active:scale-95 flex items-center gap-2 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
-                                                        style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
-                                                    >
-                                                        {isSigning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Signature className="w-4 h-4" />}
-                                                        Verify & Sign Digitally
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {isReadOnly && (
-                                                <button 
-                                                    onClick={handlePrint}
-                                                    className="bg-synos-primary text-white hover:opacity-90 px-8 rounded-2xl font-bold text-sm shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2"
-                                                    style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
-                                                >
-                                                    <Printer className="w-4 h-4" />
-                                                    Print Final Report
-                                                </button>
-                                            )}
                                         </div>
                                     </div>
                                 </div>

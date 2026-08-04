@@ -41,6 +41,7 @@ import { MriTechTerminal } from '@/features/radiology/MriTechTerminal'
 import { CTTechTerminal } from '@/features/radiology/CTTechTerminal'
 import { USTechTerminal } from '@/features/radiology/USTechTerminal'
 import { RadiologistTerminal } from '@/features/radiology/RadiologistTerminal'
+import { PacsArchiveScreen } from '@/features/radiology/PacsArchiveScreen'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
@@ -204,6 +205,19 @@ function App() {
               } />
             </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={['Radiologist', 'XRayTech', 'MriTech', 'CTTech', 'USTech', 'Admin']} />}>
+              <Route path="/radiology/pacs" element={
+                <AdminProtectedWrapper roleName="PACS Archive">
+                  <PacsArchiveScreen />
+                </AdminProtectedWrapper>
+              } />
+              <Route path="/pacs" element={
+                <AdminProtectedWrapper roleName="PACS Archive">
+                  <PacsArchiveScreen />
+                </AdminProtectedWrapper>
+              } />
+            </Route>
+
             <Route element={<ProtectedRoute allowedRoles={['DeliveryDesk', 'Admin']} />}>
               <Route path="/delivery" element={
                 <AdminProtectedWrapper roleName="Delivery Desk">
@@ -247,6 +261,7 @@ function App() {
 
                 {/* Intelligence Department */}
                 <Route path="/finance/intelligence" element={<IntelligenceDashboard />} />
+                <Route path="/finance/economics" element={<IntelligenceDashboard />} />
               </Route>
             </Route>
 
@@ -262,6 +277,7 @@ function App() {
                 <Route path="/admin/patients" element={<PatientSearchScreen />} />
                 <Route path="/admin/patients/:id" element={<PatientDetailScreen />} />
                 <Route path="/admin/report-archive" element={<ReportArchiveScreen />} />
+                <Route path="/admin/pacs" element={<PacsArchiveScreen />} />
               </Route>
             </Route>
 

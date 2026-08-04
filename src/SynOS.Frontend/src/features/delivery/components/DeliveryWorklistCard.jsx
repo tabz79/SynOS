@@ -54,8 +54,8 @@ export function DeliveryWorklistCard({ report, isSelected, onClick }) {
             className={cn(
                 "w-full text-left p-4 rounded-2xl border transition-all duration-200 group relative flex flex-col gap-2",
                 isSelected 
-                    ? "dark:bg-synos-primary/10 bg-synos-primary/5 border-synos-primary/30 shadow-lg ring-1 ring-synos-primary/20" 
-                    : "dark:bg-zinc-900/50 bg-white border-black/5 dark:border-white/5 hover:border-synos-primary/20 shadow-sm"
+                    ? "bg-indigo-50/90 dark:bg-synos-primary/10 border-2 border-synos-primary shadow-md ring-1 ring-synos-primary/20" 
+                    : "synos-item-card"
             )}
         >
             <div className="flex justify-between items-start min-w-0">

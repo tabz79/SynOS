@@ -1039,9 +1039,12 @@ namespace TBZ.Middleware.Api.Endpoints
                 if (lab == null) return Results.NotFound(new { error = "Laboratory not found." });
 
                 var days = dto.DaysToExtend <= 0 ? 7 : dto.DaysToExtend;
-                var currentExpiry = lab.ExpiryDate ?? DateTime.UtcNow;
-                var newExpiry = currentExpiry.AddDays(days);
+                var baseDate = (lab.ExpiryDate.HasValue && lab.ExpiryDate.Value > DateTime.UtcNow) 
+                    ? lab.ExpiryDate.Value 
+                    : DateTime.UtcNow;
+                var newExpiry = baseDate.AddDays(days);
                 lab.ExpiryDate = newExpiry;
+                lab.Status = "Active";
 
                 db.StoredEvents.Add(new StoredEvent
                 {

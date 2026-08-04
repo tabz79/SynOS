@@ -1106,6 +1106,11 @@ app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContex
         lab.Status = "Expired";
         await db.SaveChangesAsync();
     }
+    else if (lab.ExpiryDate.HasValue && lab.ExpiryDate.Value >= DateTime.UtcNow && lab.Status == "Expired")
+    {
+        lab.Status = "Active";
+        await db.SaveChangesAsync();
+    }
 
     if (lab.Status != "Active")
     {

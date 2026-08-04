@@ -706,15 +706,15 @@ export function TypistTerminal() {
                 <SystemBar serverTime={null} syncStatus="Synced" />
             </div>
 
-            {!selectedReportId && (
-                <div className="px-4 py-2 border-b dark:border-white/5 border-zinc-200 bg-zinc-900/10 flex items-center gap-2 select-none no-print">
+            <div className="no-print border-b dark:border-white/5 border-zinc-200 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-4 py-1.5 flex items-center justify-between select-none z-20">
+                <div className="flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900/80 p-1 rounded-xl border border-zinc-200 dark:border-white/5">
                     <button
                         onClick={() => setActiveTerminalMode('pathology')}
                         className={cn(
-                            "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                            "px-3.5 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5",
                             activeTerminalMode === 'pathology' 
-                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
-                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
+                                ? "bg-synos-primary text-white shadow-sm"
+                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                         )}
                     >
                         Pathology Reports
@@ -722,16 +722,16 @@ export function TypistTerminal() {
                     <button
                         onClick={() => setActiveTerminalMode('radiology')}
                         className={cn(
-                            "px-4 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                            "px-3.5 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5",
                             activeTerminalMode === 'radiology'
-                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
-                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-850/40"
+                                ? "bg-synos-primary text-white shadow-sm"
+                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                         )}
                     >
                         Radiology Live Dictation
                     </button>
                 </div>
-            )}
+            </div>
 
             {activeTerminalMode === 'radiology' ? (
                 <RadiologyTypistTerminal 
@@ -756,12 +756,12 @@ export function TypistTerminal() {
                     (isQueueCollapsed && !isMacroManagerOpen) ? "w-0 overflow-hidden opacity-0 pointer-events-none" : "w-[15%] opacity-100"
                 )} style={{ gap: 'var(--ws-gap)' }}>
                     {isMacroManagerOpen ? (
-                        <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
+                        <div className="synos-elevated-card rounded-xl p-4 flex flex-col h-full min-h-0">
                             <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
                         </div>
                     ) : (
                         <>
-                            <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col gap-3 shrink-0">
+                            <div className="synos-elevated-card rounded-xl p-4 flex flex-col gap-3 shrink-0">
                                 <div className="flex items-center justify-between">
                                     <h2 className="text-lg font-bold flex items-center gap-2 dark:text-zinc-200">
                                         <ClipboardList className="w-5 h-5 text-synos-primary" />
@@ -865,7 +865,7 @@ export function TypistTerminal() {
                 </div>
 
                 <div className="flex-1 flex flex-col min-h-0 no-print" style={{ gap: 'var(--ws-gap)' }}>
-                    <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl flex-1 flex flex-col min-h-0" style={{ padding: 'var(--ws-padding)' }}>
+                    <div className="synos-card-elevated rounded-xl flex-1 flex flex-col min-h-0" style={{ padding: 'var(--ws-padding)' }}>
                         {isLoadingDetail ? (
                             <div className="flex-1 flex flex-col items-center justify-center opacity-50">
                                 <Loader2 className="w-10 h-10 animate-spin mb-4 text-synos-primary" />
@@ -1076,46 +1076,47 @@ export function TypistTerminal() {
                                                             Preview Updated via Backend
                                                         </div>
                                                     )}
-                                                    <div className="grid grid-cols-2 w-full" style={{ gap: 'var(--ws-gap)' }}>
+                                                    <div className="flex items-center gap-2 w-full pt-1 shrink-0">
+                                                        {/* 1. Save Draft (First button) */}
                                                         <button 
                                                             onClick={handleSaveInterpretation}
                                                             disabled={isSaving}
-                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 rounded-xl transition-all active:scale-95 disabled:opacity-40 uppercase tracking-tight"
-                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
+                                                            className="px-3 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all shadow-sm shrink-0 uppercase tracking-tight active:scale-95 disabled:opacity-40"
                                                         >
                                                             {isSaving ? "Saving..." : "Save Draft"}
                                                         </button>
-                                                        <button 
-                                                            onClick={() => window.print()}
-                                                            disabled={!selectedReportId}
-                                                            className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-600 hover:dark:bg-zinc-700 hover:bg-zinc-200 font-bold text-[10px] px-2 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-tight"
-                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
-                                                        >
-                                                            <Printer className="w-3 h-3" />
-                                                            Quick Print
-                                                        </button>
-                                                        
+
+                                                        {/* 2. Submit for Digital Sign (MAIN PRIMARY BUTTON - Prominent & High Contrast) */}
                                                         <button 
                                                             onClick={() => handleSubmit(false)}
                                                             disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                            className="col-span-2 bg-synos-primary text-white hover:opacity-90 px-4 rounded-xl font-black text-[10px] shadow-xl shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-tight"
-                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
+                                                            className="flex-1 px-4 py-2 rounded-xl text-xs font-black bg-synos-primary text-white hover:bg-synos-primary/95 shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-wider shrink-0"
                                                         >
-                                                            {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+                                                            {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                                                             Submit for Digital Sign
                                                         </button>
- 
+
+                                                        {/* 3. Quick Print (Extra Feature Option) */}
+                                                        <button 
+                                                            onClick={() => window.print()}
+                                                            disabled={!selectedReportId}
+                                                            className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all shadow-sm shrink-0 uppercase tracking-tight"
+                                                            title="Quick Print"
+                                                        >
+                                                            <Printer className="w-3.5 h-3.5" />
+                                                        </button>
+
+                                                        {/* 4. Print & Submit for Manual Sign (Extra Feature Option) */}
                                                         <button 
                                                             onClick={() => {
                                                                 window.print();
                                                                 handleSubmit(true);
                                                             }}
                                                             disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                            className="col-span-2 border-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/5 px-4 rounded-xl font-black text-[10px] transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-40 uppercase tracking-tight"
-                                                            style={{ paddingTop: 'var(--ws-btn-py)', paddingBottom: 'var(--ws-btn-py)' }}
+                                                            className="px-3 py-2 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 hover:bg-amber-100 transition-all shadow-sm shrink-0 uppercase tracking-tight disabled:opacity-40"
+                                                            title="Print & Submit for Manual Sign"
                                                         >
-                                                            <Printer className="w-3 h-3" />
-                                                            Print & Submit for Manual Sign
+                                                            Manual Sign
                                                         </button>
                                                     </div>
                                                 </div>

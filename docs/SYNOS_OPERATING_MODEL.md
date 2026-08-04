@@ -1,6 +1,6 @@
 # SynOS: The Diagnostic Operating System (Operating Model)
 
-This document outlines the system architecture, organizational relationships, departmental pipelines, real-time synchronization flows, and management controls of SynOS. It serves as a blueprint for designing interactive visual storyboards, scroll-driven narratives, and system orchestration diagrams for the TBZ Labs product experience page.
+This document outlines the system architecture, organizational relationships, departmental pipelines, real-time synchronization flows, resilience mechanisms, and management controls of SynOS. It serves as a blueprint for designing interactive visual storyboards, scroll-driven narratives, and system orchestration diagrams for the TBZ Labs product experience page.
 
 ---
 
@@ -15,7 +15,7 @@ Legacy software acts as a static database—a system of record where operators m
        [ Reception Desk ] ----(Registration)----> [ Billing & Payment ]
                |                                           |
                |                                           v
-    [ Live Activity Stream ] <---(Updates)------- [ Phlebotomy Queue ]
+    [ Live Activity Stream ] <---(Updates)------- [ Phlebotomy Queue (Isolated) ]
                |                                           |
                v                                           v
       [ Director Dashboard ]                     [ Department Workbench ]
@@ -30,21 +30,7 @@ SynOS does the same for a diagnostic center:
 2. **Device Coordination (PACS & DICOM)**: Connects imaging hardware directly to radiologist workspaces.
 3. **Resource Management (Inventory Engine)**: Tracks reagent and consumable consumption automatically as tests run.
 4. **Inter-Process Communication (SignalR & Real-Time Deltas)**: Broadcasts updates across terminals immediately, eliminating verbal check-ins and walking between departments.
-
-### The Problem it Solves
-Traditional software creates **operational silence**. Receptionists don't know if a patient is waiting at phlebotomy; pathologists don't know if a critical sample is being processed; directors have no idea about real-time cash flow or machine bottlenecks until the end of the month. This results in:
-* High turnaround time (TAT) due to queue stagnation.
-* Revenue leakage from unverified discount approvals or misrouted outsourced tests.
-* Lost or mislabeled physical samples.
-* Pathologist burnout due to inefficient transcription pipelines.
-
-### SynOS vs. Traditional DLMS
-| Operational Dimension | Traditional LIMS / DLMS | SynOS (Diagnostic OS) |
-| :--- | :--- | :--- |
-| **Data Flow** | Pull-based (manual refreshes, searching for records) | Push-based (real-time SignalR notifications, live streams) |
-| **Coordination** | Silent (reception has no visibility into lab status) | Connected (instant visual changes across screens) |
-| **Execution** | Manual logging (technicians type data after the fact) | Automated triggering (billing unlocks phlebotomy; validation unlocks printing) |
-| **Administration** | Siloed ERP (finance and HR run in separate software) | Exception-based & Linked (attendance feeds payroll; inventory feeds finance) |
+5. **On-Premise Resilience & Fault Isolation**: Operates completely independently on client hardware; network or licensing sync hiccups never disrupt local clinical operations.
 
 ---
 
@@ -70,14 +56,14 @@ SynOS models the physical topology of a diagnostic laboratory. The following rol
   └───────┘ └───────┘ └───────┘                 └───────┘ └───────┘ └───────┘
 ```
 
-1. **Director**: The owner/management user who monitors operations, financials, performance KPIs, and bottlenecks from a single high-level panel.
-2. **Administration**: Responsible for billing governance, revenue/expense reconciliation, purchasing, and staff management.
+1. **Director**: The owner/management user who monitors operations, financials, performance KPIs, and workflow funnels from a single high-level panel.
+2. **Administration**: Responsible for billing governance, revenue/expense reconciliation, purchasing, staff management, and system restores/resets.
 3. **Reception & Billing**: The initial touchpoint for patient registration, invoice generation, discount application, and payment verification.
-4. **Sample Collection (Phlebotomy)**: The bay where biological samples (blood, urine, swab) are drawn, barcoded, and validated.
+4. **Sample Collection (Phlebotomy - Isolated Bay)**: The partitioned bay where biological samples (blood, urine, swab) are drawn, barcoded, and validated.
 5. **Laboratory Departments (Pathology / Biochemistry / Hematology / Microbiology)**: The analytical core where samples are loaded onto analyzers and parameters are recorded.
 6. **Imaging Departments (Radiology / MRI / CT / Ultrasound)**: The diagnostic imaging suites where scans are captured and sent to the PACS (Picture Archiving and Communication System).
 7. **Reporting & Transcription**: The typing pool where draft reports are formatted, using medical macros for fast data entry.
-8. **Clinical Signing Authority (Pathologists & Radiologists)**: Certified doctors who review results, compare parameters with historical benchmarks, and digitally sign reports.
+8. **Clinical Signing Authority (Pathologists & Radiologists)**: Certified doctors who review results, compare parameters with historical benchmarks, draft findings, and digitally sign reports.
 
 ---
 
@@ -85,339 +71,120 @@ SynOS models the physical topology of a diagnostic laboratory. The following rol
 
 ### Reception & Billing
 * **Primary Responsibilities**: Patient check-in, demographic recording, B2B partner mapping, test billing, cash/online payment collections, and invoice printing.
-* **Inputs**: Walk-in patient requests, B2B doctor referrals, payment details.
 * **Outputs**: Registered Patient MRN, Billing Invoices, Payment Status tokens.
-* **Dependencies**: Relies on Catalog definitions (Test Master) for correct test pricing and B2B pricing configurations.
-* **Information Exchanged**: Sends verified payment signals to Phlebotomy and Imaging queues.
 
-### Sample Collection (Phlebotomy)
-* **Primary Responsibilities**: Sample extraction, barcode labeling, sample check-in, and verification of fasting/safety protocols.
-* **Inputs**: Paid billing tokens, patient medical history alerts.
+### Sample Collection (Phlebotomy - Isolated Queue)
+* **Primary Responsibilities**: Partitioned sample collection queue, specimen extraction, barcode labeling, sample check-in, and verification of fasting/safety protocols.
 * **Outputs**: Physical barcoded tubes, Sample Collected events in the system.
-* **Dependencies**: Blocked until Billing releases the patient (Payment Verified or Credit Approved).
-* **Information Exchanged**: Sends collection timestamps and sample-ID mappings directly to the laboratory workbenches.
 
 ### Laboratory Departments (Pathology, Biochemistry, etc.)
 * **Primary Responsibilities**: Analytical processing of biological specimens, recording parameter values, flag verification (abnormal/critical values).
-* **Inputs**: Barcoded samples, analyzer output logs.
 * **Outputs**: Raw parameter results, abnormal alerts.
-* **Dependencies**: Requires checked-in samples from Phlebotomy.
-* **Information Exchanged**: Pushes completed test values to the Typist Terminal and Phlebotomy intent lists.
 
-### Imaging Departments (MRI, CT, Ultrasound)
-* **Primary Responsibilities**: Patient scanning, DICOM metadata association, image transfer to PACS.
-* **Inputs**: Ordered radiology scan tokens, patient safety checklists.
-* **Outputs**: High-resolution DICOM slices stored in PACS, workstation study links.
-* **Dependencies**: Blocked until payment is confirmed or credit is authorized.
-* **Information Exchanged**: Broadcasts scan completion and study links to the Radiologist Terminal.
+### Imaging Departments (MRI, CT, Ultrasound, X-Ray)
+* **Primary Responsibilities**: Patient scanning, DICOM metadata association, image transfer to PACS, draft findings persistence (`/api/v1/radiology/reports/{studyId}`), and radiologist reporting.
+* **Outputs**: High-resolution DICOM slices stored in PACS, immutable `ReportVersion` and `ReportSnapshot` records.
 
 ### Reporting & Transcription
 * **Primary Responsibilities**: Speed-typing pathology narratives, formatting templates, applying medical macros, and organizing draft reports for doctor reviews.
-* **Inputs**: Technical lab values, draft reports.
 * **Outputs**: Formatted clinical reports awaiting signature.
-* **Dependencies**: Requires lab technician data entry or radiologist dictation.
-* **Information Exchanged**: Passes typed reports to the Pathologist or Radiologist signing queue.
 
 ### Pathologists & Radiologists (Clinical Signing Authority)
 * **Primary Responsibilities**: Medical validation of findings, historical comparison, report signing, and dispatching critical notifications.
-* **Inputs**: Structured results, historical records, PACS image links.
-* **Outputs**: Electronically signed PDF reports (Digital or Preprinted formats).
-* **Dependencies**: Locked until the Typist/Technician completes transcription.
-* **Information Exchanged**: Pushes signed PDF releases to Delivery Desk and updates Director KPIs.
+* **Outputs**: Electronically signed PDF reports (Digital or Preprinted formats using QuestPDF A4 absolute coordinates).
 
 ### Administration & Finance
-* **Primary Responsibilities**: Ledger tracking, B2B doctor commission management, procurement, expense tracking, payroll processing.
-* **Inputs**: Collection logs, inventory purchase invoices, employee attendance entries.
-* **Outputs**: Profit & Loss statements, stock purchase orders, payroll disbursements.
-* **Dependencies**: Relies on Reception collections data and Inventory usage logs.
-* **Information Exchanged**: Reconciles reference laboratory bills and generates referral payments.
+* **Primary Responsibilities**: Ledger tracking, B2B doctor commission management, procurement, expense tracking, payroll processing, database backup/restoration, and operational data resets.
+* **Outputs**: Profit & Loss statements, stock purchase orders, payroll disbursements, backup files.
 
 ---
 
 ## 4. End-to-End Patient Journey
 
-The lifecycle of a patient visit is tracked step-by-step across different interfaces and modules:
-
 ```
-[Arrival] ──(ReceptionScreen)──> [Billing] ──(Payment verified)──> [Phlebotomy Queue]
-                                                                        │
-[Validation] <──(PathologistTerminal)── [Typing] <──(Lab Work) ◄────────┘
-     │
-     └──(Print/WhatsApp)──> [Delivery]
+[Arrival] ──(ReceptionScreen)──> [Billing] ──(Payment verified)──> [Phlebotomy Queue (Isolated)]
+                                                                         │
+[Validation/Sign] <──(Pathologist/Radiologist)── [Typing/Draft] <──(Lab/PACS) ◄┘
+         │
+         └──(Print/WhatsApp)──> [Delivery Desk]
 ```
 
-### 1. Patient Arrival
-* **Action**: Receptionist registers the patient details.
-* **Screen**: `ReceptionScreen.jsx` -> Registration Drawer.
-* **Departments Notified**: None (Draft stage).
-* **Data Created**: Temporary Patient demographic object.
-
-### 2. Billing & Test Selection
-* **Action**: Receptionist searches and adds tests from the catalog, selects referral partner, and applies rules-based discounts.
-* **Screen**: `IntentPanel.jsx`.
-* **Departments Notified**: Finance (Revenue pending status).
-* **Data Created**: Invoice ledger draft, assigned test codes.
-
-### 3. Payment Verification
-* **Action**: Cash is collected or online QR code scanner payment confirms receipt.
-* **Screen**: `IntentPanel.jsx` / Payment Drawer.
-* **Departments Notified**: Phlebotomy, Imaging, Finance.
-* **Data Created**: `PaymentReceived` event, finalized `Visit` ID, invoice token number.
-
-### 4. Sample Collection
-* **Action**: Phlebotomist draws blood/sample, scans barcode.
-* **Screen**: `PhlebotomyScreen.jsx` (Action Queue updates from "Pending Payment" to "Actionable").
-* **Departments Notified**: Specific Laboratory Department (Pathology, Biochemistry, etc.).
-* **Data Created**: `SampleCollected` event, barcode timestamp record.
-
-### 5. Laboratory Testing
-* **Action**: Lab technician processes the sample and enters numerical results.
-* **Screen**: `DepartmentWorkbenchScreen.jsx` (Spreadsheet-style inline parameter grid).
-* **Departments Notified**: Transcription/Typist terminal.
-* **Data Created**: `ParametersEntered` status, abnormal flags generated if values cross demographic limits.
-
-### 6. Report Transcription
-* **Action**: Medical typist applies layout templates and macros to clean up raw values.
-* **Screen**: `TypistTerminal.jsx` (Dual Split Screen: Left test selection, Right WYSIWYG editor).
-* **Departments Notified**: Signing Authority (Pathologist or Radiologist).
-* **Data Created**: `ReportDraftCompleted` status.
-
-### 7. Clinical Review & Approval
-* **Action**: Pathologist/Radiologist compares data with historical trends and digitally signs the report.
-* **Screen**: `PathologistTerminal.jsx` (Interactive PDF signing sheet).
-* **Departments Notified**: Reception/Delivery Desk, Director.
-* **Data Created**: Finalized PDF blob, `ReportSigned` event, updated Turnaround Time (TAT) metrics.
-
-### 8. Report Delivery
-* **Action**: Report is printed (Digital or Preprinted mode) or sent automatically via WhatsApp/Email.
-* **Screen**: `DeliveryTerminal.jsx` (Print queue).
-* **Departments Notified**: Reception, Finance (marks transaction as complete).
-* **Data Created**: Dispatch log update.
+1. **Patient Arrival & Billing**: Receptionist registers demographics and billing intentions. Payment receipt fires `VisitStarted` via SignalR.
+2. **Sample Collection (Phlebotomy)**: Patient appears in the isolated Phlebotomy Action Queue. Phlebotomist draws blood/sample and scans barcode, firing `SampleCollected`.
+3. **Laboratory / Radiology Processing**: Lab technician logs parameters on the Workbench. Radiology technologists perform scans, linking PACS studies.
+4. **Draft Findings & Transcription**: Radiologists and typists persist draft findings (`/api/v1/radiology/reports/{studyId}`).
+5. **Clinical Review & Approval**: Pathologists/Radiologists review trends, approve narrative, and apply digital signature. System generates immutable `ReportVersion` and `ReportSnapshot`.
+6. **Report Delivery**: Report is printed (Digital or Preprinted mode via QuestPDF A4 absolute positioning) or sent automatically via WhatsApp.
 
 ---
 
 ## 5. Real-Time Coordination Events
 
-The heartbeat of SynOS is its real-time event-driven loop. When an event fires, it ripples through multiple screens instantly:
-
-### Event: Patient Registration & Payment
-* **System Action**: Broadcasts `VisitStarted` via SignalR.
-* **Reception Action Queue**: Adds a new live item under "Today" group.
-* **Phlebotomy Terminal**: A red dot appears next to the "Live Queue" count; patient appears in Phlebotomy Action Queue.
-* **Activity Stream**: Appends: `"Token #1024: Patient Jane Doe visit started by Receptionist Ravi"`
-* **Director Dashboard**: The "Walk-ins Today" counter increments by 1.
-
-### Event: Sample Collection Completed
-* **System Action**: Broadcasts `SampleCollected` via SignalR.
-* **Phlebotomy Terminal**: Patient moves from "Actionable" to "History" list.
-* **Laboratory Terminal**: Patient appears in the Pathology Department Queue as "Processing".
-* **Activity Stream**: Appends: `"Token #1024: Blood sample drawn by Phlebotomist Priya"`
-
-### Event: Pathology Results Logged
-* **System Action**: Broadcasts `ResultsEntered` via SignalR.
-* **Laboratory Terminal**: Row color changes to light green (Ready for review).
-* **Typist Terminal**: Patient highlights in the "Needs Typing" sidebar list.
-
-### Event: Report Approval (Signed)
-* **System Action**: Generates PDF, uploads to storage, broadcasts `ReportFinalized`.
-* **Pathologist Terminal**: Patient is cleared from the pending signing queue.
-* **Delivery Desk**: Patient card highlights in green with a "Ready for Print/Send" badge.
-* **Director Dashboard**: Pushes a new TAT entry: `"Average Report Time: 45m"`.
+The heartbeat of SynOS is its real-time event-driven loop powered by SignalR:
+* **`VisitStarted`**: Adds patient to Phlebotomy queue, increments walk-in KPI counter.
+* **`SampleCollected`**: Moves patient from Phlebotomy to Laboratory Processing workbench.
+* **`ResultsEntered`**: Highlights patient row in green and notifies typists.
+* **`ReportFinalized`**: Generates signed PDF snapshot, notifies Delivery Desk, updates TAT metrics.
 
 ---
 
-## 6. Administrative Operations
+## 6. Radiology Operating Model
 
-Administrative tasks in SynOS run on an **Exception-Based Model** to maximize efficiency:
-
-```
-[ Attendance (Present by default) ] ───(Absence Exception)───> [ Payroll Adjustments ]
-                                                                       │
-[ Inventory consumption (Auto-deducted) ] ───(Reorder Point)───> [ Finance Expense Ledger ]
-```
-
-### Finance
-* **Revenue Tracking**: Every billing confirmation posts an automated entry to the sales ledger. Returns or corrections require multi-factor manager authorization.
-* **Expense Tracking**: Supplier invoices for reagents or consumables post to the expense ledger, feeding into the live Profit & Loss calculation.
-* **Outsource Ledgers**: Track external tests sent to reference labs, automating payments to outsource partners.
-
-### Inventory
-* **Auto-Consumption**: Every test configuration in the Test Master lists required reagents. When a report is signed, SynOS automatically decrements the stock levels.
-* **Procurement**: Alerts trigger when stock hits predefined reorder thresholds, generating draft purchase orders for approval.
-
-### HR & Payroll
-* **Exception Attendance**: Staff members are marked as "Present" by default. HR only inputs exceptions (Leaves, Late arrivals, Shift swaps).
-* **Payroll**: Reconciles monthly attendance records, adjusts allowances, deducts tax liabilities, and calculates payouts, posting the total disbursements to the Finance ledger.
+1. **Scan Ordering**: Reception bills the scan; worklist entry is sent directly to modality console via MWL protocol.
+2. **PACS Integration**: Machine pushes DICOM files to PACS. Viewer link is attached to the SynOS patient file.
+3. **Draft Findings & Dictation**: Radiologist opens record in `RadiologistTerminal.jsx`, reviews images, records dictation, and persists draft findings (`/api/v1/radiology/reports/{studyId}`).
+4. **Immutable Snapshot & Release**: Upon approval, system updates `ReportInterpretation`, generates immutable `ReportVersion` and `ReportSnapshot`, attaches digital signature, and releases signed PDF.
 
 ---
 
-## 7. Radiology Operating Model
+## 7. System Hardening & On-Premise Resilience
 
-The radiology workflow is designed for speed and large file handling:
+SynOS implements strict architectural pipelines to guarantee continuous, zero-downtime operation on client hardware:
 
-```
-[MRI/CT Scan] ──(DICOM Upload)──> [PACS Server] ──(Workstation link)──> [Radiologist Terminal]
-                                                                                │
-[Signed Report] <──(Digital Signature)── [Transcription] <──(Voice Dictation) ◄─┘
-```
+### Rule 1: Initial Setup & License Auto-Healing Pipeline
+* Outbound activation endpoints (`/api/v1/setup/test-middleware` & `/api/v1/settings/test-middleware`) use `SocketsHttpHandler` with an IPv4-first `ConnectCallback` (`AddressFamily.InterNetwork`) to bypass 15-21 second timeouts on dual-stack hosts (`cloud.tbzlabs.in`).
+* `LicenseRecoveryService.cs` checks direct local port **`5069`** (`http://localhost:5069/api/labs/validate` and `http://127.0.0.1:5069/api/labs/validate`).
+* `/api/labs/validate` in Middleware auto-reactivates labs with future expiry dates.
+* **Non-Blocking Guarantee**: `SessionValidationMiddleware.cs` NEVER blocks local operational routes (Reception, Workbench, Radiologist, WebSockets, Control Tower Summary) with 403 Forbidden on network or licensing sync errors. UI displays non-disruptive warning banners instead.
 
-1. **Scan Ordering**: Reception bills the CT/MRI scan. A worklist entry is sent directly to the imaging machine console via Modality Worklist (MWL) protocol.
-2. **Imaging**: The technologist performs the scan. The machine outputs DICOM format image files and pushes them to the PACS server.
-3. **PACS Integration**: PACS associates the DICOM study with the patient's SynOS ID. A viewer link is attached to the patient file in SynOS.
-4. **Radiologist Review**: The radiologist receives a notification. Clicking the patient record in the `RadiologistTerminal.jsx` opens the image viewer alongside a voice-dictation panel.
-5. **Report Generation**: The radiologist records findings, which are typed by a transcriptionist using customized templates.
-6. **Report Distribution**: The radiologist approves the report using the `Radiologist` signature slot, uploading the final document to the patient profile for delivery.
+### Rule 2: Active Session Credential Preservation & Database Restore Pipeline
+* `OperationsController.cs` and `UserContext.cs` resolve `CurrentUserId` using `ClaimTypes.NameIdentifier` with a mandatory fallback to `"sub"` (JWT subject GUID).
+* Before restoring a `.bak` file, `BackupService.cs` caches the restoring administrator's GUID, roles (`UserRole`), branch assignments (`UserBranchRole`), workspace access (`UserWorkspaceAccess`), and employee profile (`Employee`).
+* `NT AUTHORITY\SYSTEM` service account has `sysadmin` role in SQL Server (`.\SYNOS`), enabling `RESTORE DATABASE WITH REPLACE` to run without permission errors.
+* `BackupService.cs` maps role GUIDs by role name (`roleIdToNameMap`) post-restore to prevent `FK_UserBranchRoles_Roles_RoleId` violations, seamlessly merging the restoring administrator back into the database.
 
----
+### Rule 3: Operational Data Reset Pipeline
+* `SettingsController.cs` (`ResetOperationalData`) validates administrator password hash using `BCrypt.Net.BCrypt.Verify`.
+* Automatically creates an emergency database backup before purging transactional tables (visits, reports, bills, phlebotomy, samples) while preserving static masters, users, roles, settings, and templates.
 
-## 8. Laboratory Operating Model
+### Rule 4: Uninstaller & Packaging Stability
+* `SynOS_Setup.iss` configures `UninstallForm.FormStyle := fsStayOnTop` to ensure custom data decommission dialogs render in the foreground on Windows.
 
-Pathology workflows leverage automated rule checks to reduce clinical errors:
-
-```
-                  ┌──────────────────────────┐
-                  │  Sample Check-in (Phleb) │
-                  └────────────┬─────────────┘
-                               │
-                ┌──────────────┴──────────────┐
-                ▼                             ▼
-  ┌──────────────────────────┐  ┌──────────────────────────┐
-  │   Automated Analyzers    │  │   Manual Entry (Grids)   │
-  └─────────────┬────────────┘  └─────────────┬────────────┘
-                │                             │
-                └──────────────┬──────────────┘
-                               │
-                               ▼
-  ┌──────────────────────────┐  ┌──────────────────────────┐
-  │   Smart Range Checks     │  │   Typist Template Match  │
-  └─────────────┬────────────┘  └─────────────┬────────────┘
-                │                             │
-                └──────────────┬──────────────┘
-                               │
-                               ▼
-  ┌──────────────────────────┐  ┌──────────────────────────┐
-  │  Pathologist Validation   │  │   PDF Report Dispatch    │
-  └──────────────────────────┘  └──────────────────────────┘
-```
-
-1. **Specimen Routing**: Physical samples are routed to specific departments (Hematology, Biochemistry, Microbiology).
-2. **Analyzer Integrations**: Integrated analyzers run tests and push results directly to SynOS, auto-populating fields.
-3. **Manual Entry**: For non-automated tests, technicians log results using the spreadsheet-like input grid in `DepartmentWorkbenchScreen.jsx`.
-4. **Smart Range Checks**: SynOS checks results against reference ranges, flagging abnormal and critical values.
-5. **Pathologist Validation**: The pathologist logs into `PathologistTerminal.jsx`, reviews flagged values, compares them with past visits, and approves them.
+### Rule 5: Desktop Operations Console (SynOS Server Manager)
+* Desktop WPF operations console (`SynOS.ServerManager.exe`) published with embedded `<Resource Include="SynOS.ico" />` packaging and bundled into `{app}\ServerManager`.
+* Provides administrators with real-time monitoring of Windows services (`TBZSynOSService`), SQL Server database status, port bindings (`59999`, `5069`), and application logs with 1-click service restart capabilities.
 
 ---
 
-## 9. Data Flow Relationships
+## 8. WhatsApp Delivery Integration & TBZ Middleware Connection
 
-The relationships between modules define the operational integrity of SynOS:
-
-```
-┌─────────────────────────┐          ┌─────────────────────────┐
-│ Patient Registration    ├─────────>│ Department Queues       │
-└─────────────────────────┘          └─────────────────────────┘
-┌─────────────────────────┐          ┌─────────────────────────┐
-│ Billing Confirmation    ├─────────>│ Revenue Ledgers         │
-└─────────────────────────┘          └─────────────────────────┘
-┌─────────────────────────┐          ┌─────────────────────────┐
-│ Attendance Exceptions   ├─────────>│ Monthly Payroll         │
-└─────────────────────────┘          └─────────────────────────┘
-┌─────────────────────────┐          ┌─────────────────────────┐
-│ Signed Reports          ├─────────>│ Stock Auto-Consumption  │
-└─────────────────────────┘          └─────────────────────────┘
-┌─────────────────────────┐          ┌─────────────────────────┐
-│ Payroll Disbursements   ├─────────>│ Finance Ledgers         │
-└─────────────────────────┘          └─────────────────────────┘
-```
-
-* **Registration** initiates the workflow.
-* **Billing** validates the workflow and unlocks operations.
-* **Attendance** drives payroll adjustments.
-* **Clinical Approvals** deduct inventory stock.
-* **Payroll disbursements** are reconciled in the main ledger.
+SynOS is fully integrated with **TBZ Middleware** for event-driven diagnostics projections and patient communications:
+* **Transactional Outbox Pattern**: Clinical actions enqueue events into a local SQL Server Outbox table. `MiddlewareSyncWorker` polls and posts events over HTTP to Middleware on port `5069`.
+* **WhatsApp Report Delivery**: Signed reports generate a secure download link (`https://<cloudflare-domain>/r/{token}`). Middleware sends Meta Graph API template messages (`report_ready`).
+* **Hybrid Webhook Proxying (`WhatsAppWebhookProxyController.cs`)**:
+  A single Cloudflare Quick Tunnel is bound to SynOS.Api on port `59999`. Patient download links are resolved locally on port `59999`, while Meta webhooks (`/api/webhooks/whatsapp`) received on port `59999` are reverse-proxied to `TBZ.Middleware.Api` on port `5069`.
 
 ---
 
-## 10. Director / Management View
+## 9. Visual Storyboard For Website
 
-The Director dashboard provides a unified control center for management:
-
-* **Real-time Operations KPI**: Shows active patient volumes, current bottlenecks, and live queue wait times.
-* **Financial Ledger Visibility**: Tracks daily collections, outstanding B2B balances, and inventory spend.
-* **Staff Performance Tracking**: Logs report turnaround times (TAT) and data entry volumes.
-* **Operational Alerts**: Signals critical test levels, inventory shortages, and network sync statuses.
-
----
-
-## 11. WhatsApp Delivery Integration & TBZ Middleware Connection
-
-SynOS is fully integrated with the **TBZ Middleware** to enable event-driven diagnostics projections and automated patient communications:
-* **The Transactional Outbox Pattern**: When clinical actions occur (such as Billing or Report Signing), SynOS writes domain events (like `BillCreated` or `ReportDeliveryRequestedEvent`) to a local SQL Server Outbox table in a single atomic transaction. A background service (`MiddlewareSyncWorker`) reads these events and pushes them over HTTP to the Middleware (`/api/events` on port `5069`).
-* **WhatsApp Report Delivery**: When a report is signed and WhatsApp delivery is requested, SynOS generates a secure download link (format: `https://<cloudflare-domain>/r/{token}`). This link is carried in the event to the Middleware, which utilizes Meta's Graph API to instantly send an automated WhatsApp message (using template `report_ready`) containing the secure download link.
-* **Unified Webhook Routing (The Hybrid Tunneling Strategy)**: To allow a single public Cloudflare tunnel to handle both patient report downloads (on port `59999`) and Meta webhook subscriptions/read-delivery events (on port `5069`), SynOS.Api implements a proxy controller at `/api/webhooks/whatsapp` that forwards webhook requests to the local Middleware instance.
-
----
-
-## 12. Future Vision
-
-Planned system updates include:
-
-* **Integrated Machine Analyzers**: Direct RS232/TCP connections for automatic test logging.
-* **B2B Doctor Portals**: Independent web views for partner clinics to track referrals.
-* **AI Transcription Assistance**: Automated transcription drafts matching spoken pathologist dictation.
-
----
-
-## 12. Visual Storyboard For Website
-
-This storyboard details ten interactive scenes for the TBZ Labs product experience page, showing how SynOS coordinates a diagnostic center:
-
-### Scene 1: The Patient Arrives
-* **Visuals**: A clean, isometric view of the diagnostic center. A patient enters the lobby and approaches the reception desk.
-* **SynOS Interface overlay**: A floating, simplified view of the **Registration Drawer** appears next to the receptionist, displaying field completions.
-* **Core Message**: *SynOS starts orchestration at the front door.*
-
-### Scene 2: Interactive Billing
-* **Visuals**: The registration form updates. A cursor searches for tests (e.g., "CBC", "Lipid Profile"), applying rules-based discounts and partner rates.
-* **SynOS Interface overlay**: The **Intent Panel** slides in. An invoice is created.
-* **Core Message**: *Dynamic billing rules are enforced instantly, eliminating manual price lists.*
-
-### Scene 3: Payment Confirmation
-* **Visuals**: A payment signal flashes green. The patient receives a token card.
-* **SynOS Interface overlay**: A notification pops up on the Phlebotomy Terminal showing patient Jane Doe is ready.
-* **Core Message**: *Payments unlock the clinical queue immediately across the system.*
-
-### Scene 4: Collection Team Workflow
-* **Visuals**: The patient sits in the phlebotomy chair. The phlebotomist draws a sample and scans a barcode.
-* **SynOS Interface overlay**: The patient moves from the "Pending Collection" tab to the "Completed" tab on the **Phlebotomy Terminal**.
-* **Core Message**: *Sample tracking is verified at the point of collection.*
-
-### Scene 5: Laboratory Processing
-* **Visuals**: The lab technician places the sample tube inside an analyzer.
-* **SynOS Interface overlay**: The **Department Workbench** sheet highlights the patient row, and parameter values auto-populate.
-* **Core Message**: *Result transcription is automated, preventing manual data entry errors.*
-
-### Scene 6: Radiology Scan Capture
-* **Visuals**: The patient enters the MRI suite. The scan is completed.
-* **SynOS Interface overlay**: The DICOM image transfer animation sends scans to PACS. A link lights up on the Radiologist's screen.
-* **Core Message**: *Imaging hardware and clinical databases sync automatically.*
-
-### Scene 7: Reagent Consumption
-* **Visuals**: The lab analyzer finishes the run. A virtual bottle of reagent drops its fill level.
-* **SynOS Interface overlay**: The **Inventory Module** shows a stock reduction of 1 unit.
-* **Core Message**: *Supplies are tracked in real-time as tests complete.*
-
-### Scene 8: The Doctor's Review
-* **Visuals**: The pathologist views the report on screen, comparing results with historical trends. A digital signature is applied.
-* **SynOS Interface overlay**: The pathologist clicks "Approve & Sign".
-* **Core Message**: *Digital signatures approve and seal reports securely.*
-
-### Scene 9: Revenue Ledger Updates
-* **Visuals**: The signed report triggers a dispatch. The cash collected logs update.
-* **SynOS Interface overlay**: The **Finance Ledger** displays the transaction value alongside the doctor commission calculations.
-* **Core Message**: *Clinical completions post financial transactions instantly.*
-
-### Scene 10: Unified Management Visibility
-* **Visuals**: The camera zooms out to an isometric view of the clinic, displaying live stats above each department.
-* **SynOS Interface overlay**: The **Director Dashboard** displays KPIs: Total Walk-Ins, Cash Flow, and Average Turnaround Time.
-* **Core Message**: *SynOS is the complete operating system for modern diagnostic laboratories.*
+1. **Scene 1: Patient Arrival** — Receptionist registers patient in Registration Drawer.
+2. **Scene 2: Dynamic Billing** — Intent Panel searches tests, applies rules-based discounts.
+3. **Scene 3: Payment Confirmation** — Payment signal fires `VisitStarted`, unlocking Phlebotomy queue.
+4. **Scene 4: Phlebotomy Queue (Isolated)** — Phlebotomist scans specimen barcode in dedicated queue.
+5. **Scene 5: Lab Processing** — Workbench parameter grid auto-populates from analyzers.
+6. **Scene 6: Radiology Scan & PACS** — MRI/CT DICOM slices transfer to PACS; viewer link lights up on Radiologist terminal.
+7. **Scene 7: Reagent Consumption** — Inventory stock auto-decrements as tests are signed.
+8. **Scene 8: Radiologist Draft & Sign** — Draft findings saved (`/api/v1/radiology/reports/{studyId}`); digital signature releases immutable PDF version.
+9. **Scene 9: Revenue Ledger & Outbox Sync** — Clinical completion posts financial entry and outbox sync event.
+10. **Scene 10: Unified Director View** — Director dashboard displays workflow funnel, TAT metrics, and 1-click License Sync.

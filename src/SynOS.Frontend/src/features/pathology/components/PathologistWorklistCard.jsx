@@ -9,8 +9,8 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
 
     const ui = isDark ? {
         card: isSelected 
-            ? "border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500/20 shadow-lg" 
-            : "border-white/5 bg-zinc-950/40 hover:bg-zinc-900 shadow-md",
+            ? "border-2 border-synos-primary bg-synos-primary/10 ring-1 ring-synos-primary/20 shadow-lg" 
+            : "synos-item-card",
         name: "text-zinc-100 group-hover:text-white",
         ageSex: "bg-white/5 text-zinc-400 border-white/10",
         test: "text-zinc-400",
@@ -25,8 +25,8 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
         }
     } : {
         card: isSelected 
-            ? "bg-indigo-50 border-indigo-200 ring-2 ring-indigo-500/10 shadow-sm" 
-            : "bg-black/[0.04] border border-black/5 shadow-inner hover:bg-black/[0.06]",
+            ? "bg-indigo-50/90 border-2 border-synos-primary shadow-md" 
+            : "synos-item-card",
         name: "text-zinc-900 group-hover:text-indigo-600",
         ageSex: "bg-zinc-100 text-zinc-600 border-zinc-200",
         test: "text-zinc-600",

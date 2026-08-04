@@ -29,29 +29,34 @@ export function ActivityStream({ serverTime }) {
 
                 if (e.visibility === 'Hide') return false;
 
-                // 1. FILTER NOISE: Remove "Visit created..." explicitly as per user request
-                // (User prefers "Visit Started" from VISIT_UPDATED)
-                if (e.eventType === 'VISIT_CREATED') return false;
+                // 1. Filter out Inventory Alerts & non-patient logs (Live stream is strictly patient & report timeline)
+                const typeStr = (e.eventType || '').toUpperCase();
+                const titleStr = (e.title || e.summaryText || e.SummaryText || '').toLowerCase();
+                const tokenStr = (e.tokenId || e.TokenId || e.token || '').trim();
 
-                // 1.1 Universal Filter: 0.00 Bills
+                // Suppress draft tokens (DRAFT-...)
+                if (tokenStr.toUpperCase().startsWith('DRAFT-') || titleStr.includes('draft-')) {
+                    return false;
+                }
+
+                // Suppress extra internal events
+                if (titleStr.includes('referral partner updated') || 
+                    titleStr.includes('sample collection requested') || 
+                    titleStr.includes('collection requested') ||
+                    typeStr.includes('INVENTORY') || 
+                    titleStr.includes('inventory') || 
+                    titleStr.includes('stock') ||
+                    titleStr.includes('insufficient stock') ||
+                    typeStr === 'VISIT_CREATED') {
+                    return false;
+                }
+
+                // 2. Billing filter: Remove zero bills
                 if (e.eventType === 'BILL_GENERATED') {
-                    const title = e.title || e.summaryText || e.SummaryText || "";
-                    if (title.includes('0.00')) return false;
+                    if (titleStr.includes('0.00')) return false;
                     const total = parseFloat(e.metadataObj.Total || e.metadataObj.Amount || 0);
                     if (total === 0) return false;
                 }
-
-                // 1.2 Role-Based Filter
-                const userRole = user?.role || 'Reception';
-                if (userRole === 'Phlebotomy' || userRole === 'Lab' || userRole === 'Pathologist') {
-                    if (e.eventType === 'PAYMENT_RECEIVED' || e.eventType === 'BILL_GENERATED' || e.eventType === 'VISIT_Prepaid') {
-                        return false;
-                    }
-                }
-
-                // 1.3 Minimalist Filter: Remove "Visit started" redundancy if somehow remaining?
-                // Actually user LIKES "Visit started", dislikes "Visit created".
-                // So we keep VISIT_UPDATED events.
 
                 return true;
             });
@@ -93,14 +98,84 @@ export function ActivityStream({ serverTime }) {
         } catch { return ""; }
     };
 
-    const cleanMessage = (msg, metaObj) => {
-        if (!msg) return "";
+    const cleanActorName = (actor) => {
+        if (!actor) return "";
+        const trimmed = String(actor).trim();
+        if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(trimmed)) {
+            return "";
+        }
+        if (trimmed.toLowerCase() === "system" || trimmed.toLowerCase() === "user" || trimmed.toLowerCase() === "unknown") {
+            return "";
+        }
+        return trimmed;
+    };
+
+    const formatEventTitle = (event) => {
+        const type = (event.eventType || "").toUpperCase();
+        const msg = event.messageResolved || event.title || event.summaryText || event.SummaryText || "";
+        const meta = event.metadataObj || {};
+        const patientName = meta.PatientName || event.patientName || "Patient";
+        const token = (event.tokenId || event.TokenId || event.token || "").trim();
+        const rawActor = event.actorName || meta.ActorName || meta.CreatedBy || event.actorType;
+        const actor = cleanActorName(rawActor);
+
+        const lowerMsg = msg.toLowerCase();
+
+        // 1. Patient Registration (1st time)
+        if (type === 'PATIENT_REGISTERED' || lowerMsg.includes('registered patient') || lowerMsg.includes('patient registered') || lowerMsg.includes('new patient registered')) {
+            return `Patient ${patientName} registered`;
+        }
+
+        // 2. Visit Started / Token Assigned
+        if (type === 'VISIT_STARTED' || lowerMsg.includes('visit started') || lowerMsg.includes('token id') || lowerMsg.includes('token assigned')) {
+            return token && !token.toUpperCase().startsWith('DRAFT-') && token !== 'System'
+                ? `Token ID ${token} assigned to ${patientName}`
+                : `Visit started for ${patientName}`;
+        }
+
+        // 3. Billing & Payment
+        if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || lowerMsg.includes('payment received') || lowerMsg.includes('billed') || lowerMsg.includes('prepaid')) {
+            const tests = meta.TestCodes && Array.isArray(meta.TestCodes) && meta.TestCodes.length > 0
+                ? meta.TestCodes.join('_') 
+                : (meta.TestNames || meta.Services || 'tests');
+            const refDoc = meta.DoctorName || meta.PartnerName || meta.ReferralPartner || (lowerMsg.includes('dr.') ? msg.match(/dr\.\s*[\w\s]+/i)?.[0] : '');
+            const actorStr = actor ? `by ${actor}` : '';
+            const refStr = refDoc ? `, referred by ${refDoc}` : '';
+            return `Billed ${actorStr} for ${tests} test${refStr}`.replace(/\s+/g, ' ').trim();
+        }
+
+        // 4. Sample Collection (Phlebotomy)
+        if (type === 'SPECIMEN_COLLECTED' || type === 'SAMPLE_COLLECTED' || lowerMsg.includes('sample collected') || lowerMsg.includes('specimen collected')) {
+            return actor ? `Sample collected by ${actor}` : `Sample collected`;
+        }
+
+        // 5. Sample Processing (Lab Workbench)
+        if (type === 'SPECIMEN_PROCESSED' || type === 'SAMPLE_PROCESSED' || lowerMsg.includes('results finalized') || lowerMsg.includes('sample processed') || lowerMsg.includes('testing completed')) {
+            return actor ? `Sample processed by ${actor}` : `Sample processed`;
+        }
+
+        // 6. Report Drafted (Typist)
+        if (type === 'REPORT_DRAFTED' || lowerMsg.includes('drafted') || lowerMsg.includes('typing completed') || lowerMsg.includes('interpretation saved')) {
+            return actor ? `Report drafted by ${actor}` : `Report drafted`;
+        }
+
+        // 7. Report Verified & Signed (Pathologist / Manual)
+        if (type === 'REPORT_VERIFIED' || type === 'REPORT_SIGNED' || lowerMsg.includes('verified & signed') || lowerMsg.includes('digitally signed') || lowerMsg.includes('manually verified') || lowerMsg.includes('report signed')) {
+            const isManual = lowerMsg.includes('manually') || meta.IsManual || type === 'REPORT_MANUALLY_VERIFIED';
+            if (isManual) {
+                return `Report signed`; // (No username for manual sign as per spec)
+            }
+            return actor ? `Report verified & signed by ${actor}` : `Report verified & signed`;
+        }
+
+        // 8. Ready at Delivery Desk
+        if (type === 'REPORT_DELIVERED' || type === 'READY_FOR_DELIVERY' || lowerMsg.includes('ready for delivery') || lowerMsg.includes('ready at delivery')) {
+            return `Report is ready at Delivery desk.`;
+        }
+
+        // Fallback
         let clean = msg.replace(/\(Fact:.*?\)/g, "").trim();
-        clean = clean.replace(/[0-9a-fA-F-]{36}/g, (match) => {
-            if (metaObj.PartnerName) return metaObj.PartnerName;
-            if (metaObj.PatientName) return metaObj.PatientName;
-            return "External Partner";
-        });
+        clean = clean.replace(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g, "").trim();
         return clean;
     };
 
@@ -180,20 +255,35 @@ export function ActivityStream({ serverTime }) {
         if (currentGroup) groups.push(currentGroup);
 
         return groups.map(group => {
-            const hasFinancialEvent = group.items.some(i =>
-                i.eventType === 'PAYMENT_RECEIVED' ||
-                i.eventType === 'RECEIVABLE_CREATED'
-            );
-
+            const seenCategories = new Set();
             const mergedItems = group.items.filter(item => {
-                // HIDE NOISE: If we have a financial event, hide "Visit Finalized"
-                if (hasFinancialEvent && item.eventType === 'VISIT_FINALIZED') {
+                const type = (item.eventType || '').toUpperCase();
+                const msg = (item.title || item.summaryText || item.SummaryText || '').toLowerCase();
+
+                // Hide noise: Visit Finalized
+                if (type === 'VISIT_FINALIZED') return false;
+
+                let category = type;
+                if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || msg.includes('payment received') || msg.includes('billed') || msg.includes('prepaid')) {
+                    category = 'BILLING';
+                }
+                else if (type === 'SPECIMEN_COLLECTED' || type === 'SAMPLE_COLLECTED' || msg.includes('sample collected') || msg.includes('specimen collected')) {
+                    category = 'COLLECTION';
+                }
+                else if (type === 'RESULT_VERIFIED' || type === 'SPECIMEN_PROCESSED' || type === 'SAMPLE_PROCESSED' || msg.includes('results finalized') || msg.includes('sample processed') || msg.includes('testing completed') || msg.includes('result saved')) {
+                    category = 'PROCESSING';
+                }
+                else if (type === 'REPORT_DRAFTED' || msg.includes('drafted') || msg.includes('typing completed')) {
+                    category = 'DRAFT';
+                }
+                else if (type === 'REPORT_VERIFIED' || type === 'REPORT_SIGNED' || msg.includes('verified & signed') || msg.includes('report signed')) {
+                    category = 'VERIFY';
+                }
+
+                if (seenCategories.has(category)) {
                     return false;
                 }
-                // Also hide Duplicate "Visit marked as Paid" if "Prepaid Credit Issued" exists
-                if (item.eventType === 'VISIT_FINALIZED' && (item.title || "").toLowerCase().includes("visit marked as paid") && hasFinancialEvent) {
-                    return false;
-                }
+                seenCategories.add(category);
                 return true;
             });
 
@@ -234,7 +324,7 @@ export function ActivityStream({ serverTime }) {
 
             <div className="flex-1 overflow-hidden p-0 relative">
                 <ScrollArea className="h-full">
-                    <div className="p-4 space-y-6">
+                    <div className="p-3 space-y-5">
                         {loading && <div className="text-center text-xs text-muted-foreground py-4">Syncing stream...</div>}
 
                         {!loading && events.length === 0 && (
@@ -246,12 +336,12 @@ export function ActivityStream({ serverTime }) {
                         {groupedEvents.map((group, groupIdx) => (
                             // REQ: Left side lines too faded -> Made darker (border-black/[0.1] or border-zinc-700)
                             <div key={`${group.token}-${groupIdx}`} className={cn(
-                                "relative pl-4 border-l",
-                                isDark ? "border-zinc-700" : "border-black/[0.1]" // Darker than default border
+                                "relative pl-3 ml-1.5 border-l",
+                                isDark ? "border-zinc-700" : "border-black/[0.12]" // Darker border
                             )}>
                                 {/* Timeline Dot */}
                                 <div className={cn(
-                                    "absolute -left-1.5 top-0 h-3 w-3 rounded-full border-2",
+                                    "absolute -left-[5px] top-0.5 h-2.5 w-2.5 rounded-full border-2",
                                     isDark ? "bg-zinc-800 border-zinc-900" : "bg-white border-white ring-1 ring-black/[0.1]"
                                 )} />
 
@@ -268,32 +358,24 @@ export function ActivityStream({ serverTime }) {
                                             {group.patientName}
                                         </span>
                                     </div>
-                                    <div className="text-[10px] text-muted-foreground pl-1">
-                                        by <span className="text-foreground/70">{group.actorName}</span> • {getRelativeTime(group.timestamp)}
+                                    <div className="text-[10px] text-muted-foreground pl-1 font-medium">
+                                        {getRelativeTime(group.timestamp)}
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-1.5">
                                     {group.items.map((event, idx) => (
-                                        <div key={event.eventId || idx} className="group relative flex gap-3 text-sm">
+                                        <div key={event.eventId || idx} className="group relative flex gap-2.5 text-xs">
                                             <div className="mt-0.5 transition-colors text-muted-foreground group-hover:text-foreground">
                                                 {mapEventTypeToIcon(event.eventType, event.messageResolved)}
                                             </div>
                                             <div className="flex-1 space-y-0.5">
-                                                <p className="text-xs leading-none text-foreground/85 group-hover:text-foreground transition-colors">
-                                                    {cleanMessage(event.messageResolved, event.metadataObj)}
+                                                <p className="text-xs leading-snug text-foreground/90 group-hover:text-foreground transition-colors font-medium">
+                                                    {formatEventTitle(event)}
                                                 </p>
 
                                                 {event.subMessage && (
                                                     <p className="text-[10px] text-emerald-600/80 dark:text-emerald-500/70">{event.subMessage}</p>
-                                                )}
-
-                                                {event.metadataObj?.TestCodes && Array.isArray(event.metadataObj.TestCodes) && (
-                                                    <div className="flex flex-wrap gap-1 mt-1">
-                                                        {event.metadataObj.TestCodes.map(code => (
-                                                            <span key={code} className="text-[9px] bg-muted text-muted-foreground px-1 rounded border border-border/50">{code}</span>
-                                                        ))}
-                                                    </div>
                                                 )}
                                             </div>
                                         </div>

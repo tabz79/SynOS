@@ -44,5 +44,6 @@ namespace SynOS.Models.DTOs.Dashboard
         public string? AssignedDepartmentCode { get; set; }
         public bool? IsTokenPrinted { get; set; }
         public string? DepartmentCode { get; set; } // Added for Workbench Sync
+        public bool HasPhlebotomy { get; set; } = true; // Indicates whether visit includes blood/pathology sample collection
     }
 }

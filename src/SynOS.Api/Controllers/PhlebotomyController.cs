@@ -29,6 +29,13 @@ namespace SynOS.Api.Controllers
             _notifier = notifier;
         }
 
+        [HttpGet("queue")]
+        public async Task<IActionResult> GetPhlebotomyQueue([FromQuery] bool includeHistory = false)
+        {
+            var queue = await _phlebotomyService.GetPhlebotomyQueueAsync(includeHistory);
+            return Ok(queue);
+        }
+
         [HttpPost("claim")]
         public async Task<IActionResult> ClaimAssignment([FromBody] ClaimAssignmentRequest request)
         {

@@ -81,6 +81,10 @@ export class DicomViewportManager {
         this.initPromise = this.init();
     }
 
+    setOnSliceChange(callback) {
+        this.onSliceChange = callback;
+    }
+
     async init() {
         try {
             await initCornerstone();
@@ -94,9 +98,12 @@ export class DicomViewportManager {
         await this.initPromise;
         if (!urls || urls.length === 0) return;
 
-        // Map relative public URLs to standard WADO-URI loader scheme
+        const token = localStorage.getItem('synos_jwt');
+        // Map relative public URLs to standard WADO-URI loader scheme with auth token fallback
         const rawImageIds = urls.map(url => {
-            return url.startsWith('http') ? `wadouri:${url}` : `wadouri:${window.location.origin}${url}`;
+            const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+            const authUrl = token ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : fullUrl;
+            return `wadouri:${authUrl}`;
         });
 
         // Preload/cache metadata for all images in parallel

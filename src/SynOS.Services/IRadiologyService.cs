@@ -9,6 +9,7 @@ namespace SynOS.Services
     {
         // Technician Flow
         Task<IEnumerable<RadiologyStudyQueueDto>> GetTechnicianQueueAsync(string[] statuses, bool includeHistory = false);
+        Task<IEnumerable<RadiologyStudyQueueDto>> GetPacsMasterArchiveAsync();
         Task AssignStudyAsync(Guid studyId, Guid userId);
         Task<ReportAttachmentDto> AddAttachmentToStudyAsync(Guid studyId, Guid userId, string displayName, string fileUrl, string attachmentType);
         Task MarkImagingCompletedAsync(Guid studyId, Guid userId);

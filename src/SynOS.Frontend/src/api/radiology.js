@@ -67,5 +67,42 @@ export const RadiologyApi = {
             throw new Error(errText || 'Failed to upload attachment');
         }
         return await response.json();
+    },
+
+    getRadiologistWorklist: async () => {
+        const response = await fetch('/api/v1/radiology/studies/archive', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch radiologist worklist');
+        return await response.json();
+    },
+
+    getSeriesTree: async (radiologyStudyId) => {
+        const response = await fetch(`/api/v1/radiology/pacs/studies/${radiologyStudyId}/series-tree`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch PACS series tree');
+        return await response.json();
+    },
+
+    uploadDicom: async (radiologyStudyId, formData) => {
+        const response = await fetch(`/api/v1/radiology/pacs/${radiologyStudyId}/upload`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` },
+            body: formData
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.message || data.title || 'Failed to upload DICOM file');
+        }
+        return data;
+    },
+
+    getStorageStats: async () => {
+        const response = await fetch('/api/v1/radiology/pacs/admin/storage-stats', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+        });
+        if (!response.ok) return null;
+        return await response.json();
     }
 };

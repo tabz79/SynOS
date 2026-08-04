@@ -12,7 +12,7 @@ Core philosophy:
 
 - Fast
 - Reliable
-- Operational First
+- Operational First & Always Available On-Premise
 - Low Hardware Friendly
 - Queue Driven
 - Role Based
@@ -26,11 +26,11 @@ Patient Arrival
 → Reception
 → Billing
 → Payment Confirmation
-→ Sample Collection / Radiology Routing
-→ Processing Workbench
-→ Typing
-→ Verification
-→ Delivery
+→ Sample Collection (Isolated Phlebotomy Queue) / Radiology Routing
+→ Processing Workbench / PACS DICOM Suite
+→ Typing / Draft Findings
+→ Verification & Digital Signature
+→ Delivery (Print / WhatsApp via Hybrid Middleware)
 
 ---
 
@@ -50,11 +50,11 @@ Handles:
 Workflow:
 
 Reception
-→ Phlebotomy
+→ Phlebotomy Queue (Isolated)
 → Workbench
 → Typist
 → Pathologist
-→ Delivery
+→ Delivery Desk
 
 ---
 
@@ -70,10 +70,10 @@ Handles:
 Workflow:
 
 Reception
-→ Technician
-→ Typist
-→ Radiologist
-→ Delivery
+→ Technician (MWL Worklist / PACS DICOM Upload)
+→ Radiologist Draft Findings (`/api/v1/radiology/reports/{studyId}`)
+→ Radiologist Verification & Digital Signature (`ReportSnapshot` & `ReportVersion`)
+→ Delivery Desk
 
 Radiology bypasses:
 
@@ -112,13 +112,13 @@ Frontend screens must not invent workflow rules.
 
 Reports are generated from snapshot structures.
 
-Snapshots represent immutable report data at a specific point in time.
+Snapshots represent immutable report data at a specific point in time (`ReportVersion` and `ReportSnapshot`).
 
 ---
 
 ## Catalog Driven
 
-Tests, parameters, profiles and report structures are driven from catalog definitions.
+Tests, parameters, profiles and report structures are driven from catalog definitions (Test Master).
 
 No hardcoded medical definitions in UI.
 
@@ -145,21 +145,45 @@ These may integrate later but are not core.
 
 ---
 
-# Implemented Extensions
+# Implemented Extensions & Hardened Pipelines
 
 ## QuestPDF Absolute A4 Coordinate Engine
 * Reports are rendered dynamically via QuestPDF using templates designed in React.
-* When `enableAbsolutePositioning` is true, the default flow table is skipped. All patient metadata is positioned at precise `X` and `Y` coordinate offsets (in millimeters) relative to the page canvas, enabling compatibility with preprinted background paper letterheads.
+* When `enableAbsolutePositioning` is true, all patient metadata is positioned at precise `X` and `Y` coordinate offsets (in millimeters) relative to the page canvas, enabling compatibility with preprinted background paper letterheads.
 
-## Transactional Outbox Sync Middleware
-* Patient visits and report delivery request actions enqueued in the local outbox database table are picked up by `MiddlewareSyncWorker` and synced to the standalone TBZ Middleware (port 5069) for WhatsApp dispatching.
+## Non-Blocking On-Premise Resilience & License Auto-Healing
+* Local operational APIs and WebSockets are NEVER blocked with HTTP 403 errors if network or subscription sync issues occur (`SessionValidationMiddleware.cs`).
+* Licensing system uses IPv4-first `SocketsHttpHandler` callback to bypass dual-stack DNS timeouts.
+* Direct local middleware validation probes port **`5069`** (`http://localhost:5069/api/labs/validate`).
+* UI includes a 1-click **Sync License** button on the Control Tower dashboard for immediate auto-healing status synchronization.
+
+## Active Session Preserving Database Backup & Restore Pipeline
+* Pre-restoration caching of restoring user GUID/claims (`"sub"` claim fallback), roles (`UserRole`), branch assignments (`UserBranchRole`), workspace access (`UserWorkspaceAccess`), and employee profile (`Employee`).
+* Post-restore role name-to-ID mapping (`roleIdToNameMap`) prevents `FK_UserBranchRoles_Roles_RoleId` foreign key violations.
+* `NT AUTHORITY\SYSTEM` service account has `sysadmin` role in SQL Server (`.\SYNOS`), enabling `RESTORE DATABASE WITH REPLACE` to run without permission errors.
+
+## Safe Operational Data Reset Pipeline
+* `ResetOperationalData` endpoint in `SettingsController.cs` validates administrator password hash via `BCrypt.Net.BCrypt.Verify`.
+* Automatically creates an emergency database backup before purging transactional tables while preserving static masters, users, roles, settings, and templates.
+
+## Radiology Findings Draft & Immutable Snapshot Engine
+* Draft findings persist via `fetchReportDraft` (`/api/v1/radiology/reports/{studyId}`).
+* Signing generates rich narrative HTML, updates `ReportInterpretation`, and stores immutable `ReportVersion` & `ReportSnapshot` records.
+
+## Transactional Outbox & Hybrid Middleware Sync
+* Domain events enqueued in the local outbox table are picked up by `MiddlewareSyncWorker` and synced to standalone TBZ Middleware (port 5069).
+* Meta webhooks (`/api/webhooks/whatsapp`) received on SynOS.Api (port 59999) are reverse-proxied to Middleware on port 5069 over a single Cloudflare Quick Tunnel (`WhatsAppWebhookProxyController.cs`).
+
+## Desktop Operations Console (SynOS Server Manager)
+* Standalone WPF desktop application (`SynOS.ServerManager.exe`) published with embedded `<Resource Include="SynOS.ico" />` assets and deployed into `{app}\ServerManager`.
+* Enables local laboratory administrators to monitor backend Windows services (`TBZSynOSService`), SQL Server engine state, database connectivity, and port listeners (`59999`, `5069`), with 1-click service control and logs viewing.
 
 -------
 
-##Technical Debt:
+## Technical Debt:
 Parameter definitions are duplicated between standalone tests and profile tests.
 
-##Future architecture:
+## Future Architecture:
 Introduce ParameterMaster and TestParameterLinks.
 
 Target version:

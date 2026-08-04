@@ -48,6 +48,34 @@ export function ControlTowerDashboard() {
         }
     }, [isAdmin]);
 
+    const [isSyncingLicense, setIsSyncingLicense] = useState(false);
+
+    const handleSyncLicense = async () => {
+        setIsSyncingLicense(true);
+        try {
+            const token = localStorage.getItem('synos_jwt');
+            const response = await fetch('/api/v1/admin/settings/test-middleware', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            });
+            const resData = await response.json();
+            if (resData.success) {
+                await loadLicenseInfo();
+                alert("License successfully synchronized with TBZ Cloud!");
+            } else {
+                alert(resData.message || "Failed to sync license.");
+            }
+        } catch (e) {
+            alert("Failed to connect to cloud license server.");
+        } finally {
+            setIsSyncingLicense(false);
+        }
+    };
+
     const loadBranches = async () => {
         try {
             const data = await AdminApi.getBranches();
@@ -120,11 +148,9 @@ export function ControlTowerDashboard() {
         );
     }
 
-    const cardStyle = {
-        background: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ=="), linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
-    };
+    const cardStyle = {};
 
-    const cardClasses = "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] border border-black/[0.1]";
+    const cardClasses = "synos-dept-card";
 
     const operationsCards = [
         { title: "Reception", subtitle: "Registration & Billing", icon: UserPlus, data: summary?.reception, path: "/reception", btnText: "Open Reception" },
@@ -173,7 +199,7 @@ export function ControlTowerDashboard() {
                         const graceExpiryDate = new Date(expiryDate.getTime() + 7 * 24 * 60 * 60 * 1000);
                         
                         const formatDateStr = (date) => {
-                            return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                            return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
                         };
 
                         const handleCopyLabId = () => {
@@ -183,7 +209,7 @@ export function ControlTowerDashboard() {
                         };
 
                         return (
-                            <div className="bg-white dark:bg-zinc-900 border border-black/[0.08] dark:border-white/[0.08] rounded-2xl p-3.5 shadow-[0_4px_12px_rgba(0,0,0,0.03)] flex flex-row items-center justify-between gap-4 w-full md:w-[380px] text-left animate-fadeIn">
+                            <div className="synos-elevated-card rounded-2xl p-3.5 flex flex-row items-center justify-between gap-4 w-full md:w-[380px] text-left animate-fadeIn">
                                 <div className="space-y-1">
                                     <div className="text-[11px] font-black uppercase tracking-wider text-zinc-450 dark:text-zinc-500">
                                         Annual Subscription
@@ -209,12 +235,21 @@ export function ControlTowerDashboard() {
                                         </a>
                                     </div>
                                 </div>
-                                <button 
-                                    onClick={handleCopyLabId} 
-                                    className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[10px] font-black text-zinc-650 dark:text-zinc-450 hover:bg-zinc-50 dark:hover:bg-zinc-850/50 hover:text-zinc-850 dark:hover:text-zinc-200 transition-all shadow-xs uppercase tracking-wider shrink-0"
-                                >
-                                    {copiedId ? "Copied!" : "Copy Lab ID"}
-                                </button>
+                                <div className="flex flex-col gap-2 shrink-0">
+                                    <button 
+                                        onClick={handleSyncLicense}
+                                        disabled={isSyncingLicense}
+                                        className="px-3 py-1.5 bg-synos-primary text-white rounded-lg text-[10px] font-black hover:opacity-90 transition-all shadow-xs uppercase tracking-wider shrink-0 flex items-center justify-center gap-1"
+                                    >
+                                        {isSyncingLicense ? <Loader2 className="h-3 w-3 animate-spin" /> : "Sync License"}
+                                    </button>
+                                    <button 
+                                        onClick={handleCopyLabId} 
+                                        className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[10px] font-black text-zinc-650 dark:text-zinc-450 hover:bg-zinc-50 dark:hover:bg-zinc-850/50 hover:text-zinc-850 dark:hover:text-zinc-200 transition-all shadow-xs uppercase tracking-wider shrink-0"
+                                    >
+                                        {copiedId ? "Copied!" : "Copy Lab ID"}
+                                    </button>
+                                </div>
                             </div>
                         );
                     }
@@ -222,13 +257,13 @@ export function ControlTowerDashboard() {
                 })()}
 
                 {isAdmin && (
-                    <div className="flex items-center gap-3 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5 w-fit">
+                    <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-md w-fit">
                         <button
                             onClick={() => setIsConsolidated(true)}
                             className={cn(
                                 "px-4 py-2 rounded-xl text-xs font-bold transition-all",
                                 isConsolidated 
-                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                    ? "bg-zinc-100 dark:bg-zinc-800 text-synos-primary shadow-sm"
                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                             )}
                         >

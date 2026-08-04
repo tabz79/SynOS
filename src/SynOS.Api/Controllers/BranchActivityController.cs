@@ -74,11 +74,48 @@ namespace SynOS.Api.Controllers
 
             if (!events.Any()) return Ok(new List<object>()); // Empty
 
-            // 4. Resolve Actor Names (Fix for GUIDs in ActorName)
-            // Identify potential GUIDs
+            // 4. Resolve Visit Tokens, Patient Names, ReferredBy Doctors, and Test Codes
+            var visitIds = events
+                .Where(e => !string.IsNullOrEmpty(e.VisitId) && Guid.TryParse(e.VisitId, out _))
+                .Select(e => Guid.Parse(e.VisitId!))
+                .Distinct()
+                .ToList();
+
+            var visitMap = new Dictionary<Guid, (string Token, string PatientName, string ReferredBy, List<string> TestCodes)>();
+            if (visitIds.Any())
+            {
+                var visits = await _context.Visits
+                    .AsNoTracking()
+                    .Include(v => v.Patient)
+                    .Include(v => v.Referrer)
+                    .Include(v => v.ReferralPartner)
+                    .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                    .Where(v => visitIds.Contains(v.VisitId))
+                    .ToListAsync();
+
+                foreach (var v in visits)
+                {
+                    var pName = v.Patient != null 
+                        ? (!string.IsNullOrWhiteSpace(v.Patient.DisplayName) ? v.Patient.DisplayName : $"{v.Patient.FirstName} {v.Patient.LastName}".Trim()) 
+                        : "Patient";
+                    var tok = v.Token ?? "UNKNOWN";
+                    var refDoc = v.Referrer?.ProviderName ?? v.ReferrerText ?? v.ReferralPartner?.Name ?? "";
+                    var tCodes = v.Orders
+                        .Select(o => !string.IsNullOrWhiteSpace(o.TestCode) ? o.TestCode : (o.Test != null ? (o.Test.TestCode ?? o.Test.TestName) : ""))
+                        .Where(c => !string.IsNullOrWhiteSpace(c))
+                        .Distinct()
+                        .ToList();
+
+                    visitMap[v.VisitId] = (tok, pName, refDoc, tCodes);
+                }
+            }
+
+            // 5. Resolve User Names for any Actor GUIDs
             var potentialUserIds = events
-                .Where(e => Guid.TryParse(e.ActorName, out _))
-                .Select(e => Guid.Parse(e.ActorName!)) // Safe bang because where check
+                .SelectMany(e => new[] { e.ActorName, e.ActorType })
+                .Where(a => !string.IsNullOrEmpty(a) && Guid.TryParse(a, out _))
+                .Select(a => Guid.Parse(a!))
                 .Distinct()
                 .ToList();
 
@@ -91,23 +128,60 @@ namespace SynOS.Api.Controllers
                     .ToDictionaryAsync(u => u.UserId, u => u.Name);
             }
 
-            // 5. Map to DTO (Enforcing UTC & Actor Name)
+            // 6. Map to Enriched DTO
             var dtos = events.Select(e => 
             {
-                string displayName = e.ActorName ?? "Unknown";
+                string displayName = "";
                 
-                // Try resolve if it looks like a GUID
-                if (Guid.TryParse(e.ActorName, out var guidId))
+                // 1. Try to resolve GUID from userMap
+                if (!string.IsNullOrWhiteSpace(e.ActorName) && Guid.TryParse(e.ActorName, out var guidId) && userMap.TryGetValue(guidId, out var resolvedName))
                 {
-                    if (userMap.TryGetValue(guidId, out var resolvedName))
-                    {
-                        displayName = resolvedName;
-                    }
-                    else if (guidId == _userContext.CurrentUserId)
-                    {
-                        displayName = "You"; // Contextual nicety
-                    }
+                    displayName = resolvedName;
                 }
+                else if (!string.IsNullOrWhiteSpace(e.ActorType) && Guid.TryParse(e.ActorType, out var guidId2) && userMap.TryGetValue(guidId2, out var resolvedName2))
+                {
+                    displayName = resolvedName2;
+                }
+                // 2. If ActorType is a real name/username and not "System" / "User", use it
+                else if (!string.IsNullOrWhiteSpace(e.ActorType) && e.ActorType != "System" && e.ActorType != "User" && !Guid.TryParse(e.ActorType, out _))
+                {
+                    displayName = e.ActorType;
+                }
+                // 3. If ActorName is a real name string and not a GUID / "User", use it
+                else if (!string.IsNullOrWhiteSpace(e.ActorName) && e.ActorName != "User" && !Guid.TryParse(e.ActorName, out _))
+                {
+                    displayName = e.ActorName;
+                }
+
+                if (displayName == "User" || displayName == "System") displayName = "";
+
+                // Resolve Token, PatientName, ReferredBy, and TestCodes from visitMap
+                string resolvedToken = e.TokenId ?? "";
+                string patientName = "Patient";
+                string doctorName = "";
+                var testCodes = new List<string>();
+
+                if (!string.IsNullOrEmpty(e.VisitId) && Guid.TryParse(e.VisitId, out var vId) && visitMap.TryGetValue(vId, out var vData))
+                {
+                    if (string.IsNullOrEmpty(resolvedToken) || Guid.TryParse(resolvedToken, out _))
+                    {
+                        resolvedToken = vData.Token;
+                    }
+                    patientName = vData.PatientName;
+                    doctorName = vData.ReferredBy;
+                    testCodes = vData.TestCodes;
+                }
+
+                // Construct enriched metadata JSON string
+                var metaObj = new
+                {
+                    PatientName = patientName,
+                    DoctorName = doctorName,
+                    TestCodes = testCodes,
+                    ActorName = displayName,
+                    TokenId = resolvedToken
+                };
+                string enrichedMetadata = System.Text.Json.JsonSerializer.Serialize(metaObj);
 
                 // Ensure UTC spec for JSON serializer
                 var utcTime = DateTime.SpecifyKind(e.OccurredAt, DateTimeKind.Utc);
@@ -116,13 +190,14 @@ namespace SynOS.Api.Controllers
                 {
                     EventId = e.EventId,
                     EventType = e.EventType,
-                    OccurredAt = utcTime, // Will serialize with 'Z'
+                    OccurredAt = utcTime,
                     ActorName = displayName,
                     BranchId = e.BranchId,
                     VisitId = e.VisitId,
-                    TokenId = e.TokenId,
+                    TokenId = resolvedToken,
                     SummaryText = e.SummaryText,
-                    Color = GetEventColor(e.EventType), // Enrich with UI hints
+                    Metadata = enrichedMetadata,
+                    Color = GetEventColor(e.EventType),
                     Icon = GetEventIcon(e.EventType)
                 };
             });

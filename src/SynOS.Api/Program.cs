@@ -92,6 +92,7 @@ if (!string.IsNullOrEmpty(connectionString))
 var isDevelopment = builder.Environment.IsDevelopment();
 
 var isConfigured = false;
+Console.WriteLine($"[Setup-Diag] Start isConfigured check: isSetupMode={isSetupMode}, connStr='{connectionString}'");
 if (!isSetupMode && !string.IsNullOrEmpty(connectionString) && !connectionString.Contains("YOUR_SERVER"))
 {
     try
@@ -99,27 +100,31 @@ if (!isSetupMode && !string.IsNullOrEmpty(connectionString) && !connectionString
         var optionsBuilder = new DbContextOptionsBuilder<SynOS.Data.SynOSDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
         using var context = new SynOS.Data.SynOSDbContext(optionsBuilder.Options);
-        if (context.Database.CanConnect())
+        try
         {
             var conn = context.Database.GetDbConnection();
-            var wasClosed = conn.State == System.Data.ConnectionState.Closed;
-            if (wasClosed) conn.Open();
+            conn.Open();
+            Console.WriteLine("[Setup-Diag] conn.Open() SUCCESS!");
             using var cmd = conn.CreateCommand();
             cmd.CommandText = "SELECT COUNT(*) FROM sys.tables WHERE name = 'LabProfiles'";
             var count = Convert.ToInt32(cmd.ExecuteScalar());
-            if (wasClosed) conn.Close();
-            
-            if (count > 0)
-            {
-                isConfigured = true;
-            }
+            conn.Close();
+            Console.WriteLine($"[Setup-Diag] sys.tables LabProfiles count={count}");
+            if (count > 0) isConfigured = true;
+        }
+        catch (Exception connEx)
+        {
+            Console.WriteLine($"[Setup-Diag] conn.Open() EXCEPTION: {connEx.Message}");
+            Console.WriteLine(connEx.ToString());
         }
     }
-    catch
+    catch (Exception ex)
     {
-        // Not configured or migrated yet
+        Console.WriteLine($"[Setup-Diag] Database check failed: {ex.Message}");
+        Log.Warning(ex, "[Setup-Diag] Database connection check failed.");
     }
 }
+Console.WriteLine($"[Setup-Diag] Final isConfigured={isConfigured}");
 
 SynOS.Api.Services.SystemSetupState.IsConfigured = isConfigured;
 
@@ -321,9 +326,15 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ReportingPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Pathologist") || 
+            context.User.IsInRole("Radiologist") ||
             context.User.IsInRole("Typist") || 
             context.User.IsInRole("DeliveryDesk") || 
-            context.User.IsInRole("Admin")));
+            context.User.IsInRole("Admin") ||
+            context.User.IsInRole("Technician") ||
+            context.User.IsInRole("XRayTech") ||
+            context.User.IsInRole("MriTech") ||
+            context.User.IsInRole("CTTech") ||
+            context.User.IsInRole("USTech")));
     options.AddPolicy("LabProcessingPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Technician") ||
@@ -668,7 +679,7 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["Permissions-Policy"] = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()";
-    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' http: https: ws: wss:; frame-ancestors 'none';";
+    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http: https: ws: wss:; frame-ancestors 'none';";
     await next();
 });
 
@@ -729,7 +740,14 @@ appLifetime.ApplicationStarted.Register(() =>
                     {
                         var context = services.GetRequiredService<SynOSDbContext>();
                         Log.Information("Running database migrations in background...");
-                        await context.Database.MigrateAsync();
+                        try
+                        {
+                            await context.Database.MigrateAsync();
+                        }
+                        catch (Exception migEx)
+                        {
+                            Log.Warning(migEx, "EF Core migration encountered an exception (schema fallback will ensure tables and columns exist).");
+                        }
                         DbInitializer.EnsureTablesAndColumnsCreated(context);
                         DbInitializer.Initialize(context);
 
@@ -868,6 +886,29 @@ appLifetime.ApplicationStarted.Register(() =>
                 Log.Fatal(ex, "Background service startup/migration task failed!");
             }
         });
+    }
+});
+
+// Pre-warm Entity Framework Core model cache and connection pool in background
+_ = Task.Run(async () =>
+{
+    try
+    {
+        await Task.Delay(1000); // Allow Kestrel startup to complete
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+        
+        // Execute light queries to pre-compile EF Core models and cache query plans
+        _ = await context.Reports.AsNoTracking().FirstOrDefaultAsync();
+        _ = await context.Visits.AsNoTracking().FirstOrDefaultAsync();
+        _ = await context.Orders.AsNoTracking().FirstOrDefaultAsync();
+        _ = await context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync();
+        
+        Log.Information("Entity Framework Core query plans and metadata caches successfully pre-warmed.");
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to pre-warm EF Core metadata cache.");
     }
 });
 

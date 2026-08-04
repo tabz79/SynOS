@@ -11,6 +11,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
+    const [testSelectedIndex, setTestSelectedIndex] = useState(0);
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
@@ -545,7 +546,27 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                             type="text"
                             placeholder="Add Test Code or Name..."
                             value={filter}
-                            onChange={(e) => setFilter(e.target.value)}
+                            onChange={(e) => {
+                                setFilter(e.target.value);
+                                setTestSelectedIndex(0);
+                            }}
+                            onKeyDown={(e) => {
+                                if (suggestions.length === 0) return;
+                                if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    setTestSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+                                } else if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    setTestSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+                                } else if (e.key === 'Enter' || e.key === 'Tab') {
+                                    if (testSelectedIndex >= 0 && testSelectedIndex < suggestions.length) {
+                                        e.preventDefault();
+                                        handleAddTest(suggestions[testSelectedIndex]);
+                                        setFilter("");
+                                        setTestSelectedIndex(0);
+                                    }
+                                }
+                            }}
                             disabled={isProcessing}
                             className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none transition-colors disabled:opacity-50 type-code", ui.input)}
                         />
@@ -554,12 +575,19 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         {suggestions.length > 0 && (
                             <div className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
                                 {/* INTERNAL TESTS */}
-                                {suggestions.map(test => (
+                                {suggestions.map((test, idx) => (
                                     <button
                                         key={test.testCode || test.code}
-                                        onClick={() => handleAddTest(test)}
+                                        onMouseEnter={() => setTestSelectedIndex(idx)}
+                                        onClick={() => {
+                                            handleAddTest(test);
+                                            setFilter("");
+                                            setTestSelectedIndex(0);
+                                        }}
                                         className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
-                                            isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100")}
+                                            idx === testSelectedIndex
+                                                ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                                : (isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100"))}
                                     >
                                         <div className="flex items-center gap-2">
                                             <div>
@@ -594,12 +622,12 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
                     {internalTests.map(test => (
                         <div key={test.testCode || test.code} className={cn("rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border", ui.testCard)}>
-                            <div className="flex items-center gap-3">
-                                <div className={cn("w-8 h-8 rounded flex items-center justify-center type-code border", ui.testCode)}>
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className={cn("px-2.5 py-1 min-w-[32px] min-h-[32px] max-w-[120px] rounded flex items-center justify-center type-code border shrink-0 font-mono text-[10px] font-bold truncate", ui.testCode)}>
                                     {test.testCode || test.code}
                                 </div>
-                                <div>
-                                    <div className="type-value leading-tight">{test.testName || test.name}</div>
+                                <div className="min-w-0">
+                                    <div className="type-value leading-tight truncate">{test.testName || test.name}</div>
                                     <div className="type-section-header mt-0.5">{test.dept || test.category || test.department}</div>
                                 </div>
                             </div>
@@ -766,7 +794,9 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partners, onApplyPartner, onUpdateText }) {
     const [value, setValue] = useState(initialValue);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
     const isSelecting = useRef(false);
+    const listRef = useRef(null);
 
     // Sync with Snapshot (Strict Rule)
     useEffect(() => {
@@ -777,6 +807,51 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
     const suggestions = value.length < 2 ? [] : partners.filter(p =>
         p.name.toLowerCase().includes(value.toLowerCase())
     );
+
+    // Reset keyboard selection index when suggestions change
+    useEffect(() => {
+        if (showSuggestions && suggestions.length > 0) {
+            setSelectedIndex(0);
+        } else {
+            setSelectedIndex(-1);
+        }
+    }, [value, showSuggestions, suggestions.length]);
+
+    // Scroll selected item into view inside dropdown
+    useEffect(() => {
+        if (selectedIndex >= 0 && listRef.current) {
+            const selectedElem = listRef.current.children[selectedIndex];
+            if (selectedElem) {
+                selectedElem.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [selectedIndex]);
+
+    const handleApply = (partnerId) => {
+        isSelecting.current = true;
+        onApplyPartner(partnerId);
+        setShowSuggestions(false);
+        setTimeout(() => { isSelecting.current = false; }, 500);
+    };
+
+    const handleKeyDown = (e) => {
+        if (!showSuggestions || suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+            if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+                e.preventDefault();
+                handleApply(suggestions[selectedIndex].referralPartnerId);
+            }
+        } else if (e.key === 'Escape') {
+            setShowSuggestions(false);
+        }
+    };
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -804,13 +879,13 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
                     setValue(e.target.value);
                     setShowSuggestions(true);
                 }}
+                onKeyDown={handleKeyDown}
                 onBlur={() => {
-                    // Delay to allow click on suggestion to register
+                    // Delay to allow click or keyboard selection to register
                     setTimeout(() => {
                         setShowSuggestions(false);
                         
-                        // FIX: If we are currently selecting a partner from the dropdown, skip the text update
-                        // because it will cause a race condition with onApplyPartner.
+                        // FIX: If we are currently selecting a partner from the dropdown, skip the raw text update
                         if (isSelecting.current) return;
 
                         // Case B: Commit text if changed, no partner selected, and value differs from snapshot
@@ -826,18 +901,23 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
 
             {/* Suggestions Overlay */}
             {showSuggestions && suggestions.length > 0 && (
-                <div className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-48")}>
-                    {suggestions.map(p => (
+                <div 
+                    ref={listRef}
+                    className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-48")}
+                >
+                    {suggestions.map((p, idx) => (
                         <button
                             key={p.referralPartnerId}
+                            onMouseEnter={() => setSelectedIndex(idx)}
                             onMouseDown={(e) => {
                                 e.preventDefault(); // Prevent blur
-                                isSelecting.current = true;
-                                onApplyPartner(p.referralPartnerId);
-                                setTimeout(() => { isSelecting.current = false; }, 500);
+                                handleApply(p.referralPartnerId);
                             }}
                             className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between",
-                                ui.hover, isDark ? "border-zinc-800/50" : "border-zinc-100")}
+                                idx === selectedIndex 
+                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                    : ui.hover,
+                                isDark ? "border-zinc-800/50" : "border-zinc-100")}
                         >
                             <span className="truncate">{p.name}</span>
                             {p.status === 0 && (

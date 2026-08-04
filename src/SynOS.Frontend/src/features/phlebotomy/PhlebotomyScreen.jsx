@@ -47,7 +47,7 @@ export function PhlebotomyScreen() {
         let isMounted = true;
         const reloadQueue = async () => {
             try {
-                const queueData = await ReceptionApi.getActionQueue(showHistory);
+                const queueData = await ReceptionApi.getPhlebotomyQueue(showHistory);
                 if (isMounted && Array.isArray(queueData)) {
                     setActionQueue(normalizeQueueData(queueData).filter(isPhleboRelevant));
                 }
@@ -64,6 +64,9 @@ export function PhlebotomyScreen() {
 
     // Filter Function for Branch-Wide Phlebotomy View
     const isPhleboRelevant = (row) => {
+        // Must contain blood/pathology sample collection orders
+        if (row.hasPhlebotomy === false) return false;
+
         const isToday = row.dateGroup === 'Today';
         if (showHistoryRef.current) {
             // History: Only show completed/processed items from YESTERDAY and older
@@ -75,9 +78,7 @@ export function PhlebotomyScreen() {
                    row.operationalStatus === 'Reported' ||
                    row.operationalStatus === 'Delivered';
         } else {
-            // Live: Show today's items (proof of work) regardless of status,
-            // plus older items that are still pending/active
-            if (isToday) return true;
+            // Live: Show items needing sample collection or currently in processing
             return row.operationalStatus === 'Ready for Sample' || 
                    row.operationalStatus === 'Pending Collection' ||
                    row.operationalStatus === 'Collected' ||
@@ -93,7 +94,7 @@ export function PhlebotomyScreen() {
             try {
                 const [summaryData, queueData] = await Promise.all([
                     ReceptionApi.getDashboardSummary(),
-                    ReceptionApi.getActionQueue(showHistory)
+                    ReceptionApi.getPhlebotomyQueue(showHistory)
                 ]);
 
                 if (summaryData) setSummary(summaryData);
@@ -141,7 +142,7 @@ export function PhlebotomyScreen() {
             });
 
             SignalRService.onActionQueueUpdated(() => {
-                ReceptionApi.getActionQueue(showHistoryRef.current).then(data => {
+                ReceptionApi.getPhlebotomyQueue(showHistoryRef.current).then(data => {
                     if (Array.isArray(data)) {
                         setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
                     }
@@ -169,7 +170,7 @@ export function PhlebotomyScreen() {
         // Failsafe Polling (every 5 minutes)
         const interval = setInterval(async () => {
             try {
-                const data = await ReceptionApi.getActionQueue(showHistoryRef.current);
+                const data = await ReceptionApi.getPhlebotomyQueue(showHistoryRef.current);
                 if (Array.isArray(data)) {
                     setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
                 }

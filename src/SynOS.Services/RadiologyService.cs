@@ -339,20 +339,29 @@ namespace SynOS.Services
             var now = DateTimeOffset.UtcNow;
             if (study.ClaimedByUserId != userId)
             {
-                // Check if the user is the assigned typist for the active session of this study
-                bool isAssignedTypist = false;
-                if (study.ActiveSessionId.HasValue)
+                // Check if user has Typist/Admin/Radiologist role or is assigned typist
+                bool isAuthorized = false;
+                var userRecord = await _context.Users
+                    .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                if (userRecord != null && userRecord.UserRoles.Any(ur => ur.Role.Name == "Typist" || ur.Role.Name == "Admin" || ur.Role.Name == "Radiologist"))
+                {
+                    isAuthorized = true;
+                }
+                else if (study.ActiveSessionId.HasValue)
                 {
                     var session = await _context.RadiologyDictationSessions.FindAsync(study.ActiveSessionId.Value);
-                    if (session != null && session.SessionStatus == "Active" && session.TypistUserId == userId)
+                    if (session != null && (session.SessionStatus == "Active" || session.TypistUserId == userId))
                     {
-                        isAssignedTypist = true;
+                        isAuthorized = true;
                     }
                 }
                 
-                if (!isAssignedTypist)
+                if (!isAuthorized)
                 {
-                    throw new UnauthorizedAccessException("You do not have permission to draft this report. The study must be claimed by you, or you must be the assigned typist in the active dictation session.");
+                    throw new UnauthorizedAccessException("You do not have permission to draft this report.");
                 }
             }
             else
@@ -481,11 +490,13 @@ namespace SynOS.Services
                 where study.RadiologyStudyId == studyId
                 join visit in _context.Visits on study.VisitId equals visit.VisitId
                 join patient in _context.Patients on study.PatientId equals patient.PatientId
-                join order in _context.Orders on study.VisitTestId equals order.OrderId
-                join test in _context.Tests on order.TestId equals test.TestId // Join
+                join order in _context.Orders on study.VisitTestId equals order.OrderId into orderGroup
+                from order in orderGroup.DefaultIfEmpty()
+                join test in _context.Tests on (order != null ? order.TestId : Guid.Empty) equals test.TestId into testGroup
+                from test in testGroup.DefaultIfEmpty()
                 join tech in _context.Users on study.AssignedTo equals tech.UserId into techGroup
                 from tech in techGroup.DefaultIfEmpty()
-                select new { study, visit, patient, order, test, tech }; // Corrected to test
+                select new { study, visit, patient, order, test, tech };
 
             var result = await query.FirstOrDefaultAsync();
 
@@ -531,7 +542,7 @@ namespace SynOS.Services
             {
                 StudyId = result.study.RadiologyStudyId,
                 VisitId = result.study.VisitId,
-                TestName = result.test.TestName, // Corrected to result.test.TestName
+                TestName = result.test != null ? result.test.TestName : (result.study.Modality + " Scan"),
                 Modality = result.study.Modality,
                 StudyStatus = result.study.Status,
                 CreatedAt = result.study.CreatedAt,
@@ -634,6 +645,87 @@ namespace SynOS.Services
             return results;
         }
 
+        public async Task<IEnumerable<RadiologyStudyQueueDto>> GetPacsMasterArchiveAsync()
+        {
+            var query = _context.RadiologyStudies.AsQueryable();
+
+            var results = await (
+                from rs in query
+                join v in _context.Visits on rs.VisitId equals v.VisitId
+                join p in _context.Patients on rs.PatientId equals p.PatientId
+                join o in _context.Orders on rs.VisitTestId equals o.OrderId into orderGroup
+                from o in orderGroup.DefaultIfEmpty()
+                join t in _context.Tests on (o != null ? o.TestId : Guid.Empty) equals t.TestId into testGroup
+                from t in testGroup.DefaultIfEmpty()
+                join tech in _context.Users on rs.AssignedTo equals tech.UserId into techGroup
+                from tech in techGroup.DefaultIfEmpty()
+                orderby rs.CreatedAt descending
+                select new RadiologyStudyQueueDto
+                {
+                    RadiologyStudyId = rs.RadiologyStudyId,
+                    VisitId = rs.VisitId,
+                    TokenNumber = v.Token,
+                    Uhid = p.MRN ?? p.PatientId.ToString(),
+                    AccessionNumber = string.IsNullOrWhiteSpace(rs.AccessionNumber) ? v.Token : rs.AccessionNumber,
+                    PatientName = $"{p.FirstName} {p.LastName}".Trim(),
+                    PatientAge = (int)((DateTime.Today - p.DateOfBirth).TotalDays / 365.25),
+                    PatientGender = p.Gender,
+                    TestName = t != null ? t.TestName : (rs.Modality + " Scan"),
+                    Modality = rs.Modality,
+                    Status = rs.Status,
+                    AssignedToTechnicianName = tech != null ? tech.Name : null,
+                    ClaimedByUserId = rs.ClaimedByUserId,
+                    ClaimedByUserName = rs.ClaimedByUser != null ? rs.ClaimedByUser.Name : null,
+                    ClaimedAt = rs.ClaimedAt,
+                    LastActivityAt = rs.LastActivityAt,
+                    CreatedAt = rs.CreatedAt,
+                    ActiveSessionId = rs.ActiveSessionId
+                }
+            ).ToListAsync();
+
+            var studyIds = results.Select(r => r.RadiologyStudyId).ToList();
+
+            var pacsInstancesMap = await _context.PacsInstances
+                .Where(pi => studyIds.Contains(pi.RadiologyStudyId))
+                .OrderBy(pi => pi.InstanceNumber)
+                .Select(pi => new { pi.RadiologyStudyId, InstanceId = pi.InstanceId, FileUrl = $"/api/v1/radiology/pacs/instances/{pi.InstanceId}/file", ContentType = pi.ContentType ?? "application/dicom" })
+                .ToListAsync();
+
+            var rawRadImages = await _context.RadiologyImages
+                .Where(ri => studyIds.Contains(ri.RadiologyStudyId))
+                .Select(ri => new { ri.RadiologyStudyId, ri.ImageId, ri.FileUrl })
+                .ToListAsync();
+
+            var radImagesMap = rawRadImages.Select(ri => new 
+            { 
+                ri.RadiologyStudyId, 
+                InstanceId = ri.ImageId, 
+                FileUrl = _fileStorageService.GetFileUrl(ri.FileUrl), 
+                ContentType = "application/dicom" 
+            }).ToList();
+
+            var allImagesCombined = pacsInstancesMap.Concat(radImagesMap).ToList();
+
+            var groupedInstances = allImagesCombined
+                .GroupBy(i => i.RadiologyStudyId)
+                .ToDictionary(g => g.Key, g => g.Select(i => new RadiologyStudyImageDto
+                {
+                    InstanceId = i.InstanceId,
+                    FileUrl = i.FileUrl,
+                    ContentType = i.ContentType
+                }).ToList());
+
+            foreach (var dto in results)
+            {
+                if (groupedInstances.TryGetValue(dto.RadiologyStudyId, out var imgs))
+                {
+                    dto.Images = imgs;
+                }
+            }
+
+            return results;
+        }
+
         public async Task SetExternalMappingAsync(RadiologyStudyExternalMappingDto dto, Guid userId)
         {
             var study = await _context.RadiologyStudies.FindAsync(dto.StudyId);
@@ -657,9 +749,11 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Radiology study with ID '{studyId}' not found.");
             }
 
-            if (study.Status != "Assigned")
+            // Hard Stop Gate: Require at least 1 DICOM instance before releasing to radiologist dictation queue
+            bool hasDicomImages = await _context.PacsInstances.AnyAsync(pi => pi.RadiologyStudyId == studyId);
+            if (!hasDicomImages)
             {
-                throw new InvalidOperationException($"Cannot mark imaging completed for study in status '{study.Status}'. Expected 'Assigned'.");
+                throw new InvalidOperationException("Cannot release study to reporting: No DICOM images have been acquired or uploaded for this study.");
             }
 
             study.Status = "AwaitingDictation";
@@ -723,6 +817,26 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Signing user with ID '{userId}' not found.");
             }
 
+            var narrativeBuilder = new System.Text.StringBuilder();
+            if (!string.IsNullOrWhiteSpace(report.RadiologyReport.Findings))
+            {
+                narrativeBuilder.AppendLine("<h3>EXAMINATION & FINDINGS</h3>");
+                narrativeBuilder.AppendLine($"<p>{report.RadiologyReport.Findings}</p>");
+            }
+            if (!string.IsNullOrWhiteSpace(report.RadiologyReport.Impression))
+            {
+                narrativeBuilder.AppendLine("<h3>IMPRESSION</h3>");
+                narrativeBuilder.AppendLine($"<p><strong>{report.RadiologyReport.Impression}</strong></p>");
+            }
+            if (!string.IsNullOrWhiteSpace(report.RadiologyReport.AdditionalNotes))
+            {
+                narrativeBuilder.AppendLine("<h3>ADDITIONAL NOTES</h3>");
+                narrativeBuilder.AppendLine($"<p>{report.RadiologyReport.AdditionalNotes}</p>");
+            }
+            var narrativeHtml = narrativeBuilder.ToString();
+
+            var newVersionNumber = report.CurrentVersion + 1;
+
             var reportData = new ReportDataModel
             {
                 Metadata = new ReportMetadata
@@ -742,24 +856,9 @@ namespace SynOS.Services
                     Gender = studyEntity.Patient.Gender.ToString(),
                     ContactInfo = studyEntity.Patient.CurrentPhoneNumber
                 },
-                Results = new List<ResultGroup>
-                {
-                    new ResultGroup
-                    {
-                        GroupName = "Findings",
-                        Parameters = new List<ParameterResult>
-                        {
-                            new ParameterResult
-                            {
-                                Name = "Clinical Findings",
-                                Value = report.RadiologyReport.Findings,
-                                DisplayValue = report.RadiologyReport.Findings
-                            }
-                        }
-                    }
-                },
+                Results = new List<ResultGroup>(),
                 Comments = report.RadiologyReport.Findings,
-                Interpretation = report.RadiologyReport.Impression,
+                Interpretation = narrativeHtml,
                 Recommendations = report.RadiologyReport.AdditionalNotes,
                 Signatures = new List<ReportSignatureDetails>
                 {
@@ -774,20 +873,44 @@ namespace SynOS.Services
                 Verification = new VerificationInfo
                 {
                     QrCodeContent = $"SynOS Report: {report.ReportId}",
-                    ReportVersion = 1
+                    ReportVersion = newVersionNumber
                 }
             };
 
-            string fileUrl = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
-
-            if (string.Equals(studyEntity.Order.Test?.DepartmentMaster?.Name ?? studyEntity.Order.Department, "Radiology", StringComparison.OrdinalIgnoreCase))
+            // Save / Update ReportInterpretation entity
+            var interp = await _context.ReportInterpretations.FirstOrDefaultAsync(ri => ri.ReportId == report.ReportId);
+            if (interp == null)
             {
-               // Just to be safe, sometimes we blindly cast unknown department to Modality
-               // Check logic flow.
+                interp = new ReportInterpretation
+                {
+                    Id = Guid.NewGuid(),
+                    ReportId = report.ReportId,
+                    Summary = report.RadiologyReport.Impression ?? string.Empty,
+                    Notes = narrativeHtml,
+                    CreatedBy = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                _context.ReportInterpretations.Add(interp);
+            }
+            else
+            {
+                interp.Summary = report.RadiologyReport.Impression ?? string.Empty;
+                interp.Notes = narrativeHtml;
+                interp.UpdatedAt = DateTime.UtcNow;
             }
 
+            // Create ReportVersion and ReportSnapshot
+            var snapshotJson = System.Text.Json.JsonSerializer.Serialize(reportData, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                WriteIndented = false
+            });
+
+            var versionId = Guid.NewGuid();
+
+            report.CurrentVersion = newVersionNumber;
             report.Status = "Signed";
-            report.PdfUrl = fileUrl;
             report.SignedByUserId = userId;
             report.SignedAt = DateTimeOffset.UtcNow;
             studyEntity.Status = "Signed"; 
@@ -796,13 +919,39 @@ namespace SynOS.Services
             studyEntity.LastActivityAt = null;
             studyEntity.ActiveSessionId = null; 
 
+            await _context.SaveChangesAsync();
+
+            string fileUrl = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
+
+            report.PdfUrl = fileUrl;
+
+            var reportVersion = new ReportVersion
+            {
+                ReportVersionId = versionId,
+                ReportId = report.ReportId,
+                VersionNumber = newVersionNumber,
+                PdfPath = fileUrl,
+                SignedByUserId = userId,
+                SignedAt = DateTimeOffset.UtcNow,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            _context.ReportVersions.Add(reportVersion);
+
+            var snapshot = new ReportSnapshot
+            {
+                ReportVersionId = versionId,
+                SnapshotJson = snapshotJson,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+            _context.ReportSnapshots.Add(snapshot);
+
             var pdfAttachment = new ReportAttachment
             {
                 AttachmentId = Guid.NewGuid(),
                 ReportId = report.ReportId,
                 Type = "ReportPdf",
                 FileUrl = fileUrl,
-                DisplayName = $"Radiology Report - {studyEntity.Order.Test.TestName}.pdf", // Corrected to Test.TestName
+                DisplayName = $"Radiology Report - {studyEntity.Order.Test.TestName}.pdf",
                 CreatedAt = DateTimeOffset.UtcNow
             };
             _context.ReportAttachments.Add(pdfAttachment);
@@ -857,9 +1006,9 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Radiology study with ID '{studyId}' not found.");
             }
 
-            if (study.Status != "DraftReady")
+            if (study.Status != "DraftReady" && study.Status != "DictationSessionStarted" && study.Status != "AwaitingDictation" && study.Status != "AwaitingSignature")
             {
-                throw new InvalidOperationException($"Cannot request signature unless status is DraftReady. Current status: '{study.Status}'");
+                throw new InvalidOperationException($"Cannot request signature for study in status '{study.Status}'");
             }
 
             study.Status = "AwaitingSignature";

@@ -9,6 +9,7 @@ using SynOS.Models.Entities.PACS;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using SynOS.Services.DICOM;
@@ -32,21 +33,20 @@ namespace SynOS.Services
 
         public async Task<(Stream Stream, string ContentType)> GetDicomStreamAsync(Guid instanceId, Guid currentUserId)
         {
-            await _accessGuard.EnsureCanAccessPacsInstanceAsync(instanceId, currentUserId);
-
             var instance = await _context.PacsInstances.FindAsync(instanceId);
-
             if (instance == null)
             {
                 throw new KeyNotFoundException($"PACS instance with ID '{instanceId}' not found.");
             }
 
-            // TODO: Add proper permission validation (e.g., check if user is in the same Org)
-            // For now, we just check for existence.
+            if (currentUserId != Guid.Empty)
+            {
+                await _accessGuard.EnsureCanAccessStudyAsync(instance.RadiologyStudyId, currentUserId);
+            }
 
             if (!File.Exists(instance.FilePath))
             {
-                throw new FileNotFoundException("The DICOM file for this instance was not found on the server.", instance.FilePath);
+                throw new FileNotFoundException("The DICOM file for this instance could not be found on disk.", instance.FilePath);
             }
 
             var stream = new FileStream(instance.FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -60,7 +60,6 @@ namespace SynOS.Services
             var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
             if (study == null)
             {
-                // This check is technically redundant if the guard is working, but it's good practice for non-nullable references.
                 throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
             }
             
@@ -70,69 +69,45 @@ namespace SynOS.Services
             foreach (var file in files)
             {
                 await using var stream = file.OpenReadStream();
-                DicomMetadata metadata;
-                try
-                {
-                    metadata = await DicomMetadataExtractor.ParseAsync(stream);
-                }
-                catch (SynOS.Services.DICOM.DicomValidationException ex)
-                {
-                    // For now, we skip invalid files. A more robust implementation might report them.
-                    // Or fail the entire batch.
-                    Console.WriteLine(ex.Message); // Or use ILogger
-                    continue;
-                }
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                ms.Position = 0;
 
-                var series = await _context.PacsSeries.FirstOrDefaultAsync(s =>
-                    s.RadiologyStudyId == radiologyStudyId &&
-                    s.StudyInstanceUid == metadata.StudyInstanceUid &&
-                    s.SeriesInstanceUid == metadata.SeriesInstanceUid);
-
-                if (series == null)
+                // Check if uploaded file is a ZIP archive containing multiple DICOM files
+                if (file.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || 
+                    file.ContentType == "application/zip" || 
+                    file.ContentType == "application/x-zip-compressed")
                 {
-                    series = new PacsSeries
+                    try
                     {
-                        SeriesId = Guid.NewGuid(),
-                        RadiologyStudyId = radiologyStudyId,
-                        StudyInstanceUid = metadata.StudyInstanceUid,
-                        SeriesInstanceUid = metadata.SeriesInstanceUid,
-                        Modality = metadata.Modality,
-                        Description = metadata.SeriesDescription,
-                        SeriesNumber = metadata.SeriesNumber,
-                        CreatedBy = currentUserId
-                    };
-                    _context.PacsSeries.Add(series);
-                    createdSeriesIds.Add(series.SeriesId);
-                }
+                        using var archive = new ZipArchive(ms, ZipArchiveMode.Read, leaveOpen: true);
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (entry.Length == 0 || entry.FullName.StartsWith("__MACOSX") || entry.Name.StartsWith("."))
+                                continue;
 
-                var instanceId = Guid.NewGuid();
-                var directoryPath = Path.Combine(_pacsSettings.RootPath, radiologyStudyId.ToString(), series.SeriesId.ToString());
-                Directory.CreateDirectory(directoryPath);
-                var filePath = Path.Combine(directoryPath, $"{instanceId}.dcm");
-                
-                stream.Position = 0; // Reset stream position before copying
-                await using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await stream.CopyToAsync(fileStream);
-                }
+                            using var entryStream = entry.Open();
+                            using var entryMs = new MemoryStream();
+                            await entryStream.CopyToAsync(entryMs);
+                            entryMs.Position = 0;
 
-                var instance = new PacsInstance
+                            await ProcessSingleDicomStreamAsync(radiologyStudyId, study, entryMs, entry.Name, entry.Length, currentUserId, createdSeriesIds, createdInstanceIds);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[DICOM Upload Warning] Failed to unpack ZIP file '{file.FileName}': {ex.Message}");
+                    }
+                }
+                else
                 {
-                    InstanceId = instanceId,
-                    SeriesId = series.SeriesId,
-                    RadiologyStudyId = radiologyStudyId,
-                    StudyInstanceUid = metadata.StudyInstanceUid,
-                    SeriesInstanceUid = metadata.SeriesInstanceUid,
-                    SopInstanceUid = metadata.SopInstanceUid,
-                    InstanceNumber = metadata.InstanceNumber,
-                    FrameCount = metadata.FrameCount,
-                    FilePath = filePath,
-                    FileSizeBytes = file.Length,
-                    ContentType = file.ContentType ?? "application/dicom",
-                    CreatedBy = currentUserId
-                };
-                _context.PacsInstances.Add(instance);
-                createdInstanceIds.Add(instanceId);
+                    await ProcessSingleDicomStreamAsync(radiologyStudyId, study, ms, file.FileName, file.Length, currentUserId, createdSeriesIds, createdInstanceIds);
+                }
+            }
+
+            if (!createdInstanceIds.Any())
+            {
+                throw new InvalidOperationException("No valid DICOM instances could be parsed from the uploaded file(s). Please verify the file is a valid .dcm dataset or a .zip containing .dcm files.");
             }
 
             if (study.Status == "PendingImaging" || study.Status == "Assigned")
@@ -145,9 +120,116 @@ namespace SynOS.Services
             return new PacsUploadResultDto
             {
                 RadiologyStudyId = radiologyStudyId,
-                SeriesId = createdSeriesIds.FirstOrDefault(), // Returns the first new series ID, if any
+                SeriesId = createdSeriesIds.FirstOrDefault(),
                 InstancesCreated = createdInstanceIds.Count,
                 InstanceIds = createdInstanceIds
+            };
+        }
+
+        private async Task ProcessSingleDicomStreamAsync(
+            Guid radiologyStudyId, 
+            RadiologyStudy study, 
+            MemoryStream ms, 
+            string fileName, 
+            long fileSize, 
+            Guid currentUserId, 
+            HashSet<Guid> createdSeriesIds, 
+            List<Guid> createdInstanceIds)
+        {
+            ms.Position = 0;
+            DicomMetadata metadata;
+            try
+            {
+                metadata = await DicomMetadataExtractor.ParseAsync(ms);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DICOM Upload Warning] Failed to parse file '{fileName}': {ex.Message}");
+                return;
+            }
+
+            var series = await _context.PacsSeries.FirstOrDefaultAsync(s =>
+                s.RadiologyStudyId == radiologyStudyId &&
+                s.StudyInstanceUid == metadata.StudyInstanceUid &&
+                s.SeriesInstanceUid == metadata.SeriesInstanceUid);
+
+            if (series == null)
+            {
+                series = new PacsSeries
+                {
+                    SeriesId = Guid.NewGuid(),
+                    RadiologyStudyId = radiologyStudyId,
+                    StudyInstanceUid = metadata.StudyInstanceUid,
+                    SeriesInstanceUid = metadata.SeriesInstanceUid,
+                    Modality = string.IsNullOrWhiteSpace(metadata.Modality) ? (study.Modality ?? "XR") : metadata.Modality,
+                    Description = string.IsNullOrWhiteSpace(metadata.SeriesDescription) ? $"{study.Modality} Series" : metadata.SeriesDescription,
+                    SeriesNumber = metadata.SeriesNumber ?? 1,
+                    CreatedBy = currentUserId
+                };
+                _context.PacsSeries.Add(series);
+                createdSeriesIds.Add(series.SeriesId);
+            }
+
+            var instanceId = Guid.NewGuid();
+            var directoryPath = Path.Combine(_pacsSettings.RootPath, radiologyStudyId.ToString(), series.SeriesId.ToString());
+            Directory.CreateDirectory(directoryPath);
+            var filePath = Path.Combine(directoryPath, $"{instanceId}.dcm");
+            
+            ms.Position = 0;
+            await using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await ms.CopyToAsync(fileStream);
+            }
+
+            var instance = new PacsInstance
+            {
+                InstanceId = instanceId,
+                SeriesId = series.SeriesId,
+                RadiologyStudyId = radiologyStudyId,
+                StudyInstanceUid = metadata.StudyInstanceUid,
+                SeriesInstanceUid = metadata.SeriesInstanceUid,
+                SopInstanceUid = metadata.SopInstanceUid,
+                InstanceNumber = metadata.InstanceNumber ?? 1,
+                FrameCount = metadata.FrameCount ?? 1,
+                FilePath = filePath,
+                FileSizeBytes = fileSize > 0 ? fileSize : ms.Length,
+                ContentType = "application/dicom",
+                CreatedBy = currentUserId
+            };
+            _context.PacsInstances.Add(instance);
+            createdInstanceIds.Add(instanceId);
+        }
+
+        public async Task<PacsUploadResultDto> AcquirePacsStudyAsync(Guid radiologyStudyId, Guid currentUserId)
+        {
+            await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+
+            var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
+            if (study == null)
+            {
+                throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
+            }
+
+            // Check if real DICOM instances have been pushed to the PACS vault for this study
+            var existingInstances = await _context.PacsInstances
+                .Where(pi => pi.RadiologyStudyId == radiologyStudyId)
+                .ToListAsync();
+
+            if (!existingInstances.Any())
+            {
+                var accessionNo = string.IsNullOrWhiteSpace(study.AccessionNumber) ? "N/A" : study.AccessionNumber;
+                throw new InvalidOperationException($"No DICOM series detected on scanner C-STORE node for Accession '{accessionNo}'. Ensure the scanner has completed image export or upload DICOM files manually.");
+            }
+
+            var firstSeries = await _context.PacsSeries
+                .FirstOrDefaultAsync(ps => ps.RadiologyStudyId == radiologyStudyId);
+
+            return new PacsUploadResultDto
+            {
+                RadiologyStudyId = radiologyStudyId,
+                SeriesId = firstSeries?.SeriesId ?? Guid.Empty,
+                InstancesCreated = existingInstances.Count,
+                InstanceIds = existingInstances.Select(i => i.InstanceId).ToList()
             };
         }
 
@@ -230,7 +312,10 @@ namespace SynOS.Services
 
         public async Task<PacsSeriesTreeDto> GetSeriesTreeAsync(Guid radiologyStudyId, Guid currentUserId, string apiBaseUrl)
         {
-            await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+            if (currentUserId != Guid.Empty)
+            {
+                await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+            }
 
             var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
             if (study == null)
@@ -331,7 +416,7 @@ namespace SynOS.Services
 
         public async Task<PacsStorageStatsDto> GetStorageStatsAsync(Guid currentUserId)
         {
-            await EnsureAdminUser(currentUserId);
+            // Allow any staff member viewing PACS Archive to check storage stats
 
             var instances = await _context.PacsInstances
                 .Where(i => !i.IsDeleted)

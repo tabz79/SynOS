@@ -62,7 +62,8 @@ export const ReceptionApi = {
             assignedPhlebotomistName: row.assignedPhlebotomistName || row.assignedUserName || row.AssignedUserName,
             assignedDepartmentCode: row.assignedDepartmentCode || row.AssignedDepartmentCode,
             isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
-            dateGroup: row.dateGroup || row.DateGroup || "Today"
+            dateGroup: row.dateGroup || row.DateGroup || "Today",
+            hasPhlebotomy: row.hasPhlebotomy ?? row.HasPhlebotomy ?? true
         }));
     },
 
@@ -321,6 +322,24 @@ export const ReceptionApi = {
         if (!response.ok) {
             console.error("Action Queue Fetch Failed:", response.status);
             return []; // Fail safe
+        }
+
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    },
+
+    getPhlebotomyQueue: async (includeHistory = false) => {
+        const url = includeHistory
+            ? '/api/v1/phlebotomy/queue?includeHistory=true'
+            : '/api/v1/phlebotomy/queue';
+
+        const response = await fetch(ReceptionApi.withBranchId(url), {
+            headers: ReceptionApi.getHeaders()
+        });
+
+        if (!response.ok) {
+            console.error("Phlebotomy Queue Fetch Failed:", response.status);
+            return [];
         }
 
         const data = await response.json();

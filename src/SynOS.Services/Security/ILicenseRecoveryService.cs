@@ -12,7 +12,7 @@ namespace SynOS.Services.Security
         /// Thread-safe single-flight execution with 60-second caching threshold.
         /// Updates database profile and MiddlewareSyncHealth state.
         /// </summary>
-        Task<bool> TriggerSelfHealingRecoveryAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken = default);
+        Task<bool> TriggerSelfHealingRecoveryAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken = default, bool force = false);
 
         /// <summary>
         /// Validates a raw unencrypted license key string against Control Tower,

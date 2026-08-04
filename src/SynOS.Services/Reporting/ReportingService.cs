@@ -403,25 +403,15 @@ namespace SynOS.Services.Reporting
         }
         private async Task<ReportStructureDto> BuildDynamicStructureAsync(Report report, Visit visit)
         {
-            // 1. Fetch Order
-            Order order = null;
             if (report.SourceType == "RadiologyStudy")
             {
-                var study = await _context.RadiologyStudies
-                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
-                if (study != null)
-                {
-                    order = await _context.Orders
-                        .Include(o => o.Test)
-                        .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
-                }
+                return await BuildRadiologyStructureAsync(report, visit);
             }
-            else
-            {
-                order = await _context.Orders
-                    .Include(o => o.Test)
-                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
-            }
+
+            // 1. Fetch Order for Pathology
+            var order = await _context.Orders
+                .Include(o => o.Test)
+                .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
 
             if (order == null) throw new KeyNotFoundException($"Order for report {report.ReportId} not found.");
 
@@ -932,6 +922,92 @@ namespace SynOS.Services.Reporting
                 // Note: The caller (BuildDynamicStructureAsync) will catch and log more context
                 throw;
             }
+        }
+
+        private async Task<ReportStructureDto> BuildRadiologyStructureAsync(Report report, Visit visit)
+        {
+            var radStudy = await _context.RadiologyStudies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                
+            var radReport = report.RadiologyReport 
+                ?? await _context.RadiologyReports.AsNoTracking().FirstOrDefaultAsync(rr => rr.ReportId == report.ReportId || rr.RadiologyStudyId == report.SourceId);
+
+            var patient = visit.Patient;
+            var pName = patient != null ? $"{patient.FirstName} {patient.LastName}".Trim() : "Patient";
+            int ageYears = patient != null && patient.DateOfBirth != default ? (DateTime.Today.Year - patient.DateOfBirth.Year) : 0;
+            var pAgeGender = $"{ageYears} Yrs / {patient?.Gender ?? "N/A"}";
+
+            var groups = new List<ReportGroupDto>();
+            if (radReport != null)
+            {
+                var paramsList = new List<ReportParameterDto>();
+                if (!string.IsNullOrWhiteSpace(radReport.Findings))
+                {
+                    paramsList.Add(new ReportParameterDto
+                    {
+                        ParameterName = "EXAMINATION & FINDINGS",
+                        ParameterCode = "RAD_FINDINGS",
+                        Value = radReport.Findings,
+                        ShowNarrative = true,
+                        NarrativeTemplate = radReport.Findings
+                    });
+                }
+                if (!string.IsNullOrWhiteSpace(radReport.Impression))
+                {
+                    paramsList.Add(new ReportParameterDto
+                    {
+                        ParameterName = "IMPRESSION",
+                        ParameterCode = "RAD_IMPRESSION",
+                        Value = radReport.Impression,
+                        ShowNarrative = true,
+                        NarrativeTemplate = radReport.Impression
+                    });
+                }
+                if (!string.IsNullOrWhiteSpace(radReport.AdditionalNotes))
+                {
+                    paramsList.Add(new ReportParameterDto
+                    {
+                        ParameterName = "ADDITIONAL NOTES",
+                        ParameterCode = "RAD_NOTES",
+                        Value = radReport.AdditionalNotes,
+                        ShowNarrative = true,
+                        NarrativeTemplate = radReport.AdditionalNotes
+                    });
+                }
+
+                if (paramsList.Any())
+                {
+                    groups.Add(new ReportGroupDto
+                    {
+                        GroupName = "RADIOLOGY REPORT",
+                        Order = 1,
+                        Parameters = paramsList
+                    });
+                }
+            }
+
+            return new ReportStructureDto
+            {
+                ReportId = report.ReportId,
+                SourceId = report.SourceId,
+                Token = visit.Token ?? "N/A",
+                PatientName = string.IsNullOrWhiteSpace(pName) ? "Patient" : pName,
+                PatientAgeGender = pAgeGender,
+                Status = report.Status,
+                Department = radStudy?.Modality ?? "Radiology",
+                Groups = groups,
+                Patient = new PatientHeaderDto
+                {
+                    PatientId = patient?.MRN ?? "N/A",
+                    Name = string.IsNullOrWhiteSpace(pName) ? "Patient" : pName,
+                    MRN = patient?.MRN ?? "N/A",
+                    Age = ageYears,
+                    Gender = patient?.Gender ?? "N/A",
+                    Phone = patient?.CurrentPhoneNumber ?? "N/A",
+                    DateOfBirth = patient?.DateOfBirth.ToString("yyyy-MM-dd")
+                }
+            };
         }
     }
 

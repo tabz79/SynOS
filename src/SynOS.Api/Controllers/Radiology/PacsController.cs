@@ -21,57 +21,108 @@ namespace SynOS.Api.Controllers.Radiology
             _pacsService = pacsService;
         }
 
+        private bool TryGetUserId(out Guid userId)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            if (Guid.TryParse(userIdString, out userId)) return true;
+
+            var queryToken = Request.Query["token"].FirstOrDefault() ?? Request.Query["access_token"].FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(queryToken))
+            {
+                try
+                {
+                    var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                    var jwt = handler.ReadJwtToken(queryToken);
+                    var sub = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier || c.Type == "sub" || c.Type == "nameid")?.Value;
+                    if (Guid.TryParse(sub, out userId)) return true;
+                }
+                catch { }
+            }
+
+            userId = Guid.Empty;
+            return false;
+        }
+
         [HttpPost("{radiologyStudyId:guid}/upload")]
         [DisableRequestSizeLimit]
         [RequestFormLimits(MultipartBodyLengthLimit = 524288000)]
-        public async Task<IActionResult> UploadDicom(Guid radiologyStudyId, [FromForm] IFormFileCollection files)
+        public async Task<IActionResult> UploadDicom(Guid radiologyStudyId, [FromForm] IFormFileCollection files = null)
         {
-            if (files == null || !files.Any())
+            var uploadFiles = (files != null && files.Any()) ? files : Request.Form.Files;
+            if (uploadFiles == null || !uploadFiles.Any())
             {
-                return BadRequest("No files uploaded.");
+                return BadRequest(new { message = "No files received. Please select a .dcm or .zip file." });
             }
             
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            if (!TryGetUserId(out var userId)) return Unauthorized();
 
-            var result = await _pacsService.UploadDicomAsync(radiologyStudyId, files, userId);
+            try
+            {
+                var result = await _pacsService.UploadDicomAsync(radiologyStudyId, uploadFiles, userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
-            // Use the first created instance ID for the location header.
-            var firstInstanceId = result.InstanceIds.FirstOrDefault();
+        [HttpPost("{radiologyStudyId:guid}/acquire")]
+        public async Task<IActionResult> AcquirePacsStudy(Guid radiologyStudyId)
+        {
+            if (!TryGetUserId(out var userId)) return Unauthorized();
 
-            return CreatedAtAction(nameof(GetDicom), new { instanceId = firstInstanceId }, result);
+            try
+            {
+                var result = await _pacsService.AcquirePacsStudyAsync(radiologyStudyId, userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpGet("instances/{instanceId:guid}/file")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetDicom(Guid instanceId)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            TryGetUserId(out var userId);
             
-            var (stream, contentType) = await _pacsService.GetDicomStreamAsync(instanceId, userId);
-
-            // Suggest a filename for the download
-            var fileDownloadName = $"{instanceId}.dcm";
-
-            return File(stream, contentType, fileDownloadName);
+            try
+            {
+                var (stream, contentType) = await _pacsService.GetDicomStreamAsync(instanceId, userId);
+                var fileDownloadName = $"{instanceId}.dcm";
+                return File(stream, contentType, fileDownloadName);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (FileNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("{radiologyStudyId:guid}/reindex")]
         [Authorize(Roles = "Admin,Radiologist")]
         public async Task<IActionResult> ReindexStudy(Guid radiologyStudyId)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            if (!TryGetUserId(out var userId)) return Unauthorized();
             var result = await _pacsService.ReindexStudyAsync(radiologyStudyId, userId);
             return Ok(result);
         }
 
         [HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
-        [Authorize(Roles = "Admin,Radiologist,XRayTech,MriTech,CTTech,USTech")]
+        [Authorize(Roles = "Admin,Radiologist,XRayTech,MriTech,CTTech,USTech,Pathologist,LabTech,Technician")]
         public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            if (!TryGetUserId(out var userId)) return Unauthorized();
             
             var request = HttpContext.Request;
             var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";

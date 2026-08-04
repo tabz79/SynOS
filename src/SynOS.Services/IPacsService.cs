@@ -15,6 +15,11 @@ namespace SynOS.Services
             Guid currentUserId
         );
 
+        Task<PacsUploadResultDto> AcquirePacsStudyAsync(
+            Guid radiologyStudyId,
+            Guid currentUserId
+        );
+
         Task<(Stream Stream, string ContentType)> GetDicomStreamAsync(
             Guid instanceId,
             Guid currentUserId

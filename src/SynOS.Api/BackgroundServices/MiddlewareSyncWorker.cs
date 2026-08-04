@@ -102,15 +102,22 @@ namespace SynOS.Api.BackgroundServices
                         await SendHeartbeatAsync(stoppingToken);
                         await PollAndProcessCommandsAsync(stoppingToken);
 
-                        if (DateTime.UtcNow - _lastLicenseCheck > TimeSpan.FromHours(24))
+                        // Efficient License Polling: Check once every 24 hours during normal operations; check once every 6 hours when expiring or in grace/soft lock.
+                        using (var scope = _serviceProvider.CreateScope())
                         {
-                            using (var scope = _serviceProvider.CreateScope())
+                            var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                            var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
+                            bool isExpiringOrExpired = profile == null || 
+                                                       !profile.LicenseExpiryDate.HasValue || 
+                                                       profile.LicenseExpiryDate.Value <= DateTime.UtcNow.AddDays(7);
+                            var checkInterval = isExpiringOrExpired ? TimeSpan.FromHours(6) : TimeSpan.FromHours(24);
+
+                            if (DateTime.UtcNow - _lastLicenseCheck > checkInterval)
                             {
-                                var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
-                                var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
-                                await SynchronizeLicenseInfoAsync(dbContext, profile, stoppingToken);
+                                var writeProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
+                                await SynchronizeLicenseInfoAsync(dbContext, writeProfile, stoppingToken);
+                                _lastLicenseCheck = DateTime.UtcNow;
                             }
-                            _lastLicenseCheck = DateTime.UtcNow;
                         }
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException)
@@ -136,6 +143,17 @@ namespace SynOS.Api.BackgroundServices
                 var dbContext = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
 
                 var profile = await dbContext.LabProfiles.AsNoTracking().FirstOrDefaultAsync(stoppingToken);
+
+                // Pause WhatsApp outbox dispatch during Soft Lock or Hard Lock
+                if (profile != null && profile.LicenseExpiryDate.HasValue)
+                {
+                    if (DateTime.UtcNow > profile.LicenseExpiryDate.Value.AddDays(7) || profile.LicenseStatus == "HardLock")
+                    {
+                        _logger.LogDebug("Outbox event dispatch paused due to subscription Soft/Hard Lock.");
+                        return;
+                    }
+                }
+
                 var apiUrl = GetEffectiveApiUrl(profile);
                 var apiKey = GetEffectiveApiKey(profile);
 
@@ -528,11 +546,22 @@ namespace SynOS.Api.BackgroundServices
                                 _logger.LogInformation("Successfully sent health snapshot via remote command");
                                 success = true;
                             }
-                            else if (commandType == "RefreshFeatureFlags" || commandType == "RefreshLicense" || commandType == "RestartBackgroundWorkers")
+                            else if (commandType == "RefreshLicense")
                             {
-                                _logger.LogWarning("Command type {CommandType} is not implemented.", commandType);
-                                success = false;
-                                errorMessage = $"Command type {commandType} is not implemented.";
+                                var dbProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
+                                var key = GetEffectiveApiKey(dbProfile);
+                                success = await _licenseRecoveryService.ValidateKeyAndSyncProfileAsync(key, dbContext, dbProfile, stoppingToken);
+                                if (!success)
+                                {
+                                    success = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, dbProfile, stoppingToken);
+                                }
+                                _logger.LogInformation("RefreshLicense remote command executed. Result: {Success}", success);
+                            }
+                            else if (commandType == "RefreshFeatureFlags" || commandType == "RestartBackgroundWorkers")
+                            {
+                                var dbProfile = await dbContext.LabProfiles.FirstOrDefaultAsync(stoppingToken);
+                                success = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, dbProfile, stoppingToken);
+                                _logger.LogInformation("Command type {CommandType} executed. Result: {Success}", commandType, success);
                             }
                             else
                             {

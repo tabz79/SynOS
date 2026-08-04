@@ -9,7 +9,7 @@ namespace SynOS.Api.Controllers.Radiology
 {
     [ApiController]
     [Route("api/v1/radiology/pacs/admin")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [Authorize(Roles = "Admin,SuperAdmin,Radiologist,CTTech,MRITech,XRayTech,USTech,Pathologist,Typist")]
     public class PacsAdminController : ControllerBase
     {
         private readonly IPacsService _pacsService;
@@ -19,11 +19,16 @@ namespace SynOS.Api.Controllers.Radiology
             _pacsService = pacsService;
         }
 
+        private bool TryGetUserId(out Guid userId)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+            return Guid.TryParse(userIdString, out userId);
+        }
+
         [HttpGet("orphans")]
         public async Task<IActionResult> GetOrphanSummary()
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            if (!TryGetUserId(out var userId)) return Unauthorized();
             var result = await _pacsService.GetOrphanSummaryAsync(userId);
             return Ok(result);
         }
@@ -31,8 +36,7 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpPost("orphans/cleanup")]
         public async Task<IActionResult> CleanupOrphans()
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            if (!TryGetUserId(out var userId)) return Unauthorized();
             var result = await _pacsService.CleanupOrphansAsync(userId);
             return Ok(result);
         }
@@ -40,8 +44,7 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpGet("storage-stats")]
         public async Task<IActionResult> GetStorageStats()
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+            TryGetUserId(out var userId);
             var result = await _pacsService.GetStorageStatsAsync(userId);
             return Ok(result);
         }

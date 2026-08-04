@@ -618,8 +618,10 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPost("test-middleware")]
-        public async Task<IActionResult> TestMiddlewareConnection([FromBody] MiddlewareDto dto)
+        [HttpPost("/api/v1/settings/test-middleware")]
+        public async Task<IActionResult> TestMiddlewareConnection([FromBody] MiddlewareDto? dto = null)
         {
+            dto ??= new MiddlewareDto();
             try
             {
                 var profile = await _context.LabProfiles.FirstOrDefaultAsync();
@@ -630,7 +632,7 @@ namespace SynOS.Api.Controllers.Admin
                 }
                 else
                 {
-                    success = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(_context, profile);
+                    success = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(_context, profile, force: true);
                 }
 
                 if (success)
@@ -1058,8 +1060,8 @@ namespace SynOS.Api.Controllers.Admin
 
     public class MiddlewareDto
     {
-        public string ApiUrl { get; set; } = null!;
-        public string ApiKey { get; set; } = null!;
+        public string? ApiUrl { get; set; }
+        public string? ApiKey { get; set; }
     }
 
     public class RotateSecretDto

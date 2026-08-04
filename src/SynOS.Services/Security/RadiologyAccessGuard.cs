@@ -49,7 +49,7 @@ namespace SynOS.Services.Security
             // if (user.OrgId != study.OrgId) { throw new UnauthorizedAccessException(...); }
             // if (!user.CanAccessAllBranches && user.BranchId != study.BranchId) { throw new UnauthorizedAccessException(...); }
 
-            var allowedRoles = new[] { "Radiologist", "XRayTech" };
+            var allowedRoles = new[] { "Admin", "SuperAdmin", "Radiologist", "XRayTech", "MriTech", "CTTech", "USTech", "Pathologist", "LabTech", "Technician", "Phlebotomist" };
             if (userRoles.Any(role => allowedRoles.Contains(role)))
             {
                 // Role is sufficient for now. Add more granular checks (e.g., assignment) if needed.

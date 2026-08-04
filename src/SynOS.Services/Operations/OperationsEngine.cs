@@ -451,7 +451,8 @@ namespace SynOS.Services.Operations
                                 .Select(wa => wa.Department)
                                 .FirstOrDefault(),
                 
-                DepartmentCode = assignments.FirstOrDefault()?.DepartmentCode
+                DepartmentCode = assignments.FirstOrDefault()?.DepartmentCode,
+                HasPhlebotomy = visit.Orders.Any(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled && (o.Test == null || (o.Test.ModalityId == null && !string.Equals(o.Test.Category, "Radiology", StringComparison.OrdinalIgnoreCase) && !string.Equals(o.Test.DepartmentMaster?.Name, "Radiology", StringComparison.OrdinalIgnoreCase))))
             };
         }
 
@@ -579,14 +580,26 @@ namespace SynOS.Services.Operations
         // Private Helper for Event Emission (Internal Use Only)
         private async Task EmitEventAsync(BranchEventType eventType, Guid branchId, Guid entityId, string token, string description, Guid actorId, Guid? sourceId = null, string? sourceType = null)
         {
+            string actorNameStr = actorId != Guid.Empty ? actorId.ToString() : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId.ToString() : "");
+            string actorTypeStr = !string.IsNullOrWhiteSpace(_userContext.UserName) ? _userContext.UserName : "Lab Tech";
+
+            if (actorId != Guid.Empty)
+            {
+                var u = await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == actorId);
+                if (u != null)
+                {
+                    actorTypeStr = u.Name;
+                }
+            }
+
             await _eventWriter.WriteEventAsync(
                 eventType,
                 branchId.ToString(),
                 entityId.ToString(),
                 token,
                 description,
-                "User",
-                actorId.ToString(),
+                actorTypeStr,
+                actorNameStr,
                 saveChanges: false, // ATOMICITY FIX: Defer save to transaction owner
                 sourceId: sourceId,
                 sourceType: sourceType

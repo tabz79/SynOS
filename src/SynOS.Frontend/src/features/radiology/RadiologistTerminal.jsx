@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
 import { DicomViewportManager } from './DicomViewportManager';
@@ -13,20 +13,25 @@ import {
     Check, 
     Send, 
     FileText, 
+    Edit3,
+    Eye,
     Maximize2, 
     Folder, 
+    FolderArchive,
     Grid,
     Trash2,
     BookOpen,
     Loader2,
     Users,
     Key,
-    Lock
+    Lock,
+    X
 } from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
 import { CollaborationCallOverlay } from './CollaborationCallOverlay';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 import { MedicalMacrosWorkspace } from '@/components/editor/MedicalMacrosWorkspace';
+import { PacsArchiveScreen } from './PacsArchiveScreen';
 import { ReportA4 } from '../documents/templates/ReportA4';
 import { useTemplateForReport } from '../documents/templates/hooks/useReportTemplates';
 
@@ -43,6 +48,28 @@ export function RadiologistTerminal() {
     const [selectedStudy, setSelectedStudy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+
+    const [leftWidth, setLeftWidth] = useState(300);
+    const [rightWidth, setRightWidth] = useState(450);
+    const containerRef = useRef(null);
+    const isResizingLeft = useRef(false);
+    const isResizingRight = useRef(false);
+
+    // Collapsed Queue & Macro State
+    const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
+    const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
+    const [showPacsModal, setShowPacsModal] = useState(false);
+
+    // SignalR Connection
+    const [liveTypistConnected, setLiveTypistConnected] = useState(false);
+    const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+    const [isHubReady, setIsHubReady] = useState(false);
+    const hubConnection = useRef(null);
+    const currentJoinedStudyIdRef = useRef(null);
+
+    // Canvas references
+    const canvasRef = useRef(null);
+    const viewportManager = useRef(null);
 
     // Viewport Adjustments
     const [brightness, setBrightness] = useState(100);
@@ -61,35 +88,70 @@ export function RadiologistTerminal() {
     const [reportData, setReportData] = useState(null);
     const { template, loading: templateLoading } = useTemplateForReport(reportData);
     const [previewLoading, setPreviewLoading] = useState(false);
+    const [rightPanelTab, setRightPanelTab] = useState('preview'); // 'preview' | 'editor'
 
+    // Live Report Preview Auto-Fit, Zoom, and Pan State
+    const [previewScale, setPreviewScale] = useState(0.55);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStartRef = useRef({ x: 0, y: 0 });
+    const previewContainerRef = useRef(null);
 
-    const isPreviewMode = selectedStudy && (
-        selectedStudy.studyStatus === 'DraftReady' || 
-        selectedStudy.studyStatus === 'AwaitingSignature' || 
-        selectedStudy.studyStatus === 'Signed'
-    );
+    const memoizedReportData = useMemo(() => {
+        if (!reportData) return null;
+        return {
+            ...reportData,
+            interpretation: draftFindings !== undefined && draftFindings !== null ? draftFindings : reportData.interpretation
+        };
+    }, [reportData, draftFindings]);
 
-    // Collapsed Queue State
-    const [isQueueCollapsed, setIsQueueCollapsed] = useState(false);
-    const [isMacroManagerOpen, setIsMacroManagerOpen] = useState(false);
+    // Auto-Calculate Fit Scale based on Right Panel Container Width
+    useEffect(() => {
+        if (previewContainerRef.current) {
+            const containerWidth = previewContainerRef.current.clientWidth || rightWidth || 450;
+            const fitScale = Math.min(Math.max((containerWidth - 32) / 794, 0.3), 1.2);
+            setPreviewScale(fitScale);
+            setPanOffset({ x: 0, y: 0 });
+        }
+    }, [selectedStudy?.studyId || selectedStudy?.radiologyStudyId, rightWidth, rightPanelTab]);
 
-    // SignalR Connection
-    const [liveTypistConnected, setLiveTypistConnected] = useState(false);
-    const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-    const [isHubReady, setIsHubReady] = useState(false);
-    const hubConnection = useRef(null);
-    const currentJoinedStudyIdRef = useRef(null);
+    // Ctrl+Scroll listener for Live A4 Report Preview Zoom
+    useEffect(() => {
+        const container = previewContainerRef.current;
+        if (!container) return;
 
-    // Canvas references
-    const canvasRef = useRef(null);
-    const viewportManager = useRef(null);
+        const handleWheel = (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const delta = -e.deltaY;
+                const factor = delta > 0 ? 1.05 : 0.95;
+                setPreviewScale(prev => Math.min(Math.max(prev * factor, 0.2), 3.0));
+            }
+        };
 
-    // Resizable panel widths (pixels)
-    const [leftWidth, setLeftWidth] = useState(300);
-    const [rightWidth, setRightWidth] = useState(450);
-    const containerRef = useRef(null);
-    const isResizingLeft = useRef(false);
-    const isResizingRight = useRef(false);
+        container.addEventListener('wheel', handleWheel, { passive: false });
+        return () => {
+            container.removeEventListener('wheel', handleWheel);
+        };
+    }, [reportData, rightPanelTab]);
+
+    const handlePreviewMouseDown = (e) => {
+        if (e.button !== 0) return; // Only left click
+        setIsDragging(true);
+        dragStartRef.current = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+    };
+
+    const handlePreviewMouseMove = (e) => {
+        if (!isDragging) return;
+        setPanOffset({
+            x: e.clientX - dragStartRef.current.x,
+            y: e.clientY - dragStartRef.current.y
+        });
+    };
+
+    const handlePreviewMouseUp = () => {
+        setIsDragging(false);
+    };
 
     const handleLeftResizeStart = (e) => {
         e.preventDefault();
@@ -150,7 +212,7 @@ export function RadiologistTerminal() {
         try {
             const statuses = showHistory 
                 ? ['Signed', 'ManualVerified', 'Finalized'] 
-                : ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
+                : ['PendingImaging', 'Assigned', 'ImagingCompleted', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature'];
             const params = statuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
             const response = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${showHistory}&${params}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
@@ -171,14 +233,18 @@ export function RadiologistTerminal() {
     }, [showHistory]);
 
     const handleSelectStudy = async (study) => {
-        if (viewportManager.current) {
+        const newStudyId = study.studyId || study.radiologyStudyId;
+        const currentStudyId = selectedStudy?.studyId || selectedStudy?.radiologyStudyId;
+        
+        // Only destroy viewport if selecting a DIFFERENT study
+        if (currentStudyId && currentStudyId !== newStudyId && viewportManager.current) {
             viewportManager.current.destroy();
             viewportManager.current = null;
         }
+        
         setLoading(true);
-        const studyId = study.studyId || study.radiologyStudyId;
         try {
-            const response = await fetch(`/api/v1/radiology/reports/${studyId}`, {
+            const response = await fetch(`/api/v1/radiology/reports/${newStudyId}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
             if (response.ok) {
@@ -208,9 +274,6 @@ export function RadiologistTerminal() {
                 }
             });
             if (response.ok) {
-                // Claim successful! Re-fetch study details to update local UI claimed state
-                await handleSelectStudy({ radiologyStudyId: studyId });
-                
                 // Now Start Session on backend to transition status to DictationSessionStarted
                 const startRes = await fetch(`/api/v1/radiology/studies/${studyId}/session/start`, {
                     method: 'POST',
@@ -220,21 +283,30 @@ export function RadiologistTerminal() {
                     }
                 });
                 
-                if (startRes.ok) {
-                    // Fetch details again to make sure session details are mapped
-                    await handleSelectStudy({ radiologyStudyId: studyId });
-                    fetchWorklist();
-                    alert("Study claimed and collaborative dictation session started.");
-                } else {
-                    const err = await startRes.json();
-                    throw new Error(err.message || "Failed to start dictation session");
+                // Fetch fresh details and re-apply claim state
+                const detailsRes = await fetch(`/api/v1/radiology/reports/${studyId}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                });
+                if (detailsRes.ok) {
+                    const details = await detailsRes.json();
+                    setSelectedStudy(details);
+                    
+                    // If viewport manager exists, re-feed images to ensure rendering
+                    if (viewportManager.current && details.images && details.images.length > 0) {
+                        const urls = details.images.map(img => img.fileUrl);
+                        viewportManager.current.setImages(urls).then(() => {
+                            setActiveSliceIndex(0);
+                        });
+                    }
                 }
+                fetchWorklist();
             } else {
                 const err = await response.json();
                 throw new Error(err.message || "Failed to claim study");
             }
         } catch (error) {
-            alert(error.message);
+            console.error("Claim study error:", error);
+            alert(error.message || "Failed to claim study");
         } finally {
             setActionLoading(false);
         }
@@ -397,13 +469,36 @@ export function RadiologistTerminal() {
                         }));
                     };
                     
-                    // Load raw DICOM slices if study contains any extracted slices
-                    if (selectedStudy.images && selectedStudy.images.length > 0) {
-                        const urls = selectedStudy.images.map(img => img.fileUrl);
-                        viewportManager.current.setImages(urls).then(() => {
-                            setActiveSliceIndex(0);
-                        });
-                    }
+                    // Load raw DICOM slices if study contains any PACS instances or extracted slices
+                    const loadDicomImages = async () => {
+                        let urls = [];
+                        if (selectedStudy.images && selectedStudy.images.length > 0) {
+                            urls = selectedStudy.images.map(img => img.fileUrl);
+                        } else {
+                            try {
+                                const tree = await RadiologyApi.getSeriesTree(studyId);
+                                if (tree && tree.series) {
+                                    tree.series.forEach(s => {
+                                        if (s.instances) {
+                                            s.instances.forEach(inst => {
+                                                urls.push(`/api/v1/radiology/pacs/instances/${inst.instanceId}/file`);
+                                            });
+                                        }
+                                    });
+                                }
+                            } catch (e) {
+                                console.warn("No PACS series tree found for study:", e);
+                            }
+                        }
+
+                        if (urls.length > 0 && viewportManager.current) {
+                            viewportManager.current.setImages(urls).then(() => {
+                                setActiveSliceIndex(0);
+                            }).catch(e => console.error("Error setting DICOM viewport images:", e));
+                        }
+                    };
+
+                    loadDicomImages();
                 }
                 
                 // Switch session groups dynamically
@@ -448,25 +543,24 @@ export function RadiologistTerminal() {
 
     const fetchReportDraft = async (studyId) => {
         try {
+            const detailResponse = await fetch(`/api/v1/radiology/reports/${studyId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            });
+            if (detailResponse.ok) {
+                const details = await detailResponse.json();
+                if (details.report) {
+                    setDraftFindings(details.report.findings || '');
+                    setDraftImpression(details.report.impression || '');
+                    setDraftNotes(details.report.additionalNotes || '');
+                }
+            }
+
             const response = await fetch(`/api/v1/reports/source/RadiologyStudy/${studyId}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
             if (response.ok) {
                 const report = await response.json();
                 setReportId(report.reportId);
-                
-                // Fetch radiology specific fields if available
-                const detailResponse = await fetch(`/api/v1/reports/${report.reportId}/full`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
-                });
-                if (detailResponse.ok) {
-                    const detail = await detailResponse.json();
-                    if (detail.radiologyReport) {
-                        setDraftFindings(detail.radiologyReport.findings || '');
-                        setDraftImpression(detail.radiologyReport.impression || '');
-                        setDraftNotes(detail.radiologyReport.additionalNotes || '');
-                    }
-                }
             }
         } catch (error) {
             console.error("Failed to load report draft:", error);
@@ -474,7 +568,7 @@ export function RadiologistTerminal() {
     };
 
     useEffect(() => {
-        if (selectedStudy && isPreviewMode && reportId) {
+        if (selectedStudy && reportId) {
             const fetchPreview = async () => {
                 setPreviewLoading(true);
                 try {
@@ -495,7 +589,7 @@ export function RadiologistTerminal() {
         } else {
             setReportData(null);
         }
-    }, [selectedStudy?.studyStatus, reportId]);
+    }, [selectedStudy?.studyId || selectedStudy?.radiologyStudyId, reportId]);
 
     const isUnmountedRef = useRef(false);
 
@@ -640,11 +734,11 @@ export function RadiologistTerminal() {
         }
 
         // Live broadcast over hub connection
-        if (hubConnection.current && selectedStudy) {
+        if (hubConnection.current && hubConnection.current.state === 'Connected' && selectedStudy) {
             try {
                 await hubConnection.current.invoke('SendDraftUpdate', studyId, JSON.stringify(update));
             } catch (err) {
-                console.error("SignalR broadcast failed:", err);
+                // Silently handle offline/reconnecting states
             }
         }
     };
@@ -690,7 +784,29 @@ export function RadiologistTerminal() {
         if (!selectedStudy) return;
         setActionLoading(true);
         const studyId = selectedStudy.radiologyStudyId || selectedStudy.studyId;
+        if (!draftFindings || !draftFindings.trim()) {
+            alert("Cannot sign report: Findings content is empty. Please enter your findings before signing.");
+            setActionLoading(false);
+            return;
+        }
+
         try {
+            // First save findings/impression draft content
+            const draftBody = {
+                studyId: studyId,
+                findings: draftFindings,
+                impression: draftImpression,
+                additionalNotes: draftNotes
+            };
+            await fetch('/api/v1/radiology/reports/draft', {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(draftBody)
+            });
+
             // Then Digitally Sign (Direct sign for Radiology)
             const signResponse = await fetch('/api/v1/radiology/reports/sign', {
                 method: 'POST',
@@ -924,6 +1040,17 @@ export function RadiologistTerminal() {
                                         );
                                     })
                                 )}
+                            </div>
+
+                            {/* PACS Master Archive Trigger Footer */}
+                            <div className="p-3 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white">
+                                <button
+                                    onClick={() => setShowPacsModal(true)}
+                                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-2 transition shadow-sm"
+                                >
+                                    <FolderArchive className="w-4 h-4 text-emerald-100" />
+                                    <span>PACS Archive Explorer</span>
+                                </button>
                             </div>
                         </>
                     )}
@@ -1277,8 +1404,8 @@ export function RadiologistTerminal() {
                                 </div>
                             </div>
                         ) : (
-                            /* EDIT MODE PANEL / PREVIEW MODE PANEL */
                             <div className="flex-1 flex flex-col overflow-hidden">
+                                {/* UNIFIED COLLABORATIVE PANEL WITH SWITCH TOGGLE */}
                                 {isClaimExpired && selectedStudy?.studyStatus !== 'Signed' && (
                                     <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-[11px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider flex items-center justify-between gap-2 shrink-0 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="flex items-center gap-2">
@@ -1294,166 +1421,145 @@ export function RadiologistTerminal() {
                                         </button>
                                     </div>
                                 )}
-                                {isPreviewMode ? (
-                                    /* PREVIEW MODE PANEL */
-                                    <div className="flex-1 flex flex-col overflow-hidden">
-                                        <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center shrink-0">
-                                            <div>
-                                                <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">
-                                                    Report Preview
-                                                </h3>
-                                                <div className="flex items-center gap-1.5 mt-1">
-                                                    <span className={`h-1.5 w-1.5 rounded-full ${selectedStudy.studyStatus === 'Signed' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-                                                    <span className="text-[10px] dark:text-zinc-400 text-zinc-550">
-                                                        {selectedStudy.studyStatus === 'Signed' ? 'Finalized & Signed' : 'Draft Review'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {selectedStudy.studyStatus !== 'Signed' && (
-                                                    <>
-                                                        <button
-                                                            onClick={handleResumeDictation}
-                                                            disabled={actionLoading}
-                                                            className="px-3 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded font-bold border dark:border-zinc-700 border-zinc-200 text-[10px] uppercase transition-colors"
-                                                        >
-                                                            Edit Draft
-                                                        </button>
-                                                        <button
-                                                            onClick={handleSignReport}
-                                                            disabled={actionLoading}
-                                                            className={`px-4 py-1.5 text-white font-bold rounded text-[10px] uppercase transition-all flex items-center gap-1.5 ${
-                                                                selectedStudy.studyStatus === 'AwaitingSignature' 
-                                                                    ? 'bg-emerald-550 hover:bg-emerald-600 animate-pulse shadow-emerald-500/20 shadow-lg' 
-                                                                    : 'bg-synos-emerald hover:opacity-90'
-                                                            }`}
-                                                        >
-                                                            {actionLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Lock className="h-3 w-3" />}
-                                                            Digital Sign
-                                                        </button>
-                                                    </>
-                                                )}
-                                            </div>
+
+                                {/* Header with Connection Ribbon & Segmented Switch Button */}
+                                <div className="p-3 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center shrink-0">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-xs uppercase tracking-wider dark:text-zinc-200 text-zinc-800">Collaborative Transcription</h3>
+                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                                                connectionStatus === 'Connected' ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' :
+                                                connectionStatus === 'Reconnecting' ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200 animate-pulse' :
+                                                'dark:bg-red-500/10 bg-red-50 text-red-600 dark:text-red-400 dark:border-red-500/20 border-red-200'
+                                            }`}>
+                                                {connectionStatus}
+                                            </span>
                                         </div>
-
-                                        {selectedStudy.studyStatus === 'AwaitingSignature' && (
-                                            <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                <Users className="h-3.5 w-3.5 animate-pulse text-emerald-500" />
-                                                Typist has requested digital signature review
-                                            </div>
-                                        )}
-
-                                        <div className="flex-1 overflow-auto bg-zinc-300/50 dark:bg-zinc-900/50 p-4 custom-scrollbar">
-                                            {(previewLoading || templateLoading) ? (
-                                                <div className="h-full flex flex-col items-center justify-center opacity-30">
-                                                    <Loader2 className="w-6 h-6 animate-spin mb-4" />
-                                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Generating A4 Render...</span>
-                                                </div>
-                                            ) : (reportData && template) ? (
-                                                <div className="p-4 origin-top min-w-max flex justify-center">
-                                                    <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden">
-                                                        <ReportA4 reportData={reportData} template={template} />
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8">
-                                                    <Loader2 className="w-6 h-6 animate-spin mb-4" />
-                                                    <p className="text-[9px] font-black uppercase tracking-widest">
-                                                        Loading Draft Structure...
-                                                    </p>
-                                                </div>
-                                            )}
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
+                                            <span className="text-[9px] dark:text-zinc-400 text-zinc-550 font-semibold">
+                                                {liveTypistConnected ? 'Typist joined session (Live Sync)' : 'Waiting for Typist...'}
+                                            </span>
                                         </div>
                                     </div>
-                                ) : (
-                                    /* EDIT MODE PANEL */
-                                    <div className="flex-1 flex flex-col overflow-hidden">
-                                        {/* Connection Ribbon */}
-                                        <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex justify-between items-center">
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <h3 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">Collaborative Transcription</h3>
-                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                                                        connectionStatus === 'Connected' ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' :
-                                                        connectionStatus === 'Reconnecting' ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200 animate-pulse' :
-                                                        connectionStatus === 'Connecting' ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/20 animate-pulse' :
-                                                        'dark:bg-red-500/10 bg-red-50 text-red-650 dark:text-red-400 dark:border-red-500/20 border-red-200'
-                                                    }`}>
-                                                        {connectionStatus}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 mt-1">
-                                                    <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
-                                                    <span className="text-[10px] dark:text-zinc-400 text-zinc-550">
-                                                        {liveTypistConnected ? 'Typist joined session (Live Sync)' : 'Waiting for Typist...'}
-                                                    </span>
-                                                </div>
+
+                                    {/* Segmented Switch Toggle Button */}
+                                    <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-800/80 p-0.5 rounded-lg border dark:border-white/10 border-zinc-300">
+                                        <button
+                                            onClick={() => setRightPanelTab('preview')}
+                                            className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
+                                                rightPanelTab === 'preview'
+                                                    ? 'bg-synos-primary text-white shadow-sm'
+                                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                            }`}
+                                        >
+                                            <FileText className="w-3 h-3" />
+                                            Live Preview
+                                        </button>
+                                        <button
+                                            onClick={() => setRightPanelTab('editor')}
+                                            className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
+                                                rightPanelTab === 'editor'
+                                                    ? 'bg-synos-primary text-white shadow-sm'
+                                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                            }`}
+                                        >
+                                            <Edit3 className="w-3 h-3" />
+                                            Rich Editor
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {selectedStudy.studyStatus === 'AwaitingSignature' && (
+                                    <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0">
+                                        <Users className="h-3.5 w-3.5 animate-pulse text-emerald-500" />
+                                        Typist has requested digital signature review
+                                    </div>
+                                )}
+
+                                {/* Panel Content: Live A4 Preview OR Rich Text Editor */}
+                                {rightPanelTab === 'preview' ? (
+                                    <div 
+                                        ref={previewContainerRef}
+                                        className="flex-1 overflow-hidden bg-zinc-200/60 dark:bg-zinc-900/60 relative select-none custom-scrollbar min-h-0"
+                                        onMouseDown={handlePreviewMouseDown}
+                                        onMouseMove={handlePreviewMouseMove}
+                                        onMouseUp={handlePreviewMouseUp}
+                                        onMouseLeave={handlePreviewMouseUp}
+                                        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                                    >
+                                        {/* Zoom & Pan Hint Overlay */}
+                                        <div className="absolute top-2 left-3 z-10 pointer-events-none">
+                                            <span className="text-[9px] font-mono bg-zinc-900/80 text-zinc-200 px-2 py-0.5 rounded shadow-sm backdrop-blur-sm">
+                                                Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
+                                            </span>
+                                        </div>
+
+                                        {(previewLoading || templateLoading) ? (
+                                            <div className="h-full flex flex-col items-center justify-center opacity-40">
+                                                <Loader2 className="w-6 h-6 animate-spin mb-2 text-synos-primary" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Rendering Live A4 Preview...</span>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={handleSaveDraft}
-                                                    className="px-2.5 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded font-bold border dark:border-zinc-700 border-zinc-200 text-[10px] uppercase transition-colors"
+                                        ) : (memoizedReportData && template) ? (
+                                            <div className="p-4 flex justify-center items-start w-full h-full absolute top-0 left-0">
+                                                <div 
+                                                    className="bg-white shadow-2xl rounded-sm overflow-hidden origin-top min-w-[210mm] transition-transform duration-75 select-none"
+                                                    style={{ 
+                                                        transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${previewScale})`,
+                                                        pointerEvents: isDragging ? 'none' : 'auto'
+                                                    }}
                                                 >
-                                                    Save Draft
-                                                </button>
+                                                    <ReportA4 reportData={memoizedReportData} template={template} />
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        {/* Report Textareas */}
-                                        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Findings & Observation</label>
-                                                <RichMedicalEditor
-                                                    value={draftFindings}
-                                                    onChange={(val) => handleFieldChange('findings', val)}
-                                                    disabled={actionLoading || !isClaimedByMe}
-                                                    patientContext={patientContext}
-                                                    onSaveDraft={handleSaveDraft}
-                                                    placeholder="Dynamic visual findings here..."
-                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                                />
+                                        ) : (
+                                            <div className="h-full flex flex-col items-center justify-center text-center opacity-40 p-6">
+                                                <FileText className="w-8 h-8 mb-2 text-zinc-400" />
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                                    Awaiting Live Draft Data...
+                                                </p>
                                             </div>
-
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Diagnostic Impression</label>
-                                                <RichMedicalEditor
-                                                    value={draftImpression}
-                                                    onChange={(val) => handleFieldChange('impression', val)}
-                                                    disabled={actionLoading || !isClaimedByMe}
-                                                    patientContext={patientContext}
-                                                    onSaveDraft={handleSaveDraft}
-                                                    placeholder="Clinical impression..."
-                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                                />
-                                            </div>
-
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-550 tracking-wider">Additional Recommendations / Notes</label>
-                                                <RichMedicalEditor
-                                                    value={draftNotes}
-                                                    onChange={(val) => handleFieldChange('notes', val)}
-                                                    disabled={actionLoading || !isClaimedByMe}
-                                                    patientContext={patientContext}
-                                                    onSaveDraft={handleSaveDraft}
-                                                    placeholder="Recommendations..."
-                                                    onOpenMacroManager={() => setIsMacroManagerOpen(true)}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Sign-off Dispatcher */}
-                                        <div className="p-4 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white">
-                                            <button
-                                                onClick={handleSignReport}
-                                                disabled={actionLoading || !draftFindings || !draftImpression}
-                                                className="w-full py-2.5 bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm"
-                                            >
-                                                {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
-                                                Digitally Sign & Release Report
-                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0">
+                                        <div className="space-y-2 synos-card-elevated rounded-2xl p-4 bg-white dark:bg-zinc-950 flex-1 flex flex-col min-h-0">
+                                            <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-600 tracking-wider flex items-center gap-1.5 shrink-0">
+                                                <FileText className="h-4 w-4 text-synos-primary animate-pulse" />
+                                                Radiology Findings & Impression
+                                            </label>
+                                            <RichMedicalEditor
+                                                value={draftFindings}
+                                                onChange={(val) => handleFieldChange('findings', val)}
+                                                disabled={actionLoading || !isClaimedByMe}
+                                                patientContext={patientContext}
+                                                onSaveDraft={handleSaveDraft}
+                                                placeholder="Type radiology findings, observations, and diagnostic impressions as you dictate..."
+                                                onOpenMacroManager={() => setIsMacroManagerOpen(true)}
+                                                className="flex-1 h-full min-h-0 flex flex-col"
+                                            />
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Footer Actions */}
+                                <div className="p-3 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex items-center justify-between gap-3 shrink-0">
+                                    <button
+                                        onClick={handleSaveDraft}
+                                        disabled={actionLoading}
+                                        className="px-3.5 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded-lg font-bold border dark:border-zinc-700 border-zinc-200 text-xs uppercase transition-all shrink-0 active:scale-[0.98]"
+                                    >
+                                        Save Draft
+                                    </button>
+                                    <button
+                                        onClick={handleSignReport}
+                                        disabled={actionLoading || (!draftFindings && selectedStudy.studyStatus !== 'Signed')}
+                                        className="flex-1 py-1.5 bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
+                                    >
+                                        {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
+                                        Digitally Sign & Release Report
+                                    </button>
+                                </div>
                             </div>
                         )
                     ) : (
@@ -1473,6 +1579,27 @@ export function RadiologistTerminal() {
                 onSelectStudy={(studyId) => handleSelectStudy({ radiologyStudyId: studyId })} 
                 role="Radiologist"
             />
+
+            {/* PACS Archive Modal Overlay for Radiologist */}
+            {showPacsModal && (
+                <div className="fixed inset-0 z-50 bg-zinc-950/98 flex flex-col">
+                    <div className="px-4 py-2 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between">
+                        <div className="flex items-center space-x-2 text-xs text-zinc-200">
+                            <FolderArchive className="w-4 h-4 text-emerald-400" />
+                            <span className="font-bold">Master PACS Archive Explorer</span>
+                        </div>
+                        <button
+                            onClick={() => setShowPacsModal(false)}
+                            className="p-1 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white transition"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                        <PacsArchiveScreen />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

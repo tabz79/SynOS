@@ -553,14 +553,22 @@ namespace SynOS.Services.Phlebotomy
                 await transaction.CommitAsync();
 
                 // 10. EMIT EVENT: Notify subscribers of specimen collection (updates dashboard)
+                string collectorName = _userContext.UserName;
+                if (string.IsNullOrEmpty(collectorName) && _userContext.CurrentUserId != Guid.Empty)
+                {
+                    var u = await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == _userContext.CurrentUserId);
+                    if (u != null) collectorName = u.Name;
+                }
+                if (string.IsNullOrEmpty(collectorName)) collectorName = "Phlebotomist";
+
                 await _operationalEventWriter.WriteEventAsync(
                     BranchEventType.SPECIMEN_COLLECTED,
                     branchInfo.BranchId.Value.ToString(),
                     visitId.ToString(),
                     branchInfo.Token,
-                    $"Collection completed for {orders.Count} tests.",
-                    "Phlebotomist",
-                    null,
+                    $"Sample collected for {orders.Count} tests.",
+                    collectorName,
+                    _userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId.ToString() : null,
                     false,
                     visitId,
                     "Visit",
@@ -632,6 +640,101 @@ namespace SynOS.Services.Phlebotomy
                 CollectedAt = specimens.OrderByDescending(s => s.CollectedAt).FirstOrDefault()?.CollectedAt,
                 CollectedByName = collectedByName
             };
+        }
+
+        public async Task<System.Collections.Generic.List<SynOS.Models.DTOs.Dashboard.ActionQueueRowDto>> GetPhlebotomyQueueAsync(bool includeHistory = false)
+        {
+            var today = DateTime.UtcNow.Date;
+
+            // Strict Clinical Partitioning: Find visit IDs that contain ACTIVE PATHOLOGY / BLOOD TEST orders
+            var phleboVisitIds = await _db.Orders
+                .AsNoTracking()
+                .Include(o => o.Test)
+                    .ThenInclude(t => t.DepartmentMaster)
+                .Where(o => o.Status != OrderStatus.Cancelled &&
+                            (o.Test == null || (o.Test.ModalityId == null && 
+                                                o.Test.Category != "Radiology" && 
+                                                (o.Test.DepartmentMaster == null || o.Test.DepartmentMaster.Name != "Radiology"))))
+                .Select(o => o.VisitId)
+                .Distinct()
+                .ToListAsync();
+
+            var query = _db.Visits
+                .AsNoTracking()
+                .Include(v => v.Patient)
+                .Include(v => v.Orders).ThenInclude(o => o.Test)
+                .Include(v => v.ReferralPartner)
+                .Where(v => phleboVisitIds.Contains(v.VisitId));
+
+            if (includeHistory)
+            {
+                query = query.Where(v => v.CreatedAt.Date < today);
+            }
+            else
+            {
+                query = query.Where(v => v.CreatedAt.Date == today || 
+                                         _db.Specimens.Any(s => s.VisitId == v.VisitId && s.Status == SpecimenStatus.Pending));
+            }
+
+            var visits = await query.OrderByDescending(v => v.CreatedAt).ToListAsync();
+            var visitIds = visits.Select(v => v.VisitId).ToList();
+
+            var collectedVisitIds = await _db.Specimens
+                .Where(s => visitIds.Contains(s.VisitId) && s.Status == SpecimenStatus.Collected)
+                .Select(s => s.VisitId)
+                .Distinct()
+                .ToListAsync();
+
+            var processingVisitIds = await _db.Specimens
+                .Where(s => visitIds.Contains(s.VisitId) && s.Status == SpecimenStatus.Accessioned)
+                .Select(s => s.VisitId)
+                .Distinct()
+                .ToListAsync();
+
+            var assignments = await _db.WorkAssignments
+                .AsNoTracking()
+                .Where(w => visitIds.Contains(w.SourceReferenceId))
+                .ToListAsync();
+
+            var result = new System.Collections.Generic.List<SynOS.Models.DTOs.Dashboard.ActionQueueRowDto>();
+            foreach (var visit in visits)
+            {
+                var isCollected = collectedVisitIds.Contains(visit.VisitId);
+                var isProcessing = processingVisitIds.Contains(visit.VisitId);
+
+                string opStatus = "Ready for Sample";
+                if (isProcessing) opStatus = "In Processing";
+                else if (isCollected) opStatus = "Collected";
+
+                var assignment = assignments.FirstOrDefault(w => w.SourceReferenceId == visit.VisitId);
+
+                var dto = new SynOS.Models.DTOs.Dashboard.ActionQueueRowDto
+                {
+                    VisitId = visit.VisitId,
+                    Token = visit.Token,
+                    CreatedAt = visit.CreatedAt,
+                    PatientName = visit.Patient != null ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim() : "Unknown",
+                    PatientAgeGender = visit.Patient != null ? $"{(DateTime.Today.Year - visit.Patient.DateOfBirth.Year)}y / {visit.Patient.Gender}" : "N/A",
+                    TestCodes = visit.Orders
+                        .Where(o => o.Status != OrderStatus.Cancelled && (o.Test == null || o.Test.ModalityId == null))
+                        .Select(o => o.TestCode).ToList(),
+                    PaymentDisplay = visit.Status.ToString(),
+                    TotalAmount = 0m,
+                    PaymentMethod = "Paid",
+                    ReferrerName = visit.ReferralPartner?.Name ?? "Self",
+                    OperationalStatus = opStatus,
+                    LastUpdatedAt = visit.CreatedAt,
+                    DateGroup = visit.CreatedAt.Date == today ? "Today" : visit.CreatedAt.ToString("dd MMM"),
+                    IsFinalized = isCollected,
+                    AssignedUserId = assignment?.AssignedResourceId,
+                    AssignedUserName = null,
+                    HasPhlebotomy = true
+                };
+
+                result.Add(dto);
+            }
+
+            return result;
         }
     }
 }

@@ -79,7 +79,7 @@ namespace SynOS.Api.BackgroundServices
                     }
                 }
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            catch (OperationCanceledException)
             {
                 // Graceful shutdown
             }

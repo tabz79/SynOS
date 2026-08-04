@@ -85,13 +85,13 @@ namespace SynOS.Services.Security
             return "TBZ-LAB-KEY-12345";
         }
 
-        public async Task<bool> TriggerSelfHealingRecoveryAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken = default)
+        public async Task<bool> TriggerSelfHealingRecoveryAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken = default, bool force = false)
         {
             await _recoveryLock.WaitAsync(stoppingToken);
             try
             {
-                // Throttling: If recovery was attempted within the last 60 seconds, reuse cached result
-                if (DateTime.UtcNow - _lastRecoveryAttemptUtc < TimeSpan.FromSeconds(60))
+                // Throttling: If recovery was attempted within the last 60 seconds, reuse cached result unless force is requested
+                if (!force && DateTime.UtcNow - _lastRecoveryAttemptUtc < TimeSpan.FromSeconds(60))
                 {
                     _logger.LogInformation("Self-healing recovery requested within 60s threshold. Reusing cached recovery result ({Result}).", _lastRecoveryResult);
                     return _lastRecoveryResult;
@@ -164,14 +164,53 @@ namespace SynOS.Services.Security
                 ? profile.MiddlewareApiUrl
                 : (_configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events");
 
-            var validateUrl = apiUrl.Replace("/api/events", "/api/labs/validate");
+            var urlsToTry = new System.Collections.Generic.List<string>
+            {
+                apiUrl.Replace("/api/events", "/api/labs/validate")
+            };
+            if (!urlsToTry.Contains("http://localhost:5069/api/labs/validate"))
+            {
+                urlsToTry.Add("http://localhost:5069/api/labs/validate");
+            }
+            if (!urlsToTry.Contains("http://127.0.0.1:5069/api/labs/validate"))
+            {
+                urlsToTry.Add("http://127.0.0.1:5069/api/labs/validate");
+            }
+            if (!urlsToTry.Contains("http://localhost:5173/api/labs/validate"))
+            {
+                urlsToTry.Add("http://localhost:5173/api/labs/validate");
+            }
 
-            _logger.LogInformation("Validating license key against Control Tower ({ValidateUrl})...", validateUrl);
-            using var request = new HttpRequestMessage(HttpMethod.Post, validateUrl);
-            request.Headers.Add("X-Api-Key", rawLicenseKey);
+            HttpResponseMessage? response = null;
+            string? successfulUrl = null;
 
-            var response = await _httpClient.SendAsync(request, stoppingToken);
-            if (response.IsSuccessStatusCode)
+            foreach (var validateUrl in urlsToTry)
+            {
+                try
+                {
+                    _logger.LogInformation("Validating license key against Control Tower ({ValidateUrl})...", validateUrl);
+                    using var request = new HttpRequestMessage(HttpMethod.Post, validateUrl);
+                    request.Headers.Add("X-Api-Key", rawLicenseKey);
+
+                    var res = await _httpClient.SendAsync(request, stoppingToken);
+                    if (res.IsSuccessStatusCode)
+                    {
+                        response = res;
+                        successfulUrl = validateUrl;
+                        break;
+                    }
+                    else if (response == null)
+                    {
+                        response = res;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogDebug(ex, "Failed license validation connection to {ValidateUrl}", validateUrl);
+                }
+            }
+
+            if (response != null && response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
                 using var doc = JsonDocument.Parse(responseBody);
@@ -258,7 +297,11 @@ namespace SynOS.Services.Security
                 {
                     var responseBody = await response.Content.ReadAsStringAsync(stoppingToken);
                     using var doc = JsonDocument.Parse(responseBody);
-                    if (doc.RootElement.TryGetProperty("message", out var msgProp))
+                    if (doc.RootElement.TryGetProperty("error", out var errProp))
+                    {
+                        errorMsg = errProp.GetString() ?? errorMsg;
+                    }
+                    else if (doc.RootElement.TryGetProperty("message", out var msgProp))
                     {
                         errorMsg = msgProp.GetString() ?? errorMsg;
                     }
@@ -270,14 +313,7 @@ namespace SynOS.Services.Security
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized || response.StatusCode == System.Net.HttpStatusCode.Forbidden)
                 {
-                    if (profile != null)
-                    {
-                        profile.LicenseStatus = "Suspended";
-                        profile.UpdatedAt = DateTimeOffset.UtcNow;
-                        dbContext.LabProfiles.Update(profile);
-                        await dbContext.SaveChangesAsync(stoppingToken);
-                    }
-                    MiddlewareSyncHealth.StatusMessage = "Unauthorized";
+                    MiddlewareSyncHealth.StatusMessage = "Unauthorized (Invalid Cloud Key)";
                 }
                 else
                 {

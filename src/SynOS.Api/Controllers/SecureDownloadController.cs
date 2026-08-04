@@ -26,15 +26,15 @@ public class SecureDownloadController : ControllerBase
     [HttpGet("/secure/r/{token}")]
     public async Task<IActionResult> LandingPage(string token)
     {
-        // Simple HTML landing page (Premium look)
+        // Simple HTML landing page (Premium look with Dual PACS + PDF Actions)
         var html = $@"
         <!DOCTYPE html>
         <html lang='en'>
         <head>
             <meta charset='UTF-8'>
             <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-            <title>Secure Report Download | SynOS</title>
-            <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap' rel='stylesheet'>
+            <title>Secure Medical Portal | SynOS</title>
+            <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap' rel='stylesheet'>
             <style>
                 body {{ 
                     font-family: 'Inter', sans-serif; 
@@ -43,113 +43,169 @@ public class SecureDownloadController : ControllerBase
                     display: flex; 
                     align-items: center; 
                     justify-content: center; 
-                    height: 100vh; 
+                    min-height: 100vh; 
                     margin: 0; 
-                    overflow: hidden;
+                    padding: 1rem;
+                    box-sizing: border-box;
                 }}
                 .card {{
                     background: rgba(255,255,255,0.03);
-                    border: 1px solid rgba(255,255,255,0.05);
-                    padding: 3rem;
+                    border: 1px solid rgba(255,255,255,0.08);
+                    padding: 2.5rem;
                     border-radius: 2rem;
                     text-align: center;
-                    max-width: 400px;
+                    max-width: 440px;
                     width: 100%;
                     backdrop-filter: blur(20px);
                     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
                 }}
                 .logo {{ 
-                    color: #4f46e5; 
+                    color: #10b981; 
                     font-weight: 900; 
                     font-size: 1.5rem; 
                     letter-spacing: -0.05em; 
-                    margin-bottom: 2rem;
+                    margin-bottom: 1.5rem;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     gap: 0.5rem;
                 }}
-                h1 {{ font-size: 1.5rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; }}
-                p {{ color: #71717a; font-size: 0.875rem; margin-bottom: 2rem; line-height: 1.5; }}
+                h1 {{ font-size: 1.4rem; font-weight: 900; letter-spacing: -0.025em; margin-bottom: 0.5rem; }}
+                p {{ color: #a1a1aa; font-size: 0.85rem; margin-bottom: 1.5rem; line-height: 1.5; }}
                 .input-group {{ text-align: left; margin-bottom: 1.5rem; }}
-                label {{ font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #52525b; letter-spacing: 0.1em; margin-left: 0.5rem; }}
+                label {{ font-size: 0.65rem; font-weight: 900; text-transform: uppercase; color: #71717a; letter-spacing: 0.1em; margin-left: 0.5rem; }}
                 input {{
                     width: 100%;
                     background: #18181b;
-                    border: none;
+                    border: 1px solid #27272a;
                     border-radius: 1rem;
-                    padding: 1rem;
+                    padding: 0.9rem;
                     color: white;
                     font-family: monospace;
-                    font-size: 1.25rem;
+                    font-size: 1.2rem;
                     margin-top: 0.5rem;
                     box-sizing: border-box;
                     text-align: center;
-                    letter-spacing: 0.2em;
+                    letter-spacing: 0.15em;
                 }}
-                input:focus {{ outline: 2px solid #4f46e5; }}
-                button {{
+                input:focus {{ outline: 2px solid #10b981; border-color: transparent; }}
+                .btn {{
                     width: 100%;
-                    background: #4f46e5;
+                    background: #10b981;
                     color: white;
                     border: none;
                     border-radius: 1rem;
                     padding: 1rem;
-                    font-weight: 900;
+                    font-weight: 800;
                     text-transform: uppercase;
                     letter-spacing: 0.05em;
                     cursor: pointer;
                     transition: all 0.2s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    font-size: 0.85rem;
                 }}
-                button:hover {{ background: #4338ca; transform: translateY(-1px); }}
-                button:active {{ transform: translateY(0); }}
-                .footer {{ margin-top: 2rem; font-size: 0.75rem; color: #3f3f46; }}
+                .btn:hover {{ background: #059669; transform: translateY(-1px); }}
+                .btn-secondary {{
+                    background: #27272a;
+                    color: #e4e4e7;
+                    margin-top: 0.75rem;
+                }}
+                .btn-secondary:hover {{ background: #3f3f46; }}
+                .actions {{ display: none; margin-top: 1.5rem; flex-direction: column; gap: 0.75rem; }}
+                .error-msg {{ color: #ef4444; font-size: 0.8rem; font-weight: 600; margin-top: 0.75rem; display: none; }}
+                .footer {{ margin-top: 2rem; font-size: 0.75rem; color: #52525b; }}
             </style>
         </head>
         <body>
             <div class='card'>
                 <div class='logo'>
                     <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10'/></svg>
-                    SynOS Secure
+                    SynOS Medical Portal
                 </div>
-                <h1>Download Report</h1>
-                <p>For security, please enter the 10-digit mobile number registered at the lab.</p>
+                <h1>Verify Access</h1>
+                <p>Enter the 10-digit mobile number registered at the lab to view your results and diagnostic imaging.</p>
                 
-                <form id='downloadForm'>
+                <form id='verifyForm'>
                     <div class='input-group'>
-                        <label>Registered Mobile</label>
+                        <label>Registered Mobile Number</label>
                         <input type='tel' id='phone' placeholder='98XXXXXXXX' maxlength='10' required>
                     </div>
-                    <button type='submit' id='submitBtn'>Verify & Download</button>
+                    <button type='submit' id='submitBtn' class='btn'>Verify Identity</button>
+                    <div id='errorMsg' class='error-msg'>Mobile number mismatch. Please verify and try again.</div>
                 </form>
 
+                <div id='actions' class='actions'>
+                    <button id='downloadPdfBtn' class='btn'>
+                        📄 View / Download Signed PDF Report
+                    </button>
+                    <button id='viewPacsBtn' class='btn btn-secondary'>
+                        🔬 Launch Interactive DICOM PACS Viewer
+                    </button>
+                </div>
+
                 <div class='footer'>
-                    &copy; {DateTime.UtcNow.Year} SynOS Lab Intelligence
+                    &copy; {DateTime.UtcNow.Year} SynOS Lab Intelligence • Diagnostic PACS
                 </div>
             </div>
 
             <script>
-                document.getElementById('downloadForm').onsubmit = function(e) {{
+                document.getElementById('verifyForm').onsubmit = async function(e) {{
                     e.preventDefault();
-                    const phone = document.getElementById('phone').value;
+                    const phone = document.getElementById('phone').value.trim();
                     const btn = document.getElementById('submitBtn');
-                    btn.innerText = 'Downloading...';
+                    const errorMsg = document.getElementById('errorMsg');
+                    const actions = document.getElementById('actions');
+
+                    errorMsg.style.display = 'none';
+                    btn.innerText = 'Verifying...';
                     btn.disabled = true;
-                    
-                    // Trigger download
-                    window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
-                    
-                    // Reset after delay
-                    setTimeout(() => {{
-                        btn.innerText = 'Verify & Download';
-                        btn.disabled = false;
-                    }}, 3000);
+
+                    try {{
+                        const res = await fetch(`/api/v1/public/reports/verify-phone/{token}?phone=` + phone);
+                        if (res.ok) {{
+                            document.getElementById('verifyForm').style.display = 'none';
+                            actions.style.display = 'flex';
+
+                            document.getElementById('downloadPdfBtn').onclick = function() {{
+                                window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
+                            }};
+
+                            document.getElementById('viewPacsBtn').onclick = function() {{
+                                window.location.href = `/pacs?token={token}&phone=` + phone;
+                            }};
+                        }} else {{
+                            errorMsg.style.display = 'block';
+                            btn.innerText = 'Verify Identity';
+                            btn.disabled = false;
+                        }}
+                    }} catch (err) {{
+                        // Fallback directly to pdf download if verify fails offline
+                        window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
+                    }}
                 }};
             </script>
         </body>
         </html>";
         
         return Content(html, "text/html");
+    }
+
+    [HttpGet("verify-phone/{token}")]
+    public async Task<IActionResult> VerifyPhone(string token, [FromQuery] string phone)
+    {
+        if (string.IsNullOrEmpty(phone)) return BadRequest(new { error = "Phone required" });
+        try
+        {
+            await _deliveryService.VerifyAndDownloadAsync(token, phone);
+            return Ok(new { valid = true });
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
     }
 
     [HttpGet("verify/{token}")]

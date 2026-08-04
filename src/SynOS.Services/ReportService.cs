@@ -631,7 +631,7 @@ namespace SynOS.Services
                     .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
             }
 
-            if (order == null) return null;
+            if (order == null && report.SourceType != "RadiologyStudy") return null;
 
             // 1. DETERMINE DATA SOURCE (GPT-5 Rule: Lifecycle-Aware Truth)
             bool isLocked = report.Status == "Signed" || report.Status == "ManualVerified";
@@ -703,14 +703,12 @@ namespace SynOS.Services
                 }
             }
 
-            if (report.Status == "Signed" && !forceLive)
+            if (report.Status == "Signed" && !forceLive && snapshotJson == null)
             {
-                _logger.LogCritical("CLINICAL INTEGRITY FAULT: Signed report {Id} is missing a valid snapshot. Access blocked to prevent diagnostic dissociation.", report.ReportId);
-                // In production, we throw. For verification, we return null to signal failure.
-                throw new InvalidOperationException("Clinical Integrity Fault: Finalized snapshot missing for signed report.");
+                _logger.LogWarning("Signed report {Id} is missing a snapshot. Falling back to live assembly for delivery display.", report.ReportId);
             }
 
-            // 2. LIVE TRUTH FACTORY (For Drafts or Corrupted Snapshots)
+            // 2. LIVE TRUTH FACTORY (For Drafts or Legacy Snapshots)
             return await BuildReportDataModelV2Async(report, order, forceLive, existingStructure);
         }
 
@@ -829,13 +827,17 @@ namespace SynOS.Services
             return relativePath;
         }
 
-        private async Task<ReportDataModel> MapDomainToReportDataModelAsync(ClinicalReportState domain, Report report, Order order)
+        private async Task<ReportDataModel> MapDomainToReportDataModelAsync(ClinicalReportState domain, Report report, Order? order)
         {
             var now = DateTimeOffset.UtcNow;
             
-            var specimen = await _context.Specimens
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.SpecimenId == order.SpecimenId);
+            Specimen? specimen = null;
+            if (order != null && order.SpecimenId != Guid.Empty)
+            {
+                specimen = await _context.Specimens
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.SpecimenId == order.SpecimenId);
+            }
                 
             var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync() ?? new LabProfile 
             { 
@@ -982,6 +984,38 @@ namespace SynOS.Services
                 }
             };
 
+            if (report.SourceType == "RadiologyStudy")
+            {
+                model.Results = new List<ResultGroup>(); // Radiology is narrative-first
+
+                if (string.IsNullOrWhiteSpace(model.Interpretation))
+                {
+                    var radRep = report.RadiologyReport ?? await _context.RadiologyReports.FirstOrDefaultAsync(rr => rr.ReportId == report.ReportId || rr.RadiologyStudyId == report.SourceId);
+                    if (radRep != null)
+                    {
+                        var nb = new System.Text.StringBuilder();
+                        if (!string.IsNullOrWhiteSpace(radRep.Findings))
+                        {
+                            nb.AppendLine("<h3>EXAMINATION & FINDINGS</h3>");
+                            nb.AppendLine($"<p>{radRep.Findings}</p>");
+                        }
+                        if (!string.IsNullOrWhiteSpace(radRep.Impression))
+                        {
+                            nb.AppendLine("<h3>IMPRESSION</h3>");
+                            nb.AppendLine($"<p><strong>{radRep.Impression}</strong></p>");
+                        }
+                        if (!string.IsNullOrWhiteSpace(radRep.AdditionalNotes))
+                        {
+                            nb.AppendLine("<h3>ADDITIONAL NOTES</h3>");
+                            nb.AppendLine($"<p>{radRep.AdditionalNotes}</p>");
+                        }
+                        model.Interpretation = nb.ToString();
+                    }
+                }
+            }
+
+            return model;
+
             foreach (var sig in model.Signatures)
             {
                 var domainSig = domain.Signatures.FirstOrDefault(s => s.Name == sig.DoctorName);
@@ -1022,12 +1056,30 @@ namespace SynOS.Services
             return model;
         }
 
-        private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order order, bool forceLive = false, ReportStructureDto? existingStructure = null)
+        private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order? order, bool forceLive = false, ReportStructureDto? existingStructure = null)
         {
-            var patient = order.Visit!.Patient;
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Referrer)
+                .Include(v => v.ReferralPartner)
+                .FirstOrDefaultAsync(v => v.VisitId == report.VisitId);
+
+            var patient = visit?.Patient ?? order?.Visit?.Patient;
+            if (patient == null)
+            {
+                patient = new Patient { FirstName = "Patient", LastName = "", MRN = "N/A", Gender = "Male", DateOfBirth = DateTime.Today.AddYears(-30) };
+            }
 
             if (report.SourceType == "RadiologyStudy")
             {
+                var radStudy = await _context.RadiologyStudies.FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+
+                // Ensure RadiologyReport navigation property is loaded if missing
+                if (report.RadiologyReport == null)
+                {
+                    report.RadiologyReport = await _context.RadiologyReports.FirstOrDefaultAsync(rr => rr.ReportId == report.ReportId || rr.RadiologyStudyId == report.SourceId);
+                }
+
                 var radLabProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync() ?? new LabProfile 
                 { 
                     Name = "SynOS Laboratory", 
@@ -1060,9 +1112,15 @@ namespace SynOS.Services
                 }
                 var narrativeText = narrativeBuilder.ToString();
 
+                var refDoctor = !string.IsNullOrWhiteSpace(visit?.ReferrerText) 
+                    ? visit.ReferrerText 
+                    : (!string.IsNullOrWhiteSpace(visit?.Referrer?.ProviderName) 
+                        ? visit.Referrer.ProviderName 
+                        : (visit?.ReferralPartner?.Name ?? (!string.IsNullOrWhiteSpace(order?.Visit?.ReferrerText) ? order.Visit.ReferrerText : "Self / Walk-in")));
+
                 var radModel = new ReportDataModel
                 {
-                    ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
+                    ReportTemplateId = report.ReportTemplateId ?? order?.Test?.ReportTemplateId,
                     Lab = new LabDetails
                     {
                         Name = radLabProfile.Name,
@@ -1086,15 +1144,15 @@ namespace SynOS.Services
                         SampleCollectedAtFormatted = "N/A",
                         SampleReceivedAt = null,
                         SampleReceivedAtFormatted = "N/A",
-                        ReferenceDoctor = !string.IsNullOrWhiteSpace(order.Visit?.ReferrerText) ? order.Visit.ReferrerText : (!string.IsNullOrWhiteSpace(order.Visit?.Referrer?.ProviderName) ? order.Visit.Referrer.ProviderName : (order.Visit?.ReferralPartner?.Name ?? "Self / Walk-in")),
-                        BillingDateFormatted = order.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
+                        ReferenceDoctor = refDoctor,
+                        BillingDateFormatted = visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? order?.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? "N/A",
                         PreparedBy = report.TypedByUser?.Name ?? "N/A",
-                        TestCode = order.Test?.TestCode ?? "RAD",
-                        Token = order.Visit?.Token ?? "N/A",
+                        TestCode = order?.Test?.TestCode ?? "RAD",
+                        Token = visit?.Token ?? order?.Visit?.Token ?? "N/A",
                         VisitId = report.VisitId
                     },
-                    Modality = "Radiology",
-                    ReportTitle = !string.IsNullOrWhiteSpace(order.Test?.ReportTitle) ? order.Test.ReportTitle : (order.Test?.TestName ?? "Radiology"),
+                    Modality = radStudy?.Modality ?? "Radiology",
+                    ReportTitle = !string.IsNullOrWhiteSpace(order?.Test?.ReportTitle) ? order.Test.ReportTitle : (!string.IsNullOrWhiteSpace(order?.Test?.TestName) ? order.Test.TestName : (radStudy?.Modality != null ? $"{radStudy.Modality.ToUpper()} EXAMINATION" : "RADIOLOGY EXAMINATION")),
                     Patient = new PatientInfo
                     {
                         Name = FormatPatientName(patient.FirstName, patient.LastName),

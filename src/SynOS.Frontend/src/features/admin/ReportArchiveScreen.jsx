@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { ReportsApi } from '@/api/reports';
 import { AdminApi } from '@/api/admin';
@@ -34,6 +34,10 @@ const getLocalYYYYMMDD = (date) => {
 export function ReportArchiveScreen() {
     const { theme } = useTheme();
     
+    // Auto-fit preview scale to prevent horizontal clipping when window is not maximized
+    const previewContainerRef = useRef(null);
+    const [previewScale, setPreviewScale] = useState(0.92);
+
     // Core query parameters
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedBranchId, setSelectedBranchId] = useState("");
@@ -70,6 +74,30 @@ export function ReportArchiveScreen() {
 
     // High fidelity template resolver hook
     const { template, loading: templateLoading } = useTemplateForReport(reportData);
+
+    // Observer to auto-fit A4 preview scale to available container width
+    useEffect(() => {
+        if (!previewContainerRef.current) return;
+
+        const updateScale = () => {
+            if (!previewContainerRef.current) return;
+            const width = previewContainerRef.current.clientWidth;
+            if (width > 0) {
+                const availableWidth = width - 16; // 8px padding on each side
+                const fittedScale = availableWidth / 793.7;
+                setPreviewScale(Math.min(0.95, Math.max(0.35, fittedScale)));
+            }
+        };
+
+        updateScale();
+
+        const observer = new ResizeObserver(() => {
+            updateScale();
+        });
+
+        observer.observe(previewContainerRef.current);
+        return () => observer.disconnect();
+    }, [reportStructure, template]);
 
     // Fetch branches and departments on mount
     useEffect(() => {
@@ -528,67 +556,87 @@ export function ReportArchiveScreen() {
             {/* RIGHT COLUMN: Detail & High Fidelity Preview (60% width) */}
             <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-synos-background relative z-10">
                 {isLoadingDetail || templateLoading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-synos-background/50 backdrop-blur-sm z-50">
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-synos-background/90 z-50">
                         <Loader2 className="w-10 h-10 animate-spin text-synos-primary" />
                     </div>
                 ) : (reportStructure && template) ? (
-                    <div className="h-full flex flex-col p-6 overflow-hidden">
+                    <div className="h-full flex flex-col p-3 overflow-hidden relative">
                         {/* Master Preview Render Box */}
-                        <div className="flex-1 border dark:border-white/5 border-zinc-200 rounded-3xl overflow-hidden bg-zinc-200/50 dark:bg-zinc-900/50 flex flex-col shadow-inner relative min-h-0">
-                            {/* Preview Label Ribbon */}
-                            <div className="absolute inset-x-0 top-0 h-12 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b dark:border-white/5 border-black/5 flex items-center justify-between px-6 z-10">
-                                <div className="flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-synos-primary" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
-                                        High-Fidelity Document Preview
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    <span className="text-[9px] font-black text-green-600 uppercase tracking-widest">
-                                        Archived Copy
-                                    </span>
-                                </div>
+                        <div className="flex-1 synos-elevated-card rounded-3xl overflow-hidden flex flex-col relative min-h-0">
+                            {/* Minimal Floating Glass Window Label */}
+                            <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-md flex items-center gap-2">
+                                <FileText className="w-3.5 h-3.5 text-synos-primary" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider dark:text-zinc-300 text-zinc-700">
+                                    High-Fidelity Document Preview
+                                </span>
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1" />
+                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                    Archived
+                                </span>
                             </div>
                             
-                            {/* Page Renderer View */}
-                            <div className="flex-1 overflow-auto p-6 pt-16 custom-scrollbar flex justify-center">
-                                <div className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden h-max origin-top scale-[0.9]">
-                                    <ReportA4 reportData={reportData} template={template} />
+                            {/* Page Renderer View (auto-fits scale to container width, goes 100% to bottom, zero cropping) */}
+                            <div ref={previewContainerRef} className="flex-1 overflow-auto p-1 sm:p-2 pt-14 pb-20 custom-scrollbar flex justify-center items-start">
+                                <div 
+                                    style={{ 
+                                        width: `${793.7 * previewScale}px`,
+                                        height: 'max-content',
+                                        overflow: 'hidden'
+                                    }}
+                                    className="flex justify-center shrink-0"
+                                >
+                                    <div 
+                                        style={{ 
+                                            transform: `scale(${previewScale})`,
+                                            transformOrigin: 'top left',
+                                            width: '793.7px',
+                                            marginRight: `-${793.7 * (1 - previewScale)}px`,
+                                            marginBottom: `-${1122 * (1 - previewScale)}px`
+                                        }}
+                                        className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm shrink-0"
+                                    >
+                                        <ReportA4 reportData={reportData} template={template} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* BOTTOM UTILITY & ACTION BAR */}
-                        <div className="mt-6 p-6 rounded-3xl bg-zinc-50 dark:bg-zinc-900 border dark:border-white/5 border-zinc-200 flex flex-col md:flex-row md:items-center md:justify-between gap-6 shrink-0 shadow-lg shadow-black/[0.02]">
-                            <div className="space-y-1">
-                                <h4 className="text-sm font-bold dark:text-white text-zinc-900 flex items-center gap-2">
-                                    <FileCheck2 className="w-4 h-4 text-synos-primary" />
-                                    {reportListItem?.patientName} ({reportListItem?.patientAgeGender})
-                                </h4>
-                                <div className="text-[10px] text-zinc-550 dark:text-zinc-500 font-medium flex items-center gap-3 flex-wrap">
-                                    <span>MRN: <strong>{reportListItem?.mrn || 'N/A'}</strong></span>
-                                    <span>&bull;</span>
-                                    <span>Token: <strong>{reportListItem?.token}</strong></span>
-                                    <span>&bull;</span>
-                                    <span>Referrer: <strong>{reportListItem?.referrerName}</strong></span>
-                                    <span>&bull;</span>
-                                    <span>Status: <strong className="uppercase">{reportListItem?.status}</strong></span>
+                            {/* 3 MINIMAL FLOATING AESTHETIC CARDS AT THE BOTTOM */}
+                            <div className="absolute bottom-4 inset-x-4 z-25 flex items-stretch gap-3">
+                                {/* Card 1: Patient Details & Status */}
+                                <div className="flex-1 min-w-0 bg-white dark:bg-zinc-900 border dark:border-white/10 border-zinc-200/80 px-4 py-3 rounded-2xl flex items-center gap-3.5 shadow-xl shadow-black/5">
+                                    <div className="w-10 h-10 shrink-0 rounded-xl bg-synos-primary/10 text-synos-primary flex items-center justify-center shadow-inner">
+                                        <FileCheck2 className="w-5 h-5" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="text-xs font-bold tracking-tight dark:text-white text-zinc-900 truncate">
+                                            {reportListItem?.patientName} ({reportListItem?.patientAgeGender})
+                                        </h4>
+                                        <div className="text-[10px] text-zinc-500 font-medium flex items-center gap-2 truncate mt-0.5">
+                                            <span>MRN: <strong className="text-zinc-700 dark:text-zinc-300">{reportListItem?.mrn || 'N/A'}</strong></span>
+                                            <span>&bull;</span>
+                                            <span>Token: <strong className="text-zinc-700 dark:text-zinc-300">{reportListItem?.token}</strong></span>
+                                            <span>&bull;</span>
+                                            <span>Referrer: <strong className="text-zinc-700 dark:text-zinc-300">{reportListItem?.referrerName}</strong></span>
+                                            <span>&bull;</span>
+                                            <span>Status: <strong className="uppercase text-emerald-600 dark:text-emerald-400">{reportListItem?.status}</strong></span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="flex items-center gap-3 self-end md:self-auto">
+                                {/* Card 2: Download PDF Button */}
                                 <button 
                                     onClick={handleDownload}
-                                    className="px-5 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-300 hover:dark:bg-zinc-700 active:scale-95 transition-all flex items-center gap-2"
+                                    className="bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-100 text-white dark:text-zinc-900 px-6 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-black/10 active:scale-95 transition-all flex items-center justify-center gap-2 border dark:border-white/10 border-zinc-800/20 shrink-0"
                                     title="Download PDF File"
                                 >
                                     <Download className="w-4 h-4" />
                                     Download PDF
                                 </button>
+
+                                {/* Card 3: Print Report Button */}
                                 <button 
                                     onClick={handlePrint}
-                                    className="px-5 py-3 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg bg-synos-primary text-white hover:bg-opacity-95 active:scale-95 transition-all flex items-center gap-2"
+                                    className="bg-synos-primary hover:bg-synos-primary/95 text-white px-6 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-synos-primary/15 active:scale-95 transition-all flex items-center justify-center gap-2 border border-synos-primary/30 shrink-0"
                                     title="Open Print Dialog"
                                 >
                                     <Printer className="w-4 h-4" />
