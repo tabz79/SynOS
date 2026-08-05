@@ -229,9 +229,17 @@ export function DicomViewerContainer({
         const nextLayout = nextMprState ? 'MPR' : '1x1';
         setLayout(nextLayout);
         if (nextMprState) {
-            setActiveTool('Crosshairs');
+            handleToolChange('Crosshairs');
         } else {
-            setActiveTool('WindowLevel');
+            handleToolChange('WindowLevel');
+        }
+    };
+
+    // Active Tool Switcher Handler
+    const handleToolChange = (toolName) => {
+        setActiveTool(toolName);
+        if (viewportManager.current) {
+            viewportManager.current.setToolActive(toolName);
         }
     };
 

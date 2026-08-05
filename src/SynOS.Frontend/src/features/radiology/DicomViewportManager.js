@@ -402,10 +402,12 @@ export class DicomViewportManager {
             }
         });
 
-        // Activate tools safely
+        // Activate tools safely according to viewport mode
         try {
             this.setToolActive(this.activeToolName);
-            this.toolGroup.setToolActive('StackScrollMouseWheel');
+            if (!isMPR) {
+                this.toolGroup.setToolActive('StackScrollMouseWheel');
+            }
         } catch (e) {
             console.warn("Could not set active tool in toolGroup:", e);
         }
