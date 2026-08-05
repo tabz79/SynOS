@@ -43,6 +43,7 @@ export function DeliveryTerminal() {
     const [toast, setToast] = useState(null);
     const [showWhatsAppPrompt, setShowWhatsAppPrompt] = useState(false);
     const [deliveryPhone, setDeliveryPhone] = useState("");
+    const [includeDicom, setIncludeDicom] = useState(true);
     const [gatewayStatus, setGatewayStatus] = useState(null);
 
     const showToast = (message, type = 'success') => {
@@ -502,6 +503,21 @@ export function DeliveryTerminal() {
                                         placeholder="NEW NUMBER"
                                     />
                                 </div>
+
+                                {/* DICOM Viewer Access Option */}
+                                <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                    <input 
+                                        type="checkbox"
+                                        id="includeDicomCheck"
+                                        checked={includeDicom}
+                                        onChange={(e) => setIncludeDicom(e.target.checked)}
+                                        className="w-4 h-4 rounded border-emerald-500 text-emerald-600 focus:ring-emerald-500"
+                                    />
+                                    <label htmlFor="includeDicomCheck" className="text-xs font-semibold select-none cursor-pointer">
+                                        Include DICOM Web Viewer Access Link
+                                    </label>
+                                </div>
+
                                 <div className="flex gap-4">
                                     <button 
                                         onClick={() => setShowWhatsAppPrompt(false)}

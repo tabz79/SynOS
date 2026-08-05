@@ -165,14 +165,29 @@ export function PacsArchiveScreen() {
         }
     };
 
-    const handleDownloadZip = (study) => {
-        const url = `/api/v1/radiology/pacs/studies/${study.radiologyStudyId}/download-zip`;
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `Study_${study.accessionNumber || study.radiologyStudyId}.zip`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+    const handleDownloadZip = async (study) => {
+        try {
+            const token = localStorage.getItem('synos_jwt');
+            const response = await fetch(`/api/v1/radiology/pacs/studies/${study.radiologyStudyId}/download-zip`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            if (!response.ok) {
+                alert('Failed to download ZIP archive: ' + response.statusText);
+                return;
+            }
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.setAttribute('download', `Study_${study.accessionNumber || study.radiologyStudyId}.zip`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            console.error("ZIP download exception:", err);
+            alert("Failed to download ZIP archive: " + err.message);
+        }
     };
 
     const handleFileUploadSubmit = async () => {

@@ -1100,23 +1100,60 @@ public class DeliveryService : IDeliveryService
         var memoryStream = new MemoryStream();
         using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
         {
+            // Add report PDF if available
+            await EnsureReportPdfAsync(report);
+            var latestReportVersion = report.ReportVersions?.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
+            string? relativePdfPath = latestReportVersion?.PdfPath ?? report.PdfUrl;
+            if (!string.IsNullOrEmpty(relativePdfPath))
+            {
+                var basePath = _configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
+                var absolutePdfPath = Path.Combine(basePath, relativePdfPath);
+                if (File.Exists(absolutePdfPath))
+                {
+                    var pdfEntry = archive.CreateEntry($"Report_{report.ReportId}.pdf");
+                    using (var pdfStream = File.OpenRead(absolutePdfPath))
+                    using (var entryStream = pdfEntry.Open())
+                    {
+                        await pdfStream.CopyToAsync(entryStream);
+                    }
+                }
+            }
+
+            // Add attachments
             foreach (var attachment in report.Attachments)
             {
-                // Ensure FileUrl is not null or empty
-                if (string.IsNullOrEmpty(attachment.FileUrl))
-                {
-                    _logger.LogWarning("Attachment {AttachmentId} has no FileUrl. Skipping.", attachment.AttachmentId);
-                    continue;
-                }
-
-                // Get file stream from storage service
+                if (string.IsNullOrEmpty(attachment.FileUrl)) continue;
                 using (var fileStream = await _fileStorageService.GetFileStreamAsync(attachment.FileUrl))
                 {
-                    var entry = archive.CreateEntry(attachment.DisplayName);
+                    var entry = archive.CreateEntry($"Attachments/{attachment.DisplayName}");
                     using (var entryStream = entry.Open())
                     {
                         await fileStream.CopyToAsync(entryStream);
                     }
+                }
+            }
+
+            // If RadiologyStudy, add raw DICOM files directly from PACS archive
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var instances = await _context.PacsInstances
+                    .Where(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted)
+                    .OrderBy(i => i.SeriesInstanceUid)
+                    .ThenBy(i => i.InstanceNumber)
+                    .ToListAsync();
+
+                int idx = 1;
+                foreach (var instance in instances)
+                {
+                    if (string.IsNullOrEmpty(instance.FilePath) || !File.Exists(instance.FilePath)) continue;
+                    var entryName = $"DICOM/IMG_{(instance.InstanceNumber ?? idx):D4}_{instance.InstanceId}.dcm";
+                    var entry = archive.CreateEntry(entryName);
+                    using (var dcmStream = File.OpenRead(instance.FilePath))
+                    using (var entryStream = entry.Open())
+                    {
+                        await dcmStream.CopyToAsync(entryStream);
+                    }
+                    idx++;
                 }
             }
         }

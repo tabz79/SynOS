@@ -48,7 +48,9 @@ export function DicomViewerContainer({
     seriesList = [],
     height = '100%',
     className = '',
-    showToolbar = true
+    showToolbar = true,
+    mode = 'internal',
+    onSeriesSelect = null
 }) {
     const containerRef = useRef(null);
     const viewportManager = useRef(null);

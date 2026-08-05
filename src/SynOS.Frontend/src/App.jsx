@@ -42,6 +42,7 @@ import { CTTechTerminal } from '@/features/radiology/CTTechTerminal'
 import { USTechTerminal } from '@/features/radiology/USTechTerminal'
 import { RadiologistTerminal } from '@/features/radiology/RadiologistTerminal'
 import { PacsArchiveScreen } from '@/features/radiology/PacsArchiveScreen'
+import { SharedStudyViewer } from '@/features/radiology/SharedStudyViewer'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function RootRedirect() {
@@ -111,9 +112,10 @@ function App() {
       <PrintOrchestratorProvider>
         <BrowserRouter>
           <Routes>
-            {/* Public Route */}
+            {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/setup" element={<FirstRunWizard />} />
+            <Route path="/r/:token/viewer" element={<SharedStudyViewer />} />
 
             {/* Document Engine (Decoupled Print Pipeline) */}
             <Route path="/print/report/:id" element={<DocumentPrinter />} />

@@ -14,11 +14,16 @@ namespace SynOS.Api.Controllers;
 public class SecureDownloadController : ControllerBase
 {
     private readonly IDeliveryService _deliveryService;
+    private readonly IPacsService _pacsService;
     private readonly ILogger<SecureDownloadController> _logger;
 
-    public SecureDownloadController(IDeliveryService deliveryService, ILogger<SecureDownloadController> logger)
+    public SecureDownloadController(
+        IDeliveryService deliveryService,
+        IPacsService pacsService,
+        ILogger<SecureDownloadController> logger)
     {
         _deliveryService = deliveryService;
+        _pacsService = pacsService;
         _logger = logger;
     }
 
@@ -26,7 +31,6 @@ public class SecureDownloadController : ControllerBase
     [HttpGet("/secure/r/{token}")]
     public async Task<IActionResult> LandingPage(string token)
     {
-        // Simple HTML landing page (Premium look with Dual PACS + PDF Actions)
         var html = $@"
         <!DOCTYPE html>
         <html lang='en'>
@@ -54,7 +58,7 @@ public class SecureDownloadController : ControllerBase
                     padding: 2.5rem;
                     border-radius: 2rem;
                     text-align: center;
-                    max-width: 440px;
+                    max-width: 460px;
                     width: 100%;
                     backdrop-filter: blur(20px);
                     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
@@ -141,7 +145,10 @@ public class SecureDownloadController : ControllerBase
                     <button id='downloadPdfBtn' class='btn'>
                         📄 View / Download Signed PDF Report
                     </button>
-                    <button id='viewPacsBtn' class='btn btn-secondary'>
+                    <button id='downloadZipBtn' class='btn btn-secondary'>
+                        📦 Download Complete Study Archive (.zip)
+                    </button>
+                    <button id='viewPacsBtn' class='btn btn-secondary' style='display: none;'>
                         🔬 Launch Interactive DICOM PACS Viewer
                     </button>
                 </div>
@@ -166,6 +173,10 @@ public class SecureDownloadController : ControllerBase
                     try {{
                         const res = await fetch(`/api/v1/public/reports/verify-phone/{token}?phone=` + phone);
                         if (res.ok) {{
+                            const data = await res.json();
+                            sessionStorage.setItem('synos_public_phone', phone);
+                            sessionStorage.setItem('synos_public_token', '{token}');
+
                             document.getElementById('verifyForm').style.display = 'none';
                             actions.style.display = 'flex';
 
@@ -173,16 +184,23 @@ public class SecureDownloadController : ControllerBase
                                 window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
                             }};
 
-                            document.getElementById('viewPacsBtn').onclick = function() {{
-                                window.location.href = `/pacs?token={token}&phone=` + phone;
+                            document.getElementById('downloadZipBtn').onclick = function() {{
+                                window.location.href = `/api/v1/public/reports/download-package/{token}?phone=` + phone;
                             }};
+
+                            if (data.isRadiology) {{
+                                const pacsBtn = document.getElementById('viewPacsBtn');
+                                pacsBtn.style.display = 'flex';
+                                pacsBtn.onclick = function() {{
+                                    window.location.href = `/r/{token}/viewer`;
+                                }};
+                            }}
                         }} else {{
                             errorMsg.style.display = 'block';
                             btn.innerText = 'Verify Identity';
                             btn.disabled = false;
                         }}
                     }} catch (err) {{
-                        // Fallback directly to pdf download if verify fails offline
                         window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
                     }}
                 }};
@@ -194,13 +212,28 @@ public class SecureDownloadController : ControllerBase
     }
 
     [HttpGet("verify-phone/{token}")]
-    public async Task<IActionResult> VerifyPhone(string token, [FromQuery] string phone)
+    public async Task<IActionResult> VerifyPhone(
+        string token, 
+        [FromQuery] string phone,
+        [FromServices] SynOS.Data.SynOSDbContext context)
     {
         if (string.IsNullOrEmpty(phone)) return BadRequest(new { error = "Phone required" });
         try
         {
             await _deliveryService.VerifyAndDownloadAsync(token, phone);
-            return Ok(new { valid = true });
+            
+            var downloadLink = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(context.DownloadLinks, dl => dl.Report),
+                dl => dl.Token == token);
+
+            bool isRadiology = downloadLink?.Report?.SourceType == "RadiologyStudy";
+            Guid? radiologyStudyId = isRadiology ? downloadLink?.Report?.SourceId : null;
+
+            return Ok(new { 
+                valid = true,
+                isRadiology = isRadiology,
+                radiologyStudyId = radiologyStudyId
+            });
         }
         catch (Exception ex)
         {
@@ -215,14 +248,11 @@ public class SecureDownloadController : ControllerBase
     public async Task<IActionResult> VerifyLink(string token)
     {
         var secureLinkDetails = await _deliveryService.GetSecureLinkVerificationDetailsAsync(token);
-        
-        if (!secureLinkDetails.Valid) // Check the Valid property of the DTO
+        if (!secureLinkDetails.Valid)
         {
-            _logger.LogWarning("Secure link verification failed for token: {Token} (Invalid or Expired)", token);
-            // Return 401 if invalid/expired, otherwise 404 if not found (though service handles not found by returning Valid = false)
+            _logger.LogWarning("Secure link verification failed for token: {Token}", token);
             return Unauthorized(new { error = "InvalidLinkOrExpired" });
         }
-
         return Ok(secureLinkDetails);
     }
 
@@ -238,53 +268,12 @@ public class SecureDownloadController : ControllerBase
     {
         if (string.IsNullOrEmpty(phone))
         {
-            _logger.LogWarning("Download attempt for token {Token} failed: phone query parameter is missing.", token);
             return BadRequest(new { error = "Phone number is required." });
         }
 
         try
         {
             var fileStream = await _deliveryService.VerifyAndDownloadAsync(token, phone);
-            
-            // Diagnostics
-            string absolutePath = "Unknown";
-            long fileSize = 0;
-            string fileHash = "Unknown";
-            try
-            {
-                var downloadLink = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
-                    Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(
-                        Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(
-                            context.DownloadLinks, dl => dl.Report), 
-                        r => r.Report.ReportVersions),
-                    dl => dl.Token == token);
-
-                if (downloadLink != null)
-                {
-                    var latestReportVersion = downloadLink.Report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
-                    string? relativePath = latestReportVersion?.PdfPath ?? downloadLink.Report.PdfUrl;
-                    if (!string.IsNullOrEmpty(relativePath))
-                    {
-                        var basePath = configuration["FileStorage:BasePath"] ?? "C:\\SynOS_Files";
-                        absolutePath = System.IO.Path.Combine(basePath, relativePath);
-                        if (System.IO.File.Exists(absolutePath))
-                        {
-                            var fileBytes = await System.IO.File.ReadAllBytesAsync(absolutePath);
-                            fileSize = fileBytes.Length;
-                            using var sha256 = System.Security.Cryptography.SHA256.Create();
-                            var hashBytes = sha256.ComputeHash(fileBytes);
-                            fileHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to compute diagnostics for token {Token}", token);
-            }
-
-            _logger.LogInformation("DOWNLOAD REPORT DIAGNOSTIC TRACE - Path: {AbsolutePath}, Size: {Size} bytes, SHA256: {Hash}", absolutePath, fileSize, fileHash);
-
             var fileName = $"Report_{token}.pdf"; 
             Response.Headers.Append("X-Content-Type-Options", "nosniff");
             Response.Headers.Append("X-Frame-Options", "DENY");
@@ -293,12 +282,10 @@ public class SecureDownloadController : ControllerBase
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == 401)
         {
-            _logger.LogWarning("Secure download failed for token {Token} (phone mismatch/invalid): {Message}", token, ex.Message);
             return Unauthorized(new { error = ex.Message });
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == 400 || ex.StatusCode == 404)
         {
-            _logger.LogWarning("Secure download failed for token {Token} (bad request/not found): {Message}", token, ex.Message);
             return BadRequest(new { error = ex.Message });
         }
     }
@@ -311,7 +298,6 @@ public class SecureDownloadController : ControllerBase
     {
         if (string.IsNullOrEmpty(phone))
         {
-            _logger.LogWarning("Download package attempt for token {Token} failed: phone query parameter is missing.", token);
             return BadRequest(new { error = "Phone number is required." });
         }
 
@@ -326,13 +312,76 @@ public class SecureDownloadController : ControllerBase
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == 401)
         {
-            _logger.LogWarning("Secure download package failed for token {Token} (phone mismatch/invalid): {Message}", token, ex.Message);
             return Unauthorized(new { error = ex.Message });
         }
         catch (BadHttpRequestException ex) when (ex.StatusCode == 400 || ex.StatusCode == 404)
         {
-            _logger.LogWarning("Secure download package failed for token {Token} (bad request/not found): {Message}", token, ex.Message);
             return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("viewer/{token}/series-tree")]
+    public async Task<IActionResult> GetPublicSeriesTree(
+        string token,
+        [FromQuery] string phone,
+        [FromServices] SynOS.Data.SynOSDbContext context)
+    {
+        if (string.IsNullOrEmpty(phone)) return BadRequest(new { error = "Phone required" });
+
+        try
+        {
+            await _deliveryService.VerifyAndDownloadAsync(token, phone);
+
+            var downloadLink = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(context.DownloadLinks, dl => dl.Report),
+                dl => dl.Token == token);
+
+            if (downloadLink?.Report?.SourceType != "RadiologyStudy")
+            {
+                return BadRequest(new { error = "Not a radiology study" });
+            }
+
+            var radiologyStudyId = downloadLink.Report.SourceId;
+            var request = HttpContext.Request;
+            var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";
+
+            var seriesTree = await _pacsService.GetSeriesTreeAsync(radiologyStudyId, Guid.Empty, apiBaseUrl);
+
+            // Re-map instance stream URLs to use public streaming endpoint with phone authentication
+            foreach (var series in seriesTree.Series)
+            {
+                foreach (var inst in series.Instances)
+                {
+                    inst.Wadouri = $"/api/v1/public/reports/viewer/{token}/instances/{inst.InstanceId}/file?phone={Uri.EscapeDataString(phone)}";
+                }
+            }
+
+            return Ok(seriesTree);
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("viewer/{token}/instances/{instanceId:guid}/file")]
+    public async Task<IActionResult> GetPublicDicomFile(
+        string token,
+        Guid instanceId,
+        [FromQuery] string phone)
+    {
+        if (string.IsNullOrEmpty(phone)) return BadRequest(new { error = "Phone required" });
+
+        try
+        {
+            await _deliveryService.VerifyAndDownloadAsync(token, phone);
+
+            var (stream, contentType) = await _pacsService.GetDicomStreamAsync(instanceId, Guid.Empty);
+            return File(stream, contentType, $"{instanceId}.dcm");
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(new { error = ex.Message });
         }
     }
 }
