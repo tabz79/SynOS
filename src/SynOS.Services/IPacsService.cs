@@ -39,5 +39,6 @@ namespace SynOS.Services
         Task<PacsOrphanSummaryDto> GetOrphanSummaryAsync(Guid currentUserId);
         Task<PacsStorageStatsDto> GetStorageStatsAsync(Guid currentUserId);
         Task<PacsOrphanSummaryDto> CleanupOrphansAsync(Guid currentUserId);
+        Task<(byte[] ZipBytes, string FileName)> CreateStudyZipAsync(Guid radiologyStudyId, Guid currentUserId);
     }
 }

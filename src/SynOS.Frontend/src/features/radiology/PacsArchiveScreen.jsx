@@ -18,7 +18,9 @@ import {
     Database,
     FolderArchive,
     SlidersHorizontal,
-    ChevronDown
+    DownloadCloud,
+    History,
+    FileSpreadsheet
 } from 'lucide-react';
 import { RadiologyApi } from '@/api/radiology';
 import { DicomViewerContainer } from './DicomViewerContainer';
@@ -34,11 +36,11 @@ export function PacsArchiveScreen() {
     const [filterAccession, setFilterAccession] = useState('');
     const [filterModality, setFilterModality] = useState('ALL');
     const [filterStatus, setFilterStatus] = useState('ALL');
-    const [datePreset, setDatePreset] = useState('ALL'); // 'ALL', 'TODAY', 'YESTERDAY', 'PAST3', 'PAST7', 'PAST30', 'CUSTOM'
+    const [datePreset, setDatePreset] = useState('ALL');
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
 
-    const [selectedStudy, setSelectedStudy] = useState(null);
+    const [selectedStudy, setSelectedStudy] = useState(null); // Drawer inspector hidden when null
     const [viewerStudy, setViewerStudy] = useState(null);
     const [seriesTree, setSeriesTree] = useState(null);
     const [seriesLoading, setSeriesLoading] = useState(false);
@@ -46,6 +48,11 @@ export function PacsArchiveScreen() {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadFiles, setUploadFiles] = useState([]);
+    
+    // Report preview modal state
+    const [reportModalStudy, setReportModalStudy] = useState(null);
+    const [reportModalData, setReportModalData] = useState(null);
+    const [reportModalLoading, setReportModalLoading] = useState(false);
 
     const fetchStudies = async () => {
         setLoading(true);
@@ -137,6 +144,35 @@ export function PacsArchiveScreen() {
         } finally {
             setViewerLoading(false);
         }
+    };
+
+    const handleViewReport = async (study) => {
+        setReportModalStudy(study);
+        setReportModalLoading(true);
+        setReportModalData(null);
+        try {
+            const res = await fetch(`/api/v1/radiology/reports/${study.radiologyStudyId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setReportModalData(data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch report details:", err);
+        } finally {
+            setReportModalLoading(false);
+        }
+    };
+
+    const handleDownloadZip = (study) => {
+        const url = `/api/v1/radiology/pacs/studies/${study.radiologyStudyId}/download-zip`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `Study_${study.accessionNumber || study.radiologyStudyId}.zip`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     };
 
     const handleFileUploadSubmit = async () => {
@@ -426,14 +462,15 @@ export function PacsArchiveScreen() {
                                         <th className="p-3.5">Accession Number</th>
                                         <th className="p-3.5">Date & Time</th>
                                         <th className="p-3.5">#SE / #IM</th>
-                                        <th className="p-3.5">Status</th>
-                                        <th className="p-3.5 text-right">Actions</th>
+                                        <th className="p-3.5">REPORT STATUS</th>
+                                        <th className="p-3.5 text-right">ACTIONS</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-zinc-150 dark:divide-zinc-800">
                                     {filteredStudies.map((study) => {
                                         const isSelected = selectedStudy?.radiologyStudyId === study.radiologyStudyId;
                                         const totalImagesCount = study.images?.length || 0;
+                                        const isSigned = ['Signed', 'Finalized', 'ManualVerified'].includes(study.status);
                                         return (
                                             <tr 
                                                 key={study.radiologyStudyId}
@@ -459,28 +496,67 @@ export function PacsArchiveScreen() {
                                                 <td className="p-3.5 font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
                                                     1 / {totalImagesCount}
                                                 </td>
+                                                {/* REPORT STATUS Column: ONLY In Progress or Signed */}
                                                 <td className="p-3.5">
                                                     <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xxs font-bold uppercase tracking-wider border ${
-                                                        study.status === 'Completed' || study.status === 'Signed'
+                                                        isSigned
                                                             ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20'
-                                                            : study.status === 'Assigned'
-                                                            ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20'
                                                             : 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20'
                                                     }`}>
-                                                        • {study.status || 'Pending'}
+                                                        • {isSigned ? 'Signed' : 'In Progress'}
                                                     </span>
                                                 </td>
+                                                {/* ACTIONS Column: Primary "Study" button + 3 compact action icons */}
                                                 <td className="p-3.5 text-right">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleOpenViewer(study);
-                                                        }}
-                                                        className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl text-xs font-bold inline-flex items-center space-x-1.5 shadow-sm hover:shadow transition-all duration-260 ease-synos active:scale-[0.98]"
-                                                    >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                        <span>View DICOM</span>
-                                                    </button>
+                                                    <div className="flex items-center justify-end space-x-1.5">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleOpenViewer(study);
+                                                            }}
+                                                            className="group px-3 py-1.5 bg-zinc-900 hover:bg-indigo-600 text-white rounded-xl text-xs font-bold inline-flex items-center shadow-sm hover:shadow transition-all duration-200 active:scale-[0.98]"
+                                                            title="Open DICOM Study Viewer"
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5 mr-1 text-indigo-400 group-hover:text-white" />
+                                                            <span>Study</span>
+                                                        </button>
+
+                                                        {/* Icon Action 1: Download Study DICOM Zip */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDownloadZip(study);
+                                                            }}
+                                                            className="p-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition"
+                                                            title="Download Study (.ZIP Archive)"
+                                                        >
+                                                            <DownloadCloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                        </button>
+
+                                                        {/* Icon Action 2: View Report PDF / Details */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleViewReport(study);
+                                                            }}
+                                                            className="p-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition"
+                                                            title="View Clinical Report"
+                                                        >
+                                                            <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                                        </button>
+
+                                                        {/* Icon Action 3: Filter Patient Scans History */}
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setFilterMrn(study.uhid || '');
+                                                            }}
+                                                            className="p-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition"
+                                                            title="Patient Scans History"
+                                                        >
+                                                            <History className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -491,18 +567,29 @@ export function PacsArchiveScreen() {
                     )}
                 </div>
 
-                {/* Right Panel: Selected Study Inspector & Full-Height Series Details */}
-                <div className="w-80 synos-card-elevated dark:bg-synos-surface bg-white rounded-2xl p-4 flex flex-col justify-between shadow-sm border border-zinc-250 dark:border-zinc-700 h-full">
-                    {selectedStudy ? (
+                {/* Right Drawer Inspector: HIDDEN BY DEFAULT, slides in on row click */}
+                {selectedStudy && (
+                    <div className="w-80 synos-card-elevated dark:bg-synos-surface bg-white rounded-2xl p-4 flex flex-col justify-between shadow-lg border border-zinc-250 dark:border-zinc-700 h-full animate-in slide-in-from-right duration-200">
                         <div className="flex flex-col h-full space-y-4">
-                            <div>
-                                <div className="text-xxs uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold mb-1">Selected DICOM Study</div>
-                                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{selectedStudy.testName}</h3>
-                                <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-2 space-y-1 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                                    <div><span className="text-zinc-500 font-medium">Patient:</span> <span className="font-bold text-zinc-800 dark:text-zinc-200">{selectedStudy.patientName}</span></div>
-                                    <div><span className="text-zinc-500 font-medium">UHID:</span> <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{selectedStudy.uhid || selectedStudy.patientUhid || 'SYN-P-001'}</span></div>
-                                    <div><span className="text-zinc-500 font-medium">Accession:</span> <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{selectedStudy.accessionNumber || selectedStudy.tokenNumber || 'ACC-001'}</span></div>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <div className="text-xxs uppercase tracking-wider text-indigo-600 dark:text-indigo-400 font-bold mb-0.5">Selected DICOM Study</div>
+                                    <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{selectedStudy.testName}</h3>
                                 </div>
+                                <button 
+                                    onClick={() => setSelectedStudy(null)}
+                                    className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                    title="Close Inspector"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1.5 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                                <div><span className="text-zinc-500 font-medium">Patient:</span> <span className="font-bold text-zinc-800 dark:text-zinc-200">{selectedStudy.patientName}</span></div>
+                                <div><span className="text-zinc-500 font-medium">UHID:</span> <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{selectedStudy.uhid || 'N/A'}</span></div>
+                                <div><span className="text-zinc-500 font-medium">Accession:</span> <span className="font-mono text-zinc-800 dark:text-zinc-200 font-bold">{selectedStudy.accessionNumber || 'N/A'}</span></div>
+                                <div><span className="text-zinc-500 font-medium">Exact Workflow State:</span> <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{selectedStudy.status}</span></div>
                             </div>
 
                             {/* Full-Height Series Hierarchy Section */}
@@ -577,16 +664,11 @@ export function PacsArchiveScreen() {
                                 )}
                             </div>
                         </div>
-                    ) : (
-                        <div className="h-full flex flex-col items-center justify-center text-center p-6 text-zinc-400">
-                            <Layers className="w-8 h-8 mb-2 text-zinc-300 dark:text-zinc-700" />
-                            <span className="text-xs font-medium">Select a study from the master archive to inspect DICOM series and metadata.</span>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
-            {/* View DICOM Modal Viewer */}
+            {/* View DICOM Modal Viewer with Dedicate Loading Screen */}
             {viewerStudy && (
                 <div className="fixed top-[48px] inset-x-0 bottom-0 z-[40] bg-zinc-950 flex flex-col animate-in fade-in duration-200">
                     <div className="px-4 py-3 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between text-white">
@@ -620,16 +702,29 @@ export function PacsArchiveScreen() {
                         </div>
                     </div>
 
-                    <div className="flex-1 bg-black overflow-hidden relative">
-                        {viewerUrls.length > 0 ? (
-                            <DicomViewerContainer urls={viewerUrls} imageIds={viewerUrls} modality={viewerStudy.modality || 'MRI'} />
-                        ) : viewerLoading ? (
-                            <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-xs">
-                                <RefreshCw className="w-6 h-6 animate-spin mb-2 text-indigo-500" />
-                                <span>Loading DICOM WebGL Slice Viewer...</span>
+                    <div className="flex-1 bg-black overflow-hidden relative flex flex-col min-h-0">
+                        {viewerLoading ? (
+                            <div className="h-full flex flex-col items-center justify-center text-zinc-300 text-xs space-y-3 bg-zinc-950">
+                                <RefreshCw className="w-8 h-8 animate-spin text-indigo-500 mb-1" />
+                                <div className="font-bold text-sm text-zinc-100">Loading DICOM Study & WebGL Viewer...</div>
+                                <div className="text-zinc-500 font-mono text-xxs">Fetching image slices and initializing viewport...</div>
                             </div>
+                        ) : viewerUrls.length > 0 ? (
+                            <DicomViewerContainer 
+                                urls={viewerUrls} 
+                                imageIds={viewerUrls} 
+                                modality={viewerStudy.modality || 'MRI'} 
+                                studyMetadata={{
+                                    patientName: viewerStudy.patientName,
+                                    uhid: viewerStudy.uhid,
+                                    accessionNumber: viewerStudy.accessionNumber,
+                                    testName: viewerStudy.testName,
+                                    studyDate: formatStudyDate(viewerStudy.createdAt || viewerStudy.createdDate)
+                                }}
+                                seriesList={seriesTree?.series || []}
+                            />
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-xs p-6 text-center space-y-3">
+                            <div className="h-full flex flex-col items-center justify-center text-zinc-400 text-xs p-6 text-center space-y-3 bg-zinc-950">
                                 <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400">
                                     <Layers className="w-6 h-6" />
                                 </div>
@@ -648,6 +743,76 @@ export function PacsArchiveScreen() {
                                 </button>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* View Clinical Report Modal */}
+            {reportModalStudy && (
+                <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl rounded-2xl p-6 max-w-lg w-full text-xs space-y-4">
+                        <div className="flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-3">
+                            <div>
+                                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Clinical Radiology Report</h3>
+                                <div className="text-xxs font-mono text-zinc-500">{reportModalStudy.patientName} • UHID: {reportModalStudy.uhid || 'N/A'}</div>
+                            </div>
+                            <button onClick={() => setReportModalStudy(null)}><X className="w-5 h-5 text-zinc-400" /></button>
+                        </div>
+
+                        {reportModalLoading ? (
+                            <div className="py-12 flex flex-col items-center justify-center text-zinc-400 space-y-2">
+                                <RefreshCw className="w-6 h-6 animate-spin text-indigo-500" />
+                                <span>Loading clinical report content...</span>
+                            </div>
+                        ) : reportModalData ? (
+                            <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                                <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                                    <div className="text-xxs uppercase tracking-wider text-indigo-500 font-bold">Study Name</div>
+                                    <div className="font-bold text-sm text-zinc-900 dark:text-zinc-100">{reportModalData.testName || reportModalStudy.testName}</div>
+                                    <div className="text-xxs text-zinc-500 mt-1">Status: {reportModalData.studyStatus} • Modality: {reportModalData.modality}</div>
+                                </div>
+
+                                {reportModalData.attachments && reportModalData.attachments.length > 0 && (
+                                    <div>
+                                        <div className="font-bold text-zinc-800 dark:text-zinc-200 mb-1">Attached PDF / Zip Documents</div>
+                                        <div className="space-y-1.5">
+                                            {reportModalData.attachments.map(att => (
+                                                <a 
+                                                    key={att.attachmentId}
+                                                    href={att.fileUrl} 
+                                                    target="_blank" 
+                                                    rel="noreferrer"
+                                                    className="flex items-center justify-between p-2.5 bg-indigo-50/50 dark:bg-indigo-950/30 hover:bg-indigo-100 rounded-xl border border-indigo-200 text-indigo-700 dark:text-indigo-300 font-bold"
+                                                >
+                                                    <span className="flex items-center"><FileText className="w-4 h-4 mr-2" /> {att.fileName}</span>
+                                                    <span className="text-xxs uppercase font-mono">Open PDF</span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <div className="font-bold text-zinc-800 dark:text-zinc-200 mb-1">Report Narrative</div>
+                                    <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300 font-mono text-xs">
+                                        {reportModalData.reportText || "Report dictation in progress / awaiting radiologist signature."}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="py-8 text-center text-zinc-400">
+                                No report available for this study yet.
+                            </div>
+                        )}
+
+                        <div className="flex justify-end pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                            <button 
+                                onClick={() => setReportModalStudy(null)}
+                                className="px-4 py-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 text-zinc-800 dark:text-zinc-200 rounded-xl font-bold"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

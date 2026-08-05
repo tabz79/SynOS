@@ -106,8 +106,54 @@ export class DicomViewportManager {
             return `wadouri:${authUrl}`;
         });
 
+        // Diagnostic Instrumentation for DICOM Metadata & Decoded Image Dimensions requested by User
+        if (rawImageIds.length > 0) {
+            const testId = rawImageIds[0];
+            try {
+                console.log("=== DICOM METADATA & DECODER DIAGNOSTIC INSTRUMENTATION ===");
+                console.log("Target ImageId:", testId);
+                const loadedImage = await cornerstone.imageLoader.loadImage(testId);
+                if (loadedImage) {
+                    const pixelData = loadedImage.getPixelData?.();
+                    const imagePlane = cornerstone.metaData.get('imagePlaneModule', testId) || {};
+
+                    console.log("DICOM Header Metadata:", {
+                        Rows: loadedImage.rows || imagePlane.rows,
+                        Columns: loadedImage.columns || imagePlane.columns,
+                        BitsAllocated: loadedImage.bitsAllocated,
+                        BitsStored: loadedImage.bitsStored,
+                        SamplesPerPixel: loadedImage.samplesPerPixel,
+                        PhotometricInterpretation: loadedImage.photometricInterpretation
+                    });
+
+                    console.log("Decoded Image Object Properties:", {
+                        width: loadedImage.width,
+                        height: loadedImage.height,
+                        color: loadedImage.color,
+                        rgba: loadedImage.rgba,
+                        numComps: loadedImage.numComps,
+                        pixelDataLength: pixelData ? pixelData.length : 0,
+                        pixelDataByteLength: pixelData ? pixelData.byteLength : 0
+                    });
+
+                    const rows = loadedImage.rows || 512;
+                    const cols = loadedImage.columns || 512;
+                    const allocatedPixels = rows * cols;
+                    const returnedPixels = pixelData ? pixelData.length : 0;
+
+                    console.log("Pixel Count Comparison:", {
+                        allocatedPixelsRowsTimesCols: allocatedPixels,
+                        returnedPixelsFromDecoder: returnedPixels,
+                        difference: returnedPixels - allocatedPixels
+                    });
+                }
+                console.log("===========================================================");
+            } catch (err) {
+                console.error("DICOM Load/Decode Diagnostic Error:", err);
+            }
+        }
+
         // Preload/cache metadata for all images in parallel
-        // WadoURI loader will parse DICOM headers and cache metadata automatically
         await Promise.all(rawImageIds.map(id => {
             return cornerstone.imageLoader.loadImage(id).catch(err => {
                 console.warn(`Failed to load image/metadata for ID: ${id}`, err);
@@ -131,7 +177,6 @@ export class DicomViewportManager {
 
     async setLayout(layout) {
         await this.initPromise;
-        if (this.layout === layout) return;
         this.layout = layout;
         await this.updateLayout();
     }
@@ -144,14 +189,16 @@ export class DicomViewportManager {
 
         // Query grid viewport containers rendered by React
         let elements = this.container.querySelectorAll('.viewport-element');
-        if (elements.length === 0) {
-            // Fallback: if React has not updated DOM yet, wait a frame and retry
-            await new Promise(resolve => setTimeout(resolve, 50));
+        let attempts = 0;
+        while (elements.length === 0 && attempts < 15) {
+            await new Promise(resolve => setTimeout(resolve, 40));
             elements = this.container.querySelectorAll('.viewport-element');
-            if (elements.length === 0) {
-                // If still not found, use container itself as a fallback
-                elements = [this.container];
-            }
+            attempts++;
+        }
+
+        if (elements.length === 0) {
+            console.error("No .viewport-element containers found in DOM!");
+            return;
         }
 
         const renderingEngineId = `SynosRenderingEngine_${Date.now()}`;
@@ -162,21 +209,44 @@ export class DicomViewportManager {
 
         if (isMPR) {
             // MPR Viewport Configuration
-            const volumeId = `cornerstoneStreamingImageVolume:volume_${Date.now()}`;
-            const volume = await cornerstone.volumeLoader.createAndCacheVolume(volumeId, {
-                imageIds: this.imageIds
-            });
-            volume.load();
+            let axialEl = document.getElementById('synos-viewport-axial') || this.container.querySelector('#synos-viewport-axial');
+            let sagittalEl = document.getElementById('synos-viewport-sagittal') || this.container.querySelector('#synos-viewport-sagittal');
+            let coronalEl = document.getElementById('synos-viewport-coronal') || this.container.querySelector('#synos-viewport-coronal');
 
-            const axialEl = this.container.querySelector('#synos-viewport-axial') || elements[0];
-            const sagittalEl = this.container.querySelector('#synos-viewport-sagittal') || elements[1];
-            const coronalEl = this.container.querySelector('#synos-viewport-coronal') || elements[2];
-            const volume3dEl = this.container.querySelector('#synos-viewport-3d') || elements[3];
+            let attempts = 0;
+            while ((!axialEl || !sagittalEl || !coronalEl) && attempts < 15) {
+                await new Promise(resolve => setTimeout(resolve, 40));
+                axialEl = document.getElementById('synos-viewport-axial') || this.container.querySelector('#synos-viewport-axial');
+                sagittalEl = document.getElementById('synos-viewport-sagittal') || this.container.querySelector('#synos-viewport-sagittal');
+                coronalEl = document.getElementById('synos-viewport-coronal') || this.container.querySelector('#synos-viewport-coronal');
+                attempts++;
+            }
+
+            if (!axialEl || !sagittalEl || !coronalEl) {
+                console.error("MPR Viewport elements not found in DOM yet");
+                return;
+            }
+
+            const volumeId = `cornerstoneStreamingImageVolume:volume_${Date.now()}`;
+            let isVolumeLoaded = false;
+            try {
+                const volume = await cornerstone.volumeLoader.createAndCacheVolume(volumeId, {
+                    imageIds: this.imageIds
+                });
+                if (volume) {
+                    volume.load();
+                    isVolumeLoaded = true;
+                }
+            } catch (vErr) {
+                console.warn("Volume loading exception, falling back to 2D stack orthographic rendering:", vErr);
+            }
+
+            const vpType = isVolumeLoaded ? cornerstone.Enums.ViewportType.ORTHOGRAPHIC : cornerstone.Enums.ViewportType.STACK;
 
             viewportInputs.push(
                 {
                     viewportId: 'axial',
-                    type: cornerstone.Enums.ViewportType.ORTHOGRAPHIC,
+                    type: vpType,
                     element: axialEl,
                     defaultOptions: {
                         orientation: cornerstone.Enums.OrientationAxis.AXIAL,
@@ -185,7 +255,7 @@ export class DicomViewportManager {
                 },
                 {
                     viewportId: 'sagittal',
-                    type: cornerstone.Enums.ViewportType.ORTHOGRAPHIC,
+                    type: vpType,
                     element: sagittalEl,
                     defaultOptions: {
                         orientation: cornerstone.Enums.OrientationAxis.SAGITTAL,
@@ -194,7 +264,7 @@ export class DicomViewportManager {
                 },
                 {
                     viewportId: 'coronal',
-                    type: cornerstone.Enums.ViewportType.ORTHOGRAPHIC,
+                    type: vpType,
                     element: coronalEl,
                     defaultOptions: {
                         orientation: cornerstone.Enums.OrientationAxis.CORONAL,
@@ -203,71 +273,61 @@ export class DicomViewportManager {
                 }
             );
 
-            if (volume3dEl) {
-                viewportInputs.push({
-                    viewportId: '3d',
-                    type: cornerstone.Enums.ViewportType.VOLUME_3D,
-                    element: volume3dEl,
-                    defaultOptions: {
-                        orientation: cornerstone.Enums.OrientationAxis.CORONAL,
-                        background: [0, 0, 0]
-                    }
-                });
-            }
-
             this.renderingEngine.setViewports(viewportInputs);
 
+            // Audit Active RenderingEngine and Viewports after MPR Initialization
+            try {
+                const activeViewports = this.renderingEngine.getViewports();
+                const enabledElements = cornerstone.getEnabledElements ? cornerstone.getEnabledElements() : [];
+                console.log("=== PROOF OF ENABLED VIEWPORTS AFTER setViewports() ===");
+                console.log("Total registered viewports in RenderingEngine:", activeViewports.length);
+                console.log("Viewport IDs:", activeViewports.map(v => v.id));
+                console.log("Viewport Elements:", activeViewports.map(v => ({ viewportId: v.id, elementId: v.element?.id, elementTag: v.element?.tagName, elementClass: v.element?.className })));
+                console.log("Enabled Elements in Cornerstone:", enabledElements.map(e => ({ viewportId: e.viewport?.id, elementId: e.element?.id })));
+                console.log("=======================================================");
+            } catch (e) {
+                console.warn("Post-initialization audit error:", e);
+            }
+
             this.volumeId = volumeId;
-            // Set volumes on each volume viewport
+            // Load volumes or 2D image stacks into each viewport
             for (const vInput of viewportInputs) {
                 const viewport = this.renderingEngine.getViewport(vInput.viewportId);
-                await viewport.setVolumes([{ volumeId }]);
-                
-                if (vInput.viewportId === '3d') {
-                    try {
-                        viewport.setProperties({ preset: 'CT-Bone' });
-                    } catch (e) {
-                        console.warn("Could not set volume rendering preset:", e);
-                    }
-                }
-                
-                viewport.resetCamera();
-                
-                const element = vInput.element;
-                const vId = vInput.viewportId;
-                if (element && vId !== '3d') {
-                    element.addEventListener(cornerstone.Enums.Events.CAMERA_MODIFIED, () => {
+                if (viewport) {
+                    if (isVolumeLoaded && typeof viewport.setVolumes === 'function') {
                         try {
-                            const currentIndex = viewport.getCurrentImageIdIndex();
-                            let numSlices = this.imageIds.length;
-                            
-                            const sliceRangeInfo = cornerstone.utilities.getVolumeSliceRangeInfo(viewport, volumeId);
-                            if (sliceRangeInfo && sliceRangeInfo.sliceRange) {
-                                numSlices = sliceRangeInfo.sliceRange.max - sliceRangeInfo.sliceRange.min + 1;
-                            }
-                            
-                            if (this.onViewportSliceChange) {
-                                this.onViewportSliceChange(vId, currentIndex, numSlices);
-                            }
-                        } catch (err) {
-                            console.warn("Failed to update slice details:", err);
+                            await viewport.setVolumes([{ volumeId }]);
+                        } catch (e) {
+                            console.warn("Could not set volume on viewport:", vInput.viewportId, e);
                         }
-                    });
-                    
-                    // Initialize state
-                    setTimeout(() => {
+                    } else if (typeof viewport.setStack === 'function' && this.imageIds.length > 0) {
                         try {
-                            const currentIndex = viewport.getCurrentImageIdIndex();
-                            let numSlices = this.imageIds.length;
-                            const sliceRangeInfo = cornerstone.utilities.getVolumeSliceRangeInfo(viewport, volumeId);
-                            if (sliceRangeInfo && sliceRangeInfo.sliceRange) {
-                                numSlices = sliceRangeInfo.sliceRange.max - sliceRangeInfo.sliceRange.min + 1;
-                            }
-                            if (this.onViewportSliceChange) {
-                                this.onViewportSliceChange(vId, currentIndex, numSlices);
-                            }
-                        } catch (e) {}
-                    }, 500);
+                            const sliceOffset = vInput.viewportId === 'sagittal' ? Math.floor(this.imageIds.length / 3) : (vInput.viewportId === 'coronal' ? Math.floor(this.imageIds.length * 2 / 3) : 0);
+                            await viewport.setStack(this.imageIds, sliceOffset);
+                        } catch (e) {
+                            console.warn("Could not set stack on viewport:", vInput.viewportId, e);
+                        }
+                    }
+                    try {
+                        viewport.resetCamera();
+                        viewport.render();
+                    } catch (e) {}
+
+                    const element = vInput.element;
+                    const vId = vInput.viewportId;
+                    if (element) {
+                        try {
+                            element.addEventListener(cornerstone.Enums.Events.CAMERA_MODIFIED, () => {
+                                try {
+                                    const currentIndex = viewport.getCurrentImageIdIndex?.() ?? 0;
+                                    let numSlices = this.imageIds.length;
+                                    if (this.onViewportSliceChange) {
+                                        this.onViewportSliceChange(vId, currentIndex, numSlices);
+                                    }
+                                } catch (err) {}
+                            });
+                        } catch (err) {}
+                    }
                 }
             }
         } else {
@@ -321,63 +381,55 @@ export class DicomViewportManager {
 
         const tools = [
             'WindowLevel', 'Pan', 'Zoom',
-            'Length', 'Angle', 'RectangleROI', 'EllipticalROI'
+            'Length', 'Angle', 'RectangleROI', 'EllipticalROI',
+            'Crosshairs', 'StackScrollMouseWheel'
         ];
-        if (isMPR) {
-            tools.push('Crosshairs');
-            tools.push('SlabScrollMouseWheel');
-        } else {
-            tools.push('StackScrollMouseWheel');
-        }
-        tools.forEach(tName => this.toolGroup.addTool(tName));
+        
+        tools.forEach(tName => {
+            try {
+                this.toolGroup.addTool(tName);
+            } catch (e) {
+                console.warn(`Could not add tool ${tName} to toolGroup:`, e);
+            }
+        });
 
         // Assign viewports to tool group (except 3D)
         viewportInputs.forEach(v => {
             if (v.viewportId !== '3d') {
-                this.toolGroup.addViewport(v.viewportId, this.renderingEngine.id);
+                try {
+                    this.toolGroup.addViewport(v.viewportId, this.renderingEngine.id);
+                } catch (e) {}
             }
         });
 
-        // Configure 3D tool group if we have a 3D viewport
-        const has3D = viewportInputs.some(v => v.viewportId === '3d');
-        if (has3D) {
-            const toolGroup3DId = `toolGroup3D_${Date.now()}`;
-            this.toolGroup3DId = toolGroup3DId;
-            this.toolGroup3D = cornerstoneTools.ToolGroupManager.createToolGroup(toolGroup3DId);
-            
-            const tools3D = ['TrackballRotate', 'Pan', 'Zoom'];
-            tools3D.forEach(tName => this.toolGroup3D.addTool(tName));
-            
-            this.toolGroup3D.addViewport('3d', this.renderingEngine.id);
-            
-            const MouseBindings = cornerstoneTools.Enums.MouseBindings;
-            
-            // Set TrackballRotate active on left mouse drag
-            this.toolGroup3D.setToolActive('TrackballRotate', {
-                bindings: [{ mouseButton: MouseBindings.Primary }]
-            });
-            // Set Pan active on middle mouse drag
-            this.toolGroup3D.setToolActive('Pan', {
-                bindings: [{ mouseButton: MouseBindings.Secondary }]
-            });
-            // Set Zoom active on right mouse drag
-            this.toolGroup3D.setToolActive('Zoom', {
-                bindings: [{ mouseButton: MouseBindings.Auxiliary }]
-            });
-        }
-
-        // Activate tools
-        this.setToolActive(this.activeToolName);
-        if (isMPR) {
-            this.toolGroup.setToolConfiguration('SlabScrollMouseWheel', {
-                invert: true
-            });
-            this.toolGroup.setToolActive('SlabScrollMouseWheel');
-        } else {
+        // Activate tools safely
+        try {
+            this.setToolActive(this.activeToolName);
             this.toolGroup.setToolActive('StackScrollMouseWheel');
+        } catch (e) {
+            console.warn("Could not set active tool in toolGroup:", e);
         }
 
-        this.renderingEngine.render();
+        try {
+            this.renderingEngine.render();
+            // Force explicit resize & camera reset after DOM stabilization
+            setTimeout(() => {
+                if (this.renderingEngine) {
+                    try {
+                        this.renderingEngine.resize(true, true);
+                        const viewports = this.renderingEngine.getViewports();
+                        viewports.forEach(vp => {
+                            try {
+                                vp.resetCamera();
+                                vp.render();
+                            } catch (err) {}
+                        });
+                    } catch (err) {}
+                }
+            }, 100);
+        } catch (e) {
+            console.error("Error during initial renderingEngine render:", e);
+        }
     }
 
     setToolActive(toolName) {
@@ -458,11 +510,91 @@ export class DicomViewportManager {
     resize() {
         if (this.renderingEngine) {
             try {
-                this.renderingEngine.resize();
+                this.renderingEngine.resize(true, true);
+                const viewports = this.renderingEngine.getViewports();
+                viewports.forEach(vp => {
+                    try {
+                        vp.render();
+                    } catch (e) {}
+                });
             } catch (error) {
                 console.error("Failed to resize Cornerstone3D rendering engine:", error);
             }
         }
+    }
+
+    resetCamera() {
+        if (!this.renderingEngine) return;
+        try {
+            const viewports = this.renderingEngine.getViewports();
+            viewports.forEach(vp => {
+                try {
+                    vp.resetCamera();
+                    vp.render();
+                } catch (e) {}
+            });
+        } catch (error) {}
+    }
+
+    setZoom(zoomFactor) {
+        if (!this.renderingEngine) return;
+        try {
+            const viewports = this.renderingEngine.getViewports();
+            viewports.forEach(vp => {
+                try {
+                    if (typeof vp.setZoom === 'function') {
+                        vp.setZoom(zoomFactor / 100);
+                    } else {
+                        const camera = vp.getCamera();
+                        if (camera && camera.parallelScale) {
+                            if (!vp.initialParallelScale) vp.initialParallelScale = camera.parallelScale;
+                            camera.parallelScale = vp.initialParallelScale / (zoomFactor / 100);
+                            vp.setCamera(camera);
+                        }
+                    }
+                    vp.render();
+                } catch (e) {}
+            });
+        } catch (e) {}
+    }
+
+    setSlabThickness(thickness) {
+        if (!this.renderingEngine || this.layout !== 'MPR') return;
+        try {
+            const viewports = this.renderingEngine.getViewports();
+            viewports.forEach(vp => {
+                if (vp.type === cornerstone.Enums.ViewportType.ORTHOGRAPHIC) {
+                    try {
+                        if (typeof vp.setSlabThickness === 'function') {
+                            vp.setSlabThickness(thickness);
+                        }
+                        vp.render();
+                    } catch (e) {}
+                }
+            });
+        } catch (e) {}
+    }
+
+    setProjectionMode(mode) {
+        if (!this.renderingEngine || this.layout !== 'MPR') return;
+        // Blend mode numeric constants: 0 = Maximum Intensity (MIP), 1 = Minimum Intensity (MinIP), 2 = Average (AvgIP)
+        let blendMode = 0;
+        if (mode === 'MinIP') blendMode = 1;
+        else if (mode === 'AvgIP') blendMode = 2;
+        else blendMode = 0;
+        try {
+            const viewports = this.renderingEngine.getViewports();
+            viewports.forEach(vp => {
+                if (vp.type === cornerstone.Enums.ViewportType.ORTHOGRAPHIC) {
+                    try {
+                        if (typeof vp.setBlendMode === 'function') {
+                            vp.setBlendMode(blendMode);
+                        }
+                        vp.render();
+                    } catch (e) {}
+                }
+            });
+        } catch (e) {}
     }
 
     setFilters(brightness, contrast) {
@@ -520,6 +652,7 @@ export class DicomViewportManager {
     }
 
     cleanupViewports() {
+        // Step 1: Remove Viewports from ToolGroups first
         if (this.toolGroup) {
             try {
                 if (this.renderingEngine) {
@@ -555,11 +688,12 @@ export class DicomViewportManager {
             this.toolGroup3DId = null;
         }
 
+        // Step 2: Safely destroy RenderingEngine and release WebGL GPU memory
         if (this.renderingEngine) {
             try {
                 this.renderingEngine.destroy();
             } catch (e) {
-                console.error("Error during rendering engine destruction:", e);
+                console.warn("RenderingEngine cleanup exception:", e);
             }
             this.renderingEngine = null;
         }

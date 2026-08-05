@@ -503,5 +503,67 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException("User does not have Admin privileges.");
             }
         }
+
+        public async Task<(byte[] ZipBytes, string FileName)> CreateStudyZipAsync(Guid radiologyStudyId, Guid currentUserId)
+        {
+            var study = await _context.RadiologyStudies.FindAsync(radiologyStudyId);
+            if (study == null)
+            {
+                throw new KeyNotFoundException($"Study with ID '{radiologyStudyId}' not found.");
+            }
+
+            if (currentUserId != Guid.Empty)
+            {
+                await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
+            }
+
+            var pacsInstances = await _context.PacsInstances
+                .Where(pi => pi.RadiologyStudyId == radiologyStudyId)
+                .ToListAsync();
+
+            var radImages = await _context.RadiologyImages
+                .Where(ri => ri.RadiologyStudyId == radiologyStudyId)
+                .ToListAsync();
+
+            var filePaths = new List<(string DiskPath, string ArchiveName)>();
+
+            int counter = 1;
+            foreach (var pi in pacsInstances)
+            {
+                if (File.Exists(pi.FilePath))
+                {
+                    filePaths.Add((pi.FilePath, $"Instance_{counter++:D4}.dcm"));
+                }
+            }
+
+            foreach (var ri in radImages)
+            {
+                string fullPath = ri.FileUrl;
+                if (!Path.IsPathRooted(fullPath))
+                {
+                    fullPath = Path.Combine(_pacsSettings.RootPath ?? @"C:\SynOS_Files\PACS", ri.FileUrl);
+                }
+                if (File.Exists(fullPath))
+                {
+                    filePaths.Add((fullPath, $"Image_{counter++:D4}.dcm"));
+                }
+            }
+
+            using var ms = new MemoryStream();
+            using (var archive = new ZipArchive(ms, ZipArchiveMode.Create, true))
+            {
+                foreach (var (diskPath, archiveName) in filePaths)
+                {
+                    var entry = archive.CreateEntry(archiveName, CompressionLevel.Fastest);
+                    using var entryStream = entry.Open();
+                    using var fileStream = File.OpenRead(diskPath);
+                    await fileStream.CopyToAsync(entryStream);
+                }
+            }
+
+            var cleanAccession = string.IsNullOrWhiteSpace(study.AccessionNumber) ? study.RadiologyStudyId.ToString() : study.AccessionNumber;
+            var fileName = $"Study_{cleanAccession}.zip";
+            return (ms.ToArray(), fileName);
+        }
     }
 }

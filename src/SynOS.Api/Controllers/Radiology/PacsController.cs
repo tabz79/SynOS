@@ -131,5 +131,21 @@ namespace SynOS.Api.Controllers.Radiology
             
             return Ok(result);
         }
+
+        [HttpGet("studies/{radiologyStudyId:guid}/download-zip")]
+        [Authorize(Roles = "Admin,SuperAdmin,Radiologist,XRayTech,MriTech,CTTech,USTech,Pathologist,LabTech,Technician,Receptionist,Typist")]
+        public async Task<IActionResult> DownloadStudyZip(Guid radiologyStudyId)
+        {
+            TryGetUserId(out var userId);
+            try
+            {
+                var (zipBytes, fileName) = await _pacsService.CreateStudyZipAsync(radiologyStudyId, userId);
+                return File(zipBytes, "application/zip", fileName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

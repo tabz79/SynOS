@@ -1,278 +1,62 @@
- SignalR(Branch): Subscriber added (Total: 1)
- [2026-08-03T11:50:13.340Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
- SignalR(Branch): Starting connection...
- [RootRedirect] Evaluating redirect: Object
- [BHK] widget sdk 1.0.0
- [BHK] install: missing/invalid publicKey or merchantId — aborting
- [2026-08-03T11:50:14.005Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiM2MwOTdiOGItNTdkNi00ZWQ5LTk3YmMtZDdlYThlNTBiMDJiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTc0MzcxMSwiZXhwIjoxNzg1ODMwMTExLCJpYXQiOjE3ODU3NDM3MTEsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.xAv5pPDKJ1BeHFTF45gQWUlCzH1CM0kMHhFLBDVcpUI.
- [2026-08-03T11:50:14.006Z] Information: Using HubProtocol 'json'.
- SignalR(Branch): Connected to /branchOperationsHub
- SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
-content.js:18 Uncaught (in promise) 
- [2026-08-03T11:52:09.191Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:59999/radiologyCollaborationHub'.
- [2026-08-03T11:52:09.215Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiM2MwOTdiOGItNTdkNi00ZWQ5LTk3YmMtZDdlYThlNTBiMDJiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTc0MzcxMSwiZXhwIjoxNzg1ODMwMTExLCJpYXQiOjE3ODU3NDM3MTEsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.xAv5pPDKJ1BeHFTF45gQWUlCzH1CM0kMHhFLBDVcpUI.
- CornerstoneRender: Using detect-gpu to get the GPU benchmark: Object
- CornerstoneRender: using GPU rendering
-api/v1/radiology/pacs/instances/fb9830c7-cc9f-4b69-9b3f-b1f61cbcd8ba/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/fb9830c7-cc9f-4b69-9b3f-b1f61cbcd8ba/file Object
-api/v1/radiology/pacs/instances/82413590-af36-47bf-9f89-fac68a5772c9/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/82413590-af36-47bf-9f89-fac68a5772c9/file Object
-api/v1/radiology/pacs/instances/d431f6e9-89ea-49b4-bda4-8f7afbc8e832/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/d431f6e9-89ea-49b4-bda4-8f7afbc8e832/file Object
-api/v1/radiology/pacs/instances/e6332d46-1f64-4130-8643-bfe8a23edd8e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/e6332d46-1f64-4130-8643-bfe8a23edd8e/file Object
-api/v1/radiology/pacs/instances/14fa4804-f363-49c3-a01b-4bc6f5324e17/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/14fa4804-f363-49c3-a01b-4bc6f5324e17/file Object
-api/v1/radiology/pacs/instances/616242e0-3708-493f-a9b2-64f7173e28d8/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/616242e0-3708-493f-a9b2-64f7173e28d8/file Object
-api/v1/radiology/pacs/instances/a975d4fb-f1f0-4c41-9a1d-e59440ea3292/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/a975d4fb-f1f0-4c41-9a1d-e59440ea3292/file Object
-api/v1/radiology/pacs/instances/63ffc4ee-9a90-43b8-9979-5576cc4d057c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/63ffc4ee-9a90-43b8-9979-5576cc4d057c/file Object
-api/v1/radiology/pacs/instances/8fee6887-802f-4f62-93bb-54ed5a1dd733/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/8fee6887-802f-4f62-93bb-54ed5a1dd733/file Object
-api/v1/radiology/pacs/instances/928918da-6162-4089-8da7-2cd46879a046/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/1bff699e-058b-4004-99c9-9b0111bcbf18/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/a4538028-6fe5-4544-aa4d-93a0242b192c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/bb3fa959-682e-49e6-922a-d2e76204fb6c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/928918da-6162-4089-8da7-2cd46879a046/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/1bff699e-058b-4004-99c9-9b0111bcbf18/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/a4538028-6fe5-4544-aa4d-93a0242b192c/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/bb3fa959-682e-49e6-922a-d2e76204fb6c/file Object
-api/v1/radiology/pacs/instances/fcd16439-4a63-4aff-b3e1-641eee81a74e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/fcd16439-4a63-4aff-b3e1-641eee81a74e/file Object
-api/v1/radiology/pacs/instances/7d3bcad2-88ca-4a98-8fae-e6182ba11b9e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/7d3bcad2-88ca-4a98-8fae-e6182ba11b9e/file Object
-api/v1/radiology/pacs/instances/3ec7c30a-03a6-4436-8b99-7e11c8bf4ad9/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/3ec7c30a-03a6-4436-8b99-7e11c8bf4ad9/file Object
-api/v1/radiology/pacs/instances/1ccf4181-5406-494f-997e-50eb201a6d1a/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/1ccf4181-5406-494f-997e-50eb201a6d1a/file Object
-api/v1/radiology/pacs/instances/f9600183-b475-480a-82c6-58dc60246015/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/f9600183-b475-480a-82c6-58dc60246015/file Object
-api/v1/radiology/pacs/instances/eec84b5a-a699-4ece-bdc2-ee03ad0ecba4/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/eec84b5a-a699-4ece-bdc2-ee03ad0ecba4/file Object
-api/v1/radiology/pacs/instances/98f0e86a-9b24-491b-af6f-4544014fcfbe/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/1fa3ae1b-c185-4566-8673-a5ba19fd624a/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/449456d0-d8be-4cba-ab71-a5f0255020d8/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/98f0e86a-9b24-491b-af6f-4544014fcfbe/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/1fa3ae1b-c185-4566-8673-a5ba19fd624a/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/449456d0-d8be-4cba-ab71-a5f0255020d8/file Object
-api/v1/radiology/pacs/instances/fcc96233-8e01-48e5-b59f-322bfdde67e2/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/fcc96233-8e01-48e5-b59f-322bfdde67e2/file Object
-api/v1/radiology/pacs/instances/8b92d65f-d0ca-41ff-828a-3f56b079e236/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/eabaa0c1-9713-402d-9fe6-36f0b5c3e91c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/0b0d795a-4fc3-447a-9983-5963a6869694/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/8b92d65f-d0ca-41ff-828a-3f56b079e236/file Object
-api/v1/radiology/pacs/instances/8a000f77-ad31-4ddd-b6fb-ecf6ecc30497/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/d4fffb57-7713-455d-8ef7-27533650368d/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/eabaa0c1-9713-402d-9fe6-36f0b5c3e91c/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/0b0d795a-4fc3-447a-9983-5963a6869694/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/8a000f77-ad31-4ddd-b6fb-ecf6ecc30497/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/d4fffb57-7713-455d-8ef7-27533650368d/file Object
-api/v1/radiology/pacs/instances/92e5bf14-a24e-49a7-96a9-797df554d361/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/92e5bf14-a24e-49a7-96a9-797df554d361/file Object
-api/v1/radiology/pacs/instances/286ad0d1-342c-46e3-aa2c-130ebbecfa08/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/286ad0d1-342c-46e3-aa2c-130ebbecfa08/file Object
-api/v1/radiology/pacs/instances/91b22213-d733-4810-849a-8484ebc71206/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/8065de7e-9957-4542-9261-1cf413cf83df/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/35d900e5-ac7f-4f82-b3ba-b093c13d7f77/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/35d900e5-ac7f-4f82-b3ba-b093c13d7f77/file Object
-api/v1/radiology/pacs/instances/063970e4-5730-42ad-95d8-bb5ba44edb0c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/063970e4-5730-42ad-95d8-bb5ba44edb0c/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/91b22213-d733-4810-849a-8484ebc71206/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/8065de7e-9957-4542-9261-1cf413cf83df/file Object
-api/v1/radiology/pacs/instances/7ff252d4-8909-44ee-844b-a17ea7d3b35a/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/7ff252d4-8909-44ee-844b-a17ea7d3b35a/file Object
-api/v1/radiology/pacs/instances/2d53631b-6cd6-4451-8cee-50c646fef766/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/2d53631b-6cd6-4451-8cee-50c646fef766/file Object
-api/v1/radiology/pacs/instances/5d84cb62-d6cf-481f-99d4-027b09c89d1a/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/5d84cb62-d6cf-481f-99d4-027b09c89d1a/file Object
-api/v1/radiology/pacs/instances/a5aa4508-3bd9-4dde-8a2c-bb49e2863dd3/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/a5aa4508-3bd9-4dde-8a2c-bb49e2863dd3/file Object
-api/v1/radiology/pacs/instances/ceb61a4f-9b36-4aeb-a79d-d5550e45c6ed/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/6e7290e0-7d0a-4bc5-9b4e-690e8e9ae990/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/871643bc-48ca-4af2-9660-2e320effe47e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/871643bc-48ca-4af2-9660-2e320effe47e/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/ceb61a4f-9b36-4aeb-a79d-d5550e45c6ed/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/6e7290e0-7d0a-4bc5-9b4e-690e8e9ae990/file Object
-api/v1/radiology/pacs/instances/3bde7651-7ce4-4a11-a2db-de5340472b4a/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/3bde7651-7ce4-4a11-a2db-de5340472b4a/file Object
-api/v1/radiology/pacs/instances/dbc57b3d-e120-4ea2-9352-a7f491058d31/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/dbc57b3d-e120-4ea2-9352-a7f491058d31/file Object
-api/v1/radiology/pacs/instances/7b14b064-987f-4722-bd0a-7d23866a2379/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/7b14b064-987f-4722-bd0a-7d23866a2379/file Object
-api/v1/radiology/pacs/instances/d9bcf24e-a07d-4e60-9a1e-bd09a4a187f8/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/d9bcf24e-a07d-4e60-9a1e-bd09a4a187f8/file Object
-api/v1/radiology/pacs/instances/7c617491-8244-4e3b-ba4d-78421a2dfc9c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/0cff7a9b-38e2-469c-8cdc-f096d222812e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/a3a3bc98-59b7-4105-b16c-47dca0750c9d/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/93ffe3b2-0c9f-40dc-b0a6-68b2832bcddc/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/7c617491-8244-4e3b-ba4d-78421a2dfc9c/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/0cff7a9b-38e2-469c-8cdc-f096d222812e/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/a3a3bc98-59b7-4105-b16c-47dca0750c9d/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/93ffe3b2-0c9f-40dc-b0a6-68b2832bcddc/file Object
-api/v1/radiology/pacs/instances/46fb533a-19df-4e41-9428-39f80f323294/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/46fb533a-19df-4e41-9428-39f80f323294/file Object
-api/v1/radiology/pacs/instances/eef5dc08-0298-4f71-b3d8-7adf2b386756/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/af5e37d9-a694-4029-92b9-053029e316d7/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/f59408be-660f-4ac9-9280-8f792f17bc7e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/39accb4e-1228-4c60-9077-115d711de08d/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/eef5dc08-0298-4f71-b3d8-7adf2b386756/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/af5e37d9-a694-4029-92b9-053029e316d7/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/f59408be-660f-4ac9-9280-8f792f17bc7e/file Object
-api/v1/radiology/pacs/instances/c285c769-d041-4848-98e1-3bacef1efd31/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/39accb4e-1228-4c60-9077-115d711de08d/file Object
- Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/c285c769-d041-4848-98e1-3bacef1efd31/file Object
-api/v1/radiology/pacs/instances/4dbfbd6b-d2be-4cba-901b-21081f4e8ac4/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/4dbfbd6b-d2be-4cba-901b-21081f4e8ac4/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/daa7a274-e0da-4ed8-9679-1652c368bbcb/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/533442f5-631a-499f-b1e0-20ac37ea2d92/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/69a4ab14-3ee9-4a14-816e-2ec318acaab1/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/3d955e5a-f76a-4abe-a712-814ae8937617/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/daa7a274-e0da-4ed8-9679-1652c368bbcb/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/533442f5-631a-499f-b1e0-20ac37ea2d92/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/69a4ab14-3ee9-4a14-816e-2ec318acaab1/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/3d955e5a-f76a-4abe-a712-814ae8937617/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/a224421f-afeb-4545-80ca-c9c8044cbdb0/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/a224421f-afeb-4545-80ca-c9c8044cbdb0/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/755a9c0e-c386-4de4-b148-3f9b0cf28972/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/755a9c0e-c386-4de4-b148-3f9b0cf28972/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/51f5eeda-6bc8-42e0-a159-58afb60e4cea/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/51f5eeda-6bc8-42e0-a159-58afb60e4cea/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/3066a88f-3d94-4e8a-a498-438b0b54fb40/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/3066a88f-3d94-4e8a-a498-438b0b54fb40/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/25b52429-2fab-48f3-95ed-ff58e83e3ca6/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/3f9a924c-362a-413f-810d-8f231ba4af87/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/e9b9eaa0-0eeb-460a-888c-ccb57758b2b7/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/b7960e43-7542-444b-82c4-78f20b1718b3/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/25b52429-2fab-48f3-95ed-ff58e83e3ca6/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/584d41c8-6114-4815-b670-e7043391ec6b/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/3f9a924c-362a-413f-810d-8f231ba4af87/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/e9b9eaa0-0eeb-460a-888c-ccb57758b2b7/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/740f0756-f792-40c0-96f5-753184b65db9/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/b7960e43-7542-444b-82c4-78f20b1718b3/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/584d41c8-6114-4815-b670-e7043391ec6b/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/740f0756-f792-40c0-96f5-753184b65db9/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/49d7a7fd-9857-40e3-a612-37bba2459357/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/1deab0ab-d99c-4643-9150-51a983639c54/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/49d7a7fd-9857-40e3-a612-37bba2459357/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/1deab0ab-d99c-4643-9150-51a983639c54/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/9049e7c7-1b3d-4b68-ae49-4c6c5d536a05/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/9049e7c7-1b3d-4b68-ae49-4c6c5d536a05/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/a2152dc7-4031-453c-af0c-ff06323fd936/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/a2152dc7-4031-453c-af0c-ff06323fd936/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/8788e97b-6478-46c7-ba1c-9c6f5115b93c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/89818034-b02f-4ba8-8a5b-946e4aa77105/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/8788e97b-6478-46c7-ba1c-9c6f5115b93c/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/89818034-b02f-4ba8-8a5b-946e4aa77105/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/6b41ba82-1dc3-4d50-b99f-f4d524749a8c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/e81c0755-7eda-4af8-addf-d63f196c38f0/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/94ed5f9e-f57c-4df7-83bc-19ab9e417169/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/6b41ba82-1dc3-4d50-b99f-f4d524749a8c/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/e81c0755-7eda-4af8-addf-d63f196c38f0/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/94ed5f9e-f57c-4df7-83bc-19ab9e417169/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/2d201bbd-4b10-4c69-85dc-d0adf1366650/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/2d201bbd-4b10-4c69-85dc-d0adf1366650/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/859948fb-a477-4d4b-b743-73e0d58b6f63/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/859948fb-a477-4d4b-b743-73e0d58b6f63/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/138bf2d3-edeb-4406-92ea-51cc8ab9dc66/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/138bf2d3-edeb-4406-92ea-51cc8ab9dc66/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/d34faa06-e820-4151-bd3e-a05f07ae9741/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/d34faa06-e820-4151-bd3e-a05f07ae9741/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/2ab2d38a-7a41-44b4-bd16-124bd7789ef6/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/4df9dc35-de65-4fc1-9aa7-b1cbb6d10480/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/2ab2d38a-7a41-44b4-bd16-124bd7789ef6/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/4df9dc35-de65-4fc1-9aa7-b1cbb6d10480/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/e01129f3-2d55-4cbb-a44b-960a01451e70/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/38cb00ef-b717-4421-b88c-c890c81d4aa2/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/e01129f3-2d55-4cbb-a44b-960a01451e70/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/38cb00ef-b717-4421-b88c-c890c81d4aa2/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/502925e0-0a1b-4a2c-ae4d-e86da2521a26/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-api/v1/radiology/pacs/instances/2738cbdb-e46d-47e4-9342-fac8be453c03/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/502925e0-0a1b-4a2c-ae4d-e86da2521a26/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/2738cbdb-e46d-47e4-9342-fac8be453c03/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/df0661de-7620-45de-b363-e06c16ad912e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:218860 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/df0661de-7620-45de-b363-e06c16ad912e/file Object
-(anonymous) @ index-0znzKCI2.js:218860
-api/v1/radiology/pacs/instances/82413590-af36-47bf-9f89-fac68a5772c9/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/fb9830c7-cc9f-4b69-9b3f-b1f61cbcd8ba/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/fcd16439-4a63-4aff-b3e1-641eee81a74e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/a4538028-6fe5-4544-aa4d-93a0242b192c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/7d3bcad2-88ca-4a98-8fae-e6182ba11b9e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/f9600183-b475-480a-82c6-58dc60246015/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/3ec7c30a-03a6-4436-8b99-7e11c8bf4ad9/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/1ccf4181-5406-494f-997e-50eb201a6d1a/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/bb3fa959-682e-49e6-922a-d2e76204fb6c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/7d3bcad2-88ca-4a98-8fae-e6182ba11b9e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/8fee6887-802f-4f62-93bb-54ed5a1dd733/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/bb3fa959-682e-49e6-922a-d2e76204fb6c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/8fee6887-802f-4f62-93bb-54ed5a1dd733/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/bb3fa959-682e-49e6-922a-d2e76204fb6c/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/fcd16439-4a63-4aff-b3e1-641eee81a74e/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
-api/v1/radiology/pacs/instances/8fee6887-802f-4f62-93bb-54ed5a1dd733/file:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)
-index-0znzKCI2.js:139528 Object
-(anonymous) @ index-0znzKCI2.js:139528
+index-BgNF3sF8.js:12105 SignalR(Branch): Subscriber added (Total: 1)
+index-BgNF3sF8.js:10604 [2026-08-05T05:20:54.984Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
+index-BgNF3sF8.js:12107 SignalR(Branch): Starting connection...
+index-BgNF3sF8.js:223180 [RootRedirect] Evaluating redirect: Object
+content.ts-CK3vpF-9.js:5 [BHK] widget sdk 1.0.0
+content.ts-CK3vpF-9.js:5 [BHK] install: missing/invalid publicKey or merchantId — aborting
+S0 @ content.ts-CK3vpF-9.js:5
+index-BgNF3sF8.js:10604 [2026-08-05T05:20:55.797Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY.
+index-BgNF3sF8.js:10604 [2026-08-05T05:20:55.799Z] Information: Using HubProtocol 'json'.
+index-BgNF3sF8.js:12108 SignalR(Branch): Connected to /branchOperationsHub
+index-BgNF3sF8.js:12096 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
+index-BgNF3sF8.js:118138 CornerstoneRender: Using detect-gpu to get the GPU benchmark: Object
+index-BgNF3sF8.js:118138 CornerstoneRender: using GPU rendering
+index-BgNF3sF8.js:219034 === DICOM METADATA & DECODER DIAGNOSTIC INSTRUMENTATION ===
+index-BgNF3sF8.js:219034 Target ImageId: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/6fc12891-8e94-42d4-89c0-259833cc525a/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY
+index-BgNF3sF8.js:219038 DICOM Header Metadata: Object
+index-BgNF3sF8.js:219045 Decoded Image Object Properties: Object
+index-BgNF3sF8.js:219055 Pixel Count Comparison: Object
+index-BgNF3sF8.js:219061 ===========================================================
+index-BgNF3sF8.js:219066 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/e29e7d01-2e64-4721-b919-5fd16a43709d/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY Object
+(anonymous) @ index-BgNF3sF8.js:219066
+index-BgNF3sF8.js:219066 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/d22caaf5-f0a2-4b2b-a12f-91fecd67f543/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY Object
+(anonymous) @ index-BgNF3sF8.js:219066
+index-BgNF3sF8.js:219430 === VIEWPORT LIFECYCLE AUDIT BEFORE DESTRUCTION ===
+index-BgNF3sF8.js:219430 Registered Viewports in RenderingEngine before cleanup: 1
+index-BgNF3sF8.js:219432 [Viewport #0] {id: 'viewport-0', type: 'stack', elementId: 'synos-viewport-single', elementClass: 'viewport-element relative w-full h-full flex-1 min-h-0 block', isDisabled: false}
+index-BgNF3sF8.js:219444 ====================================================
+index-BgNF3sF8.js:219475 RenderingEngine completely destroyed
+index-BgNF3sF8.js:219430 === VIEWPORT LIFECYCLE AUDIT BEFORE DESTRUCTION ===
+index-BgNF3sF8.js:219430 Registered Viewports in RenderingEngine before cleanup: 2
+index-BgNF3sF8.js:219432 [Viewport #0] {id: 'viewport-0', type: 'stack', elementId: 'synos-viewport-single', elementClass: 'viewport-element relative w-full h-full flex-1 min-h-0 block', isDisabled: false}
+index-BgNF3sF8.js:113599 error in event listener of type:  CORNERSTONE_ELEMENT_DISABLED NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at index-BgNF3sF8.js:203260:22
+    at R5e._U (index-BgNF3sF8.js:203261:15)
+    at R5e.dispatchEvent (index-BgNF3sF8.js:113597:14)
+    at GA (index-BgNF3sF8.js:117120:14)
+    at LG._resetViewport (index-BgNF3sF8.js:161910:26)
+    at LG.disableElement (index-BgNF3sF8.js:161594:12)
+    at index-BgNF3sF8.js:219440:94
+    at Array.forEach (<anonymous>)
+    at Jie.cleanupViewports (index-BgNF3sF8.js:219430:161)
+    at Jie.updateLayout (index-BgNF3sF8.js:219077:12)
+dispatchEvent @ index-BgNF3sF8.js:113599
+GA @ index-BgNF3sF8.js:117120
+_resetViewport @ index-BgNF3sF8.js:161910
+disableElement @ index-BgNF3sF8.js:161594
+(anonymous) @ index-BgNF3sF8.js:219440
+cleanupViewports @ index-BgNF3sF8.js:219430
+updateLayout @ index-BgNF3sF8.js:219077
+setLayout @ index-BgNF3sF8.js:219073
+await in setLayout
+ft @ index-BgNF3sF8.js:219611
+onClick @ index-BgNF3sF8.js:220065
+Vb @ index-BgNF3sF8.js:6908
+(anonymous) @ index-BgNF3sF8.js:7159
+lt @ index-BgNF3sF8.js:1935
+oE @ index-BgNF3sF8.js:6979
+hu @ index-BgNF3sF8.js:8449
+QE @ index-BgNF3sF8.js:8431
+index-BgNF3sF8.js:219432 [Viewport #1] {id: 'viewport-1', type: 'stack', elementId: '', elementClass: 'viewport-element', isDisabled: false}
+index-BgNF3sF8.js:219444 ====================================================
+index-BgNF3sF8.js:219475 RenderingEngine completely destroyed
