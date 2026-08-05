@@ -693,6 +693,14 @@ export class DicomViewportManager {
         // Step 2: Safely destroy RenderingEngine and release WebGL GPU memory
         if (this.renderingEngine) {
             try {
+                const viewports = this.renderingEngine.getViewports();
+                viewports.forEach(vp => {
+                    try {
+                        if (vp && vp.element && vp.canvas && vp.element.contains(vp.canvas)) {
+                            vp.element.removeChild(vp.canvas);
+                        }
+                    } catch (err) {}
+                });
                 this.renderingEngine.destroy();
             } catch (e) {
                 console.warn("RenderingEngine cleanup exception:", e);

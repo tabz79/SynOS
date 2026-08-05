@@ -50,7 +50,8 @@ export function DicomViewerContainer({
     className = '',
     showToolbar = true,
     mode = 'internal',
-    onSeriesSelect = null
+    onSeriesSelect = null,
+    leftAction = null
 }) {
     const containerRef = useRef(null);
     const viewportManager = useRef(null);
@@ -401,6 +402,7 @@ export function DicomViewerContainer({
                     
                     {/* Left Tools Group */}
                     <div className="flex flex-wrap items-center space-x-1.5 py-0.5">
+                        {leftAction}
                         
                         {/* 1. Series Sidebar Toggle Button */}
                         <button

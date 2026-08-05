@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
 import { DicomViewportManager } from './DicomViewportManager';
+import { DicomViewerContainer } from './DicomViewerContainer';
 import { RadiologyApi } from '@/api/radiology';
 import { ReportsApi } from '@/api/reports';
 import { 
@@ -25,7 +26,9 @@ import {
     Users,
     Key,
     Lock,
-    X
+    X,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import * as signalR from '@microsoft/signalr';
 import { CollaborationCallOverlay } from './CollaborationCallOverlay';
@@ -48,6 +51,20 @@ export function RadiologistTerminal() {
     const [selectedStudy, setSelectedStudy] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [seriesTree, setSeriesTree] = useState(null);
+    const [activeImageIds, setActiveImageIds] = useState([]);
+
+    const handleSeriesChange = (seriesId) => {
+        if (!seriesTree) return;
+        const targetSeries = seriesTree.series?.find(s => s.seriesId === seriesId);
+        if (targetSeries && targetSeries.instances) {
+            const imageIds = targetSeries.instances.map(inst => {
+                const url = inst.wadouri || `/api/v1/radiology/pacs/instances/${inst.instanceId}/file`;
+                return url.startsWith('wadouri:') ? url : `wadouri:${url}`;
+            });
+            setActiveImageIds(imageIds);
+        }
+    };
 
     const [leftWidth, setLeftWidth] = useState(300);
     const [rightWidth, setRightWidth] = useState(450);
@@ -448,60 +465,60 @@ export function RadiologistTerminal() {
         };
     }, []);
 
-    // Initialize Dicom Viewport and sync collaborative session when active study changes
+    // Load DICOM Viewport images and sync collaborative session when active study changes
     useEffect(() => {
         if (selectedStudy) {
             setIsQueueCollapsed(true);
-            const isClaimedByMe = selectedStudy.claimedByUserId === user?.id;
             const studyId = selectedStudy.studyId || selectedStudy.radiologyStudyId;
             
-            if (isClaimedByMe && studyId) {
-                if (canvasRef.current) {
-                    viewportManager.current = new DicomViewportManager(canvasRef.current, selectedStudy.modality);
-                    viewportManager.current.layout = layout;
-                    viewportManager.current.onSliceChange = (idx) => {
-                        setActiveSliceIndex(idx);
-                    };
-                    viewportManager.current.onViewportSliceChange = (viewportId, current, max) => {
-                        setViewportSlices(prev => ({
-                            ...prev,
-                            [viewportId]: { current, max }
-                        }));
-                    };
-                    
-                    // Load raw DICOM slices if study contains any PACS instances or extracted slices
-                    const loadDicomImages = async () => {
-                        let urls = [];
-                        if (selectedStudy.images && selectedStudy.images.length > 0) {
-                            urls = selectedStudy.images.map(img => img.fileUrl);
-                        } else {
-                            try {
-                                const tree = await RadiologyApi.getSeriesTree(studyId);
-                                if (tree && tree.series) {
-                                    tree.series.forEach(s => {
-                                        if (s.instances) {
-                                            s.instances.forEach(inst => {
-                                                urls.push(`/api/v1/radiology/pacs/instances/${inst.instanceId}/file`);
-                                            });
+            if (studyId) {
+                // Load raw DICOM slices if study contains any PACS instances or extracted slices
+                const loadDicomImages = async () => {
+                    let urls = [];
+                    if (selectedStudy.images && selectedStudy.images.length > 0) {
+                        urls = selectedStudy.images.map(img => img.fileUrl);
+                    }
+
+                    if (urls.length === 0) {
+                        try {
+                            const res = await fetch(`/api/v1/radiology/reports/${studyId}`, {
+                                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                            });
+                            if (res.ok) {
+                                const details = await res.json();
+                                if (details && details.images && details.images.length > 0) {
+                                    urls = details.images.map(img => img.fileUrl);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("Failed to fetch study report details for PACS viewer:", e);
+                        }
+                    }
+
+                    try {
+                        const tree = await RadiologyApi.getSeriesTree(studyId);
+                        if (tree && tree.series) {
+                            setSeriesTree(tree);
+                            tree.series.forEach(s => {
+                                if (s.instances) {
+                                    s.instances.forEach(inst => {
+                                        const fileUrl = `/api/v1/radiology/pacs/instances/${inst.instanceId}/file`;
+                                        if (!urls.includes(fileUrl)) {
+                                            urls.push(fileUrl);
                                         }
                                     });
                                 }
-                            } catch (e) {
-                                console.warn("No PACS series tree found for study:", e);
-                            }
+                            });
                         }
+                    } catch (e) {
+                        console.warn("No PACS series tree found for study:", e);
+                    }
+                    setActiveImageIds(urls);
+                };
 
-                        if (urls.length > 0 && viewportManager.current) {
-                            viewportManager.current.setImages(urls).then(() => {
-                                setActiveSliceIndex(0);
-                            }).catch(e => console.error("Error setting DICOM viewport images:", e));
-                        }
-                    };
-
-                    loadDicomImages();
-                }
+                loadDicomImages();
                 
-                // Switch session groups dynamically
+                // Switch session groups dynamically for SignalR collaborative transcription
                 const studyIdStr = studyId.toString();
                 if (currentJoinedStudyIdRef.current && currentJoinedStudyIdRef.current !== studyIdStr) {
                     if (hubConnection.current && hubConnection.current.state === 'Connected' && isHubReady) {
@@ -518,14 +535,7 @@ export function RadiologistTerminal() {
                 fetchReportDraft(studyId);
             }
         }
-
-        return () => {
-            if (viewportManager.current) {
-                viewportManager.current.destroy();
-                viewportManager.current = null;
-            }
-        };
-    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId, layout, isHubReady]);
+    }, [selectedStudy?.radiologyStudyId || selectedStudy?.studyId, selectedStudy?.claimedByUserId, isHubReady]);
 
     // Centering & Resizing layout adapter for CSS transitions
     useEffect(() => {
@@ -1070,257 +1080,45 @@ export function RadiologistTerminal() {
                 {/* 2. WebGL Resizable Viewport */}
                 <div className="h-full flex-1 flex flex-col overflow-hidden dark:bg-black bg-zinc-950 min-w-[300px]">
                     {selectedStudy ? (
-                        <div className="flex-1 flex flex-col overflow-hidden">
-                            {/* Viewport Control Strip */}
-                            <div className="p-3 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex items-center justify-between text-xs gap-3">
-                                <div className="flex items-center gap-3">
+                        <div className="flex-1 flex flex-col overflow-hidden relative">
+                            <DicomViewerContainer 
+                                urls={activeImageIds}
+                                imageIds={activeImageIds}
+                                modality={selectedStudy?.modality || 'MRI'}
+                                studyMetadata={{
+                                    patientName: selectedStudy?.patientName,
+                                    uhid: selectedStudy?.uhid || selectedStudy?.patientUhid,
+                                    accessionNumber: selectedStudy?.accessionNumber,
+                                    testName: selectedStudy?.testName,
+                                    studyDate: selectedStudy?.createdAt || selectedStudy?.createdDate
+                                }}
+                                seriesList={seriesTree?.series || []}
+                                mode="internal"
+                                onSeriesSelect={handleSeriesChange}
+                                leftAction={
                                     <button
                                         onClick={() => setIsQueueCollapsed(prev => !prev)}
-                                        className="p-1 hover:bg-zinc-500/10 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-black border dark:border-synos-border border-zinc-200 text-xs flex items-center justify-center w-6 h-6 animate-in fade-in zoom-in duration-300"
-                                        title={isQueueCollapsed ? "Show Patient Queue" : "Collapse Workspace"}
+                                        className={`flex flex-col items-center justify-center px-3 py-1 rounded-lg border text-xxs font-bold transition shadow-sm ${
+                                            isQueueCollapsed 
+                                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-400' 
+                                                : 'bg-zinc-800 hover:bg-zinc-700 text-cyan-300 border-zinc-700'
+                                        }`}
+                                        title={isQueueCollapsed ? "Expand Patient Queue Cards" : "Collapse Patient Queue Cards"}
                                     >
-                                        {isQueueCollapsed ? "→" : "←"}
+                                        {isQueueCollapsed ? (
+                                            <>
+                                                <ChevronRight className="w-4 h-4 mb-0.5 text-white" />
+                                                <span>Queue</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ChevronLeft className="w-4 h-4 mb-0.5 text-cyan-300" />
+                                                <span>Collapse</span>
+                                            </>
+                                        )}
                                     </button>
-                                    <div className="flex items-center gap-1">
-                                        <Sun className="h-3.5 w-3.5 dark:text-zinc-400 text-zinc-550" />
-                                        <input 
-                                            type="range" 
-                                            min="30" 
-                                            max="200" 
-                                            value={brightness} 
-                                            onChange={(e) => updateFilters(Number(e.target.value), contrast)}
-                                            className="w-16 accent-synos-primary cursor-pointer"
-                                        />
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <Contrast className="h-3.5 w-3.5 dark:text-zinc-400 text-zinc-550" />
-                                        <input 
-                                            type="range" 
-                                            min="30" 
-                                            max="200" 
-                                            value={contrast} 
-                                            onChange={(e) => updateFilters(brightness, Number(e.target.value))}
-                                            className="w-16 accent-synos-primary cursor-pointer"
-                                        />
-                                    </div>
-                                </div>
-                                {/* Active Tool Toggles */}
-                                <div className="flex dark:bg-zinc-900 bg-zinc-100 p-0.5 rounded border dark:border-zinc-850 border-zinc-200 flex-wrap gap-0.5">
-                                    <button
-                                        onClick={() => handleToggleTool('Wwwc')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Wwwc' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        title="Window Width / Window Center"
-                                    >
-                                        Windowing
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('Length')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Length' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        title="Length Caliper"
-                                    >
-                                        Caliper
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('Angle')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Angle' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        title="Cobb Angle"
-                                    >
-                                        Angle
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('RectangleROI')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'RectangleROI' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        title="Rectangle ROI"
-                                    >
-                                        Rect ROI
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('EllipticalROI')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'EllipticalROI' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        title="Elliptical ROI"
-                                    >
-                                        Ellipse ROI
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('Crosshairs')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Crosshairs' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        title="Crosshair Synchronization (MPR)"
-                                    >
-                                        Crosshair
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('Pan')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Pan' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                    >
-                                        Pan
-                                    </button>
-                                    <button
-                                        onClick={() => handleToggleTool('Zoom')}
-                                        className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${activeTool === 'Zoom' ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                    >
-                                        Zoom
-                                    </button>
-                                </div>
-
-                                {/* Layout Grid Selector */}
-                                <div className="flex dark:bg-zinc-900 bg-zinc-100 p-0.5 rounded border dark:border-zinc-850 border-zinc-200 gap-0.5 shrink-0">
-                                    {['1x1', '1x2', '2x2', 'MPR'].map((lay) => (
-                                        <button
-                                            key={lay}
-                                            onClick={() => handleLayoutChange(lay)}
-                                            className={`px-2 py-1 rounded text-[10px] font-bold transition-all ${layout === lay ? 'bg-synos-primary text-white shadow-sm' : 'dark:text-zinc-400 text-zinc-655 hover:dark:text-zinc-200 hover:text-zinc-900'}`}
-                                        >
-                                            {lay}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Slice Scrolling & Actions */}
-                                <div className="flex items-center gap-3">
-                                    {(() => {
-                                        const activeSliceInfo = viewportSlices[activeViewportId] || { current: activeSliceIndex, max: selectedStudy?.images?.length || 1 };
-                                        const { current, max } = activeSliceInfo;
-                                        if (max <= 1) return null;
-                                        return (
-                                            <div className="flex items-center gap-2 border-r dark:border-synos-border border-zinc-200 pr-3">
-                                                <span className="text-[10px] font-mono dark:text-zinc-400 text-zinc-550">
-                                                    Slice: {current + 1} / {max}
-                                                </span>
-                                                <input
-                                                    type="range"
-                                                    min="0"
-                                                    max={max - 1}
-                                                    value={current}
-                                                    onChange={(e) => {
-                                                        const val = Number(e.target.value);
-                                                        setViewportSlices(prev => ({
-                                                            ...prev,
-                                                            [activeViewportId]: { ...prev[activeViewportId], current: val }
-                                                        }));
-                                                        if (viewportManager.current) {
-                                                            viewportManager.current.setViewportSlice(activeViewportId, val);
-                                                        }
-                                                    }}
-                                                    className="w-20 accent-synos-primary cursor-pointer h-1 rounded-lg bg-zinc-200 dark:bg-zinc-850"
-                                                />
-                                            </div>
-                                        );
-                                    })()}
-
-                                    <button
-                                        onClick={handleClearCalipers}
-                                        className="px-2.5 py-1 dark:bg-zinc-900 bg-zinc-100 border dark:border-zinc-800 border-zinc-200 hover:dark:bg-zinc-800 hover:bg-zinc-200/50 dark:text-zinc-300 text-zinc-700 rounded font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5 transition-all"
-                                    >
-                                        <Trash2 className="h-3 w-3" />
-                                        Clear Annotations
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Canvas Area */}
-                            <div className="flex-1 relative overflow-hidden flex items-center justify-center p-2 dark:bg-synos-background bg-zinc-50">
-                                <div 
-                                    key={`${selectedStudy.studyId || selectedStudy.radiologyStudyId}_${layout}`}
-                                    ref={canvasRef}
-                                    onContextMenu={(e) => e.preventDefault()}
-                                    className="absolute inset-2 border dark:border-synos-border border-zinc-200 dark:bg-black bg-zinc-900 rounded-lg shadow-2xl overflow-hidden p-1"
-                                >
-                                   {layout === '1x1' && (
-                                       <div 
-                                           onMouseDown={() => setActiveViewportId('viewport-0')}
-                                           className="w-full h-full relative bg-black rounded overflow-hidden"
-                                       >
-                                           <div id="synos-viewport-0" className="w-full h-full viewport-element" />
-                                           {renderViewportScrollbar('viewport-0')}
-                                       </div>
-                                   )}
-                                   {layout === '1x2' && (
-                                       <div className="grid grid-cols-2 gap-2 w-full h-full">
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('viewport-0')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-0" className="w-full h-full viewport-element" />
-                                               {renderViewportScrollbar('viewport-0')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('viewport-1')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-1" className="w-full h-full viewport-element" />
-                                               {renderViewportScrollbar('viewport-1')}
-                                           </div>
-                                       </div>
-                                   )}
-                                   {layout === '2x2' && (
-                                       <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-full">
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('viewport-0')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-0" className="w-full h-full viewport-element" />
-                                               {renderViewportScrollbar('viewport-0')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('viewport-1')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-1" className="w-full h-full viewport-element" />
-                                               {renderViewportScrollbar('viewport-1')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('viewport-2')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-2" className="w-full h-full viewport-element" />
-                                               {renderViewportScrollbar('viewport-2')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('viewport-3')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-3" className="w-full h-full viewport-element" />
-                                               {renderViewportScrollbar('viewport-3')}
-                                           </div>
-                                       </div>
-                                   )}
-                                   {layout === 'MPR' && (
-                                       <div className="grid grid-cols-2 grid-rows-2 gap-2 w-full h-full">
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('axial')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-axial" className="w-full h-full viewport-element" />
-                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">AXIAL</span>
-                                               {renderViewportScrollbar('axial')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('sagittal')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-sagittal" className="w-full h-full viewport-element" />
-                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">SAGITTAL</span>
-                                               {renderViewportScrollbar('sagittal')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('coronal')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-coronal" className="w-full h-full viewport-element" />
-                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">CORONAL</span>
-                                               {renderViewportScrollbar('coronal')}
-                                           </div>
-                                           <div 
-                                               onMouseDown={() => setActiveViewportId('3d')}
-                                               className="w-full h-full relative bg-black rounded overflow-hidden"
-                                           >
-                                               <div id="synos-viewport-3d" className="w-full h-full viewport-element" />
-                                               <span className="absolute top-2 left-2 text-[10px] bg-black/60 px-1.5 py-0.5 rounded text-white font-mono z-10 select-none">3D VOLUME</span>
-                                           </div>
-                                       </div>
-                                   )}
-                                </div>
-                            </div>
+                                }
+                            />
                         </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-500 text-zinc-400">
