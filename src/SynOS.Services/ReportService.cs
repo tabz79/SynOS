@@ -1710,10 +1710,9 @@ namespace SynOS.Services
             }
             else
             {
-                // History View:
-                // Show Completed (terminal) reports from the last 7 days (including today)
+                // History (7d) View: Show Completed (terminal) reports from the last 7 days from yesterday and older (strictly < today)
                 reportsQuery = reportsQuery.Where(r => 
-                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < nextDay
+                    terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < today
                 );
             }
 

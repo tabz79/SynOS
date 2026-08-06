@@ -53,7 +53,26 @@ namespace SynOS.Services
             return (stream, instance.ContentType);
         }
 
+        private class DicomStagedItemInfo
+        {
+            public string StagedFilePath { get; set; } = string.Empty;
+            public DicomMetadata Metadata { get; set; } = null!;
+        }
+
         public async Task<PacsUploadResultDto> UploadDicomAsync(Guid radiologyStudyId, IReadOnlyList<IFormFile> files, Guid currentUserId)
+        {
+            var summary = await ImportDicomEnterpriseAsync(radiologyStudyId, files, currentUserId);
+            var firstSeries = await _context.PacsSeries.FirstOrDefaultAsync(s => s.RadiologyStudyId == radiologyStudyId);
+            return new PacsUploadResultDto
+            {
+                RadiologyStudyId = radiologyStudyId,
+                SeriesId = firstSeries?.SeriesId ?? Guid.Empty,
+                InstancesCreated = summary.ImagesImported,
+                InstanceIds = new List<Guid>()
+            };
+        }
+
+        public async Task<PacsImportSummaryDto> ImportDicomEnterpriseAsync(Guid radiologyStudyId, IReadOnlyList<IFormFile> files, Guid currentUserId)
         {
             await _accessGuard.EnsureCanAccessStudyAsync(radiologyStudyId, currentUserId);
 
@@ -62,68 +81,274 @@ namespace SynOS.Services
             {
                 throw new KeyNotFoundException($"Radiology study with ID '{radiologyStudyId}' not found.");
             }
-            
-            var createdSeriesIds = new HashSet<Guid>();
-            var createdInstanceIds = new List<Guid>();
 
-            foreach (var file in files)
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var warningsList = new List<string>();
+
+            // 1. Create Isolated Staging Directory
+            var batchId = Guid.NewGuid();
+            var stagingRoot = Path.Combine(Path.GetTempPath(), "SynOS_Staging", batchId.ToString());
+            Directory.CreateDirectory(stagingRoot);
+
+            var stagedItems = new List<DicomStagedItemInfo>();
+
+            try
             {
-                await using var stream = file.OpenReadStream();
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms);
-                ms.Position = 0;
-
-                // Check if uploaded file is a ZIP archive containing multiple DICOM files
-                if (file.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || 
-                    file.ContentType == "application/zip" || 
-                    file.ContentType == "application/x-zip-compressed")
+                // 2. Stream and Unpack files into Staging Folder
+                int fileIndex = 0;
+                foreach (var file in files)
                 {
-                    try
+                    await using var stream = file.OpenReadStream();
+                    if (file.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) || 
+                        file.ContentType == "application/zip" || 
+                        file.ContentType == "application/x-zip-compressed")
                     {
+                        using var ms = new MemoryStream();
+                        await stream.CopyToAsync(ms);
+                        ms.Position = 0;
+
                         using var archive = new ZipArchive(ms, ZipArchiveMode.Read, leaveOpen: true);
                         foreach (var entry in archive.Entries)
                         {
                             if (entry.Length == 0 || entry.FullName.StartsWith("__MACOSX") || entry.Name.StartsWith("."))
                                 continue;
 
-                            using var entryStream = entry.Open();
-                            using var entryMs = new MemoryStream();
-                            await entryStream.CopyToAsync(entryMs);
-                            entryMs.Position = 0;
+                            var stagedPath = Path.Combine(stagingRoot, $"staged_{fileIndex++}.dcm");
+                            await using (var entryStream = entry.Open())
+                            await using (var stagedFileStream = new FileStream(stagedPath, FileMode.Create))
+                            {
+                                await entryStream.CopyToAsync(stagedFileStream);
+                            }
 
-                            await ProcessSingleDicomStreamAsync(radiologyStudyId, study, entryMs, entry.Name, entry.Length, currentUserId, createdSeriesIds, createdInstanceIds);
+                            // Sequential In-Memory DICOM Metadata Extraction
+                            await using var stagedReadStream = new FileStream(stagedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                            try
+                            {
+                                var metadata = await DicomMetadataExtractor.ParseAsync(stagedReadStream);
+                                
+                                // Fatal Validation Checks
+                                if (string.IsNullOrWhiteSpace(metadata.StudyInstanceUid) ||
+                                    string.IsNullOrWhiteSpace(metadata.SeriesInstanceUid) ||
+                                    string.IsNullOrWhiteSpace(metadata.SopInstanceUid))
+                                {
+                                    throw new SynOS.Services.DICOM.DicomValidationException($"Fatal: DICOM file '{entry.Name}' is missing essential UIDs (Study/Series/SOP Instance UID).");
+                                }
+
+                                if (string.IsNullOrWhiteSpace(metadata.SeriesDescription))
+                                {
+                                    warningsList.Add($"File '{entry.Name}' lacks SeriesDescription tag. Defaulted to '{study.Modality} Series'.");
+                                }
+
+                                stagedItems.Add(new DicomStagedItemInfo
+                                {
+                                    StagedFilePath = stagedPath,
+                                    Metadata = metadata
+                                });
+                            }
+                            catch (Exception ex) when (!(ex is SynOS.Services.DICOM.DicomValidationException))
+                            {
+                                warningsList.Add($"Failed to parse DICOM header for entry '{entry.Name}': {ex.Message}");
+                            }
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine($"[DICOM Upload Warning] Failed to unpack ZIP file '{file.FileName}': {ex.Message}");
+                        var stagedPath = Path.Combine(stagingRoot, $"staged_{fileIndex++}.dcm");
+                        await using (var stagedFileStream = new FileStream(stagedPath, FileMode.Create))
+                        {
+                            await stream.CopyToAsync(stagedFileStream);
+                        }
+
+                        await using var stagedReadStream = new FileStream(stagedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        try
+                        {
+                            var metadata = await DicomMetadataExtractor.ParseAsync(stagedReadStream);
+                            if (string.IsNullOrWhiteSpace(metadata.StudyInstanceUid) ||
+                                string.IsNullOrWhiteSpace(metadata.SeriesInstanceUid) ||
+                                string.IsNullOrWhiteSpace(metadata.SopInstanceUid))
+                            {
+                                throw new SynOS.Services.DICOM.DicomValidationException($"Fatal: DICOM file '{file.FileName}' is missing essential UIDs (Study/Series/SOP Instance UID).");
+                            }
+
+                            stagedItems.Add(new DicomStagedItemInfo
+                            {
+                                StagedFilePath = stagedPath,
+                                Metadata = metadata
+                            });
+                        }
+                        catch (Exception ex) when (!(ex is SynOS.Services.DICOM.DicomValidationException))
+                        {
+                            warningsList.Add($"Failed to parse DICOM header for file '{file.FileName}': {ex.Message}");
+                        }
                     }
                 }
-                else
+
+                if (!stagedItems.Any())
                 {
-                    await ProcessSingleDicomStreamAsync(radiologyStudyId, study, ms, file.FileName, file.Length, currentUserId, createdSeriesIds, createdInstanceIds);
+                    throw new InvalidOperationException("No valid DICOM instances could be parsed from the uploaded dataset.");
+                }
+
+                // 3. Build 3-Tier Hierarchy Tree in Memory
+                var inMemorySeriesGroups = stagedItems
+                    .GroupBy(item => item.Metadata.SeriesInstanceUid)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // 4. Single State Query to fetch existing PACS series & instances for RadiologyStudyId
+                var existingSeriesList = await _context.PacsSeries
+                    .Where(s => s.RadiologyStudyId == radiologyStudyId)
+                    .ToListAsync();
+                var existingSeriesMap = existingSeriesList.ToDictionary(s => s.SeriesInstanceUid, s => s);
+
+                var existingInstancesList = await _context.PacsInstances
+                    .Where(i => i.RadiologyStudyId == radiologyStudyId)
+                    .ToListAsync();
+                var existingSopUidSet = new HashSet<string>(existingInstancesList.Select(i => i.SopInstanceUid));
+
+                var promotedFiles = new List<string>();
+                int imagesImported = 0;
+                int imagesSkipped = 0;
+
+                // 5. Atomic Database Transaction with Pre-Commit File Promotion
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    foreach (var seriesGroup in inMemorySeriesGroups)
+                    {
+                        var seriesUid = seriesGroup.Key;
+                        var firstItem = seriesGroup.Value.First();
+
+                        if (!existingSeriesMap.TryGetValue(seriesUid, out var seriesEntity))
+                        {
+                            seriesEntity = new PacsSeries
+                            {
+                                SeriesId = Guid.NewGuid(),
+                                RadiologyStudyId = radiologyStudyId,
+                                StudyInstanceUid = firstItem.Metadata.StudyInstanceUid,
+                                SeriesInstanceUid = seriesUid,
+                                Modality = string.IsNullOrWhiteSpace(firstItem.Metadata.Modality) ? (study.Modality ?? "XR") : firstItem.Metadata.Modality,
+                                Description = string.IsNullOrWhiteSpace(firstItem.Metadata.SeriesDescription) ? $"{study.Modality} Series" : firstItem.Metadata.SeriesDescription,
+                                SeriesNumber = firstItem.Metadata.SeriesNumber ?? 1,
+                                CreatedBy = currentUserId
+                            };
+                            _context.PacsSeries.Add(seriesEntity);
+                            existingSeriesMap[seriesUid] = seriesEntity;
+                        }
+
+                        var prodSeriesDir = Path.Combine(_pacsSettings.RootPath, radiologyStudyId.ToString(), seriesEntity.SeriesId.ToString());
+                        Directory.CreateDirectory(prodSeriesDir);
+
+                        foreach (var item in seriesGroup.Value)
+                        {
+                            // Auto-Skip Duplicate SOPInstanceUIDs
+                            if (existingSopUidSet.Contains(item.Metadata.SopInstanceUid))
+                            {
+                                imagesSkipped++;
+                                continue;
+                            }
+
+                            var instanceId = Guid.NewGuid();
+                            var prodFilePath = Path.Combine(prodSeriesDir, $"{instanceId}.dcm");
+
+                            // Promote file from Staging to Production PACS archive before DB commit
+                            File.Move(item.StagedFilePath, prodFilePath, overwrite: true);
+                            promotedFiles.Add(prodFilePath);
+
+                            var instanceEntity = new PacsInstance
+                            {
+                                InstanceId = instanceId,
+                                SeriesId = seriesEntity.SeriesId,
+                                RadiologyStudyId = radiologyStudyId,
+                                StudyInstanceUid = item.Metadata.StudyInstanceUid,
+                                SeriesInstanceUid = seriesUid,
+                                SopInstanceUid = item.Metadata.SopInstanceUid,
+                                InstanceNumber = item.Metadata.InstanceNumber ?? 1,
+                                FrameCount = item.Metadata.FrameCount ?? 1,
+                                FilePath = prodFilePath,
+                                FileSizeBytes = new FileInfo(prodFilePath).Length,
+                                ContentType = "application/dicom",
+                                CreatedBy = currentUserId
+                            };
+
+                            _context.PacsInstances.Add(instanceEntity);
+                            existingSopUidSet.Add(item.Metadata.SopInstanceUid);
+                            imagesImported++;
+                        }
+                    }
+
+                    if (study.Status == "PendingImaging" || study.Status == "Assigned")
+                    {
+                        study.Status = "ImagingCompleted";
+                    }
+
+                    stopwatch.Stop();
+
+                    var auditLog = new PacsImportAuditLog
+                    {
+                        AuditLogId = Guid.NewGuid(),
+                        RadiologyStudyId = radiologyStudyId,
+                        CreatedBy = currentUserId,
+                        StudyInstanceUid = inMemorySeriesGroups.FirstOrDefault().Key != null ? inMemorySeriesGroups.First().Value.First().Metadata.StudyInstanceUid : string.Empty,
+                        ImportedAt = DateTime.UtcNow,
+                        SeriesCount = inMemorySeriesGroups.Count,
+                        ImagesImported = imagesImported,
+                        ImagesSkipped = imagesSkipped,
+                        WarningCount = warningsList.Count,
+                        WarningsJson = System.Text.Json.JsonSerializer.Serialize(warningsList),
+                        Status = "Success",
+                        DurationMs = stopwatch.ElapsedMilliseconds
+                    };
+
+                    try
+                    {
+                        _context.PacsImportAuditLogs.Add(auditLog);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception auditEx)
+                    {
+                        // Fallback: If PacsImportAuditLogs table is pending migration, complete DICOM import gracefully
+                        Console.WriteLine($"[PACS Import Audit Log Warning] Failed to write audit log: {auditEx.Message}");
+                        _context.Entry(auditLog).State = EntityState.Detached;
+                        await _context.SaveChangesAsync();
+                    }
+
+                    await transaction.CommitAsync();
+
+                    return new PacsImportSummaryDto
+                    {
+                        RadiologyStudyId = radiologyStudyId,
+                        StudyInstanceUid = auditLog.StudyInstanceUid,
+                        StudyTitle = $"{study.Modality} Study",
+                        SeriesCount = inMemorySeriesGroups.Count,
+                        ImagesImported = imagesImported,
+                        ImagesSkipped = imagesSkipped,
+                        Warnings = warningsList,
+                        DurationMs = stopwatch.ElapsedMilliseconds,
+                        ImportedAt = auditLog.ImportedAt
+                    };
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+
+                    // Cleanup promoted files if transaction failed
+                    foreach (var file in promotedFiles)
+                    {
+                        if (File.Exists(file))
+                        {
+                            try { File.Delete(file); } catch { }
+                        }
+                    }
+                    throw;
                 }
             }
-
-            if (!createdInstanceIds.Any())
+            finally
             {
-                throw new InvalidOperationException("No valid DICOM instances could be parsed from the uploaded file(s). Please verify the file is a valid .dcm dataset or a .zip containing .dcm files.");
+                // Purge Staging Directory
+                if (Directory.Exists(stagingRoot))
+                {
+                    try { Directory.Delete(stagingRoot, recursive: true); } catch { }
+                }
             }
-
-            if (study.Status == "PendingImaging" || study.Status == "Assigned")
-            {
-                study.Status = "ImagingCompleted";
-            }
-
-            await _context.SaveChangesAsync();
-
-            return new PacsUploadResultDto
-            {
-                RadiologyStudyId = radiologyStudyId,
-                SeriesId = createdSeriesIds.FirstOrDefault(),
-                InstancesCreated = createdInstanceIds.Count,
-                InstanceIds = createdInstanceIds
-            };
         }
 
         private async Task ProcessSingleDicomStreamAsync(

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { RadiologyApi } from '@/api/radiology';
+import { useAuth } from '@/context/AuthContext';
+import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs';
 import { 
     Activity, 
     UploadCloud, 
@@ -19,11 +21,49 @@ import {
 } from 'lucide-react';
 
 export function ModalityTerminalShell({ modalityName, technicianRole }) {
+    const { user } = useAuth();
     const [queue, setQueue] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
+    const [activeTab, setActiveTab] = useState('available'); // available | assigned | live | history
     const [loading, setLoading] = useState(true);
     const [activeStudy, setActiveStudy] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
+
+    const handleAssign = async (studyId) => {
+        setActionLoading(true);
+        try {
+            await RadiologyApi.assignStudy(studyId);
+            // Auto-switch UI to Assigned tab upon claiming
+            setActiveTab('assigned');
+            setShowHistory(false);
+
+            const statuses = ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
+            const data = await RadiologyApi.getTechnicianQueue(statuses, false);
+            const updated = data.find(s => s.radiologyStudyId === studyId);
+            if (updated) setActiveStudy(updated);
+            fetchQueue();
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+
+    const availableCount = queue.filter(study => !study.claimedByUserId && !study.assignedToTechnicianName).length;
+
+    const displayQueue = queue.filter(study => {
+        const isClaimedByMe = study.claimedByUserId?.toLowerCase() === user?.id?.toLowerCase() ||
+                              study.assignedToTechnicianName?.toLowerCase() === user?.name?.toLowerCase();
+        const isUnassigned = !study.claimedByUserId && !study.assignedToTechnicianName;
+
+        if (activeTab === 'available') {
+            return isUnassigned;
+        } else {
+            return isAdmin ? !isUnassigned : isClaimedByMe;
+        }
+    });
     
     // PACS simulation state
     const [pacsStep, setPacsStep] = useState(0); // 0: Idle, 1: Connecting, 2: Querying, 3: Mapping, 4: Done
@@ -40,20 +80,10 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
         if (!studyId) return;
         setCheckingSliceCount(true);
         try {
-            const tree = await RadiologyApi.getSeriesTree(studyId);
-            let total = 0;
-            if (tree && tree.series) {
-                tree.series.forEach(s => {
-                    if (s.instances) {
-                        total += s.instances.length;
-                    }
-                });
-            }
-            setDicomSliceCount(total);
-            if (tree && tree.accessionNumber) {
-                setPacsAccession(tree.accessionNumber);
-            }
-        } catch (e) {
+            const count = await RadiologyApi.getStudySliceCount(studyId);
+            setDicomSliceCount(count);
+        } catch (err) {
+            console.error("Failed to check DICOM slice count:", err);
             setDicomSliceCount(0);
         } finally {
             setCheckingSliceCount(false);
@@ -75,8 +105,14 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                 ? ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'] 
                 : ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
             const data = await RadiologyApi.getTechnicianQueue(statuses, showHistory);
-            // Filter by modality if applicable
-            const filtered = data.filter(s => s.modality.toLowerCase().includes(modalityName.toLowerCase()) || modalityName === "General");
+            // Robust filter by modality or testName (e.g. MRI, CT, US, X-Ray)
+            const filtered = data.filter(s => {
+                if (!modalityName || modalityName === "General") return true;
+                const target = modalityName.toLowerCase();
+                const modStr = (s.modality || '').toLowerCase();
+                const testStr = (s.testName || '').toLowerCase();
+                return modStr.includes(target) || testStr.includes(target);
+            });
             setQueue(filtered);
         } catch (error) {
             console.error("Failed to load technician queue:", error);
@@ -89,25 +125,6 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
         fetchQueue();
     }, [modalityName, showHistory]);
 
-    const handleAssign = async (studyId) => {
-        setActionLoading(true);
-        try {
-            await RadiologyApi.assignStudy(studyId);
-            // Refresh queue and select active study
-            const statuses = showHistory 
-                ? ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'] 
-                : ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
-            const data = await RadiologyApi.getTechnicianQueue(statuses, showHistory);
-            const updated = data.find(s => s.radiologyStudyId === studyId);
-            setActiveStudy(updated);
-            fetchQueue();
-        } catch (error) {
-            alert(error.message);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
     const handleScannerImport = async (study) => {
         setPacsStep(1); // Querying DICOM network
         setActionLoading(true);
@@ -115,15 +132,19 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
         try {
             const res = await fetch(`/api/v1/radiology/pacs/${study.radiologyStudyId}/acquire`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
-                    'Content-Type': 'application/json'
-                }
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
+            
+            if (res.ok) {
+                const data = await res.json();
+                setPacsStep(2);
+                setTimeout(() => setPacsStep(3), 800);
+                setTimeout(() => {
+                    setPacsStep(4);
+                    setPacsViewerUrl(`/viewer/${data.studyInstanceUid || study.radiologyStudyId}`);
+                    setActionLoading(false);
+                }, 1600);
+            } else {
                 setPacsStep(0);
                 alert(data.message || data.title || "No DICOM series detected on scanner C-STORE node. Please upload DICOM files manually.");
                 return;
@@ -234,28 +255,14 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                         </div>
 
                         {/* Filter Tabs */}
-                        <div className="mb-2.5 flex gap-1.5">
-                            <button
-                                onClick={() => setShowHistory(false)}
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200 ${
-                                    !showHistory 
-                                        ? 'bg-zinc-900 text-white shadow-xs' 
-                                        : 'bg-white/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-white border border-zinc-200 dark:border-zinc-700'
-                                }`}
-                            >
-                                LIVE QUEUE
-                            </button>
-                            <button
-                                onClick={() => setShowHistory(true)}
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all duration-200 ${
-                                    showHistory 
-                                        ? 'bg-zinc-900 text-white shadow-xs' 
-                                        : 'bg-white/80 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-white border border-zinc-200 dark:border-zinc-700'
-                                }`}
-                            >
-                                HISTORY (7D)
-                            </button>
-                        </div>
+                        <WorklistMatrixTabs
+                            activeAssignmentTab={activeTab}
+                            onAssignmentTabChange={setActiveTab}
+                            showHistory={showHistory}
+                            onTimeTabChange={setShowHistory}
+                            availableCount={availableCount}
+                            className="mb-2.5"
+                        />
 
                         {/* Patient Card List */}
                         <div className="flex-1 overflow-y-auto pr-1 space-y-2">
@@ -264,12 +271,12 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                     <Loader2 className="w-3.5 h-3.5 animate-spin text-zinc-700" />
                                     <span>Loading Worklist...</span>
                                 </div>
-                            ) : queue.length === 0 ? (
+                            ) : displayQueue.length === 0 ? (
                                 <div className="text-center py-10 text-zinc-400 text-xs font-medium">
                                     <span>No radiology studies in queue.</span>
                                 </div>
                             ) : (
-                                queue.map((study) => {
+                                displayQueue.map((study) => {
                                     const isSelected = activeStudy?.radiologyStudyId === study.radiologyStudyId;
                                     return (
                                         <div

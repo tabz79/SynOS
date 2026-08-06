@@ -1,352 +1,229 @@
-I actually like this version **much more** than the previous one. It's getting close. But I'd still change a few things before green-lighting it.
+# Task: Redesign the PACS DICOM Import Pipeline (Enterprise Grade)
+
+The recent bug exposed architectural weaknesses in the import pipeline. I do **not** want a patch that merely fixes duplicate `PacsSeries` rows. I want the importer redesigned so it behaves like an enterprise PACS.
+
+## Goals
+
+* Preserve the DICOM hierarchy exactly as it exists.
+* Prevent database corruption.
+* Make imports repeatable and safe.
+* Never rely on UI workarounds to hide bad data.
 
 ---
 
-# 👍 Things I really like
+## Required Design
 
-### 1. Middleware untouched ✅
+### 1. Build the hierarchy in memory first
 
-Exactly what we wanted.
+Do **not** query the database for every image.
+
+When importing a folder or ZIP:
+
+* Read every DICOM.
+* Build the complete hierarchy in memory.
+
+Example:
 
 ```
-SynOS
-    ↓
-Middleware
-    ↓
-WhatsApp
-    ↓
-Patient
+Study
+    Series A
+        Images...
+
+    Series B
+        Images...
+
+    Series C
+        Images...
 ```
 
-Middleware never sees PDFs or DICOM.
+Group by:
 
-Excellent.
+* StudyInstanceUID
+* SeriesInstanceUID
+* SOPInstanceUID
+
+Only after the hierarchy is complete should database writes begin.
 
 ---
 
-### 2. Existing PACS reused ✅
+### 2. Single transaction
 
-No duplicate storage.
+Import must occur inside one database transaction.
 
-No duplicate archive.
+```
+Begin Transaction
 
-Perfect.
+Create Study
+
+Create Series
+
+Create Images
+
+Commit
+```
+
+If a fatal error occurs, rollback everything.
+
+Never leave half-imported studies.
 
 ---
 
-### 3. Existing Cornerstone reused ✅
+### 3. Eliminate N+1 queries
 
-This is the biggest win.
+Do not perform SQL lookups for every image.
 
-One viewer.
+Maintain an in-memory lookup (Dictionary or equivalent) while importing.
 
-One rendering engine.
-
-One bugfix path.
-
-One feature path.
-
-When you improve MPR later...
-
-Everyone benefits.
+Database access should be minimized.
 
 ---
 
-### 4. ZIP enhancement ✅
+### 4. Database integrity
 
-Exactly what should happen.
+Add database protection.
 
----
+Create a UNIQUE constraint so duplicate series for the same study cannot exist.
 
-# ⚠️ Things I'd still push back on
-
-## 1. Don't call it "PublicDicomViewerScreen"
-
-I don't like the naming.
-
-It suggests another viewer.
-
-It isn't.
-
-It is the SAME viewer.
-
-I'd call it something like
-
-```
-ExternalStudyViewer
-```
-
-or
-
-```
-SharedStudyViewer
-```
-
-because internally it's literally reusing
-
-```
-DicomViewerContainer
-```
+If duplicate data already exists, create a migration strategy instead of forcing the constraint immediately.
 
 ---
 
-## 2. Viewer mode
+### 5. Idempotent imports
 
-I would insist on adding
+If the same study is imported twice:
 
-```
-mode="internal"
+* do not duplicate studies
+* do not duplicate series
+* do not duplicate instances
 
-mode="external"
-```
-
-to the existing viewer.
-
-Not
-
-```
-if (public)
-```
-
-all over the code.
-
-Example
-
-```
-<DicomViewerContainer
-    mode="external"
-/>
-```
-
-Then inside
-
-```
-if(mode==="external")
-```
-
-* hide worklists
-* hide edit buttons
-* hide admin actions
-
-Cleaner.
+The importer should detect existing objects and reuse or skip them.
 
 ---
 
-## 3. Measurements
+### 6. Validation levels
 
-This is the one I want the agent to think about.
+Separate validation into three categories.
 
-Should external users be allowed to measure?
+#### Fatal
 
-Personally...
+Reject import.
 
-I'd allow
+Examples:
 
-✅ distance
+* Missing StudyInstanceUID
+* Missing SeriesInstanceUID
+* Missing SOPInstanceUID
+* Corrupted DICOM
+* Invalid pixel data
 
-✅ angle
-
-✅ zoom
-
-✅ pan
-
-✅ window level
-
-But
-
-❌ never save anything.
-
-Temporary only.
-
-When browser closes...
-
-Measurements disappear.
+Rollback transaction.
 
 ---
 
-## 4. One thing missing...
+#### Warning
 
-Huge missing piece.
+Import continues.
 
-Suppose the study contains
+Examples:
 
-```
-Series 1
-CT Head
-
-Series 2
-Bone Window
-
-Series 3
-Contrast
-
-Series 4
-Sagittal Recon
-```
-
-Internal PACS already lets you switch series.
-
-Will external viewer?
-
-It should.
-
-Otherwise you're only exposing part of the study.
-
-I'd ask the agent to verify this.
+* Missing patient age
+* Missing referring doctor
+* Missing institution
+* Missing comments
 
 ---
 
-## 5. Huge security question
+#### Auto Skip
 
-This is important.
+If duplicate SOP Instance UID is encountered:
 
-Today the proposal says
+Skip that instance.
 
-```
-/r/token
-
-↓
-
-verify
-
-↓
-
-viewer token
-```
-
-Good.
-
-But what if doctor sends
-
-```
-https://cloud.../viewer
-```
-
-to someone else?
-
-Viewer token must expire.
-
-I'd probably make it
-
-15–30 minutes
-
-Then
-
-```
-DownloadLink
-
-7 days
-
-↓
-
-Viewer Session
-
-30 minutes
-```
-
-Much better.
+Continue importing the remaining images.
 
 ---
 
-## 6. Mobile
+### 7. Import summary
 
-The agent didn't mention it.
+Every import should generate a structured summary.
 
-I would.
+Example:
 
-External viewer should automatically work on
+```
+Study:
+MRI Brain
 
-* Chrome Android
-* Safari iPhone
-* iPad
+Series:
+4
 
-No separate code.
+Images Imported:
+589
+
+Images Skipped:
+2
+
+Warnings:
+1
+
+Errors:
+0
+
+Import Duration:
+4.3 seconds
+```
+
+This should be available to the technician after import.
 
 ---
 
-# One thing I would ask before implementation
+### 8. Preserve DICOM hierarchy
 
-This is the only remaining architecture question I'd want answered.
+The importer must never invent or split series.
 
-Your current viewer has
-
-```
-Radiologist
-
-↓
-
-PACS Archive
-
-↓
-
-Viewer
-```
-
-The external viewer has
+If the source DICOM contains:
 
 ```
-Token
-
-↓
-
-Viewer
+Study
+ ├── Series A (96)
+ ├── Series B (15)
+ ├── Series C (7)
+ └── Series D (96)
 ```
 
-Question:
-
-## Is the viewer tightly coupled to PACS Archive?
-
-or
-
-Can it already operate independently?
-
-If today
+SynOS must store exactly:
 
 ```
-DicomViewerContainer
+Study
+ ├── Series A (96)
+ ├── Series B (15)
+ ├── Series C (7)
+ └── Series D (96)
 ```
 
-expects
+The viewer should simply render what the database contains.
 
-```
-PacsArchiveScreen
-```
-
-to feed it lots of props...
-
-then I'd refactor **before** implementation.
-
-I'd rather have
-
-```
-Study Loader
-        │
-        ▼
-DicomViewerContainer
-```
-
-where
-
-Study Loader = Internal PACS
-
-or
-
-Study Loader = Secure Token
-
-Then the viewer doesn't know where the study came from.
-
-That's cleaner long-term.
+No synthetic grouping.
+No fallback grouping.
+No UI masking.
 
 ---
 
-# Overall
+### 9. Backward compatibility
 
-I'd give this an **8.8/10**.
+If existing studies are already corrupted (duplicate `PacsSeries` rows), propose a repair or migration strategy before enabling the UNIQUE constraint.
 
-It's a strong architecture.
+---
 
-The only thing I'd tell the agent before coding is:
+### Deliverables
 
-> Ensure `DicomViewerContainer` becomes a truly reusable, source-agnostic component. It should not know whether the study came from the internal PACS Archive or an external secure token. The responsibility for loading and authorizing the study should live outside the viewer. The viewer should simply receive a study and render it. This keeps one rendering engine, one UI, one maintenance path, and avoids long-term divergence between internal and external workflows.
+Before writing code, provide:
 
-That one refinement will make the design much cleaner and easier to evolve over time.
+1. The proposed import pipeline.
+2. Database changes.
+3. Validation strategy.
+4. Repair strategy for existing corrupted data.
+5. Rollback strategy.
+6. Performance impact for studies with 5,000+ images.
+
+---
+

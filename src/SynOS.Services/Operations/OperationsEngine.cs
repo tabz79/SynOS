@@ -175,8 +175,8 @@ namespace SynOS.Services.Operations
                                     )
                                 )
                                 ||
-                                // HISTORY VIEW: Terminal (7 days)
-                                (includeHistory && terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate && v.TokenDate < nextDay)
+                                // HISTORY VIEW: Terminal (7 days, excluding today)
+                                (includeHistory && terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate && v.TokenDate < today)
                             ));
 
             if (_userContext.CurrentRole == "Receptionist")

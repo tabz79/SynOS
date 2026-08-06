@@ -15,6 +15,7 @@ import { TokenCell, PatientCell, StatusCell, TechnicianCell } from '@/components
 import { DepartmentWorkbenchIntentPanel } from './components/DepartmentWorkbenchIntentPanel';
 import { UnsavedChangesGuard } from './components/UnsavedChangesGuard';
 import { ProcessingApi } from '@/api/processing';
+import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs';
 
 export function DepartmentWorkbenchScreen() {
     const { theme } = useTheme();
@@ -115,22 +116,13 @@ export function DepartmentWorkbenchScreen() {
     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
 
     const filteredQueue = queue.filter(item => {
-        if (showHistory) {
-            if (activeTab === "available") {
-                return item.assignedResourceId !== user?.resourceId;
-            } else {
-                return item.assignedResourceId === user?.resourceId;
-            }
+        const isUnassigned = !item.assignedResourceId;
+        const isAssignedToMe = item.assignedResourceId === user?.resourceId;
+
+        if (activeTab === "available") {
+            return isUnassigned;
         } else {
-            if (activeTab === "available") return !item.assignedResourceId;
-            
-            // ADMIN RULE: Admins see EVERYTHING in the assigned tab
-            if (isAdmin) {
-                return !!item.assignedResourceId;
-            }
-            
-            // Standard User: See only what is assigned to ME
-            return item.assignedResourceId === user?.resourceId;
+            return isAdmin ? !isUnassigned : isAssignedToMe;
         }
     });
 
@@ -169,49 +161,14 @@ export function DepartmentWorkbenchScreen() {
                                 <div className="flex items-center gap-4 shrink-0">
                                     <ActionQueueHeader title="Labor Queue" count={filteredQueue.length} />
                                     
-                                    {/* Tabs */}
-                                    <div className="flex items-center gap-1 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm shrink-0">
-                                        {['available', 'assigned'].map(tab => (
-                                            <button
-                                                key={tab}
-                                                onClick={() => setActiveTab(tab)}
-                                                className={cn(
-                                                    "text-[10px] uppercase font-bold px-3 py-1 rounded transition-all",
-                                                    activeTab === tab 
-                                                        ? "bg-zinc-800 text-white shadow-sm"
-                                                        : "text-zinc-500 hover:text-zinc-900"
-                                                )}
-                                            >
-                                                {tab}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    {/* History Switcher */}
-                                    <div className="flex items-center gap-1 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm shrink-0">
-                                        <button
-                                            onClick={() => setShowHistory(false)}
-                                            className={cn(
-                                                "text-[10px] uppercase font-bold px-3 py-1 rounded transition-all",
-                                                !showHistory 
-                                                    ? "bg-zinc-800 text-white shadow-sm"
-                                                    : "text-zinc-500 hover:text-zinc-900"
-                                            )}
-                                        >
-                                            Live
-                                        </button>
-                                        <button
-                                            onClick={() => setShowHistory(true)}
-                                            className={cn(
-                                                "text-[10px] uppercase font-bold px-3 py-1 rounded transition-all",
-                                                showHistory 
-                                                    ? "bg-zinc-800 text-white shadow-sm"
-                                                    : "text-zinc-500 hover:text-zinc-900"
-                                            )}
-                                        >
-                                            History (7d)
-                                        </button>
-                                    </div>
+                                    <WorklistMatrixTabs
+                                        activeAssignmentTab={activeTab}
+                                        onAssignmentTabChange={setActiveTab}
+                                        showHistory={showHistory}
+                                        onTimeTabChange={setShowHistory}
+                                        availableCount={availableCount}
+                                        theme={theme}
+                                    />
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button

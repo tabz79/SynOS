@@ -46,9 +46,9 @@ namespace SynOS.Api.Controllers.Radiology
         [HttpPost("{radiologyStudyId:guid}/upload")]
         [DisableRequestSizeLimit]
         [RequestFormLimits(MultipartBodyLengthLimit = 524288000)]
-        public async Task<IActionResult> UploadDicom(Guid radiologyStudyId, [FromForm] IFormFileCollection files = null)
+        public async Task<IActionResult> UploadDicom(Guid radiologyStudyId, [FromForm] List<IFormFile> files)
         {
-            var uploadFiles = (files != null && files.Any()) ? files : Request.Form.Files;
+            IReadOnlyList<IFormFile> uploadFiles = (files != null && files.Any()) ? files : Request.Form.Files.ToList();
             if (uploadFiles == null || !uploadFiles.Any())
             {
                 return BadRequest(new { message = "No files received. Please select a .dcm or .zip file." });
@@ -58,7 +58,29 @@ namespace SynOS.Api.Controllers.Radiology
 
             try
             {
-                var result = await _pacsService.UploadDicomAsync(radiologyStudyId, uploadFiles, userId);
+                var result = await _pacsService.ImportDicomEnterpriseAsync(radiologyStudyId, uploadFiles, userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("{radiologyStudyId:guid}/import-enterprise")]
+        public async Task<IActionResult> ImportDicomEnterprise(Guid radiologyStudyId, [FromForm] List<IFormFile> files)
+        {
+            IReadOnlyList<IFormFile> uploadFiles = (files != null && files.Any()) ? files : Request.Form.Files.ToList();
+            if (uploadFiles == null || !uploadFiles.Any())
+            {
+                return BadRequest(new { message = "No files received. Please select a .dcm or .zip file." });
+            }
+            
+            if (!TryGetUserId(out var userId)) return Unauthorized();
+
+            try
+            {
+                var result = await _pacsService.ImportDicomEnterpriseAsync(radiologyStudyId, uploadFiles, userId);
                 return Ok(result);
             }
             catch (Exception ex)

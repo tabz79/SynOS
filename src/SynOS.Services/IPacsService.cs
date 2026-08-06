@@ -15,6 +15,12 @@ namespace SynOS.Services
             Guid currentUserId
         );
 
+        Task<PacsImportSummaryDto> ImportDicomEnterpriseAsync(
+            Guid radiologyStudyId,
+            IReadOnlyList<IFormFile> files,
+            Guid currentUserId
+        );
+
         Task<PacsUploadResultDto> AcquirePacsStudyAsync(
             Guid radiologyStudyId,
             Guid currentUserId

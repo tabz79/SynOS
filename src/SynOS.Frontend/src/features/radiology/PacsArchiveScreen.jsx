@@ -126,6 +126,7 @@ export function PacsArchiveScreen() {
 
             const tree = await RadiologyApi.getSeriesTree(study.radiologyStudyId).catch(() => null);
             if (tree && tree.series) {
+                setSeriesTree(tree);
                 tree.series.forEach(s => {
                     if (s.instances) {
                         s.instances.forEach(inst => {
@@ -136,6 +137,8 @@ export function PacsArchiveScreen() {
                         });
                     }
                 });
+            } else {
+                setSeriesTree(null);
             }
             setViewerUrls(urls);
         } catch (e) {

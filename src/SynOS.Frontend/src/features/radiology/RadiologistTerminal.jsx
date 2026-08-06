@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
+import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs';
 import { DicomViewportManager } from './DicomViewportManager';
 import { DicomViewerContainer } from './DicomViewerContainer';
 import { RadiologyApi } from '@/api/radiology';
@@ -278,6 +279,8 @@ export function RadiologistTerminal() {
         }
     };
 
+    const [activeTab, setActiveTab] = useState('available'); // available | assigned | live | history
+
     const handleClaimStudy = async () => {
         if (!selectedStudy) return;
         setActionLoading(true);
@@ -291,6 +294,10 @@ export function RadiologistTerminal() {
                 }
             });
             if (response.ok) {
+                // Auto-switch active tab to Assigned upon claiming study
+                setActiveTab('assigned');
+                setShowHistory(false);
+
                 // Now Start Session on backend to transition status to DictationSessionStarted
                 const startRes = await fetch(`/api/v1/radiology/studies/${studyId}/session/start`, {
                     method: 'POST',
@@ -947,6 +954,19 @@ export function RadiologistTerminal() {
         );
     };
 
+    const availableCount = studies.filter(s => !s.claimedByUserId).length;
+
+    const filteredStudies = studies.filter(s => {
+        const isClaimedByMe = s.claimedByUserId?.toLowerCase() === user?.id?.toLowerCase();
+        const isUnassigned = !s.claimedByUserId;
+
+        if (activeTab === 'available') {
+            return isUnassigned;
+        } else {
+            return isAdmin ? !isUnassigned : isClaimedByMe;
+        }
+    });
+
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800 flex flex-col font-sans select-none overflow-hidden">
             {/* System Header */}
@@ -970,29 +990,18 @@ export function RadiologistTerminal() {
                             <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex flex-col gap-3">
                                 <div className="flex justify-between items-center">
                                     <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Interpretations Worklist</span>
-                                    <span className="text-[10px] dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-650 px-2 py-0.5 rounded-full font-bold">
-                                        {studies.length} {showHistory ? "history" : "active"}
+                                    <span className="text-[10px] text-zinc-500 uppercase font-mono tracking-wider">
+                                        {filteredStudies.length} {showHistory ? "historical" : "active"}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit">
-                                    <button
-                                        onClick={() => setShowHistory(false)}
-                                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
-                                            !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
-                                        }`}
-                                    >
-                                        Live
-                                    </button>
-                                    <button
-                                        onClick={() => setShowHistory(true)}
-                                        className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
-                                            showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
-                                        }`}
-                                    >
-                                        History (7d)
-                                    </button>
-                                </div>
+                                <WorklistMatrixTabs
+                                    activeAssignmentTab={activeTab}
+                                    onAssignmentTabChange={setActiveTab}
+                                    showHistory={showHistory}
+                                    onTimeTabChange={setShowHistory}
+                                    availableCount={availableCount}
+                                />
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-3 space-y-2">
@@ -1001,14 +1010,14 @@ export function RadiologistTerminal() {
                                         <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                                         <span className="text-[11px] text-zinc-500">Retrieving diagnostic queue...</span>
                                     </div>
-                                ) : studies.length === 0 ? (
+                                ) : filteredStudies.length === 0 ? (
                                     <div className="h-full flex items-center justify-center flex-col text-center p-6 text-zinc-655">
                                         <Activity className="h-8 w-8 mb-2 dark:text-zinc-700 text-zinc-300 animate-pulse" />
                                         <span className="text-xs font-semibold uppercase">Queue Empty</span>
                                         <span className="text-[10px] dark:text-zinc-600 text-zinc-500 mt-1">No studies awaiting reporting.</span>
                                     </div>
                                 ) : (
-                                    studies.map((study) => {
+                                    filteredStudies.map((study) => {
                                         const isSelected = selectedStudy?.studyId === study.radiologyStudyId || selectedStudy?.radiologyStudyId === study.radiologyStudyId;
                                         const isClaimedByMe = study.claimedByUserId === user?.id;
                                         const isClaimedByOthers = study.claimedByUserId && study.claimedByUserId !== user?.id;
@@ -1050,17 +1059,6 @@ export function RadiologistTerminal() {
                                         );
                                     })
                                 )}
-                            </div>
-
-                            {/* PACS Master Archive Trigger Footer */}
-                            <div className="p-3 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white">
-                                <button
-                                    onClick={() => setShowPacsModal(true)}
-                                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-2 transition shadow-sm"
-                                >
-                                    <FolderArchive className="w-4 h-4 text-emerald-100" />
-                                    <span>PACS Archive Explorer</span>
-                                </button>
                             </div>
                         </>
                     )}

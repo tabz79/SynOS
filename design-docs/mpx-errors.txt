@@ -1,246 +1,104 @@
-index-D1Vm7qsI.js:12105 SignalR(Branch): Subscriber added (Total: 1)
-index-D1Vm7qsI.js:10604 [2026-08-05T07:11:55.540Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
-index-D1Vm7qsI.js:12107 SignalR(Branch): Starting connection...
-index-D1Vm7qsI.js:223177 [RootRedirect] Evaluating redirect: Object
-content.ts-CK3vpF-9.js:5 [BHK] widget sdk 1.0.0
-content.ts-CK3vpF-9.js:5 [BHK] install: missing/invalid publicKey or merchantId — aborting
-S0 @ content.ts-CK3vpF-9.js:5
-index-D1Vm7qsI.js:10604 [2026-08-05T07:11:56.229Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY.
-index-D1Vm7qsI.js:10604 [2026-08-05T07:11:56.230Z] Information: Using HubProtocol 'json'.
-index-D1Vm7qsI.js:12108 SignalR(Branch): Connected to /branchOperationsHub
-index-D1Vm7qsI.js:12096 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
-index-D1Vm7qsI.js:118138 CornerstoneRender: Using detect-gpu to get the GPU benchmark: Object
-index-D1Vm7qsI.js:118138 CornerstoneRender: using GPU rendering
-index-D1Vm7qsI.js:219034 === DICOM METADATA & DECODER DIAGNOSTIC INSTRUMENTATION ===
-index-D1Vm7qsI.js:219034 Target ImageId: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/6fc12891-8e94-42d4-89c0-259833cc525a/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY
-index-D1Vm7qsI.js:219038 DICOM Header Metadata: Object
-index-D1Vm7qsI.js:219045 Decoded Image Object Properties: Object
-index-D1Vm7qsI.js:219055 Pixel Count Comparison: Object
-index-D1Vm7qsI.js:219061 ===========================================================
-index-D1Vm7qsI.js:219066 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/e29e7d01-2e64-4721-b919-5fd16a43709d/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY Object
-(anonymous) @ index-D1Vm7qsI.js:219066
-index-D1Vm7qsI.js:219066 Failed to load image/metadata for ID: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/d22caaf5-f0a2-4b2b-a12f-91fecd67f543/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY Object
-(anonymous) @ index-D1Vm7qsI.js:219066
-index-D1Vm7qsI.js:218898 Prefetched imageId: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/6fc12891-8e94-42d4-89c0-259833cc525a/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY
-index-D1Vm7qsI.js:218898 Prefetched imageId: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/72580997-4dcc-4b31-a9e5-a438ecd1fa95/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY
-index-D1Vm7qsI.js:218898 Prefetched imageId: wadouri:http://localhost:59999/api/v1/radiology/pacs/instances/50a06f79-affd-4bb2-819a-35d4aa175465/file?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMzIxMDU2NDUtZDA4MS00ZjEwLTkwNWMtMjQ0OGRlOWZjYzNiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTgzMDYzMCwiZXhwIjoxNzg1OTE3MDMwLCJpYXQiOjE3ODU4MzA2MzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.juZgtkhKbqB8ZiQ6VJQ9aMKLgRs8TwdQQ8-2N6SvMSY
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-3c117b38-7469-4a4f-a4f5-720781756de7:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230240
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230412
-    at u (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231352)
-    at async Object.handler (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231625)
-    at async self.onmessage (3c117b38-7469-4a4f-a4f5-720781756de7:1:161007)
-index-D1Vm7qsI.js:219144 === PROOF OF ENABLED VIEWPORTS AFTER setViewports() ===
-index-D1Vm7qsI.js:219144 Total registered viewports in RenderingEngine: 3
-index-D1Vm7qsI.js:219144 Viewport IDs: Array(3)
-index-D1Vm7qsI.js:219144 Viewport Elements: Array(3)
-index-D1Vm7qsI.js:219152 Enabled Elements in Cornerstone: Array(3)
-index-D1Vm7qsI.js:219158 =======================================================
-index-D1Vm7qsI.js:219519 === LIVE ANCESTOR WALK FROM synos-viewport-axial UP TO document.body ===
-index-D1Vm7qsI.js:219523 [Ancestor Step #0] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #1] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #2] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #3] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #4] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #5] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #6] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #7] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #8] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #9] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #10] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #11] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #12] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #13] Object
-index-D1Vm7qsI.js:219523 [Ancestor Step #14] Object
-index-D1Vm7qsI.js:219535 =========================================================================
-index-D1Vm7qsI.js:219537 === MPR ROW DIRECT CHILDREN AUDIT ===
-index-D1Vm7qsI.js:219537 mprRow Tag: DIV Class: flex flex-row w-full h-full divide-x divide-zinc-900 overflow-hidden flex-1 min-h-0 bg-black Children Count: 3
-index-D1Vm7qsI.js:219539 [MPR Row Child #0] Object
-index-D1Vm7qsI.js:219539 [MPR Row Child #1] Object
-index-D1Vm7qsI.js:219539 [MPR Row Child #2] Object
-index-D1Vm7qsI.js:219549 =====================================
-index-D1Vm7qsI.js:219549 === FULL DOM SUBTREE BENEATH containerRef ===
-index-D1Vm7qsI.js:219549 <div class="flex flex-row w-full h-full divide-x divide-zinc-900 overflow-hidden flex-1 min-h-0 bg-black"><div class="relative bg-black h-full flex-1 overflow-hidden flex flex-col" style="flex: 1 1 33.333%; width: 33.333%; min-width: 150px;"><div class="absolute top-3 right-3 z-20 w-3.5 h-3.5 rounded-full bg-red-500 shadow-md shadow-red-500/50"></div><div class="absolute top-2 inset-x-0 text-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">A</div><div class="absolute bottom-2 inset-x-0 text-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">P</div><div class="absolute left-2 inset-y-0 flex items-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">R</div><div class="absolute right-2 inset-y-0 flex items-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">L</div><div class="absolute bottom-3 right-3 z-10 text-xxs font-mono text-cyan-400 font-bold">W: 300 L: 40</div><div id="synos-viewport-axial" class="viewport-element relative w-full h-full flex-1 block" tabindex="-1" data-viewport-uid="axial" data-rendering-engine-uid="SynosRenderingEngine_1785914080540" style="width: 100%; height: 100%; min-width: 150px; min-height: 150px; cursor: url(&quot;blob:http://localhost:59999/00957631-8d36-4e49-a7ce-e46ecdc96f69&quot;) 8 8, default;"><div class="viewport-element" style="position: relative; width: 100%; height: 100%; overflow: hidden;"><canvas class="cornerstone-canvas" width="449" height="766" style="position: absolute; width: 449px; height: 766px; image-rendering: pixelated;"></canvas><svg class="svg-layer" id="svg-layer-axial" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; pointer-events: none; position: absolute;"><defs><filter id="shadow-svg-layer-axial" filterUnits="userSpaceOnUse"><feOffset result="offOut" in="SourceGraphic" dx="0.5" dy="0.5"></feOffset><feColorMatrix result="matrixOut" in="offOut" in2="matrix" values="0.2 0 0 0 0 0 0.2 0 0 0 0 0 0.2 0 0 0 0 0 1 0"></feColorMatrix><feBlend in="SourceGraphic" in2="matrixOut" mode="normal"></feBlend></filter></defs><line x1="224.50001525878906" y1="363" x2="224.50001525878906" y2="5.684341886080802e-14" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="224.50001525878906" y1="403" x2="224.50001525878906" y2="766" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="204.50001525878906" y1="383" x2="0" y2="383" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="244.50001525878906" y1="383" x2="449" y2="383" stroke="rgb(0, 200, 0)" stroke-width="1"></line></svg></div></div></div><div class="relative bg-black h-full flex-1 overflow-hidden flex flex-col" style="flex: 1 1 33.333%; width: 33.333%; min-width: 150px;"><div class="absolute top-3 right-3 z-20 w-3.5 h-3.5 rounded-full bg-yellow-400 shadow-md shadow-yellow-400/50"></div><div class="absolute top-2 inset-x-0 text-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">S</div><div class="absolute bottom-2 inset-x-0 text-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">I</div><div class="absolute left-2 inset-y-0 flex items-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">A</div><div class="absolute right-2 inset-y-0 flex items-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">P</div><div class="absolute bottom-3 right-3 z-10 text-xxs font-mono text-cyan-400 font-bold">W: 300 L: 40</div><div id="synos-viewport-sagittal" class="viewport-element relative w-full h-full flex-1 block" tabindex="-1" data-viewport-uid="sagittal" data-rendering-engine-uid="SynosRenderingEngine_1785914080540" style="width: 100%; height: 100%; min-width: 150px; min-height: 150px; cursor: url(&quot;blob:http://localhost:59999/00957631-8d36-4e49-a7ce-e46ecdc96f69&quot;) 8 8, default;"><div class="viewport-element" style="position: relative; width: 100%; height: 100%; overflow: hidden;"><canvas class="cornerstone-canvas" width="448" height="766" style="position: absolute; width: 448px; height: 766px; image-rendering: pixelated;"></canvas><svg class="svg-layer" id="svg-layer-sagittal" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; pointer-events: none; position: absolute;"><defs><filter id="shadow-svg-layer-sagittal" filterUnits="userSpaceOnUse"><feOffset result="offOut" in="SourceGraphic" dx="0.5" dy="0.5"></feOffset><feColorMatrix result="matrixOut" in="offOut" in2="matrix" values="0.2 0 0 0 0 0 0.2 0 0 0 0 0 0.2 0 0 0 0 0 1 0"></feColorMatrix><feBlend in="SourceGraphic" in2="matrixOut" mode="normal"></feBlend></filter></defs><line x1="243.99998474121094" y1="383" x2="448" y2="383" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="203.99998474121094" y1="383" x2="0" y2="383" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="223.99998474121094" y1="403" x2="223.99998474121094" y2="766" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="223.99998474121094" y1="363" x2="223.99998474121094" y2="5.684341886080802e-14" stroke="rgb(0, 200, 0)" stroke-width="1"></line></svg></div></div></div><div class="relative bg-black h-full flex-1 overflow-hidden flex flex-col" style="flex: 1 1 33.333%; width: 33.333%; min-width: 150px;"><div class="absolute top-3 right-3 z-20 w-3.5 h-3.5 rounded-full bg-emerald-400 shadow-md shadow-emerald-400/50"></div><div class="absolute top-2 inset-x-0 text-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">S</div><div class="absolute bottom-2 inset-x-0 text-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">I</div><div class="absolute left-2 inset-y-0 flex items-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">R</div><div class="absolute right-2 inset-y-0 flex items-center z-10 text-xs font-mono text-cyan-300 font-bold pointer-events-none">L</div><div class="absolute bottom-3 right-3 z-10 text-xxs font-mono text-cyan-400 font-bold">W: 300 L: 40</div><div id="synos-viewport-coronal" class="viewport-element relative w-full h-full flex-1 block" tabindex="-1" data-viewport-uid="coronal" data-rendering-engine-uid="SynosRenderingEngine_1785914080540" style="width: 100%; height: 100%; min-width: 150px; min-height: 150px; cursor: url(&quot;blob:http://localhost:59999/00957631-8d36-4e49-a7ce-e46ecdc96f69&quot;) 8 8, default;"><div class="viewport-element" style="position: relative; width: 100%; height: 100%; overflow: hidden;"><canvas class="cornerstone-canvas" width="448" height="766" style="position: absolute; width: 448px; height: 766px; image-rendering: pixelated;"></canvas><svg class="svg-layer" id="svg-layer-coronal" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%; pointer-events: none; position: absolute;"><defs><filter id="shadow-svg-layer-coronal" filterUnits="userSpaceOnUse"><feOffset result="offOut" in="SourceGraphic" dx="0.5" dy="0.5"></feOffset><feColorMatrix result="matrixOut" in="offOut" in2="matrix" values="0.2 0 0 0 0 0 0.2 0 0 0 0 0 0.2 0 0 0 0 0 1 0"></feColorMatrix><feBlend in="SourceGraphic" in2="matrixOut" mode="normal"></feBlend></filter></defs><line x1="244.00001525878906" y1="383" x2="448" y2="383" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="204.00001525878906" y1="383" x2="0" y2="383" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="224.00001525878906" y1="363" x2="224.00001525878906" y2="5.684341886080802e-14" stroke="rgb(0, 200, 0)" stroke-width="1"></line><line x1="224.00001525878906" y1="403" x2="224.00001525878906" y2="766" stroke="rgb(0, 200, 0)" stroke-width="1"></line></svg></div></div></div></div>
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-index-D1Vm7qsI.js:219549 =============================================
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-3c117b38-7469-4a4f-a4f5-720781756de7:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230240
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230412
-    at u (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231352)
-    at async Object.handler (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231625)
-    at async self.onmessage (3c117b38-7469-4a4f-a4f5-720781756de7:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279552). Error: target array for image does not have the same length (262144) as the decoded image length (279552).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-3c117b38-7469-4a4f-a4f5-720781756de7:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230240
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230412
-    at u (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231352)
-    at async Object.handler (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231625)
-    at async self.onmessage (3c117b38-7469-4a4f-a4f5-720781756de7:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279552). Error: target array for image does not have the same length (262144) as the decoded image length (279552).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279552). Error: target array for image does not have the same length (262144) as the decoded image length (279552).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-3c117b38-7469-4a4f-a4f5-720781756de7:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230240
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230412
-    at u (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231352)
-    at async Object.handler (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231625)
-    at async self.onmessage (3c117b38-7469-4a4f-a4f5-720781756de7:1:161007)
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-3c117b38-7469-4a4f-a4f5-720781756de7:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230240
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230412
-    at u (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231352)
-    at async Object.handler (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231625)
-    at async self.onmessage (3c117b38-7469-4a4f-a4f5-720781756de7:1:161007)
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-3c117b38-7469-4a4f-a4f5-720781756de7:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230240
-    at 3c117b38-7469-4a4f-a4f5-720781756de7:1:1230412
-    at u (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231352)
-    at async Object.handler (3c117b38-7469-4a4f-a4f5-720781756de7:1:1231625)
-    at async self.onmessage (3c117b38-7469-4a4f-a4f5-720781756de7:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279552). Error: target array for image does not have the same length (262144) as the decoded image length (279552).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-0ea4a20f-6407-4de9-aea5-aedec2ad382d:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279552). Error: target array for image does not have the same length (262144) as the decoded image length (279552).
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230240
-    at 0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1230412
-    at u (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231352)
-    at async Object.handler (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:1231625)
-    at async self.onmessage (0ea4a20f-6407-4de9-aea5-aedec2ad382d:1:161007)
-6643451c-2296-4035-abe1-9413432b2f77:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279040). Error: target array for image does not have the same length (262144) as the decoded image length (279040).
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230240
-    at 6643451c-2296-4035-abe1-9413432b2f77:1:1230412
-    at u (6643451c-2296-4035-abe1-9413432b2f77:1:1231352)
-    at async Object.handler (6643451c-2296-4035-abe1-9413432b2f77:1:1231625)
-    at async self.onmessage (6643451c-2296-4035-abe1-9413432b2f77:1:161007)
-16080bbf-ecdf-4781-ac73-b65297136792:1 task decodeTask failed - target array for image does not have the same length (262144) as the decoded image length (279552). Error: target array for image does not have the same length (262144) as the decoded image length (279552).
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230240
-    at 16080bbf-ecdf-4781-ac73-b65297136792:1:1230412
-    at u (16080bbf-ecdf-4781-ac73-b65297136792:1:1231352)
-    at async Object.handler (16080bbf-ecdf-4781-ac73-b65297136792:1:1231625)
-    at async self.onmessage (16080bbf-ecdf-4781-ac73-b65297136792:1:161007)
-index-D1Vm7qsI.js:219767 Uncaught ReferenceError: handleToolChange is not defined
-    at onClick (index-D1Vm7qsI.js:219767:34)
-    at Vb (index-D1Vm7qsI.js:6908:15)
-    at index-D1Vm7qsI.js:7159:9
-    at lt (index-D1Vm7qsI.js:1935:17)
-    at oE (index-D1Vm7qsI.js:6979:7)
-    at hu (index-D1Vm7qsI.js:8449:25)
-    at QE (index-D1Vm7qsI.js:8431:19)
+login:1 Denying load of chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js-BO2Uvu5T.js. Resources must be listed in the web_accessible_resources manifest key in order to be loaded by pages outside the extension.
+chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
+index-EQxQldiJ.js:12105 SignalR(Branch): Subscriber added (Total: 1)
+index-EQxQldiJ.js:10604 [2026-08-06T06:34:15.122Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
+index-EQxQldiJ.js:12107 SignalR(Branch): Starting connection...
+TypeError: Failed to fetch dynamically imported module: chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js-BO2Uvu5T.js
+index-EQxQldiJ.js:222966 [RootRedirect] Evaluating redirect: Object
+content.ts-B9qCIMLo.js:5 [BHK] widget sdk 1.0.0
+content.ts-B9qCIMLo.js:5 [BHK] install: missing/invalid publicKey or merchantId — aborting
+e0 @ content.ts-B9qCIMLo.js:5
+index-EQxQldiJ.js:10604 [2026-08-06T06:34:15.807Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
+index-EQxQldiJ.js:10604 [2026-08-06T06:34:15.808Z] Information: Using HubProtocol 'json'.
+index-EQxQldiJ.js:12108 SignalR(Branch): Connected to /branchOperationsHub
+index-EQxQldiJ.js:12096 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:14.581Z] Information: Normalizing '/dashboardHub' to 'http://localhost:59999/dashboardHub'.
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 1)
+index-EQxQldiJ.js:12015 SignalR: Starting connection...
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:14.796Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:14.797Z] Information: Using HubProtocol 'json'.
+index-EQxQldiJ.js:12066 SignalR: ReceiveServerTime received 2026-08-06T06:38:14.8797665Z
+index-EQxQldiJ.js:12016 SignalR: Connected to /dashboardHub
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:24609 DEBUG: Action Queue Raw: Array(1)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 0)
+index-EQxQldiJ.js:12079 SignalR: No subscribers, disconnecting...
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:26.308Z] Information: Connection disconnected.
+index-EQxQldiJ.js:12017 SignalR: Connection Closed
+index-EQxQldiJ.js:12080 SignalR: Disconnected
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 1)
+index-EQxQldiJ.js:12015 SignalR: Starting connection...
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:27.583Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:27.584Z] Information: Using HubProtocol 'json'.
+index-EQxQldiJ.js:12016 SignalR: Connected to /dashboardHub
+index-EQxQldiJ.js:12066 SignalR: ReceiveServerTime received 2026-08-06T06:38:27.5860578Z
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:24609 DEBUG: Action Queue Raw: Array(1)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 0)
+index-EQxQldiJ.js:12079 SignalR: No subscribers, disconnecting...
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:31.837Z] Information: Connection disconnected.
+index-EQxQldiJ.js:12017 SignalR: Connection Closed
+index-EQxQldiJ.js:12017 SignalR: Connection Closed
+index-EQxQldiJ.js:12080 SignalR: Disconnected
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:41.256Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:59999/radiologyCollaborationHub'.
+index-EQxQldiJ.js:10604 [2026-08-06T06:38:41.323Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
+index-EQxQldiJ.js:10604 [2026-08-06T06:40:02.614Z] Information: Connection disconnected.
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 1)
+index-EQxQldiJ.js:12015 SignalR: Starting connection...
+index-EQxQldiJ.js:10604 [2026-08-06T06:40:05.291Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
+index-EQxQldiJ.js:10604 [2026-08-06T06:40:05.291Z] Information: Using HubProtocol 'json'.
+index-EQxQldiJ.js:12066 SignalR: ReceiveServerTime received 2026-08-06T06:40:05.2968504Z
+index-EQxQldiJ.js:12016 SignalR: Connected to /dashboardHub
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
+index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
+index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
+index-EQxQldiJ.js:104531 Failed to check DICOM slice count: TypeError: dg.getStudySliceCount is not a function
+    at Ae (index-EQxQldiJ.js:104528:31)
+    at index-EQxQldiJ.js:104538:51
+    at Kh (index-EQxQldiJ.js:5213:19)
+    at VB (index-EQxQldiJ.js:5966:39)
+    at xc (index-EQxQldiJ.js:5958:67)
+    at VB (index-EQxQldiJ.js:5966:11)
+    at xc (index-EQxQldiJ.js:5958:67)
+    at VB (index-EQxQldiJ.js:6000:11)
+    at xc (index-EQxQldiJ.js:5958:67)
+    at VB (index-EQxQldiJ.js:5966:11)
+Ae @ index-EQxQldiJ.js:104531
+index-EQxQldiJ.js:104531 Failed to check DICOM slice count: TypeError: dg.getStudySliceCount is not a function
+    at Ae (index-EQxQldiJ.js:104528:31)
+    at ge (index-EQxQldiJ.js:104608:104)
+Ae @ index-EQxQldiJ.js:104531

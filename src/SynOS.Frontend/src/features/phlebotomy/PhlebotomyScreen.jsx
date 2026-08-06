@@ -14,6 +14,7 @@ import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
 import { TokenCell, PatientCell, StatusCell, PhlebotomistCell } from '@/components/layout/ActionQueueCells'
 import { useAuth } from '@/context/AuthContext'
+import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs'
 
 export function PhlebotomyScreen() {
     const { theme } = useTheme();
@@ -67,10 +68,8 @@ export function PhlebotomyScreen() {
         // Must contain blood/pathology sample collection orders
         if (row.hasPhlebotomy === false) return false;
 
-        const isToday = row.dateGroup === 'Today';
         if (showHistoryRef.current) {
-            // History: Only show completed/processed items from YESTERDAY and older
-            if (isToday) return false;
+            // History: Show all completed/processed/collected items within the 7D window
             return row.operationalStatus === 'Collected' ||
                    row.operationalStatus === 'In Processing' ||
                    row.operationalStatus === 'Reporting' ||
@@ -242,28 +241,20 @@ export function PhlebotomyScreen() {
 
     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
 
+    const availableCount = actionQueue.filter(row => !row.assignedPhlebotomistId).length;
+
     // Filtered Queue Data (Client-Side Isolation vs Admin Oversight)
     const filteredQueue = actionQueue.filter(row => {
         const rowPhleboId = row.assignedPhlebotomistId?.toLowerCase();
         const userId = user?.id?.toLowerCase();
+        const isUnassigned = !row.assignedPhlebotomistId;
+        const isAssignedToMe = rowPhleboId === userId;
 
-        if (showHistory) {
-            if (activeAssignmentTab === "available") {
-                return rowPhleboId !== userId;
-            } else {
-                return rowPhleboId === userId;
-            }
+        if (activeAssignmentTab === "available") {
+            return isUnassigned;
         } else {
-            if (activeAssignmentTab === "available") {
-                return !row.assignedPhlebotomistId;
-            } else {
-                // ADMIN RULE: Admins see EVERYTHING in the assigned tab
-                if (isAdmin) {
-                    return !!row.assignedPhlebotomistId;
-                }
-                // Standard User: See only what is assigned to ME
-                return rowPhleboId === userId;
-            }
+            // Assigned Tab: Admins see all assigned; Standard user sees items assigned to them
+            return isAdmin ? !isUnassigned : isAssignedToMe;
         }
     });
 
@@ -304,46 +295,14 @@ export function PhlebotomyScreen() {
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-4">
                                     <ActionQueueHeader title="Collection Queue" count={filteredQueue.length} />
-                                    <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
-                                        <button
-                                            onClick={() => setActiveAssignmentTab("available")}
-                                            className={cn(
-                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                activeAssignmentTab === "available" ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
-                                            )}
-                                        >
-                                            Available
-                                        </button>
-                                        <button
-                                            onClick={() => setActiveAssignmentTab("assigned")}
-                                            className={cn(
-                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                activeAssignmentTab === "assigned" ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
-                                            )}
-                                        >
-                                            Assigned
-                                        </button>
-                                    </div>
-                                    <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
-                                        <button
-                                            onClick={() => setShowHistory(false)}
-                                            className={cn(
-                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
-                                            )}
-                                        >
-                                            Live
-                                        </button>
-                                        <button
-                                            onClick={() => setShowHistory(true)}
-                                            className={cn(
-                                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                                showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
-                                            )}
-                                        >
-                                            History (7d)
-                                        </button>
-                                    </div>
+                                    <WorklistMatrixTabs
+                                        activeAssignmentTab={activeAssignmentTab}
+                                        onAssignmentTabChange={setActiveAssignmentTab}
+                                        showHistory={showHistory}
+                                        onTimeTabChange={setShowHistory}
+                                        availableCount={availableCount}
+                                        theme={theme}
+                                    />
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button

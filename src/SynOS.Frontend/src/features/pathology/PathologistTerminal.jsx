@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from "@/lib/utils";
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
+import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs';
 import { ReportsApi } from '@/api/reports';
 import { UsersApi } from '@/api/users';
 import { useTheme } from '@/context/ThemeContext';
@@ -711,6 +712,8 @@ export function PathologistTerminal() {
     const isIdentityComplete = missingIdentityFields.length === 0;
     const [activeTab, setActiveTab] = useState("available"); // available | assigned
 
+    const availableCount = reports.filter(r => !r.verifiedByUserId).length;
+
     const filteredReports = reports.filter(r => {
         const matchesSearch = r.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              r.testName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -828,43 +831,15 @@ export function PathologistTerminal() {
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit self-start">
-                                    <button
-                                        onClick={() => setShowHistory(false)}
-                                        className={cn(
-                                            "text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                            !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
-                                        )}
-                                    >
-                                        Live
-                                    </button>
-                                    <button
-                                        onClick={() => setShowHistory(true)}
-                                        className={cn(
-                                            "text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all",
-                                            showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
-                                        )}
-                                    >
-                                        History (7d)
-                                    </button>
-                                </div>
-
-                                <div className="flex items-center gap-1 dark:bg-zinc-950 bg-zinc-50 p-1 rounded-xl border dark:border-white/5 border-zinc-200">
-                                    {['available', 'assigned'].map(tab => (
-                                        <button
-                                            key={tab}
-                                            onClick={() => setActiveTab(tab)}
-                                            className={cn(
-                                                "flex-1 text-[10px] uppercase font-black tracking-widest py-1.5 rounded-lg transition-all",
-                                                activeTab === tab 
-                                                    ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" 
-                                                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                                            )}
-                                        >
-                                            {tab}
-                                        </button>
-                                    ))}
-                                </div>
+                                 <WorklistMatrixTabs
+                                     activeAssignmentTab={activeTab}
+                                     onAssignmentTabChange={setActiveTab}
+                                     showHistory={showHistory}
+                                     onTimeTabChange={setShowHistory}
+                                     availableCount={availableCount}
+                                     theme={theme}
+                                     className="self-start"
+                                 />
 
                                 <div className="relative">
                                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500" />

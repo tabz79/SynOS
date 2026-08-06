@@ -253,6 +253,7 @@ namespace SynOS.Data
         // DbSets for PACS module
         public DbSet<Models.Entities.PACS.PacsSeries> PacsSeries { get; set; } = null!;
         public DbSet<Models.Entities.PACS.PacsInstance> PacsInstances { get; set; } = null!;
+        public DbSet<Models.Entities.PACS.PacsImportAuditLog> PacsImportAuditLogs { get; set; } = null!;
 
         // DbSets for Critical Values module
         public DbSet<CriticalRule> CriticalRules { get; set; } = null!;
@@ -978,7 +979,7 @@ namespace SynOS.Data
             // PACS Module
             modelBuilder.Entity<Models.Entities.PACS.PacsSeries>(entity =>
             {
-                entity.HasIndex(e => new { e.RadiologyStudyId, e.StudyInstanceUid, e.SeriesInstanceUid });
+                entity.HasIndex(e => new { e.RadiologyStudyId, e.SeriesInstanceUid }).IsUnique();
 
                 entity.HasOne(e => e.RadiologyStudy)
                     .WithMany()
@@ -993,6 +994,7 @@ namespace SynOS.Data
 
             modelBuilder.Entity<Models.Entities.PACS.PacsInstance>(entity =>
             {
+                entity.HasIndex(e => new { e.RadiologyStudyId, e.SopInstanceUid }).IsUnique();
                 entity.HasIndex(e => new { e.SeriesId, e.SopInstanceUid });
                 entity.HasIndex(e => e.RadiologyStudyId);
 
@@ -1004,12 +1006,19 @@ namespace SynOS.Data
                 entity.HasOne(e => e.RadiologyStudy)
                     .WithMany()
                     .HasForeignKey(e => e.RadiologyStudyId)
-                    .OnDelete(DeleteBehavior.NoAction);
-                
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 entity.HasOne(e => e.Creator)
                     .WithMany()
                     .HasForeignKey(e => e.CreatedBy)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Models.Entities.PACS.PacsImportAuditLog>(entity =>
+            {
+                entity.HasKey(e => e.AuditLogId);
+                entity.HasIndex(e => e.RadiologyStudyId);
+                entity.HasIndex(e => e.ImportedAt);
             });
 
             modelBuilder.Entity<RadiologyReport>(entity =>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { useAuth } from '@/context/AuthContext';
+import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs';
 import { CollaborationCallOverlay } from './CollaborationCallOverlay';
 import { RadiologyApi } from '@/api/radiology';
 import { 
@@ -32,6 +33,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
     const { user } = useAuth();
     const [studies, setStudies] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
+    const [activeTab, setActiveTab] = useState('available');
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -508,85 +510,92 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                         <div className="dark:bg-zinc-900 bg-white dark:border-white/5 border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl p-4 flex flex-col h-full min-h-0">
                             <MedicalMacrosWorkspace onClose={() => setIsMacroManagerOpen(false)} />
                         </div>
-                    ) : (
-                        <>
-                            <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex flex-col gap-3 shrink-0">
-                        <div className="flex justify-between items-center">
-                            <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-650">Collaborative Queue</span>
-                            <button 
-                                onClick={fetchQueue}
-                                className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
-                            >
-                                <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                            </button>
-                        </div>
+                    ) : (() => {
+                        const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+                        const availableCount = studies.filter(s => !s.claimedByUserId).length;
+                        const filteredStudies = studies.filter(s => {
+                            const isClaimedByMe = s.claimedByUserId?.toLowerCase() === user?.id?.toLowerCase();
+                            const isUnassigned = !s.claimedByUserId;
 
-                        <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit">
-                            <button
-                                onClick={() => setShowHistory(false)}
-                                className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
-                                    !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
-                                }`}
-                            >
-                                Live
-                            </button>
-                            <button
-                                onClick={() => setShowHistory(true)}
-                                className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
-                                    showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
-                                }`}
-                            >
-                                History (7d)
-                            </button>
-                        </div>
-                    </div>
+                            if (activeTab === 'available') {
+                                return isUnassigned;
+                            } else {
+                                return isAdmin ? !isUnassigned : isClaimedByMe;
+                            }
+                        });
 
-                    <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                        {loading ? (
-                            <div className="h-full flex items-center justify-center flex-col gap-2">
-                                <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                                <span className="text-[11px] text-zinc-550">Loading dictation worklist...</span>
-                            </div>
-                        ) : studies.length === 0 ? (
-                            <div className="h-full flex items-center justify-center flex-col text-center p-6 dark:text-zinc-555 text-zinc-400">
-                                <Database className="h-8 w-8 mb-2 dark:text-zinc-750 text-zinc-300" />
-                                <span className="text-xs font-semibold uppercase">Queue Cleared</span>
-                                <span className="text-[10px] dark:text-zinc-650 text-zinc-550 mt-1">No studies waiting for transcription.</span>
-                            </div>
-                        ) : (
-                            studies.map((study) => {
-                                const isSelected = selectedStudy?.radiologyStudyId === study.radiologyStudyId;
-                                return (
-                                    <div 
-                                        key={study.radiologyStudyId}
-                                        onClick={() => {
-                                            handleSelectStudy(study);
-                                            setIsQueueCollapsed(true);
-                                        }}
-                                        className={`p-3 rounded-xl transition-all duration-260 ease-synos cursor-pointer ${
-                                            isSelected 
-                                                ? 'synos-card-elevated bg-synos-primary/10 dark:text-white text-synos-primary border-synos-primary/40 shadow-md' 
-                                                : 'synos-dept-card dark:bg-synos-surface bg-white'
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="text-[10px] font-black uppercase text-synos-primary">
-                                                Token #{study.tokenNumber}
-                                            </span>
-                                            <span className="text-[10px] font-black uppercase text-synos-primary">
-                                                {study.modality}
-                                            </span>
-                                        </div>
-                                        <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
-                                        <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                        return (
+                            <>
+                                <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex flex-col gap-3 shrink-0">
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-650">Collaborative Queue</span>
+                                        <button 
+                                            onClick={fetchQueue}
+                                            className="p-1.5 dark:hover:bg-zinc-800 hover:bg-zinc-200/60 rounded transition-colors dark:text-zinc-400 text-zinc-650 hover:dark:text-zinc-200 hover:text-zinc-900"
+                                        >
+                                            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+                                        </button>
                                     </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </>
-            )}
-        </div>
+
+                                    <WorklistMatrixTabs
+                                        activeAssignmentTab={activeTab}
+                                        onAssignmentTabChange={setActiveTab}
+                                        showHistory={showHistory}
+                                        onTimeTabChange={setShowHistory}
+                                        availableCount={availableCount}
+                                    />
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                    {loading ? (
+                                        <div className="h-full flex items-center justify-center flex-col gap-2">
+                                            <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+                                            <span className="text-[11px] text-zinc-550">Loading dictation worklist...</span>
+                                        </div>
+                                    ) : filteredStudies.length === 0 ? (
+                                        <div className="h-full flex items-center justify-center flex-col text-center p-6 dark:text-zinc-555 text-zinc-400">
+                                            <Database className="h-8 w-8 mb-2 dark:text-zinc-750 text-zinc-300" />
+                                            <span className="text-xs font-semibold uppercase">Queue Cleared</span>
+                                            <span className="text-[10px] dark:text-zinc-650 text-zinc-555 mt-1">No studies waiting for transcription.</span>
+                                        </div>
+                                    ) : (
+                                        filteredStudies.map((study) => {
+                                            const isSelected = selectedStudy?.radiologyStudyId === study.radiologyStudyId;
+                                            return (
+                                                <div 
+                                                    key={study.radiologyStudyId}
+                                                    onClick={() => {
+                                                        handleSelectStudy(study);
+                                                        if (activeTab === 'available') {
+                                                            setActiveTab('assigned');
+                                                        }
+                                                        setIsQueueCollapsed(true);
+                                                    }}
+                                                    className={`p-3 rounded-xl transition-all duration-260 ease-synos cursor-pointer ${
+                                                        isSelected 
+                                                            ? 'synos-card-elevated bg-synos-primary/10 dark:text-white text-synos-primary border-synos-primary/40 shadow-md' 
+                                                            : 'synos-dept-card dark:bg-synos-surface bg-white'
+                                                    }`}
+                                                >
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-[10px] font-black uppercase text-synos-primary">
+                                                            Token #{study.tokenNumber}
+                                                        </span>
+                                                        <span className="text-[10px] font-black uppercase text-synos-primary">
+                                                            {study.modality}
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
+                                                    <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </>
+                        );
+                    })()}
+                </div>
 
                 {/* 2. Collaborative Transcription Viewport (2-Panel Layout: Editor Left, Live A4 Preview Right) */}
                 <div className="flex-1 h-full flex flex-col overflow-hidden dark:bg-synos-background bg-zinc-50">

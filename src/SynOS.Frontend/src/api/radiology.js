@@ -85,6 +85,24 @@ export const RadiologyApi = {
         return await response.json();
     },
 
+    getStudySliceCount: async (radiologyStudyId) => {
+        try {
+            const tree = await RadiologyApi.getSeriesTree(radiologyStudyId);
+            let count = 0;
+            if (tree && Array.isArray(tree.series)) {
+                tree.series.forEach(s => {
+                    if (Array.isArray(s.instances)) {
+                        count += s.instances.length;
+                    }
+                });
+            }
+            return count;
+        } catch (err) {
+            console.error("Failed to calculate study slice count:", err);
+            return 0;
+        }
+    },
+
     uploadDicom: async (radiologyStudyId, formData) => {
         const response = await fetch(`/api/v1/radiology/pacs/${radiologyStudyId}/upload`, {
             method: 'POST',

@@ -582,11 +582,6 @@ namespace SynOS.Services
         {
             var query = _context.RadiologyStudies.AsQueryable();
 
-            if (statuses != null && statuses.Any())
-            {
-                query = query.Where(rs => statuses.Contains(rs.Status));
-            }
-
             var today = DateTimeOffset.UtcNow.Date;
             var startDate = today.AddDays(-7);
             var nextDay = today.AddDays(1);
@@ -596,11 +591,16 @@ namespace SynOS.Services
             // For radiologists (who do not query PendingImaging), only Signed/Finalized/etc. are terminal.
             var isTechnicianRequest = statuses != null && statuses.Contains("PendingImaging");
             var terminalStatuses = isTechnicianRequest
-                ? new List<string> { "AwaitingDictation", "DictationSessionStarted", "DraftReady", "AwaitingSignature", "Signed", "ManualVerified", "Finalized" }
+                ? new List<string> { "AwaitingDictation", "DictationSessionStarted", "DraftReady", "AwaitingSignature", "Signed", "ManualVerified", "Finalized", "ImagingCompleted" }
                 : new List<string> { "Signed", "ManualVerified", "Finalized" };
 
             if (!includeHistory)
             {
+                if (statuses != null && statuses.Any())
+                {
+                    query = query.Where(rs => statuses.Contains(rs.Status));
+                }
+
                 query = query.Where(rs =>
                     (!terminalStatuses.Contains(rs.Status) && rs.CreatedAt >= startDate) ||
                     (terminalStatuses.Contains(rs.Status) && (rs.LastActivityAt ?? rs.CreatedAt) >= today && (rs.LastActivityAt ?? rs.CreatedAt) < nextDay)
@@ -608,6 +608,7 @@ namespace SynOS.Services
             }
             else
             {
+                // History (7d) View: Past 7 days from yesterday and older (strictly < today)
                 query = query.Where(rs =>
                     terminalStatuses.Contains(rs.Status) && (rs.LastActivityAt ?? rs.CreatedAt) >= startDate && (rs.LastActivityAt ?? rs.CreatedAt) < today
                 );
