@@ -518,8 +518,9 @@ builder.Services.AddScoped<IEventPublishingService, SynOS.Api.Services.EventPubl
 if (!isSetupMode || isConfigured)
 {
     builder.Services.AddHostedService<NotificationWorkerService>();
-    // builder.Services.AddHostedService<ExpiredLockCleanupService>();
-    // builder.Services.AddHostedService<AnalyzerTcpListenerService>();
+    builder.Services.AddHostedService<AnalyzerTcpListenerService>();
+    builder.Services.AddHostedService<SerialPortListenerService>();
+    builder.Services.AddHostedService<DicomCStoreScpService>();
     builder.Services.AddHostedService<OperationalStatsProjectionWorker>();
     builder.Services.AddHostedService<MiddlewareSyncWorker>();
     builder.Services.AddHostedService<DraftVisitCleanupService>();

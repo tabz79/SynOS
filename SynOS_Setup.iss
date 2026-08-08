@@ -10,11 +10,11 @@
 AppName=SynOS
 AppVersion=1.5.2
 AppPublisher=TBZ Labs
-DefaultDirName=C:\SynOS
+DefaultDirName=C:\Program Files\TBZ Labs\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v222_fix_pacs_archive_series_tree
+OutputBaseFilename=SynOS_Setup_v233_full_radiology_suite
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -50,12 +50,12 @@ Name: "C:\ProgramData\TBZ Labs\SynOS\Temp"
 Name: "C:\ProgramData\TBZ Labs\SynOS\CrashDumps"
 
 [InstallDelete]
-Type: files; Name: "{app}\wwwroot\assets\index-*.js"
-Type: files; Name: "{app}\wwwroot\assets\index-*.css"
+Type: filesandordirs; Name: "{app}\wwwroot\assets"
+Type: files; Name: "{app}\wwwroot\index.html"
 
 [Files]
 Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Permissions: everyone-modify
-Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json, Logs\*"
+Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json, Logs\*"; Permissions: everyone-modify
 Source: "src\SynOS.ServerManager\bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}\ServerManager"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace
 Source: "installer-assets\SynOS.ico"; DestDir: "{app}"; Flags: ignoreversion
 
@@ -724,6 +724,38 @@ begin
   Exec('powershell.exe', Cmd, '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
 end;
 
+procedure StopServiceAndProcesses;
+var
+  ExitCode: Integer;
+  i: Integer;
+  WwwrootDir: String;
+begin
+  Exec('net.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+  Exec('sc.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+  
+  for i := 1 to 5 do
+  begin
+    Exec('taskkill.exe', '/F /IM SynOS.Api.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+    Exec('taskkill.exe', '/F /IM SynOS.ServerManager.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+    Exec('taskkill.exe', '/F /IM SynOS.Updater.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+    Sleep(1000);
+  end;
+  Sleep(1000);
+  
+  // Cleanly purge old wwwroot directory so no stale assets or old index.html persist
+  WwwrootDir := ExpandConstant('{app}\wwwroot');
+  if DirExists(WwwrootDir) then
+  begin
+    DelTree(WwwrootDir, True, True, True);
+  end;
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  Result := '';
+  StopServiceAndProcesses;
+end;
+
 // Phase 2 & 3: Post-Install Verification & Rollback logic
 procedure CurStepChanged(CurStep: TSetupStep);
 var
@@ -735,12 +767,7 @@ var
 begin
   if CurStep = ssInstall then
   begin
-    // Stop the running service and kill active processes to release DLL locks before replacing files
-    Exec('net.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
-    Exec('sc.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
-    Exec('taskkill.exe', '/F /IM SynOS.Api.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
-    Exec('taskkill.exe', '/F /IM SynOS.Updater.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
-    Sleep(2000);
+    StopServiceAndProcesses;
   end;
 
   if CurStep = ssPostInstall then

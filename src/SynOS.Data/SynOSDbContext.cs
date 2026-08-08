@@ -283,6 +283,7 @@ namespace SynOS.Data
         // NEW: Branding & Identity (GPT-5 Mandate)
         public DbSet<LabProfile> LabProfiles { get; set; } = null!;
         public DbSet<AnalyzerListener> AnalyzerListeners { get; set; } = null!;
+        public DbSet<RadiologyModality> RadiologyModalities { get; set; } = null!;
         public DbSet<RoleDepartmentConfig> RoleDepartmentConfigs { get; set; } = null!;
 
         // DbSets for Referral System

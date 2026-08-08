@@ -75,6 +75,22 @@ export const ProcessingApi = {
         return await response.json();
     },
 
+    importFromAnalyzer: async (id) => {
+        const response = await fetch(`/api/processing/assignment/${id}/import-analyzer`, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            const error = new Error('Failed to import analyzer results');
+            error.status = response.status;
+            throw error;
+        }
+        return await response.json();
+    },
+
     normalizeQueueData: (items) => {
         return items.map(item => {
             const isPending = item.status === 0 || item.status === "Pending" || item.status === 3 || item.status === "Reopened";

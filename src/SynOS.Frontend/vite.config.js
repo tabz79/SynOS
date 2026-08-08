@@ -17,7 +17,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../SynOS.Api/wwwroot',
+    outDir: 'dist-build',
     emptyOutDir: true
   },
   server: {

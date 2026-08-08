@@ -149,23 +149,23 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       {/* MIDDLE — Dynamically Centered Role Takeover Notch */}
       {isTakeoverActive ? (
         <div className="flex-1 flex justify-center items-center h-full px-2 lg:px-4 min-w-0 pointer-events-none">
-          <div className="h-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 rounded-b-xl bg-zinc-950/95 border-x border-b border-amber-500/30 text-xs shadow-lg backdrop-blur-md transition-all hover:border-amber-500/60 pointer-events-auto">
+          <div className="h-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 rounded-b-xl dark:bg-zinc-950/98 bg-white/98 border-x border-b border-amber-500/50 text-xs shadow-md transition-all pointer-events-auto">
             <div className="flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-300 whitespace-nowrap">
-                <span className="hidden xl:inline">Role </span>Takeover: <span className="text-amber-400 font-bold">{takeoverRoleName}</span>
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="text-[10px] font-mono uppercase tracking-widest font-extrabold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                <span className="hidden xl:inline">Role </span>Takeover: <span className="text-amber-600 dark:text-amber-400 font-black">{takeoverRoleName}</span>
               </span>
             </div>
             
-            <div className="w-px h-3.5 bg-zinc-700/60 shrink-0" />
+            <div className="w-px h-3.5 bg-zinc-300 dark:bg-zinc-700 shrink-0" />
 
             <button 
               onClick={() => navigate('/admin')}
-              className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 hover:text-white transition-colors group cursor-pointer whitespace-nowrap"
+              className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-800 dark:text-zinc-200 hover:text-amber-600 dark:hover:text-amber-400 font-extrabold transition-colors group cursor-pointer whitespace-nowrap"
               title="Exit Role → Back to Control Tower"
             >
-              <ArrowLeft className="w-3 h-3 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="hidden lg:inline">Exit Role <span className="text-zinc-500">→</span> Back to Control Tower</span>
+              <ArrowLeft className="w-3 h-3 text-amber-600 dark:text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+              <span className="hidden lg:inline">Exit Role <span className="text-zinc-500 dark:text-zinc-400 font-bold">→</span> Back to Control Tower</span>
               <span className="inline lg:hidden">Exit</span>
             </button>
           </div>
@@ -199,27 +199,32 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           {activeDropdown === 'facility' && isAdmin && (
             <div
               ref={facilityRef}
-              className={cn(
-                "absolute right-0 mt-2 w-64 z-50 rounded-2xl p-1 shadow-xl border",
-                isDark ? "dark:bg-zinc-800 dark:border-white/10" : "bg-white border-black/5"
-              )}
+              className="absolute right-0 mt-2 w-64 z-50 synos-elevated-card rounded-2xl p-2 shadow-2xl border border-slate-300 dark:border-white/12 animate-in fade-in-50 zoom-in-95 duration-150"
             >
-              {availableBranches.map(b => (
-                <button
-                  key={b.id || b.branchId}
-                  className={cn(
-                    "w-full px-3 py-2 text-left text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5",
-                    (b.id || b.branchId) === activeOversightBranchId && "bg-zinc-700/50 text-synos-primary font-bold"
-                  )}
-                  onClick={() => {
-                    setOversightBranch(b.id || b.branchId);
-                    setActiveDropdown(null);
-                    window.location.reload(); // Reload to refresh all data with new branch context
-                  }}
-                >
-                  {b.name}
-                </button>
-              ))}
+              <div className="px-3 py-1.5 mb-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
+                Active Branch Facility
+              </div>
+              {availableBranches.map(b => {
+                const isSelected = (b.id || b.branchId) === activeOversightBranchId;
+                return (
+                  <button
+                    key={b.id || b.branchId}
+                    className={cn(
+                      "w-full px-3.5 py-2 text-left text-xs rounded-xl font-bold transition-all mb-0.5",
+                      isSelected
+                        ? "bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold shadow-xs"
+                        : "text-zinc-800 dark:text-zinc-200 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400"
+                    )}
+                    onClick={() => {
+                      setOversightBranch(b.id || b.branchId);
+                      setActiveDropdown(null);
+                      window.location.reload(); // Reload to refresh all data with new branch context
+                    }}
+                  >
+                    {b.name}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -241,57 +246,58 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           {activeDropdown === 'role' && (
             <div
               ref={roleRef}
-              className={cn(
-                "absolute right-0 mt-2 w-48 z-50 rounded-2xl p-1 shadow-xl border",
-                isDark ? "dark:bg-zinc-800 dark:border-white/10" : "bg-white border-black/5"
-              )}
+              className="absolute right-0 mt-2 w-56 z-50 synos-elevated-card rounded-2xl p-2 shadow-2xl border border-slate-300 dark:border-white/12 animate-in fade-in-50 zoom-in-95 duration-150"
             >
+              <div className="px-3 py-1.5 mb-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
+                Account & Options
+              </div>
+
               <button
-                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
-                {isDark ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-                Theme: {theme}
+                {isDark ? <Moon className="w-3.5 h-3.5 text-synos-primary" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
+                Theme: <span className="capitalize font-extrabold text-synos-primary">{theme}</span>
               </button>
 
-              <div className="h-px bg-black/5 dark:bg-white/5 my-1" />
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800/80 my-1" />
               
               <button
-                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr'); setActiveDropdown(null); }}
               >
-                <Shield className="w-3.5 h-3.5" />
+                <Shield className="w-3.5 h-3.5 text-synos-primary" />
                 My HR
               </button>
 
               <button
-                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr/attendance'); setActiveDropdown(null); }}
               >
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className="w-3.5 h-3.5 text-synos-primary" />
                 My Attendance
               </button>
 
               <button
-                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr/leave'); setActiveDropdown(null); }}
               >
-                <Activity className="w-3.5 h-3.5" />
+                <Activity className="w-3.5 h-3.5 text-synos-primary" />
                 Apply Leave
               </button>
 
               <button
-                className="w-full px-3 py-2 text-xs rounded-lg hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-2"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr/requests'); setActiveDropdown(null); }}
               >
-                <Activity className="w-3.5 h-3.5 opacity-50" />
+                <Activity className="w-3.5 h-3.5 opacity-50 text-synos-primary" />
                 My Requests
               </button>
 
-              <div className="h-px bg-black/5 dark:bg-white/5 my-1" />
+              <div className="h-px bg-zinc-200 dark:bg-zinc-800/80 my-1" />
 
               <button
-                className="w-full px-3 py-2 text-xs rounded-lg text-red-500 hover:bg-red-500/10"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-black text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:text-red-700 transition-all flex items-center gap-2.5"
                 onClick={handleLogout}
               >
                 Sign Out

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { ProcessingApi } from '@/api/processing';
-import { User, Clipboard, Hash, Clock, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { User, Clipboard, Hash, Clock, AlertCircle, Loader2, ArrowRight, Cpu } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RichPatientCard } from '@/components/patient/RichPatientCard';
@@ -136,11 +136,45 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isClaiming, setIsClaiming] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const [importNotice, setImportNotice] = useState(null);
     const [error, setError] = useState(null);
     
     // Centralized results state: { [parameterCode]: value }
     const [results, setResults] = useState({});
     const initialResultsRef = useRef({});
+
+    const handleImportFromAnalyzer = async () => {
+        if (!assignmentId) return;
+        try {
+            setIsImporting(true);
+            setError(null);
+            setImportNotice(null);
+            
+            const res = await ProcessingApi.importFromAnalyzer(assignmentId);
+            if (res && res.importedResults) {
+                setResults(prev => {
+                    const updated = {
+                        ...prev,
+                        ...res.importedResults
+                    };
+                    const paramsList = detail?.tests?.flatMap(t => t.parameters?.map(p => ({
+                        parameterCode: p.parameterCode,
+                        isCalculated: p.isCalculated || p.hasFormula || !!p.formula,
+                        formula: p.formula
+                    }))) || [];
+                    return runCalculations(updated, paramsList);
+                });
+                onDirtyUpdate?.(true);
+                setImportNotice(res.message || `✓ Imported ${res.importedCount || 3} parameter results from ${res.analyzerName || 'Analyzer'}`);
+            }
+        } catch (err) {
+            console.error("Analyzer import error:", err);
+            setError(err.message || "Failed to query connected blood analyzer.");
+        } finally {
+            setIsImporting(false);
+        }
+    };
 
     useEffect(() => {
         if (!assignmentId) return;
@@ -384,30 +418,51 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
                         {!isClaiming && <ArrowRight className="w-4 h-4" />}
                     </button>
                 ) : isAssignedToMe ? (
-                    <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-col gap-2.5 w-full">
+                        {importNotice && (
+                            <div className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-xxs flex items-center justify-between animate-fadeIn">
+                                <span>{importNotice}</span>
+                                <button onClick={() => setImportNotice(null)} className="text-zinc-400 hover:text-zinc-600 ml-2">✕</button>
+                            </div>
+                        )}
+
+                        {/* First Row: Import from Analyzer | Skip to Typist */}
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={handleImportFromAnalyzer}
+                                disabled={isSaving || isImporting}
+                                className="flex-1 h-11 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] disabled:opacity-50"
+                                title="Query connected lab analyzer and populate test parameter results"
+                            >
+                                {isImporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Cpu className="w-4 h-4 text-indigo-500" />}
+                                <span>Import from Analyzer</span>
+                            </button>
+                            <button 
+                                onClick={handleSendEmptyToTypist}
+                                disabled={isSaving || isImporting}
+                                className="flex-1 h-11 dark:bg-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 rounded-xl text-xs font-bold transition-all active:scale-[0.98] disabled:opacity-50"
+                            >
+                                Skip / Send Empty to Typist
+                            </button>
+                        </div>
+
+                        {/* Second Row: Save Draft | Complete Processing */}
                         <div className="flex gap-2">
                             <button 
                                  onClick={handleSaveDraft} 
-                                 disabled={isSaving}
+                                 disabled={isSaving || isImporting}
                                  className="flex-1 h-12 rounded-xl text-xs font-bold border dark:border-white/10 border-zinc-200 dark:text-zinc-300 hover:bg-zinc-500/5 transition-all disabled:opacity-50"
                             >
-                                Save Draft
+                                {isSaving ? "Saving..." : "Save Draft"}
                             </button>
                             <button 
                                 onClick={handleComplete}
                                 className="flex-1 h-12 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-500/20 transition-all active:scale-[0.98] disabled:opacity-50"
-                                disabled={isSaving}
+                                disabled={isSaving || isImporting}
                             >
                                 Complete Processing
                             </button>
                         </div>
-                        <button 
-                            onClick={handleSendEmptyToTypist}
-                            className="w-full h-10 dark:bg-zinc-800 bg-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 dark:text-zinc-400 rounded-xl text-xs font-bold transition-all active:scale-[0.98] disabled:opacity-50"
-                            disabled={isSaving}
-                        >
-                            Skip / Send Empty to Typist
-                        </button>
                     </div>
                 ) : (
                     <button

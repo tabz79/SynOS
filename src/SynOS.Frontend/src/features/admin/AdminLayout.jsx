@@ -31,25 +31,32 @@ export function AdminLayout() {
 
     const sidebarGroups = [
         {
-            title: "Control Tower",
+            title: "Control Tower & Operations",
             items: [
                 { name: "Dashboard", icon: LayoutDashboard, path: "/admin", exact: true },
-                // Operations
                 { name: "Reception", icon: UserPlus, path: "/reception" },
                 { name: "Reports Typing", icon: Keyboard, path: "/typist" },
                 { name: "Delivery Desk", icon: Truck, path: "/delivery" },
                 { name: "Inventory (Ops)", icon: Box, path: "/inventory" },
-                { name: "Finance (Ops)", icon: IndianRupee, path: "/finance" },
-                // Pathology
+                { name: "Finance (Ops)", icon: IndianRupee, path: "/finance" }
+            ]
+        },
+        {
+            title: "Pathology Division",
+            items: [
                 { name: "Phlebotomy", icon: Syringe, path: "/phlebotomist" },
                 { name: "Lab Workbench", icon: Beaker, path: "/workbench" },
-                { name: "Pathologist", icon: UserCheck, path: "/pathologist" },
-                // Radiology
+                { name: "Pathologist", icon: UserCheck, path: "/pathologist" }
+            ]
+        },
+        {
+            title: "Radiology Division",
+            items: [
                 { name: "X-Ray Technician", icon: Activity, path: "/xraytech" },
                 { name: "Ultrasound Technician", icon: Activity, path: "/ustech" },
                 { name: "CT Technician", icon: Activity, path: "/cttech" },
                 { name: "MRI Technician", icon: Activity, path: "/mritech" },
-                { name: "Radiologist", icon: Eye, path: "/radiologist" },
+                { name: "Radiologist", icon: Eye, path: "/radiologist" }
             ]
         }
     ];
@@ -61,8 +68,8 @@ export function AdminLayout() {
         { name: "Test Master", icon: Settings2, path: "/admin/test-master" },
         { name: "Report Templates", icon: Layout, path: "/admin/report-templates" },
         { name: "Inventory Setup", icon: Box, path: "/admin/inventory/setup" },
-        { name: "Identity & Access", icon: Users, path: "/admin/staff" },
-        { name: "Intelligence", icon: BarChart3, path: "/admin/intelligence", disabled: true },
+        { name: "Staff Master (Identity)", icon: Users, path: "/admin/staff" },
+        { name: "Intelligence", icon: BarChart3, path: "/admin/intelligence" },
         { name: "System Settings", icon: Settings, path: "/admin/settings" },
     ];
 
@@ -174,15 +181,15 @@ function SidebarLink({ item }) {
             className={({ isActive }) => `
                 flex items-center gap-2.5 px-3 py-1.5 rounded-md transition-all duration-150 group border
                 ${isActive 
-                    ? 'bg-synos-primary/10 text-synos-primary dark:text-white dark:border-synos-primary/30 border-synos-primary/30 font-semibold shadow-xs' 
-                    : 'text-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-900/80 hover:bg-zinc-100 hover:text-zinc-900 border-transparent font-medium'
+                    ? 'bg-synos-primary/10 text-synos-primary dark:text-white dark:border-synos-primary/30 border-synos-primary/30 font-bold shadow-xs' 
+                    : 'text-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900/80 hover:bg-zinc-100 hover:text-zinc-900 border-transparent font-semibold'
                 }
             `}
         >
             {({ isActive }) => (
                 <>
-                    <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-synos-primary' : 'text-zinc-400 dark:text-zinc-500 group-hover:text-synos-primary'}`} />
-                    <span className={`text-xs leading-tight transition-colors ${isActive ? 'text-synos-primary dark:text-white font-semibold' : 'text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white font-medium'}`}>{item.name}</span>
+                    <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? 'text-synos-primary' : 'text-zinc-700 dark:text-zinc-300 group-hover:text-synos-primary'}`} />
+                    <span className={`text-xs leading-tight transition-colors ${isActive ? 'text-synos-primary dark:text-white font-bold' : 'text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white font-semibold'}`}>{item.name}</span>
                 </>
             )}
         </NavLink>

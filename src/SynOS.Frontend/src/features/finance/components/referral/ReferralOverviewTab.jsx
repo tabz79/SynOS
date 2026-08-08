@@ -128,9 +128,9 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
                                 <tbody>
                                     {liveData.payables.map((p, idx) => (
                                         <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
-                                            <td className="py-3 font-semibold dark:text-zinc-200">{p.doctorName || 'Dr. Reference Partner'}</td>
+                                            <td className="py-3 font-semibold dark:text-zinc-200">{p.partnerName || 'Unknown Doctor'}</td>
                                             <td className="py-3 text-zinc-500">{p.patientName || 'Walk-In Visit'}</td>
-                                            <td className="py-3 text-right font-black text-rose-500">₹{p.amountDue?.toLocaleString()}</td>
+                                            <td className="py-3 text-right font-black text-rose-500">₹{(p.amount ?? 0).toLocaleString()}</td>
                                             <td className="py-3 text-center">
                                                 <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-rose-500/10 text-rose-500 border border-rose-500/20 font-bold">
                                                     Pending

@@ -128,6 +128,55 @@ namespace SynOS.Services
                 .ToListAsync();
         }
 
+        public async Task<bool> DeleteAnalyzerAsync(Guid analyzerId, Guid currentUserId)
+        {
+            var analyzer = await _context.LabAnalyzers.FindAsync(analyzerId);
+            if (analyzer == null) return false;
+
+            _context.LabAnalyzers.Remove(analyzer);
+            var listener = await _context.AnalyzerListeners.FirstOrDefaultAsync(l => l.AnalyzerId == analyzerId);
+            if (listener != null) _context.AnalyzerListeners.Remove(listener);
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<AnalyzerListener?> GetAnalyzerListenerAsync(Guid analyzerId)
+        {
+            return await _context.AnalyzerListeners.FirstOrDefaultAsync(l => l.AnalyzerId == analyzerId);
+        }
+
+        public async Task<AnalyzerListener> SaveAnalyzerListenerAsync(Guid analyzerId, AnalyzerListener listenerConfig)
+        {
+            var existing = await _context.AnalyzerListeners.FirstOrDefaultAsync(l => l.AnalyzerId == analyzerId);
+            if (existing == null)
+            {
+                listenerConfig.AnalyzerListenerId = Guid.NewGuid();
+                listenerConfig.AnalyzerId = analyzerId;
+                _context.AnalyzerListeners.Add(listenerConfig);
+                existing = listenerConfig;
+            }
+            else
+            {
+                existing.Protocol = listenerConfig.Protocol;
+                existing.ConnectionMode = listenerConfig.ConnectionMode;
+                existing.Port = listenerConfig.Port;
+                existing.HostIpAddress = listenerConfig.HostIpAddress;
+                existing.SerialPortName = listenerConfig.SerialPortName;
+                existing.BaudRate = listenerConfig.BaudRate;
+                existing.DataBits = listenerConfig.DataBits;
+                existing.Parity = listenerConfig.Parity;
+                existing.StopBits = listenerConfig.StopBits;
+                existing.Handshake = listenerConfig.Handshake;
+                existing.WatchFolderPath = listenerConfig.WatchFolderPath;
+                existing.WorklistMode = listenerConfig.WorklistMode;
+                existing.IsActive = listenerConfig.IsActive;
+            }
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
         private bool IsValidConnectionType(string connectionType)
         {
             return connectionType == LabAnalyzerConnectionTypes.Manual ||

@@ -1,104 +1,30 @@
 login:1 Denying load of chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js-BO2Uvu5T.js. Resources must be listed in the web_accessible_resources manifest key in order to be loaded by pages outside the extension.
-chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
-index-EQxQldiJ.js:12105 SignalR(Branch): Subscriber added (Total: 1)
-index-EQxQldiJ.js:10604 [2026-08-06T06:34:15.122Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
-index-EQxQldiJ.js:12107 SignalR(Branch): Starting connection...
+invalid/:1  Failed to load resource: net::ERR_FAILED
+index-BM11Bl2f.js:12105 SignalR(Branch): Subscriber added (Total: 1)
+index-BM11Bl2f.js:10604 [2026-08-06T14:52:04.812Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
+index-BM11Bl2f.js:12107 SignalR(Branch): Starting connection...
 TypeError: Failed to fetch dynamically imported module: chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js-BO2Uvu5T.js
-index-EQxQldiJ.js:222966 [RootRedirect] Evaluating redirect: Object
+index-BM11Bl2f.js:224268 [RootRedirect] Evaluating redirect: Object
 content.ts-B9qCIMLo.js:5 [BHK] widget sdk 1.0.0
 content.ts-B9qCIMLo.js:5 [BHK] install: missing/invalid publicKey or merchantId — aborting
 e0 @ content.ts-B9qCIMLo.js:5
-index-EQxQldiJ.js:10604 [2026-08-06T06:34:15.807Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
-index-EQxQldiJ.js:10604 [2026-08-06T06:34:15.808Z] Information: Using HubProtocol 'json'.
-index-EQxQldiJ.js:12108 SignalR(Branch): Connected to /branchOperationsHub
-index-EQxQldiJ.js:12096 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:14.581Z] Information: Normalizing '/dashboardHub' to 'http://localhost:59999/dashboardHub'.
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 1)
-index-EQxQldiJ.js:12015 SignalR: Starting connection...
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:14.796Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:14.797Z] Information: Using HubProtocol 'json'.
-index-EQxQldiJ.js:12066 SignalR: ReceiveServerTime received 2026-08-06T06:38:14.8797665Z
-index-EQxQldiJ.js:12016 SignalR: Connected to /dashboardHub
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:24609 DEBUG: Action Queue Raw: Array(1)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 0)
-index-EQxQldiJ.js:12079 SignalR: No subscribers, disconnecting...
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:26.308Z] Information: Connection disconnected.
-index-EQxQldiJ.js:12017 SignalR: Connection Closed
-index-EQxQldiJ.js:12080 SignalR: Disconnected
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 1)
-index-EQxQldiJ.js:12015 SignalR: Starting connection...
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:27.583Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:27.584Z] Information: Using HubProtocol 'json'.
-index-EQxQldiJ.js:12016 SignalR: Connected to /dashboardHub
-index-EQxQldiJ.js:12066 SignalR: ReceiveServerTime received 2026-08-06T06:38:27.5860578Z
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:24609 DEBUG: Action Queue Raw: Array(1)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 0)
-index-EQxQldiJ.js:12079 SignalR: No subscribers, disconnecting...
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:31.837Z] Information: Connection disconnected.
-index-EQxQldiJ.js:12017 SignalR: Connection Closed
-index-EQxQldiJ.js:12017 SignalR: Connection Closed
-index-EQxQldiJ.js:12080 SignalR: Disconnected
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:41.256Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:59999/radiologyCollaborationHub'.
-index-EQxQldiJ.js:10604 [2026-08-06T06:38:41.323Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
-index-EQxQldiJ.js:10604 [2026-08-06T06:40:02.614Z] Information: Connection disconnected.
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 1)
-index-EQxQldiJ.js:12015 SignalR: Starting connection...
-index-EQxQldiJ.js:10604 [2026-08-06T06:40:05.291Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiMjUwOWY3MWQtYmYzZC00OWY2LWE3MmYtMzZhNmM3ODgxOWZmIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NTkxNzg3MCwiZXhwIjoxNzg2MDA0MjcwLCJpYXQiOjE3ODU5MTc4NzAsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.MQ9UE0lzPl1QyUWLLCvJPh-y_eRwPo5nF-plYRKRESs.
-index-EQxQldiJ.js:10604 [2026-08-06T06:40:05.291Z] Information: Using HubProtocol 'json'.
-index-EQxQldiJ.js:12066 SignalR: ReceiveServerTime received 2026-08-06T06:40:05.2968504Z
-index-EQxQldiJ.js:12016 SignalR: Connected to /dashboardHub
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
-index-EQxQldiJ.js:12013 SignalR: Subscriber added (Total: 2)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:20756 DEBUG: Activity Stream Payload: Array(5)
-index-EQxQldiJ.js:12078 SignalR: Subscriber removed (Total: 1)
-index-EQxQldiJ.js:104531 Failed to check DICOM slice count: TypeError: dg.getStudySliceCount is not a function
-    at Ae (index-EQxQldiJ.js:104528:31)
-    at index-EQxQldiJ.js:104538:51
-    at Kh (index-EQxQldiJ.js:5213:19)
-    at VB (index-EQxQldiJ.js:5966:39)
-    at xc (index-EQxQldiJ.js:5958:67)
-    at VB (index-EQxQldiJ.js:5966:11)
-    at xc (index-EQxQldiJ.js:5958:67)
-    at VB (index-EQxQldiJ.js:6000:11)
-    at xc (index-EQxQldiJ.js:5958:67)
-    at VB (index-EQxQldiJ.js:5966:11)
-Ae @ index-EQxQldiJ.js:104531
-index-EQxQldiJ.js:104531 Failed to check DICOM slice count: TypeError: dg.getStudySliceCount is not a function
-    at Ae (index-EQxQldiJ.js:104528:31)
-    at ge (index-EQxQldiJ.js:104608:104)
-Ae @ index-EQxQldiJ.js:104531
+index-BM11Bl2f.js:10604 [2026-08-06T14:52:05.248Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiNzBmYzk4OTUtYzZkMi00MGM1LTllNDgtN2RjYTI1N2NiYmE3IiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjAwNDI4NSwiZXhwIjoxNzg2MDkwNjg1LCJpYXQiOjE3ODYwMDQyODUsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.cXX2BCNcXOVanW03s6YjBzPNce0wi0Nj4_ax-qShhSg.
+index-BM11Bl2f.js:10604 [2026-08-06T14:52:05.251Z] Information: Using HubProtocol 'json'.
+index-BM11Bl2f.js:12108 SignalR(Branch): Connected to /branchOperationsHub
+index-BM11Bl2f.js:12096 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
+index-BM11Bl2f.js:32075 Uncaught ReferenceError: availableCount is not defined
+    at bEe (index-BM11Bl2f.js:32075:33)
+    at jf (index-BM11Bl2f.js:3366:164)
+    at ox (index-BM11Bl2f.js:4583:25)
+    at dx (index-BM11Bl2f.js:4834:18)
+    at vx (index-BM11Bl2f.js:6465:15)
+    at y0 (index-BM11Bl2f.js:6387:29)
+    at $h (index-BM11Bl2f.js:6378:11)
+    at lu (index-BM11Bl2f.js:6211:59)
+    at tI (index-BM11Bl2f.js:6804:119)
+    at MessagePort.H (index-BM11Bl2f.js:496:32)
+index-BM11Bl2f.js:12133 SignalR(Branch): Subscriber removed (Total: 0)
+index-BM11Bl2f.js:12134 SignalR(Branch): No subscribers, disconnecting...
+index-BM11Bl2f.js:10604 [2026-08-06T14:52:08.655Z] Information: Connection disconnected.
+index-BM11Bl2f.js:12114 SignalR(Branch): Connection Closed
+index-BM11Bl2f.js:12135 SignalR(Branch): Disconnected

@@ -114,6 +114,7 @@ export function DepartmentWorkbenchScreen() {
     ];
 
     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+    const availableCount = queue.filter(item => !item.assignedResourceId).length;
 
     const filteredQueue = queue.filter(item => {
         const isUnassigned = !item.assignedResourceId;

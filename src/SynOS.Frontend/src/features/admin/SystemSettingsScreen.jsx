@@ -62,9 +62,11 @@ import {
   Printer,
   Database,
   LifeBuoy,
-  Info
+  Info,
+  Cpu
 } from 'lucide-react';
 import { apiClient } from '@/api/client';
+import { MachineIntegrationTab } from './components/MachineIntegrationTab';
 
 export function SystemSettingsScreen() {
   const { theme } = useTheme();
@@ -1177,11 +1179,11 @@ export function SystemSettingsScreen() {
         <div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className={`sticky top-0 lg:top-8 z-20 lg:sticky bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl p-4 shadow-sm flex overflow-x-auto lg:flex-col gap-1 lg:gap-1.5 custom-scrollbar lg:overflow-x-visible transition-all duration-300 ${
+          className={`sticky top-0 lg:top-8 z-20 lg:sticky synos-elevated-card rounded-2xl p-4 shadow-xl flex overflow-x-auto lg:flex-col gap-1 lg:gap-1.5 custom-scrollbar lg:overflow-x-visible transition-all duration-300 ${
             (!isCollapsed || isHovered) ? 'lg:w-64' : 'lg:w-20'
           }`}
         >
-          <div className="hidden lg:block px-4 py-3 border-b dark:border-zinc-900 border-zinc-100 mb-2">
+          <div className="hidden lg:block px-4 py-3 border-b dark:border-zinc-800/80 border-zinc-200/80 mb-2">
             <div className={`flex items-center gap-3 transition-all duration-300 ${(!isCollapsed || isHovered) ? 'justify-between' : 'justify-center'}`}>
               <button
                 type="button"
@@ -1192,7 +1194,7 @@ export function SystemSettingsScreen() {
                 <Settings className="w-5 h-5 text-synos-primary animate-spin-slow" />
               </button>
               {(!isCollapsed || isHovered) && (
-                <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-200 animate-fadeIn truncate flex-1">
+                <h2 className="text-sm font-extrabold text-zinc-800 dark:text-zinc-200 animate-fadeIn truncate flex-1">
                   System Settings
                 </h2>
               )}
@@ -1206,6 +1208,7 @@ export function SystemSettingsScreen() {
             { id: 'branches', label: 'Branches', icon: Globe },
             { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
             { id: 'printing', label: 'Printing Setup', icon: Printer },
+            { id: 'machines', label: 'Machine Interfacing', icon: Cpu },
             { id: 'audit', label: 'Audit Logs', icon: History },
             { id: 'backup', label: 'Backup & Restore', icon: Database },
             { id: 'advanced', label: 'Super Admin Config', icon: ShieldAlert },
@@ -1223,8 +1226,8 @@ export function SystemSettingsScreen() {
                 (!isCollapsed || isHovered) ? 'justify-start' : 'justify-center'
               } ${
                 activeTab === tab.id
-                  ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/10'
-                  : 'border-transparent text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 hover:text-zinc-800 dark:hover:text-zinc-200'
+                  ? 'bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 font-bold shadow-xs'
+                  : 'border-transparent text-zinc-650 dark:text-zinc-400 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60 hover:text-zinc-900 dark:hover:text-zinc-100'
               }`}
               title={tab.label}
             >
@@ -1237,15 +1240,15 @@ export function SystemSettingsScreen() {
         </div>
 
         {/* Right Tab Contents Card Container */}
-        <div className="w-full bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl p-8 shadow-sm">
+        <div className="w-full synos-elevated-card rounded-2xl p-8 shadow-2xl">
         {loading && <div className="text-center py-12 text-zinc-500 font-bold uppercase tracking-widest text-xs">Loading operational parameters...</div>}
 
         {/* SYSTEM SETUP TAB */}
         {activeTab === 'settings' && settings && !loading && (
           <form onSubmit={handleSettingsSubmit} className="space-y-8 animate-fadeIn text-xs">
             {/* Section 1: Lab Branding */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-synos-primary uppercase tracking-widest">
                 1. Print Header & Lab Profile
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1393,8 +1396,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 2: Billing & Invoicing */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 2. Invoice & Tax Rules
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1404,7 +1407,7 @@ export function SystemSettingsScreen() {
                     type="text"
                     value={settings.invoicePrefix || ''}
                     onChange={e => setSettings({ ...settings, invoicePrefix: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1413,7 +1416,7 @@ export function SystemSettingsScreen() {
                     type="number"
                     value={settings.nextInvoiceNumber || 0}
                     onChange={e => setSettings({ ...settings, nextInvoiceNumber: Number(e.target.value) })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1423,7 +1426,7 @@ export function SystemSettingsScreen() {
                     step="0.01"
                     value={settings.defaultTaxPercent || 0}
                     onChange={e => setSettings({ ...settings, defaultTaxPercent: Number(e.target.value) })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div className="md:col-span-3 flex items-center space-x-6 bg-zinc-50/50 dark:bg-zinc-950/40 p-4 rounded-xl border dark:border-zinc-850 border-zinc-200/60 shadow-sm">
@@ -1432,7 +1435,7 @@ export function SystemSettingsScreen() {
                       type="checkbox"
                       checked={settings.enableQrPayment || false}
                       onChange={e => setSettings({ ...settings, enableQrPayment: e.target.checked })}
-                      className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                      className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                     />
                     <span className="font-semibold text-zinc-300">Enable Dynamic UPI QR Codes</span>
                   </label>
@@ -1443,7 +1446,7 @@ export function SystemSettingsScreen() {
                         placeholder="e.g. clinic@upi"
                         value={settings.upiId || ''}
                         onChange={e => setSettings({ ...settings, upiId: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                       />
                     </div>
                   )}
@@ -1452,8 +1455,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 3: Notification Gateways */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 3. Notification Gateways
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1462,7 +1465,7 @@ export function SystemSettingsScreen() {
                   <select
                     value={settings.smsGatewayProvider || 'Twilio'}
                     onChange={e => setSettings({ ...settings, smsGatewayProvider: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   >
                     <option value="Twilio">Twilio Gateway API</option>
                     <option value="Plivo">Plivo Standard SMS</option>
@@ -1477,7 +1480,7 @@ export function SystemSettingsScreen() {
                     placeholder="Encrypted password/token key"
                     value={settings.smsApiKey || ''}
                     onChange={e => setSettings({ ...settings, smsApiKey: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t dark:border-zinc-900 border-zinc-200/50">
@@ -1488,7 +1491,7 @@ export function SystemSettingsScreen() {
                       placeholder="e.g. https://api.whatsapp.com/v1/messages"
                       value={settings.whatsAppGatewayUrl || ''}
                       onChange={e => setSettings({ ...settings, whatsAppGatewayUrl: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                     />
                   </div>
                   <div>
@@ -1498,7 +1501,7 @@ export function SystemSettingsScreen() {
                       placeholder="WhatsApp Gateway authentication key"
                       value={settings.whatsAppApiKey || ''}
                       onChange={e => setSettings({ ...settings, whatsAppApiKey: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                      className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                     />
                   </div>
                 </div>
@@ -1506,8 +1509,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 4: SMTP Servers */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 4. SMTP Mail Configurations
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1517,7 +1520,7 @@ export function SystemSettingsScreen() {
                     type="text"
                     value={settings.smtpHost || ''}
                     onChange={e => setSettings({ ...settings, smtpHost: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1526,7 +1529,7 @@ export function SystemSettingsScreen() {
                     type="number"
                     value={settings.smtpPort || 587}
                     onChange={e => setSettings({ ...settings, smtpPort: Number(e.target.value) })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1535,7 +1538,7 @@ export function SystemSettingsScreen() {
                     type="text"
                     value={settings.smtpSenderName || ''}
                     onChange={e => setSettings({ ...settings, smtpSenderName: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1544,7 +1547,7 @@ export function SystemSettingsScreen() {
                     type="email"
                     value={settings.smtpSenderEmail || ''}
                     onChange={e => setSettings({ ...settings, smtpSenderEmail: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1553,7 +1556,7 @@ export function SystemSettingsScreen() {
                     type="text"
                     value={settings.smtpUsername || ''}
                     onChange={e => setSettings({ ...settings, smtpUsername: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div>
@@ -1563,7 +1566,7 @@ export function SystemSettingsScreen() {
                     placeholder="SMTP Authentication Password"
                     value={settings.smtpPassword || ''}
                     onChange={e => setSettings({ ...settings, smtpPassword: e.target.value })}
-                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                   />
                 </div>
                 <div className="md:col-span-3 flex items-center bg-zinc-50/50 dark:bg-zinc-950/40 p-4 rounded-xl border dark:border-zinc-850 border-zinc-200/60 shadow-sm">
@@ -1572,7 +1575,7 @@ export function SystemSettingsScreen() {
                       type="checkbox"
                       checked={settings.smtpEnableSsl || false}
                       onChange={e => setSettings({ ...settings, smtpEnableSsl: e.target.checked })}
-                      className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                      className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                     />
                     <span className="font-semibold text-zinc-300">Enable SSL/TLS Secure Channel</span>
                   </label>
@@ -1581,8 +1584,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 5: Database Backups */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 5. Database Auto-Backups
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-zinc-50/30 dark:bg-zinc-950/20 p-6 rounded-xl border dark:border-zinc-850 border-zinc-200/10">
@@ -1592,7 +1595,7 @@ export function SystemSettingsScreen() {
                       type="checkbox"
                       checked={settings.backupEnabled || false}
                       onChange={e => setSettings({ ...settings, backupEnabled: e.target.checked })}
-                      className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                      className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                     />
                     <span className="font-bold text-zinc-300">Enable Automatic Database Backups</span>
                   </label>
@@ -1604,7 +1607,7 @@ export function SystemSettingsScreen() {
                       <select
                         value={settings.backupFrequency || 'Daily'}
                         onChange={e => setSettings({ ...settings, backupFrequency: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                       >
                         <option value="Daily">Daily (Every 24h)</option>
                         <option value="Weekly">Weekly (Every 7d)</option>
@@ -1617,7 +1620,7 @@ export function SystemSettingsScreen() {
                         type="time"
                         value={settings.backupTime || '02:00'}
                         onChange={e => setSettings({ ...settings, backupTime: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -1626,7 +1629,7 @@ export function SystemSettingsScreen() {
                         type="text"
                         value={settings.backupPath || ''}
                         onChange={e => setSettings({ ...settings, backupPath: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                       />
                     </div>
                   </>
@@ -1638,7 +1641,7 @@ export function SystemSettingsScreen() {
             <div className="pt-6 border-t dark:border-zinc-800 border-zinc-200 flex justify-end">
               <button
                 type="submit"
-                className="px-8 py-3 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xs uppercase tracking-widest rounded-xl shadow-lg hover:shadow-synos-primary/20 transition-all active:scale-95"
+                className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
               >
                 Save Settings Configuration
               </button>
@@ -1719,10 +1722,10 @@ export function SystemSettingsScreen() {
         {activeTab === 'departments' && !loading && (
           <div className="animate-fadeIn space-y-12">
             {/* Departments Registry Section */}
-            <div className="border-b dark:border-zinc-850 border-zinc-200 pb-8 space-y-6">
-              <div className="flex justify-between items-center">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Departments Registry</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Departments Registry</h3>
                   <p className="text-zinc-500 text-xs font-semibold">Register diagnostic processing departments, assign codes, and set macro categories.</p>
                 </div>
                 <button
@@ -1735,7 +1738,7 @@ export function SystemSettingsScreen() {
                     });
                     setShowDepartmentForm(true);
                   }}
-                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                 >
                   + Register Department
                 </button>
@@ -1789,10 +1792,10 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Department Hours / Operating Policies Section */}
-            <div className="space-y-6">
-              <div className="flex justify-between items-center">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Department operating hour bounds</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Department Operating Hour Bounds</h3>
                   <p className="text-zinc-500 text-xs font-semibold">Define custom operating times, turnaround deadlines, and search access guidelines per role.</p>
                 </div>
                 <button
@@ -1807,7 +1810,7 @@ export function SystemSettingsScreen() {
                     });
                     setShowPolicyForm(true);
                   }}
-                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                 >
                   + Add Operating Policy
                 </button>
@@ -1858,7 +1861,7 @@ export function SystemSettingsScreen() {
 
             {/* Department Dialog */}
             {showDepartmentForm && editingDepartment && (
-              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div 
                   className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
                   style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
@@ -1931,7 +1934,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold rounded-xl active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Department
                       </button>
@@ -1943,7 +1946,7 @@ export function SystemSettingsScreen() {
 
             {/* Policy Dialog */}
             {showPolicyForm && editingPolicy && (
-              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div 
                   className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-lg shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
                   style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
@@ -2042,7 +2045,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold rounded-xl active:scale-95 transition-all animate-none"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Policy
                       </button>
@@ -2058,10 +2061,10 @@ export function SystemSettingsScreen() {
         {activeTab === 'pricing' && !loading && (
           <div className="animate-fadeIn space-y-10">
             {/* Discount Master */}
-            <div className="border-b dark:border-zinc-800 border-zinc-200 pb-8">
-              <div className="flex justify-between items-center mb-6">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Discount Masters</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Discount Masters</h3>
                   <p className="text-zinc-550 text-xs font-semibold">Manage active patient billing discount codes and promotions.</p>
                 </div>
                 <button
@@ -2077,7 +2080,7 @@ export function SystemSettingsScreen() {
                     });
                     setShowDiscountForm(true);
                   }}
-                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                 >
                   + Add Discount
                 </button>
@@ -2085,20 +2088,20 @@ export function SystemSettingsScreen() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {discounts.map(d => (
-                  <div key={d.discountDefinitionId} className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between">
+                  <div key={d.discountDefinitionId} className="synos-dept-card rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.01] transition-all duration-200">
                     <div>
                       <div className="flex justify-between items-start mb-3">
-                        <span className="font-mono text-xs font-bold text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded">
+                        <span className="font-mono text-xs font-bold text-synos-primary bg-synos-primary/10 px-2.5 py-1 rounded-lg">
                           {d.code}
                         </span>
-                        <span className={`h-2 w-2 rounded-full ${d.isActive ? 'bg-emerald-500' : 'bg-zinc-650'}`} />
+                        <span className={`h-2.5 w-2.5 rounded-full ${d.isActive ? 'bg-emerald-500 shadow-sm shadow-emerald-500/50' : 'bg-zinc-400'}`} />
                       </div>
-                      <h4 className="font-bold text-sm text-zinc-150 mb-2">{d.name}</h4>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 space-y-1 mb-4">
-                        <p>Discount Value: <strong>{d.type === 0 ? `${d.value}%` : `₹${d.value}`}</strong></p>
-                        {d.maxLimit && <p>Max Cap: <strong>₹{d.maxLimit}</strong></p>}
+                      <h4 className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100 mb-2">{d.name}</h4>
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1.5 mb-4">
+                        <p>Discount Value: <strong className="text-zinc-900 dark:text-zinc-100">{d.type === 0 ? `${d.value}%` : `₹${d.value}`}</strong></p>
+                        {d.maxLimit && <p>Max Cap: <strong className="text-zinc-900 dark:text-zinc-100">₹{d.maxLimit}</strong></p>}
                         {d.effectiveFrom && (
-                          <p className="text-[10px] text-zinc-500">
+                          <p className="text-[11px] text-zinc-500 font-medium">
                             Range: {formatDate(d.effectiveFrom)} – {d.effectiveTo ? formatDate(d.effectiveTo) : 'Forever'}
                           </p>
                         )}
@@ -2109,7 +2112,7 @@ export function SystemSettingsScreen() {
                         setEditingDiscount(d);
                         setShowDiscountForm(true);
                       }}
-                      className="w-full text-center py-2 border dark:border-zinc-800 border-zinc-200/30 hover:bg-zinc-800 text-xxs font-bold uppercase tracking-wider text-synos-primary rounded-lg transition-colors"
+                      className="w-full text-center py-2.5 border border-zinc-200 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xxs font-extrabold uppercase tracking-wider text-synos-primary rounded-xl transition-all shadow-xs"
                     >
                       Edit discount
                     </button>
@@ -2119,10 +2122,10 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Referral Partners */}
-            <div>
-              <div className="flex justify-between items-center mb-6">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Referral Partners Registry</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Referral Partners Registry</h3>
                   <p className="text-zinc-550 text-xs font-semibold">Configure clinics, reference labs, and physicians commission settings.</p>
                 </div>
                 <button
@@ -2138,7 +2141,7 @@ export function SystemSettingsScreen() {
                     });
                     setShowPartnerForm(true);
                   }}
-                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                 >
                   + Add Referral Partner
                 </button>
@@ -2146,18 +2149,18 @@ export function SystemSettingsScreen() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {partners.map(p => (
-                  <div key={p.referralPartnerId} className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex justify-between items-start">
+                  <div key={p.referralPartnerId} className="synos-dept-card rounded-2xl p-6 flex justify-between items-start hover:scale-[1.01] transition-all duration-200">
                     <div>
                       <div className="flex items-center space-x-2.5 mb-2">
-                        <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-xxs font-bold px-2 py-0.5 rounded">
+                        <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-xxs font-extrabold px-2.5 py-0.5 rounded-lg">
                           {p.partnerType === 0 ? 'Doctor' : p.partnerType === 1 ? 'Clinic' : 'Hospital'}
                         </span>
-                        <h4 className="font-bold text-sm text-zinc-150">{p.name}</h4>
+                        <h4 className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">{p.name}</h4>
                       </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 space-y-1 mt-3">
-                        {p.contactInfo && <p>📞 Contact: <strong>{p.contactInfo}</strong></p>}
-                        <p>💸 Commission: <strong>{p.defaultCommissionPercentage}%</strong> ({p.calculationBase === 0 ? 'Gross base' : 'Net base'})</p>
-                        {p.paymentCollectionModel && <p>💳 Settlement Mode: <strong>{p.paymentCollectionModel}</strong></p>}
+                      <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1.5 mt-3 font-medium">
+                        {p.contactInfo && <p>📞 Contact: <strong className="text-zinc-900 dark:text-zinc-100">{p.contactInfo}</strong></p>}
+                        <p>💸 Commission: <strong className="text-zinc-900 dark:text-zinc-100">{p.defaultCommissionPercentage}%</strong> ({p.calculationBase === 0 ? 'Gross base' : 'Net base'})</p>
+                        {p.paymentCollectionModel && <p>💳 Settlement Mode: <strong className="text-zinc-900 dark:text-zinc-100">{p.paymentCollectionModel}</strong></p>}
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
@@ -2188,7 +2191,7 @@ export function SystemSettingsScreen() {
 
             {/* Discount Dialog Form */}
             {showDiscountForm && editingDiscount && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-200">
                   <h3 className="text-sm font-bold mb-4 border-b border-zinc-800 pb-2 text-synos-primary uppercase tracking-widest">
                     {editingDiscount.discountDefinitionId ? 'Modify Discount Rules' : 'New Discount Setup'}
@@ -2295,7 +2298,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold rounded-xl active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Discount
                       </button>
@@ -2307,7 +2310,7 @@ export function SystemSettingsScreen() {
 
             {/* Partner Dialog Form */}
             {showPartnerForm && editingPartner && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-200">
                   <h3 className="text-sm font-bold mb-4 border-b border-zinc-800 pb-2 text-synos-primary uppercase tracking-widest">
                     {editingPartner.referralPartnerId ? 'Edit Partner Details' : 'Register Referral Partner'}
@@ -2402,7 +2405,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold rounded-xl active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Partner
                       </button>
@@ -2417,94 +2420,96 @@ export function SystemSettingsScreen() {
         {/* AUDIT LOG VIEWER TAB */}
         {activeTab === 'audit' && !loading && (
           <div className="animate-fadeIn space-y-6 text-xs text-zinc-200">
-            <div>
-              <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">System Forensic Audit Trail</h3>
-              <p className="text-zinc-550 text-xs font-semibold">Inspect and audit configuration changes, transactional events, and user mappings.</p>
-            </div>
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="pb-2 border-b dark:border-zinc-800 border-zinc-200">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">System Forensic Audit Trail</h3>
+                <p className="text-zinc-550 text-xs font-semibold">Inspect and audit configuration changes, transactional events, and user mappings.</p>
+              </div>
 
-            {/* Filter controls */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-zinc-50/30 dark:bg-zinc-950/20 p-5 rounded-xl border dark:border-zinc-800 border-zinc-200/10">
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Actor User</label>
-                <select
-                  value={selectedActor}
-                  onChange={e => { setSelectedActor(e.target.value); setAuditOffset(0); }}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                >
-                  <option value="">All Actors</option>
-                  {users.map(u => (
-                    <option key={u.userId} value={u.userId}>{u.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Resource Type</label>
-                <select
-                  value={selectedResourceType}
-                  onChange={e => { setSelectedResourceType(e.target.value); setAuditOffset(0); }}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                >
-                  <option value="">All Modules</option>
-                  <option value="Settings">Settings</option>
-                  <option value="Patient">Patient</option>
-                  <option value="Visit">Visit</option>
-                  <option value="Invoice">Invoice</option>
-                  <option value="Payment">Payment</option>
-                  <option value="Discount">Discount</option>
-                  <option value="ReferralPartner">Referral Partner</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Action Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. UpdateSystemSettings"
-                  value={selectedAction}
-                  onChange={e => { setSelectedAction(e.target.value); setAuditOffset(0); }}
-                  className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xxs font-medium text-zinc-450 dark:text-zinc-500 mb-1.5 uppercase tracking-wide">Start Date</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={e => { setStartDate(e.target.value); setAuditOffset(0); }}
-                  className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff', colorScheme: theme === 'dark' ? 'dark' : 'light' }}
-                />
-              </div>
-              <div>
-                <label className="block text-xxs font-medium text-zinc-450 dark:text-zinc-500 mb-1.5 uppercase tracking-wide">End Date</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={e => { setEndDate(e.target.value); setAuditOffset(0); }}
-                  className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff', colorScheme: theme === 'dark' ? 'dark' : 'light' }}
-                />
-              </div>
-              <div className="md:col-span-5 flex justify-end">
-                <button
-                  onClick={() => {
-                    setSelectedActor('');
-                    setSelectedResourceType('');
-                    setSelectedAction('');
-                    setStartDate('');
-                    setEndDate('');
-                    setAuditOffset(0);
-                    loadAuditLogs();
-                  }}
-                  className="px-4 py-2 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 text-xxs uppercase tracking-wider rounded-xl font-bold transition-all"
-                >
-                  Clear Filters
-                </button>
-                <button
-                  onClick={loadAuditLogs}
-                  className="ml-3 px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
-                >
-                  Refresh Logs
-                </button>
+              {/* Filter controls */}
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-zinc-50/30 dark:bg-zinc-950/20 p-5 rounded-xl border dark:border-zinc-800 border-zinc-200/10">
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Actor User</label>
+                  <select
+                    value={selectedActor}
+                    onChange={e => { setSelectedActor(e.target.value); setAuditOffset(0); }}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  >
+                    <option value="">All Actors</option>
+                    {users.map(u => (
+                      <option key={u.userId} value={u.userId}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Resource Type</label>
+                  <select
+                    value={selectedResourceType}
+                    onChange={e => { setSelectedResourceType(e.target.value); setAuditOffset(0); }}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  >
+                    <option value="">All Modules</option>
+                    <option value="Settings">Settings</option>
+                    <option value="Patient">Patient</option>
+                    <option value="Visit">Visit</option>
+                    <option value="Invoice">Invoice</option>
+                    <option value="Payment">Payment</option>
+                    <option value="Discount">Discount</option>
+                    <option value="ReferralPartner">Referral Partner</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Action Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. UpdateSystemSettings"
+                    value={selectedAction}
+                    onChange={e => { setSelectedAction(e.target.value); setAuditOffset(0); }}
+                    className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-medium text-zinc-450 dark:text-zinc-500 mb-1.5 uppercase tracking-wide">Start Date</label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={e => { setStartDate(e.target.value); setAuditOffset(0); }}
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff', colorScheme: theme === 'dark' ? 'dark' : 'light' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xxs font-medium text-zinc-450 dark:text-zinc-500 mb-1.5 uppercase tracking-wide">End Date</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={e => { setEndDate(e.target.value); setAuditOffset(0); }}
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                    style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff', colorScheme: theme === 'dark' ? 'dark' : 'light' }}
+                  />
+                </div>
+                <div className="md:col-span-5 flex justify-end">
+                  <button
+                    onClick={() => {
+                      setSelectedActor('');
+                      setSelectedResourceType('');
+                      setSelectedAction('');
+                      setStartDate('');
+                      setEndDate('');
+                      setAuditOffset(0);
+                      loadAuditLogs();
+                    }}
+                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl transition-all"
+                  >
+                    Clear Filters
+                  </button>
+                  <button
+                    onClick={loadAuditLogs}
+                    className="ml-3 px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
+                  >
+                    Refresh Logs
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -2592,7 +2597,7 @@ export function SystemSettingsScreen() {
 
             {/* Diff details modal */}
             {selectedLogPayload && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50 animate-fadeIn">
                 <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto shadow-2xl">
                   <h3 className="text-sm font-bold mb-4 border-b border-zinc-800 pb-2 text-synos-primary uppercase tracking-widest">
                     State Difference Details
@@ -2637,7 +2642,7 @@ export function SystemSettingsScreen() {
                   <div className="mt-6 border-t border-zinc-800 pt-4 flex justify-end">
                     <button
                       onClick={() => setSelectedLogPayload(null)}
-                      className="px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl active:scale-95 transition-all"
+                      className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                     >
                       Close Inspector
                     </button>
@@ -2651,35 +2656,35 @@ export function SystemSettingsScreen() {
         {/* BRANCHES MANAGEMENT TAB */}
         {activeTab === 'branches' && !loading && (
           <div className="animate-fadeIn space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">Laboratory branches & facilities</h3>
-                <p className="text-zinc-500 text-xs font-semibold">Manage physical laboratory branches, active status, and accession codes.</p>
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Laboratory Branches & Facilities</h3>
+                  <p className="text-zinc-500 text-xs font-semibold">Manage physical laboratory branches, active status, and accession codes.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingBranch({
+                      code: '',
+                      name: '',
+                      isActive: true,
+                      address: '',
+                      phone: '',
+                      email: ''
+                    });
+                    setShowBranchForm(true);
+                  }}
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
+                >
+                  + Add Branch
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setEditingBranch({
-                    code: '',
-                    name: '',
-                    isActive: true,
-                    address: '',
-                    phone: '',
-                    email: ''
-                  });
-                  setShowBranchForm(true);
-                }}
-                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
-              >
-                + Add Branch
-              </button>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {branches.map(b => (
                 <div 
                   key={b.branchId} 
-                  className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between"
-                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                  className="synos-dept-card rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.01] transition-all duration-200"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -2726,7 +2731,7 @@ export function SystemSettingsScreen() {
 
             {/* Branch Form Dialog */}
             {showBranchForm && editingBranch && (
-              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div 
                   className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
                   style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
@@ -2818,7 +2823,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Branch
                       </button>
@@ -2827,38 +2832,39 @@ export function SystemSettingsScreen() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         )}
 
         {/* WORKSPACE REGISTRY TAB */}
         {activeTab === 'workspaces' && !loading && (
           <div className="animate-fadeIn space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest mb-1">System Workspace Registry</h3>
-                <p className="text-zinc-550 text-xs font-semibold">Register and manage operational dashboard routes and screen accesses dynamically.</p>
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">System Workspace Registry</h3>
+                  <p className="text-zinc-550 text-xs font-semibold">Register and manage operational dashboard routes and screen accesses dynamically.</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingWorkspace({
+                      name: '',
+                      routePath: '',
+                      isActive: true
+                    });
+                    setShowWorkspaceForm(true);
+                  }}
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
+                >
+                  + Register New Screen
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setEditingWorkspace({
-                    name: '',
-                    routePath: '',
-                    isActive: true
-                  });
-                  setShowWorkspaceForm(true);
-                }}
-                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
-              >
-                + Register New Screen
-              </button>
-            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {workspaces.map(ws => (
                 <div 
                   key={ws.workspaceId} 
-                  className="border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between"
-                  style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
+                  className="synos-dept-card rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.01] transition-all duration-200"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -2900,7 +2906,7 @@ export function SystemSettingsScreen() {
 
             {/* Workspace Registry Dialog Modal */}
             {showWorkspaceForm && editingWorkspace && (
-              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div 
                   className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250"
                   style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
@@ -2960,7 +2966,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Screen
                       </button>
@@ -2969,6 +2975,7 @@ export function SystemSettingsScreen() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         )}
 
@@ -2976,9 +2983,9 @@ export function SystemSettingsScreen() {
         {activeTab === 'printing' && !loading && (
           <div className="animate-fadeIn space-y-8 text-xs">
             {/* Helper Info Box displaying current workstation Terminal ID */}
-            <div className="p-6 rounded-2xl bg-synos-primary/10 border border-synos-primary/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h4 className="font-bold text-sm text-synos-primary uppercase tracking-wider">Your Workstation Terminal</h4>
+                <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Your Workstation Terminal</h4>
                 <p className="text-zinc-500 text-xs font-semibold mt-1">
                   Active Web Terminal ID: <strong className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-150 dark:bg-zinc-900 px-2 py-0.5 rounded border dark:border-white/5">{localStorage.getItem('synos_terminal_id') || 'Not Generated'}</strong>
                 </p>
@@ -2997,17 +3004,17 @@ export function SystemSettingsScreen() {
                   });
                   setShowTerminalForm(true);
                 }}
-                className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all shrink-0"
+                className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all shrink-0"
               >
                 Authorize This Workstation
               </button>
             </div>
 
             {/* Section 1: Branch Printers */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-4">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest">1. Branch Printers Registry</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">1. Branch Printers Registry</h3>
                   <p className="text-zinc-500 text-xs font-semibold">Expose physical thermal or barcode printer hardware available in your branch nodes.</p>
                 </div>
                 <button
@@ -3020,43 +3027,42 @@ export function SystemSettingsScreen() {
                     });
                     setShowPrinterForm(true);
                   }}
-                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                 >
                   + Register Printer
                 </button>
               </div>
 
-              <div className="overflow-x-auto border dark:border-zinc-850 border-zinc-200/10 rounded-xl bg-zinc-50/10 dark:bg-zinc-950/20">
+              <div className="overflow-x-auto rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
                 <table className="min-w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-zinc-50/60 dark:bg-zinc-950/60 border-b dark:border-zinc-800 border-zinc-200">
-                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Printer Name (OS Config)</th>
-                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Branch</th>
-                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Printer Type / Standard</th>
-                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-zinc-400">Status</th>
-                      <th className="p-4 text-xxs font-bold uppercase tracking-wider text-right text-zinc-400">Actions</th>
+                    <tr className="bg-zinc-100/60 dark:bg-zinc-800/60 border-b dark:border-zinc-700/60 border-zinc-200">
+                      <th className="p-4 text-xxs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Printer Name (OS Config)</th>
+                      <th className="p-4 text-xxs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Branch</th>
+                      <th className="p-4 text-xxs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Printer Type / Standard</th>
+                      <th className="p-4 text-xxs font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Status</th>
+                      <th className="p-4 text-xxs font-extrabold uppercase tracking-wider text-right text-zinc-500 dark:text-zinc-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
                     {printers.map(printer => (
-                      <tr key={printer.printerId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
-                        <td className="p-4 font-bold text-zinc-800 dark:text-zinc-200">{printer.printerName}</td>
-                        <td className="p-4 text-zinc-500 font-semibold">{printer.branch?.name || 'Unknown Branch'}</td>
-                        <td className="p-4 font-mono font-bold text-synos-primary">{printer.printerType || 'Thermal80mm'}</td>
+                      <tr key={printer.printerId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                        <td className="p-4 text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200">{printer.printerName}</td>
+                        <td className="p-4 text-xs text-zinc-600 dark:text-zinc-300 font-semibold">{branches.find(b => b.branchId === printer.branchId)?.name || 'Default Branch'}</td>
+                        <td className="p-4 text-xs font-bold text-indigo-600 dark:text-indigo-400">{printer.printerType}</td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${printer.isActive ? 'text-emerald-500' : 'text-zinc-500'}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${printer.isActive ? 'bg-emerald-500' : 'bg-zinc-550'}`} />
-                            {printer.isActive ? 'Active' : 'Inactive'}
+                          <span className={`px-2 py-0.5 rounded-full text-xxs font-bold uppercase tracking-wider ${printer.isActive ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/20'}`}>
+                            {printer.isActive ? 'Active' : 'Disabled'}
                           </span>
                         </td>
                         <td className="p-4 text-right">
-                          <div className="flex justify-end space-x-2">
+                          <div className="flex items-center justify-end space-x-2">
                             <button
                               onClick={() => {
                                 setEditingPrinter(printer);
                                 setShowPrinterForm(true);
                               }}
-                              className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                              className="p-1.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg transition-colors"
                               title="Edit"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
@@ -3085,10 +3091,10 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 2: Terminal Configurations */}
-            <div className="space-y-4 pt-6 border-t dark:border-zinc-900 border-zinc-200">
-              <div className="flex justify-between items-center">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-4">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest">2. Workstation Terminals Authorization</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">2. Workstation Terminals Authorization</h3>
                   <p className="text-zinc-500 text-xs font-semibold">Authorize workstation endpoints, toggle Lead Print capability, and map dedicated receipt hardware.</p>
                 </div>
                 <button
@@ -3101,13 +3107,13 @@ export function SystemSettingsScreen() {
                     });
                     setShowTerminalForm(true);
                   }}
-                  className="px-4 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                  className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                 >
                   + Authorize Terminal
                 </button>
               </div>
 
-              <div className="overflow-x-auto border dark:border-zinc-850 border-zinc-200/10 rounded-xl bg-zinc-50/10 dark:bg-zinc-950/20">
+              <div className="overflow-x-auto rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
                 <table className="min-w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-zinc-50/60 dark:bg-zinc-950/60 border-b dark:border-zinc-800 border-zinc-200">
@@ -3122,7 +3128,7 @@ export function SystemSettingsScreen() {
                     {terminals.map(config => {
                       const isCurrent = config.terminalIdentifier === localStorage.getItem('synos_terminal_id');
                       return (
-                        <tr key={config.terminalIdentifier} className={`hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors ${isCurrent ? 'bg-synos-primary/[0.03]' : ''}`}>
+                        <tr key={config.terminalIdentifier} className={`hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors ${isCurrent ? 'bg-indigo-500/[0.04]' : ''}`}>
                           <td className="p-4 font-mono font-bold text-zinc-850 dark:text-zinc-200">
                             {config.terminalIdentifier}
                             {isCurrent && (
@@ -3135,7 +3141,7 @@ export function SystemSettingsScreen() {
                           <td className="p-4 font-semibold text-zinc-700 dark:text-zinc-300">
                             {config.specificReceiptPrinter?.printerName ? (
                               <span className="flex items-center gap-1.5">
-                                <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                                <Printer className="w-3.5 h-3.5 text-indigo-500" />
                                 {config.specificReceiptPrinter.printerName}
                               </span>
                             ) : (
@@ -3143,8 +3149,8 @@ export function SystemSettingsScreen() {
                             )}
                           </td>
                           <td className="p-4">
-                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${config.isLeadPrintTerminal ? 'text-synos-primary' : 'text-zinc-500'}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${config.isLeadPrintTerminal ? 'bg-synos-primary' : 'bg-zinc-550'}`} />
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${config.isLeadPrintTerminal ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-500'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${config.isLeadPrintTerminal ? 'bg-indigo-500' : 'bg-zinc-550'}`} />
                               {config.isLeadPrintTerminal ? 'AUTHORIZED LEAD' : 'Standard Web'}
                             </span>
                           </td>
@@ -3155,7 +3161,7 @@ export function SystemSettingsScreen() {
                                   setEditingTerminal(config);
                                   setShowTerminalForm(true);
                                 }}
-                                className="p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors"
+                                className="p-1.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg transition-colors"
                                 title="Edit"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -3185,10 +3191,10 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 3: Thermal Receipt Layout Customizer */}
-            <div className="space-y-6 pt-6 border-t dark:border-zinc-900 border-zinc-200">
-              <div className="flex justify-between items-center">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
+              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-synos-primary uppercase tracking-widest">3. Thermal Receipt Layout Customizer</h3>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">3. Thermal Receipt Layout Customizer</h3>
                   <p className="text-zinc-500 text-xs font-semibold">Customize thermal receipt dimensions, spacing, typography, and transaction UPI QR codes.</p>
                 </div>
                 {isOverrideActive && (
@@ -3201,7 +3207,7 @@ export function SystemSettingsScreen() {
                 )}
               </div>
 
-              <form onSubmit={handleSaveGlobalThermalSettings} className="space-y-6 bg-zinc-50/5 dark:bg-zinc-950/20 p-6 rounded-2xl border dark:border-zinc-900 border-zinc-100/10">
+              <form onSubmit={handleSaveGlobalThermalSettings} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {/* Paper Dimensions & Font Setup */}
                   <div>
@@ -3212,7 +3218,7 @@ export function SystemSettingsScreen() {
                         <select
                           value={thermalSettings.paperWidth || '80mm'}
                           onChange={e => setThermalSettings({ ...thermalSettings, paperWidth: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                         >
                           <option value="80mm">Standard Thermal roll (80mm width / 3-inch)</option>
                           <option value="58mm">Compact Thermal roll (58mm width / 2-inch)</option>
@@ -3224,7 +3230,7 @@ export function SystemSettingsScreen() {
                         <select
                           value={thermalSettings.fontFamily || 'sans-serif'}
                           onChange={e => setThermalSettings({ ...thermalSettings, fontFamily: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                         >
                           <option value="sans-serif">Standard sans-serif (Clean & Modern)</option>
                           <option value="mono">Monospace typewriter (Fixed Width Alignment)</option>
@@ -3237,7 +3243,7 @@ export function SystemSettingsScreen() {
                         <select
                           value={thermalSettings.textSize || 'standard'}
                           onChange={e => setThermalSettings({ ...thermalSettings, textSize: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                         >
                           <option value="standard">Standard Size (Comfortable legibility)</option>
                           <option value="compact">Compact / Ultra-Save (Saves paper roll, tight padding)</option>
@@ -3255,7 +3261,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showHeader ?? true}
                           onChange={e => setThermalSettings({ ...thermalSettings, showHeader: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Show Branding Header / Title</span>
                       </label>
@@ -3265,7 +3271,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showAgeGender ?? true}
                           onChange={e => setThermalSettings({ ...thermalSettings, showAgeGender: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Show Patient Sex & Age</span>
                       </label>
@@ -3275,7 +3281,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showVisitId ?? true}
                           onChange={e => setThermalSettings({ ...thermalSettings, showVisitId: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Show Visit ID / Accession Code</span>
                       </label>
@@ -3285,7 +3291,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showTokenBox ?? true}
                           onChange={e => setThermalSettings({ ...thermalSettings, showTokenBox: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Show Large Token Callout Box</span>
                       </label>
@@ -3295,7 +3301,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showDoctorName ?? true}
                           onChange={e => setThermalSettings({ ...thermalSettings, showDoctorName: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Show Referring Doctor Name</span>
                       </label>
@@ -3305,7 +3311,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showItemDiscounts ?? true}
                           onChange={e => setThermalSettings({ ...thermalSettings, showItemDiscounts: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Show Itemized Discount Column</span>
                       </label>
@@ -3321,7 +3327,7 @@ export function SystemSettingsScreen() {
                           type="checkbox"
                           checked={thermalSettings.showUpiQr ?? false}
                           onChange={e => setThermalSettings({ ...thermalSettings, showUpiQr: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
+                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                         />
                         <span className="font-semibold text-zinc-350">Print Dynamic UPI Payment QR Code</span>
                       </label>
@@ -3335,7 +3341,7 @@ export function SystemSettingsScreen() {
                             placeholder="e.g. labmerchant@okaxis"
                             value={thermalSettings.upiId || ''}
                             onChange={e => setThermalSettings({ ...thermalSettings, upiId: e.target.value.trim() })}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 font-mono shadow-sm"
+                            className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 font-mono shadow-sm"
                           />
                         </div>
                       )}
@@ -3351,7 +3357,7 @@ export function SystemSettingsScreen() {
                         placeholder="e.g. Welcome to Khammam Branch. Diagnostics Excellence."
                         value={thermalSettings.headerSubtext || ''}
                         onChange={e => setThermalSettings({ ...thermalSettings, headerSubtext: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                       />
                     </div>
 
@@ -3362,7 +3368,7 @@ export function SystemSettingsScreen() {
                         placeholder="e.g. * Clinical correlation required. Bring this slip for reports."
                         value={thermalSettings.footerDisclaimer || ''}
                         onChange={e => setThermalSettings({ ...thermalSettings, footerDisclaimer: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
+                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
                       />
                     </div>
                   </div>
@@ -3381,13 +3387,13 @@ export function SystemSettingsScreen() {
                     <button
                       type="button"
                       onClick={handleSaveLocalOverride}
-                      className="flex-1 md:flex-initial px-5 py-2.5 border dark:border-zinc-850 border-zinc-200 hover:bg-zinc-150 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xxs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+                      className="flex-1 md:flex-initial px-5 py-2.5 border dark:border-zinc-800 border-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl transition-all shadow-xs"
                     >
                       Apply for This Workstation Only
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 md:flex-initial px-6 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs uppercase tracking-wider rounded-xl shadow active:scale-95 transition-all"
+                      className="flex-1 md:flex-initial px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
                     >
                       Save Globally as Default
                     </button>
@@ -3398,7 +3404,7 @@ export function SystemSettingsScreen() {
 
             {/* Printer Form Dialog */}
             {showPrinterForm && editingPrinter && (
-              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div 
                   className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250 bg-white dark:bg-zinc-950"
                   style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
@@ -3469,7 +3475,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Save Printer
                       </button>
@@ -3481,7 +3487,7 @@ export function SystemSettingsScreen() {
 
             {/* Terminal Form Dialog */}
             {showTerminalForm && editingTerminal && (
-              <div className="fixed inset-0 bg-zinc-950/45 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-50 animate-fadeIn">
+              <div className="fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn">
                 <div 
                   className="border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250 bg-white dark:bg-zinc-950"
                   style={{ backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' }}
@@ -3556,7 +3562,7 @@ export function SystemSettingsScreen() {
                       </button>
                       <button
                         type="submit"
-                        className="px-5 py-2 bg-synos-primary hover:bg-synos-primary/95 text-white text-xxs uppercase tracking-wider rounded-xl font-bold shadow active:scale-95 transition-all"
+                        className="px-5 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl active:scale-95 transition-all shadow-xs"
                       >
                         Authorize Workstation
                       </button>
@@ -3566,6 +3572,11 @@ export function SystemSettingsScreen() {
               </div>
             )}
           </div>
+        )}
+
+        {/* MACHINE INTEGRATION TAB */}
+        {activeTab === 'machines' && (
+          <MachineIntegrationTab isDark={theme === 'dark'} />
         )}
 
         {/* BACKUP & RESTORE TAB */}
@@ -3625,7 +3636,7 @@ export function SystemSettingsScreen() {
                   <div className="md:col-span-4 flex justify-end">
                     <button
                       type="submit"
-                      className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all w-full md:w-auto flex items-center justify-center"
+                      className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all w-full md:w-auto flex items-center justify-center"
                     >
                       Save Backup Policy
                     </button>
@@ -3797,7 +3808,7 @@ export function SystemSettingsScreen() {
                   <button
                     type="submit"
                     disabled={submittingTicket}
-                    className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all w-full md:w-auto flex items-center justify-center"
+                    className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all w-full md:w-auto flex items-center justify-center"
                   >
                     {submittingTicket ? 'Submitting...' : '📩 Submit Support Ticket'}
                   </button>
@@ -3876,8 +3887,8 @@ export function SystemSettingsScreen() {
           <>
             <form onSubmit={handleAdvancedSettingsSubmit} className="space-y-8 animate-fadeIn text-xs">
             {/* Section 1: Host & Database Connection */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 1. Host & Database Connection
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -3917,8 +3928,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 2: Security & JWT Cryptography */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 2. Security & JWT Cryptography
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -4000,8 +4011,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 3: Middleware Configuration */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 3. Middleware & Control Tower Integration
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -4089,8 +4100,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 4: PACS DICOM & Files Storage */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 4. PACS DICOM & File Storage Paths
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -4161,8 +4172,8 @@ export function SystemSettingsScreen() {
             </div>
 
             {/* Section 5: Trusted Keys */}
-            <div>
-              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-2 mb-6 text-synos-primary uppercase tracking-widest">
+            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5">
+              <h3 className="text-sm font-bold border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-6 text-zinc-900 dark:text-zinc-100">
                 5. Trusted OTA Public Signing Keys
               </h3>
               <div className="space-y-4">
@@ -4184,7 +4195,7 @@ export function SystemSettingsScreen() {
               <button
                 type="submit"
                 disabled={savingAdvanced}
-                className="h-10 px-6 bg-synos-primary hover:bg-synos-primary-dark text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5"
               >
                 {savingAdvanced ? 'Saving advanced configurations...' : 'Save Advanced Configurations'}
               </button>
@@ -4216,48 +4227,48 @@ export function SystemSettingsScreen() {
         {activeTab === 'about' && !loading && (
           <div className="space-y-8 animate-fadeIn text-xs">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+              <div className="synos-dept-card p-6 rounded-2xl flex flex-col justify-between hover:scale-[1.01] transition-all duration-200">
                 <div>
-                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                  <h4 className="text-xxs font-extrabold text-zinc-500 dark:text-zinc-400 tracking-widest mb-3">
                     On-Prem Client Identity
                   </h4>
-                  <div className="text-2xl font-bold text-synos-primary">{settings?.labId || 'LAB001'}</div>
-                  <div className="text-xxs text-zinc-400 mt-1 font-semibold">{settings?.name || 'TBZ Labs Khammam Branch'}</div>
+                  <div className="text-2xl font-black text-synos-primary">{settings?.labId || 'LAB001'}</div>
+                  <div className="text-xxs text-zinc-500 dark:text-zinc-400 mt-1 font-extrabold">{settings?.name || 'TBZ Labs Khammam Branch'}</div>
                 </div>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+              <div className="synos-dept-card p-6 rounded-2xl flex flex-col justify-between hover:scale-[1.01] transition-all duration-200">
                 <div>
-                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                  <h4 className="text-xxs font-extrabold text-zinc-500 dark:text-zinc-400 tracking-widest mb-3">
                     Active Suite Version
                   </h4>
-                  <div className="text-2xl font-bold text-synos-primary">
+                  <div className="text-2xl font-black text-synos-primary">
                     {systemInfo?.version || systemInfo?.Version || 'v1.4.9'}
                   </div>
-                  <div className="text-xxs text-emerald-500 font-bold mt-1">✓ Running stable release ring</div>
+                  <div className="text-xxs text-emerald-500 font-extrabold mt-1">✓ Running stable release ring</div>
                 </div>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+              <div className="synos-dept-card p-6 rounded-2xl flex flex-col justify-between hover:scale-[1.01] transition-all duration-200">
                 <div>
-                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                  <h4 className="text-xxs font-extrabold text-zinc-500 dark:text-zinc-400 tracking-widest mb-3">
                     System Environment
                   </h4>
-                  <div className="text-xxs text-zinc-650 dark:text-zinc-400 font-semibold font-mono space-y-1 mt-1">
+                  <div className="text-xxs text-zinc-700 dark:text-zinc-300 font-extrabold font-mono space-y-1 mt-1">
                     <div>OS: {systemInfo?.os || 'Windows 11 Home 23H2'}</div>
                     <div>Runtime: .NET {systemInfo?.dotNet || '8.0.3'}</div>
                   </div>
                 </div>
               </div>
-              <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850 flex flex-col justify-between">
+              <div className="synos-dept-card p-6 rounded-2xl flex flex-col justify-between hover:scale-[1.01] transition-all duration-200">
                 <div>
-                  <h4 className="text-xxs font-bold text-zinc-400 dark:text-zinc-500 tracking-widest mb-3">
+                  <h4 className="text-xxs font-extrabold text-zinc-500 dark:text-zinc-400 tracking-widest mb-3">
                     License Subscription
                   </h4>
-                  <div className={`text-2xl font-bold ${
+                  <div className={`text-2xl font-black ${
                     settings?.licenseStatus === 'Suspended' ? 'text-red-500' : 'text-emerald-500'
                   }`}>
                     {settings?.licenseType || 'Trial'}
                   </div>
-                  <div className="text-xxs text-zinc-450 dark:text-zinc-400 font-semibold mt-1">
+                  <div className="text-xxs text-zinc-600 dark:text-zinc-300 font-extrabold mt-1">
                     {settings?.licenseStatus === 'Suspended' ? '🔴 Suspended' : '🟢 Active'} 
                     {settings?.licenseExpiryDate && ` • Exp: ${formatDateInput(settings.licenseExpiryDate)}`}
                   </div>
@@ -4265,7 +4276,7 @@ export function SystemSettingsScreen() {
               </div>
             </div>
 
-            <div className="bg-zinc-50 dark:bg-zinc-900/40 p-6 rounded-2xl border border-zinc-200 dark:border-zinc-850">
+            <div className="synos-dept-card p-6 rounded-2xl">
               <h4 className="text-xs font-bold text-zinc-700 dark:text-zinc-300 tracking-widest mb-4">
                 License Key Manager
               </h4>
@@ -4291,7 +4302,7 @@ export function SystemSettingsScreen() {
                   type="button"
                   onClick={handleUpdateLicenseKey}
                   disabled={licenseUpdating}
-                  className="h-10 px-6 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center"
+                  className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center"
                 >
                   {licenseUpdating ? 'Updating...' : 'Apply Key'}
                 </button>
@@ -4379,7 +4390,7 @@ export function SystemSettingsScreen() {
                     type="button"
                     onClick={() => handleCheckReadiness(availableUpdate)}
                     disabled={applyingUpdate || checkingReadiness}
-                    className="w-full h-11 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    className="w-full px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5"
                   >
                     {checkingReadiness ? 'Checking Readiness...' : (applyingUpdate ? 'Applying Update...' : '⚙️ Install Software Update Now')}
                   </button>
@@ -4492,7 +4503,7 @@ export function SystemSettingsScreen() {
                       type="button"
                       onClick={() => handleApplyUpdate(readinessReport.manifest, readinessReport.report.backupId)}
                       disabled={applyingUpdate || !readinessReport.report.canInstall}
-                      className="flex-1 h-11 bg-synos-primary hover:bg-synos-primary/95 text-white font-bold text-xs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className="flex-1 px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                       {applyingUpdate ? 'Applying Update...' : 'Install Update'}
                     </button>
@@ -4543,7 +4554,7 @@ export function SystemSettingsScreen() {
                     navigator.clipboard.writeText(oneTimeKey);
                     alert('Copied to clipboard!');
                   }}
-                  className="ml-2 px-2.5 py-1 bg-synos-primary hover:bg-synos-primary/95 text-[10px] font-bold rounded-lg text-white shadow-sm transition-all"
+                  className="ml-2 px-3 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-lg shadow-xs active:scale-95 transition-all"
                 >
                   Copy
                 </button>
