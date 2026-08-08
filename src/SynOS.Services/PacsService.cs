@@ -44,14 +44,50 @@ namespace SynOS.Services
                 await _accessGuard.EnsureCanAccessStudyAsync(instance.RadiologyStudyId, currentUserId);
             }
 
-            if (!File.Exists(instance.FilePath))
+            var resolvedPath = ResolveInstanceFilePath(instance.FilePath, instanceId);
+            if (string.IsNullOrEmpty(resolvedPath) || !File.Exists(resolvedPath))
             {
                 throw new FileNotFoundException("The DICOM file for this instance could not be found on disk.", instance.FilePath);
             }
 
-            var stream = new FileStream(instance.FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            return (stream, instance.ContentType);
+            var stream = new FileStream(resolvedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return (stream, string.IsNullOrWhiteSpace(instance.ContentType) ? "application/dicom" : instance.ContentType);
         }
+
+        private string? ResolveInstanceFilePath(string rawFilePath, Guid instanceId)
+        {
+            if (string.IsNullOrWhiteSpace(rawFilePath)) return null;
+            if (File.Exists(rawFilePath)) return rawFilePath;
+
+            var cleanPath = rawFilePath.TrimStart('\\', '/');
+
+            if (!string.IsNullOrEmpty(_pacsSettings.RootPath))
+            {
+                var rootCombined = Path.Combine(_pacsSettings.RootPath, cleanPath);
+                if (File.Exists(rootCombined)) return rootCombined;
+            }
+
+            var baseCombined = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, cleanPath);
+            if (File.Exists(baseCombined)) return baseCombined;
+
+            var synosFilesCombined = Path.Combine(@"C:\SynOS_Files", cleanPath);
+            if (File.Exists(synosFilesCombined)) return synosFilesCombined;
+
+            if (!string.IsNullOrEmpty(_pacsSettings.RootPath) && Directory.Exists(_pacsSettings.RootPath))
+            {
+                var matches = Directory.GetFiles(_pacsSettings.RootPath, $"{instanceId}*", SearchOption.AllDirectories);
+                if (matches.Length > 0) return matches[0];
+            }
+
+            if (Directory.Exists(@"C:\SynOS_Files"))
+            {
+                var matches = Directory.GetFiles(@"C:\SynOS_Files", $"{instanceId}*", SearchOption.AllDirectories);
+                if (matches.Length > 0) return matches[0];
+            }
+
+            return null;
+        }
+
 
         private class DicomStagedItemInfo
         {
@@ -474,44 +510,6 @@ namespace SynOS.Services
                 .Where(pi => pi.RadiologyStudyId == radiologyStudyId)
                 .ToListAsync();
 
-            // 3. Fallback: If no DICOM instances exist yet, generate initial indexed series entry for accession
-            if (!existingInstances.Any())
-            {
-                var dummySeries = new PacsSeries
-                {
-                    SeriesId = Guid.NewGuid(),
-                    RadiologyStudyId = radiologyStudyId,
-                    StudyInstanceUid = $"1.2.840.113619.2.55.3.{DateTime.UtcNow.Ticks}",
-                    SeriesInstanceUid = $"1.2.840.113619.2.55.3.{DateTime.UtcNow.Ticks}.1",
-                    Modality = study.Modality ?? "XR",
-                    Description = $"{study.Modality} Scanner Direct Acquisition Series",
-                    SeriesNumber = 1,
-                    CreatedBy = currentUserId
-                };
-                _context.PacsSeries.Add(dummySeries);
-
-                var dummyInstance = new PacsInstance
-                {
-                    InstanceId = Guid.NewGuid(),
-                    SeriesId = dummySeries.SeriesId,
-                    RadiologyStudyId = radiologyStudyId,
-                    StudyInstanceUid = dummySeries.StudyInstanceUid,
-                    SeriesInstanceUid = dummySeries.SeriesInstanceUid,
-                    SopInstanceUid = $"1.2.840.113619.2.55.3.{DateTime.UtcNow.Ticks}.1.1",
-                    InstanceNumber = 1,
-                    FrameCount = 1,
-                    FilePath = Path.Combine(_pacsSettings.RootPath, radiologyStudyId.ToString(), dummySeries.SeriesId.ToString(), "acquired.dcm"),
-                    FileSizeBytes = 1024,
-                    ContentType = "application/dicom",
-                    CreatedBy = currentUserId
-                };
-                _context.PacsInstances.Add(dummyInstance);
-                await _context.SaveChangesAsync();
-
-                existingInstances.Add(dummyInstance);
-                createdSeriesIds.Add(dummySeries.SeriesId);
-            }
-
             var firstSeries = await _context.PacsSeries
                 .FirstOrDefaultAsync(ps => ps.RadiologyStudyId == radiologyStudyId);
 
@@ -640,7 +638,7 @@ namespace SynOS.Services
             var seriesNodes = allSeries.Select(series =>
             {
                 var instancesForSeries = allInstances
-                    .Where(inst => inst.SeriesId == series.SeriesId)
+                    .Where(inst => inst.SeriesId == series.SeriesId && !string.IsNullOrEmpty(ResolveInstanceFilePath(inst.FilePath, inst.InstanceId)))
                     .ToList();
                 
                 if (instancesForSeries.Count > _pacsSettings.MaxInstancesPerSeriesInSeriesTree)
@@ -667,7 +665,7 @@ namespace SynOS.Services
                     InstanceCount = instanceNodes.Count,
                     Instances = instanceNodes
                 };
-            }).ToList();
+            }).Where(sn => sn.InstanceCount > 0).ToList();
 
             return new PacsSeriesTreeDto
             {

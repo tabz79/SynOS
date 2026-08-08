@@ -130,7 +130,7 @@ export function PacsArchiveScreen() {
                 tree.series.forEach(s => {
                     if (s.instances) {
                         s.instances.forEach(inst => {
-                            const fileUrl = `/api/v1/radiology/pacs/instances/${inst.instanceId}/file`;
+                            const fileUrl = inst.wadouri || `/api/v1/radiology/pacs/instances/${inst.instanceId}/file`;
                             if (!urls.includes(fileUrl)) {
                                 urls.push(fileUrl);
                             }

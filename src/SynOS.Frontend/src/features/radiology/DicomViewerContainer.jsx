@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { DicomViewportManager } from './DicomViewportManager';
 import { 
     Sun, 
@@ -88,7 +88,51 @@ export function DicomViewerContainer({
     const dragStartYRef = useRef(0);
     const startZoomRef = useRef(100);
 
-    const effectiveUrls = (urls && urls.length > 0) ? urls : (imageIds && imageIds.length > 0 ? imageIds : []);
+    const effectiveUrls = useMemo(() => {
+        return (urls && urls.length > 0) ? urls : (imageIds && imageIds.length > 0 ? imageIds : []);
+    }, [urls, imageIds]);
+
+    // Default series list if not provided
+    const displaySeriesList = useMemo(() => {
+        return seriesList && seriesList.length > 0 ? seriesList : [
+            {
+                seriesId: 's1',
+                seriesDescription: `${modality} Primary Series`,
+                modality: modality,
+                instanceCount: effectiveUrls.length || 1,
+                date: '8/3/2026'
+            }
+        ];
+    }, [seriesList, modality, effectiveUrls.length]);
+
+    // Isolate active series slice stack DICOM URLs
+    const activeSeriesUrls = useMemo(() => {
+        if (!displaySeriesList || displaySeriesList.length === 0) return effectiveUrls;
+
+        const activeSer = displaySeriesList[activeSeriesIndex] || displaySeriesList[0];
+        if (!activeSer) return effectiveUrls;
+
+        // Case 1: Active series has explicit instances array
+        if (activeSer.instances && activeSer.instances.length > 0) {
+            return activeSer.instances.map(inst => {
+                return inst.wadouri || inst.fileUrl || (inst.instanceId ? `/api/v1/radiology/pacs/instances/${inst.instanceId}/file` : null);
+            }).filter(Boolean);
+        }
+
+        // Case 2: seriesList has instanceCount for each series and effectiveUrls holds full study stack
+        if (seriesList && seriesList.length > 1 && effectiveUrls && effectiveUrls.length > 0) {
+            let start = 0;
+            for (let i = 0; i < activeSeriesIndex && i < seriesList.length; i++) {
+                start += (seriesList[i].instanceCount || seriesList[i].instances?.length || 0);
+            }
+            const count = activeSer.instanceCount || activeSer.instances?.length || 0;
+            if (count > 0 && start + count <= effectiveUrls.length) {
+                return effectiveUrls.slice(start, start + count);
+            }
+        }
+
+        return effectiveUrls;
+    }, [displaySeriesList, activeSeriesIndex, effectiveUrls, seriesList]);
 
     // Initialize DicomViewportManager
     useEffect(() => {
@@ -117,16 +161,17 @@ export function DicomViewerContainer({
         };
     }, [modality]);
 
-    // Load DICOM Image URLs into DicomViewportManager
+    // Load active series DICOM Image URLs into DicomViewportManager
     useEffect(() => {
-        if (viewportManager.current && effectiveUrls && effectiveUrls.length > 0) {
-            viewportManager.current.setImages(effectiveUrls).then(() => {
-                setTotalSlices(effectiveUrls.length);
+        if (viewportManager.current && activeSeriesUrls && activeSeriesUrls.length > 0) {
+            setActiveSliceIndex(0);
+            viewportManager.current.setImages(activeSeriesUrls).then(() => {
+                setTotalSlices(activeSeriesUrls.length);
             }).catch(err => {
                 console.error("Failed to load DICOM images into DicomViewerContainer:", err);
             });
         }
-    }, [effectiveUrls]);
+    }, [activeSeriesUrls]);
 
     // CINE Loop Animation
     useEffect(() => {
@@ -381,17 +426,6 @@ export function DicomViewerContainer({
     const toggleFullscreen = () => {
         setIsFullscreen(!isFullscreen);
     };
-
-    // Default mock series list if not provided
-    const displaySeriesList = seriesList.length > 0 ? seriesList : [
-        {
-            seriesId: 's1',
-            seriesDescription: `${modality} Primary Series`,
-            modality: modality,
-            instanceCount: totalSlices || effectiveUrls.length || 1,
-            date: '8/3/2026'
-        }
-    ];
 
     return (
         <div className={`relative flex flex-col bg-zinc-950 text-zinc-100 font-sans overflow-hidden select-none flex-1 h-full w-full min-h-0 ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''} ${className}`}>

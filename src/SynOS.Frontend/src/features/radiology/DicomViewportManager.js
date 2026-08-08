@@ -99,59 +99,25 @@ export class DicomViewportManager {
         if (!urls || urls.length === 0) return;
 
         const token = localStorage.getItem('synos_jwt');
-        // Map relative public URLs to standard WADO-URI loader scheme with auth token fallback
         const rawImageIds = urls.map(url => {
-            const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
-            const authUrl = token ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : fullUrl;
+            if (!url) return '';
+            // Strip any pre-existing 'wadouri:' prefix to prevent duplicate prepending
+            const cleanUrl = url.replace(/^wadouri:/, '');
+            
+            // Ensure absolute URL
+            const fullUrl = (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://'))
+                ? cleanUrl
+                : `${window.location.origin}${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
+
+            // Append auth token if present and not already attached
+            const authUrl = (token && !fullUrl.includes('token='))
+                ? `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
+                : fullUrl;
+
             return `wadouri:${authUrl}`;
-        });
+        }).filter(Boolean);
 
-        // Diagnostic Instrumentation for DICOM Metadata & Decoded Image Dimensions requested by User
-        if (rawImageIds.length > 0) {
-            const testId = rawImageIds[0];
-            try {
-                console.log("=== DICOM METADATA & DECODER DIAGNOSTIC INSTRUMENTATION ===");
-                console.log("Target ImageId:", testId);
-                const loadedImage = await cornerstone.imageLoader.loadImage(testId);
-                if (loadedImage) {
-                    const pixelData = loadedImage.getPixelData?.();
-                    const imagePlane = cornerstone.metaData.get('imagePlaneModule', testId) || {};
 
-                    console.log("DICOM Header Metadata:", {
-                        Rows: loadedImage.rows || imagePlane.rows,
-                        Columns: loadedImage.columns || imagePlane.columns,
-                        BitsAllocated: loadedImage.bitsAllocated,
-                        BitsStored: loadedImage.bitsStored,
-                        SamplesPerPixel: loadedImage.samplesPerPixel,
-                        PhotometricInterpretation: loadedImage.photometricInterpretation
-                    });
-
-                    console.log("Decoded Image Object Properties:", {
-                        width: loadedImage.width,
-                        height: loadedImage.height,
-                        color: loadedImage.color,
-                        rgba: loadedImage.rgba,
-                        numComps: loadedImage.numComps,
-                        pixelDataLength: pixelData ? pixelData.length : 0,
-                        pixelDataByteLength: pixelData ? pixelData.byteLength : 0
-                    });
-
-                    const rows = loadedImage.rows || 512;
-                    const cols = loadedImage.columns || 512;
-                    const allocatedPixels = rows * cols;
-                    const returnedPixels = pixelData ? pixelData.length : 0;
-
-                    console.log("Pixel Count Comparison:", {
-                        allocatedPixelsRowsTimesCols: allocatedPixels,
-                        returnedPixelsFromDecoder: returnedPixels,
-                        difference: returnedPixels - allocatedPixels
-                    });
-                }
-                console.log("===========================================================");
-            } catch (err) {
-                console.error("DICOM Load/Decode Diagnostic Error:", err);
-            }
-        }
 
         // Preload/cache metadata for all images in parallel
         await Promise.all(rawImageIds.map(id => {
@@ -693,14 +659,6 @@ export class DicomViewportManager {
         // Step 2: Safely destroy RenderingEngine and release WebGL GPU memory
         if (this.renderingEngine) {
             try {
-                const viewports = this.renderingEngine.getViewports();
-                viewports.forEach(vp => {
-                    try {
-                        if (vp && vp.element && vp.canvas && vp.element.contains(vp.canvas)) {
-                            vp.element.removeChild(vp.canvas);
-                        }
-                    } catch (err) {}
-                });
                 this.renderingEngine.destroy();
             } catch (e) {
                 console.warn("RenderingEngine cleanup exception:", e);
