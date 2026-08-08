@@ -86,24 +86,24 @@ export function MyHRDashboard() {
       {/* Main Content Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity */}
-        <section className="bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-zinc-400" />
+        <section className="synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800">
+          <h2 className="text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white mb-4 flex items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-3">
+            <Clock className="w-4 h-4 text-indigo-500" />
             Recent Activity
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {recentLogs.length > 0 ? (
               recentLogs.slice(0, 5).map((log, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2 border-b border-black/5 dark:border-white/5 last:border-0">
+                <div key={idx} className="flex items-center justify-between py-2 border-b dark:border-zinc-800/60 border-zinc-100 last:border-0">
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{log.status}</span>
-                    <span className="text-xs text-zinc-500">{new Date(log.timestamp).toLocaleDateString()}</span>
+                    <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{log.status}</span>
+                    <span className="text-[10px] font-mono text-zinc-500">{new Date(log.timestamp).toLocaleDateString()}</span>
                   </div>
                   <StatusBadge status={log.status} />
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-zinc-500 text-sm italic">
+              <div className="py-8 text-center text-zinc-500 text-xs italic">
                 No recent activity recorded.
               </div>
             )}
@@ -111,9 +111,9 @@ export function MyHRDashboard() {
         </section>
 
         {/* Quick Actions */}
-        <section className="bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-            <CalendarDays className="w-5 h-5 text-zinc-400" />
+        <section className="synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800">
+          <h2 className="text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white mb-4 flex items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-3">
+            <CalendarDays className="w-4 h-4 text-indigo-500" />
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 gap-3">
@@ -141,36 +141,36 @@ export function MyHRDashboard() {
 
 function StatCard({ label, value, icon: Icon, color }) {
   const colors = {
-    emerald: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-    rose: "text-rose-500 bg-rose-500/10 border-rose-500/20",
-    blue: "text-blue-500 bg-blue-500/10 border-blue-500/20",
-    amber: "text-amber-500 bg-amber-500/10 border-amber-500/20",
+    emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    rose: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20",
+    blue: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+    amber: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-4 shadow-sm flex flex-col items-center text-center">
+    <div className="synos-dept-card rounded-2xl p-4 flex flex-col items-center text-center border border-zinc-200 dark:border-zinc-800">
       <div className={cn("p-2 rounded-xl mb-2 border", colors[color])}>
         <Icon className="w-5 h-5" />
       </div>
-      <span className="text-2xl font-black text-zinc-900 dark:text-white">{value}</span>
-      <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">{label}</span>
+      <span className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{value}</span>
+      <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-extrabold mt-0.5">{label}</span>
     </div>
   );
 }
 
 function StatusBadge({ status }) {
   const config = {
-    Present: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    Absent: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-    PaidLeave: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    Present: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    Absent: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+    PaidLeave: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
     UnpaidLeave: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
-    HalfDay: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    HalfDay: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
   };
 
   const style = config[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
 
   return (
-    <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-tight", style)}>
+    <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-tight", style)}>
       {status}
     </span>
   );
@@ -180,10 +180,10 @@ function QuickActionButton({ label, description, path }) {
   return (
     <a 
       href={path}
-      className="flex flex-col p-4 rounded-xl border border-black/5 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all"
+      className="p-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition-all shadow-xs active:scale-95 flex flex-col text-left group"
     >
-      <span className="text-sm font-bold text-zinc-900 dark:text-white">{label}</span>
-      <span className="text-[11px] text-zinc-500">{description}</span>
+      <span className="text-xs font-extrabold text-indigo-700 dark:text-indigo-300 group-hover:text-indigo-600">{label}</span>
+      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">{description}</span>
     </a>
   );
 }

@@ -1524,7 +1524,7 @@ Error generating stack: ` + z.message + `
       }
       E.defaultValue = F != null ? "" + Ji(F) : "";
     }
-    function oi(E, b, F, z) {
+    function li(E, b, F, z) {
       if (b == null) {
         if (z != null) {
           if (F != null) throw Error(A(92));
@@ -2458,14 +2458,14 @@ Error generating stack: ` + z.message + `
         se !== 0 && Ic(F, ee, se);
       }
     }
-    function li(E, b, F, z) {
+    function ci(E, b, F, z) {
       ki[oa++] = E, ki[oa++] = b, ki[oa++] = F, ki[oa++] = z, rl |= z, E.lanes |= z, E = E.alternate, E !== null && (E.lanes |= z);
     }
     function la(E, b, F, z) {
-      return li(E, b, F, z), fc(E);
+      return ci(E, b, F, z), fc(E);
     }
     function Rt(E, b) {
-      return li(E, null, null, b), fc(E);
+      return ci(E, null, null, b), fc(E);
     }
     function Ic(E, b, F) {
       E.lanes |= F;
@@ -2643,7 +2643,7 @@ Error generating stack: ` + z.message + `
           Ur("invalid", b);
           break;
         case "textarea":
-          Ur("invalid", b), oi(b, z.value, z.defaultValue, z.children);
+          Ur("invalid", b), li(b, z.value, z.defaultValue, z.children);
       }
       F = z.children, typeof F != "string" && typeof F != "number" && typeof F != "bigint" || b.textContent === "" + F || z.suppressHydrationWarning === true || $b(b.textContent, F) ? (z.popover != null && (Ur("beforetoggle", b), Ur("toggle", b)), z.onScroll != null && Ur("scroll", b), z.onScrollEnd != null && Ur("scrollend", b), z.onClick != null && (b.onclick = Cr), b = true) : b = false, b || Ug(E, true);
     }
@@ -3189,7 +3189,7 @@ Error generating stack: ` + z.message + `
         var ee = z.pending;
         return ee === null ? b.next = b : (b.next = ee.next, ee.next = b), z.pending = b, b = fc(E), Ic(E, null, F), b;
       }
-      return li(E, z, b, F), fc(E);
+      return ci(E, z, b, F), fc(E);
     }
     function Lh(E, b, F) {
       if (b = b.updateQueue, b !== null && (b = b.shared, (F & 4194048) !== 0)) {
@@ -4012,7 +4012,7 @@ Error generating stack: ` + z.message + `
         var se = E.alternate;
         if (E.lanes === 0 && (se === null || se.lanes === 0) && (se = b.lastRenderedReducer, se !== null)) try {
           var Te = b.lastRenderedState, Xe = se(Te, F);
-          if (ee.hasEagerState = true, ee.eagerState = Xe, Ms(Xe, Te)) return li(E, b, ee, 0), zi === null && iA(), false;
+          if (ee.hasEagerState = true, ee.eagerState = Xe, Ms(Xe, Te)) return ci(E, b, ee, 0), zi === null && iA(), false;
         } catch {
         }
         if (F = la(E, b, ee, z), F !== null) return no(F, E, z), FB(F, b, z), true;
@@ -7523,7 +7523,7 @@ Error generating stack: ` + z.message + `
             default:
               pi(E, b, Te, Xe, F, null);
           }
-          oi(E, z, ee, se);
+          li(E, z, ee, se);
           return;
         case "option":
           for (Bt in F) F.hasOwnProperty(Bt) && (z = F[Bt], z != null) && (Bt === "selected" ? E.selected = z && typeof z != "function" && typeof z != "symbol" : pi(E, b, Bt, z, F, null));
@@ -10425,7 +10425,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
       children: !a && t
     });
   }
-  const di = () => j.useContext(IY);
+  const oi = () => j.useContext(IY);
   class Qp extends Error {
     constructor(e, n) {
       const A = new.target.prototype;
@@ -12286,7 +12286,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
     `;
   }
   const Sge = j.createContext(), kge = ({ children: t }) => {
-    const { user: e } = di(), n = j.useRef(/* @__PURE__ */ new Set());
+    const { user: e } = oi(), n = j.useRef(/* @__PURE__ */ new Set());
     return j.useEffect(() => {
       if (!e || !e.branchId) return;
       let A = localStorage.getItem("synos_terminal_id");
@@ -16395,7 +16395,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
         key: "dzmm74"
       }
     ]
-  ], gi = Yt("circle-check", $de);
+  ], di = Yt("circle-check", $de);
   const eue = [
     [
       "circle",
@@ -20187,7 +20187,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
     return s === "ML" && e === "mL" || s === "G" && e === "g" || s === "MG" && e === "mg" ? A : Number((A * a.factorToBase).toFixed(6));
   }
   function oQ({ isOpen: t, onClose: e, screenName: n }) {
-    const { user: A } = di(), { theme: r } = ra(), a = r === "dark", [s, o] = j.useState(false), [l, c] = j.useState(false), [d, g] = j.useState([]), [u, h] = j.useState([]), [f, C] = j.useState("role"), [p, x] = j.useState(""), [m, Q] = j.useState(null), [D, S] = j.useState(1), [k, T] = j.useState("units"), [G, P] = j.useState(false), [K, H] = j.useState(null), [Y, W] = j.useState(false), q = j.useRef(null);
+    const { user: A } = oi(), { theme: r } = ra(), a = r === "dark", [s, o] = j.useState(false), [l, c] = j.useState(false), [d, g] = j.useState([]), [u, h] = j.useState([]), [f, C] = j.useState("role"), [p, x] = j.useState(""), [m, Q] = j.useState(null), [D, S] = j.useState(1), [k, T] = j.useState("units"), [G, P] = j.useState(false), [K, H] = j.useState(null), [Y, W] = j.useState(false), q = j.useRef(null);
     RY(q, t), EN(q, t, e);
     const oe = () => {
       if (n) return n;
@@ -21021,7 +21021,7 @@ Details: ${a.inner}`);
   };
   function vg({ serverTime: t, syncStatus: e = "Not Synced" }) {
     var _a;
-    const { user: n, logout: A, activeOversightBranchId: r, setOversightBranch: a } = di(), s = Ks(), o = bg(), { theme: l, setTheme: c } = ra(), [d, g] = j.useState(/* @__PURE__ */ new Date()), [u, h] = j.useState(null), [f, C] = j.useState([]), p = j.useRef(null), x = j.useRef(null);
+    const { user: n, logout: A, activeOversightBranchId: r, setOversightBranch: a } = oi(), s = Ks(), o = bg(), { theme: l, setTheme: c } = ra(), [d, g] = j.useState(/* @__PURE__ */ new Date()), [u, h] = j.useState(null), [f, C] = j.useState([]), p = j.useRef(null), x = j.useRef(null);
     EN(p, u === "facility", () => h(null)), EN(x, u === "role", () => h(null));
     const m = (n == null ? void 0 : n.role) === "Admin" || (n == null ? void 0 : n.role) === "SystemAdmin" || Array.isArray(n == null ? void 0 : n.role) && (n.role.includes("Admin") || n.role.includes("SystemAdmin")), Q = o.pathname, S = {
       "/reception": "Reception",
@@ -21571,7 +21571,7 @@ Details: ${a.inner}`);
     children: t
   });
   function n8({ serverTime: t }) {
-    const [e, n] = j.useState([]), [A, r] = j.useState(true), { user: a } = di(), { theme: s } = ra(), o = s === "dark", l = async () => {
+    const [e, n] = j.useState([]), [A, r] = j.useState(true), { user: a } = oi(), { theme: s } = ra(), o = s === "dark", l = async () => {
       try {
         const m = (await pn.getActivityStream()).filter((Q) => {
           if (!Q.metadataObj) try {
@@ -21647,15 +21647,15 @@ Details: ${a.inner}`);
             className: "h-4 w-4 text-muted-foreground"
           });
         case "PAYMENT_RECEIVED":
-          return i.jsx(gi, {
+          return i.jsx(di, {
             className: "h-4 w-4 text-emerald-600 dark:text-emerald-500"
           });
         case "RECEIVABLE_CREATED":
-          return i.jsx(gi, {
+          return i.jsx(di, {
             className: "h-4 w-4 text-emerald-600 dark:text-emerald-500"
           });
         case "VISIT_FINALIZED":
-          return i.jsx(gi, {
+          return i.jsx(di, {
             className: "h-4 w-4 text-muted-foreground"
           });
         default:
@@ -30440,7 +30440,7 @@ Details: ${a.inner}`);
   }
   function pEe({ isOpen: t, visitId: e, closePanel: n, queueItem: A, onUpdateLocalState: r }) {
     var _a, _b, _c, _d;
-    const { theme: a } = ra(), s = a === "dark", { user: o } = di(), [l, c] = j.useState(false), [d, g] = j.useState(null), [u, h] = j.useState(false), [f, C] = j.useState(false), [p, x] = j.useState(false), [m, Q] = j.useState(null), [D, S] = j.useState([]), [k, T] = j.useState(false), G = A && !A.assignedPhlebotomistId, P = ((_a = A == null ? void 0 : A.assignedPhlebotomistId) == null ? void 0 : _a.toLowerCase()) === ((_b = o == null ? void 0 : o.id) == null ? void 0 : _b.toLowerCase());
+    const { theme: a } = ra(), s = a === "dark", { user: o } = oi(), [l, c] = j.useState(false), [d, g] = j.useState(null), [u, h] = j.useState(false), [f, C] = j.useState(false), [p, x] = j.useState(false), [m, Q] = j.useState(null), [D, S] = j.useState([]), [k, T] = j.useState(false), G = A && !A.assignedPhlebotomistId, P = ((_a = A == null ? void 0 : A.assignedPhlebotomistId) == null ? void 0 : _a.toLowerCase()) === ((_b = o == null ? void 0 : o.id) == null ? void 0 : _b.toLowerCase());
     j.useEffect(() => {
       let q = true;
       return h(false), C(false), x(false), T(false), t && e ? (async () => {
@@ -30723,7 +30723,7 @@ Details: ${a.inner}`);
                 disabled: p || !P || l,
                 className: Ke("h-12 px-6 rounded-xl flex items-center gap-2 font-bold transition-all duration-200", k ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : !P || p ? W.actionBtn.disabled : "bg-white border border-black/[0.08] hover:bg-zinc-50 text-zinc-900"),
                 children: [
-                  k ? i.jsx(gi, {
+                  k ? i.jsx(di, {
                     className: "w-4 h-4"
                   }) : p ? i.jsx(wA, {
                     className: "w-4 h-4 animate-spin"
@@ -30752,7 +30752,7 @@ Details: ${a.inner}`);
             disabled: true,
             className: Ke("w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-100"),
             children: [
-              i.jsx(gi, {
+              i.jsx(di, {
                 className: "w-4 h-4"
               }),
               " Collection Completed"
@@ -30821,7 +30821,7 @@ Details: ${a.inner}`);
   }
   function BEe() {
     var _a, _b, _c, _d;
-    const { theme: t } = ra(), [e, n] = j.useState(false), [A, r] = j.useState(false), [a, s] = j.useState(false), [o, l] = j.useState([]), [c, d] = j.useState(true), [g, u] = j.useState(null), [h, f] = j.useState((/* @__PURE__ */ new Date()).toISOString()), [C, p] = j.useState("Not Synced"), { user: x } = di(), [m, Q] = j.useState("available"), [D, S] = j.useState(null), k = j.useRef(null), T = j.useRef(null);
+    const { theme: t } = ra(), [e, n] = j.useState(false), [A, r] = j.useState(false), [a, s] = j.useState(false), [o, l] = j.useState([]), [c, d] = j.useState(true), [g, u] = j.useState(null), [h, f] = j.useState((/* @__PURE__ */ new Date()).toISOString()), [C, p] = j.useState("Not Synced"), { user: x } = oi(), [m, Q] = j.useState("available"), [D, S] = j.useState(null), k = j.useRef(null), T = j.useRef(null);
     VT([
       k,
       T
@@ -30932,7 +30932,7 @@ Details: ${a.inner}`);
       {
         value: ((_d = g.testsRunning) == null ? void 0 : _d.toString()) || "0",
         label: "Tests Running",
-        icon: gi,
+        icon: di,
         color: "zinc"
       }
     ] : [
@@ -30958,7 +30958,7 @@ Details: ${a.inner}`);
       {
         value: "-",
         label: "Tests Running",
-        icon: gi,
+        icon: di,
         color: "zinc"
       }
     ], q = (ce) => {
@@ -31273,7 +31273,7 @@ Details: ${a.inner}`);
       urgent: 0,
       critical: 0,
       completed: 0
-    }), [a, s] = j.useState(true), { user: o } = di(), l = j.useCallback(async () => {
+    }), [a, s] = j.useState(true), { user: o } = oi(), l = j.useCallback(async () => {
       try {
         s(true);
         const u = await NI.getQueue(t), h = NI.normalizeQueueData(u);
@@ -31581,7 +31581,7 @@ Details: ${a.inner}`);
   };
   function yEe({ assignmentId: t, onClose: e, onDirtyUpdate: n, onUpdateLocalState: A }) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i2;
-    const { user: r } = di(), [a, s] = j.useState(null), [o, l] = j.useState(true), [c, d] = j.useState(false), [g, u] = j.useState(false), [h, f] = j.useState(false), [C, p] = j.useState(null), [x, m] = j.useState(null), [Q, D] = j.useState({}), S = j.useRef({}), k = async () => {
+    const { user: r } = oi(), [a, s] = j.useState(null), [o, l] = j.useState(true), [c, d] = j.useState(false), [g, u] = j.useState(false), [h, f] = j.useState(false), [C, p] = j.useState(null), [x, m] = j.useState(null), [Q, D] = j.useState({}), S = j.useRef({}), k = async () => {
       if (t) try {
         f(true), m(null), p(null);
         const q = await NI.importFromAnalyzer(t);
@@ -32008,7 +32008,7 @@ Details: ${a.inner}`);
     }) : null;
   }
   function bEe() {
-    const { theme: t } = ra(), { user: e } = di(), [n, A] = j.useState(false), { queue: r, summary: a, isLoading: s, updateLocalState: o } = EEe(n), [l, c] = j.useState(false), [d, g] = j.useState(false), [u, h] = j.useState("available"), [f, C] = j.useState(null), [p, x] = j.useState(false), [m, Q] = j.useState(false), [D, S] = j.useState(null), [k, T] = j.useState(false), G = j.useRef(null), P = j.useRef(null);
+    const { theme: t } = ra(), { user: e } = oi(), [n, A] = j.useState(false), { queue: r, summary: a, isLoading: s, updateLocalState: o } = EEe(n), [l, c] = j.useState(false), [d, g] = j.useState(false), [u, h] = j.useState("available"), [f, C] = j.useState(null), [p, x] = j.useState(false), [m, Q] = j.useState(false), [D, S] = j.useState(null), [k, T] = j.useState(false), G = j.useRef(null), P = j.useRef(null);
     VT([
       G,
       P
@@ -32041,7 +32041,7 @@ Details: ${a.inner}`);
       {
         value: a.completed,
         label: "Completed",
-        icon: gi,
+        icon: di,
         color: "emerald"
       }
     ], H = (le) => {
@@ -32218,7 +32218,7 @@ Details: ${a.inner}`);
     });
   }
   function vEe() {
-    const [t, e] = j.useState(""), [n, A] = j.useState(""), [r, a] = j.useState(null), [s, o] = j.useState(false), [l, c] = j.useState(null), [d, g] = j.useState(null), { login: u, user: h, isConfigured: f } = di(), C = Ks();
+    const [t, e] = j.useState(""), [n, A] = j.useState(""), [r, a] = j.useState(null), [s, o] = j.useState(false), [l, c] = j.useState(null), [d, g] = j.useState(null), { login: u, user: h, isConfigured: f } = oi(), C = Ks();
     j.useEffect(() => {
       f || C("/activate", {
         replace: true
@@ -32350,7 +32350,7 @@ Details: ${a.inner}`);
     });
   }
   function DEe() {
-    const { isConfigured: t, setIsConfigured: e } = di(), n = Ks(), [A, r] = j.useState(1), [a, s] = j.useState(true), [o, l] = j.useState(""), [c, d] = j.useState("Administrator"), [g, u] = j.useState(""), [h, f] = j.useState(""), [C, p] = j.useState(""), [x, m] = j.useState("localhost"), [Q, D] = j.useState("SynOSDb"), [S, k] = j.useState("sa"), [T, G] = j.useState(""), [P, K] = j.useState(true), [H, Y] = j.useState("C:\\SynOS_Files\\PACS"), [W, q] = j.useState("C:\\SynOS_Files"), [oe, ie] = j.useState("C:\\SynOS_Working"), [Ie, Ae] = j.useState(null), [le, re] = j.useState(null), [ce, he] = j.useState(false), [ye, ze] = j.useState(false), [ve, qe] = j.useState(false), [tt, it] = j.useState(false), [lt, Ce] = j.useState(""), [Z, Be] = j.useState(false), [ne, xe] = j.useState({
+    const { isConfigured: t, setIsConfigured: e } = oi(), n = Ks(), [A, r] = j.useState(1), [a, s] = j.useState(true), [o, l] = j.useState(""), [c, d] = j.useState("Administrator"), [g, u] = j.useState(""), [h, f] = j.useState(""), [C, p] = j.useState(""), [x, m] = j.useState("localhost"), [Q, D] = j.useState("SynOSDb"), [S, k] = j.useState("sa"), [T, G] = j.useState(""), [P, K] = j.useState(true), [H, Y] = j.useState("C:\\SynOS_Files\\PACS"), [W, q] = j.useState("C:\\SynOS_Files"), [oe, ie] = j.useState("C:\\SynOS_Working"), [Ie, Ae] = j.useState(null), [le, re] = j.useState(null), [ce, he] = j.useState(false), [ye, ze] = j.useState(false), [ve, qe] = j.useState(false), [tt, it] = j.useState(false), [lt, Ce] = j.useState(""), [Z, Be] = j.useState(false), [ne, xe] = j.useState({
       statusUrl: "",
       loginUrl: ""
     }), [Ne, Re] = j.useState([
@@ -55251,7 +55251,7 @@ ${n}
     });
   }
   function SL({ hubConnection: t, selectedStudy: e, onSelectStudy: n, role: A, targetRole: r }) {
-    const { user: a } = di(), [s, o] = j.useState("idle"), [l, c] = j.useState([]), [d, g] = j.useState(""), [u, h] = j.useState(false), [f, C] = j.useState(1), [p, x] = j.useState(false), [m, Q] = j.useState(0), [D, S] = j.useState(false), [k, T] = j.useState(false), G = j.useRef(s), P = j.useRef(u);
+    const { user: a } = oi(), [s, o] = j.useState("idle"), [l, c] = j.useState([]), [d, g] = j.useState(""), [u, h] = j.useState(false), [f, C] = j.useState(1), [p, x] = j.useState(false), [m, Q] = j.useState(0), [D, S] = j.useState(false), [k, T] = j.useState(false), G = j.useRef(s), P = j.useRef(u);
     j.useEffect(() => {
       G.current = s;
     }, [
@@ -55931,7 +55931,7 @@ ${n}
   };
   function RNe() {
     var _a, _b, _c, _d, _e2;
-    const { user: t } = di(), { theme: e } = ra(), n = e === "dark", [A, r] = j.useState([]), [a, s] = j.useState(false), [o, l] = j.useState(null), [c, d] = j.useState(null), [g, u] = j.useState(false), [h, f] = j.useState(false), [C, p] = j.useState({
+    const { user: t } = oi(), { theme: e } = ra(), n = e === "dark", [A, r] = j.useState([]), [a, s] = j.useState(false), [o, l] = j.useState(null), [c, d] = j.useState(null), [g, u] = j.useState(false), [h, f] = j.useState(false), [C, p] = j.useState({
       interpretation: "",
       comments: ""
     }), [x, m] = j.useState(null), [Q, D] = j.useState(false), [S, k] = j.useState(null), [T, G] = j.useState(false), [P, K] = j.useState(""), [H, Y] = j.useState({}), [W, q] = j.useState(null), [oe, ie] = j.useState(false), [Ie, Ae] = j.useState(false), [le, re] = j.useState(false), [ce, he] = j.useState(false), [ye, ze] = j.useState({
@@ -57395,7 +57395,7 @@ ${n}
   };
   function MNe({ selectedStudy: t, setSelectedStudy: e, hubConnectionRef: n, connectionStatus: A }) {
     var _a, _b, _c, _d;
-    const { user: r } = di(), [a, s] = j.useState([]), [o, l] = j.useState(false), [c, d] = j.useState("available"), [g, u] = j.useState(true), [h, f] = j.useState(false), [C, p] = j.useState(""), [x, m] = j.useState(""), [Q, D] = j.useState(""), [S, k] = j.useState(null), [T, G] = j.useState(false), [P, K] = j.useState(false), [H, Y] = j.useState(null), { template: W, loading: q } = uQ(H), [oe, ie] = j.useState(false), [Ie, Ae] = j.useState(0.55), [le, re] = j.useState({
+    const { user: r } = oi(), [a, s] = j.useState([]), [o, l] = j.useState(false), [c, d] = j.useState("available"), [g, u] = j.useState(true), [h, f] = j.useState(false), [C, p] = j.useState(""), [x, m] = j.useState(""), [Q, D] = j.useState(""), [S, k] = j.useState(null), [T, G] = j.useState(false), [P, K] = j.useState(false), [H, Y] = j.useState(null), { template: W, loading: q } = uQ(H), [oe, ie] = j.useState(false), [Ie, Ae] = j.useState(0.55), [le, re] = j.useState({
       x: 0,
       y: 0
     }), [ce, he] = j.useState(false), ye = j.useRef({
@@ -58092,7 +58092,7 @@ ${n}
   };
   function LNe() {
     var _a, _b, _c, _d, _e2;
-    const { user: t } = di(), { theme: e } = ra(), [n, A] = j.useState("pathology"), [r, a] = j.useState([]), [s, o] = j.useState(false), [l, c] = j.useState(null), [d, g] = j.useState(null), [u, h] = j.useState(null), [f, C] = j.useState({}), [p, x] = j.useState(false), [m, Q] = j.useState(false), [D, S] = j.useState({
+    const { user: t } = oi(), { theme: e } = ra(), [n, A] = j.useState("pathology"), [r, a] = j.useState([]), [s, o] = j.useState(false), [l, c] = j.useState(null), [d, g] = j.useState(null), [u, h] = j.useState(null), [f, C] = j.useState({}), [p, x] = j.useState(false), [m, Q] = j.useState(false), [D, S] = j.useState({
       interpretation: "",
       comments: ""
     }), [k, T] = j.useState(false), [G, P] = j.useState(null), [K, H] = j.useState(false), [Y, W] = j.useState(false), [q, oe] = j.useState(""), [ie, Ie] = j.useState(false), [Ae, le] = j.useState(false), [re, ce] = j.useState(0.6), [he, ye] = j.useState({
@@ -59109,7 +59109,7 @@ ${n}
     const A = t.signaturesCount > 0, r = t.isPhysicallyVerified || A, a = t.delivered, s = () => a ? i.jsxs("span", {
       className: "flex items-center gap-1 text-[8px] font-semibold uppercase px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20 tracking-tighter",
       children: [
-        i.jsx(gi, {
+        i.jsx(di, {
           className: "w-2 h-2"
         }),
         "Delivered"
@@ -59185,7 +59185,7 @@ ${n}
   }
   function UNe() {
     var _a, _b;
-    const { user: t } = di(), { theme: e } = ra(), n = j.useRef(null), [A, r] = j.useState(0.92), [a, s] = j.useState([]), [o, l] = j.useState(false), [c, d] = j.useState(null), [g, u] = j.useState(null), [h, f] = j.useState(null), [C, p] = j.useState(false), [x, m] = j.useState(false), [Q, D] = j.useState(false), [S, k] = j.useState(false), [T, G] = j.useState(""), [P, K] = j.useState(false), [H, Y] = j.useState(null), [W, q] = j.useState(false), [oe, ie] = j.useState(""), [Ie, Ae] = j.useState(true), [le, re] = j.useState(null), ce = (xe, Ne = "success") => {
+    const { user: t } = oi(), { theme: e } = ra(), n = j.useRef(null), [A, r] = j.useState(0.92), [a, s] = j.useState([]), [o, l] = j.useState(false), [c, d] = j.useState(null), [g, u] = j.useState(null), [h, f] = j.useState(null), [C, p] = j.useState(false), [x, m] = j.useState(false), [Q, D] = j.useState(false), [S, k] = j.useState(false), [T, G] = j.useState(""), [P, K] = j.useState(false), [H, Y] = j.useState(null), [W, q] = j.useState(false), [oe, ie] = j.useState(""), [Ie, Ae] = j.useState(true), [le, re] = j.useState(null), ce = (xe, Ne = "success") => {
       Y({
         message: xe,
         type: Ne
@@ -59468,7 +59468,7 @@ ${n}
                                 children: [
                                   i.jsx("div", {
                                     className: Ke("w-10 h-10 shrink-0 rounded-xl flex items-center justify-center shadow-inner", ne ? "bg-emerald-500/10 text-emerald-500" : "bg-orange-500/10 text-orange-500"),
-                                    children: ne ? i.jsx(gi, {
+                                    children: ne ? i.jsx(di, {
                                       className: "w-5 h-5"
                                     }) : i.jsx(Oa, {
                                       className: "w-5 h-5"
@@ -59701,7 +59701,7 @@ ${n}
                                 children: [
                                   S ? i.jsx(wA, {
                                     className: "w-4 h-4 animate-spin"
-                                  }) : i.jsx(gi, {
+                                  }) : i.jsx(di, {
                                     className: "w-4 h-4"
                                   }),
                                   "Send to This Number"
@@ -59773,7 +59773,7 @@ ${n}
     });
   }
   const jNe = () => {
-    const { id: t } = Cf(), e = Ks(), { token: n } = di(), [A, r] = j.useState([]), [a, s] = j.useState([]), [o, l] = j.useState(true), [c, d] = j.useState(null), g = (u, h, f = []) => {
+    const { id: t } = Cf(), e = Ks(), { token: n } = oi(), [A, r] = j.useState([]), [a, s] = j.useState([]), [o, l] = j.useState(true), [c, d] = j.useState(null), g = (u, h, f = []) => {
       var _a, _b;
       const C = (u == null ? void 0 : u.modality) || (u == null ? void 0 : u.Modality), p = ((_a = u == null ? void 0 : u.metadata) == null ? void 0 : _a.testCode) || ((_b = u == null ? void 0 : u.metadata) == null ? void 0 : _b.TestCode) || (u == null ? void 0 : u.testCode) || (u == null ? void 0 : u.TestCode), x = (u == null ? void 0 : u.reportTemplateId) || (u == null ? void 0 : u.ReportTemplateId) || (u == null ? void 0 : u.templateId) || (u == null ? void 0 : u.TemplateId);
       if (!C) return h[0] || null;
@@ -59940,7 +59940,7 @@ ${n}
   };
   function zNe() {
     var _a;
-    const { user: t, logout: e } = di();
+    const { user: t, logout: e } = oi();
     Ks();
     const n = [
       {
@@ -60235,7 +60235,7 @@ ${n}
   }
   function ONe() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i2, _j2, _k2, _l;
-    const { theme: t } = ra(), { user: e, activeOversightBranchId: n } = di(), A = (e == null ? void 0 : e.role) === "Admin" || (e == null ? void 0 : e.role) === "SystemAdmin", [r, a] = j.useState(null), [s, o] = j.useState(true), l = Ks(), [c, d] = j.useState(true), [g, u] = j.useState([]), [h, f] = j.useState(null), [C, p] = j.useState(false);
+    const { theme: t } = ra(), { user: e, activeOversightBranchId: n } = oi(), A = (e == null ? void 0 : e.role) === "Admin" || (e == null ? void 0 : e.role) === "SystemAdmin", [r, a] = j.useState(null), [s, o] = j.useState(true), l = Ks(), [c, d] = j.useState(true), [g, u] = j.useState([]), [h, f] = j.useState(null), [C, p] = j.useState(false);
     j.useEffect(() => {
       A && (D(), S());
     }, [
@@ -61471,7 +61471,7 @@ ${n}
     return RSe(t, PNe(t), e);
   }
   function FSe() {
-    const { user: t } = di(), [e, n] = j.useState([]), [A, r] = j.useState(true), [a, s] = j.useState(false), [o, l] = j.useState("pending");
+    const { user: t } = oi(), [e, n] = j.useState([]), [A, r] = j.useState(true), [a, s] = j.useState(false), [o, l] = j.useState("pending");
     j.useEffect(() => {
       c();
     }, []);
@@ -61611,7 +61611,7 @@ ${n}
               }) : e.length === 0 ? i.jsxs("div", {
                 className: "h-full flex flex-col items-center justify-center text-zinc-600 border-2 border-dashed border-white/5 rounded-2xl",
                 children: [
-                  i.jsx(gi, {
+                  i.jsx(di, {
                     className: "h-12 w-12 opacity-10 mb-4"
                   }),
                   i.jsx("p", {
@@ -61774,7 +61774,7 @@ ${n}
                             children: [
                               a ? i.jsx(nc, {
                                 className: "h-3 w-3 animate-spin"
-                              }) : i.jsx(gi, {
+                              }) : i.jsx(di, {
                                 className: "h-3 w-3"
                               }),
                               "Fulfill Request"
@@ -62259,7 +62259,7 @@ ${n}
                               })
                             ]
                           }),
-                          h === He.roleId && i.jsx(gi, {
+                          h === He.roleId && i.jsx(di, {
                             className: "h-3.5 w-3.5 shrink-0 ml-1"
                           })
                         ]
@@ -62327,7 +62327,7 @@ ${n}
                             className: "truncate font-semibold",
                             children: et
                           }),
-                          W === He.testId && i.jsx(gi, {
+                          W === He.testId && i.jsx(di, {
                             className: "h-3.5 w-3.5 shrink-0 ml-1"
                           })
                         ]
@@ -64200,7 +64200,7 @@ ${n}
       }
     };
     function $({ selectedTest: Oe }) {
-      const [Et, nt] = j.useState(null), [bn, Cn] = j.useState(true), [$t, Un] = j.useState([]), [fn, vA] = j.useState([]), [DA, Fr] = j.useState([]), [Fn, KA] = j.useState([]), [ni, hr] = j.useState([]), [Br, ki] = j.useState(""), [oa, rl] = j.useState(""), [iA, li] = j.useState(1), [la, Rt] = j.useState("units"), [Ic, fc] = j.useState(0), Fs = DA.find((vn) => vn.consumableId === Br);
+      const [Et, nt] = j.useState(null), [bn, Cn] = j.useState(true), [$t, Un] = j.useState([]), [fn, vA] = j.useState([]), [DA, Fr] = j.useState([]), [Fn, KA] = j.useState([]), [ni, hr] = j.useState([]), [Br, ki] = j.useState(""), [oa, rl] = j.useState(""), [iA, ci] = j.useState(1), [la, Rt] = j.useState("units"), [Ic, fc] = j.useState(0), Fs = DA.find((vn) => vn.consumableId === Br);
       j.useEffect(() => {
         Fs && Rt(tJ(Fs.unitOfMeasure));
       }, [
@@ -64472,7 +64472,7 @@ ${n}
                                 step: "any",
                                 min: "0.0001",
                                 value: iA,
-                                onChange: (vn) => li(vn.target.value),
+                                onChange: (vn) => ci(vn.target.value),
                                 className: "w-20 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs text-center outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold"
                               }),
                               i.jsx("select", {
@@ -64499,7 +64499,7 @@ ${n}
                             step: "1",
                             min: "1",
                             value: iA,
-                            onChange: (vn) => li(vn.target.value),
+                            onChange: (vn) => ci(vn.target.value),
                             className: "w-full border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs text-center outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold"
                           })
                         ]
@@ -64988,7 +64988,7 @@ ${n}
       const fn = Oe.clientX, vA = Oe.clientY, Fr = 1 / ((er || 1) * 3.78095), Fn = (ni) => {
         const hr = ni.clientX - fn, Br = ni.clientY - vA, ki = hr * Fr, oa = Br * Fr;
         let rl = Cn + ki, iA = Un ? $t - oa : $t + oa;
-        rl = Math.max(0, Math.min(210, rl)), iA = Math.max(0, Math.min(297, iA)), WA((li) => li.map((la) => la.id === Et ? {
+        rl = Math.max(0, Math.min(210, rl)), iA = Math.max(0, Math.min(297, iA)), WA((ci) => ci.map((la) => la.id === Et ? {
           ...la,
           [nt]: Math.round(rl * 10) / 10,
           [bn]: Math.round(iA * 10) / 10
@@ -65013,7 +65013,7 @@ ${n}
         });
       };
       document.addEventListener("pointermove", Fn), document.addEventListener("pointerup", KA);
-    }, [mr, vr] = j.useState((A == null ? void 0 : A.name) || ""), [Qr, fi] = j.useState((A == null ? void 0 : A.code) || ""), [mi, YA] = j.useState((A == null ? void 0 : A.department) || ""), [on, Bn] = j.useState((A == null ? void 0 : A.isProfile) || false), [Rn, Sn] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [Tt, en] = j.useState((A == null ? void 0 : A.category) || "General"), [Qn, uA] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Mn, BA] = j.useState(false), [$r, FA] = j.useState("formula"), [mA, Qi] = j.useState(""), [ia, cr] = j.useState(""), [Dr, Ji] = j.useState(false), [wa, ei] = j.useState(""), [ks, hs] = j.useState(false), [jt, Ha] = j.useState(""), [Qt, Zt] = j.useState(""), [zn, $n] = j.useState(false), [rA, kA] = j.useState(""), [oi, nr] = j.useState(""), [Si, Wr] = j.useState(false), [Ci, Rs] = j.useState(""), [RA, CA] = j.useState(""), [bA, Cr] = j.useState(false), [vi, De] = j.useState(""), [je, We] = j.useState(""), [Ve, gt] = j.useState(false), [ct, Mt] = j.useState(""), [Ct, Ft] = j.useState(""), [xt, dn] = j.useState(""), [tn, An] = j.useState(""), [En, Ze] = j.useState(""), [ft, _t] = j.useState(false), [In, pA] = j.useState(""), [hA, qr] = j.useState(""), [Zr, pr] = j.useState(""), [qA, HA] = j.useState(false), [ur, xr] = j.useState(""), [GA, Ni] = j.useState(""), [lA, Zn] = j.useState(""), [Pr, Wi] = j.useState(false), [ji, Lo] = j.useState(""), [Vs, Ng] = j.useState(""), [Fl, Ku] = j.useState(""), [tl, zc] = j.useState(false), [Tl, Sg] = j.useState(""), [Oc, Vu] = j.useState(""), [jd, Wu] = j.useState(""), [Go, nl] = j.useState(false), [dc, Hc] = j.useState(""), [kg, Qh] = j.useState(""), [_c, qu] = j.useState(""), [Ws, qs] = j.useState(false), [Pc, Qe] = j.useState(""), [nn, Mr] = j.useState(""), [ti, aa] = j.useState(""), [ba, bf] = j.useState(false), [zd, aB] = j.useState(""), [QA, sa] = j.useState(""), [Rg, Yc] = j.useState(""), [Al, Od] = j.useState(false), [Mg, Hd] = j.useState(""), [uc, _d] = j.useState(""), [Ll, xh] = j.useState(""), Fg = (Oe) => {
+    }, [mr, vr] = j.useState((A == null ? void 0 : A.name) || ""), [Qr, fi] = j.useState((A == null ? void 0 : A.code) || ""), [mi, YA] = j.useState((A == null ? void 0 : A.department) || ""), [on, Bn] = j.useState((A == null ? void 0 : A.isProfile) || false), [Rn, Sn] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [Tt, en] = j.useState((A == null ? void 0 : A.category) || "General"), [Qn, uA] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Mn, BA] = j.useState(false), [$r, FA] = j.useState("formula"), [mA, Qi] = j.useState(""), [ia, cr] = j.useState(""), [Dr, Ji] = j.useState(false), [wa, ei] = j.useState(""), [ks, hs] = j.useState(false), [jt, Ha] = j.useState(""), [Qt, Zt] = j.useState(""), [zn, $n] = j.useState(false), [rA, kA] = j.useState(""), [li, nr] = j.useState(""), [Si, Wr] = j.useState(false), [Ci, Rs] = j.useState(""), [RA, CA] = j.useState(""), [bA, Cr] = j.useState(false), [vi, De] = j.useState(""), [je, We] = j.useState(""), [Ve, gt] = j.useState(false), [ct, Mt] = j.useState(""), [Ct, Ft] = j.useState(""), [xt, dn] = j.useState(""), [tn, An] = j.useState(""), [En, Ze] = j.useState(""), [ft, _t] = j.useState(false), [In, pA] = j.useState(""), [hA, qr] = j.useState(""), [Zr, pr] = j.useState(""), [qA, HA] = j.useState(false), [ur, xr] = j.useState(""), [GA, Ni] = j.useState(""), [lA, Zn] = j.useState(""), [Pr, Wi] = j.useState(false), [ji, Lo] = j.useState(""), [Vs, Ng] = j.useState(""), [Fl, Ku] = j.useState(""), [tl, zc] = j.useState(false), [Tl, Sg] = j.useState(""), [Oc, Vu] = j.useState(""), [jd, Wu] = j.useState(""), [Go, nl] = j.useState(false), [dc, Hc] = j.useState(""), [kg, Qh] = j.useState(""), [_c, qu] = j.useState(""), [Ws, qs] = j.useState(false), [Pc, Qe] = j.useState(""), [nn, Mr] = j.useState(""), [ti, aa] = j.useState(""), [ba, bf] = j.useState(false), [zd, aB] = j.useState(""), [QA, sa] = j.useState(""), [Rg, Yc] = j.useState(""), [Al, Od] = j.useState(false), [Mg, Hd] = j.useState(""), [uc, _d] = j.useState(""), [Ll, xh] = j.useState(""), Fg = (Oe) => {
       r(Oe), localStorage.setItem("synos_selected_test_id", Oe.id), vr(Oe.name), fi(Oe.code), YA(Oe.department), Bn(Oe.isProfile), Sn(Oe.specimenTypeCode || "SERUM"), en(Oe.category || "General"), uA(Oe.modalityId || ""), lr(false), BA(false), !Oe.isProfile && Ht === "profile-builder" && jn("parameters");
     }, vf = () => {
       const Oe = ie.find((Cn) => Cn.name === mi), Et = Oe ? Oe.macroDepartment === "Radiology" : mi === "Radiology" || mi === "RAD";
@@ -65380,16 +65380,16 @@ Please use a unique code.`);
         const $t = A.minRange !== void 0 && A.minRange !== null && A.minRange !== "" ? Number(A.minRange) : null, Un = A.maxRange !== void 0 && A.maxRange !== null && A.maxRange !== "" ? Number(A.maxRange) : null, fn = {
           ...A,
           parameters: (A.parameters || []).map((iA) => {
-            const li = iA.minRange !== void 0 && iA.minRange !== null && iA.minRange !== "" ? Number(iA.minRange) : null, la = iA.maxRange !== void 0 && iA.maxRange !== null && iA.maxRange !== "" ? Number(iA.maxRange) : null;
+            const ci = iA.minRange !== void 0 && iA.minRange !== null && iA.minRange !== "" ? Number(iA.minRange) : null, la = iA.maxRange !== void 0 && iA.maxRange !== null && iA.maxRange !== "" ? Number(iA.maxRange) : null;
             return {
               ...iA,
-              minRange: li !== null && !isNaN(li) ? li : void 0,
+              minRange: ci !== null && !isNaN(ci) ? ci : void 0,
               maxRange: la !== null && !isNaN(la) ? la : void 0
             };
           })
         }, vA = (iA) => {
           var _a2;
-          const li = ie.find((Rt) => Rt.name === iA.department), la = li ? li.macroDepartment === "Radiology" : iA.department === "Radiology" || iA.department === "RAD";
+          const ci = ie.find((Rt) => Rt.name === iA.department), la = ci ? ci.macroDepartment === "Radiology" : iA.department === "Radiology" || iA.department === "RAD";
           return {
             TestCode: iA.code,
             TestName: iA.name,
@@ -65481,24 +65481,24 @@ Please use a unique code.`);
               ...fn,
               id: ni
             };
-          } catch (li) {
-            console.error(`Failed to update test ${fn.code} (${ni}):`, li), Br.push({
+          } catch (ci) {
+            console.error(`Failed to update test ${fn.code} (${ni}):`, ci), Br.push({
               code: fn.code,
-              error: li.message || li.toString() || "Unknown error"
+              error: ci.message || ci.toString() || "Unknown error"
             });
           }
         } else {
           const iA = vA(fn);
           try {
-            const li = await Ln.createTest(iA), la = li.testId || li.TestId || li.id;
+            const ci = await Ln.createTest(iA), la = ci.testId || ci.TestId || ci.id;
             hr = {
               ...fn,
               id: la
             };
-          } catch (li) {
-            console.error(`Failed to create test ${fn.code}:`, li), Br.push({
+          } catch (ci) {
+            console.error(`Failed to create test ${fn.code}:`, ci), Br.push({
               code: fn.code,
-              error: li.message || li.toString() || "Unknown error"
+              error: ci.message || ci.toString() || "Unknown error"
             });
           }
         }
@@ -65506,11 +65506,11 @@ Please use a unique code.`);
         hr && (ki = t.map((iA) => iA.id === A.id ? hr : iA), oa = hr);
         const rl = await Ln.getTests();
         if (u(rl || []), e(ki), oa) {
-          const iA = ki.find((li) => li.id === oa.id);
+          const iA = ki.find((ci) => ci.id === oa.id);
           iA && (oa = iA), r(oa), localStorage.setItem("synos_selected_test_id", oa.id);
         }
         if (Br.length > 0) {
-          const iA = Br.map((li) => `- ${li.code}: ${li.error}`).join(`
+          const iA = Br.map((ci) => `- ${ci.code}: ${ci.error}`).join(`
 `);
           alert(`Failed to save catalog changes:
 
@@ -69151,7 +69151,7 @@ Would you like to switch to "${$t.childTestName}" now?`) && Fg(DA) : alert(`Chil
     };
   };
   function PSe() {
-    const { user: t } = di(), { templates: e, setTemplates: n, loading: A, refresh: r } = cQe(), [a, s] = j.useState(null);
+    const { user: t } = oi(), { templates: e, setTemplates: n, loading: A, refresh: r } = cQe(), [a, s] = j.useState(null);
     j.useEffect(() => {
       if (e.length > 0) if (!a) s(e[0]);
       else {
@@ -73471,7 +73471,7 @@ Would you like to switch to "${$t.childTestName}" now?`) && Fg(DA) : alert(`Chil
       WA.current && tr.current && (WA.current.scrollLeft = tr.current.scrollLeft);
     }, mr = () => {
       WA.current && tr.current && (tr.current.scrollLeft = WA.current.scrollLeft);
-    }, [vr, Qr] = j.useState([]), [fi, mi] = j.useState([]), [YA, on] = j.useState(null), [Bn, Rn] = j.useState(false), [Sn, Tt] = j.useState(null), [en, Qn] = j.useState(false), [uA, Mn] = j.useState([]), [BA, $r] = j.useState([]), [FA, mA] = j.useState(null), [Qi, ia] = j.useState(false), [cr, Dr] = j.useState(null), [Ji, wa] = j.useState(false), [ei, ks] = j.useState([]), [hs, jt] = j.useState(0), [Ha] = j.useState(15), [Qt, Zt] = j.useState(0), [zn, $n] = j.useState([]), [rA, kA] = j.useState(""), [oi, nr] = j.useState(""), [Si, Wr] = j.useState(""), [Ci, Rs] = j.useState(""), [RA, CA] = j.useState(""), [bA, Cr] = j.useState(null), [vi, De] = j.useState([]), [je, We] = j.useState([]), [Ve, gt] = j.useState(null), [ct, Mt] = j.useState(false), [Ct, Ft] = j.useState(null), [xt, dn] = j.useState(false), [tn, An] = j.useState({
+    }, [vr, Qr] = j.useState([]), [fi, mi] = j.useState([]), [YA, on] = j.useState(null), [Bn, Rn] = j.useState(false), [Sn, Tt] = j.useState(null), [en, Qn] = j.useState(false), [uA, Mn] = j.useState([]), [BA, $r] = j.useState([]), [FA, mA] = j.useState(null), [Qi, ia] = j.useState(false), [cr, Dr] = j.useState(null), [Ji, wa] = j.useState(false), [ei, ks] = j.useState([]), [hs, jt] = j.useState(0), [Ha] = j.useState(15), [Qt, Zt] = j.useState(0), [zn, $n] = j.useState([]), [rA, kA] = j.useState(""), [li, nr] = j.useState(""), [Si, Wr] = j.useState(""), [Ci, Rs] = j.useState(""), [RA, CA] = j.useState(""), [bA, Cr] = j.useState(null), [vi, De] = j.useState([]), [je, We] = j.useState([]), [Ve, gt] = j.useState(null), [ct, Mt] = j.useState(false), [Ct, Ft] = j.useState(null), [xt, dn] = j.useState(false), [tn, An] = j.useState({
       paperWidth: "80mm",
       textSize: "standard",
       fontFamily: "sans-serif",
@@ -73643,7 +73643,7 @@ Would you like to switch to "${$t.childTestName}" now?`) && Fg(DA) : alert(`Chil
       l(true);
       try {
         let Qe = `?limit=${Ha}&offset=${Qt}`;
-        rA && (Qe += `&actorUserId=${rA}`), oi && (Qe += `&resourceType=${oi}`), Si && (Qe += `&action=${Si}`), Ci && (Qe += `&startDate=${N2(Ci)}`), RA && (Qe += `&endDate=${N2(RA)}`);
+        rA && (Qe += `&actorUserId=${rA}`), li && (Qe += `&resourceType=${li}`), Si && (Qe += `&action=${Si}`), Ci && (Qe += `&startDate=${N2(Ci)}`), RA && (Qe += `&endDate=${N2(RA)}`);
         const nn = await Ln.getAuditLogs(Qe);
         if (ks((nn == null ? void 0 : nn.logs) || []), jt((nn == null ? void 0 : nn.totalCount) || 0), zn.length === 0) {
           const Mr = await Ln.getUsers();
@@ -76346,7 +76346,7 @@ Backup ID: ${nn == null ? void 0 : nn.backupId}`);
                                   children: "Resource Type"
                                 }),
                                 i.jsxs("select", {
-                                  value: oi,
+                                  value: li,
                                   onChange: (Qe) => {
                                     nr(Qe.target.value), Zt(0);
                                   },
@@ -80202,7 +80202,7 @@ Please verify or update your License Key in System Settings.`);
                                   }), Q(false), S(""));
                                 },
                                 className: "bg-synos-primary text-white p-1 rounded-md",
-                                children: i.jsx(gi, {
+                                children: i.jsx(di, {
                                   className: "w-3.5 h-3.5"
                                 })
                               }),
@@ -80318,7 +80318,7 @@ Please verify or update your License Key in System Settings.`);
     });
   };
   function qSe() {
-    const { user: t } = di(), [e, n] = j.useState("manual"), [A, r] = j.useState([]), [a, s] = j.useState([]), [o, l] = j.useState(""), [c, d] = j.useState(false), [g, u] = j.useState(false), [h, f] = j.useState(null), [C, p] = j.useState({
+    const { user: t } = oi(), [e, n] = j.useState("manual"), [A, r] = j.useState([]), [a, s] = j.useState([]), [o, l] = j.useState(""), [c, d] = j.useState(false), [g, u] = j.useState(false), [h, f] = j.useState(null), [C, p] = j.useState({
       consumableId: "",
       quantity: "",
       batchNumber: "",
@@ -80557,7 +80557,7 @@ Please verify or update your License Key in System Settings.`);
         g && i.jsxs("div", {
           className: "bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl flex items-center gap-3 text-emerald-500 animate-in slide-in-from-top-4",
           children: [
-            i.jsx(gi, {
+            i.jsx(di, {
               className: "w-5 h-5 shrink-0"
             }),
             i.jsx("p", {
@@ -82147,7 +82147,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                         i.jsxs("div", {
                           className: "w-full py-4 bg-emerald-500 text-white rounded-xl text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2",
                           children: [
-                            i.jsx(gi, {
+                            i.jsx(di, {
                               className: "w-4 h-4"
                             }),
                             "Active Commitment"
@@ -82969,7 +82969,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               children: [
                 i.jsx("div", {
                   className: "w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2",
-                  children: i.jsx(gi, {
+                  children: i.jsx(di, {
                     className: "w-10 h-10 text-emerald-500"
                   })
                 }),
@@ -83344,7 +83344,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           }) : i.jsxs("span", {
                             className: "flex items-center gap-1.5 text-[9px] font-semibold uppercase text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit border border-emerald-500/20",
                             children: [
-                              i.jsx(gi, {
+                              i.jsx(di, {
                                 className: "w-3 h-3"
                               }),
                               "Healthy"
@@ -83981,7 +83981,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           }) : t.length === 0 ? i.jsxs("div", {
             className: "h-full flex items-center justify-center border-2 border-dashed border-zinc-800/10 rounded-xl flex-col gap-2",
             children: [
-              i.jsx(gi, {
+              i.jsx(di, {
                 className: "w-8 h-8 text-emerald-500/20"
               }),
               i.jsx("p", {
@@ -84294,7 +84294,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     });
   };
   function ike() {
-    const [t, e] = j.useState("ledger"), [n, A] = j.useState(null), [r, a] = j.useState((/* @__PURE__ */ new Date()).toISOString()), [s, o] = j.useState("Not Synced"), { user: l, activeOversightBranchId: c } = di(), d = (l == null ? void 0 : l.role) === "Admin" || (l == null ? void 0 : l.role) === "SystemAdmin", [g, u] = j.useState(true), [h, f] = j.useState([]);
+    const [t, e] = j.useState("ledger"), [n, A] = j.useState(null), [r, a] = j.useState((/* @__PURE__ */ new Date()).toISOString()), [s, o] = j.useState("Not Synced"), { user: l, activeOversightBranchId: c } = oi(), d = (l == null ? void 0 : l.role) === "Admin" || (l == null ? void 0 : l.role) === "SystemAdmin", [g, u] = j.useState(true), [h, f] = j.useState([]);
     j.useEffect(() => {
       d && C();
     }, [
@@ -84467,7 +84467,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
   }
   function ake() {
     var _a;
-    const { user: t } = di(), e = bg(), n = [
+    const { user: t } = oi(), e = bg(), n = [
       {
         name: "Overview",
         path: "/finance",
@@ -84780,7 +84780,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     });
   }
   const oke = () => {
-    const t = Ks(), [e, n] = j.useState(true), { user: A, activeOversightBranchId: r } = di(), a = (A == null ? void 0 : A.role) === "Admin" || (A == null ? void 0 : A.role) === "SystemAdmin", [s, o] = j.useState(true), [l, c] = j.useState("month"), [d, g] = j.useState([]), [u, h] = j.useState(null), [f, C] = j.useState([]), [p, x] = j.useState([]), [m, Q] = j.useState([]), [D, S] = j.useState([]), [k, T] = j.useState(null), [G, P] = j.useState([]), [K, H] = j.useState([]), [Y, W] = j.useState([]), [q, oe] = j.useState([]);
+    const t = Ks(), [e, n] = j.useState(true), { user: A, activeOversightBranchId: r } = oi(), a = (A == null ? void 0 : A.role) === "Admin" || (A == null ? void 0 : A.role) === "SystemAdmin", [s, o] = j.useState(true), [l, c] = j.useState("month"), [d, g] = j.useState([]), [u, h] = j.useState(null), [f, C] = j.useState([]), [p, x] = j.useState([]), [m, Q] = j.useState([]), [D, S] = j.useState([]), [k, T] = j.useState(null), [G, P] = j.useState([]), [K, H] = j.useState([]), [Y, W] = j.useState([]), [q, oe] = j.useState([]);
     j.useEffect(() => {
       a && ie();
     }, [
@@ -86405,7 +86405,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       })
     ]
   }), uke = () => {
-    const { user: t } = di(), [e, n] = j.useState([]), [A, r] = j.useState(true), [a, s] = j.useState(false), [o, l] = j.useState(null), [c, d] = j.useState("All"), [g, u] = j.useState("All"), [h, f] = j.useState("All Time"), [C, p] = j.useState({
+    const { user: t } = oi(), [e, n] = j.useState([]), [A, r] = j.useState(true), [a, s] = j.useState(false), [o, l] = j.useState(null), [c, d] = j.useState("All"), [g, u] = j.useState("All"), [h, f] = j.useState("All Time"), [C, p] = j.useState({
       start: "",
       end: ""
     });
@@ -86714,7 +86714,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       ]
     });
   }, hke = () => {
-    const { user: t } = di(), [e, n] = j.useState([]), [A, r] = j.useState([]), [a, s] = j.useState(true), [o, l] = j.useState(null), [c, d] = j.useState([]), [g, u] = j.useState(false), [h, f] = j.useState(null);
+    const { user: t } = oi(), [e, n] = j.useState([]), [A, r] = j.useState([]), [a, s] = j.useState(true), [o, l] = j.useState(null), [c, d] = j.useState([]), [g, u] = j.useState(false), [h, f] = j.useState(null);
     j.useEffect(() => {
       C();
     }, []);
@@ -87392,7 +87392,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                         className: "flex -space-x-2",
                         children: i.jsx("div", {
                           className: "w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center border-2 border-white dark:border-zinc-900",
-                          children: i.jsx(gi, {
+                          children: i.jsx(di, {
                             className: "w-3 h-3 text-emerald-500"
                           })
                         })
@@ -87606,7 +87606,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                       className: "w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"
                     }) : i.jsxs(i.Fragment, {
                       children: [
-                        i.jsx(gi, {
+                        i.jsx(di, {
                           className: "w-6 h-6"
                         }),
                         l ? "UPDATE REGISTRY" : "COMMIT TO MASTER DATA"
@@ -87836,7 +87836,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               title: "Paid This Month",
               value: `\u20B9${T.toLocaleString("en-IN")}`,
               type: "positive",
-              icon: gi
+              icon: di
             }),
             i.jsx(S2, {
               title: "Monthly Budget",
@@ -88260,7 +88260,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 className: "w-full bg-emerald-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50",
                 children: [
                   l ? "Recording Ledger Update..." : "Save Recorded Payment",
-                  i.jsx(gi, {
+                  i.jsx(di, {
                     className: "w-5 h-5"
                   })
                 ]
@@ -88555,7 +88555,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           disabled: c || !h.description || !h.amount,
                           className: "px-6 py-2.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md hover:bg-synos-primary/95 transition-all flex items-center gap-2 disabled:opacity-50",
                           children: [
-                            i.jsx(gi, {
+                            i.jsx(di, {
                               className: "w-4 h-4"
                             }),
                             c ? "Saving..." : g ? "Save Template Changes" : h.cycle === "One-Time" ? "Add One-Time Bill" : "Register & Initialize Recurring Template"
@@ -88891,7 +88891,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 className: "w-full bg-synos-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50",
                 children: [
                   l ? "Processing..." : "Authorize Settlement",
-                  i.jsx(gi, {
+                  i.jsx(di, {
                     className: "w-5 h-5"
                   })
                 ]
@@ -89715,7 +89715,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                         children: [
                           i.jsx("div", {
                             className: "w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center",
-                            children: i.jsx(gi, {
+                            children: i.jsx(di, {
                               className: "w-4 h-4 text-emerald-500"
                             })
                           }),
@@ -89774,7 +89774,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                         })
                       ]
                     }),
-                    i.jsx(gi, {
+                    i.jsx(di, {
                       className: "w-8 h-8 opacity-20"
                     })
                   ]
@@ -89897,7 +89897,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 className: "w-full bg-synos-primary text-white font-black py-5 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50",
                 children: [
                   s ? "Recording..." : "Authorize Payout",
-                  i.jsx(gi, {
+                  i.jsx(di, {
                     className: "w-5 h-5"
                   })
                 ]
@@ -90646,7 +90646,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               children: [
                 i.jsx("div", {
                   className: "w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto",
-                  children: i.jsx(gi, {
+                  children: i.jsx(di, {
                     className: "w-8 h-8"
                   })
                 }),
@@ -93395,7 +93395,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 children: [
                   i.jsx("div", {
                     className: "p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl",
-                    children: i.jsx(gi, {
+                    children: i.jsx(di, {
                       size: 20
                     })
                   }),
@@ -94830,7 +94830,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 }) : n.payables.length === 0 ? i.jsxs("div", {
                   className: "py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl",
                   children: [
-                    i.jsx(gi, {
+                    i.jsx(di, {
                       size: 32,
                       className: "mx-auto mb-3 opacity-20 text-emerald-500"
                     }),
@@ -96305,7 +96305,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       {
         id: "Present",
         label: "Present",
-        icon: gi,
+        icon: di,
         color: "text-emerald-500",
         bg: "bg-emerald-500/10"
       },
@@ -97844,7 +97844,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     i.jsxs("div", {
                       className: "flex items-center gap-2 text-emerald-600",
                       children: [
-                        i.jsx(gi, {
+                        i.jsx(di, {
                           className: "w-4 h-4"
                         }),
                         i.jsx("h3", {
@@ -98010,7 +98010,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   children: [
                     i.jsx("div", {
                       className: "w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/30",
-                      children: i.jsx(gi, {
+                      children: i.jsx(di, {
                         className: "w-6 h-6 text-emerald-500"
                       })
                     }),
@@ -102756,7 +102756,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     });
   };
   function d5e() {
-    const t = Ks(), e = bg(), n = [
+    const t = Ks(), e = bg(), { user: n } = oi(), A = [
       {
         id: "dashboard",
         label: "Overview",
@@ -102783,54 +102783,116 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       }
     ];
     return i.jsxs("div", {
-      className: "h-screen w-screen bg-[#F5FCFF] dark:bg-zinc-950 flex flex-col overflow-hidden font-sans",
+      className: "h-screen w-screen bg-[#F8FAFC] dark:bg-zinc-950 flex flex-col overflow-hidden font-sans relative",
       children: [
-        i.jsx(vg, {}),
         i.jsxs("div", {
-          className: "flex-1 flex overflow-hidden",
+          className: "fixed inset-0 pointer-events-none overflow-hidden z-[0] dark:hidden",
           children: [
-            i.jsxs("div", {
-              className: "hidden md:flex w-64 flex-col border-r border-black/5 dark:border-white/5 bg-white dark:bg-zinc-900 p-4",
+            i.jsx("div", {
+              className: "absolute inset-0 opacity-[0.015]",
+              style: {
+                backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnWdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")'
+              }
+            }),
+            i.jsx("div", {
+              className: "absolute top-[-15%] left-[-5%] w-[50%] h-[55%]",
+              style: {
+                background: "radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, rgba(6, 182, 212, 0) 70%)"
+              }
+            }),
+            i.jsx("div", {
+              className: "absolute top-[-10%] right-[10%] w-[45%] h-[50%]",
+              style: {
+                background: "radial-gradient(circle at center, rgba(37, 99, 235, 0.03) 0%, rgba(37, 99, 235, 0) 80%)"
+              }
+            }),
+            i.jsx("div", {
+              className: "absolute top-[-25%] right-[-10%] w-[60%] h-[65%]",
+              style: {
+                background: "radial-gradient(circle at 60% 30%, rgba(52, 211, 153, 0.04) 0%, rgba(52, 211, 153, 0) 70%)"
+              }
+            })
+          ]
+        }),
+        i.jsx(vg, {
+          syncStatus: "Synced"
+        }),
+        i.jsxs("div", {
+          className: "flex-1 flex overflow-hidden relative z-10",
+          children: [
+            i.jsxs("aside", {
+              style: {
+                backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnWdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")',
+                backgroundBlendMode: "overlay",
+                backgroundRepeat: "repeat"
+              },
+              className: "hidden md:flex w-64 flex-col border-r border-zinc-200 dark:border-zinc-800/80 bg-gradient-to-b from-white/98 to-zinc-50/95 dark:bg-zinc-950 p-4 justify-between",
               children: [
                 i.jsxs("div", {
-                  className: "mb-6 px-2",
                   children: [
-                    i.jsx("h2", {
-                      className: "text-lg font-bold text-zinc-900 dark:text-white",
-                      children: "My HR"
+                    i.jsxs("div", {
+                      className: "mb-6 px-2 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/60",
+                      children: [
+                        i.jsx("h2", {
+                          className: "text-base font-extrabold tracking-tight text-zinc-900 dark:text-white uppercase",
+                          children: "My HR Portal"
+                        }),
+                        i.jsx("p", {
+                          className: "text-xs font-medium text-zinc-500 mt-0.5",
+                          children: "Personal Workforce Space"
+                        })
+                      ]
                     }),
-                    i.jsx("p", {
-                      className: "text-xs text-zinc-500",
-                      children: "Personal Workforce Space"
+                    i.jsx("nav", {
+                      className: "space-y-1",
+                      children: A.map((r) => {
+                        const a = e.pathname === r.path;
+                        return i.jsxs("button", {
+                          onClick: () => t(r.path),
+                          className: Ke("w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border", a ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 shadow-xs" : "border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-white"),
+                          children: [
+                            i.jsx(r.icon, {
+                              className: Ke("w-4 h-4", a ? "text-indigo-600 dark:text-indigo-400" : "opacity-60")
+                            }),
+                            r.label
+                          ]
+                        }, r.id);
+                      })
                     })
                   ]
                 }),
-                i.jsx("nav", {
-                  className: "space-y-1",
-                  children: n.map((A) => {
-                    const r = e.pathname === A.path;
-                    return i.jsxs("button", {
-                      onClick: () => t(A.path),
-                      className: Ke("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all", r ? "bg-synos-primary/10 text-synos-primary shadow-sm" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/5"),
+                i.jsxs("div", {
+                  className: "pt-4 border-t border-zinc-200/80 dark:border-zinc-800/60 px-2 flex items-center gap-3",
+                  children: [
+                    i.jsx("div", {
+                      className: "w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center",
+                      children: (n == null ? void 0 : n.name) ? n.name.substring(0, 2).toUpperCase() : "HR"
+                    }),
+                    i.jsxs("div", {
+                      className: "flex-1 min-w-0",
                       children: [
-                        i.jsx(A.icon, {
-                          className: Ke("w-4 h-4", r ? "text-synos-primary" : "opacity-60")
+                        i.jsx("p", {
+                          className: "text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate",
+                          children: (n == null ? void 0 : n.name) || "Staff User"
                         }),
-                        A.label
+                        i.jsx("p", {
+                          className: "text-[10px] text-zinc-500 truncate",
+                          children: (n == null ? void 0 : n.role) || "Employee"
+                        })
                       ]
-                    }, A.id);
-                  })
+                    })
+                  ]
                 })
               ]
             }),
             i.jsxs("main", {
-              className: "flex-1 overflow-y-auto p-4 md:p-8 bg-zinc-50 dark:bg-zinc-950/50",
+              className: "flex-1 overflow-y-auto p-4 md:p-8",
               children: [
                 i.jsx("div", {
                   className: "md:hidden mb-4",
                   children: i.jsxs("button", {
                     onClick: () => t(-1),
-                    className: "flex items-center gap-2 text-zinc-500 text-sm py-2",
+                    className: "flex items-center gap-2 text-zinc-500 text-xs font-bold py-2",
                     children: [
                       i.jsx(km, {
                         className: "w-4 h-4"
@@ -102840,7 +102902,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   })
                 }),
                 i.jsx("div", {
-                  className: "w-full space-y-6",
+                  className: "w-full space-y-6 max-w-7xl mx-auto",
                   children: i.jsx(dk, {})
                 })
               ]
@@ -102848,22 +102910,22 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           ]
         }),
         i.jsx("div", {
-          className: "md:hidden flex items-center justify-around h-16 border-t border-black/5 dark:border-white/5 bg-white dark:bg-zinc-900 px-2 pb-safe",
-          children: n.map((A) => {
-            const r = e.pathname === A.path;
+          className: "md:hidden flex items-center justify-around h-16 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-2 pb-safe z-20",
+          children: A.map((r) => {
+            const a = e.pathname === r.path;
             return i.jsxs("button", {
-              onClick: () => t(A.path),
-              className: Ke("flex flex-col items-center gap-1 flex-1 py-1 transition-all", r ? "text-synos-primary" : "text-zinc-500"),
+              onClick: () => t(r.path),
+              className: Ke("flex flex-col items-center gap-1 flex-1 py-1 transition-all", a ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-zinc-500"),
               children: [
-                i.jsx(A.icon, {
+                i.jsx(r.icon, {
                   className: "w-5 h-5"
                 }),
                 i.jsx("span", {
                   className: "text-[10px] font-medium",
-                  children: A.label
+                  children: r.label
                 })
               ]
-            }, A.id);
+            }, r.id);
           })
         })
       ]
@@ -102879,7 +102941,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     markException: (t) => an.post("/api/v1/attendance/exception", t)
   };
   function u5e() {
-    const { user: t } = di(), [e, n] = j.useState({
+    const { user: t } = oi(), [e, n] = j.useState({
       presentDays: 0,
       absentDays: 0,
       pendingLeaves: 0,
@@ -102961,31 +103023,31 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           className: "grid grid-cols-1 lg:grid-cols-2 gap-6",
           children: [
             i.jsxs("section", {
-              className: "bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 shadow-sm",
+              className: "synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800",
               children: [
                 i.jsxs("h2", {
-                  className: "text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2",
+                  className: "text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white mb-4 flex items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-3",
                   children: [
                     i.jsx(Ns, {
-                      className: "w-5 h-5 text-zinc-400"
+                      className: "w-4 h-4 text-indigo-500"
                     }),
                     "Recent Activity"
                   ]
                 }),
                 i.jsx("div", {
-                  className: "space-y-4",
+                  className: "space-y-3",
                   children: A.length > 0 ? A.slice(0, 5).map((o, l) => i.jsxs("div", {
-                    className: "flex items-center justify-between py-2 border-b border-black/5 dark:border-white/5 last:border-0",
+                    className: "flex items-center justify-between py-2 border-b dark:border-zinc-800/60 border-zinc-100 last:border-0",
                     children: [
                       i.jsxs("div", {
                         className: "flex flex-col",
                         children: [
                           i.jsx("span", {
-                            className: "text-sm font-medium text-zinc-900 dark:text-zinc-100",
+                            className: "text-xs font-bold text-zinc-800 dark:text-zinc-200",
                             children: o.status
                           }),
                           i.jsx("span", {
-                            className: "text-xs text-zinc-500",
+                            className: "text-[10px] font-mono text-zinc-500",
                             children: new Date(o.timestamp).toLocaleDateString()
                           })
                         ]
@@ -102995,20 +103057,20 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                       })
                     ]
                   }, l)) : i.jsx("div", {
-                    className: "py-8 text-center text-zinc-500 text-sm italic",
+                    className: "py-8 text-center text-zinc-500 text-xs italic",
                     children: "No recent activity recorded."
                   })
                 })
               ]
             }),
             i.jsxs("section", {
-              className: "bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 shadow-sm",
+              className: "synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800",
               children: [
                 i.jsxs("h2", {
-                  className: "text-lg font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2",
+                  className: "text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white mb-4 flex items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-3",
                   children: [
                     i.jsx(FY, {
-                      className: "w-5 h-5 text-zinc-400"
+                      className: "w-4 h-4 text-indigo-500"
                     }),
                     "Quick Actions"
                   ]
@@ -103042,13 +103104,13 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
   }
   function M2({ label: t, value: e, icon: n, color: A }) {
     const r = {
-      emerald: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-      rose: "text-rose-500 bg-rose-500/10 border-rose-500/20",
-      blue: "text-blue-500 bg-blue-500/10 border-blue-500/20",
-      amber: "text-amber-500 bg-amber-500/10 border-amber-500/20"
+      emerald: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      rose: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/20",
+      blue: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+      amber: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20"
     };
     return i.jsxs("div", {
-      className: "bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-4 shadow-sm flex flex-col items-center text-center",
+      className: "synos-dept-card rounded-2xl p-4 flex flex-col items-center text-center border border-zinc-200 dark:border-zinc-800",
       children: [
         i.jsx("div", {
           className: Ke("p-2 rounded-xl mb-2 border", r[A]),
@@ -103057,11 +103119,11 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           })
         }),
         i.jsx("span", {
-          className: "text-2xl font-black text-zinc-900 dark:text-white",
+          className: "text-2xl font-black text-zinc-900 dark:text-white tracking-tight",
           children: e
         }),
         i.jsx("span", {
-          className: "text-[10px] uppercase tracking-wider text-zinc-500 font-bold",
+          className: "text-[10px] uppercase tracking-wider text-zinc-500 font-extrabold mt-0.5",
           children: t
         })
       ]
@@ -103069,35 +103131,35 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
   }
   function h5e({ status: t }) {
     const n = {
-      Present: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-      Absent: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-      PaidLeave: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      Present: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+      Absent: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+      PaidLeave: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
       UnpaidLeave: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
-      HalfDay: "bg-amber-500/10 text-amber-500 border-amber-500/20"
+      HalfDay: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
     }[t] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
     return i.jsx("span", {
-      className: Ke("px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-tight", n),
+      className: Ke("px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-tight", n),
       children: t
     });
   }
   function CM({ label: t, description: e, path: n }) {
     return i.jsxs("a", {
       href: n,
-      className: "flex flex-col p-4 rounded-xl border border-black/5 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-all",
+      className: "p-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition-all shadow-xs active:scale-95 flex flex-col text-left group",
       children: [
         i.jsx("span", {
-          className: "text-sm font-bold text-zinc-900 dark:text-white",
+          className: "text-xs font-extrabold text-indigo-700 dark:text-indigo-300 group-hover:text-indigo-600",
           children: t
         }),
         i.jsx("span", {
-          className: "text-[11px] text-zinc-500",
+          className: "text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5",
           children: e
         })
       ]
     });
   }
   function I5e() {
-    const { user: t } = di(), [e, n] = j.useState({
+    const { user: t } = oi(), [e, n] = j.useState({
       leaveType: "Casual",
       startDate: "",
       endDate: "",
@@ -103145,20 +103207,20 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       className: "w-full space-y-6",
       children: [
         i.jsxs("header", {
-          className: "mb-8",
+          className: "mb-6",
           children: [
             i.jsx("h1", {
               className: "text-2xl font-bold text-zinc-900 dark:text-white",
               children: "Apply for Leave"
             }),
             i.jsx("p", {
-              className: "text-zinc-500",
+              className: "text-xs text-zinc-500 font-medium",
               children: "Submit your leave request for supervisor approval."
             })
           ]
         }),
         i.jsx("div", {
-          className: "bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/5 rounded-2xl p-6 shadow-sm",
+          className: "synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800",
           children: i.jsxs("form", {
             onSubmit: s,
             className: "space-y-6",
@@ -103170,7 +103232,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     className: "space-y-1.5",
                     children: [
                       i.jsx("label", {
-                        className: "text-xs font-bold uppercase tracking-wider text-zinc-500",
+                        className: "text-[10px] font-extrabold uppercase tracking-wider text-zinc-500",
                         children: "Leave Type"
                       }),
                       i.jsx("select", {
@@ -103180,7 +103242,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           ...e,
                           leaveType: o.target.value
                         }),
-                        className: "w-full bg-zinc-50 dark:bg-black border border-black/5 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-synos-primary/20 transition-all",
+                        className: "w-full bg-zinc-50/80 dark:bg-black/60 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 dark:text-zinc-200 outline-none focus:border-indigo-500 transition-all",
                         children: a.map((o) => i.jsx("option", {
                           value: o,
                           children: o.replace(/([A-Z])/g, " $1").trim()
@@ -103195,7 +103257,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     className: "space-y-1.5",
                     children: [
                       i.jsx("label", {
-                        className: "text-xs font-bold uppercase tracking-wider text-zinc-500",
+                        className: "text-[10px] font-extrabold uppercase tracking-wider text-zinc-500",
                         children: "Start Date"
                       }),
                       i.jsx("input", {
@@ -103206,7 +103268,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           ...e,
                           startDate: o.target.value
                         }),
-                        className: "w-full bg-zinc-50 dark:bg-black border border-black/5 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-synos-primary/20 transition-all"
+                        className: "w-full bg-zinc-50/80 dark:bg-black/60 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 dark:text-zinc-200 outline-none focus:border-indigo-500 transition-all"
                       })
                     ]
                   }),
@@ -103214,7 +103276,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     className: "space-y-1.5",
                     children: [
                       i.jsx("label", {
-                        className: "text-xs font-bold uppercase tracking-wider text-zinc-500",
+                        className: "text-[10px] font-extrabold uppercase tracking-wider text-zinc-500",
                         children: "End Date"
                       }),
                       i.jsx("input", {
@@ -103225,7 +103287,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           ...e,
                           endDate: o.target.value
                         }),
-                        className: "w-full bg-zinc-50 dark:bg-black border border-black/5 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-synos-primary/20 transition-all"
+                        className: "w-full bg-zinc-50/80 dark:bg-black/60 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-2.5 text-xs font-bold text-zinc-800 dark:text-zinc-200 outline-none focus:border-indigo-500 transition-all"
                       })
                     ]
                   })
@@ -103235,7 +103297,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 className: "space-y-1.5",
                 children: [
                   i.jsx("label", {
-                    className: "text-xs font-bold uppercase tracking-wider text-zinc-500",
+                    className: "text-[10px] font-extrabold uppercase tracking-wider text-zinc-500",
                     children: "Reason / Notes"
                   }),
                   i.jsx("textarea", {
@@ -103246,12 +103308,12 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                       reason: o.target.value
                     }),
                     placeholder: "Briefly explain the reason for your leave...",
-                    className: "w-full bg-zinc-50 dark:bg-black border border-black/5 dark:border-white/10 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-synos-primary/20 transition-all resize-none"
+                    className: "w-full bg-zinc-50/80 dark:bg-black/60 border border-zinc-300 dark:border-zinc-800 rounded-xl px-4 py-3 text-xs font-medium text-zinc-800 dark:text-zinc-200 outline-none focus:border-indigo-500 transition-all resize-none"
                   })
                 ]
               }),
               A.type !== "idle" && i.jsxs("div", {
-                className: Ke("p-4 rounded-xl flex items-center gap-3 text-sm font-medium", A.type === "success" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : A.type === "error" ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" : "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20"),
+                className: Ke("p-4 rounded-xl flex items-center gap-3 text-xs font-bold", A.type === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" : A.type === "error" ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20" : "bg-zinc-500/10 text-zinc-500 border border-zinc-500/20"),
                 children: [
                   A.type === "success" ? i.jsx(qT, {
                     className: "w-4 h-4"
@@ -103264,7 +103326,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               i.jsxs("button", {
                 type: "submit",
                 disabled: A.type === "loading",
-                className: "w-full bg-synos-primary hover:bg-synos-primary/90 text-white font-bold py-3 rounded-xl shadow-lg shadow-synos-primary/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider",
                 children: [
                   i.jsx(ZT, {
                     className: "w-4 h-4"
@@ -103279,7 +103341,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     });
   }
   function f5e() {
-    const { user: t } = di(), [e, n] = j.useState(true), [A, r] = j.useState(null), [a, s] = j.useState(() => {
+    const { user: t } = oi(), [e, n] = j.useState(true), [A, r] = j.useState(null), [a, s] = j.useState(() => {
       const d = /* @__PURE__ */ new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
     }), o = async () => {
@@ -103311,13 +103373,13 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   className: "text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2",
                   children: [
                     i.jsx(Hu, {
-                      className: "w-6 h-6 text-synos-primary"
+                      className: "w-5 h-5 text-indigo-500"
                     }),
                     "Attendance History & Roster"
                   ]
                 }),
                 i.jsx("p", {
-                  className: "text-sm text-zinc-500",
+                  className: "text-xs text-zinc-500 font-medium",
                   children: "View your daily shift records, present days, and leave facts."
                 })
               ]
@@ -103328,7 +103390,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 type: "month",
                 value: a.substring(0, 7),
                 onChange: (d) => s(`${d.target.value}-01`),
-                className: "bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 px-4 py-2 rounded-xl text-sm font-bold outline-none focus:border-synos-primary"
+                className: "bg-zinc-50/80 dark:bg-black/60 border border-zinc-300 dark:border-zinc-800 px-4 py-2 rounded-xl text-xs font-bold outline-none focus:border-indigo-500 text-zinc-800 dark:text-zinc-200 transition-all"
               })
             })
           ]
@@ -103337,10 +103399,10 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           className: "grid grid-cols-2 sm:grid-cols-4 gap-4",
           children: [
             i.jsxs("div", {
-              className: "p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20",
+              className: "synos-dept-card p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider",
                   children: "Days Present"
                 }),
                 i.jsx("p", {
@@ -103350,10 +103412,10 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               ]
             }),
             i.jsxs("div", {
-              className: "p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20",
+              className: "synos-dept-card p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider",
                   children: "Approved Leaves"
                 }),
                 i.jsx("p", {
@@ -103363,23 +103425,23 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               ]
             }),
             i.jsxs("div", {
-              className: "p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20",
+              className: "synos-dept-card p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider",
                   children: "Planned Leaves"
                 }),
                 i.jsx("p", {
-                  className: "text-2xl font-black text-blue-600 dark:text-blue-400 mt-1",
+                  className: "text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1",
                   children: l.totalPlannedLeaves || 0
                 })
               ]
             }),
             i.jsxs("div", {
-              className: "p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20",
+              className: "synos-dept-card p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider",
                   children: "Total Absences / LOP"
                 }),
                 i.jsx("p", {
@@ -103391,14 +103453,14 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           ]
         }),
         i.jsx("div", {
-          className: "bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/10 rounded-2xl p-6 shadow-sm space-y-6",
+          className: "synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 space-y-6",
           children: e ? i.jsx("div", {
             className: "h-64 flex items-center justify-center",
             children: i.jsxs("div", {
               className: "flex flex-col items-center gap-2",
               children: [
                 i.jsx("div", {
-                  className: "w-8 h-8 border-4 border-synos-primary border-t-transparent rounded-full animate-spin"
+                  className: "w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"
                 }),
                 i.jsx("p", {
                   className: "text-xs text-zinc-500",
@@ -103415,7 +103477,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     });
   }
   function C5e() {
-    const { user: t } = di(), [e, n] = j.useState([]), [A, r] = j.useState(true), a = async () => {
+    const { user: t } = oi(), [e, n] = j.useState([]), [A, r] = j.useState(true), a = async () => {
       try {
         r(true);
         const s = await Qm.getMyRequests();
@@ -103439,13 +103501,13 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 className: "text-2xl font-bold text-zinc-900 dark:text-white flex items-center gap-2",
                 children: [
                   i.jsx(ma, {
-                    className: "w-6 h-6 text-synos-primary"
+                    className: "w-5 h-5 text-indigo-500"
                   }),
                   "My Leave Applications"
                 ]
               }),
               i.jsx("p", {
-                className: "text-sm text-zinc-500",
+                className: "text-xs text-zinc-500 font-medium",
                 children: "Track the status of your submitted leave requests and manager reviews."
               })
             ]
@@ -103457,7 +103519,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             className: "flex flex-col items-center gap-2",
             children: [
               i.jsx("div", {
-                className: "w-8 h-8 border-4 border-synos-primary border-t-transparent rounded-full animate-spin"
+                className: "w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"
               }),
               i.jsx("p", {
                 className: "text-xs text-zinc-500",
@@ -103466,10 +103528,10 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             ]
           })
         }) : e.length === 0 ? i.jsxs("div", {
-          className: "p-12 text-center bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/10 rounded-2xl",
+          className: "synos-dept-card p-12 text-center rounded-2xl border border-zinc-200 dark:border-zinc-800",
           children: [
             i.jsx(FY, {
-              className: "w-12 h-12 text-zinc-300 mx-auto mb-3"
+              className: "w-12 h-12 text-zinc-400 mx-auto mb-3"
             }),
             i.jsx("h3", {
               className: "text-base font-bold text-zinc-900 dark:text-white",
@@ -103511,7 +103573,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 " Rejected"
               ]
             })), i.jsxs("div", {
-              className: "p-5 bg-white dark:bg-zinc-900 border border-black/5 dark:border-white/10 rounded-2xl shadow-sm space-y-4",
+              className: "synos-dept-card p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4",
               children: [
                 i.jsxs("div", {
                   className: "flex justify-between items-start",
@@ -103519,14 +103581,14 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     i.jsxs("div", {
                       children: [
                         i.jsxs("span", {
-                          className: "text-xs font-bold text-synos-primary uppercase tracking-wider",
+                          className: "text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider",
                           children: [
                             s.leaveType,
                             " Leave"
                           ]
                         }),
                         i.jsxs("p", {
-                          className: "text-xs text-zinc-400 mt-0.5",
+                          className: "text-[10px] font-mono text-zinc-400 mt-0.5",
                           children: [
                             "Applied on ",
                             new Date(s.appliedAt).toLocaleDateString()
@@ -103538,17 +103600,17 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   ]
                 }),
                 i.jsxs("div", {
-                  className: "space-y-2 py-2 border-y border-black/5 dark:border-white/5 text-xs",
+                  className: "space-y-2 py-2 border-y dark:border-zinc-800 border-zinc-100 text-xs",
                   children: [
                     i.jsxs("div", {
                       className: "flex justify-between",
                       children: [
                         i.jsx("span", {
-                          className: "text-zinc-500",
+                          className: "text-zinc-500 font-medium",
                           children: "Duration"
                         }),
                         i.jsxs("span", {
-                          className: "font-bold text-zinc-900 dark:text-zinc-200",
+                          className: "font-bold text-zinc-800 dark:text-zinc-200",
                           children: [
                             new Date(s.startDate).toLocaleDateString(),
                             " \u2014 ",
@@ -103561,11 +103623,11 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                       className: "flex flex-col gap-1",
                       children: [
                         i.jsx("span", {
-                          className: "text-zinc-500",
+                          className: "text-zinc-500 font-medium",
                           children: "Reason"
                         }),
                         i.jsxs("p", {
-                          className: "text-zinc-700 dark:text-zinc-300 italic bg-zinc-50 dark:bg-zinc-800/50 p-2.5 rounded-lg border border-black/5 dark:border-white/5",
+                          className: "text-zinc-700 dark:text-zinc-300 italic bg-zinc-50 dark:bg-zinc-800/50 p-2.5 rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 text-xs",
                           children: [
                             '"',
                             s.reason,
@@ -105904,7 +105966,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     });
   }
   function Jk({ modalityName: t, technicianRole: e }) {
-    const { user: n } = di(), [A, r] = j.useState([]), [a, s] = j.useState(false), [o, l] = j.useState("available"), [c, d] = j.useState(true), [g, u] = j.useState(null), [h, f] = j.useState(false), C = async (ve) => {
+    const { user: n } = oi(), [A, r] = j.useState([]), [a, s] = j.useState(false), [o, l] = j.useState("available"), [c, d] = j.useState(true), [g, u] = j.useState(null), [h, f] = j.useState(false), C = async (ve) => {
       f(true);
       try {
         await kc.assignStudy(ve), l("assigned"), s(false);
@@ -140232,7 +140294,7 @@ fn main(
       var Ee = Array.prototype, rt = Function.prototype, ke = Object.prototype, de = ye["__core-js_shared__"], pe = (function() {
         var Ze = /[^.]+$/.exec(de && de.keys && de.keys.IE_PROTO || "");
         return Ze ? "Symbol(src)_1." + Ze : "";
-      })(), Fe = rt.toString, we = ke.hasOwnProperty, Je = ke.toString, ut = RegExp("^" + Fe.call(we).replace(ie, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), Ge = qe ? ye.Buffer : void 0, St = ye.Symbol, wt = ye.Uint8Array, kt = Re(Object.getPrototypeOf, Object), st = Object.create, ht = ke.propertyIsEnumerable, _e = Ee.splice, He = Object.getOwnPropertySymbols, et = Ge ? Ge.isBuffer : void 0, Dt = Re(Object.keys, Object), qt = oi(ye, "DataView"), Xt = oi(ye, "Map"), Gn = oi(ye, "Promise"), cn = oi(ye, "Set"), Dn = oi(ye, "WeakMap"), Tn = oi(Object, "create"), $ = vi(qt), er = vi(Xt), ae = vi(Gn), Gt = vi(cn), Ht = vi(Dn), jn = St ? St.prototype : void 0, me = jn ? jn.valueOf : void 0;
+      })(), Fe = rt.toString, we = ke.hasOwnProperty, Je = ke.toString, ut = RegExp("^" + Fe.call(we).replace(ie, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), Ge = qe ? ye.Buffer : void 0, St = ye.Symbol, wt = ye.Uint8Array, kt = Re(Object.getPrototypeOf, Object), st = Object.create, ht = ke.propertyIsEnumerable, _e = Ee.splice, He = Object.getOwnPropertySymbols, et = Ge ? Ge.isBuffer : void 0, Dt = Re(Object.keys, Object), qt = li(ye, "DataView"), Xt = li(ye, "Map"), Gn = li(ye, "Promise"), cn = li(ye, "Set"), Dn = li(ye, "WeakMap"), Tn = li(Object, "create"), $ = vi(qt), er = vi(Xt), ae = vi(Gn), Gt = vi(cn), Ht = vi(Dn), jn = St ? St.prototype : void 0, me = jn ? jn.valueOf : void 0;
       function sn(Ze) {
         var ft = -1, _t = Ze ? Ze.length : 0;
         for (this.clear(); ++ft < _t; ) {
@@ -140467,7 +140529,7 @@ fn main(
         var _t = Ze.__data__;
         return CA(ft) ? _t[typeof ft == "string" ? "string" : "hash"] : _t.map;
       }
-      function oi(Ze, ft) {
+      function li(Ze, ft) {
         var _t = ne(Ze, ft);
         return cr(_t) ? _t : void 0;
       }
@@ -160068,7 +160130,7 @@ fn main(
     }
     return null;
   }
-  const { staticOffsetAPI: KYe, otherStaticMethods: VYe } = o5, { SlicingMode: ci } = c5;
+  const { staticOffsetAPI: KYe, otherStaticMethods: VYe } = o5, { SlicingMode: gi } = c5;
   function WYe(t, e) {
     e.classHierarchy.push("vtkImageMapper"), t.getSliceAtPosition = (A) => {
       const r = t.getCurrentImage();
@@ -160077,21 +160139,21 @@ fn main(
       else if (Number.isFinite(A)) {
         const d = r.getBounds();
         switch (e.slicingMode) {
-          case ci.X:
+          case gi.X:
             a = [
               A,
               (d[3] + d[2]) / 2,
               (d[5] + d[4]) / 2
             ];
             break;
-          case ci.Y:
+          case gi.Y:
             a = [
               (d[1] + d[0]) / 2,
               A,
               (d[5] + d[4]) / 2
             ];
             break;
-          case ci.Z:
+          case gi.Z:
             a = [
               (d[1] + d[0]) / 2,
               (d[3] + d[2]) / 2,
@@ -160109,13 +160171,13 @@ fn main(
       const o = r.getExtent(), { ijkMode: l } = t.getClosestIJKAxis();
       let c = 0;
       switch (l) {
-        case ci.I:
+        case gi.I:
           c = pg(s[0], o[0], o[1]);
           break;
-        case ci.J:
+        case gi.J:
           c = pg(s[1], o[2], o[3]);
           break;
-        case ci.K:
+        case gi.K:
           c = pg(s[2], o[4], o[5]);
           break;
         default:
@@ -160125,36 +160187,36 @@ fn main(
     }, t.setSliceFromCamera = (A) => {
       const r = A.getFocalPoint();
       switch (e.slicingMode) {
-        case ci.I:
-        case ci.J:
-        case ci.K:
+        case gi.I:
+        case gi.J:
+        case gi.K:
           {
             const a = t.getSliceAtPosition(r);
             t.setSlice(a);
           }
           break;
-        case ci.X:
+        case gi.X:
           t.setSlice(r[0]);
           break;
-        case ci.Y:
+        case gi.Y:
           t.setSlice(r[1]);
           break;
-        case ci.Z:
+        case gi.Z:
           t.setSlice(r[2]);
           break;
       }
     }, t.setXSlice = (A) => {
-      t.setSlicingMode(ci.X), t.setSlice(A);
+      t.setSlicingMode(gi.X), t.setSlice(A);
     }, t.setYSlice = (A) => {
-      t.setSlicingMode(ci.Y), t.setSlice(A);
+      t.setSlicingMode(gi.Y), t.setSlice(A);
     }, t.setZSlice = (A) => {
-      t.setSlicingMode(ci.Z), t.setSlice(A);
+      t.setSlicingMode(gi.Z), t.setSlice(A);
     }, t.setISlice = (A) => {
-      t.setSlicingMode(ci.I), t.setSlice(A);
+      t.setSlicingMode(gi.I), t.setSlice(A);
     }, t.setJSlice = (A) => {
-      t.setSlicingMode(ci.J), t.setSlice(A);
+      t.setSlicingMode(gi.J), t.setSlice(A);
     }, t.setKSlice = (A) => {
-      t.setSlicingMode(ci.K), t.setSlice(A);
+      t.setSlicingMode(gi.K), t.setSlice(A);
     }, t.getSlicingModeNormal = () => {
       const A = [
         0,
@@ -160162,30 +160224,30 @@ fn main(
         0
       ], r = t.getCurrentImage().getDirection();
       switch (e.slicingMode) {
-        case ci.X:
+        case gi.X:
           A[0] = 1;
           break;
-        case ci.Y:
+        case gi.Y:
           A[1] = 1;
           break;
-        case ci.Z:
+        case gi.Z:
           A[2] = 1;
           break;
-        case ci.I:
+        case gi.I:
           bw(r, [
             1,
             0,
             0
           ], A);
           break;
-        case ci.J:
+        case gi.J:
           bw(r, [
             0,
             1,
             0
           ], A);
           break;
-        case ci.K:
+        case gi.K:
           bw(r, [
             0,
             0,
@@ -160198,13 +160260,13 @@ fn main(
     function n() {
       let A;
       switch (e.slicingMode) {
-        case ci.X:
+        case gi.X:
           A = 0;
           break;
-        case ci.Y:
+        case gi.Y:
           A = 1;
           break;
-        case ci.Z:
+        case gi.Z:
           A = 2;
           break;
         default:
@@ -160225,20 +160287,20 @@ fn main(
     }
     t.setSlicingMode = (A) => {
       e.slicingMode !== A && (e.slicingMode = A, t.getCurrentImage() && n(), t.modified());
-    }, t.getClosestIJKAxis = () => ((e.closestIJKAxis === void 0 || e.closestIJKAxis.ijkMode === ci.NONE) && t.getCurrentImage() && n(), e.closestIJKAxis), t.getBounds = () => {
+    }, t.getClosestIJKAxis = () => ((e.closestIJKAxis === void 0 || e.closestIJKAxis.ijkMode === gi.NONE) && t.getCurrentImage() && n(), e.closestIJKAxis), t.getBounds = () => {
       const A = t.getCurrentImage();
       if (!A) return Ih();
       if (!e.useCustomExtents) return A.getBounds();
       const r = e.customDisplayExtent.slice(), { ijkMode: a } = t.getClosestIJKAxis();
       let s = e.slice;
       switch (a !== e.slicingMode && (s = t.getSliceAtPosition(e.slice)), a) {
-        case ci.I:
+        case gi.I:
           r[0] = s, r[1] = s;
           break;
-        case ci.J:
+        case gi.J:
           r[2] = s, r[3] = s;
           break;
-        case ci.K:
+        case gi.K:
           r[4] = s, r[5] = s;
           break;
       }
@@ -160250,13 +160312,13 @@ fn main(
       const s = a.getSpatialExtent(), { ijkMode: o } = t.getClosestIJKAxis();
       let l = A;
       switch (o !== e.slicingMode && (l = t.getSliceAtPosition(A)), o) {
-        case ci.I:
+        case gi.I:
           s[0] = l - r, s[1] = l + r;
           break;
-        case ci.J:
+        case gi.J:
           s[2] = l - r, s[3] = l + r;
           break;
-        case ci.K:
+        case gi.K:
           s[4] = l - r, s[5] = l + r;
           break;
       }
@@ -160264,9 +160326,9 @@ fn main(
     }, t.intersectWithLineForPointPicking = (A, r) => YYe(A, r, t), t.intersectWithLineForCellPicking = (A, r) => JYe(A, r, t), t.getCurrentImage = () => t.getInputData();
   }
   const qYe = {
-    slicingMode: ci.NONE,
+    slicingMode: gi.NONE,
     closestIJKAxis: {
-      ijkMode: ci.NONE,
+      ijkMode: gi.NONE,
       flip: false
     },
     renderToRectangle: false,
@@ -189494,9 +189556,9 @@ Input: ` + this.err.str);
               for (var zn = Qt.length; zn--; ) if (Ji(Qt[zn][0], Zt)) return zn;
               return -1;
             }
-            function uA(Qt, Zt, zn, $n, rA, kA, oi) {
+            function uA(Qt, Zt, zn, $n, rA, kA, li) {
               var nr;
-              if ($n && (nr = kA ? $n(Qt, rA, kA, oi) : $n(Qt)), nr !== void 0) return nr;
+              if ($n && (nr = kA ? $n(Qt, rA, kA, li) : $n(Qt)), nr !== void 0) return nr;
               if (!jt(Qt)) return Qt;
               var Si = wa(Qt);
               if (Si) {
@@ -189575,10 +189637,10 @@ Input: ` + this.err.str);
                   })(Qt, Wr, uA, Zt);
                 }
               }
-              oi || (oi = new Tt());
-              var Rs = oi.get(Qt);
+              li || (li = new Tt());
+              var Rs = li.get(Qt);
               if (Rs) return Rs;
-              if (oi.set(Qt, nr), !Si) var RA = zn ? (function(CA) {
+              if (li.set(Qt, nr), !Si) var RA = zn ? (function(CA) {
                 return (function(bA, Cr, vi) {
                   var De = Cr(bA);
                   return wa(bA) ? De : (function(je, We) {
@@ -189590,7 +189652,7 @@ Input: ` + this.err.str);
               return (function(CA, bA) {
                 for (var Cr = -1, vi = CA ? CA.length : 0; ++Cr < vi && bA(CA[Cr], Cr) !== false; ) ;
               })(RA || Qt, (function(CA, bA) {
-                RA && (CA = Qt[bA = CA]), en(nr, bA, uA(CA, Zt, zn, $n, bA, Qt, oi));
+                RA && (CA = Qt[bA = CA]), en(nr, bA, uA(CA, Zt, zn, $n, bA, Qt, li));
               })), nr;
             }
             function Mn(Qt) {
@@ -189600,8 +189662,8 @@ Input: ` + this.err.str);
             function BA(Qt, Zt, zn, $n) {
               zn || (zn = {});
               for (var rA = -1, kA = Zt.length; ++rA < kA; ) {
-                var oi = Zt[rA], nr = void 0;
-                en(zn, oi, nr === void 0 ? Qt[oi] : nr);
+                var li = Zt[rA], nr = void 0;
+                en(zn, li, nr === void 0 ? Qt[li] : nr);
               }
               return zn;
             }
@@ -189757,7 +189819,7 @@ Input: ` + this.err.str);
                   for (var Wr = -1, Ci = Array(nr); ++Wr < nr; ) Ci[Wr] = Si(Wr);
                   return Ci;
                 })(Zt.length, String) : [], rA = $n.length, kA = !!rA;
-                for (var oi in Zt) !Tn.call(Zt, oi) || kA && (oi == "length" || ia(oi, rA)) || $n.push(oi);
+                for (var li in Zt) !Tn.call(Zt, li) || kA && (li == "length" || ia(li, rA)) || $n.push(li);
                 return $n;
               })(Qt) : (function(Zt) {
                 if (!cr(Zt)) return qn(Zt);
@@ -190992,7 +191054,7 @@ Input: ` + this.err.str);
               annotation: N
             });
           }
-          function oi(N) {
+          function li(N) {
             nr({
               annotation: N,
               contourHoleProcessingEnabled: arguments.length > 1 && arguments[1] !== void 0 && arguments[1]
@@ -192096,7 +192158,7 @@ Input: ` + this.err.str);
             return Math.sqrt(Math.pow(N[0] - I[0], 2) + Math.pow(N[1] - I[1], 2) + Math.pow(N[2] - I[2], 2));
           }
           $.Settings.getRuntimeSettings();
-          const { TOUCH_START: oa, TOUCH_START_ACTIVATE: rl, TOUCH_PRESS: iA, TOUCH_DRAG: li, TOUCH_END: la, TOUCH_TAP: Rt, TOUCH_SWIPE: Ic } = me, fc = {
+          const { TOUCH_START: oa, TOUCH_START_ACTIVATE: rl, TOUCH_PRESS: iA, TOUCH_DRAG: ci, TOUCH_END: la, TOUCH_TAP: Rt, TOUCH_SWIPE: Ic } = me, fc = {
             page: [
               0,
               0
@@ -192173,7 +192235,7 @@ Input: ` + this.err.str);
             };
             const R = {
               event: N,
-              eventName: li,
+              eventName: ci,
               renderingEngineId: Kn.renderingEngineId,
               viewportId: Kn.viewportId,
               camera: {},
@@ -192187,7 +192249,7 @@ Input: ` + this.err.str);
               deltaPoints: y,
               deltaDistance: w
             };
-            Cc(Kn.element, li, R), (function(M, L) {
+            Cc(Kn.element, ci, R), (function(M, L) {
               const U = (/* @__PURE__ */ new Date()).getTime(), O = Kn.startTime.getTime();
               if (Kn.swiped || U - O > Kn.swipeToleranceMs) return;
               const [_, J] = L.canvas, V = {
@@ -202576,7 +202638,7 @@ Input: ` + this.err.str);
               targetWindingDirection: f0.Clockwise
             }, L);
             const { textBox: _ } = v.data.handles;
-            return _ != null && _.hasMoved || oi(v, y), this.isDrawing = false, this.drawData = void 0, this.commonData = void 0, Ut(U, R), this.deactivateDraw(N), true;
+            return _ != null && _.hasMoved || li(v, y), this.isDrawing = false, this.drawData = void 0, this.commonData = void 0, Ut(U, R), this.deactivateDraw(N), true;
           }
           function Ev() {
             const { canvasPoints: N } = this.drawData, I = N.length, B = [
@@ -202600,7 +202662,7 @@ Input: ` + this.err.str);
             return w.data.handles.points = [
               _[0],
               _[_.length - 1]
-            ], w.data.isOpenUShapeContour && (w.data.openUShapeContourVectorToPeak = $x(B, M)), O.hasMoved || oi(w, y), this.isDrawing = false, this.drawData = void 0, this.commonData = void 0, Ut(L, v), this.deactivateDraw(N), true;
+            ], w.data.isOpenUShapeContour && (w.data.openUShapeContourVectorToPeak = $x(B, M)), O.hasMoved || li(w, y), this.isDrawing = false, this.drawData = void 0, this.commonData = void 0, Ut(L, v), this.deactivateDraw(N), true;
           }
           function mv(N) {
             const I = N.detail, { currentPoints: B, lastPoints: y } = I, w = B.canvas, v = y.canvas, { canvasPoints: R } = this.drawData, M = R.slice(0, -1), L = Cv(M, w, v, false);
@@ -211060,7 +211122,7 @@ Input: ` + this.err.str);
                 I.triggerChangeEvent(R, _, V, U), I.clearEditData();
               })), ae(this, "triggerChangeEvent", (function(B, y) {
                 let w = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : ei.StatsUpdated, v = arguments.length > 3 && arguments[3] !== void 0 && arguments[3];
-                w === ei.Completed ? oi(B, v) : rA(B, y.viewport.element, w);
+                w === ei.Completed ? li(B, v) : rA(B, y.viewport.element, w);
               })), ae(this, "_mouseDownCallback", ((B) => {
                 const y = B.type === me.MOUSE_DOUBLE_CLICK, { annotation: w, viewportIdsToRender: v, worldToSlice: R, sliceToWorld: M } = this.editData;
                 if (this.editData.closed) return;
@@ -219856,18 +219918,18 @@ Input: ` + this.err.str);
             register: function(De) {
               De.registerImageLoader("dicomweb", rA), De.registerImageLoader("wadouri", rA), De.registerImageLoader("dicomfile", rA), De.metaData.addProvider(Dr);
             }
-          }, oi = function(De) {
+          }, li = function(De) {
             WA.register(De), kA.register(De);
           };
           let nr, Si;
           const Wr = {
             set cornerstone(De) {
-              nr = De, oi(nr);
+              nr = De, li(nr);
             },
             get cornerstone() {
               if (!nr) {
                 if (nr = window && window.cornerstone, !nr) throw new Error("cornerstoneDICOMImageLoader requires a copy of Cornerstone to work properly. Please add cornerstoneDICOMImageLoader.external.cornerstone = cornerstone; to your application.");
-                oi(nr);
+                li(nr);
               }
               return nr;
             },
@@ -223148,7 +223210,7 @@ Input: ` + this.err.str);
   let ts = null, ep = null, CD = 0;
   function WZe() {
     var _a, _b, _c, _d, _e2, _f;
-    const { user: t } = di(), [e, n] = j.useState([]), [A, r] = j.useState(false), [a, s] = j.useState(null), [o, l] = j.useState(true), [c, d] = j.useState(false), [g, u] = j.useState(null), [h, f] = j.useState([]), C = (on) => {
+    const { user: t } = oi(), [e, n] = j.useState([]), [A, r] = j.useState(false), [a, s] = j.useState(null), [o, l] = j.useState(true), [c, d] = j.useState(false), [g, u] = j.useState(null), [h, f] = j.useState([]), C = (on) => {
       var _a2;
       if (!g) return;
       const Bn = (_a2 = g.series) == null ? void 0 : _a2.find((Rn) => Rn.seriesId === on);
@@ -224354,7 +224416,7 @@ Input: ` + this.err.str);
   }
   function _o({ allowedRoles: t = [] }) {
     var _a;
-    const { user: e, isAuthenticated: n, isConfigured: A } = di(), r = bg();
+    const { user: e, isAuthenticated: n, isConfigured: A } = oi(), r = bg();
     if (!A) return i.jsx(Os, {
       to: "/activate",
       replace: true
@@ -224416,7 +224478,7 @@ Input: ` + this.err.str);
     return i.jsx(dk, {});
   }
   function ZZe() {
-    const { isAuthenticated: t, user: e, isConfigured: n } = di(), A = e == null ? void 0 : e.role, r = Array.isArray(A) ? A.includes("Admin") : A === "Admin";
+    const { isAuthenticated: t, user: e, isConfigured: n } = oi(), A = e == null ? void 0 : e.role, r = Array.isArray(A) ? A.includes("Admin") : A === "Admin";
     return console.info("[RootRedirect] Evaluating redirect:", {
       isAuthenticated: t,
       role: A,
@@ -224497,7 +224559,7 @@ Input: ` + this.err.str);
     });
   }
   function ml({ children: t, roleName: e }) {
-    const { user: n } = di(), A = Array.isArray(n == null ? void 0 : n.role) ? n.role.includes("Admin") : (n == null ? void 0 : n.role) === "Admin";
+    const { user: n } = oi(), A = Array.isArray(n == null ? void 0 : n.role) ? n.role.includes("Admin") : (n == null ? void 0 : n.role) === "Admin";
     return i.jsxs(i.Fragment, {
       children: [
         A && i.jsx(p5e, {
