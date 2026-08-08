@@ -610,8 +610,8 @@ export function OpeningStockOnboarding() {
                             <input type="date" value={manualEntry.expiryDate} onChange={(e) => setManualEntry({...manualEntry, expiryDate: e.target.value})} className="w-full bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all" />
                         </div>
                         <div className="col-span-2 pt-4">
-                            <button type="submit" disabled={loading} className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-synos-primary/20">
-                                {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-5 h-5" />}
+                            <button type="submit" disabled={loading} className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider">
+                                {loading ? <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
                                 Onboard Single Item
                             </button>
                         </div>
@@ -655,8 +655,8 @@ export function OpeningStockOnboarding() {
                             </table>
                         </div>
                         <div className="flex items-center justify-between">
-                            <button onClick={() => setBulkEntries([...bulkEntries, { id: Date.now(), consumableId: '', quantity: '', batchNumber: '', expiryDate: '' }])} className="text-synos-primary text-sm font-semibold flex items-center gap-2 hover:underline"><Plus className="w-4 h-4" /> Add Row</button>
-                            <button onClick={handleBulkSubmit} disabled={loading} className="bg-synos-primary text-white font-semibold px-8 py-3 rounded-xl flex items-center gap-2">{loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />} Commit {bulkEntries.length} Items</button>
+                            <button onClick={() => setBulkEntries([...bulkEntries, { id: Date.now(), consumableId: '', quantity: '', batchNumber: '', expiryDate: '' }])} className="text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-2 hover:underline"><Plus className="w-4 h-4" /> Add Row</button>
+                            <button onClick={handleBulkSubmit} disabled={loading} className="px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-2 uppercase tracking-wider">{loading ? <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />} Commit {bulkEntries.length} Items</button>
                         </div>
                     </div>
                 )}
@@ -664,7 +664,7 @@ export function OpeningStockOnboarding() {
                 {activeMethod === 'paste' && (
                     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
                         <textarea value={pasteData} onChange={(e) => setPasteData(e.target.value)} placeholder="Paste Excel rows here..." className="w-full h-64 bg-black/[0.02] border border-black/5 rounded-md px-3 py-2 text-sm focus:ring-1 ring-synos-primary outline-none transition-all font-mono" />
-                        <button onClick={parsePasteData} className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2"><Search className="w-5 h-5" /> Parse Paste Buffer</button>
+                        <button onClick={parsePasteData} className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"><Search className="w-4 h-4" /> Parse Paste Buffer</button>
                     </div>
                 )}
 

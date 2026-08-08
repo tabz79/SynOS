@@ -175,9 +175,9 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
                     <button 
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                        className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
                     >
-                        {isLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <PlusCircle className="w-5 h-5" />}
+                        {isLoading ? <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" /> : <PlusCircle className="w-4 h-4" />}
                         Register & Select Item
                     </button>
                 </form>
@@ -698,12 +698,12 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                             </div>
                         </div>
 
-                        <div className="p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02]">
+                        <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-white/[0.02]">
                             <button 
                                 onClick={() => onReceive(selectedItem)}
-                                className="w-full bg-synos-primary text-white font-bold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
                             >
-                                <PlusCircle className="w-5 h-5" />
+                                <PlusCircle className="w-4 h-4" />
                                 Receive for this item
                             </button>
                         </div>
@@ -995,7 +995,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                 <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="mt-4 w-full bg-synos-primary text-white font-semibold py-4 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:scale-100"
+                    className="mt-4 w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider"
                 >
                     {isSubmitting ? (
                         <>

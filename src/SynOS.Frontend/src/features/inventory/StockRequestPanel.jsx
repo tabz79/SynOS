@@ -372,16 +372,11 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
 
             {/* Footer */}
             {!success && (
-                <div className={cn("p-6 shrink-0", ui.footer)}>
+                <div className={cn("p-6 shrink-0 border-t dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-white/[0.02]")}>
                     <button 
                         onClick={handleSubmit}
                         disabled={!selectedItem || isSubmitting}
-                        className={cn(
-                            "w-full rounded-xl py-3.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 disabled:opacity-30 disabled:active:scale-100",
-                            !selectedItem 
-                                ? (isDark ? "bg-zinc-800 text-zinc-500" : "bg-zinc-100 text-zinc-400") 
-                                : "bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-900/20"
-                        )}
+                        className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-30 uppercase tracking-wider"
                     >
                         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Submit Stock Request <ArrowRight className="h-4 w-4" /></>}
                     </button>

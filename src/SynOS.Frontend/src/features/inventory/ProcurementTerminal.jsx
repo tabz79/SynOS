@@ -71,14 +71,14 @@ export const ProcurementTerminal = () => {
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-1">
                     <h1 className="text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2">
-                        <ShoppingCart className="w-5 h-5 text-synos-primary" />
+                        <ShoppingCart className="w-5 h-5 text-indigo-500" />
                         Procurement Terminal
                     </h1>
                     <p className="text-xs text-zinc-500 tracking-tight">Formalizing commitments and managing supplier obligations.</p>
                 </div>
                 <button 
                     onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-synos-primary/20 hover:scale-105 transition-all"
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all uppercase tracking-wider"
                 >
                     <Plus className="w-4 h-4" />
                     New Purchase Order
@@ -87,21 +87,21 @@ export const ProcurementTerminal = () => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Active POs</p>
-                    <p className="text-lg font-semibold text-synos-primary">{orders.filter(o => o.status !== 'Closed').length}</p>
+                <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Active POs</p>
+                    <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1">{orders.filter(o => o.status !== 'Closed').length}</p>
                 </div>
-                <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Pending Receipt</p>
-                    <p className="text-lg font-semibold text-amber-500">{orders.filter(o => o.status === 'Approved').length}</p>
+                <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Pending Receipt</p>
+                    <p className="text-lg font-black text-amber-500 mt-1">{orders.filter(o => o.status === 'Approved').length}</p>
                 </div>
-                <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Order Value (Total)</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">₹--</p>
+                <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Order Value (Total)</p>
+                    <p className="text-lg font-black text-zinc-900 dark:text-white mt-1">₹--</p>
                 </div>
-                <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm">
-                    <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">Suppliers</p>
-                    <p className="text-lg font-semibold text-zinc-900 dark:text-white">{vendors.length}</p>
+                <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Vendors Active</p>
+                    <p className="text-lg font-black text-emerald-500 mt-1">{vendors.length}</p>
                 </div>
             </div>
 
@@ -230,10 +230,10 @@ export const ProcurementTerminal = () => {
                             <button 
                                 onClick={handleCreatePO}
                                 disabled={!selectedVendor}
-                                className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider"
                             >
                                 Generate Draft PO
-                                <FileText className="w-5 h-5" />
+                                <FileText className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
@@ -277,7 +277,7 @@ export const ProcurementTerminal = () => {
                                 <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Category</label>
                                 <input name="category" placeholder="Medical / Lab / General" className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
                             </div>
-                            <button type="submit" className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all">
+                            <button type="submit" className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all uppercase tracking-wider">
                                 Register & Select
                             </button>
                         </form>

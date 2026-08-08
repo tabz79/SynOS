@@ -210,9 +210,9 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                                 <button 
                                     onClick={handleAddItem}
                                     disabled={!newItem.tubeId || newItem.orderedQuantity <= 0}
-                                    className="w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider"
                                 >
-                                    <Plus className="w-5 h-5" />
+                                    <Plus className="w-4 h-4" />
                                     Add to Order
                                 </button>
                             </div>

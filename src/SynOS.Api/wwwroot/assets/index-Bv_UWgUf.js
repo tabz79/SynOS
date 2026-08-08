@@ -20232,7 +20232,6 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
     }, re = (f === "role" ? d : u).filter((he) => he.name.toLowerCase().includes(p.toLowerCase()) || he.code.toLowerCase().includes(p.toLowerCase())), ce = a ? {
       panel: "bg-zinc-900 border-l border-white/10 shadow-2xl relative z-20",
       header: "bg-zinc-900 border-b border-white/5",
-      footer: "bg-zinc-900 border-t border-white/5",
       title: "text-white",
       subtitle: "text-zinc-500",
       input: "bg-black/40 border-white/5 text-white placeholder-zinc-500 focus:border-emerald-500/50",
@@ -20243,7 +20242,6 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
     } : {
       panel: "bg-white border-l border-zinc-200 shadow-[-20px_0_50px_rgba(0,0,0,0.1)] relative z-20",
       header: "bg-zinc-50 border-b border-zinc-200",
-      footer: "bg-zinc-50 border-t border-zinc-200",
       title: "text-zinc-900",
       subtitle: "text-zinc-500",
       input: "bg-white border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:border-emerald-500/50",
@@ -20587,11 +20585,11 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
           })
         }),
         !Y && i.jsx("div", {
-          className: Ke("p-6 shrink-0", ce.footer),
+          className: Ke("p-6 shrink-0 border-t dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-white/[0.02]"),
           children: i.jsx("button", {
             onClick: Ae,
             disabled: !m || l,
-            className: Ke("w-full rounded-xl py-3.5 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95 disabled:opacity-30 disabled:active:scale-100", m ? "bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-900/20" : a ? "bg-zinc-800 text-zinc-500" : "bg-zinc-100 text-zinc-400"),
+            className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-30 uppercase tracking-wider",
             children: l ? i.jsx(wA, {
               className: "h-4 w-4 animate-spin"
             }) : i.jsxs(i.Fragment, {
@@ -80676,12 +80674,12 @@ Please verify or update your License Key in System Settings.`);
                   children: i.jsxs("button", {
                     type: "submit",
                     disabled: c,
-                    className: "w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-synos-primary/20",
+                    className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider",
                     children: [
                       c ? i.jsx("div", {
-                        className: "w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                        className: "w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"
                       }) : i.jsx(Af, {
-                        className: "w-5 h-5"
+                        className: "w-4 h-4"
                       }),
                       "Onboard Single Item"
                     ]
@@ -80812,7 +80810,7 @@ Please verify or update your License Key in System Settings.`);
                           expiryDate: ""
                         }
                       ]),
-                      className: "text-synos-primary text-sm font-semibold flex items-center gap-2 hover:underline",
+                      className: "text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-2 hover:underline",
                       children: [
                         i.jsx(Gi, {
                           className: "w-4 h-4"
@@ -80823,10 +80821,10 @@ Please verify or update your License Key in System Settings.`);
                     i.jsxs("button", {
                       onClick: W,
                       disabled: c,
-                      className: "bg-synos-primary text-white font-semibold px-8 py-3 rounded-xl flex items-center gap-2",
+                      className: "px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center gap-2 uppercase tracking-wider",
                       children: [
                         c ? i.jsx("div", {
-                          className: "w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                          className: "w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"
                         }) : i.jsx(Af, {
                           className: "w-4 h-4"
                         }),
@@ -80850,10 +80848,10 @@ Please verify or update your License Key in System Settings.`);
                 }),
                 i.jsxs("button", {
                   onClick: q,
-                  className: "w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2",
+                  className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider",
                   children: [
                     i.jsx(Vi, {
-                      className: "w-5 h-5"
+                      className: "w-4 h-4"
                     }),
                     " Parse Paste Buffer"
                   ]
@@ -82106,10 +82104,10 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                         i.jsxs("button", {
                           onClick: C,
                           disabled: !u.tubeId || u.orderedQuantity <= 0,
-                          className: "w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50",
+                          className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider",
                           children: [
                             i.jsx(Gi, {
-                              className: "w-5 h-5"
+                              className: "w-4 h-4"
                             }),
                             "Add to Order"
                           ]
@@ -82228,7 +82226,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   className: "text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2",
                   children: [
                     i.jsx(YY, {
-                      className: "w-5 h-5 text-synos-primary"
+                      className: "w-5 h-5 text-indigo-500"
                     }),
                     "Procurement Terminal"
                   ]
@@ -82241,7 +82239,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             }),
             i.jsxs("button", {
               onClick: () => o(true),
-              className: "flex items-center gap-2 px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-synos-primary/20 hover:scale-105 transition-all",
+              className: "flex items-center gap-2 px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all uppercase tracking-wider",
               children: [
                 i.jsx(Gi, {
                   className: "w-4 h-4"
@@ -82255,53 +82253,53 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           className: "grid grid-cols-1 md:grid-cols-4 gap-4",
           children: [
             i.jsxs("div", {
-              className: "p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm",
+              className: "synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-semibold text-zinc-500 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider",
                   children: "Active POs"
                 }),
                 i.jsx("p", {
-                  className: "text-lg font-semibold text-synos-primary",
+                  className: "text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1",
                   children: t.filter((p) => p.status !== "Closed").length
                 })
               ]
             }),
             i.jsxs("div", {
-              className: "p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm",
+              className: "synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-semibold text-zinc-500 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider",
                   children: "Pending Receipt"
                 }),
                 i.jsx("p", {
-                  className: "text-lg font-semibold text-amber-500",
+                  className: "text-lg font-black text-amber-500 mt-1",
                   children: t.filter((p) => p.status === "Approved").length
                 })
               ]
             }),
             i.jsxs("div", {
-              className: "p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm",
+              className: "synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-semibold text-zinc-500 uppercase tracking-wider",
+                  className: "text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider",
                   children: "Order Value (Total)"
                 }),
                 i.jsx("p", {
-                  className: "text-lg font-semibold text-zinc-900 dark:text-white",
+                  className: "text-lg font-black text-zinc-900 dark:text-white mt-1",
                   children: "\u20B9--"
                 })
               ]
             }),
             i.jsxs("div", {
-              className: "p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900 shadow-sm",
+              className: "synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200",
               children: [
                 i.jsx("p", {
-                  className: "text-[10px] font-semibold text-zinc-500 uppercase tracking-wider",
-                  children: "Suppliers"
+                  className: "text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider",
+                  children: "Vendors Active"
                 }),
                 i.jsx("p", {
-                  className: "text-lg font-semibold text-zinc-900 dark:text-white",
+                  className: "text-lg font-black text-emerald-500 mt-1",
                   children: d.length
                 })
               ]
@@ -82531,11 +82529,11 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   i.jsxs("button", {
                     onClick: C,
                     disabled: !u,
-                    className: "w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50",
+                    className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider",
                     children: [
                       "Generate Draft PO",
                       i.jsx(ma, {
-                        className: "w-5 h-5"
+                        className: "w-4 h-4"
                       })
                     ]
                   })
@@ -82623,7 +82621,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   }),
                   i.jsx("button", {
                     type: "submit",
-                    className: "w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] transition-all",
+                    className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all uppercase tracking-wider",
                     children: "Register & Select"
                   })
                 ]
@@ -82847,12 +82845,12 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               i.jsxs("button", {
                 type: "submit",
                 disabled: a,
-                className: "w-full bg-synos-primary text-white font-semibold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2",
+                className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider",
                 children: [
                   a ? i.jsx("div", {
-                    className: "w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"
+                    className: "w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"
                   }) : i.jsx(WI, {
-                    className: "w-5 h-5"
+                    className: "w-4 h-4"
                   }),
                   "Register & Select Item"
                 ]
@@ -83507,13 +83505,13 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 ]
               }),
               i.jsx("div", {
-                className: "p-6 border-t border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02]",
+                className: "p-6 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-white/[0.02]",
                 children: i.jsxs("button", {
                   onClick: () => t(f),
-                  className: "w-full bg-synos-primary text-white font-bold py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2",
+                  className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider",
                   children: [
                     i.jsx(WI, {
-                      className: "w-5 h-5"
+                      className: "w-4 h-4"
                     }),
                     "Receive for this item"
                   ]
@@ -83886,7 +83884,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             i.jsx("button", {
               type: "submit",
               disabled: h,
-              className: "mt-4 w-full bg-synos-primary text-white font-semibold py-4 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:scale-100",
+              className: "mt-4 w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 uppercase tracking-wider",
               children: h ? i.jsxs(i.Fragment, {
                 children: [
                   i.jsx("div", {
