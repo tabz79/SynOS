@@ -716,8 +716,18 @@ export function DicomViewerContainer({
                             return (
                                 <div 
                                     key={ser.seriesId || index}
-                                    onClick={() => setActiveSeriesIndex(index)}
-                                    className={`p-2 rounded-xl border cursor-pointer transition flex flex-col space-y-1.5 ${
+                                    draggable={true}
+                                    onDragStart={(e) => {
+                                        e.dataTransfer.setData('application/json', JSON.stringify({ seriesId: ser.seriesId, index }));
+                                        e.dataTransfer.effectAllowed = 'copy';
+                                    }}
+                                    onClick={() => {
+                                        setActiveSeriesIndex(index);
+                                        if (onSeriesSelect && (ser.seriesId || ser.id)) {
+                                            onSeriesSelect(ser.seriesId || ser.id);
+                                        }
+                                    }}
+                                    className={`p-2 rounded-xl border cursor-grab active:cursor-grabbing transition flex flex-col space-y-1.5 ${
                                         isSerActive 
                                             ? 'bg-cyan-950/40 border-cyan-500/60 text-cyan-200 ring-1 ring-cyan-500/40' 
                                             : 'bg-zinc-900/60 hover:bg-zinc-800 border-zinc-800 text-zinc-400'
@@ -763,6 +773,27 @@ export function DicomViewerContainer({
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        e.dataTransfer.dropEffect = 'copy';
+                    }}
+                    onDrop={(e) => {
+                        e.preventDefault();
+                        try {
+                            const rawData = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
+                            if (rawData) {
+                                const parsed = JSON.parse(rawData);
+                                if (parsed.index !== undefined) {
+                                    setActiveSeriesIndex(parsed.index);
+                                }
+                                if (onSeriesSelect && (parsed.seriesId || parsed.id)) {
+                                    onSeriesSelect(parsed.seriesId || parsed.id);
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Drop series error:", err);
+                        }
+                    }}
                     style={{ cursor: activeTool === 'Zoom' ? 'ns-resize' : 'default' }}
                 >
                     

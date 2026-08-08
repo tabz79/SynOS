@@ -1060,6 +1060,18 @@ export function RadiologistTerminal() {
                                     })
                                 )}
                             </div>
+
+                            {/* Footer: Open PACS Archive Button */}
+                            <div className="p-3 border-t dark:border-zinc-800 border-zinc-200 shrink-0 bg-zinc-900/30">
+                                <button
+                                    onClick={() => setShowPacsModal(true)}
+                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 text-xs font-bold transition-all shadow-xs group"
+                                    title="Open full PACS Archive study viewer & search"
+                                >
+                                    <FolderArchive className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+                                    <span>Open PACS Archive</span>
+                                </button>
+                            </div>
                         </>
                     )}
                 </div>

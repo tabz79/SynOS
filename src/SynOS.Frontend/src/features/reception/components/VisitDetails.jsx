@@ -12,12 +12,23 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
     const [testSelectedIndex, setTestSelectedIndex] = useState(0);
+    const testListRef = useRef(null);
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
     const [outsourcedCatalog, setOutsourcedCatalog] = useState([]); // ADDED: Outsourced Catalog Master
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
+
+    // Auto-scroll selected test option into view
+    useEffect(() => {
+        if (testSelectedIndex >= 0 && testListRef.current) {
+            const selectedElem = testListRef.current.children[testSelectedIndex];
+            if (selectedElem) {
+                selectedElem.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [testSelectedIndex]);
 
     const handleDeleteDraft = async () => {
         if (!visitId) return;
@@ -573,7 +584,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
 
                         {/* Search Suggestions Dropdown */}
                         {suggestions.length > 0 && (
-                            <div className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
+                            <div ref={testListRef} className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
                                 {/* INTERNAL TESTS */}
                                 {suggestions.map((test, idx) => (
                                     <button
