@@ -97,6 +97,10 @@ namespace SynOS.Services.Reporting
                             snapshotData.Token = snapshotData.Patient.MRN;
                         }
 
+                        var pacsCount = await _context.PacsInstances.CountAsync(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted);
+                        snapshotData.HasPacsStudy = pacsCount > 0;
+                        snapshotData.DicomInstanceCount = pacsCount;
+
                         return snapshotData;
                     }
                 }
@@ -107,7 +111,11 @@ namespace SynOS.Services.Reporting
             }
 
             // Fallback to dynamic build if no snapshot record exists or snapshot parsing failed
-            return await BuildDynamicStructureAsync(report, visit);
+            var dynamicStructure = await BuildDynamicStructureAsync(report, visit);
+            var livePacsCount = await _context.PacsInstances.CountAsync(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted);
+            dynamicStructure.HasPacsStudy = livePacsCount > 0;
+            dynamicStructure.DicomInstanceCount = livePacsCount;
+            return dynamicStructure;
         }
 
         public async Task<ReportStructureDto> PreviewReportStructureAsync(Guid reportId)

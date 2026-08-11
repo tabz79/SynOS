@@ -23,6 +23,8 @@ namespace SynOS.Models.DTOs.Reporting
         public bool CanEditValues { get; set; }
         public bool IsPhysicallyVerified { get; set; }
         public bool IsManualFlow { get; set; }
+        public bool HasPacsStudy { get; set; }
+        public int DicomInstanceCount { get; set; }
         public List<ColumnDefinitionState> ColumnDefinitions { get; set; } = new();
 
         public static ReportStructureDto FromDomain(ClinicalReportState state)

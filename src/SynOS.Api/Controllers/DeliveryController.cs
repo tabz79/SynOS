@@ -83,7 +83,7 @@ public class DeliveryController : ControllerBase
     public async Task<IActionResult> DeliverViaWhatsApp([FromBody] DeliveryWithPhoneRequestDto request)
     {
         var userId = GetCurrentUserId();
-        var result = await _deliveryService.DeliverViaWhatsAppAsync(request.ReportId, request.Phone, userId);
+        var result = await _deliveryService.DeliverViaWhatsAppAsync(request.ReportId, request.Phone, userId, request.IncludeDicom);
         return Ok(result);
     }
 
@@ -147,5 +147,5 @@ public class DeliveryController : ControllerBase
 
 // DTOs for requests (can be nested or in a separate file)
 public record DeliveryRequestDto(Guid ReportId);
-public record DeliveryWithPhoneRequestDto(Guid ReportId, string Phone);
+public record DeliveryWithPhoneRequestDto(Guid ReportId, string Phone, bool IncludeDicom = false);
 public record DeliveryWithEmailRequestDto(Guid ReportId, string Email);

@@ -168,14 +168,14 @@ export const ReportsApi = {
         return true;
     },
 
-    deliverViaWhatsApp: async (reportId, phone) => {
+    deliverViaWhatsApp: async (reportId, phone, includeDicom = false) => {
         const response = await fetch(`/api/v1/delivery/whatsapp`, {
             method: 'POST',
             headers: { 
                 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ ReportId: reportId, Phone: phone })
+            body: JSON.stringify({ ReportId: reportId, Phone: phone, IncludeDicom: includeDicom })
         });
         if (!response.ok) throw new Error('Failed to send WhatsApp');
         return await response.json();

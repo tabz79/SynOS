@@ -1,229 +1,225 @@
-# Task: Redesign the PACS DICOM Import Pipeline (Enterprise Grade)
+I reviewed the uploaded plan. 
 
-The recent bug exposed architectural weaknesses in the import pipeline. I do **not** want a patch that merely fixes duplicate `PacsSeries` rows. I want the importer redesigned so it behaves like an enterprise PACS.
+My verdict: **Much better than the original version, but I would still not approve it as-is.**
 
-## Goals
+There are 3 things I would push back on before letting an agent start coding.
 
-* Preserve the DICOM hierarchy exactly as it exists.
-* Prevent database corruption.
-* Make imports repeatable and safe.
-* Never rely on UI workarounds to hide bad data.
+### 1. Don't create `ReportDepartmentResolver` yet
 
----
+This is the biggest one.
 
-## Required Design
+The plan introduces a brand-new classification engine:
 
-### 1. Build the hierarchy in memory first
-
-Do **not** query the database for every image.
-
-When importing a folder or ZIP:
-
-* Read every DICOM.
-* Build the complete hierarchy in memory.
-
-Example:
-
-```
-Study
-    Series A
-        Images...
-
-    Series B
-        Images...
-
-    Series C
-        Images...
+```csharp
+ReportDepartmentResolver.IsRadiology(...)
 ```
 
-Group by:
+with hardcoded values:
 
-* StudyInstanceUID
-* SeriesInstanceUID
-* SOPInstanceUID
-
-Only after the hierarchy is complete should database writes begin.
-
----
-
-### 2. Single transaction
-
-Import must occur inside one database transaction.
-
-```
-Begin Transaction
-
-Create Study
-
-Create Series
-
-Create Images
-
-Commit
+```csharp
+Radiology
+RAD
+XRAY
+CT
+MRI
+US
+ULTRASOUND
+MAMMO
+DEXA
 ```
 
-If a fatal error occurs, rollback everything.
+The problem:
 
-Never leave half-imported studies.
+* You are introducing a new source of truth.
+* Tomorrow you add PET, Echo, TMT, ECG, Mammography variants, etc.
+* Now you have business rules duplicated.
 
----
+For SynOS, the actual source of truth should already exist in your data model.
 
-### 3. Eliminate N+1 queries
+I would first ask:
 
-Do not perform SQL lookups for every image.
+> What field already determines whether something belongs to Radiology or Pathology?
 
-Maintain an in-memory lookup (Dictionary or equivalent) while importing.
+If `Department` is already reliable, use that directly.
 
-Database access should be minimized.
+If `SourceType == RadiologyStudy` is already reliable, use that directly.
 
----
-
-### 4. Database integrity
-
-Add database protection.
-
-Create a UNIQUE constraint so duplicate series for the same study cannot exist.
-
-If duplicate data already exists, create a migration strategy instead of forcing the constraint immediately.
+Don't invent a classification layer unless you've proven the existing model is insufficient.
 
 ---
 
-### 5. Idempotent imports
+### 2. The PACS existence check worries me
 
-If the same study is imported twice:
+The plan says:
 
-* do not duplicate studies
-* do not duplicate series
-* do not duplicate instances
-
-The importer should detect existing objects and reuse or skip them.
-
----
-
-### 6. Validation levels
-
-Separate validation into three categories.
-
-#### Fatal
-
-Reject import.
-
-Examples:
-
-* Missing StudyInstanceUID
-* Missing SeriesInstanceUID
-* Missing SOPInstanceUID
-* Corrupted DICOM
-* Invalid pixel data
-
-Rollback transaction.
-
----
-
-#### Warning
-
-Import continues.
-
-Examples:
-
-* Missing patient age
-* Missing referring doctor
-* Missing institution
-* Missing comments
-
----
-
-#### Auto Skip
-
-If duplicate SOP Instance UID is encountered:
-
-Skip that instance.
-
-Continue importing the remaining images.
-
----
-
-### 7. Import summary
-
-Every import should generate a structured summary.
-
-Example:
-
-```
-Study:
-MRI Brain
-
-Series:
-4
-
-Images Imported:
-589
-
-Images Skipped:
-2
-
-Warnings:
-1
-
-Errors:
-0
-
-Import Duration:
-4.3 seconds
+```csharp
+PacsInstances.CountAsync(
+   i => i.RadiologyStudyId == report.SourceId
+)
 ```
 
-This should be available to the technician after import.
+Before approving this, verify:
+
+```text
+Report.SourceId
+==
+RadiologyStudy.Id
+```
+
+Actually confirm it.
+
+Because if:
+
+```text
+Report.SourceId = AccessionNo
+```
+
+or
+
+```text
+Report.SourceId = StudyUid
+```
+
+then this entire PACS gate breaks silently.
+
+The plan assumes a relationship without proving it.
+
+I would make the agent verify:
+
+```sql
+Report.SourceId
+RadiologyStudy.Id
+PacsInstances.RadiologyStudyId
+```
+
+before writing code.
 
 ---
 
-### 8. Preserve DICOM hierarchy
+### 3. The WhatsApp Viewer URL is probably wrong
 
-The importer must never invent or split series.
+This line:
 
-If the source DICOM contains:
-
-```
-Study
- ├── Series A (96)
- ├── Series B (15)
- ├── Series C (7)
- └── Series D (96)
+```text
+ViewerLink:
+{publicBaseUrl}/r/{token}/viewer
 ```
 
-SynOS must store exactly:
+looks invented.
 
+The review claims:
+
+> Explicit backend URL generation
+
+Good.
+
+But:
+
+> Does a route actually exist for `/r/{token}/viewer`?
+
+That's the real question.
+
+I would not let the agent add URLs that don't already map to a controller or React route.
+
+First verify:
+
+```text
+Current PACS Viewer Route
+Current Secure Link Route
+Current Public Controller
 ```
-Study
- ├── Series A (96)
- ├── Series B (15)
- ├── Series C (7)
- └── Series D (96)
-```
 
-The viewer should simply render what the database contains.
-
-No synthetic grouping.
-No fallback grouping.
-No UI masking.
+Otherwise you'll ship WhatsApp links that 404.
 
 ---
 
-### 9. Backward compatibility
+## What I do like
 
-If existing studies are already corrupted (duplicate `PacsSeries` rows), propose a repair or migration strategy before enabling the UNIQUE constraint.
+These parts are solid:
+
+### Department tabs
+
+```text
+Pathology
+Radiology
+```
+
+Absolutely.
+
+Your Delivery Desk is becoming overloaded.
+
+Separating Pathology and Radiology is operationally correct.
 
 ---
 
-### Deliverables
+### LocalStorage persistence
 
-Before writing code, provide:
+Good.
 
-1. The proposed import pipeline.
-2. Database changes.
-3. Validation strategy.
-4. Repair strategy for existing corrupted data.
-5. Rollback strategy.
-6. Performance impact for studies with 5,000+ images.
+Operator should return to:
+
+```text
+Radiology > Live
+```
+
+after refresh.
+
+No reason to force re-selection.
 
 ---
 
+### DICOM ZIP toggle
+
+Good.
+
+But only if:
+
+```text
+hasPacsStudy == true
+```
+
+Exactly as proposed.
+
+Otherwise you'll confuse users with a checkbox that does nothing.
+
+---
+
+### Backend-generated URLs
+
+100% correct.
+
+Never construct:
+
+```js
+reportLink + "/viewer"
+```
+
+inside React.
+
+That belongs in the backend.
+
+---
+
+## My recommendation
+
+Tell the coding agent:
+
+### APPROVED WITH CHANGES
+
+Before implementation:
+
+1. Verify whether `Department` alone can drive segregation.
+
+   * If yes, remove `ReportDepartmentResolver`.
+
+2. Verify relationship:
+
+   * `Report.SourceId`
+   * `RadiologyStudy.Id`
+   * `PacsInstances.RadiologyStudyId`
+
+3. Verify an actual PACS viewer route exists.
+
+   * Do not invent `/r/{token}/viewer`.
+
+If those 3 checks pass, the rest of the plan is sound and aligns well with how SynOS should evolve operationally.

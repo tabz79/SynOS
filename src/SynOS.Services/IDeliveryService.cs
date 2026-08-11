@@ -9,7 +9,7 @@ public interface IDeliveryService
 {
     Task<List<DeliveryQueueItemDto>> GetDeliveryQueueAsync(string? department, string? status);
     Task<DeliveryResultDto> DeliverViaPrintAsync(Guid reportId, Guid userId);
-    Task<DeliveryResultWithLinkDto> DeliverViaWhatsAppAsync(Guid reportId, string phone, Guid userId);
+    Task<DeliveryResultWithLinkDto> DeliverViaWhatsAppAsync(Guid reportId, string phone, Guid userId, bool includeDicomZip = false);
     Task<DeliveryResultWithLinkDto> DeliverViaSmsAsync(Guid reportId, string phone, Guid userId);
     Task<DeliveryResultDto> DeliverViaEmailAsync(Guid reportId, string email, Guid userId);
     Task<SecureLinkDto> GenerateSecureLinkAsync(Guid reportId, Guid userId);

@@ -1699,25 +1699,25 @@ namespace SynOS.Services
             if (!string.IsNullOrEmpty(department))
             {
                 var isPathology = string.Equals(department, "Pathology", StringComparison.OrdinalIgnoreCase);
-                var matchingDeptCodes = await _context.DepartmentMasters
-                    .Where(dm => dm.MacroDepartment == department || (isPathology && dm.MacroDepartment == "LAB") || dm.Code == department || dm.Name == department)
-                    .Select(dm => dm.Code)
-                    .ToListAsync();
+                var isRadiology = string.Equals(department, "Radiology", StringComparison.OrdinalIgnoreCase);
 
-                if (!matchingDeptCodes.Contains(department))
+                if (isRadiology)
                 {
-                    matchingDeptCodes.Add(department);
+                    reportsQuery = reportsQuery.Where(r => r.Department == "Radiology" || r.Department == "RAD" || r.SourceType == "RadiologyStudy");
                 }
-
-                if (isPathology)
+                else if (isPathology)
                 {
-                    matchingDeptCodes = matchingDeptCodes
-                        .Where(code => !string.Equals(code, "RAD", StringComparison.OrdinalIgnoreCase) 
-                                    && !string.Equals(code, "RADIOLOGY", StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    reportsQuery = reportsQuery.Where(r => r.Department != "Radiology" && r.Department != "RAD" && r.SourceType != "RadiologyStudy");
                 }
-
-                reportsQuery = reportsQuery.Where(r => matchingDeptCodes.Contains(r.Department));
+                else
+                {
+                    var matchingDeptCodes = await _context.DepartmentMasters
+                        .Where(dm => dm.MacroDepartment == department || dm.Code == department || dm.Name == department)
+                        .Select(dm => dm.Code)
+                        .ToListAsync();
+                    if (!matchingDeptCodes.Contains(department)) matchingDeptCodes.Add(department);
+                    reportsQuery = reportsQuery.Where(r => matchingDeptCodes.Contains(r.Department));
+                }
             }
 
             var reports = await reportsQuery

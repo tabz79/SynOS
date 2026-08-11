@@ -29,6 +29,9 @@ export function DeliveryTerminal() {
     // Auto-fit preview scale to prevent horizontal clipping when window is not maximized
     const previewContainerRef = useRef(null);
     const [previewScale, setPreviewScale] = useState(0.92);
+    const [departmentTab, setDepartmentTab] = useState(() => {
+        return localStorage.getItem('synos_delivery_department') || 'Pathology';
+    });
     const [reports, setReports] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
     const [selectedReportId, setSelectedReportId] = useState(null);
@@ -75,7 +78,7 @@ export function DeliveryTerminal() {
 
     useEffect(() => {
         fetchWorklist();
-    }, [showHistory]);
+    }, [showHistory, departmentTab]);
 
     useEffect(() => {
         if (selectedReportId) {
@@ -86,21 +89,30 @@ export function DeliveryTerminal() {
         }
     }, [selectedReportId]);
 
+    const handleDepartmentChange = (newDept) => {
+        setDepartmentTab(newDept);
+        localStorage.setItem('synos_delivery_department', newDept);
+        setSelectedReportId(null);
+    };
+
     const fetchWorklist = async () => {
         setIsLoadingList(true);
         try {
             // Live: ReadyForVerification, Signed, ManualVerified, Delivered
             // History (7d): Signed, ManualVerified, Finalized, Delivered
             const statusStr = showHistory ? 'Signed,ManualVerified,Finalized,Delivered' : 'ReadyForVerification,Signed,ManualVerified,Delivered';
-            const data = await ReportsApi.getReportsByStatus(statusStr, undefined, showHistory);
+            const data = await ReportsApi.getReportsByStatus(statusStr, departmentTab, showHistory);
             setReports(data);
             
             // Auto-select first if none selected or if current selected is not in new list
             if (data.length > 0 && (!selectedReportId || !data.some(r => r.reportId === selectedReportId))) {
                 setSelectedReportId(data[0].reportId);
+            } else if (data.length === 0) {
+                setSelectedReportId(null);
             }
         } catch (err) {
             console.error("Failed to fetch delivery worklist:", err);
+            showToast("Failed to load worklist", "error");
         } finally {
             setIsLoadingList(false);
         }
@@ -194,7 +206,7 @@ export function DeliveryTerminal() {
         if (!selectedReportId || !deliveryPhone) return;
         setIsDelivering(true);
         try {
-            await ReportsApi.deliverViaWhatsApp(selectedReportId, deliveryPhone);
+            await ReportsApi.deliverViaWhatsApp(selectedReportId, deliveryPhone, includeDicom);
             setShowWhatsAppPrompt(false);
             showToast("Report queued for WhatsApp dispatch successfully!", "success");
             autoAdvance();
@@ -259,6 +271,32 @@ export function DeliveryTerminal() {
                                     History (7d)
                                 </button>
                             </div>
+                        </div>
+
+                        {/* Primary Department Segmented Selector */}
+                        <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-900/80 rounded-xl border border-zinc-200 dark:border-white/5">
+                            <button
+                                onClick={() => handleDepartmentChange('Pathology')}
+                                className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                    departmentTab === 'Pathology'
+                                        ? "bg-white dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-black/5 dark:border-white/5"
+                                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+                                }`}
+                            >
+                                <span className={`w-2 h-2 rounded-full ${departmentTab === 'Pathology' ? 'bg-emerald-500' : 'bg-zinc-400'}`} />
+                                Pathology
+                            </button>
+                            <button
+                                onClick={() => handleDepartmentChange('Radiology')}
+                                className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                    departmentTab === 'Radiology'
+                                        ? "bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-black/5 dark:border-white/5"
+                                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+                                }`}
+                            >
+                                <span className={`w-2 h-2 rounded-full ${departmentTab === 'Radiology' ? 'bg-indigo-500' : 'bg-zinc-400'}`} />
+                                Radiology
+                            </button>
                         </div>
                         <div className="relative">
                             <Search className="absolute left-3 top-3 w-4 h-4 text-zinc-400" />
@@ -504,19 +542,21 @@ export function DeliveryTerminal() {
                                     />
                                 </div>
 
-                                {/* DICOM Viewer Access Option */}
-                                <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                                    <input 
-                                        type="checkbox"
-                                        id="includeDicomCheck"
-                                        checked={includeDicom}
-                                        onChange={(e) => setIncludeDicom(e.target.checked)}
-                                        className="w-4 h-4 rounded border-emerald-500 text-emerald-600 focus:ring-emerald-500"
-                                    />
-                                    <label htmlFor="includeDicomCheck" className="text-xs font-semibold select-none cursor-pointer">
-                                        Include DICOM Web Viewer Access Link
-                                    </label>
-                                </div>
+                                {/* DICOM Viewer Access Option - Only shown when PACS study instances actually exist */}
+                                {reportStructure?.hasPacsStudy === true && (reportStructure?.dicomInstanceCount || 0) > 0 && (
+                                    <div className="flex items-center gap-3 p-3.5 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                        <input 
+                                            type="checkbox"
+                                            id="includeDicomCheck"
+                                            checked={includeDicom}
+                                            onChange={(e) => setIncludeDicom(e.target.checked)}
+                                            className="w-4 h-4 rounded border-emerald-500 text-emerald-600 focus:ring-emerald-500"
+                                        />
+                                        <label htmlFor="includeDicomCheck" className="text-xs font-semibold select-none cursor-pointer">
+                                            Include DICOM Study Files (ZIP Download)
+                                        </label>
+                                    </div>
+                                )}
 
                                 <div className="flex gap-4">
                                     <button 

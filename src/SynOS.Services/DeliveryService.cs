@@ -323,7 +323,7 @@ public class DeliveryService : IDeliveryService
         return new DeliveryResultDto(deliveryLog.LogId, deliveryLog.Status.ToString());
     }
 
-    public async Task<DeliveryResultWithLinkDto> DeliverViaWhatsAppAsync(Guid reportId, string phone, Guid userId)
+    public async Task<DeliveryResultWithLinkDto> DeliverViaWhatsAppAsync(Guid reportId, string phone, Guid userId, bool includeDicomZip = false)
     {
         // Validate phone
         if (!IsIndianMobileNumber(phone))
@@ -400,6 +400,21 @@ public class DeliveryService : IDeliveryService
 
         var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
         var labId = !string.IsNullOrWhiteSpace(profile?.LabId) ? profile.LabId : (_configuration["Middleware:LabId"] ?? "LAB001");
+
+        string waContent = includeDicomZip
+            ? $"Dear {patientName}, your diagnostic radiology report and imaging study for {tests} are ready.\n\n📄 View/Download Report: {secureLinkDto.Link}\n📦 Download DICOM Images (ZIP): {secureLinkDto.PackageLink}\n🔬 View Images Online: {secureLinkDto.ViewerLink}"
+            : $"Dear {patientName}, your test report for {tests} is ready.\n\n📄 View/Download Report: {secureLinkDto.Link}";
+
+        // Create NotificationQueue entry for WhatsApp background dispatcher
+        var notificationQueue = new NotificationQueue
+        {
+            Type = NotificationType.WHATSAPP,
+            TargetId = deliveryLog.LogId,
+            Recipient = phone,
+            Content = waContent,
+            Status = NotificationStatus.Pending
+        };
+        _context.NotificationQueues.Add(notificationQueue);
 
         // Enqueue ReportDeliveryRequestedEvent
         _outboxService.Enqueue(new ReportDeliveryRequestedEvent(
@@ -658,9 +673,10 @@ public class DeliveryService : IDeliveryService
         await _context.SaveChangesAsync();
 
         var linkUrl = $"{_publicBaseUrl}/r/{token}";
-        var packageLinkUrl = $"{_publicBaseUrl}/r/{token}?pkg=1";
+        var packageLinkUrl = $"{_publicBaseUrl}/api/v1/public/reports/download-package/{token}";
+        var viewerLinkUrl = $"{_publicBaseUrl}/r/{token}";
         
-        return new SecureLinkDto(token, linkUrl, packageLinkUrl, expiresAt, maxDownloads, maxDownloads);
+        return new SecureLinkDto(token, linkUrl, packageLinkUrl, expiresAt, maxDownloads, maxDownloads, viewerLinkUrl);
     }
 
     public async Task<Stream> VerifyAndDownloadAsync(string token, string phone)

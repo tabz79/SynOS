@@ -6,5 +6,6 @@ public sealed record SecureLinkDto(
     string PackageLink, // New property for the ZIP package link
     DateTimeOffset ExpiresAt,
     int MaxDownloads,
-    int DownloadsRemaining
+    int DownloadsRemaining,
+    string? ViewerLink = null
 );
