@@ -832,12 +832,14 @@ namespace SynOS.Services
             var signaturesList = new List<ReportSignatureDetails>();
             foreach (var s in domain.Signatures)
             {
-                var sigResult = await LoadSignatureImageAsync(s.SignatureImageUrl);
+                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == s.Name);
+                var sigImageUrl = !string.IsNullOrEmpty(s.SignatureImageUrl) ? s.SignatureImageUrl : user?.SignatureImageUrl;
+                var sigResult = await LoadSignatureImageAsync(sigImageUrl);
                 signaturesList.Add(new ReportSignatureDetails
                 {
                     DoctorName = s.Name,
-                    Credentials = s.Designation,
-                    Role = s.Designation.Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
+                    Credentials = s.Designation ?? user?.Designation ?? string.Empty,
+                    Role = (s.Designation ?? user?.Designation ?? "").Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
                     SignedAt = s.SignedAt,
                     Hash = s.Hash,
                     Version = domain.Verification.ReportVersion,
@@ -990,18 +992,17 @@ namespace SynOS.Services
                         var nb = new System.Text.StringBuilder();
                         if (!string.IsNullOrWhiteSpace(radRep.Findings))
                         {
-                            nb.AppendLine("<h3>EXAMINATION & FINDINGS</h3>");
-                            nb.AppendLine($"<p>{radRep.Findings}</p>");
+                            nb.AppendLine(radRep.Findings);
                         }
                         if (!string.IsNullOrWhiteSpace(radRep.Impression))
                         {
-                            nb.AppendLine("<h3>IMPRESSION</h3>");
-                            nb.AppendLine($"<p><strong>{radRep.Impression}</strong></p>");
+                            if (nb.Length > 0) nb.AppendLine();
+                            nb.AppendLine(radRep.Impression);
                         }
                         if (!string.IsNullOrWhiteSpace(radRep.AdditionalNotes))
                         {
-                            nb.AppendLine("<h3>ADDITIONAL NOTES</h3>");
-                            nb.AppendLine($"<p>{radRep.AdditionalNotes}</p>");
+                            if (nb.Length > 0) nb.AppendLine();
+                            nb.AppendLine(radRep.AdditionalNotes);
                         }
                         model.Interpretation = nb.ToString();
                     }
@@ -1090,18 +1091,17 @@ namespace SynOS.Services
                 {
                     if (!string.IsNullOrWhiteSpace(radiologyReport.Findings))
                     {
-                        narrativeBuilder.AppendLine("<h3>EXAMINATION & FINDINGS</h3>");
-                        narrativeBuilder.AppendLine($"<p>{radiologyReport.Findings}</p>");
+                        narrativeBuilder.AppendLine(radiologyReport.Findings);
                     }
                     if (!string.IsNullOrWhiteSpace(radiologyReport.Impression))
                     {
-                        narrativeBuilder.AppendLine("<h3>IMPRESSION</h3>");
-                        narrativeBuilder.AppendLine($"<p><strong>{radiologyReport.Impression}</strong></p>");
+                        if (narrativeBuilder.Length > 0) narrativeBuilder.AppendLine();
+                        narrativeBuilder.AppendLine(radiologyReport.Impression);
                     }
                     if (!string.IsNullOrWhiteSpace(radiologyReport.AdditionalNotes))
                     {
-                        narrativeBuilder.AppendLine("<h3>ADDITIONAL NOTES</h3>");
-                        narrativeBuilder.AppendLine($"<p>{radiologyReport.AdditionalNotes}</p>");
+                        if (narrativeBuilder.Length > 0) narrativeBuilder.AppendLine();
+                        narrativeBuilder.AppendLine(radiologyReport.AdditionalNotes);
                     }
                 }
                 var narrativeText = narrativeBuilder.ToString();

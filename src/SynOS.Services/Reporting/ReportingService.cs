@@ -939,7 +939,7 @@ namespace SynOS.Services.Reporting
                 {
                     paramsList.Add(new ReportParameterDto
                     {
-                        ParameterName = "EXAMINATION & FINDINGS",
+                        ParameterName = string.Empty,
                         ParameterCode = "RAD_FINDINGS",
                         Value = radReport.Findings,
                         ShowNarrative = true,
@@ -950,7 +950,7 @@ namespace SynOS.Services.Reporting
                 {
                     paramsList.Add(new ReportParameterDto
                     {
-                        ParameterName = "IMPRESSION",
+                        ParameterName = string.Empty,
                         ParameterCode = "RAD_IMPRESSION",
                         Value = radReport.Impression,
                         ShowNarrative = true,
@@ -961,7 +961,7 @@ namespace SynOS.Services.Reporting
                 {
                     paramsList.Add(new ReportParameterDto
                     {
-                        ParameterName = "ADDITIONAL NOTES",
+                        ParameterName = string.Empty,
                         ParameterCode = "RAD_NOTES",
                         Value = radReport.AdditionalNotes,
                         ShowNarrative = true,

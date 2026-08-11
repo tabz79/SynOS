@@ -834,22 +834,51 @@ namespace SynOS.Services
             var narrativeBuilder = new System.Text.StringBuilder();
             if (!string.IsNullOrWhiteSpace(report.RadiologyReport.Findings))
             {
-                narrativeBuilder.AppendLine("<h3>EXAMINATION & FINDINGS</h3>");
-                narrativeBuilder.AppendLine($"<p>{report.RadiologyReport.Findings}</p>");
+                narrativeBuilder.AppendLine(report.RadiologyReport.Findings);
             }
             if (!string.IsNullOrWhiteSpace(report.RadiologyReport.Impression))
             {
-                narrativeBuilder.AppendLine("<h3>IMPRESSION</h3>");
-                narrativeBuilder.AppendLine($"<p><strong>{report.RadiologyReport.Impression}</strong></p>");
+                if (narrativeBuilder.Length > 0) narrativeBuilder.AppendLine();
+                narrativeBuilder.AppendLine(report.RadiologyReport.Impression);
             }
             if (!string.IsNullOrWhiteSpace(report.RadiologyReport.AdditionalNotes))
             {
-                narrativeBuilder.AppendLine("<h3>ADDITIONAL NOTES</h3>");
-                narrativeBuilder.AppendLine($"<p>{report.RadiologyReport.AdditionalNotes}</p>");
+                if (narrativeBuilder.Length > 0) narrativeBuilder.AppendLine();
+                narrativeBuilder.AppendLine(report.RadiologyReport.AdditionalNotes);
             }
             var narrativeHtml = narrativeBuilder.ToString();
 
             var newVersionNumber = report.CurrentVersion + 1;
+
+            var signaturesList = new List<ReportSignatureDetails>();
+            var director = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+            if (director != null)
+            {
+                var directorSigRes = await LoadSignatureImageAsync(director.SignatureImageUrl);
+                signaturesList.Add(new ReportSignatureDetails
+                {
+                    DoctorName = director.Name,
+                    Credentials = director.Designation ?? "Chief Pathologist",
+                    Role = "Chief Pathologist / Director",
+                    SignedAt = (signingUser.UserId == director.UserId) ? DateTimeOffset.UtcNow : null,
+                    SignatureImage = directorSigRes.ImageBytes,
+                    SignatureImageBase64 = directorSigRes.Base64String
+                });
+            }
+
+            if (director == null || signingUser.UserId != director.UserId)
+            {
+                var signingSigRes = await LoadSignatureImageAsync(signingUser.SignatureImageUrl);
+                signaturesList.Add(new ReportSignatureDetails
+                {
+                    DoctorName = signingUser.Name,
+                    Credentials = signingUser.Designation ?? "Consultant Radiologist",
+                    Role = "Radiologist",
+                    SignedAt = DateTimeOffset.UtcNow,
+                    SignatureImage = signingSigRes.ImageBytes,
+                    SignatureImageBase64 = signingSigRes.Base64String
+                });
+            }
 
             var reportData = new ReportDataModel
             {
@@ -874,16 +903,7 @@ namespace SynOS.Services
                 Comments = null,
                 Interpretation = narrativeHtml,
                 Recommendations = report.RadiologyReport.AdditionalNotes,
-                Signatures = new List<ReportSignatureDetails>
-                {
-                    new ReportSignatureDetails
-                    {
-                        DoctorName = signingUser.Name,
-                        Credentials = signingUser.Designation,
-                        SignedAt = DateTimeOffset.UtcNow,
-                        Role = "Radiologist"
-                    }
-                },
+                Signatures = signaturesList,
                 Verification = new VerificationInfo
                 {
                     QrCodeContent = $"SynOS Report: {report.ReportId}",
@@ -1057,6 +1077,35 @@ namespace SynOS.Services
 
             study.Status = "AwaitingSignature";
             await _context.SaveChangesAsync();
+        }
+
+        private async Task<(byte[]? ImageBytes, string? Base64String)> LoadSignatureImageAsync(string? signatureImageUrl)
+        {
+            if (string.IsNullOrEmpty(signatureImageUrl)) return (null, null);
+
+            try
+            {
+                if (signatureImageUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    var commaIndex = signatureImageUrl.IndexOf(',');
+                    var base64Data = commaIndex >= 0 ? signatureImageUrl.Substring(commaIndex + 1) : signatureImageUrl;
+                    var bytes = Convert.FromBase64String(base64Data);
+                    return (bytes, base64Data);
+                }
+                else
+                {
+                    var cleanPath = signatureImageUrl.TrimStart('/', '\\');
+                    using var stream = await _fileStorageService.GetFileStreamAsync(cleanPath);
+                    using var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    var bytes = ms.ToArray();
+                    return (bytes, Convert.ToBase64String(bytes));
+                }
+            }
+            catch
+            {
+                return (null, null);
+            }
         }
 
         private static string FormatPatientName(string firstName, string lastName)
