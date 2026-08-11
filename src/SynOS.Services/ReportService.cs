@@ -676,6 +676,19 @@ namespace SynOS.Services
                         if (v2Data != null)
                         {
                             v2Data.Metadata.GeneratedFrom = "snapshot";
+                            if (string.IsNullOrWhiteSpace(v2Data.Metadata.GeneratedAtFormatted))
+                            {
+                                DateTimeOffset genAt = (v2Data.Metadata.GeneratedAt.HasValue && v2Data.Metadata.GeneratedAt.Value != default) 
+                                    ? v2Data.Metadata.GeneratedAt.Value 
+                                    : (report.SignedAt.HasValue ? report.SignedAt.Value : report.CreatedAt);
+                                v2Data.Metadata.GeneratedAtFormatted = genAt.ToString("dd-MMM-yyyy, hh:mm tt");
+                            }
+                            if (string.IsNullOrWhiteSpace(v2Data.Metadata.BillingDateFormatted))
+                            {
+                                var visit = report.Visit ?? await _context.Visits.AsNoTracking().FirstOrDefaultAsync(v => v.VisitId == report.VisitId);
+                                DateTimeOffset billDate = visit != null ? visit.CreatedAt : report.CreatedAt;
+                                v2Data.Metadata.BillingDateFormatted = billDate.ToString("dd-MMM-yyyy");
+                            }
                             return v2Data;
                         }
                     }
@@ -1672,7 +1685,7 @@ namespace SynOS.Services
             }
             else
             {
-                // History (7d) View: Show Completed (terminal) reports from the last 7 days from yesterday and older (strictly < today)
+                // History (7d) View: Show Completed (terminal) reports from the past 7 days starting from yesterday (strictly < today)
                 reportsQuery = reportsQuery.Where(r => 
                     terminalStatuses.Contains(r.Status) && (r.UpdatedAt ?? r.CreatedAt) >= startDate && (r.UpdatedAt ?? r.CreatedAt) < today
                 );

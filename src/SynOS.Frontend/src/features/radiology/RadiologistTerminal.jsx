@@ -1005,9 +1005,9 @@ export function RadiologistTerminal() {
             <SystemBar syncStatus={connectionStatus === 'Connected' ? 'Synced' : 'Not Synced'} />
 
             {toastMessage && (
-                <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2 animate-bounce">
-                    <Check className="w-4 h-4" />
-                    <span>{toastMessage}</span>
+                <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[99999] bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-2xl flex items-center gap-2.5 animate-bounce border border-emerald-400/30">
+                    <Check className="w-4 h-4 text-emerald-100" />
+                    <span className="tracking-wide">{toastMessage}</span>
                 </div>
             )}
 

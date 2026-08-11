@@ -90,13 +90,13 @@ export function DeliveryTerminal() {
         setIsLoadingList(true);
         try {
             // Live: ReadyForVerification, Signed, ManualVerified, Delivered
-            // History: Delivered
-            const statusStr = showHistory ? 'Delivered' : 'ReadyForVerification,Signed,ManualVerified,Delivered';
+            // History (7d): Signed, ManualVerified, Finalized, Delivered
+            const statusStr = showHistory ? 'Signed,ManualVerified,Finalized,Delivered' : 'ReadyForVerification,Signed,ManualVerified,Delivered';
             const data = await ReportsApi.getReportsByStatus(statusStr, undefined, showHistory);
             setReports(data);
             
-            // Auto-select first if none selected
-            if (data.length > 0 && !selectedReportId) {
+            // Auto-select first if none selected or if current selected is not in new list
+            if (data.length > 0 && (!selectedReportId || !data.some(r => r.reportId === selectedReportId))) {
                 setSelectedReportId(data[0].reportId);
             }
         } catch (err) {
@@ -243,7 +243,7 @@ export function DeliveryTerminal() {
 
                             <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit shrink-0 font-sans">
                                 <button
-                                    onClick={() => setShowHistory(false)}
+                                    onClick={() => { setShowHistory(false); setSelectedReportId(null); }}
                                     className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
                                         !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
                                     }`}
@@ -251,7 +251,7 @@ export function DeliveryTerminal() {
                                     Live
                                 </button>
                                 <button
-                                    onClick={() => setShowHistory(true)}
+                                    onClick={() => { setShowHistory(true); setSelectedReportId(null); }}
                                     className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
                                         showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
                                     }`}

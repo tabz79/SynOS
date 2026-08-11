@@ -887,6 +887,8 @@ namespace SynOS.Services
                     ContractVersion = 2,
                     GeneratedFrom = "live",
                     GeneratedAt = DateTimeOffset.UtcNow,
+                    GeneratedAtFormatted = DateTimeOffset.UtcNow.ToString("dd-MMM-yyyy, hh:mm tt"),
+                    BillingDateFormatted = studyEntity.Visit?.CreatedAt.ToString("dd-MMM-yyyy") ?? DateTimeOffset.UtcNow.ToString("dd-MMM-yyyy"),
                     ReferenceDoctor = !string.IsNullOrWhiteSpace(result.visit?.ReferrerText) ? result.visit.ReferrerText : (!string.IsNullOrWhiteSpace(result.visit?.Referrer?.ProviderName) ? result.visit.Referrer.ProviderName : (result.visit?.ReferralPartner?.Name ?? "Self / Walk-in"))
                 },
                 ReportTitle = !string.IsNullOrWhiteSpace(studyEntity.Order.Test?.ReportTitle) ? studyEntity.Order.Test.ReportTitle : studyEntity.Order.Test?.TestName,
