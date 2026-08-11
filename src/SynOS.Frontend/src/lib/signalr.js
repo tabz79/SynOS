@@ -146,6 +146,11 @@ export const SignalRService = {
         conn.on("receiveServerTime", (st) => callback(st));
     },
 
+    getConnectionStatus: () => {
+        if (!connection) return "Not Synced";
+        return connection.state === HubConnectionState.Connected ? "Synced" : "Not Synced";
+    },
+
     onConnectionStatusChanged: (callback) => {
         if (!window._signalrStatusSubscribers) window._signalrStatusSubscribers = [];
         window._signalrStatusSubscribers.push(callback);

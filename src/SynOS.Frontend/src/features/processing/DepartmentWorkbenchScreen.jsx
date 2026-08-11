@@ -6,7 +6,7 @@ import { RealitySummary } from '@/components/layout/RealitySummary';
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue';
 import { ActivityStream } from '@/components/layout/ActivityStream';
 import { useTheme } from '@/context/ThemeContext';
-import { ClipboardList, AlertCircle, CheckCircle2, FlaskConical, ChevronDown, User, Package } from 'lucide-react';
+import { ClipboardList, AlertCircle, CheckCircle2, FlaskConical, ChevronDown, User, Package, Clock, UserCheck } from 'lucide-react';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
 import { useFlipGroup } from "@/hooks/useSynOSMotion";
 import { useAuth } from '@/context/AuthContext';
@@ -42,10 +42,10 @@ export function DepartmentWorkbenchScreen() {
 
     // Reality Tiles mapping
     const realityTiles = [
-        { value: summary.pending, label: "Pending", qualifier: "Awaiting", icon: ClipboardList, color: "blue" },
-        { value: summary.urgent, label: "Urgent", qualifier: "Priority", icon: AlertCircle, color: "amber" },
-        { value: summary.critical, label: "Critical", icon: AlertCircle, color: "red" },
-        { value: summary.completed, label: "Completed", icon: CheckCircle2, color: "emerald" },
+        { value: summary.unassigned, label: "Unassigned Queue", qualifier: "Awaiting Claim", icon: ClipboardList, color: "blue" },
+        { value: summary.activeWorklist, label: "Active Worklist", qualifier: "Claimed & In-Progress", icon: UserCheck, color: "indigo" },
+        { value: summary.slaBreach, label: "Delayed Tests", qualifier: "Waiting > 45m", icon: Clock, color: summary.slaBreach > 0 ? "amber" : "zinc" },
+        { value: summary.completed, label: "Completed Today", qualifier: "Validated", icon: CheckCircle2, color: "emerald" },
     ];
 
     const handleOpenAssignment = (row) => {
@@ -160,7 +160,7 @@ export function DepartmentWorkbenchScreen() {
                         <div ref={queueRef} className="flex-1 flex flex-col min-h-0 relative border-t dark:border-white/5 border-zinc-200 pt-4">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-4 shrink-0">
-                                    <ActionQueueHeader title="Labor Queue" count={filteredQueue.length} />
+                                    <ActionQueueHeader title="Processing Worklist" count={filteredQueue.length} />
                                     
                                     <WorklistMatrixTabs
                                         activeAssignmentTab={activeTab}

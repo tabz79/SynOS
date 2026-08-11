@@ -3,10 +3,10 @@ import { cn } from '@/lib/utils';
 import { CheckCircle2, Clock, Smartphone, UserCheck } from 'lucide-react';
 
 export function DeliveryWorklistCard({ report, isSelected, onClick }) {
-    // GPT-5 Logic: Determine status on the fly
-    const isDigital = report.signaturesCount > 0;
+    const statusNorm = (report.status || '').toLowerCase();
+    const isDigital = (report.signaturesCount > 0) || statusNorm === 'signed' || statusNorm === 'manualverified';
     const isVerified = report.isPhysicallyVerified || isDigital;
-    const isDelivered = report.delivered;
+    const isDelivered = report.delivered || statusNorm === 'delivered';
 
     const getStatusBadge = () => {
         if (isDelivered) {

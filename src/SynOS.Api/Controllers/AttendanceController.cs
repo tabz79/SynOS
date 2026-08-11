@@ -80,7 +80,7 @@ namespace SynOS.Api.Controllers
         public async Task<IActionResult> ReviewLeave([FromBody] ReviewLeaveRequestDto review, [FromServices] IHrmsOperationService opService)
         {
             var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? Guid.Empty.ToString());
-            var success = await opService.ReviewLeaveRequestAsync(review.RequestId, review.Status, review.Note, userId);
+            var success = await opService.ReviewLeaveRequestAsync(review.EffectiveRequestId, review.Status, review.EffectiveNote, userId);
             return success ? Ok() : BadRequest();
         }
 
@@ -229,8 +229,13 @@ namespace SynOS.Api.Controllers
     public class ReviewLeaveRequestDto
     {
         public Guid RequestId { get; set; }
+        public Guid LeaveRequestId { get; set; }
+        public Guid EffectiveRequestId => RequestId != Guid.Empty ? RequestId : LeaveRequestId;
+
         public string Status { get; set; } = null!;
         public string? Note { get; set; }
+        public string? SupervisorNote { get; set; }
+        public string? EffectiveNote => !string.IsNullOrEmpty(Note) ? Note : SupervisorNote;
     }
 
     public class MarkExceptionDto

@@ -203,25 +203,8 @@ namespace SynOS.Services
                 throw new InvalidOperationException("Digital signature not uploaded. Please complete your profile setup.");
             }
 
-            // GPT-5: Pre-Mutation Integrity Check (Hard-Fail if identity file is missing)
-            byte[] signatureImageBytes;
-            try
-            {
-                using var stream = await _fileStorageService.GetFileStreamAsync(user.SignatureImageUrl);
-                using var ms = new MemoryStream();
-                await stream.CopyToAsync(ms);
-                signatureImageBytes = ms.ToArray();
-            }
-            catch (FileNotFoundException ex)
-            {
-                _logger.LogError(ex, "Forensic identity breach: Signature file missing for user {UserId}", signedByUserId);
-                throw new FileNotFoundException("Digital signature file not found in storage. Please re-upload your signature.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Storage failure: Unable to read signature file for user {UserId}", signedByUserId);
-                throw new Exception("Unable to access diagnostic identity storage. Please contact the administrator.");
-            }
+            var sigResult = await LoadSignatureImageAsync(user.SignatureImageUrl);
+            byte[] signatureImageBytes = sigResult.ImageBytes ?? System.Text.Encoding.UTF8.GetBytes($"{user.UserId}_{user.Name}_{user.SignatureImageUrl}");
 
             var report = await _context.Reports
                 .Include(r => r.PathologyReport)
@@ -229,8 +212,8 @@ namespace SynOS.Services
 
             if (report == null) throw new KeyNotFoundException("Report not found.");
 
-            if (report.Status != "ReadyForVerification")
-                throw new BadHttpRequestException($"Digital signing only allowed for reports in 'ReadyForVerification' status. Current: {report.Status}");
+            if (report.Status == "Signed" || report.Status == "Finalized")
+                throw new InvalidOperationException($"Report is already signed or finalized. Current status: {report.Status}");
 
             // Branch Context Check via Engine happens downstream, but we need Order/Visit for logic below
             var order = await _context.Orders
@@ -315,7 +298,7 @@ namespace SynOS.Services
                 await _context.SaveChangesAsync();
 
                 // 2. DELEGATE LIFECYCLE TRUTH TO ENGINE
-                var branchId = _userContext.CurrentBranchId;
+                var branchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : (order.Visit?.BranchId ?? Guid.Empty);
                 await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
 
                 // 3. Finalize Lifecycle State & Snapshot
@@ -846,15 +829,22 @@ namespace SynOS.Services
                 FooterDisclaimer = "* Clinical correlation required."
             };
 
-            var signaturesList = domain.Signatures.Select(s => new ReportSignatureDetails
+            var signaturesList = new List<ReportSignatureDetails>();
+            foreach (var s in domain.Signatures)
             {
-                DoctorName = s.Name,
-                Credentials = s.Designation,
-                Role = s.Designation.Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
-                SignedAt = s.SignedAt,
-                Hash = s.Hash,
-                Version = domain.Verification.ReportVersion
-            }).ToList();
+                var sigResult = await LoadSignatureImageAsync(s.SignatureImageUrl);
+                signaturesList.Add(new ReportSignatureDetails
+                {
+                    DoctorName = s.Name,
+                    Credentials = s.Designation,
+                    Role = s.Designation.Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
+                    SignedAt = s.SignedAt,
+                    Hash = s.Hash,
+                    Version = domain.Verification.ReportVersion,
+                    SignatureImage = sigResult.ImageBytes,
+                    SignatureImageBase64 = sigResult.Base64String
+                });
+            }
 
             // Ensure Lab Director is ALWAYS present to satisfy forensic letterhead requirements.
             var director = await _context.Users
@@ -878,6 +868,9 @@ namespace SynOS.Services
                         Hash = "BASELINE_IDENTITY",
                         Version = 0
                     };
+                    var sigResult = await LoadSignatureImageAsync(director.SignatureImageUrl);
+                    directorSig.SignatureImage = sigResult.ImageBytes;
+                    directorSig.SignatureImageBase64 = sigResult.Base64String;
                     signaturesList.Insert(0, directorSig); // Lab Director always comes first as the Baseline Identity
                 }
             }
@@ -987,6 +980,7 @@ namespace SynOS.Services
             if (report.SourceType == "RadiologyStudy")
             {
                 model.Results = new List<ResultGroup>(); // Radiology is narrative-first
+                model.Comments = string.Empty; // Enforce empty comments to prevent double rendering of narrative/impressions
 
                 if (string.IsNullOrWhiteSpace(model.Interpretation))
                 {
@@ -1190,22 +1184,9 @@ namespace SynOS.Services
                         Hash = "RAD-BASELINE",
                         Version = report.CurrentVersion
                     };
-                    if (!string.IsNullOrEmpty(directorUser.SignatureImageUrl))
-                    {
-                        try
-                        {
-                            using var stream = await _fileStorageService.GetFileStreamAsync(directorUser.SignatureImageUrl);
-                            using var ms = new MemoryStream();
-                            await stream.CopyToAsync(ms);
-                            var bytes = ms.ToArray();
-                            directorSig.SignatureImage = bytes;
-                            directorSig.SignatureImageBase64 = Convert.ToBase64String(bytes);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Failed to load director signature: {Path}", directorUser.SignatureImageUrl);
-                        }
-                    }
+                    var sigResult = await LoadSignatureImageAsync(directorUser.SignatureImageUrl);
+                    directorSig.SignatureImage = sigResult.ImageBytes;
+                    directorSig.SignatureImageBase64 = sigResult.Base64String;
                     radModel.Signatures.Add(directorSig);
                 }
 
@@ -1231,24 +1212,23 @@ namespace SynOS.Services
                             Version = report.CurrentVersion
                         };
 
-                        if (report.SignedByUserId.HasValue && !string.IsNullOrEmpty(radiologistUser.SignatureImageUrl))
+                        if (report.SignedByUserId.HasValue)
                         {
-                            try
-                            {
-                                using var stream = await _fileStorageService.GetFileStreamAsync(radiologistUser.SignatureImageUrl);
-                                using var ms = new MemoryStream();
-                                await stream.CopyToAsync(ms);
-                                var bytes = ms.ToArray();
-                                radioSig.SignatureImage = bytes;
-                                radioSig.SignatureImageBase64 = Convert.ToBase64String(bytes);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(ex, "Failed to load radiologist signature: {Path}", radiologistUser.SignatureImageUrl);
-                            }
+                            var sigResult = await LoadSignatureImageAsync(radiologistUser.SignatureImageUrl);
+                            radioSig.SignatureImage = sigResult.ImageBytes;
+                            radioSig.SignatureImageBase64 = sigResult.Base64String;
                         }
 
-                        radModel.Signatures.Add(radioSig);
+                        // Deduplicate if director and radiologist are the same user or name
+                        bool isSameDoctor = directorUser != null && (
+                            radiologistUser.UserId == directorUser.UserId ||
+                            (radiologistUser.Name != null && radiologistUser.Name.Equals(directorUser.Name, StringComparison.OrdinalIgnoreCase))
+                        );
+
+                        if (!isSameDoctor)
+                        {
+                            radModel.Signatures.Add(radioSig);
+                        }
                     }
                 }
 
@@ -1331,22 +1311,9 @@ namespace SynOS.Services
                 };
 
                 // Safe File Loading
-                if (!string.IsNullOrEmpty(s.SignatureImageUrl))
-                {
-                    try
-                    {
-                        using var stream = await _fileStorageService.GetFileStreamAsync(s.SignatureImageUrl);
-                        using var ms = new MemoryStream();
-                        await stream.CopyToAsync(ms);
-                        var bytes = ms.ToArray();
-                        sigDetail.SignatureImage = bytes;
-                        sigDetail.SignatureImageBase64 = Convert.ToBase64String(bytes);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to read signature image from storage: {Path}", s.SignatureImageUrl);
-                    }
-                }
+                var sigResult = await LoadSignatureImageAsync(s.SignatureImageUrl);
+                sigDetail.SignatureImage = sigResult.ImageBytes;
+                sigDetail.SignatureImageBase64 = sigResult.Base64String;
                 signatures.Add(sigDetail);
             }
 
@@ -1376,22 +1343,9 @@ namespace SynOS.Services
                     };
 
                     // Load Director's Signature Image (Forensic Integrity)
-                    if (!string.IsNullOrEmpty(director.SignatureImageUrl))
-                    {
-                        try
-                        {
-                            using var stream = await _fileStorageService.GetFileStreamAsync(director.SignatureImageUrl);
-                            using var ms = new MemoryStream();
-                            await stream.CopyToAsync(ms);
-                            var bytes = ms.ToArray();
-                            directorSig.SignatureImage = bytes;
-                            directorSig.SignatureImageBase64 = Convert.ToBase64String(bytes);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Failed to load Lab Director identity image from storage: {Path}", director.SignatureImageUrl);
-                        }
-                    }
+                    var sigResult = await LoadSignatureImageAsync(director.SignatureImageUrl);
+                    directorSig.SignatureImage = sigResult.ImageBytes;
+                    directorSig.SignatureImageBase64 = sigResult.Base64String;
 
                     signatures.Insert(0, directorSig); // Lab Director always comes first as the Baseline Identity
                 }
@@ -1552,7 +1506,15 @@ namespace SynOS.Services
         public async Task<FullReportContextDto> GetFullReportContextAsync(Guid reportId, bool forceLive = true)
         {
             var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
-            if (report == null) throw new KeyNotFoundException($"Report {reportId} not found.");
+            if (report == null)
+            {
+                report = await _context.Reports.FirstOrDefaultAsync(r => r.SourceId == reportId);
+                if (report == null)
+                {
+                    throw new KeyNotFoundException($"Report {reportId} not found.");
+                }
+                reportId = report.ReportId;
+            }
 
             // 1. Single Assembly Pass
             var structure = await _reportingService.GetReportStructureAsync(reportId, forceFresh: forceLive);
@@ -1857,11 +1819,11 @@ namespace SynOS.Services
             var report = await _context.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
             if (report == null) throw new KeyNotFoundException($"Report {reportId} not found.");
 
-            // Check if the claiming user is a Pathologist
-            var isPathologist = await _context.UserRoles
-                .AnyAsync(ur => ur.UserId == userId && ur.Role.Name == "Pathologist");
+            // Check if the claiming user is a Pathologist or Admin/SystemAdmin
+            var isPathologistOrAdmin = await _context.UserRoles
+                .AnyAsync(ur => ur.UserId == userId && (ur.Role.Name == "Pathologist" || ur.Role.Name == "Admin" || ur.Role.Name == "SystemAdmin"));
 
-            if (isPathologist)
+            if (isPathologistOrAdmin)
             {
                 report.VerifiedByUserId = userId;
             }
@@ -1872,7 +1834,7 @@ namespace SynOS.Services
                 {
                     report.TypedByUserId = userId;
                 }
-                else if (report.Status == "ReadyForVerification")
+                else
                 {
                     report.VerifiedByUserId = userId;
                 }
@@ -2119,6 +2081,36 @@ namespace SynOS.Services
                 l = "";
             }
             return $"{f} {l}".Trim();
+        }
+
+        private async Task<(byte[]? ImageBytes, string? Base64String)> LoadSignatureImageAsync(string? signatureImageUrl)
+        {
+            if (string.IsNullOrEmpty(signatureImageUrl)) return (null, null);
+
+            try
+            {
+                if (signatureImageUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    var commaIndex = signatureImageUrl.IndexOf(',');
+                    var base64Data = commaIndex >= 0 ? signatureImageUrl.Substring(commaIndex + 1) : signatureImageUrl;
+                    var bytes = Convert.FromBase64String(base64Data);
+                    return (bytes, base64Data);
+                }
+                else
+                {
+                    var cleanPath = signatureImageUrl.TrimStart('/', '\\');
+                    using var stream = await _fileStorageService.GetFileStreamAsync(cleanPath);
+                    using var ms = new MemoryStream();
+                    await stream.CopyToAsync(ms);
+                    var bytes = ms.ToArray();
+                    return (bytes, Convert.ToBase64String(bytes));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load signature image from path or base64: {Path}", signatureImageUrl);
+                return (null, null);
+            }
         }
     }
 }

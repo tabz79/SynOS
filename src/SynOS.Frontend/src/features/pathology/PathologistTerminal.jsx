@@ -556,6 +556,15 @@ export function PathologistTerminal() {
         const currentRequestId = ++requestCounter.current;
 
         try {
+            // Auto-claim if unclaimed
+            if (currentReportItem && !currentReportItem.verifiedByUserId) {
+                try {
+                    await ReportsApi.claimReport(selectedReportId);
+                } catch (e) {
+                    console.warn("Auto-claim on save skipped:", e);
+                }
+            }
+
             // 1. Save Interpretation
             await ReportsApi.updateInterpretation(
                 selectedReportId, 
@@ -744,6 +753,7 @@ export function PathologistTerminal() {
         try {
             await ReportsApi.claimReport(reportId);
             await fetchWorklist();
+            setActiveTab("assigned");
             setSelectedReportId(reportId);
         } catch (err) {
             alert("Failed to claim report: " + err.message);
@@ -912,7 +922,7 @@ export function PathologistTerminal() {
                                     Choose a record from the worklist to start interpretation and signing.
                                 </p>
                             </div>
-                        ) : (activeTab === 'available' && !isAdmin) ? (
+                        ) : (activeTab === 'available' && !currentReportItem?.verifiedByUserId) ? (
                             <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
                                 <ShieldAlert className="w-20 h-20 mb-6 text-indigo-500 opacity-20" />
                                 <h3 className="text-xl font-bold dark:text-zinc-200 uppercase tracking-widest">Unclaimed for Verification</h3>

@@ -15,5 +15,7 @@ public sealed record DeliveryQueueItemDto(
     int CriticalCount,
     string PdfUrl,
     DeliveryMethod? LastDeliveryMethod,
-    DeliveryStatus? LastDeliveryStatus
+    DeliveryStatus? LastDeliveryStatus,
+    string? Status = null,
+    int SignaturesCount = 0
 );

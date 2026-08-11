@@ -27,6 +27,7 @@ import {
     Users,
     Key,
     Lock,
+    CheckCircle2,
     X,
     ChevronLeft,
     ChevronRight
@@ -228,10 +229,12 @@ export function RadiologistTerminal() {
     const fetchWorklist = async () => {
         setLoading(true);
         try {
-            const statuses = showHistory 
-                ? ['Signed', 'ManualVerified', 'Finalized'] 
-                : ['PendingImaging', 'Assigned', 'ImagingCompleted', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature'];
-            const params = statuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
+            const allStatuses = [
+                'PendingImaging', 'Assigned', 'ImagingCompleted', 
+                'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 
+                'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'
+            ];
+            const params = allStatuses.map(s => `status=${encodeURIComponent(s)}`).join('&');
             const response = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${showHistory}&${params}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
@@ -801,7 +804,8 @@ export function RadiologistTerminal() {
         if (!selectedStudy) return;
         setActionLoading(true);
         const studyId = selectedStudy.radiologyStudyId || selectedStudy.studyId;
-        if (!draftFindings || !draftFindings.trim()) {
+        const isFindingsEmpty = !draftFindings || (typeof draftFindings === 'string' && !draftFindings.trim());
+        if (isFindingsEmpty) {
             alert("Cannot sign report: Findings content is empty. Please enter your findings before signing.");
             setActionLoading(false);
             return;
@@ -838,7 +842,7 @@ export function RadiologistTerminal() {
                 throw new Error(err.message || "Failed to digitally sign report");
             }
 
-            alert("Clinical Report Digitally Signed and Released successfully");
+            showToast("Clinical Report Digitally Signed and Released successfully");
             await handleSelectStudy({ radiologyStudyId: studyId });
             fetchWorklist();
         } catch (error) {
@@ -896,8 +900,31 @@ export function RadiologistTerminal() {
         }
     };
 
-    const isClaimedByMe = selectedStudy && selectedStudy.claimedByUserId === user?.id;
-    const isClaimedByOthers = selectedStudy && selectedStudy.claimedByUserId && selectedStudy.claimedByUserId !== user?.id;
+    const [toastMessage, setToastMessage] = useState(null);
+    const showToast = (msg) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 4000);
+    };
+
+    const studyStatusNorm = ((selectedStudy?.studyStatus || selectedStudy?.status) || '').toLowerCase();
+    const isSignedOrFinal = Boolean(
+        selectedStudy && (
+            studyStatusNorm === 'signed' ||
+            studyStatusNorm === 'finalized' ||
+            studyStatusNorm === 'manualverified'
+        )
+    );
+
+    const isClaimedByMe = Boolean(
+        selectedStudy && (
+            isSignedOrFinal ||
+            (selectedStudy.claimedByUserId && user?.id && selectedStudy.claimedByUserId.toLowerCase() === user.id.toLowerCase()) ||
+            (selectedStudy.claimedByUserId && user?.resourceId && selectedStudy.claimedByUserId.toLowerCase() === user.resourceId.toLowerCase()) ||
+            (selectedStudy.claimedByUserName && user?.name && selectedStudy.claimedByUserName.toLowerCase() === user.name.toLowerCase())
+        )
+    );
+
+    const isClaimedByOthers = selectedStudy && !isSignedOrFinal && selectedStudy.claimedByUserId && !isClaimedByMe;
     
     // Check timeouts
     const isClaimExpired = selectedStudy && selectedStudy.claimedAt && 
@@ -954,16 +981,21 @@ export function RadiologistTerminal() {
         );
     };
 
-    const availableCount = studies.filter(s => !s.claimedByUserId).length;
+    const isStudySignedOrCompleted = (s) => {
+        const st = ((s?.studyStatus || s?.status) || '').toLowerCase();
+        return st === 'signed' || st === 'finalized' || st === 'manualverified';
+    };
+
+    const availableCount = studies.filter(s => !s.claimedByUserId && !isStudySignedOrCompleted(s)).length;
 
     const filteredStudies = studies.filter(s => {
-        const isClaimedByMe = s.claimedByUserId?.toLowerCase() === user?.id?.toLowerCase();
-        const isUnassigned = !s.claimedByUserId;
+        const isSigned = isStudySignedOrCompleted(s);
+        const isUnassigned = !s.claimedByUserId && !isSigned;
 
         if (activeTab === 'available') {
             return isUnassigned;
         } else {
-            return isAdmin ? !isUnassigned : isClaimedByMe;
+            return !isUnassigned;
         }
     });
 
@@ -971,6 +1003,13 @@ export function RadiologistTerminal() {
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 dark:text-zinc-100 text-zinc-800 flex flex-col font-sans select-none overflow-hidden">
             {/* System Header */}
             <SystemBar syncStatus={connectionStatus === 'Connected' ? 'Synced' : 'Not Synced'} />
+
+            {toastMessage && (
+                <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-lg flex items-center gap-2 animate-bounce">
+                    <Check className="w-4 h-4" />
+                    <span>{toastMessage}</span>
+                </div>
+            )}
 
             {/* Core Workstation Workspace */}
             <div ref={containerRef} className="flex-1 flex overflow-hidden relative w-full">
@@ -1019,44 +1058,51 @@ export function RadiologistTerminal() {
                                 ) : (
                                     filteredStudies.map((study) => {
                                         const isSelected = selectedStudy?.studyId === study.radiologyStudyId || selectedStudy?.radiologyStudyId === study.radiologyStudyId;
-                                        const isClaimedByMe = study.claimedByUserId === user?.id;
-                                        const isClaimedByOthers = study.claimedByUserId && study.claimedByUserId !== user?.id;
-                                        return (
-                                            <div 
-                                                key={study.radiologyStudyId}
-                                                onClick={() => handleSelectStudy(study)}
-                                                className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
-                                                    isSelected 
-                                                        ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
-                                                        : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
-                                                }`}
-                                            >
-                                                <div className="flex justify-between items-center mb-1">
-                                                    <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
-                                                        Token #{study.tokenNumber}
-                                                    </span>
-                                                    <span className="text-[10px] font-black uppercase text-synos-primary">
-                                                        {study.modality}
-                                                    </span>
-                                                </div>
-                                                <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
-                                                <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
-                                                <div className="mt-2 flex items-center justify-between text-[10px]">
-                                                    <span className={`px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${
-                                                        isClaimedByMe 
-                                                            ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' 
-                                                            : isClaimedByOthers 
-                                                                ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-emerald-200' 
-                                                                : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200'
-                                                    }`}>
-                                                        {isClaimedByMe ? 'Claimed by Me' : isClaimedByOthers ? `Locked (${study.claimedByUserName || 'Other'})` : 'Unclaimed'}
-                                                    </span>
-                                                    {study.status && (
-                                                        <span className="dark:text-zinc-500 text-zinc-400 font-mono text-[9px]">{study.status}</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        );
+                                         const isClaimedByMe = Boolean(
+                                             study.claimedByUserId && (
+                                                 (user?.id && study.claimedByUserId.toLowerCase() === user.id.toLowerCase()) ||
+                                                 (user?.resourceId && study.claimedByUserId.toLowerCase() === user.resourceId.toLowerCase()) ||
+                                                 (user?.name && study.claimedByUserName && study.claimedByUserName.toLowerCase() === user.name.toLowerCase())
+                                             )
+                                         );
+                                         const isClaimedByOthers = Boolean(study.claimedByUserId && !isClaimedByMe);
+                                         const isSigned = isStudySignedOrCompleted(study);
+                                         return (
+                                             <div 
+                                                 key={study.radiologyStudyId}
+                                                 onClick={() => handleSelectStudy(study)}
+                                                 className={`p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${
+                                                     isSelected 
+                                                         ? 'bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm' 
+                                                         : 'dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm'
+                                                 }`}
+                                             >
+                                                 <div className="flex justify-between items-center mb-1">
+                                                     <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
+                                                         Token #{study.tokenNumber}
+                                                     </span>
+                                                     <span className="text-[10px] font-black uppercase text-synos-primary">
+                                                         {study.modality}
+                                                     </span>
+                                                 </div>
+                                                 <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
+                                                 <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                                                 <div className="mt-2 flex items-center justify-between text-[10px]">
+                                                     <span className={`px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${
+                                                         isSigned || isClaimedByMe
+                                                             ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' 
+                                                             : isClaimedByOthers 
+                                                                 ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-emerald-200' 
+                                                                 : 'dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200'
+                                                     }`}>
+                                                         {isSigned ? 'Signed' : isClaimedByMe ? 'Claimed by Me' : isClaimedByOthers ? `Locked (${study.claimedByUserName || 'Other'})` : 'Unclaimed'}
+                                                     </span>
+                                                     {study.status && (
+                                                         <span className="dark:text-zinc-500 text-zinc-400 font-mono text-[9px]">{study.status}</span>
+                                                     )}
+                                                 </div>
+                                             </div>
+                                         );
                                     })
                                 )}
                             </div>
@@ -1360,13 +1406,23 @@ export function RadiologistTerminal() {
                                         Save Draft
                                     </button>
                                     <button
-                                        onClick={handleSignReport}
-                                        disabled={actionLoading || (!draftFindings && selectedStudy.studyStatus !== 'Signed')}
-                                        className="flex-1 py-1.5 bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-xs uppercase tracking-wider rounded-lg transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]"
-                                    >
-                                        {actionLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Lock className="h-3.5 w-3.5" />}
-                                        Digitally Sign & Release Report
-                                    </button>
+                                         onClick={handleSignReport}
+                                         disabled={actionLoading || isSignedOrFinal || (!draftFindings && selectedStudy.studyStatus !== 'Signed')}
+                                         className={`flex-1 py-1.5 font-bold text-xs uppercase tracking-wider rounded-lg transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${
+                                             isSignedOrFinal 
+                                                 ? 'bg-emerald-600 text-white cursor-default opacity-90' 
+                                                 : 'bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white'
+                                         }`}
+                                     >
+                                         {actionLoading ? (
+                                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                         ) : isSignedOrFinal ? (
+                                             <CheckCircle2 className="h-3.5 w-3.5 text-white" />
+                                         ) : (
+                                             <Lock className="h-3.5 w-3.5" />
+                                         )}
+                                         {isSignedOrFinal ? "Report Digitally Signed & Released" : "Digitally Sign & Release Report"}
+                                     </button>
                                 </div>
                             </div>
                         )

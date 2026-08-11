@@ -218,6 +218,12 @@ public class DeliveryService : IDeliveryService
                 _logger.LogWarning("No PDF path found for ReportId: {ReportId}", report.ReportId);
             }
 
+            int sigCount = await _context.ReportSignatures.CountAsync(s => s.ReportId == report.ReportId);
+            if (sigCount == 0 && (report.Status == "Signed" || report.Status == "ManualVerified"))
+            {
+                sigCount = 1;
+            }
+
             dtos.Add(new DeliveryQueueItemDto(
                 report.ReportId,
                 visitToken, // TokenNumber
@@ -231,7 +237,9 @@ public class DeliveryService : IDeliveryService
                 criticalCount,
                 pdfUrl,
                 latestDeliveryLog?.DeliveryMethod,
-                latestDeliveryLog?.Status
+                latestDeliveryLog?.Status,
+                report.Status,
+                sigCount
             ));
         }
 

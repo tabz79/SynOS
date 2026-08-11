@@ -6,9 +6,9 @@ import { useAuth } from '@/context/AuthContext';
 export function useProcessing(showHistory = false) {
     const [queue, setQueue] = useState([]);
     const [summary, setSummary] = useState({
-        pending: 0,
-        urgent: 0,
-        critical: 0,
+        unassigned: 0,
+        activeWorklist: 0,
+        slaBreach: 0,
         completed: 0
     });
     const [isLoading, setIsLoading] = useState(true);
@@ -29,11 +29,14 @@ export function useProcessing(showHistory = false) {
     }, [showHistory]);
 
     const updateSummary = (items) => {
+        const now = Date.now();
+        const fortyFiveMinsMs = 45 * 60 * 1000;
+
         const stats = {
-            pending: items.filter(i => i.status === 0).length,
-            urgent: items.filter(i => i.priority === 'Urgent').length,
-            critical: items.filter(i => i.priority === 'Critical').length,
-            completed: items.filter(i => i.status === 2).length // In real app, this might come from a different endpoint or specific "today" filter
+            unassigned: items.filter(i => !i.assignedResourceId && (i.operationalStatus === 'Pending' || i.status === 0 || i.status === 'Pending')).length,
+            activeWorklist: items.filter(i => !!i.assignedResourceId && i.operationalStatus !== 'Completed' && i.status !== 2 && i.status !== 'Completed').length,
+            slaBreach: items.filter(i => (i.operationalStatus !== 'Completed' && i.status !== 2 && i.status !== 'Completed') && (i.createdAt && (now - new Date(i.createdAt).getTime() > fortyFiveMinsMs))).length,
+            completed: items.filter(i => i.operationalStatus === 'Completed' || i.status === 2 || i.status === 'Completed').length
         };
         setSummary(stats);
     };

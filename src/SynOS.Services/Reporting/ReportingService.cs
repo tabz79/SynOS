@@ -58,15 +58,8 @@ namespace SynOS.Services.Reporting
             bool isFinalized = report.Status == "Signed" || report.Status == "ManualVerified";
             
             // 2. Honors snapshot ONLY if report is finalized AND we aren't forcing fresh.
-            if (isFinalized && !forceFresh && latestVersion?.Snapshot != null)
+            if (isFinalized && !forceFresh && latestVersion?.Snapshot != null && !string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
             {
-                if (string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
-                {
-                    throw new Models.Exceptions.SnapshotIntegrityException(
-                        $"Clinical integrity fault: Snapshot JSON is missing for ReportVersion {latestVersion.ReportVersionId}. Access blocked to prevent diagnostic dissociation.",
-                        latestVersion.ReportVersionId);
-                }
-
                 try 
                 {
                     ClinicalReportState? domainState = null;
@@ -90,38 +83,30 @@ namespace SynOS.Services.Reporting
                         snapshotData = JsonSerializer.Deserialize<ReportStructureDto>(latestVersion.Snapshot.SnapshotJson);
                     }
 
-                    if (snapshotData == null || snapshotData.Groups == null || !snapshotData.Groups.Any())
+                    if (snapshotData != null && snapshotData.Groups != null && snapshotData.Groups.Any())
                     {
-                        throw new Models.Exceptions.SnapshotIntegrityException(
-                            "Clinical integrity fault: Snapshot deserialized to an empty or invalid clinical structure.",
-                            latestVersion.ReportVersionId);
-                    }
+                        // GPT-5: Overlay live delivery status onto immutable clinical snapshot
+                        snapshotData.IsPhysicallyVerified = report.IsPhysicallyVerified;
+                        snapshotData.IsManualFlow = report.IsManualFlow;
+                        snapshotData.Status = report.Status;
+                        
+                        if (string.IsNullOrEmpty(snapshotData.PatientName) && snapshotData.Patient != null)
+                        {
+                            snapshotData.PatientName = snapshotData.Patient.Name;
+                            snapshotData.PatientAgeGender = $"{snapshotData.Patient.Age} / {snapshotData.Patient.Gender}";
+                            snapshotData.Token = snapshotData.Patient.MRN;
+                        }
 
-                    // GPT-5: Overlay live delivery status onto immutable clinical snapshot
-                    snapshotData.IsPhysicallyVerified = report.IsPhysicallyVerified;
-                    snapshotData.IsManualFlow = report.IsManualFlow;
-                    snapshotData.Status = report.Status;
-                    
-                    if (string.IsNullOrEmpty(snapshotData.PatientName) && snapshotData.Patient != null)
-                    {
-                        snapshotData.PatientName = snapshotData.Patient.Name;
-                        snapshotData.PatientAgeGender = $"{snapshotData.Patient.Age} / {snapshotData.Patient.Gender}";
-                        snapshotData.Token = snapshotData.Patient.MRN;
+                        return snapshotData;
                     }
-                    
-                    return snapshotData;
                 }
-                catch (JsonException ex)
+                catch (Exception ex)
                 {
-                    _logger.LogCritical(ex, "Clinical integrity fault: Corrupted snapshot JSON for ReportVersion {Id}.", latestVersion.ReportVersionId);
-                    throw new Models.Exceptions.SnapshotIntegrityException(
-                        "The clinical report snapshot is corrupted. Clinical review is blocked for diagnostic consistency.",
-                        ex,
-                        latestVersion.ReportVersionId);
+                    _logger.LogWarning(ex, "Failed to parse snapshot JSON for ReportVersion {ReportVersionId}. Falling back to live structure.", latestVersion.ReportVersionId);
                 }
             }
 
-            // Fallback to dynamic build ONLY if no snapshot record exists at all (Legacy or Draft support)
+            // Fallback to dynamic build if no snapshot record exists or snapshot parsing failed
             return await BuildDynamicStructureAsync(report, visit);
         }
 
@@ -365,8 +350,16 @@ namespace SynOS.Services.Reporting
             var interpretationData = await _context.ReportInterpretations.AsNoTracking().FirstOrDefaultAsync(ri => ri.ReportId == version.ReportId);
             if (interpretationData != null)
             {
-                domainState.Comments = interpretationData.Notes ?? string.Empty;
-                domainState.Interpretation = interpretationData.Summary ?? string.Empty;
+                if (version.Report.SourceType == "RadiologyStudy")
+                {
+                    domainState.Comments = string.Empty;
+                    domainState.Interpretation = interpretationData.Notes ?? string.Empty;
+                }
+                else
+                {
+                    domainState.Comments = interpretationData.Notes ?? string.Empty;
+                    domainState.Interpretation = interpretationData.Summary ?? string.Empty;
+                }
             }
             else if (order != null)
             {

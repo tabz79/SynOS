@@ -54,6 +54,8 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
     const availableCount = queue.filter(study => !study.claimedByUserId && !study.assignedToTechnicianName).length;
 
     const displayQueue = queue.filter(study => {
+        if (showHistory) return true;
+
         const isClaimedByMe = study.claimedByUserId?.toLowerCase() === user?.id?.toLowerCase() ||
                               study.assignedToTechnicianName?.toLowerCase() === user?.name?.toLowerCase();
         const isUnassigned = !study.claimedByUserId && !study.assignedToTechnicianName;
@@ -101,9 +103,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
     const fetchQueue = async () => {
         setLoading(true);
         try {
-            const statuses = showHistory 
-                ? ['AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'] 
-                : ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized'];
+            const statuses = ['PendingImaging', 'Assigned', 'AwaitingDictation', 'DictationSessionStarted', 'DraftReady', 'AwaitingSignature', 'Signed', 'ManualVerified', 'Finalized', 'ImagingCompleted'];
             const data = await RadiologyApi.getTechnicianQueue(statuses, showHistory);
             // Robust filter by modality or testName (e.g. MRI, CT, US, X-Ray)
             const filtered = data.filter(s => {

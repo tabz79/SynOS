@@ -64,10 +64,18 @@ namespace SynOS.Api.Controllers
                 // GPT-5: Missing identity data is 422 Unprocessable Entity
                 return UnprocessableEntity(new { message = ex.Message });
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new { message = ex.Message });
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected failure during digital sign-off for report {ReportId}", reportId);
-                return StatusCode(500, new { message = ex.Message });
+                return StatusCode(500, new { message = ex.Message, details = ex.ToString() });
             }
         }
 
@@ -236,6 +244,10 @@ namespace SynOS.Api.Controllers
             {
                 var context = await _reportService.GetFullReportContextAsync(reportId, forceLive);
                 return Ok(context);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
             catch (Exception ex)
             {

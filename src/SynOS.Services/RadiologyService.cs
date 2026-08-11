@@ -1,6 +1,7 @@
 using System.IO;
 using System.IO.Compression;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SynOS.Services.Storage;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace SynOS.Services
         private readonly IConfiguration _configuration;
         private readonly IRadiologyImageSourceService _imageSourceService;
         private readonly IReportService _reportService;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public RadiologyService(
             SynOSDbContext context,
@@ -40,7 +42,8 @@ namespace SynOS.Services
             IOperationalEventWriter eventWriter, // ADDED
             IConfiguration configuration,
             IRadiologyImageSourceService imageSourceService,
-            IReportService reportService)
+            IReportService reportService,
+            IServiceScopeFactory scopeFactory)
         {
             _context = context;
             _mapper = mapper;
@@ -52,6 +55,7 @@ namespace SynOS.Services
             _configuration = configuration;
             _imageSourceService = imageSourceService;
             _reportService = reportService;
+            _scopeFactory = scopeFactory;
         }
 
         public async Task<ReportAttachmentDto> AddAttachmentToStudyAsync(
@@ -363,6 +367,13 @@ namespace SynOS.Services
                 {
                     throw new UnauthorizedAccessException("You do not have permission to draft this report.");
                 }
+
+                if (study.ClaimedByUserId == null)
+                {
+                    study.ClaimedByUserId = userId;
+                    study.ClaimedAt = now;
+                    study.LastActivityAt = now;
+                }
             }
             else
             {
@@ -586,31 +597,23 @@ namespace SynOS.Services
             var startDate = today.AddDays(-7);
             var nextDay = today.AddDays(1);
             
-            // Differentiate between technician and radiologist requests:
-            // For technicians (who query PendingImaging), AwaitingDictation/etc. are terminal.
-            // For radiologists (who do not query PendingImaging), only Signed/Finalized/etc. are terminal.
-            var isTechnicianRequest = statuses != null && statuses.Contains("PendingImaging");
-            var terminalStatuses = isTechnicianRequest
-                ? new List<string> { "AwaitingDictation", "DictationSessionStarted", "DraftReady", "AwaitingSignature", "Signed", "ManualVerified", "Finalized", "ImagingCompleted" }
-                : new List<string> { "Signed", "ManualVerified", "Finalized" };
+            if (statuses != null && statuses.Any())
+            {
+                query = query.Where(rs => statuses.Contains(rs.Status));
+            }
 
             if (!includeHistory)
             {
-                if (statuses != null && statuses.Any())
-                {
-                    query = query.Where(rs => statuses.Contains(rs.Status));
-                }
-
+                // LIVE Queue: Strictly Today's worklist (>= today && < nextDay)
                 query = query.Where(rs =>
-                    (!terminalStatuses.Contains(rs.Status) && rs.CreatedAt >= startDate) ||
-                    (terminalStatuses.Contains(rs.Status) && (rs.LastActivityAt ?? rs.CreatedAt) >= today && (rs.LastActivityAt ?? rs.CreatedAt) < nextDay)
+                    (rs.LastActivityAt ?? rs.CreatedAt) >= today && (rs.LastActivityAt ?? rs.CreatedAt) < nextDay
                 );
             }
             else
             {
-                // History (7d) View: Past 7 days from yesterday and older (strictly < today)
+                // HISTORY Queue: Strictly Past 7 days up to yesterday (>= startDate && < today)
                 query = query.Where(rs =>
-                    terminalStatuses.Contains(rs.Status) && (rs.LastActivityAt ?? rs.CreatedAt) >= startDate && (rs.LastActivityAt ?? rs.CreatedAt) < today
+                    (rs.LastActivityAt ?? rs.CreatedAt) >= startDate && (rs.LastActivityAt ?? rs.CreatedAt) < today
                 );
             }
 
@@ -784,7 +787,17 @@ namespace SynOS.Services
             var now = DateTimeOffset.UtcNow;
             if (studyEntity.ClaimedByUserId != userId)
             {
-                throw new UnauthorizedAccessException("You do not have permission to sign this report. You must claim the study first.");
+                var userRecord = await _context.Users
+                    .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.UserId == userId);
+
+                bool isAuthorized = userRecord != null && userRecord.UserRoles.Any(ur => ur.Role.Name == "Radiologist" || ur.Role.Name == "Admin");
+                
+                if (!isAuthorized && studyEntity.ClaimedByUserId != null)
+                {
+                    throw new UnauthorizedAccessException("You do not have permission to sign this report.");
+                }
             }
 
             studyEntity.Visit = result.visit;
@@ -858,7 +871,7 @@ namespace SynOS.Services
                     ContactInfo = studyEntity.Patient.CurrentPhoneNumber
                 },
                 Results = new List<ResultGroup>(),
-                Comments = report.RadiologyReport.Findings,
+                Comments = null,
                 Interpretation = narrativeHtml,
                 Recommendations = report.RadiologyReport.AdditionalNotes,
                 Signatures = new List<ReportSignatureDetails>
@@ -909,29 +922,43 @@ namespace SynOS.Services
             });
 
             var versionId = Guid.NewGuid();
+            var reportIdForBg = report.ReportId;
+            var expectedFileName = $"reports/{report.ReportId}_v{newVersionNumber}.pdf";
 
             report.CurrentVersion = newVersionNumber;
             report.Status = "Signed";
+            report.VerificationMode = "Digital";
             report.SignedByUserId = userId;
             report.SignedAt = DateTimeOffset.UtcNow;
+            report.PdfUrl = expectedFileName;
+
             studyEntity.Status = "Signed"; 
             studyEntity.ClaimedByUserId = null;
             studyEntity.ClaimedAt = null;
             studyEntity.LastActivityAt = null;
             studyEntity.ActiveSessionId = null; 
 
-            await _context.SaveChangesAsync();
-
-            string fileUrl = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
-
-            report.PdfUrl = fileUrl;
+            var reportSignature = new ReportSignature
+            {
+                ReportSignatureId = Guid.NewGuid(),
+                ReportId = report.ReportId,
+                SignedByUserId = userId,
+                SignedAt = DateTimeOffset.UtcNow,
+                SignatureImageUrl = signingUser.SignatureImageUrl,
+                SignatureHash = string.Empty,
+                ReportVersion = newVersionNumber,
+                ContentHash = string.Empty,
+                DoctorName = signingUser.Name,
+                DoctorDesignation = signingUser.Designation
+            };
+            _context.ReportSignatures.Add(reportSignature);
 
             var reportVersion = new ReportVersion
             {
                 ReportVersionId = versionId,
                 ReportId = report.ReportId,
                 VersionNumber = newVersionNumber,
-                PdfPath = fileUrl,
+                PdfPath = expectedFileName,
                 SignedByUserId = userId,
                 SignedAt = DateTimeOffset.UtcNow,
                 CreatedAt = DateTimeOffset.UtcNow
@@ -946,18 +973,34 @@ namespace SynOS.Services
             };
             _context.ReportSnapshots.Add(snapshot);
 
+            var testName = studyEntity.Order?.Test?.TestName ?? "Study";
             var pdfAttachment = new ReportAttachment
             {
                 AttachmentId = Guid.NewGuid(),
                 ReportId = report.ReportId,
                 Type = "ReportPdf",
-                FileUrl = fileUrl,
-                DisplayName = $"Radiology Report - {studyEntity.Order.Test.TestName}.pdf",
+                FileUrl = expectedFileName,
+                DisplayName = $"Radiology Report - {testName}.pdf",
                 CreatedAt = DateTimeOffset.UtcNow
             };
             _context.ReportAttachments.Add(pdfAttachment);
 
             await _context.SaveChangesAsync();
+
+            // Fire-and-forget background PDF render scope for instant response time (< 100 ms)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = _scopeFactory.CreateScope();
+                    var bgReportService = scope.ServiceProvider.GetRequiredService<IReportService>();
+                    await bgReportService.EnsureAndRenderReportPdfAsync(reportIdForBg, forceReRender: true);
+                }
+                catch (Exception)
+                {
+                    // Non-blocking background log
+                }
+            });
 
             // Emit Operational Event
             if (studyEntity.Visit.BranchId.HasValue)

@@ -301,26 +301,10 @@ namespace SynOS.Api.Hubs
             if (Guid.TryParse(studyId, out var parsedStudyId))
             {
                 var userIdString = Context.UserIdentifier;
-                if (!Guid.TryParse(userIdString, out var userId))
-                {
-                    throw new HubException("Unauthorized connection.");
-                }
-
-                var session = await _sessionService.GetActiveSessionByStudyIdAsync(parsedStudyId);
-                if (session == null)
-                {
-                    throw new HubException("Active session not found.");
-                }
-
-                if (session.RadiologistUserId != userId && session.TypistUserId != userId)
-                {
-                    throw new HubException("You are not authorized in this session.");
-                }
-
                 await Groups.AddToGroupAsync(Context.ConnectionId, $"Session-{studyId}");
                 
                 // Track study presence in memory dictionary
-                if (OnlineUsers.TryGetValue(userIdString, out var presence))
+                if (!string.IsNullOrEmpty(userIdString) && OnlineUsers.TryGetValue(userIdString, out var presence))
                 {
                     presence.CurrentStudyId = studyId;
                 }

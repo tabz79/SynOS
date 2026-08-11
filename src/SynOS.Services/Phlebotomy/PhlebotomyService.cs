@@ -696,6 +696,18 @@ namespace SynOS.Services.Phlebotomy
                 .Where(w => visitIds.Contains(w.SourceReferenceId))
                 .ToListAsync();
 
+            var resourceIds = assignments
+                .Where(w => w.AssignedResourceId.HasValue)
+                .Select(w => w.AssignedResourceId!.Value)
+                .Distinct()
+                .ToList();
+
+            var resourceMap = await _db.OperationalResources
+                .AsNoTracking()
+                .Include(r => r.User)
+                .Where(r => resourceIds.Contains(r.OperationalResourceId))
+                .ToDictionaryAsync(r => r.OperationalResourceId, r => r.User != null ? r.User.Name : null);
+
             var result = new System.Collections.Generic.List<SynOS.Models.DTOs.Dashboard.ActionQueueRowDto>();
             foreach (var visit in visits)
             {
@@ -707,6 +719,11 @@ namespace SynOS.Services.Phlebotomy
                 else if (isCollected) opStatus = "Collected";
 
                 var assignment = assignments.FirstOrDefault(w => w.SourceReferenceId == visit.VisitId);
+                string? assignedName = null;
+                if (assignment?.AssignedResourceId != null && resourceMap.TryGetValue(assignment.AssignedResourceId.Value, out var rName))
+                {
+                    assignedName = rName;
+                }
 
                 var dto = new SynOS.Models.DTOs.Dashboard.ActionQueueRowDto
                 {
@@ -727,7 +744,7 @@ namespace SynOS.Services.Phlebotomy
                     DateGroup = visit.CreatedAt.Date == today ? "Today" : visit.CreatedAt.ToString("dd MMM"),
                     IsFinalized = isCollected,
                     AssignedUserId = assignment?.AssignedResourceId,
-                    AssignedUserName = null,
+                    AssignedUserName = assignedName,
                     HasPhlebotomy = true
                 };
 

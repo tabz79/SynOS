@@ -6,7 +6,7 @@ import { RealitySummary } from '@/components/layout/RealitySummary'
 import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { useTheme } from '@/context/ThemeContext'
-import { Users, TestTube2, AlertCircle, CheckCircle2, Plus, ChevronDown, Package } from 'lucide-react'
+import { Users, TestTube2, AlertCircle, CheckCircle2, Plus, ChevronDown, Package, Clock } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { PhlebotomyIntentPanel } from './components/PhlebotomyIntentPanel'
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
@@ -98,11 +98,10 @@ export function PhlebotomyScreen() {
 
                 if (summaryData) setSummary(summaryData);
                 if (Array.isArray(queueData)) {
-                    const phleboData = normalizeQueueData(queueData).filter(isPhleboRelevant);
-                    setActionQueue(phleboData);
+                    setActionQueue(normalizeQueueData(queueData).filter(isPhleboRelevant));
                 }
             } catch (e) {
-                console.error("Failed to fetch initial phlebotomy data", e);
+                console.error("Failed to load initial phlebotomy data", e);
             } finally {
                 setIsLoadingQueue(false);
             }
@@ -110,61 +109,33 @@ export function PhlebotomyScreen() {
 
         loadInitial();
 
-        // 2. Connect SignalR
-        const connect = async () => {
-            SignalRService.onReceptionSummaryUpdated((payload) => {
-                setSummary(payload);
-            });
-
-            SignalRService.onActionQueueDeltaReceived((deltaRow) => {
-                if (!deltaRow) return;
-
-                const normalized = normalizeQueueData([deltaRow])[0];
-
-                setActionQueue(prev => {
-                    const isRelevantNow = isPhleboRelevant(normalized);
-                    const exists = prev.some(r => r.visitId === normalized.visitId);
-
-                    if (exists) {
-                        // Update or Remove if status shifted away from Pending
-                        if (isRelevantNow) {
-                            return prev.map(r => r.visitId === normalized.visitId ? normalized : r);
-                        } else {
-                            return prev.filter(r => r.visitId !== normalized.visitId);
-                        }
-                    } else if (isRelevantNow) {
-                        // Unshift new Token to top of queue
-                        return [normalized, ...prev];
-                    }
-                    return prev;
-                });
-            });
-
-            SignalRService.onActionQueueUpdated(() => {
-                ReceptionApi.getPhlebotomyQueue(showHistoryRef.current).then(data => {
-                    if (Array.isArray(data)) {
-                        setActionQueue(normalizeQueueData(data).filter(isPhleboRelevant));
-                    }
-                });
-            });
-
-            // Anchor Time & Sync Status
-            SignalRService.onReceiveServerTime((time) => {
-                setServerTime(time);
-            });
-
+        // 2. Realtime SignalR Wiring
+        const connectSignalR = async () => {
             SignalRService.onConnectionStatusChanged((status) => {
                 setConnectionStatus(status);
             });
 
+            SignalRService.onActionQueueDeltaReceived((delta) => {
+                loadInitial();
+            });
+
+            SignalRService.onReceptionSummaryUpdated((stats) => {
+                if (stats) setSummary(stats);
+            });
+            
+            SignalRService.onReceiveServerTime((time) => {
+                setServerTime(time);
+            });
+
             try {
                 await SignalRService.startConnection();
+                setConnectionStatus(SignalRService.getConnectionStatus());
             } catch (err) {
                 setConnectionStatus("Not Synced");
             }
         };
 
-        connect();
+        connectSignalR();
 
         // Failsafe Polling (every 5 minutes)
         const interval = setInterval(async () => {
@@ -182,16 +153,18 @@ export function PhlebotomyScreen() {
     }, []);
 
     // REALITY TILES (Live Data mapping)
-    const realityTiles = summary ? [
-        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins Today", qualifier: "Active", icon: Users, color: "blue" },
-        { value: summary.pendingCollections?.toString() || "0", label: "Pending Samples", qualifier: "Awaiting", icon: AlertCircle, color: "red" },
-        { value: summary.completedCollections?.toString() || "0", label: "Collected Today", icon: TestTube2, color: "emerald" },
-        { value: summary.testsRunning?.toString() || "0", label: "Tests Running", icon: CheckCircle2, color: "zinc" },
-    ] : [
-        { value: "-", label: "Pending Samples", qualifier: "Urgent", icon: AlertCircle, color: "red" },
-        { value: "-", label: "Collected Today", icon: TestTube2, color: "emerald" },
-        { value: "-", label: "Walk-Ins Today", icon: Users, color: "blue" },
-        { value: "-", label: "Tests Running", icon: CheckCircle2, color: "zinc" },
+    const now = Date.now();
+    const fifteenMinsMs = 15 * 60 * 1000;
+    const pendingSamplesCount = (summary?.pendingCollections ?? actionQueue.filter(r => r.operationalStatus === 'Ready for Sample' || r.operationalStatus === 'Pending Collection').length).toString();
+    const delayedDrawsCount = actionQueue.filter(r => (r.operationalStatus === 'Ready for Sample' || r.operationalStatus === 'Pending Collection') && (r.createdAt && (now - new Date(r.createdAt).getTime() > fifteenMinsMs))).length.toString();
+    const collectedCount = (summary?.completedCollections ?? actionQueue.filter(r => r.operationalStatus === 'Collected').length).toString();
+    const inProcessingCount = (summary?.testsRunning ?? actionQueue.filter(r => r.operationalStatus === 'In Processing').length).toString();
+
+    const realityTiles = [
+        { value: pendingSamplesCount, label: "Pending Samples", qualifier: "Awaiting Draw", icon: AlertCircle, color: "red" },
+        { value: delayedDrawsCount, label: "Longest Wait (>15m)", qualifier: "Patient Waiting", icon: Clock, color: Number(delayedDrawsCount) > 0 ? "amber" : "zinc" },
+        { value: collectedCount, label: "Collected Today", qualifier: "Drawn & Barcoded", icon: TestTube2, color: "emerald" },
+        { value: inProcessingCount, label: "In Processing", qualifier: "Lab Workload", icon: CheckCircle2, color: "blue" },
     ];
 
     // Intent Panel Actions
@@ -246,9 +219,16 @@ export function PhlebotomyScreen() {
     // Filtered Queue Data (Client-Side Isolation vs Admin Oversight)
     const filteredQueue = actionQueue.filter(row => {
         const rowPhleboId = row.assignedPhlebotomistId?.toLowerCase();
+        const rowPhleboName = row.assignedPhlebotomistName?.toLowerCase();
         const userId = user?.id?.toLowerCase();
+        const resourceId = user?.resourceId?.toLowerCase();
+        const userName = user?.name?.toLowerCase();
         const isUnassigned = !row.assignedPhlebotomistId;
-        const isAssignedToMe = rowPhleboId === userId;
+        const isAssignedToMe = Boolean(rowPhleboId) && (
+            rowPhleboId === userId ||
+            rowPhleboId === resourceId ||
+            (Boolean(rowPhleboName) && Boolean(userName) && rowPhleboName === userName)
+        );
 
         if (activeAssignmentTab === "available") {
             return isUnassigned;

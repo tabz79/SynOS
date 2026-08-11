@@ -53,7 +53,7 @@ export function useTemplateForReport(reportData) {
     // 2. Default template for modality
     if (!found) {
       const normModality = (modality || "").toLowerCase().trim();
-      const isRad = normModality.includes("rad");
+      const isRad = normModality.includes("rad") || normModality.includes("x-ray") || normModality.includes("xray") || normModality.includes("mri") || normModality.includes("ct") || normModality.includes("us") || normModality.includes("ultra");
       const targetModality = isRad ? "radiology" : "pathology";
       found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
     }
@@ -134,7 +134,7 @@ export function useTemplateForReport(reportData) {
         // 3. Default template for modality
         if (!found) {
           const normModality = (modality || "").toLowerCase().trim();
-          const isRad = normModality.includes("rad");
+          const isRad = normModality.includes("rad") || normModality.includes("x-ray") || normModality.includes("xray") || normModality.includes("mri") || normModality.includes("ct") || normModality.includes("us") || normModality.includes("ultra");
           const targetModality = isRad ? "radiology" : "pathology";
           found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
         }

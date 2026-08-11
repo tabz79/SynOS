@@ -2024,8 +2024,10 @@ function LeaveReviewModal({ request, onClose }) {
         setSubmitting(true);
         try {
             await WorkforceApi.reviewLeave({
+                requestId: request.leaveRequestId,
                 leaveRequestId: request.leaveRequestId,
                 status: action,
+                note: note,
                 supervisorNote: note
             });
             onClose();

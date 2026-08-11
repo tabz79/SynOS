@@ -458,19 +458,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISampleNotifier, SampleNotifier>(); // Register notifier
 builder.Services.AddScoped<IReportTemplateService, ReportTemplateService>(); // Register new service
 builder.Services.AddScoped<IReportPdfRenderer, QuestPdfReportRenderer>(); // Register new service
-builder.Services.AddScoped<IRadiologyService, RadiologyService>(provider =>
-    new RadiologyService(
-        provider.GetRequiredService<SynOSDbContext>(),
-        provider.GetRequiredService<IMapper>(),
-        provider.GetRequiredService<IReportPdfRenderer>(),
-        provider.GetRequiredService<IReportTemplateService>(),
-        provider.GetRequiredService<IUserService>(),
-        provider.GetRequiredService<IFileStorageService>(),
-        provider.GetRequiredService<IOperationalEventWriter>(), // ADDED
-        provider.GetRequiredService<IConfiguration>(),
-        provider.GetRequiredService<IRadiologyImageSourceService>(),
-        provider.GetRequiredService<IReportService>()
-    ));
+builder.Services.AddScoped<IRadiologyService, RadiologyService>();
 builder.Services.AddScoped<IRadiologyImageSourceService, RadiologyImageSourceService>();
 builder.Services.AddScoped<IDictationSessionService, DictationSessionService>();
 builder.Services.AddScoped<IPacsService, PacsService>();

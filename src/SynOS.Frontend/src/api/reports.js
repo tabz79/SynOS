@@ -90,7 +90,14 @@ export const ReportsApi = {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
         });
-        if (!response.ok) throw new Error('Failed to sign report');
+        if (!response.ok) {
+            let errMsg = 'Failed to sign report';
+            try {
+                const errData = await response.json();
+                errMsg = errData.message || errData.Message || errMsg;
+            } catch {}
+            throw new Error(errMsg);
+        }
         return await response.json();
     },
 
