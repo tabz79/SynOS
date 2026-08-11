@@ -679,36 +679,43 @@ public class DeliveryService : IDeliveryService
         return new SecureLinkDto(token, linkUrl, packageLinkUrl, expiresAt, maxDownloads, maxDownloads, viewerLinkUrl);
     }
 
-    public async Task<Stream> VerifyAndDownloadAsync(string token, string phone)
+    private async Task<DownloadLink> ValidateLinkAndPhoneAsync(string token, string phone)
     {
-        // Validate phone input
         if (!IsIndianMobileNumber(phone))
         {
             _logger.LogWarning("Invalid phone number format for secure download token {Token}: {Phone}", token, phone);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+            throw new BadHttpRequestException("PhoneMismatch", 401);
         }
 
         var downloadLink = await _context.DownloadLinks
             .Include(dl => dl.Report)
                 .ThenInclude(r => r.ReportVersions)
+            .Include(dl => dl.Report)
+                .ThenInclude(r => r.Attachments)
             .FirstOrDefaultAsync(dl => dl.Token == token);
 
         if (downloadLink == null || !downloadLink.IsActive)
         {
             _logger.LogWarning("Attempted download with non-existent or inactive token: {Token}", token);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+            throw new BadHttpRequestException("LinkInactive", 401);
         }
 
-        // Validate link
-        if (downloadLink.ExpiresAt <= DateTimeOffset.UtcNow || downloadLink.DownloadCount >= downloadLink.MaxDownloads)
+        if (downloadLink.ExpiresAt <= DateTimeOffset.UtcNow)
         {
-            downloadLink.IsActive = false; // Deactivate expired/exhausted links
+            downloadLink.IsActive = false;
             await _context.SaveChangesAsync();
-            _logger.LogWarning("Attempted download with expired or exhausted token: {Token}", token);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+            _logger.LogWarning("Attempted download with expired token: {Token}", token);
+            throw new BadHttpRequestException("LinkExpired", 401);
         }
 
-        // Fetch the patient’s registered phone and compare
+        if (downloadLink.DownloadCount >= downloadLink.MaxDownloads)
+        {
+            downloadLink.IsActive = false;
+            await _context.SaveChangesAsync();
+            _logger.LogWarning("Attempted download with exhausted token: {Token}", token);
+            throw new BadHttpRequestException("DownloadLimitReached", 401);
+        }
+
         string patientPhoneNumber;
         if (downloadLink.Report.SourceType == "Order")
         {
@@ -735,12 +742,24 @@ public class DeliveryService : IDeliveryService
             throw new InvalidOperationException($"Unsupported Report SourceType: {downloadLink.Report.SourceType}");
         }
 
-        // Compare strings
         if (phone != patientPhoneNumber)
         {
             _logger.LogWarning("Phone number mismatch for secure download token {Token}. Provided: {ProvidedPhone}, Expected: {ExpectedPhone}", token, phone, patientPhoneNumber);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
+            throw new BadHttpRequestException("PhoneMismatch", 401);
         }
+
+        return downloadLink;
+    }
+
+    public async Task<bool> VerifyPhoneOnlyAsync(string token, string phone)
+    {
+        await ValidateLinkAndPhoneAsync(token, phone);
+        return true;
+    }
+
+    public async Task<Stream> VerifyAndDownloadAsync(string token, string phone)
+    {
+        var downloadLink = await ValidateLinkAndPhoneAsync(token, phone);
 
         // If valid:
         downloadLink.DownloadCount++;
@@ -750,7 +769,7 @@ public class DeliveryService : IDeliveryService
         }
         if (downloadLink.DownloadCount >= downloadLink.MaxDownloads)
         {
-            downloadLink.IsActive = false; // Deactivate if max downloads reached
+            downloadLink.IsActive = false;
         }
         await _context.SaveChangesAsync();
         _logger.LogInformation("Secure download successful for token {Token} by phone {Phone}. DownloadCount: {DownloadCount}", token, phone, downloadLink.DownloadCount);
@@ -1038,67 +1057,7 @@ public class DeliveryService : IDeliveryService
 
     public async Task<Stream> DownloadReportPackageAsync(string token, string phoneNumber)
     {
-        // Reuse verification logic from VerifyAndDownloadAsync
-        // Validate phone input
-        if (!IsIndianMobileNumber(phoneNumber))
-        {
-            _logger.LogWarning("Invalid phone number format for secure download package token {Token}: {Phone}", token, phoneNumber);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
-        }
-
-        var downloadLink = await _context.DownloadLinks
-            .Include(dl => dl.Report)
-                .ThenInclude(r => r.Attachments)
-            .FirstOrDefaultAsync(dl => dl.Token == token);
-
-        if (downloadLink == null || !downloadLink.IsActive)
-        {
-            _logger.LogWarning("Attempted download package with non-existent or inactive token: {Token}", token);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
-        }
-
-        // Validate link expiration and download count
-        if (downloadLink.ExpiresAt <= DateTimeOffset.UtcNow || downloadLink.DownloadCount >= downloadLink.MaxDownloads)
-        {
-            downloadLink.IsActive = false; // Deactivate expired/exhausted links
-            await _context.SaveChangesAsync();
-            _logger.LogWarning("Attempted download package with expired or exhausted token: {Token}", token);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
-        }
-
-        // Fetch the patient’s registered phone and compare
-        string patientPhoneNumber;
-        if (downloadLink.Report.SourceType == "Order")
-        {
-            var order = await _context.Orders
-                .Include(o => o.Visit)
-                    .ThenInclude(v => v.Patient)
-                .FirstOrDefaultAsync(o => o.OrderId == downloadLink.Report.SourceId);
-
-            if (order == null) throw new KeyNotFoundException("Order not found for report.");
-            patientPhoneNumber = order.Visit.Patient.CurrentPhoneNumber;
-        }
-        else if (downloadLink.Report.SourceType == "RadiologyStudy")
-        {
-            var radiologyStudy = await _context.RadiologyStudies
-                .Include(rs => rs.Visit)
-                    .ThenInclude(v => v.Patient)
-                .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == downloadLink.Report.SourceId);
-            
-            if (radiologyStudy == null) throw new KeyNotFoundException("Radiology Study not found for report.");
-            patientPhoneNumber = radiologyStudy.Visit.Patient.CurrentPhoneNumber;
-        }
-        else
-        {
-            throw new InvalidOperationException($"Unsupported Report SourceType: {downloadLink.Report.SourceType}");
-        }
-
-
-        if (phoneNumber != patientPhoneNumber)
-        {
-            _logger.LogWarning("Phone number mismatch for secure download package token {Token}. Provided: {ProvidedPhone}, Expected: {ExpectedPhone}", token, phoneNumber, patientPhoneNumber);
-            throw new BadHttpRequestException("InvalidPhoneOrLink", 401);
-        }
+        var downloadLink = await ValidateLinkAndPhoneAsync(token, phoneNumber);
 
         // If valid: Increment download count and update link
         downloadLink.DownloadCount++;
@@ -1108,7 +1067,7 @@ public class DeliveryService : IDeliveryService
         }
         if (downloadLink.DownloadCount >= downloadLink.MaxDownloads)
         {
-            downloadLink.IsActive = false; // Deactivate if max downloads reached
+            downloadLink.IsActive = false;
         }
         await _context.SaveChangesAsync();
         _logger.LogInformation("Secure download package successful for token {Token} by phone {Phone}. DownloadCount: {DownloadCount}", token, phoneNumber, downloadLink.DownloadCount);

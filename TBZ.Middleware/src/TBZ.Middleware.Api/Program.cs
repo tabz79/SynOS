@@ -1161,24 +1161,19 @@ async Task ProxyToSynOS(string path, HttpContext context, IHttpClientFactory htt
     await response.Content.CopyToAsync(context.Response.Body);
 }
 
-app.MapGet("/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+app.MapGet("/r/{*path}", async (string? path, HttpContext context, IHttpClientFactory httpClientFactory) =>
 {
-    await ProxyToSynOS($"/r/{token}", context, httpClientFactory);
+    await ProxyToSynOS($"/r/{path}", context, httpClientFactory);
 });
 
-app.MapGet("/secure/r/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+app.MapGet("/secure/r/{*path}", async (string? path, HttpContext context, IHttpClientFactory httpClientFactory) =>
 {
-    await ProxyToSynOS($"/secure/r/{token}", context, httpClientFactory);
+    await ProxyToSynOS($"/secure/r/{path}", context, httpClientFactory);
 });
 
-app.MapGet("/api/v1/public/reports/download/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
+app.MapGet("/api/v1/public/reports/{*path}", async (string? path, HttpContext context, IHttpClientFactory httpClientFactory) =>
 {
-    await ProxyToSynOS($"/api/v1/public/reports/download/{token}", context, httpClientFactory);
-});
-
-app.MapGet("/api/v1/public/reports/download-package/{token}", async (string token, HttpContext context, IHttpClientFactory httpClientFactory) =>
-{
-    await ProxyToSynOS($"/api/v1/public/reports/download-package/{token}", context, httpClientFactory);
+    await ProxyToSynOS($"/api/v1/public/reports/{path}", context, httpClientFactory);
 });
 
 app.MapGet("/", () =>

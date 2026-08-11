@@ -14,6 +14,7 @@ public interface IDeliveryService
     Task<DeliveryResultDto> DeliverViaEmailAsync(Guid reportId, string email, Guid userId);
     Task<SecureLinkDto> GenerateSecureLinkAsync(Guid reportId, Guid userId);
     Task<Stream> VerifyAndDownloadAsync(string token, string phone);
+    Task<bool> VerifyPhoneOnlyAsync(string token, string phone);
     Task<Stream> DownloadReportPackageAsync(string token, string phoneNumber);
     Task<DeliveryResultDto> MarkHandedOverAsync(Guid reportId, Guid userId);
     Task<List<DeliveryAttemptDto>> GetAttemptsAsync(Guid reportId);

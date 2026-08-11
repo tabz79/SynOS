@@ -196,12 +196,27 @@ public class SecureDownloadController : ControllerBase
                                 }};
                             }}
                         }} else {{
+                            const errData = await res.json().catch(() => ({{}}));
+                            let msg = 'Mobile number mismatch. Please verify and try again.';
+                            if (errData.error === 'LinkExpired') {{
+                                msg = 'This report link has expired. Please contact the laboratory for a new link.';
+                            }} else if (errData.error === 'DownloadLimitReached') {{
+                                msg = 'This report link is no longer available. Please contact the laboratory.';
+                            }} else if (errData.error === 'LinkInactive') {{
+                                msg = 'This report link is no longer active.';
+                            }} else if (errData.error === 'PhoneMismatch') {{
+                                msg = 'The mobile number entered does not match our records.';
+                            }}
+                            errorMsg.innerText = msg;
                             errorMsg.style.display = 'block';
                             btn.innerText = 'Verify Identity';
                             btn.disabled = false;
                         }}
                     }} catch (err) {{
-                        window.location.href = `/api/v1/public/reports/download/{token}?phone=` + phone;
+                        errorMsg.innerText = 'Connection error. Please try again.';
+                        errorMsg.style.display = 'block';
+                        btn.innerText = 'Verify Identity';
+                        btn.disabled = false;
                     }}
                 }};
             </script>
@@ -217,10 +232,10 @@ public class SecureDownloadController : ControllerBase
         [FromQuery] string phone,
         [FromServices] SynOS.Data.SynOSDbContext context)
     {
-        if (string.IsNullOrEmpty(phone)) return BadRequest(new { error = "Phone required" });
+        if (string.IsNullOrEmpty(phone)) return BadRequest(new { error = "PhoneMismatch" });
         try
         {
-            await _deliveryService.VerifyAndDownloadAsync(token, phone);
+            await _deliveryService.VerifyPhoneOnlyAsync(token, phone);
             
             var downloadLink = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
                 Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(context.DownloadLinks, dl => dl.Report),
@@ -235,9 +250,13 @@ public class SecureDownloadController : ControllerBase
                 radiologyStudyId = radiologyStudyId
             });
         }
+        catch (BadHttpRequestException ex)
+        {
+            return StatusCode(ex.StatusCode, new { error = ex.Message });
+        }
         catch (Exception ex)
         {
-            return Unauthorized(new { error = ex.Message });
+            return StatusCode(401, new { error = ex.Message });
         }
     }
 
