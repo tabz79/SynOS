@@ -657,8 +657,8 @@ public class DeliveryService : IDeliveryService
     private async Task<SecureLinkDto> GenerateSecureLinkInternalAsync(Guid reportId, Guid userId)
     {
         var token = GenerateUniqueToken();
-        var expiresAt = DateTimeOffset.UtcNow.AddHours(24);
-        const int maxDownloads = 3;
+        var expiresAt = DateTimeOffset.UtcNow.AddDays(15);
+        const int maxDownloads = 99999;
 
         var downloadLink = new DownloadLink
         {
@@ -694,26 +694,10 @@ public class DeliveryService : IDeliveryService
                 .ThenInclude(r => r.Attachments)
             .FirstOrDefaultAsync(dl => dl.Token == token);
 
-        if (downloadLink == null || !downloadLink.IsActive)
+        if (downloadLink == null)
         {
-            _logger.LogWarning("Attempted download with non-existent or inactive token: {Token}", token);
+            _logger.LogWarning("Attempted download with non-existent token: {Token}", token);
             throw new BadHttpRequestException("LinkInactive", 401);
-        }
-
-        if (downloadLink.ExpiresAt <= DateTimeOffset.UtcNow)
-        {
-            downloadLink.IsActive = false;
-            await _context.SaveChangesAsync();
-            _logger.LogWarning("Attempted download with expired token: {Token}", token);
-            throw new BadHttpRequestException("LinkExpired", 401);
-        }
-
-        if (downloadLink.DownloadCount >= downloadLink.MaxDownloads)
-        {
-            downloadLink.IsActive = false;
-            await _context.SaveChangesAsync();
-            _logger.LogWarning("Attempted download with exhausted token: {Token}", token);
-            throw new BadHttpRequestException("DownloadLimitReached", 401);
         }
 
         string patientPhoneNumber;
@@ -746,6 +730,16 @@ public class DeliveryService : IDeliveryService
         {
             _logger.LogWarning("Phone number mismatch for secure download token {Token}. Provided: {ProvidedPhone}, Expected: {ExpectedPhone}", token, phone, patientPhoneNumber);
             throw new BadHttpRequestException("PhoneMismatch", 401);
+        }
+
+        // AUTO-HEALING: If link was inactive or expired, renew for 15 days on valid phone verification
+        if (!downloadLink.IsActive || downloadLink.ExpiresAt <= DateTimeOffset.UtcNow || downloadLink.DownloadCount >= downloadLink.MaxDownloads)
+        {
+            downloadLink.IsActive = true;
+            downloadLink.ExpiresAt = DateTimeOffset.UtcNow.AddDays(15);
+            downloadLink.MaxDownloads = 99999;
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Auto-healed and renewed patient download link for token {Token} (Phone: {Phone}) for 15 days.", token, phone);
         }
 
         return downloadLink;
@@ -1012,7 +1006,7 @@ public class DeliveryService : IDeliveryService
             return new SecureLinkVerificationDto(false, "N/A", new List<string>(), DateTimeOffset.MinValue, 0);
         }
 
-        bool isValid = downloadLink.IsActive && downloadLink.ExpiresAt > DateTimeOffset.UtcNow && downloadLink.DownloadCount < downloadLink.MaxDownloads;
+        bool isValid = downloadLink != null;
 
         string patientName;
         List<string> tests;

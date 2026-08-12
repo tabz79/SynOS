@@ -363,6 +363,16 @@ public class SecureDownloadController : ControllerBase
             var radiologyStudyId = downloadLink.Report.SourceId;
             string publicHost = Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? Request.Host.ToUriComponent();
             string publicScheme = Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? Request.Scheme;
+            
+            if (Request.IsHttps 
+                || string.Equals(Request.Headers["X-Forwarded-Proto"], "https", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Request.Headers["X-Forwarded-Ssl"], "on", StringComparison.OrdinalIgnoreCase)
+                || publicHost.Contains("tbzlabs.in", StringComparison.OrdinalIgnoreCase)
+                || (!publicHost.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) && !publicHost.StartsWith("127.0.0.1")))
+            {
+                publicScheme = "https";
+            }
+
             var apiBaseUrl = $"{publicScheme}://{publicHost}";
 
             var seriesTree = await _pacsService.GetSeriesTreeAsync(radiologyStudyId, Guid.Empty, apiBaseUrl);

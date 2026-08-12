@@ -16,6 +16,10 @@ export function AuthProvider({ children }) {
     };
 
     useEffect(() => {
+        const path = window.location.pathname;
+        if (path.startsWith('/r/') || path.startsWith('/secure/r/')) {
+            return;
+        }
         const checkSetup = async () => {
             try {
                 const res = await fetch('/api/v1/setup/status');

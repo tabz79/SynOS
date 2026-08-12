@@ -10326,15 +10326,17 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
       localStorage.setItem("synos_oversight_branch_id", f), d(f);
     };
     j.useEffect(() => {
+      const f = window.location.pathname;
+      if (f.startsWith("/r/") || f.startsWith("/secure/r/")) return;
       (async () => {
         try {
-          const C = await fetch("/api/v1/setup/status");
-          if (C.ok) {
-            const p = await C.json();
-            l(p.isConfigured);
+          const p = await fetch("/api/v1/setup/status");
+          if (p.ok) {
+            const x = await p.json();
+            l(x.isConfigured);
           }
-        } catch (C) {
-          console.error("Setup check failed:", C);
+        } catch (p) {
+          console.error("Setup check failed:", p);
         }
       })();
     }, []), j.useEffect(() => {
