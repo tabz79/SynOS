@@ -64,7 +64,9 @@ export function DicomViewerContainer({
     const [activeSliceIndex, setActiveSliceIndex] = useState(0);
     const [totalSlices, setTotalSlices] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    
+    const [isImageLoading, setIsImageLoading] = useState(true);
+    const [loadingProgress, setLoadingProgress] = useState(0);
+
     // Saince PACS Suite UI Controls
     const [showSeriesSidebar, setShowSeriesSidebar] = useState(true);
     const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -164,12 +166,31 @@ export function DicomViewerContainer({
     // Load active series DICOM Image URLs into DicomViewportManager
     useEffect(() => {
         if (viewportManager.current && activeSeriesUrls && activeSeriesUrls.length > 0) {
+            setIsImageLoading(true);
             setActiveSliceIndex(0);
+            setLoadingProgress(10);
+
+            const progressTimer = setInterval(() => {
+                setLoadingProgress(prev => {
+                    if (prev >= 85) return 85;
+                    return prev + 15;
+                });
+            }, 120);
+
             viewportManager.current.setImages(activeSeriesUrls).then(() => {
+                clearInterval(progressTimer);
+                setLoadingProgress(100);
                 setTotalSlices(activeSeriesUrls.length);
+                setTimeout(() => setIsImageLoading(false), 250);
             }).catch(err => {
                 console.error("Failed to load DICOM images into DicomViewerContainer:", err);
+                clearInterval(progressTimer);
+                setIsImageLoading(false);
             });
+
+            return () => clearInterval(progressTimer);
+        } else {
+            setIsImageLoading(false);
         }
     }, [activeSeriesUrls]);
 
@@ -934,8 +955,55 @@ export function DicomViewerContainer({
                         </>
                     )}
 
-                    {/* Empty State Banner when no DICOM slices exist */}
-                    {totalSlices === 0 && (
+                    {/* HIGH-TECH ANIMATED DICOM MEDICAL LOADING OVERLAY */}
+                    {isImageLoading && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/95 text-zinc-100 z-40 p-6 text-center backdrop-blur-md transition-opacity duration-300">
+                            {/* Animated Scanner Aperture & Radar Ring */}
+                            <div className="relative w-24 h-24 flex items-center justify-center mb-6">
+                                {/* Outer Spinning Gradient Pulse Ring */}
+                                <div className="absolute inset-0 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 border-r-indigo-500 animate-spin" style={{ animationDuration: '1.2s' }} />
+                                
+                                {/* Counter-Spinning Inner Aperture */}
+                                <div className="absolute inset-2 rounded-full border border-dashed border-amber-400/40 animate-spin" style={{ animationDuration: '3s', animationDirection: 'reverse' }} />
+                                
+                                {/* Pulsing Central Medical Scan Icon */}
+                                <div className="relative z-10 w-12 h-12 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/20 animate-pulse">
+                                    <Activity className="w-6 h-6 text-cyan-300" />
+                                </div>
+
+                                {/* Glowing Laser Scan Bar */}
+                                <div className="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent top-1/2 -translate-y-1/2 shadow-[0_0_12px_#06b6d4] animate-bounce" />
+                            </div>
+
+                            {/* Loading Header */}
+                            <h3 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+                                <span>STREAMING DICOM MEDICAL SCANS</span>
+                                <span className="inline-block w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                            </h3>
+
+                            {/* Series Subtext */}
+                            <p className="text-xs font-mono text-cyan-300/80 mt-1 max-w-sm">
+                                {displaySeriesList[activeSeriesIndex]?.seriesDescription || `${modality} Diagnostic Series`} 
+                                {activeSeriesUrls.length > 0 ? ` (${activeSeriesUrls.length} Slices)` : ''}
+                            </p>
+
+                            {/* Progress Bar Container */}
+                            <div className="w-64 bg-zinc-900 border border-zinc-800 rounded-full h-2 mt-4 overflow-hidden p-0.5 shadow-inner">
+                                <div 
+                                    className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-amber-400 h-full rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(6,182,212,0.8)]"
+                                    style={{ width: `${Math.max(loadingProgress, 15)}%` }}
+                                />
+                            </div>
+
+                            {/* Status indicator */}
+                            <span className="text-[10px] font-mono text-zinc-500 mt-2 uppercase tracking-widest">
+                                {loadingProgress < 100 ? 'Decoding WebGL Pixel Data...' : 'Rendering Medical Viewport...'}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Empty State Banner when no DICOM slices exist (Only shown when NOT loading and totalSlices === 0) */}
+                    {!isImageLoading && totalSlices === 0 && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950/90 text-zinc-400 z-30 p-6 text-center">
                             <div className="w-14 h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-3 text-cyan-400 shadow-inner">
                                 <Layers className="w-7 h-7" />
