@@ -616,10 +616,13 @@ export function TypistTerminal() {
         }
     };
 
+    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+
     const handlePrint = () => {
         if (!selectedReportId) return;
         // GPT-5 Rule: Draft phase MUST use forceLive to prevent stale snapshot 'Legacy' leak
-        window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
     };
 
     const isLocked = reportStructure?.status === 'ReadyForVerification' || reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified';
@@ -694,8 +697,8 @@ export function TypistTerminal() {
             interpretation: interpretation.interpretation,
             comments: interpretation.comments
         };
-        return <ReportA4 reportData={mergedReportData} template={template} />;
-    }, [reportData, template, interpretation, resultsState]);
+        return <ReportA4 reportData={mergedReportData} template={template} forcePreprinted={isPreprinted} />;
+    }, [reportData, template, interpretation, resultsState, isPreprinted]);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
@@ -1070,6 +1073,21 @@ export function TypistTerminal() {
                                                             {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                                                             Submit for Digital Sign
                                                         </button>
+                                                         {/* Preprinted Sheet Toggle */}
+                                                         <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 cursor-pointer select-none shrink-0" title="Toggle Preprinted Sheet Mode">
+                                                             <input 
+                                                                 type="checkbox" 
+                                                                 checked={isPreprinted}
+                                                                 onChange={(e) => {
+                                                                     setIsPreprinted(e.target.checked);
+                                                                     localStorage.setItem('synos_preprinted_mode', e.target.checked ? 'true' : 'false');
+                                                                 }}
+                                                                 className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
+                                                             />
+                                                             <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                                 Preprinted
+                                                             </span>
+                                                         </label>
 
                                                         {/* 3. Quick Print (Extra Feature Option) */}
                                                         <button 

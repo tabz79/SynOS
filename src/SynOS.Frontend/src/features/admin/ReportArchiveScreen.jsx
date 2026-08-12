@@ -221,11 +221,14 @@ export function ReportArchiveScreen() {
         setPage(1);
     };
 
+    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+
     const handlePrint = async () => {
         if (!selectedReportId) return;
         try {
             await ReportsApi.deliverViaPrint(selectedReportId);
-            window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
+            const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+            window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
         } catch (err) {
             console.error("Print invocation failed:", err);
         }
@@ -595,7 +598,7 @@ export function ReportArchiveScreen() {
                                         }}
                                         className="bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm shrink-0"
                                     >
-                                        <ReportA4 reportData={reportData} template={template} />
+                                        <ReportA4 reportData={reportData} template={template} forcePreprinted={isPreprinted} />
                                     </div>
                                 </div>
                             </div>
@@ -622,6 +625,22 @@ export function ReportArchiveScreen() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Preprinted Sheet Toggle */}
+                                <label className="flex items-center gap-2 px-4 rounded-2xl bg-white/90 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl cursor-pointer select-none shrink-0">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isPreprinted}
+                                        onChange={(e) => {
+                                            setIsPreprinted(e.target.checked);
+                                            localStorage.setItem('synos_preprinted_mode', e.target.checked ? 'true' : 'false');
+                                        }}
+                                        className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                                    />
+                                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                        Preprinted
+                                    </span>
+                                </label>
 
                                 {/* Card 2: Download PDF Button */}
                                 <button 

@@ -612,21 +612,28 @@ namespace SynOS.Services
                         }
                     });
 
-                    table.Header(header =>
-                    {
-                        foreach (var col in activeColumns)
-                        {
-                            var cell = header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3);
-                            IContainer contentContainer = cell;
-                            
-                            var align = col.Alignment?.ToLower() ?? "left";
-                            if (align == "center") contentContainer = cell.AlignCenter();
-                            else if (align == "right") contentContainer = cell.AlignRight();
-                            else contentContainer = cell.AlignLeft();
+                    bool isRadiologyOrNarrative = string.Equals(data.Modality, "Radiology", StringComparison.OrdinalIgnoreCase) ||
+                                                  data.Results == null ||
+                                                  !data.Results.Any(g => g.Parameters != null && g.Parameters.Any());
 
-                            contentContainer.Text(col.Title.ToUpper()).FontSize(9).Bold();
-                        }
-                    });
+                    if (!isRadiologyOrNarrative)
+                    {
+                        table.Header(header =>
+                        {
+                            foreach (var col in activeColumns)
+                            {
+                                var cell = header.Cell().BorderTop(1).BorderBottom(1).PaddingVertical(3);
+                                IContainer contentContainer = cell;
+                                
+                                var align = col.Alignment?.ToLower() ?? "left";
+                                if (align == "center") contentContainer = cell.AlignCenter();
+                                else if (align == "right") contentContainer = cell.AlignRight();
+                                else contentContainer = cell.AlignLeft();
+
+                                contentContainer.Text(col.Title.ToUpper()).FontSize(9).Bold();
+                            }
+                        });
+                    }
 
                     foreach (var group in data.Results)
                     {

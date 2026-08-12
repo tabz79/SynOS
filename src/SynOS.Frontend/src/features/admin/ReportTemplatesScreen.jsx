@@ -1904,11 +1904,12 @@ export function ReportTemplatesScreen() {
               
               {/* Background Backdrop Master Artwork */}
               {((previewMode === "digital") || (previewMode === "physical" && !selectedTemplate.usePreprinted)) && selectedTemplate.backgroundPath && (
-                <div 
-                  className="absolute inset-0 bg-cover bg-center pointer-events-none"
+                <img 
+                  src={selectedTemplate.backgroundPath} 
+                  alt="Background Letterhead"
+                  className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none"
                   style={{ 
-                    backgroundImage: `url(${selectedTemplate.backgroundPath})`, 
-                    opacity: selectedTemplate.bgImageOpacity ?? 0.05,
+                    opacity: selectedTemplate.backgroundPath.startsWith('data:') ? 1.0 : (selectedTemplate.bgImageOpacity ?? 1.0),
                     zIndex: 0 
                   }} 
                 />

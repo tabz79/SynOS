@@ -349,7 +349,7 @@ public class SecureDownloadController : ControllerBase
 
         try
         {
-            await _deliveryService.VerifyAndDownloadAsync(token, phone);
+            await _deliveryService.VerifyPhoneOnlyAsync(token, phone);
 
             var downloadLink = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
                 Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(context.DownloadLinks, dl => dl.Report),
@@ -361,8 +361,9 @@ public class SecureDownloadController : ControllerBase
             }
 
             var radiologyStudyId = downloadLink.Report.SourceId;
-            var request = HttpContext.Request;
-            var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";
+            string publicHost = Request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? Request.Host.ToUriComponent();
+            string publicScheme = Request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? Request.Scheme;
+            var apiBaseUrl = $"{publicScheme}://{publicHost}";
 
             var seriesTree = await _pacsService.GetSeriesTreeAsync(radiologyStudyId, Guid.Empty, apiBaseUrl);
 
@@ -371,15 +372,19 @@ public class SecureDownloadController : ControllerBase
             {
                 foreach (var inst in series.Instances)
                 {
-                    inst.Wadouri = $"/api/v1/public/reports/viewer/{token}/instances/{inst.InstanceId}/file?phone={Uri.EscapeDataString(phone)}";
+                    inst.Wadouri = $"wadouri:{apiBaseUrl.TrimEnd('/')}/api/v1/public/reports/viewer/{token}/instances/{inst.InstanceId}/file?phone={Uri.EscapeDataString(phone)}";
                 }
             }
 
             return Ok(seriesTree);
         }
+        catch (BadHttpRequestException ex)
+        {
+            return StatusCode(ex.StatusCode, new { error = ex.Message });
+        }
         catch (Exception ex)
         {
-            return Unauthorized(new { error = ex.Message });
+            return StatusCode(401, new { error = ex.Message });
         }
     }
 
@@ -393,14 +398,18 @@ public class SecureDownloadController : ControllerBase
 
         try
         {
-            await _deliveryService.VerifyAndDownloadAsync(token, phone);
+            await _deliveryService.VerifyPhoneOnlyAsync(token, phone);
 
             var (stream, contentType) = await _pacsService.GetDicomStreamAsync(instanceId, Guid.Empty);
             return File(stream, contentType, $"{instanceId}.dcm");
         }
+        catch (BadHttpRequestException ex)
+        {
+            return StatusCode(ex.StatusCode, new { error = ex.Message });
+        }
         catch (Exception ex)
         {
-            return Unauthorized(new { error = ex.Message });
+            return StatusCode(401, new { error = ex.Message });
         }
     }
 }

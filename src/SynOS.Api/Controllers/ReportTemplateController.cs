@@ -40,6 +40,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTemplates([FromQuery] string? modality = null, [FromQuery] bool includeDeleted = false)
         {
             try
@@ -54,6 +55,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetTemplateById(Guid id)
         {
             try

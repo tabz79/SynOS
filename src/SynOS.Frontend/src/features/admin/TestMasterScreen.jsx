@@ -2869,11 +2869,12 @@ function TestInventoryTab({ selectedTest }) {
             >
               
               {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.backgroundPath && (
-                <div 
-                  className="absolute inset-0 bg-cover bg-center pointer-events-none"
+                <img 
+                  src={activeTemplate.backgroundPath} 
+                  alt="Background Letterhead"
+                  className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none"
                   style={{ 
-                    backgroundImage: `url(${activeTemplate.backgroundPath})`, 
-                    opacity: activeTemplate.bgImageOpacity ?? 0.05,
+                    opacity: activeTemplate.backgroundPath.startsWith('data:') ? 1.0 : (activeTemplate.bgImageOpacity ?? 1.0),
                     zIndex: 0 
                   }} 
                 />

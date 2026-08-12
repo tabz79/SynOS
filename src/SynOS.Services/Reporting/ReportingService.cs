@@ -457,11 +457,14 @@ namespace SynOS.Services.Reporting
             }
 
             // 7. Assemble DTO Base
+            var defaultPathologyTemplate = (await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == (report.Department ?? "Pathology") && t.IsDefault && !t.IsDeleted))
+                ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == "Pathology" && t.IsDefault && !t.IsDeleted);
+
             var dto = new ReportStructureDto
             {
                 ReportId = report.ReportId,
                 SourceId = report.SourceId,
-                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId,
+                ReportTemplateId = report.ReportTemplateId ?? order.Test?.ReportTemplateId ?? defaultPathologyTemplate?.TemplateId,
                 Status = report.Status,
                 PatientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}",
                 PatientAgeGender = $"{Utils.ReferenceRangeResolver.CalculateAge(visit.Patient.DateOfBirth, visit.TokenDate)} / {visit.Patient.Gender}",
@@ -988,10 +991,21 @@ namespace SynOS.Services.Reporting
                 }
             }
 
+            var resolvedTemplateId = report.ReportTemplateId;
+            if (!resolvedTemplateId.HasValue || resolvedTemplateId.Value == Guid.Empty)
+            {
+                var radTemplate = await _context.ReportTemplates
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(t => t.Modality == "Radiology" && t.IsDefault && !t.IsDeleted)
+                    ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == "Radiology" && !t.IsDeleted);
+                resolvedTemplateId = radTemplate?.TemplateId;
+            }
+
             return new ReportStructureDto
             {
                 ReportId = report.ReportId,
                 SourceId = report.SourceId,
+                ReportTemplateId = resolvedTemplateId,
                 Token = visit.Token ?? "N/A",
                 PatientName = string.IsNullOrWhiteSpace(pName) ? "Patient" : pName,
                 PatientAgeGender = pAgeGender,

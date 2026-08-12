@@ -1,417 +1,218 @@
-login:1 Denying load of chrome-extension://ojplmecpdpgccookcobabopnaifgidhf/assets/couponCollection.js-BO2Uvu5T.js. Resources must be listed in the web_accessible_resources manifest key in order to be loaded by pages outside the extension.
-chrome-extension://invalid/:1  Failed to load resource: net::ERR_FAILED
- SignalR(Branch): Subscriber added (Total: 1)
- [2026-08-11T04:28:03.110Z] Information: Normalizing '/branchOperationsHub' to 'http://localhost:59999/branchOperationsHub'.
- SignalR(Branch): Starting connection...
-
- [RootRedirect] Evaluating redirect: Object
- [BHK] widget sdk 1.0.0
- [BHK] install: missing/invalid publicKey or merchantId — aborting
- [2026-08-11T04:28:04.265Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
- [2026-08-11T04:28:04.266Z] Information: Using HubProtocol 'json'.
- SignalR(Branch): Connected to /branchOperationsHub
- SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
- [2026-08-11T04:28:56.974Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:59999/radiologyCollaborationHub'.
- [2026-08-11T04:28:57.172Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
- CornerstoneRender: Using detect-gpu to get the GPU benchmark: Object
- CornerstoneRender: using GPU rendering
- [2026-08-11T04:30:52.321Z] Information: Connection disconnected.
- [2026-08-11T04:30:54.789Z] Information: Normalizing '/dashboardHub' to 'http://localhost:59999/dashboardHub'.
- SignalR: Subscriber added (Total: 1)
- SignalR: Starting connection...
- [2026-08-11T04:30:54.823Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
- [2026-08-11T04:30:54.824Z] Information: Using HubProtocol 'json'.
- SignalR: Connected to /dashboardHub
- SignalR: ReceiveServerTime received 2026-08-11T04:30:54.8655512Z
- DEBUG: Activity Stream Payload: Array(41)
- DEBUG: Action Queue Raw: Array(2)
- DEBUG: Activity Stream Payload: Array(41)
- DEBUG: Activity Stream Payload: Array(41)
- SignalR: ActionQueueDeltaReceived received DRAFT-F5980025
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-F5980025
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-F5980025
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-F5980025
- ReceptionScreen: Delta Received Object
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- SignalR: ActionQueueUpdated received (Thundering Herd Fallback)
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- SignalR: Action Queue Refreshed
- DEBUG: Activity Stream Payload: Array(41)
- DEBUG: Activity Stream Payload: Array(41)
- SignalR: ActionQueueDeltaReceived received DRAFT-E1236531
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-E1236531
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-E1236531
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-E1236531
- ReceptionScreen: Delta Received Object
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- DEBUG: applyReferralToVisit Payload: Object
- SignalR: ActionQueueDeltaReceived received DRAFT-E1236531
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received DRAFT-E1236531
- ReceptionScreen: Delta Received Object
- DEBUG: Activity Stream Payload: Array(44)
- DEBUG: Activity Stream Payload: Array(44)
- SignalR: ActionQueueDeltaReceived received MAI-003
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received MAI-003
- ReceptionScreen: Delta Received Object
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- SignalR: ReceptionSummaryUpdated received Object
- ReceptionScreen: Received Reality Summary Update Object
- SignalR: ActionQueueDeltaReceived received MAI-003
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received MAI-003
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received MAI-003
- ReceptionScreen: Delta Received Object
- SignalR: ActionQueueDeltaReceived received MAI-003
- ReceptionScreen: Delta Received Object
- DEBUG: Activity Stream Payload: Array(47)
- SignalR: Subscriber removed (Total: 0)
- SignalR: No subscribers, disconnecting...
- [2026-08-11T04:31:32.577Z] Information: Connection disconnected.
- SignalR: Connection Closed
- SignalR: Disconnected
- SignalR: Subscriber added (Total: 1)
- SignalR: Starting connection...
- [2026-08-11T04:31:33.055Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
- [2026-08-11T04:31:33.056Z] Information: Using HubProtocol 'json'.
- SignalR: ReceiveServerTime received 2026-08-11T04:31:33.0660788Z
- SignalR: Connected to /dashboardHub
- DEBUG: Activity Stream Payload: Array(47)
- DEBUG: Activity Stream Payload: Array(47)
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- Completing collection for assignment: 220cd40f-a65d-41ea-bcd4-936f2aae7249
- SignalR: InventoryShortageReceived received Object
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- DEBUG: Activity Stream Payload: Array(48)
- SignalR: Subscriber added (Total: 2)
- DEBUG: Activity Stream Payload: Array(48)
- DEBUG: Activity Stream Payload: Array(48)
- DEBUG: Activity Stream Payload: Array(48)
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- DEBUG: Activity Stream Payload: Array(48)
- DEBUG: Activity Stream Payload: Array(48)
- DEBUG: Activity Stream Payload: Array(48)
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- DEBUG: Activity Stream Payload: Array(48)
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: ActionQueueDeltaReceived received MAI-003
- SignalR: Subscriber removed (Total: 1)
- [2026-08-11T04:32:30.986Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:59999/radiologyCollaborationHub'.
- [2026-08-11T04:32:31.044Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: 
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: 
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph"}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph"}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
-   5. calling setContent() with parsed JSON value
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: 
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph"}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph"}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
-   5. calling setContent() with parsed JSON value
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [2026-08-11T04:36:55.962Z] Information: Connection disconnected.
- [2026-08-11T04:39:36.777Z] Information: Normalizing '/radiologyCollaborationHub' to 'http://localhost:59999/radiologyCollaborationHub'.
- [2026-08-11T04:39:37.050Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: 
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
-   5. calling setContent() with parsed JSON value
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Impressions: this is fine as far as you visit a endocronologist for further studies and evaluations. "}]}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: undefined
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: 
-   2. lastValueRef.current: undefined
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: NO
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph"}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph"}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph"}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph"}]}
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"T"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"T"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"T"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"T"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Th"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Th"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Th"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Th"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Thi"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Thi"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Thi"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Thi"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This "}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This "}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This "}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This "}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This i"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This i"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This i"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This i"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is "}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is "}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is "}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is "}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a "}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a "}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a "}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a "}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a t"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a t"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a t"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a t"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a te"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a te"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a te"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a te"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a tes"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a tes"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a tes"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a tes"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test"}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test"}]}]}
-   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test"}]}]}
-   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test"}]}]}
-   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
- [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test "}]}]}
- [RichMedicalEditor.jsx] useEffect sync triggered:
-   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test "}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test "}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test "}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test a"}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test a"}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test a"}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test a"}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test ag"}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test ag"}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test ag"}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test ag"}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test aga"}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test aga"}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test aga"}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test aga"}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test agai"}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test agai"}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test agai"}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test agai"}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again"}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again"}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again"}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again"}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again."}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again."}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again."}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again."}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54317 [RichMedicalEditor.jsx] useEffect sync triggered:
-index-DjA9YpQ2.js:54317   1. incoming value prop: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54317   2. lastValueRef.current: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54317   3. editor.getJSON() (raw content): {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54318   4. early exit: YES, value === lastValueRef.current. Bypassing sync.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:10598 [2026-08-11T04:42:20.335Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ index-DjA9YpQ2.js:10598
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.337Z] Information: Close message received from server.
-index-DjA9YpQ2.js:10598 [2026-08-11T04:42:20.337Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ index-DjA9YpQ2.js:10598
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.338Z] Information: Connection reconnecting because of error 'Error: Server returned an error on close: Connection closed with an error.'.
-index-DjA9YpQ2.js:12115 SignalR(Branch): Reconnecting...
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.338Z] Information: Reconnect attempt number 1 will start in 0 ms.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.342Z] Information: Close message received from server.
-index-DjA9YpQ2.js:10598 [2026-08-11T04:42:20.342Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ index-DjA9YpQ2.js:10598
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.342Z] Information: Connection reconnecting because of error 'Error: Server returned an error on close: Connection closed with an error.'.
-index-DjA9YpQ2.js:12019 SignalR: Reconnecting...
-index-DjA9YpQ2.js:12019 SignalR: Reconnecting...
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.344Z] Information: Reconnect attempt number 1 will start in 0 ms.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.565Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.736Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.738Z] Information: Using HubProtocol 'json'.
-index-DjA9YpQ2.js:12066 SignalR: ReceiveServerTime received 2026-08-11T04:42:20.7439318Z
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.746Z] Information: HubConnection reconnected successfully.
-index-DjA9YpQ2.js:12021 SignalR: Reconnected
-index-DjA9YpQ2.js:12021 SignalR: Reconnected
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.759Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.760Z] Information: Using HubProtocol 'json'.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:20.763Z] Information: HubConnection reconnected successfully.
-index-DjA9YpQ2.js:12116 SignalR(Branch): Reconnected. Re-registering capabilities...
-index-DjA9YpQ2.js:12097 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-api/v1/reports/3b04087b-7b20-45eb-bb91-7d9252050c69/sign:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
-index-DjA9YpQ2.js:56194 Signing failed: Error: Failed to sign report
-    at Object.signReport (index-DjA9YpQ2.js:33192:24)
-    at async jt (index-DjA9YpQ2.js:56190:21)
-jt @ index-DjA9YpQ2.js:56194
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:10598 [2026-08-11T04:42:54.427Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ index-DjA9YpQ2.js:10598
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.428Z] Information: Close message received from server.
-index-DjA9YpQ2.js:10598 [2026-08-11T04:42:54.429Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ index-DjA9YpQ2.js:10598
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.429Z] Information: Connection reconnecting because of error 'Error: Server returned an error on close: Connection closed with an error.'.
-index-DjA9YpQ2.js:12115 SignalR(Branch): Reconnecting...
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.429Z] Information: Reconnect attempt number 1 will start in 0 ms.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.429Z] Information: Close message received from server.
-index-DjA9YpQ2.js:10598 [2026-08-11T04:42:54.430Z] Error: Connection disconnected with error 'Error: Server returned an error on close: Connection closed with an error.'.
-log @ index-DjA9YpQ2.js:10598
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.430Z] Information: Connection reconnecting because of error 'Error: Server returned an error on close: Connection closed with an error.'.
-index-DjA9YpQ2.js:12019 SignalR: Reconnecting...
-index-DjA9YpQ2.js:12019 SignalR: Reconnecting...
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.431Z] Information: Reconnect attempt number 1 will start in 0 ms.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.536Z] Information: WebSocket connected to ws://localhost:59999/radiologyCollaborationHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.553Z] Information: WebSocket connected to ws://localhost:59999/branchOperationsHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.553Z] Information: Using HubProtocol 'json'.
-index-DjA9YpQ2.js:54204 [RichMedicalEditor.jsx] Initializing lastValueRef.current to: {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"This is a test again. "}]}]}
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.765Z] Information: HubConnection reconnected successfully.
-index-DjA9YpQ2.js:12116 SignalR(Branch): Reconnected. Re-registering capabilities...
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.767Z] Information: WebSocket connected to ws://localhost:59999/dashboardHub?access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiJhMzBmNTJkNi02MGU1LTQ4MzQtOWJmMS04YzRlNTZhYjM5NTYiLCJ1bmlxdWVfbmFtZSI6IkRyLiBWYXN1ZGV2YSBSYW8iLCJ1c2VybmFtZSI6ImRydmFzdSIsIndvcmtzcGFjZXMiOiIvdHlwaXN0LC9waGxlYm90b21pc3QsL2N0dGVjaCwvcmFkaW9sb2dpc3QsL3dvcmtiZW5jaCwvZGVsaXZlcnksL3VzdGVjaCwvcmFkaW9sb2d5LC9wYXRob2xvZ2lzdCwveHJheXRlY2gsL3JlY2VwdGlvbiwvbXJpdGVjaCwvaW52ZW50b3J5LC9maW5hbmNlIiwiZW1haWwiOiJwYXRob2xvZ2lzdEBsYWIuY29tIiwic2Vzc2lvbl9tb2RlIjoib3BlcmF0aW9uYWwiLCJzZXNzaW9uX2lkIjoiOTNiYmU5M2MtZWQxMy00MTRlLTgxMWMtZmE5Y2M1YzE1YjRiIiwiZGVwYXJ0bWVudF9jb2RlIjoiR2VuZXJhbCIsInJvbGUiOiJBZG1pbiIsIlJvbGVJZCI6ImM4Y2UyNTJlLTQyM2YtNDc4YS1hMWUzLTgwNjc1Y2FlZWUwOCIsImJyYW5jaF9pZCI6ImEwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMSIsInJlc291cmNlX2lkIjoiY2YwYjYwNmItMDE4Ni00Mjc5LTg3OTAtMDhhMTU5MDU3OGIwIiwiYnJhbmNoX25hbWUiOiJNYWluIExhYiIsIm5iZiI6MTc4NjM2NTY2NiwiZXhwIjoxNzg2NDUyMDY2LCJpYXQiOjE3ODYzNjU2NjYsImlzcyI6IlN5bk9TLkFwaSIsImF1ZCI6IlN5bk9TLkFwcCJ9.wuJg_fKk-tfva15wHKOKNX5RVX80_m0EWYX4f5Iimuk.
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.768Z] Information: Using HubProtocol 'json'.
-index-DjA9YpQ2.js:12066 SignalR: ReceiveServerTime received 2026-08-11T04:42:54.7694283Z
-index-DjA9YpQ2.js:10604 [2026-08-11T04:42:54.770Z] Information: HubConnection reconnected successfully.
-index-DjA9YpQ2.js:12021 SignalR: Reconnected
-index-DjA9YpQ2.js:12021 SignalR: Reconnected
-index-DjA9YpQ2.js:12097 SignalR(Branch): Capability 'Thermal80mm' registration result: DENIED
+2index-B7bSrlec.js:141135 Error: The pixel data is missing
+    at me (index-B7bSrlec.js:219048:74)
+    at index-B7bSrlec.js:219885:26
+    at new Promise (<anonymous>)
+    at index-B7bSrlec.js:219880:26
+    at iA (index-B7bSrlec.js:219900:15)
+    at $P (index-B7bSrlec.js:141095:15)
+    at lre (index-B7bSrlec.js:141119:50)
+    at Zp (index-B7bSrlec.js:141133:15)
+    at index-B7bSrlec.js:161673:16
+    at Array.map (<anonymous>)
+(anonymous) @ index-B7bSrlec.js:141135
+Promise.catch
+Zp @ index-B7bSrlec.js:141134
+(anonymous) @ index-B7bSrlec.js:161673
+loadImages @ index-B7bSrlec.js:161671
+_loadAndDisplayImageGPU @ index-B7bSrlec.js:161691
+_loadAndDisplayImage @ index-B7bSrlec.js:161561
+_setImageIdIndex @ index-B7bSrlec.js:161787
+setStack @ index-B7bSrlec.js:161536
+updateLayout @ index-B7bSrlec.js:220627
+await in updateLayout
+setImages @ index-B7bSrlec.js:220481
+await in setImages
+(anonymous) @ index-B7bSrlec.js:220927
+Kh @ index-B7bSrlec.js:5213
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5972
+_b @ index-B7bSrlec.js:6666
+lC @ index-B7bSrlec.js:6654
+AE @ index-B7bSrlec.js:6647
+Nx @ index-B7bSrlec.js:6554
+$B @ index-B7bSrlec.js:6276
+lu @ index-B7bSrlec.js:6251
+qb @ index-B7bSrlec.js:6808
+cC @ index-B7bSrlec.js:6753
+Wb @ index-B7bSrlec.js:6771
+(anonymous) @ index-B7bSrlec.js:6812
+index-B7bSrlec.js:220477 Failed to load image/metadata for ID: wadouri:http://127.0.0.1:59999/api/v1/public/reports/viewer/7e01e3a961e14ad09093c923aedb46ef/instances/0e79b30c-f890-49e6-8785-5f81f6932cea/file?phone=9866962092 {error: Error: The pixel data is missing
+    at me (https://cloud.tbzlabs.in/assets/index-B7bSrlec.js:21904…, dataSet: de}
+(anonymous) @ index-B7bSrlec.js:220477
+Promise.catch
+(anonymous) @ index-B7bSrlec.js:220477
+setImages @ index-B7bSrlec.js:220477
+await in setImages
+(anonymous) @ index-B7bSrlec.js:220927
+Kh @ index-B7bSrlec.js:5213
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5972
+_b @ index-B7bSrlec.js:6666
+lC @ index-B7bSrlec.js:6654
+AE @ index-B7bSrlec.js:6647
+Nx @ index-B7bSrlec.js:6554
+$B @ index-B7bSrlec.js:6276
+lu @ index-B7bSrlec.js:6251
+qb @ index-B7bSrlec.js:6808
+cC @ index-B7bSrlec.js:6753
+Wb @ index-B7bSrlec.js:6771
+(anonymous) @ index-B7bSrlec.js:6812
+index-B7bSrlec.js:141135 Error: The pixel data is missing
+    at me (index-B7bSrlec.js:219048:74)
+    at index-B7bSrlec.js:219885:26
+    at new Promise (<anonymous>)
+    at index-B7bSrlec.js:219880:26
+    at iA (index-B7bSrlec.js:219900:15)
+    at $P (index-B7bSrlec.js:141095:15)
+    at lre (index-B7bSrlec.js:141119:50)
+    at Zp (index-B7bSrlec.js:141133:15)
+    at index-B7bSrlec.js:161673:16
+    at Array.map (<anonymous>)
+(anonymous) @ index-B7bSrlec.js:141135
+Promise.catch
+Zp @ index-B7bSrlec.js:141134
+(anonymous) @ index-B7bSrlec.js:161673
+loadImages @ index-B7bSrlec.js:161671
+_loadAndDisplayImageGPU @ index-B7bSrlec.js:161691
+_loadAndDisplayImage @ index-B7bSrlec.js:161561
+_setImageIdIndex @ index-B7bSrlec.js:161787
+setStack @ index-B7bSrlec.js:161536
+updateLayout @ index-B7bSrlec.js:220627
+setImages @ index-B7bSrlec.js:220481
+await in setImages
+(anonymous) @ index-B7bSrlec.js:220927
+Kh @ index-B7bSrlec.js:5213
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5966
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:6000
+xc @ index-B7bSrlec.js:5958
+WB @ index-B7bSrlec.js:5972
+_b @ index-B7bSrlec.js:6666
+lC @ index-B7bSrlec.js:6654
+AE @ index-B7bSrlec.js:6647
+Nx @ index-B7bSrlec.js:6554
+$B @ index-B7bSrlec.js:6276
+lu @ index-B7bSrlec.js:6251
+qb @ index-B7bSrlec.js:6808
+cC @ index-B7bSrlec.js:6753
+Wb @ index-B7bSrlec.js:6771
+(anonymous) @ index-B7bSrlec.js:6812
+3index-B7bSrlec.js:141135 Error: The pixel data is missing
+    at me (index-B7bSrlec.js:219048:74)
+    at index-B7bSrlec.js:219885:26
+    at new Promise (<anonymous>)
+    at index-B7bSrlec.js:219880:26
+    at iA (index-B7bSrlec.js:219900:15)
+    at $P (index-B7bSrlec.js:141095:15)
+    at lre (index-B7bSrlec.js:141119:50)
+    at Zp (index-B7bSrlec.js:141133:15)
+    at index-B7bSrlec.js:161673:16
+    at Array.map (<anonymous>)

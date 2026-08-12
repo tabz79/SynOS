@@ -487,9 +487,12 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
         }
     };
 
+    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+
     const handlePrintOut = () => {
         if (!reportId) return;
-        window.open(`/print/report/${reportId}?forceLive=true`, '_blank');
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        window.open(`/print/report/${reportId}?forceLive=true${preprintedQuery}`, '_blank');
     };
 
     const patientContext = selectedStudy ? {
@@ -671,10 +674,27 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                             <FileText className="w-4 h-4 text-synos-primary" />
                                             <h4 className="text-xs font-bold uppercase tracking-wider dark:text-zinc-200 text-zinc-800">Draft Preview</h4>
                                         </div>
-                                        <span className="text-[9px] font-extrabold uppercase bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                            Live Synced
-                                        </span>
+                                        <div className="flex items-center gap-3">
+                                            <label className="flex items-center gap-1.5 cursor-pointer select-none" title="Toggle Preprinted Sheet Mode">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isPreprinted}
+                                                    onChange={(e) => {
+                                                        setIsPreprinted(e.target.checked);
+                                                        localStorage.setItem('synos_preprinted_mode', e.target.checked ? 'true' : 'false');
+                                                    }}
+                                                    className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
+                                                />
+                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                    Preprinted
+                                                </span>
+                                            </label>
+
+                                            <span className="text-[9px] font-extrabold uppercase bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                Live Synced
+                                            </span>
+                                        </div>
                                     </div>
 
                                     <div 
@@ -707,7 +727,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                                         pointerEvents: isDragging ? 'none' : 'auto'
                                                     }}
                                                 >
-                                                    <ReportA4 reportData={memoizedReportData} template={template} />
+                                                    <ReportA4 reportData={memoizedReportData} template={template} forcePreprinted={isPreprinted} />
                                                 </div>
                                             </div>
                                         ) : (

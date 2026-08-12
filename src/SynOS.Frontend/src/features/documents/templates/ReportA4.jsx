@@ -108,7 +108,7 @@ const renderTipTapJSON = (node) => {
  * ReportA4 - DYNAMIC TEMPLATE RENDERER
  * Supports pre-printed letterhead overlays or full digital layouts.
  */
-export const ReportA4 = ({ reportData, template }) => {
+export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
   if (!reportData || !template) return null;
 
   const { 
@@ -143,19 +143,6 @@ export const ReportA4 = ({ reportData, template }) => {
     
     const resolvedStr = resolveVariables(contentStr, patient, metadata, results, calculateAge);
     
-    const trimmed = resolvedStr.trim();
-    if (trimmed.startsWith('{')) {
-      try {
-        const parsed = JSON.parse(trimmed);
-        if (parsed && parsed.type === 'doc') {
-          return renderTipTapJSON(parsed);
-        }
-      } catch (e) {
-        console.error("TipTap JSON parse failed", e);
-      }
-    }
-    
-    // Parse mixed content containing both HTML tags and TipTap JSON blocks
     const parts = [];
     let currentIndex = 0;
     let htmlStr = resolvedStr;
@@ -168,77 +155,63 @@ export const ReportA4 = ({ reportData, template }) => {
       }
       
       let prefix = htmlStr.substring(currentIndex, jsonStart);
+      if (prefix) {
+        parts.push({ type: 'html', content: prefix });
+      }
       
-      // Extract the JSON object by matching curly braces
-      let braceCount = 0;
+      let depth = 0;
       let jsonEnd = -1;
+      let inString = false;
+      let escape = false;
+      
       for (let i = jsonStart; i < htmlStr.length; i++) {
-        if (htmlStr[i] === '{') braceCount++;
-        else if (htmlStr[i] === '}') {
-          braceCount--;
-          if (braceCount === 0) {
-            jsonEnd = i + 1;
-            break;
+        const char = htmlStr[i];
+        if (escape) {
+          escape = false;
+          continue;
+        }
+        if (char === '\\') {
+          escape = true;
+          continue;
+        }
+        if (char === '"') {
+          inString = !inString;
+          continue;
+        }
+        if (!inString) {
+          if (char === '{') depth++;
+          else if (char === '}') {
+            depth--;
+            if (depth === 0) {
+              jsonEnd = i + 1;
+              break;
+            }
           }
         }
       }
       
       if (jsonEnd !== -1) {
-        let suffix = htmlStr.substring(jsonEnd);
-        let wrapInStrong = false;
-        
-        const strongPrefixRegex = /<p>\s*<strong>\s*$/i;
-        const strongSuffixRegex = /^\s*<\/strong>\s*<\/p>/i;
-        const pPrefixRegex = /<p>\s*$/i;
-        const pSuffixRegex = /^\s*<\/p>/i;
-        
-        if (strongPrefixRegex.test(prefix) && strongSuffixRegex.test(suffix)) {
-          prefix = prefix.replace(strongPrefixRegex, '');
-          suffix = suffix.replace(strongSuffixRegex, '');
-          wrapInStrong = true;
-        } else if (pPrefixRegex.test(prefix) && pSuffixRegex.test(suffix)) {
-          prefix = prefix.replace(pPrefixRegex, '');
-          suffix = suffix.replace(pSuffixRegex, '');
-        }
-        
-        if (prefix) {
-          parts.push({ type: 'html', content: prefix });
-        }
-        
-        const jsonStr = htmlStr.substring(jsonStart, jsonEnd);
-        try {
-          const parsed = JSON.parse(jsonStr);
-          parts.push({ type: 'tiptap', content: parsed, wrapInStrong });
-        } catch (e) {
-          console.error("Failed to parse embedded TipTap JSON", e);
-          parts.push({ type: 'html', content: jsonStr });
-        }
-        
-        // Update htmlStr and reset index since we sliced suffix
-        htmlStr = suffix;
-        currentIndex = 0;
+        const jsonBlockStr = htmlStr.substring(jsonStart, jsonEnd);
+        parts.push({ type: 'tiptap', content: jsonBlockStr });
+        currentIndex = jsonEnd;
       } else {
         parts.push({ type: 'html', content: htmlStr.substring(jsonStart) });
         break;
       }
     }
-    
+
     return (
-      <div className="space-y-2">
+      <div className="space-y-1">
         {parts.map((part, idx) => {
           if (part.type === 'html') {
-            const trimmedContent = part.content.trim();
-            if (!trimmedContent) return null;
-            if (trimmedContent.startsWith('<') || trimmedContent.includes('<h3') || trimmedContent.includes('<p')) {
-              return <div key={idx} dangerouslySetInnerHTML={{ __html: part.content }} />;
-            }
-            return <div key={idx} className="whitespace-pre-wrap">{part.content}</div>;
+            return <div key={idx} dangerouslySetInnerHTML={{ __html: part.content }} />;
           } else if (part.type === 'tiptap') {
-            const tiptapRender = renderTipTapJSON(part.content);
-            if (part.wrapInStrong) {
-              return <div key={idx} className="font-bold">{tiptapRender}</div>;
+            try {
+              const parsed = JSON.parse(part.content);
+              return <div key={idx}>{renderTipTapJSON(parsed)}</div>;
+            } catch (e) {
+              return <div key={idx}>{part.content}</div>;
             }
-            return <div key={idx}>{tiptapRender}</div>;
           }
           return null;
         })}
@@ -247,6 +220,7 @@ export const ReportA4 = ({ reportData, template }) => {
   };
 
   const activeTemplate = template;
+  const isPreprinted = forcePreprinted || activeTemplate?.usePreprinted;
 
   const getCoordinates = (template) => {
     if (!template) return {};
@@ -322,18 +296,22 @@ export const ReportA4 = ({ reportData, template }) => {
     paddingLeft: activeTemplate.enableAbsolutePositioning ? '0mm' : `${activeTemplate.leftRightMargin || 12}mm`,
     paddingRight: activeTemplate.enableAbsolutePositioning ? '0mm' : `${activeTemplate.leftRightMargin || 12}mm`,
     paddingBottom: activeTemplate.enableAbsolutePositioning ? '0mm' : `${activeTemplate.bottomMargin || 35}mm`,
-    borderWidth: `${activeTemplate.borderWidth !== undefined ? activeTemplate.borderWidth : 1}px`,
-    borderStyle: activeTemplate.borderStyle || 'solid',
-    borderColor: activeTemplate.borderColor || '#e2e8f0',
-    borderRadius: `${activeTemplate.borderRadius !== undefined ? activeTemplate.borderRadius : 12}px`,
-    backgroundColor: activeTemplate.bgType === 'solid' ? activeTemplate.bgColor : '#ffffff',
-    background: activeTemplate.bgType === 'gradient' 
+    borderWidth: isPreprinted ? '0px' : `${activeTemplate.borderWidth !== undefined ? activeTemplate.borderWidth : 1}px`,
+    borderStyle: isPreprinted ? 'none' : (activeTemplate.borderStyle || 'solid'),
+    borderColor: isPreprinted ? 'transparent' : (activeTemplate.borderColor || '#e2e8f0'),
+    borderRadius: isPreprinted ? '0px' : `${activeTemplate.borderRadius !== undefined ? activeTemplate.borderRadius : 12}px`,
+    backgroundColor: isPreprinted ? '#ffffff' : (activeTemplate.bgType === 'solid' ? activeTemplate.bgColor : '#ffffff'),
+    background: isPreprinted ? '#ffffff' : (activeTemplate.bgType === 'gradient' 
       ? `linear-gradient(${activeTemplate.bgGradientAngle || 135}deg, ${activeTemplate.bgGradientStart || '#ffffff'}, ${activeTemplate.bgGradientEnd || '#ffffff'})`
-      : undefined
+      : undefined),
+    WebkitPrintColorAdjust: 'exact',
+    printColorAdjust: 'exact'
   } : {
     paddingLeft: '12mm',
     paddingRight: '12mm',
-    paddingBottom: '35mm'
+    paddingBottom: '35mm',
+    WebkitPrintColorAdjust: 'exact',
+    printColorAdjust: 'exact'
   };
 
   return (
@@ -342,24 +320,21 @@ export const ReportA4 = ({ reportData, template }) => {
       className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-[210mm] print:min-h-[296.5mm] print:h-[296.5mm] relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden"
       style={pageStyle}
     >
-      {/* 🖼️ BACKGROUND IMAGE BACKDROP */}
-      {activeTemplate && activeTemplate.bgType === 'image' && activeTemplate.backgroundPath && (
-        <div 
-          className="absolute inset-0 pointer-events-none" 
+      {/* 🖼️ BACKGROUND IMAGE BACKDROP (HTML img tag guarantees rendering in browser print engine) */}
+      {!isPreprinted && activeTemplate && activeTemplate.bgType === 'image' && activeTemplate.backgroundPath && (
+        <img 
+          src={activeTemplate.backgroundPath} 
+          alt="Report Background Letterhead"
+          className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none" 
           style={{
-            backgroundImage: `url(${activeTemplate.backgroundPath})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundSize: '100% 100%',
-            opacity: activeTemplate.bgImageOpacity || 0.05,
-            mixBlendMode: 'multiply',
+            opacity: activeTemplate.backgroundPath.startsWith('data:') ? 1.0 : (activeTemplate.bgImageOpacity ?? 1.0),
             zIndex: 0
           }}
         />
       )}
 
       {/* 🌊 WATERMARK */}
-      {activeTemplate && activeTemplate.includeWatermark && activeTemplate.watermarkText && (
+      {!isPreprinted && activeTemplate && activeTemplate.includeWatermark && activeTemplate.watermarkText && (
         <div 
           className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
           style={{ zIndex: 0 }}
@@ -381,8 +356,8 @@ export const ReportA4 = ({ reportData, template }) => {
         </div>
       )}
       {/* 🏥 HEADER RESERVATION (Pre-printed spacer or Digital Branding) */}
-      {activeTemplate && activeTemplate.usePreprinted ? (
-        <div style={{ height: `${activeTemplate.topMargin || 48}mm` }} className="w-full shrink-0 relative z-10" />
+      {isPreprinted ? (
+        <div style={{ height: `${activeTemplate?.topMargin || 48}mm` }} className="w-full shrink-0 relative z-10" />
       ) : (
         activeTemplate?.includeBranding !== false && (
           <>

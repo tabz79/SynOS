@@ -200,8 +200,11 @@ app.Use(async (context, next) =>
         path.StartsWith("/r/", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/secure/r/", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/api/v1/public/reports/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/assets/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/files/", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase) ||
         path.Equals("/index.html", StringComparison.OrdinalIgnoreCase))
     {
         await next();
@@ -1138,14 +1141,41 @@ app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContex
 async Task ProxyToSynOS(string path, HttpContext context, IHttpClientFactory httpClientFactory)
 {
     var client = httpClientFactory.CreateClient();
+
+    async Task<HttpResponseMessage> SendRequest(string targetBaseUrl)
+    {
+        var requestMessage = new HttpRequestMessage(new HttpMethod(context.Request.Method), $"{targetBaseUrl}{path}{context.Request.QueryString}");
+        requestMessage.Headers.TryAddWithoutValidation("X-Forwarded-Host", context.Request.Host.Value);
+        requestMessage.Headers.TryAddWithoutValidation("X-Forwarded-Proto", context.Request.Scheme);
+        if (context.Request.ContentLength > 0 || context.Request.ContentType != null)
+        {
+            var streamContent = new StreamContent(context.Request.Body);
+            if (context.Request.ContentType != null)
+            {
+                streamContent.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse(context.Request.ContentType);
+            }
+            requestMessage.Content = streamContent;
+        }
+        return await client.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+    }
+
     HttpResponseMessage response;
     try
     {
-        response = await client.GetAsync($"http://127.0.0.1:59999{path}{context.Request.QueryString}");
+        response = await SendRequest("http://127.0.0.1:59999");
     }
     catch
     {
-        response = await client.GetAsync($"http://127.0.0.1:59998{path}{context.Request.QueryString}");
+        try
+        {
+            response = await SendRequest("http://127.0.0.1:59998");
+        }
+        catch (Exception ex)
+        {
+            context.Response.StatusCode = 502;
+            await context.Response.WriteAsync($"Bad Gateway: Local SynOS instance unavailable. {ex.Message}");
+            return;
+        }
     }
 
     context.Response.StatusCode = (int)response.StatusCode;
@@ -1174,6 +1204,21 @@ app.MapGet("/secure/r/{*path}", async (string? path, HttpContext context, IHttpC
 app.MapGet("/api/v1/public/reports/{*path}", async (string? path, HttpContext context, IHttpClientFactory httpClientFactory) =>
 {
     await ProxyToSynOS($"/api/v1/public/reports/{path}", context, httpClientFactory);
+});
+
+app.MapGet("/assets/{*path}", async (string? path, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    await ProxyToSynOS($"/assets/{path}", context, httpClientFactory);
+});
+
+app.MapGet("/files/{*path}", async (string? path, HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    await ProxyToSynOS($"/files/{path}", context, httpClientFactory);
+});
+
+app.MapGet("/favicon.ico", async (HttpContext context, IHttpClientFactory httpClientFactory) =>
+{
+    await ProxyToSynOS("/favicon.ico", context, httpClientFactory);
 });
 
 app.MapGet("/", () =>

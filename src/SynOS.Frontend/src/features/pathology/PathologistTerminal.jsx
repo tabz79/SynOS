@@ -689,10 +689,13 @@ export function PathologistTerminal() {
         }
     };
 
+    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+
     const handlePrint = () => {
         if (!selectedReportId) return;
         // GPT-5 Rule: Review phase MUST use forceLive to prevent stale snapshot 'Legacy' leak
-        window.open(`/print/report/${selectedReportId}?forceLive=true`, '_blank');
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
     };
 
     const isReadOnly = reportStructure?.status === 'Signed' || reportStructure?.status === 'ManualVerified' || reportStructure?.status === 'Finalized';
@@ -791,8 +794,8 @@ export function PathologistTerminal() {
             interpretation: interpretation.interpretation,
             comments: interpretation.comments
         };
-        return <ReportA4 reportData={mergedReportData} template={template} />;
-    }, [reportData, template, interpretation, resultsState]);
+        return <ReportA4 reportData={mergedReportData} template={template} forcePreprinted={isPreprinted} />;
+    }, [reportData, template, interpretation, resultsState, isPreprinted]);
 
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-transparent text-foreground flex flex-col overflow-hidden font-sans selection:bg-indigo-500/30 relative">
@@ -1169,6 +1172,21 @@ export function PathologistTerminal() {
                                                                     Reject to Typist
                                                                 </button>
                                                             )}
+                                                            {/* Preprinted Sheet Toggle */}
+                                                            <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 cursor-pointer select-none shrink-0" title="Toggle Preprinted Sheet Mode">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={isPreprinted}
+                                                                    onChange={(e) => {
+                                                                        setIsPreprinted(e.target.checked);
+                                                                        localStorage.setItem('synos_preprinted_mode', e.target.checked ? 'true' : 'false');
+                                                                    }}
+                                                                    className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
+                                                                />
+                                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                                    Preprinted
+                                                                </span>
+                                                            </label>
 
                                                             {/* Print Review */}
                                                             <button 
@@ -1197,13 +1215,29 @@ export function PathologistTerminal() {
                                                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                                             {reportStructure?.status === 'ManualVerified' ? "Report Manually Verified (Audit Locked)" : "Digital Signature Active (Immutable Trace)"}
                                                         </div>
-                                                        <button 
-                                                            onClick={handlePrint}
-                                                            className="bg-synos-primary text-white hover:opacity-90 px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-wider"
-                                                        >
-                                                            <Printer className="w-3.5 h-3.5" />
-                                                            Print Final Report
-                                                        </button>
+                                                        <div className="flex items-center gap-2">
+                                                            <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 cursor-pointer select-none shrink-0" title="Toggle Preprinted Sheet Mode">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={isPreprinted}
+                                                                    onChange={(e) => {
+                                                                        setIsPreprinted(e.target.checked);
+                                                                        localStorage.setItem('synos_preprinted_mode', e.target.checked ? 'true' : 'false');
+                                                                    }}
+                                                                    className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
+                                                                />
+                                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                                    Preprinted
+                                                                </span>
+                                                            </label>
+                                                            <button 
+                                                                onClick={handlePrint}
+                                                                className="bg-synos-primary text-white hover:opacity-90 px-6 py-2.5 rounded-xl font-bold text-xs shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center gap-2 uppercase tracking-wider"
+                                                            >
+                                                                <Printer className="w-3.5 h-3.5" />
+                                                                Print Final Report
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>

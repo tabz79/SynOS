@@ -21,18 +21,18 @@ export const DocumentPrinter = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const resolveTemplate = (reportData, mappedList, catalog = []) => {
-    const modality = reportData?.modality || reportData?.Modality;
+  const resolveTemplate = (reportData, mappedList = [], catalog = []) => {
+    if (!mappedList || mappedList.length === 0) return null;
+
+    const modality = reportData?.modality || reportData?.Modality || reportData?.department || reportData?.Department || "";
     const testCode = reportData?.metadata?.testCode || reportData?.metadata?.TestCode || reportData?.testCode || reportData?.TestCode;
     const reportTemplateId = reportData?.reportTemplateId || reportData?.ReportTemplateId || reportData?.templateId || reportData?.TemplateId;
 
-    if (!modality) return mappedList[0] || null;
-
     let found = null;
     
-    // 1. Direct match
+    // 1. Direct match by ID
     if (reportTemplateId) {
-      found = mappedList.find(t => t.id === reportTemplateId);
+      found = mappedList.find(t => t.id === reportTemplateId || (t.id && reportTemplateId && String(t.id).toLowerCase() === String(reportTemplateId).toLowerCase()));
     }
 
     // 2. Catalog settings override from database
@@ -40,16 +40,17 @@ export const DocumentPrinter = () => {
       const test = catalog.find(t => (t.testCode || t.TestCode || t.code || "").toUpperCase() === (testCode || "").toUpperCase());
       const templateId = test?.reportTemplateId || test?.ReportTemplateId || test?.templateId;
       if (templateId) {
-        found = mappedList.find(t => t.id === templateId);
+        found = mappedList.find(t => t.id === templateId || (t.id && templateId && String(t.id).toLowerCase() === String(templateId).toLowerCase()));
       }
     }
 
     // 3. Default template for modality
-    if (!found) {
+    if (!found && modality) {
       const normModality = (modality || "").toLowerCase().trim();
-      const isRad = normModality.includes("rad");
+      const isRad = normModality.includes("rad") || normModality.includes("mri") || normModality.includes("ct") || normModality.includes("xray") || normModality.includes("usg");
       const targetModality = isRad ? "radiology" : "pathology";
-      found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
+      found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality)
+           || mappedList.find(t => (t.modality || "").toLowerCase().trim() === targetModality);
     }
 
     // 4. Default template globally
@@ -74,9 +75,9 @@ export const DocumentPrinter = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const forceLive = urlParams.get('forceLive') === 'true';
         
-        // 1. Fetch primary report data
+        // 1. Fetch Primary Report
         const primaryData = await ReportsApi.getReportData(id, forceLive);
-        const visitId = primaryData.metadata?.visitId || primaryData.Metadata?.VisitId || primaryData.visitId || primaryData.VisitId;
+        const visitId = primaryData?.visitId || primaryData?.VisitId || primaryData?.metadata?.visitId;
         
         // 2. Fetch all reports to check for siblings
         let finalReportDataList = [primaryData];
@@ -105,18 +106,31 @@ export const DocumentPrinter = () => {
           console.warn("Could not load sibling reports, rendering primary report only.", siblingErr);
         }
 
-        // 3. Fetch all templates (cached)
-        const templateDtos = await fetchTemplatesCached();
-        const mappedTemplates = templateDtos.map(item => {
+        // 3. Fetch all templates (cached with fallback)
+        let templateDtos = [];
+        try {
+          templateDtos = await fetchTemplatesCached();
+        } catch (fetchErr) {
+          console.warn("fetchTemplatesCached failed, trying direct fetch", fetchErr);
+          const res = await fetch('/api/v1/reports/templates');
+          if (res.ok) {
+            templateDtos = await res.json();
+          }
+        }
+
+        const mappedTemplates = (templateDtos || []).map(item => {
           let dsl = item.templateDsl;
           if (!dsl && item.templateJson) {
             try {
-              dsl = JSON.parse(item.templateJson);
+              dsl = typeof item.templateJson === 'string' ? JSON.parse(item.templateJson) : item.templateJson;
             } catch (e) {
               console.error(e);
             }
           }
-          return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
+          if (!dsl && item.sections) {
+            dsl = item;
+          }
+          return mapBackendDslToTemplate(dsl, item.templateId || item.id, item.isDefault, item.isPublished);
         });
 
         // 3.5 Fetch tests catalog for overrides (cached)
@@ -145,6 +159,17 @@ export const DocumentPrinter = () => {
 
     fetchAllReportData();
   }, [id, token]);
+
+  const [isPreprinted, setIsPreprinted] = useState(() => {
+    const urlParam = new URLSearchParams(window.location.search).get('preprinted');
+    if (urlParam !== null) return urlParam === 'true';
+    return localStorage.getItem('synos_preprinted_mode') === 'true';
+  });
+
+  const handleTogglePreprinted = (checked) => {
+    setIsPreprinted(checked);
+    localStorage.setItem('synos_preprinted_mode', checked ? 'true' : 'false');
+  };
 
   useEffect(() => {
     if (!loading && reportsData.length > 0 && templates.length === reportsData.length && !error) {
@@ -204,6 +229,20 @@ export const DocumentPrinter = () => {
             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Pipeline Ready</span>
           </div>
           <div className="h-4 w-[1px] bg-zinc-800"></div>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              checked={isPreprinted} 
+              onChange={(e) => handleTogglePreprinted(e.target.checked)}
+              className="w-4 h-4 accent-amber-500 rounded cursor-pointer" 
+            />
+            <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+              Preprinted Sheet
+            </span>
+          </label>
+
+          <div className="h-4 w-[1px] bg-zinc-800"></div>
           <button 
             onClick={() => window.print()}
             className="text-xs font-bold text-white uppercase tracking-widest hover:text-synos-primary transition-colors"
@@ -226,7 +265,7 @@ export const DocumentPrinter = () => {
             className="relative shadow-[0_0_100px_rgba(0,0,0,0.1)] print-page-container"
             style={{ pageBreakBefore: idx > 0 ? 'always' : 'auto' }}
           >
-            <ReportA4 reportData={report} template={templates[idx]} />
+            <ReportA4 reportData={report} template={templates[idx]} forcePreprinted={isPreprinted} />
           </div>
         ))}
       </div>
