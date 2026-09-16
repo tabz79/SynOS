@@ -488,6 +488,16 @@ if (!isMigrationTool)
     var db = scope.ServiceProvider.GetRequiredService<MiddlewareDbContext>();
     db.Database.Migrate();
 
+    // Ensure SQLite database has the TenantType column if upgraded from earlier schema
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE Labs ADD COLUMN TenantType TEXT NOT NULL DEFAULT 'DiagnosticLab';");
+    }
+    catch
+    {
+        // Column already exists, safe to ignore
+    }
+
     // Seed default tenant LAB001 with API Key "TBZ-LAB-KEY-12345" if not present
     var defaultLabId = "LAB001";
     var defaultApiKey = "TBZ-LAB-KEY-12345";
