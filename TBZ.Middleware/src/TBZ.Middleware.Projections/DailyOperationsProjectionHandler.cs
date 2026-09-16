@@ -110,6 +110,43 @@ namespace TBZ.Middleware.Projections
                     fact.ReportsDelivered++;
                     factUpdated = true;
                     break;
+
+                case "PatientDemographicsSync":
+                    fact.PatientsRegistered++;
+                    factUpdated = true;
+                    break;
+
+                case "PatientVisitFact":
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(storedEvent.PayloadJson);
+                        decimal fee = 0;
+                        if (doc.RootElement.TryGetProperty("consultationFee", out var feeProp) && feeProp.TryGetDecimal(out var parsedFee)) fee = parsedFee;
+                        else if (doc.RootElement.TryGetProperty("ConsultationFee", out var feeProp2) && feeProp2.TryGetDecimal(out var parsedFee2)) fee = parsedFee2;
+                        
+                        fact.BillsCreated++;
+                        fact.PaymentsCount++;
+                        fact.RevenueCollected += fee;
+                        factUpdated = true;
+                    }
+                    catch {}
+                    break;
+
+                case "ClinicFinancialFact":
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(storedEvent.PayloadJson);
+                        decimal payable = 0;
+                        if (doc.RootElement.TryGetProperty("netPayable", out var payProp) && payProp.TryGetDecimal(out var parsedPay)) payable = parsedPay;
+                        else if (doc.RootElement.TryGetProperty("NetPayable", out var payProp2) && payProp2.TryGetDecimal(out var parsedPay2)) payable = parsedPay2;
+                        
+                        fact.BillsCreated++;
+                        fact.PaymentsCount++;
+                        fact.RevenueCollected += payable;
+                        factUpdated = true;
+                    }
+                    catch {}
+                    break;
             }
 
             if (factUpdated && isNew)

@@ -21,6 +21,8 @@ namespace TBZ.Middleware.Domain
         public DateTime? LastVisitDate { get; set; }
         
         public string LastVisitedBranchId { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string ReasonForVisit { get; set; } = string.Empty;
         
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

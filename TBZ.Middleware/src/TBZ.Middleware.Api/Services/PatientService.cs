@@ -21,7 +21,9 @@ namespace TBZ.Middleware.Api.Services
 
         public async Task<List<PatientListItemDto>> GetPatientsAsync(string labId, string? q)
         {
-            var query = _db.PatientIntelligenceFacts.Where(f => f.LabId == labId);
+            var query = string.IsNullOrEmpty(labId) || labId.Equals("ALL", StringComparison.OrdinalIgnoreCase)
+                ? _db.PatientIntelligenceFacts.AsQueryable()
+                : _db.PatientIntelligenceFacts.Where(f => f.LabId == labId);
 
             if (!string.IsNullOrEmpty(q))
             {
@@ -30,6 +32,8 @@ namespace TBZ.Middleware.Api.Services
                     f.PatientName.ToLower().Contains(lowerQ) ||
                     f.MRN.ToLower().Contains(lowerQ) ||
                     f.MobileNumber.ToLower().Contains(lowerQ) ||
+                    f.Location.ToLower().Contains(lowerQ) ||
+                    f.ReasonForVisit.ToLower().Contains(lowerQ) ||
                     f.ReferringDoctorOrPartner.ToLower().Contains(lowerQ)
                 );
             }
@@ -105,6 +109,11 @@ namespace TBZ.Middleware.Api.Services
                     }
                 }
 
+                var resolvedLocation = !string.IsNullOrEmpty(p.Location) ? p.Location : "Local Area";
+                var resolvedReason = !string.IsNullOrEmpty(p.ReasonForVisit)
+                    ? p.ReasonForVisit
+                    : (distinctTests.Count > 0 ? string.Join(", ", distinctTests) : (!string.IsNullOrEmpty(p.ReferringDoctorOrPartner) ? $"Consultation ({p.ReferringDoctorOrPartner})" : "General Visit"));
+
                 result.Add(new PatientListItemDto
                 {
                     PatientId = p.PatientId,
@@ -113,6 +122,9 @@ namespace TBZ.Middleware.Api.Services
                     Age = age,
                     Gender = p.Gender,
                     MobileNumber = p.MobileNumber,
+                    Location = resolvedLocation,
+                    ReasonForVisit = resolvedReason,
+                    LabId = p.LabId,
                     TestsOrdered = string.Join(", ", distinctTests),
                     ReferringDoctorOrPartner = p.ReferringDoctorOrPartner,
                     TotalVisits = p.TotalVisits,
@@ -126,7 +138,7 @@ namespace TBZ.Middleware.Api.Services
 
         public async Task<PatientDetailsDto?> GetPatientDetailsAsync(string labId, Guid patientId)
         {
-            var p = await _db.PatientIntelligenceFacts.FirstOrDefaultAsync(f => f.LabId == labId && f.PatientId == patientId);
+            var p = await _db.PatientIntelligenceFacts.FirstOrDefaultAsync(f => (string.IsNullOrEmpty(labId) || labId.Equals("ALL", StringComparison.OrdinalIgnoreCase) || f.LabId == labId) && f.PatientId == patientId);
             if (p == null) return null;
 
             int age = 0;
@@ -163,6 +175,8 @@ namespace TBZ.Middleware.Api.Services
                     VisitId = v.VisitId,
                     Token = v.Token,
                     VisitDate = v.VisitDate,
+                    ReasonForVisit = !string.IsNullOrEmpty(v.ReasonForVisit) ? v.ReasonForVisit : (tests.Count > 0 ? string.Join(", ", tests) : "Outpatient Visit"),
+                    Location = !string.IsNullOrEmpty(v.Location) ? v.Location : (!string.IsNullOrEmpty(p.Location) ? p.Location : "Local Area"),
                     Tests = tests,
                     AmountPaid = v.AmountPaid
                 });
@@ -176,6 +190,9 @@ namespace TBZ.Middleware.Api.Services
                 Age = age,
                 Gender = p.Gender,
                 MobileNumber = p.MobileNumber,
+                Location = !string.IsNullOrEmpty(p.Location) ? p.Location : "Local Area",
+                ReasonForVisit = !string.IsNullOrEmpty(p.ReasonForVisit) ? p.ReasonForVisit : "General Consultation",
+                LabId = p.LabId,
                 ReferringDoctorOrPartner = p.ReferringDoctorOrPartner,
                 TotalVisits = p.TotalVisits,
                 LifetimeRevenue = p.LifetimeRevenue,

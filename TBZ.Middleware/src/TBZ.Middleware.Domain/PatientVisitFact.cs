@@ -15,6 +15,8 @@ namespace TBZ.Middleware.Domain
         public string ReferringDoctorOrPartner { get; set; } = string.Empty;
         public Guid? ReferralPartnerId { get; set; }
         public Guid? ReferringDoctorId { get; set; }
+        public string Location { get; set; } = string.Empty;
+        public string ReasonForVisit { get; set; } = string.Empty;
         
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

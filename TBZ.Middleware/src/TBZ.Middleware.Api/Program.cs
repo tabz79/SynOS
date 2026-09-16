@@ -498,6 +498,30 @@ if (!isMigrationTool)
         // Column already exists, safe to ignore
     }
 
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE PatientIntelligenceFacts ADD COLUMN Location TEXT NOT NULL DEFAULT '';");
+    }
+    catch {}
+
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE PatientIntelligenceFacts ADD COLUMN ReasonForVisit TEXT NOT NULL DEFAULT '';");
+    }
+    catch {}
+
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE PatientVisitFacts ADD COLUMN Location TEXT NOT NULL DEFAULT '';");
+    }
+    catch {}
+
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE PatientVisitFacts ADD COLUMN ReasonForVisit TEXT NOT NULL DEFAULT '';");
+    }
+    catch {}
+
     // Seed default tenant LAB001 with API Key "TBZ-LAB-KEY-12345" if not present
     var defaultLabId = "LAB001";
     var defaultApiKey = "TBZ-LAB-KEY-12345";
