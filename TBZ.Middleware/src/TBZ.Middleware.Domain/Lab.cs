@@ -9,6 +9,7 @@ namespace TBZ.Middleware.Domain
         public string LabName { get; set; } = string.Empty;
         public string ApiKeyHash { get; set; } = string.Empty;
         public string Status { get; set; } = "Active"; // "Active", "Suspended"
+        public string TenantType { get; set; } = "DiagnosticLab"; // "DiagnosticLab", "Clinic"
         public DateTime CreatedAt { get; set; }
         
         public string GeographicalRegion { get; set; } = string.Empty;

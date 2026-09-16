@@ -100,6 +100,7 @@ namespace TBZ.Middleware.Infrastructure
                 entity.Property(e => e.LabName).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.ApiKeyHash).IsRequired().HasMaxLength(256);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TenantType).IsRequired().HasMaxLength(50).HasDefaultValue("DiagnosticLab");
                 entity.Property(e => e.LicenseType).IsRequired().HasMaxLength(50).HasDefaultValue("Professional");
                 entity.Property(e => e.MaximumBranches).HasDefaultValue(1);
                 entity.Property(e => e.BranchCount).HasDefaultValue(0);

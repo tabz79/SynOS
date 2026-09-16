@@ -31,15 +31,51 @@ namespace TBZ.Middleware.Api.Endpoints
     {
         public static void MapControlTowerEndpoints(this IEndpointRouteBuilder app)
         {
-            // Helper method to extract LabId from headers, query parameters, or default to LAB001
+            // Helper method to extract tenant ID (Lab or Clinic) from headers, query parameters, or default to LAB001
             string GetLabId(HttpContext context, string? queryLabId)
             {
+                if (context.Request.Headers.TryGetValue("X-Tenant-Id", out var headerTenantId) && !string.IsNullOrEmpty(headerTenantId))
+                {
+                    return headerTenantId.ToString();
+                }
+                if (context.Request.Headers.TryGetValue("X-Clinic-Id", out var headerClinicId) && !string.IsNullOrEmpty(headerClinicId))
+                {
+                    return headerClinicId.ToString();
+                }
                 if (context.Request.Headers.TryGetValue("X-Lab-Id", out var headerLabId) && !string.IsNullOrEmpty(headerLabId))
                 {
                     return headerLabId.ToString();
                 }
+                if (context.Request.Query.TryGetValue("tenantId", out var queryTenant) && !string.IsNullOrEmpty(queryTenant))
+                {
+                    return queryTenant.ToString();
+                }
+                if (context.Request.Query.TryGetValue("clinicId", out var qClinic) && !string.IsNullOrEmpty(qClinic))
+                {
+                    return qClinic.ToString();
+                }
                 return queryLabId ?? "LAB001";
             }
+
+            // 0. GET /api/controltower/tenants
+            app.MapGet("/api/controltower/tenants", async (MiddlewareDbContext db) =>
+            {
+                var tenants = await db.Labs
+                    .Select(l => new
+                    {
+                        Id = l.Id,
+                        Name = l.LabName,
+                        TenantType = l.TenantType,
+                        Status = l.Status,
+                        LicenseType = l.LicenseType,
+                        ExpiryDate = l.ExpiryDate,
+                        LastSeenAt = l.LastSeenAt
+                    })
+                    .ToListAsync();
+                return Results.Ok(tenants);
+            })
+            .WithName("GetTenants")
+            .WithOpenApi();
 
             // 1. GET /api/controltower/overview
             app.MapGet("/api/controltower/overview", async (HttpContext context, string? labId, string? branchId, DateTime? date, OverviewService service) =>

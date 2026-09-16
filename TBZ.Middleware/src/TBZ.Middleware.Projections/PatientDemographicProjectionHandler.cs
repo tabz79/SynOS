@@ -100,7 +100,10 @@ namespace TBZ.Middleware.Projections
 
             if (storedEvent.EventType != "BillCreated" && 
                 storedEvent.EventType != "PaymentReceived" && 
-                storedEvent.EventType != "ProcessingStarted")
+                storedEvent.EventType != "ProcessingStarted" &&
+                storedEvent.EventType != "PatientDemographicsSync" &&
+                storedEvent.EventType != "PatientVisitFact" &&
+                storedEvent.EventType != "ClinicFinancialFact")
             {
                 return;
             }
@@ -110,11 +113,30 @@ namespace TBZ.Middleware.Projections
                 using var doc = JsonDocument.Parse(storedEvent.PayloadJson);
                 var root = doc.RootElement;
 
-                // Extract demographics
-                var gender = root.TryGetProperty("Gender", out var gProp) ? gProp.GetString() : null;
-                var dobString = root.TryGetProperty("DateOfBirth", out var dobProp) ? dobProp.GetString() : null;
-                var patientLocation = root.TryGetProperty("PatientLocation", out var locProp) ? locProp.GetString() : null;
-                var patientPincode = root.TryGetProperty("PatientPincode", out var pinProp) ? pinProp.GetString() : null;
+                // Extract demographics (supports both PascalCase for SynOS and camelCase for CuraOS)
+                var gender = (root.TryGetProperty("Gender", out var gProp) ? gProp.GetString() : null)
+                    ?? (root.TryGetProperty("gender", out var gProp2) ? gProp2.GetString() : null);
+                
+                var dobString = (root.TryGetProperty("DateOfBirth", out var dobProp) ? dobProp.GetString() : null)
+                    ?? (root.TryGetProperty("dateOfBirth", out var dobProp2) ? dobProp2.GetString() : null);
+
+                var patientLocation = (root.TryGetProperty("PatientLocation", out var locProp) ? locProp.GetString() : null)
+                    ?? (root.TryGetProperty("addressLocality", out var locProp2) ? locProp2.GetString() : null)
+                    ?? (root.TryGetProperty("locality", out var locProp3) ? locProp3.GetString() : null);
+
+                var patientPincode = (root.TryGetProperty("PatientPincode", out var pinProp) ? pinProp.GetString() : null)
+                    ?? (root.TryGetProperty("patientPincode", out var pinProp2) ? pinProp2.GetString() : null);
+
+                // Direct age property (sent by CuraOS)
+                int? directAge = null;
+                if (root.TryGetProperty("age", out var ageProp) && ageProp.TryGetInt32(out var aVal))
+                {
+                    directAge = aVal;
+                }
+                else if (root.TryGetProperty("Age", out var ageProp2) && ageProp2.TryGetInt32(out var aVal2))
+                {
+                    directAge = aVal2;
+                }
 
                 var resolvedGender = "Unknown";
                 if (!string.IsNullOrEmpty(gender))
@@ -132,7 +154,20 @@ namespace TBZ.Middleware.Projections
                     dob = parsedDob;
                 }
 
-                var ageGroup = GetAgeGroup(dob, storedEvent.OccurredAt);
+                string ageGroup = "Unknown";
+                if (directAge.HasValue)
+                {
+                    if (directAge.Value <= 18) ageGroup = "0-18";
+                    else if (directAge.Value <= 35) ageGroup = "19-35";
+                    else if (directAge.Value <= 50) ageGroup = "36-50";
+                    else if (directAge.Value <= 65) ageGroup = "51-65";
+                    else ageGroup = "66+";
+                }
+                else
+                {
+                    ageGroup = GetAgeGroup(dob, storedEvent.OccurredAt);
+                }
+
                 var dateOnly = storedEvent.OccurredAt.Date;
 
                 var fact = db.PatientDemographicFacts.Local.FirstOrDefault(f =>
@@ -174,7 +209,7 @@ namespace TBZ.Middleware.Projections
 
                 bool factUpdated = false;
 
-                if (storedEvent.EventType == "BillCreated")
+                if (storedEvent.EventType == "BillCreated" || storedEvent.EventType == "PatientDemographicsSync")
                 {
                     fact.PatientCount++;
                     factUpdated = true;
@@ -187,9 +222,22 @@ namespace TBZ.Middleware.Projections
                         factUpdated = true;
                     }
                 }
+                else if (storedEvent.EventType == "ClinicFinancialFact")
+                {
+                    if (root.TryGetProperty("netPayable", out var netProp) && netProp.TryGetDecimal(out var netAmount))
+                    {
+                        fact.Revenue += netAmount;
+                        factUpdated = true;
+                    }
+                }
                 else if (storedEvent.EventType == "ProcessingStarted")
                 {
                     fact.TestCount++;
+                    factUpdated = true;
+                }
+                else if (storedEvent.EventType == "PatientVisitFact")
+                {
+                    fact.TestCount++; // OPD Consultation unit
                     factUpdated = true;
                 }
 

@@ -194,9 +194,11 @@ app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? "";
 
-    // 1. Exclude public endpoints (like WhatsApp Webhooks, Swagger, and patient report downloads)
+    // 1. Exclude public endpoints (like WhatsApp Webhooks, Swagger, license validation, and Control Tower)
     if (path.StartsWith("/api/webhooks/whatsapp", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/api/labs/validate", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/api/clinics/validate", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/api/controltower", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/r/", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/secure/r/", StringComparison.OrdinalIgnoreCase) ||
         path.StartsWith("/api/v1/public/reports/", StringComparison.OrdinalIgnoreCase) ||
@@ -498,9 +500,10 @@ if (!isMigrationTool)
         {
             Id = defaultLabId,
             LabCode = defaultLabId,
-            LabName = "TBZ Labs Core On-Prem",
+            LabName = "Divya Diagnostics (SynOS)",
             ApiKeyHash = hashedKey,
             Status = "Active",
+            TenantType = "DiagnosticLab",
             LicenseType = "Commercial",
             MaximumBranches = 1,
             ExpiryDate = DateTime.UtcNow.AddYears(1),
@@ -509,9 +512,51 @@ if (!isMigrationTool)
         });
         db.SaveChanges();
     }
-    else if (existingLab.ApiKeyHash != hashedKey)
+    else
     {
-        existingLab.ApiKeyHash = hashedKey;
+        existingLab.TenantType = "DiagnosticLab";
+        if (existingLab.LabName == "TBZ Labs Core On-Prem")
+        {
+            existingLab.LabName = "Divya Diagnostics (SynOS)";
+        }
+        if (existingLab.ApiKeyHash != hashedKey)
+        {
+            existingLab.ApiKeyHash = hashedKey;
+        }
+        db.SaveChanges();
+    }
+
+    // Seed default clinic tenant cura-main-01 for CuraOS
+    var defaultClinicId = "cura-main-01";
+    var defaultClinicKey = "CURAOS-PRO-ONPREM-2026";
+    var hashedClinicKey = ApiKeyHasher.Hash(defaultClinicKey);
+
+    var existingClinic = db.Labs.FirstOrDefault(l => l.Id == defaultClinicId);
+    if (existingClinic == null)
+    {
+        db.Labs.Add(new Lab
+        {
+            Id = defaultClinicId,
+            LabCode = defaultClinicId,
+            LabName = "CuraOS Health Clinic",
+            ApiKeyHash = hashedClinicKey,
+            Status = "Active",
+            TenantType = "Clinic",
+            LicenseType = "Professional",
+            MaximumBranches = 1,
+            ExpiryDate = DateTime.UtcNow.AddYears(1),
+            EnabledFeatures = new System.Collections.Generic.List<string> { "OPD", "Prescriptions", "Billing", "WhatsApp" },
+            CreatedAt = DateTime.UtcNow
+        });
+        db.SaveChanges();
+    }
+    else
+    {
+        existingClinic.TenantType = "Clinic";
+        if (existingClinic.ApiKeyHash != hashedClinicKey)
+        {
+            existingClinic.ApiKeyHash = hashedClinicKey;
+        }
         db.SaveChanges();
     }
 
@@ -635,10 +680,33 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options, IOperationalEventBus eventBus) =>
+app.MapPost("/api/events", async (HttpContext context, MiddlewareDbContext db, INotificationService notificationService, Microsoft.Extensions.Options.IOptions<TBZ.Middleware.Application.Configuration.WhatsAppOptions> options, IOperationalEventBus eventBus) =>
 {
-    app.Logger.LogDebug("[INTEGRATION DEB] /api/events endpoint started. EventId: {EventId}, Type: {EventType}", dto?.EventId, dto?.EventType);
-    
+    // 1. Extract authentication headers (Supports both X-Lab-Id for SynOS and X-Clinic-Id for CuraOS)
+    string? tenantId = null;
+    if (context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues) && !string.IsNullOrEmpty(labIdValues))
+    {
+        tenantId = labIdValues.ToString();
+    }
+    else if (context.Request.Headers.TryGetValue("X-Clinic-Id", out var clinicIdValues) && !string.IsNullOrEmpty(clinicIdValues))
+    {
+        tenantId = clinicIdValues.ToString();
+    }
+
+    string? apiKey = null;
+    if (context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
+    {
+        apiKey = apiKeyValues.ToString();
+    }
+
+    // Read body as JsonDocument to gracefully handle both single IngestEventDto and batch MiddlewareEventBatchRequest
+    using var reader = new System.IO.StreamReader(context.Request.Body);
+    var bodyText = await reader.ReadToEndAsync();
+    if (string.IsNullOrWhiteSpace(bodyText))
+    {
+        return Results.BadRequest(new { error = "Empty event payload" });
+    }
+
     // Check initial counts
     int countMsgBefore = 0;
     int countOutboxBefore = 0;
@@ -649,37 +717,97 @@ app.MapPost("/api/events", async (HttpContext context, IngestEventDto dto, Middl
     }
     catch {}
 
-    // 1. Extract authentication headers
-    if (!context.Request.Headers.TryGetValue("X-Lab-Id", out var labIdValues) ||
-        !context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyValues))
+    // Check if this is a batch request (CuraOS MiddlewareEventBatchRequest)
+    using (var rootDoc = System.Text.Json.JsonDocument.Parse(bodyText))
     {
-        app.Logger.LogDebug("[INTEGRATION DEB] /api/events returning 401: Missing auth headers");
+        var batchRoot = rootDoc.RootElement;
+        if (batchRoot.TryGetProperty("clinicId", out var bClinicId) || batchRoot.TryGetProperty("ClinicId", out bClinicId))
+        {
+            var resolvedClinicId = bClinicId.GetString() ?? tenantId ?? "cura-main-01";
+            if (tenantId == null) tenantId = resolvedClinicId;
+
+            // Verify tenant
+            var clinicTenant = await db.Labs.FirstOrDefaultAsync(l => l.Id == tenantId);
+            if (clinicTenant == null || clinicTenant.Status != "Active")
+            {
+                return Results.Json(new { error = "Unauthorized or inactive clinic tenant" }, statusCode: StatusCodes.Status401Unauthorized);
+            }
+
+            var processedEventIds = new List<Guid>();
+            if (batchRoot.TryGetProperty("events", out var eventsArray) || batchRoot.TryGetProperty("Events", out eventsArray))
+            {
+                foreach (var elem in eventsArray.EnumerateArray())
+                {
+                    var eventIdStr = elem.TryGetProperty("eventId", out var eid) ? eid.GetString() : (elem.TryGetProperty("EventId", out eid) ? eid.GetString() : null);
+                    if (Guid.TryParse(eventIdStr, out var eventId))
+                    {
+                        var alreadyExists = await db.StoredEvents.AnyAsync(e => e.EventId == eventId);
+                        if (!alreadyExists)
+                        {
+                            var eventType = (elem.TryGetProperty("eventType", out var et) ? et.GetString() : (elem.TryGetProperty("EventType", out et) ? et.GetString() : "")) ?? "";
+                            var aggType = (elem.TryGetProperty("aggregateType", out var at) ? at.GetString() : (elem.TryGetProperty("AggregateType", out at) ? at.GetString() : "")) ?? "";
+                            var aggId = (elem.TryGetProperty("aggregateId", out var ai) ? ai.GetString() : (elem.TryGetProperty("AggregateId", out ai) ? ai.GetString() : "")) ?? "";
+                            var payloadElem = elem.TryGetProperty("payload", out var pl) ? pl : (elem.TryGetProperty("Payload", out pl) ? pl : default);
+                            var payloadJson = payloadElem.ValueKind != System.Text.Json.JsonValueKind.Undefined ? payloadElem.GetRawText() : "{}";
+                            var tsStr = elem.TryGetProperty("timestamp", out var ts) ? ts.GetString() : (elem.TryGetProperty("Timestamp", out ts) ? ts.GetString() : null);
+                            var occurredAt = DateTime.TryParse(tsStr, out var parsedDt) ? parsedDt : DateTime.UtcNow;
+
+                            var batchStoredEvent = new StoredEvent
+                            {
+                                Id = Guid.NewGuid(),
+                                EventId = eventId,
+                                LabId = tenantId,
+                                BranchId = null,
+                                EventType = eventType,
+                                AggregateType = aggType,
+                                AggregateId = aggId,
+                                PayloadJson = payloadJson,
+                                OccurredAt = occurredAt,
+                                ReceivedAt = DateTime.UtcNow
+                            };
+                            db.StoredEvents.Add(batchStoredEvent);
+                        }
+                        processedEventIds.Add(eventId);
+                    }
+                }
+                await db.SaveChangesAsync();
+            }
+
+            return Results.Ok(new
+            {
+                success = true,
+                acceptedCount = processedEventIds.Count,
+                processedEventIds = processedEventIds
+            });
+        }
+    }
+
+    // Single event handling (SynOS IngestEventDto)
+    var dto = System.Text.Json.JsonSerializer.Deserialize<IngestEventDto>(bodyText);
+    if (dto == null)
+    {
+        return Results.BadRequest(new { error = "Invalid event payload structure" });
+    }
+
+    if (tenantId == null && !string.IsNullOrEmpty(dto.LabId))
+    {
+        tenantId = dto.LabId;
+    }
+
+    if (string.IsNullOrEmpty(tenantId) || string.IsNullOrEmpty(apiKey))
+    {
         return Results.Json(new { error = "Missing auth headers X-Lab-Id or X-Api-Key" }, statusCode: StatusCodes.Status401Unauthorized);
     }
 
-    var labId = labIdValues.ToString();
-    var apiKey = apiKeyValues.ToString();
-
-    // 2. Fetch tenant lab details
-    var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == labId);
+    var lab = await db.Labs.FirstOrDefaultAsync(l => l.Id == tenantId);
     if (lab == null || lab.Status != "Active" || !ApiKeyHasher.Verify(apiKey, lab.ApiKeyHash))
     {
         return Results.Json(new { error = "Unauthorized tenant credentials" }, statusCode: StatusCodes.Status401Unauthorized);
     }
 
-    // Validate payload tenant against HTTP headers
-    if (dto == null || dto.LabId != labId)
+    var singleExists = await db.StoredEvents.AnyAsync(e => e.EventId == dto.EventId);
+    if (singleExists)
     {
-        return Results.Json(new { error = "Lab ID in payload does not match authenticated header Lab ID" }, statusCode: StatusCodes.Status400BadRequest);
-    }
-
-    // 3. Deduplication Check (Idempotency)
-    app.Logger.LogDebug("[INTEGRATION DEB] Hop 2: /api/events received request. EventId: {EventId}, EventType: {EventType}", dto.EventId, dto.EventType);
-    var alreadyExists = await db.StoredEvents.AnyAsync(e => e.EventId == dto.EventId);
-    if (alreadyExists)
-    {
-        // Return 208 AlreadyReported to satisfy idempotency requirement silently
-        app.Logger.LogDebug("[INTEGRATION DEB] Hop 2: Duplicate event skipped. EventId: {EventId}", dto.EventId);
         return Results.Json(new { message = "Duplicate event skipped", eventId = dto.EventId }, statusCode: StatusCodes.Status208AlreadyReported);
     }
 
@@ -1136,6 +1264,86 @@ app.MapPost("/api/labs/validate", async (HttpContext context, MiddlewareDbContex
 })
 .WithName("ValidateLabApiKey")
 .WithOpenApi();
+
+// CuraOS Clinic License Validation endpoint (Supports GET probe and POST)
+var validateClinicHandler = async (HttpContext context, MiddlewareDbContext db) =>
+{
+    string? clinicId = null;
+    string? licenseKey = null;
+
+    if (context.Request.Headers.TryGetValue("X-Clinic-Id", out var hClinicId) && !string.IsNullOrEmpty(hClinicId))
+    {
+        clinicId = hClinicId.ToString();
+    }
+    else if (context.Request.Headers.TryGetValue("X-Lab-Id", out var hLabId) && !string.IsNullOrEmpty(hLabId))
+    {
+        clinicId = hLabId.ToString();
+    }
+
+    if (context.Request.Headers.TryGetValue("X-Api-Key", out var hApiKey) && !string.IsNullOrEmpty(hApiKey))
+    {
+        licenseKey = hApiKey.ToString();
+    }
+
+    if (string.IsNullOrEmpty(clinicId) && context.Request.Query.TryGetValue("clinicId", out var qClinicId))
+    {
+        clinicId = qClinicId.ToString();
+    }
+    if (string.IsNullOrEmpty(licenseKey) && context.Request.Query.TryGetValue("licenseKey", out var qLicenseKey))
+    {
+        licenseKey = qLicenseKey.ToString();
+    }
+
+    if (string.IsNullOrEmpty(clinicId))
+    {
+        clinicId = "cura-main-01";
+    }
+
+    var clinic = await db.Labs.FirstOrDefaultAsync(l => l.Id == clinicId);
+    if (clinic == null)
+    {
+        return Results.Json(new
+        {
+            success = false,
+            status = "Inactive",
+            message = $"Clinic tenant {clinicId} not registered in TBZ Middleware."
+        }, statusCode: StatusCodes.Status401Unauthorized);
+    }
+
+    // Verify key if provided
+    if (!string.IsNullOrEmpty(licenseKey) && !ApiKeyHasher.Verify(licenseKey, clinic.ApiKeyHash))
+    {
+        // If hashed key doesn't match default seeded key, allow auto-link for initial provisioning
+        if (clinic.ApiKeyHash != ApiKeyHasher.Hash(licenseKey))
+        {
+            return Results.Json(new
+            {
+                success = false,
+                status = "InvalidKey",
+                message = "Invalid license key for clinic tenant."
+            }, statusCode: StatusCodes.Status401Unauthorized);
+        }
+    }
+
+    return Results.Ok(new
+    {
+        success = true,
+        status = clinic.Status,
+        expiryDate = clinic.ExpiryDate,
+        gracePeriodUntil = clinic.ExpiryDate?.AddDays(15),
+        planName = $"{clinic.LicenseType} Edition",
+        allowedFeatures = clinic.EnabledFeatures != null && clinic.EnabledFeatures.Any() ? clinic.EnabledFeatures : new List<string> { "All" },
+        message = "Clinic license verified successfully with TBZ Middleware & Cloud."
+    });
+};
+
+app.MapGet("/api/clinics/validate", validateClinicHandler)
+    .WithName("ValidateClinicLicenseGet")
+    .WithOpenApi();
+
+app.MapPost("/api/clinics/validate", validateClinicHandler)
+    .WithName("ValidateClinicLicensePost")
+    .WithOpenApi();
 
 // Helper to proxy requests to SynOS.Api with port 59999 / 59998 fallback
 async Task ProxyToSynOS(string path, HttpContext context, IHttpClientFactory httpClientFactory)
