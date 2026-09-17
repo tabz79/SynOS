@@ -64,6 +64,7 @@ namespace TBZ.Middleware.Projections
 
                     fact.PatientCount++;
                     fact.RevenueGenerated += dto.Financials.PaidAmount;
+                    fact.CommissionEarned += dto.Referral != null ? dto.Referral.CommissionAmount : 0m;
                     fact.TestCount += dto.Investigations.Count;
                     fact.UpdatedAt = DateTime.UtcNow;
 

@@ -12,9 +12,13 @@ namespace TBZ.Middleware.Api.DTOs
     {
         public string DoctorId { get; set; } = string.Empty;
         public string DoctorName { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
         public int PatientCount { get; set; }
         public decimal RevenueGenerated { get; set; }
+        public decimal CommissionEarned { get; set; }
+        public decimal AverageBill { get; set; }
         public int TestCount { get; set; }
+        public string LastReferralDate { get; set; } = string.Empty;
     }
 
     public class ReferralPartnerSummaryDto
@@ -24,6 +28,9 @@ namespace TBZ.Middleware.Api.DTOs
         public string PartnerLocation { get; set; } = string.Empty;
         public int PatientCount { get; set; }
         public decimal RevenueGenerated { get; set; }
+        public decimal CommissionEarned { get; set; }
+        public decimal AverageBill { get; set; }
         public int TestCount { get; set; }
+        public string LastReferralDate { get; set; } = string.Empty;
     }
 }

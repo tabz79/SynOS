@@ -179,10 +179,10 @@ namespace TBZ.Middleware.Api.Endpoints
             .WithOpenApi();
 
             // GET /api/controltower/patients
-            app.MapGet("/api/controltower/patients", async (HttpContext context, string? labId, string? q, PatientService service) =>
+            app.MapGet("/api/controltower/patients", async (HttpContext context, string? labId, string? q, string? doctor, PatientService service) =>
             {
                 var resolvedLabId = GetLabId(context, labId);
-                var data = await service.GetPatientsAsync(resolvedLabId, q);
+                var data = await service.GetPatientsAsync(resolvedLabId, q, doctor);
                 return Results.Ok(data);
             })
             .WithName("GetPatients")

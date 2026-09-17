@@ -522,6 +522,24 @@ if (!isMigrationTool)
     }
     catch {}
 
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE PatientVisitFacts ADD COLUMN CommissionAmount NUMERIC NOT NULL DEFAULT 0;");
+    }
+    catch {}
+
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE DoctorReferralFacts ADD COLUMN CommissionEarned NUMERIC NOT NULL DEFAULT 0;");
+    }
+    catch {}
+
+    try
+    {
+        db.Database.ExecuteSqlRaw("ALTER TABLE ReferralPartnerFacts ADD COLUMN CommissionEarned NUMERIC NOT NULL DEFAULT 0;");
+    }
+    catch {}
+
     // Seed default tenant LAB001 with API Key "TBZ-LAB-KEY-12345" if not present
     var defaultLabId = "LAB001";
     var defaultApiKey = "TBZ-LAB-KEY-12345";

@@ -19,11 +19,17 @@ namespace TBZ.Middleware.Api.Services
             _db = db;
         }
 
-        public async Task<List<PatientListItemDto>> GetPatientsAsync(string labId, string? q)
+        public async Task<List<PatientListItemDto>> GetPatientsAsync(string labId, string? q, string? doctor = null)
         {
             var query = string.IsNullOrEmpty(labId) || labId.Equals("ALL", StringComparison.OrdinalIgnoreCase)
                 ? _db.PatientIntelligenceFacts.AsQueryable()
                 : _db.PatientIntelligenceFacts.Where(f => f.LabId == labId);
+
+            if (!string.IsNullOrWhiteSpace(doctor) && !doctor.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+            {
+                var docLower = doctor.Trim().ToLowerInvariant();
+                query = query.Where(f => f.ReferringDoctorOrPartner.ToLower() == docLower || f.ReferringDoctorOrPartner.ToLower().Contains(docLower));
+            }
 
             if (!string.IsNullOrEmpty(q))
             {

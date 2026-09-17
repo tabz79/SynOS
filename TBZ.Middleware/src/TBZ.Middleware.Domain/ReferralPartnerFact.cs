@@ -14,6 +14,7 @@ namespace TBZ.Middleware.Domain
 
         public int PatientCount { get; set; }
         public decimal RevenueGenerated { get; set; }
+        public decimal CommissionEarned { get; set; }
         public int TestCount { get; set; }
 
         public DateTime CreatedAt { get; set; }

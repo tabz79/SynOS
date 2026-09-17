@@ -123,6 +123,7 @@ namespace TBZ.Middleware.Projections
                             ReferringDoctorId = dto.Referral.DoctorId != Guid.Empty ? dto.Referral.DoctorId : null,
                             ReferralPartnerId = dto.Financials.CorporateId,
                             AmountPaid = dto.Financials.PaidAmount,
+                            CommissionAmount = dto.Referral != null ? dto.Referral.CommissionAmount : 0m,
                             Location = !string.IsNullOrEmpty(patientLocation) ? patientLocation : "Local Area",
                             ReasonForVisit = testsSummary,
                             TestsJson = JsonSerializer.Serialize(dto.Investigations.Select(i => i.TestCode).ToList()),
@@ -137,6 +138,7 @@ namespace TBZ.Middleware.Projections
                         visitFact.ReferringDoctorId = dto.Referral.DoctorId != Guid.Empty ? dto.Referral.DoctorId : null;
                         visitFact.ReferralPartnerId = dto.Financials.CorporateId;
                         visitFact.AmountPaid = dto.Financials.PaidAmount;
+                        visitFact.CommissionAmount = dto.Referral != null ? dto.Referral.CommissionAmount : 0m;
                         if (!string.IsNullOrEmpty(patientLocation)) visitFact.Location = patientLocation;
                         visitFact.ReasonForVisit = testsSummary;
                         visitFact.TestsJson = JsonSerializer.Serialize(dto.Investigations.Select(i => i.TestCode).ToList());

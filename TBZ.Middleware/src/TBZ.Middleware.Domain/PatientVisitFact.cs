@@ -17,6 +17,7 @@ namespace TBZ.Middleware.Domain
         public Guid? ReferringDoctorId { get; set; }
         public string Location { get; set; } = string.Empty;
         public string ReasonForVisit { get; set; } = string.Empty;
+        public decimal CommissionAmount { get; set; }
         
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
