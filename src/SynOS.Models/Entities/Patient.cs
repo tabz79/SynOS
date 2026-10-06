@@ -11,7 +11,7 @@ namespace SynOS.Models.Entities
         public Guid PatientId { get; set; }
 
         [Required]
-        [StringLength(6)]
+        [StringLength(50)]
         public string MRN { get; set; } = string.Empty;
 
         [Required]

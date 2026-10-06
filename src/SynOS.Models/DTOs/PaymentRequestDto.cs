@@ -8,13 +8,20 @@ namespace SynOS.Models.DTOs
         [Required]
         public decimal Amount { get; set; }
 
-        [Required]
-        public string Method { get; set; } = string.Empty;
+        public string? Method { get; set; }
 
-        [Required]
-        public string ReceiptNo { get; set; } = string.Empty;
+        // Alias for compatibility with external payloads
+        public string? PaymentMethod
+        {
+            get => Method;
+            set => Method = value;
+        }
 
-        [Required]
+        public string? Notes { get; set; }
+
+        public string? ReceiptNo { get; set; }
+
         public Guid ReceivedByUserId { get; set; }
     }
 }
+

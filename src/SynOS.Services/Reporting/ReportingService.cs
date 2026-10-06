@@ -1239,4 +1239,39 @@ namespace SynOS.Services.Reporting
             public override System.Collections.IEnumerator GetEnumerator() => ((System.Collections.IEnumerable)_inner).GetEnumerator();
         }
     }
+
+    /// <summary>
+    /// Resilient ADO.NET Connection Interceptor:
+    /// Evicts poisoned socket pools when SQL Server restarts or mid-flight connection drops occur.
+    /// </summary>
+    public class SqlPoolEvictionInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
+    {
+        public override void ConnectionFailed(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionErrorEventData eventData)
+        {
+            EvictPool(eventData.Exception);
+            base.ConnectionFailed(connection, eventData);
+        }
+
+        public override System.Threading.Tasks.Task ConnectionFailedAsync(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionErrorEventData eventData, System.Threading.CancellationToken cancellationToken = default)
+        {
+            EvictPool(eventData.Exception);
+            return base.ConnectionFailedAsync(connection, eventData, cancellationToken);
+        }
+
+        private static void EvictPool(Exception? ex)
+        {
+            if (ex is Microsoft.Data.SqlClient.SqlException || ex is System.IO.IOException || ex is System.Net.Sockets.SocketException)
+            {
+                try
+                {
+                    Microsoft.Data.SqlClient.SqlConnection.ClearAllPools();
+                }
+                catch
+                {
+                    // Non-fatal pool eviction
+                }
+            }
+        }
+    }
 }
+

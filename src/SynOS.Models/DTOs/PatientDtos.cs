@@ -22,6 +22,9 @@ namespace SynOS.Models.DTOs
 
     public class PatientCreateDto
     {
+        [StringLength(50)]
+        public string? MRN { get; set; }
+
         [Required]
         [StringLength(100)]
         public string FirstName { get; set; }

@@ -75,6 +75,11 @@ BEGIN
     ALTER TABLE [Patients] ADD [IsDateOfBirthKnown] bit NOT NULL DEFAULT 0;
 END
 
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Patients') AND name = 'MRN' AND max_length < 100)
+BEGIN
+    ALTER TABLE [Patients] ALTER COLUMN [MRN] nvarchar(50) NOT NULL;
+END
+
 -- 4. Add columns to DiscountMasters if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
 BEGIN

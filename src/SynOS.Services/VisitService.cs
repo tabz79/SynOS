@@ -137,6 +137,7 @@ namespace SynOS.Services
             }
 
             var fallbackUserId = validUserId ?? await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+            var effectiveUserId = validUserId ?? fallbackUserId;
 
             // Resilient BranchId resolution: If current user context has no branch claim (e.g. headless token / external orchestrator),
             // safely fallback to the primary lab branch (MAIN) or the first available branch in the database.
@@ -162,8 +163,8 @@ namespace SynOS.Services
                 ReferrerId = visitDto.ReferrerId,
                 PaymentCollectionModel = visitDto.PaymentCollectionModel,
                 ReferrerText = visitDto.ReferrerText,
-                CreatedByUserId = validUserId ?? fallbackUserId,
-                AssignedReceptionistId = validUserId ?? fallbackUserId
+                CreatedByUserId = effectiveUserId,
+                AssignedReceptionistId = effectiveUserId
             };
 
             _context.Visits.Add(visit);
@@ -212,7 +213,7 @@ namespace SynOS.Services
                             DiscountFactId = Guid.NewGuid(),
                             InvoiceId = invoice.InvoiceId,
                             DiscountDefinitionId = appliedDiscount.DiscountDefinitionId,
-                            AppliedBy = actorUserId.ToString(),
+                            AppliedBy = effectiveUserId.ToString(),
                             AppliedAt = DateTime.UtcNow,
                             CreatedAt = DateTime.UtcNow,
                             IsActive = true,
@@ -229,9 +230,9 @@ namespace SynOS.Services
             await _context.SaveChangesAsync();
 
             // CALL REVENUE ENGINE
-            await _revenueEngine.ApplySnapshotAsync(visit.VisitId, actorUserId);
+            await _revenueEngine.ApplySnapshotAsync(visit.VisitId, effectiveUserId);
             
-            await _auditService.LogAsync(actorUserId, "CreateVisit", "Visit", visit.VisitId, visitDto);
+            await _auditService.LogAsync(effectiveUserId, "CreateVisit", "Visit", visit.VisitId, visitDto);
 
             if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue)
             {
@@ -243,7 +244,7 @@ namespace SynOS.Services
                     Method = "PartnerAccount",
                     ReceiptNo = $"SYS-{visit.Token}",
                     ReceivedAt = DateTime.UtcNow,
-                    ReceivedByUserId = fallbackUserId
+                    ReceivedByUserId = effectiveUserId
                 };
                 _context.Payments.Add(payment);
                 invoice.Status = "Paid";
@@ -263,11 +264,11 @@ namespace SynOS.Services
 
                 await _context.SaveChangesAsync();
                 
-                await MarkVisitAsPrepaidAsync(visit.VisitId, actorUserId, visit.VisitId);
+                await MarkVisitAsPrepaidAsync(visit.VisitId, effectiveUserId, visit.VisitId);
             }
 
             // ENRICHED METADATA
-            string actorName = await GetActorNameAsync(actorUserId);
+            string actorName = await GetActorNameAsync(effectiveUserId);
             string patientName = $"{patient.FirstName} {patient.LastName}";
 
             var visitMetadata = JsonSerializer.Serialize(new
@@ -284,12 +285,12 @@ namespace SynOS.Services
 
             await _operationalEventWriter.WriteEventAsync(
                 BranchEventType.VISIT_CREATED,
-                _userContext.CurrentBranchId.ToString(),
+                effectiveBranchId.ToString(),
                 visit.VisitId.ToString(),
                 visit.Token,
                 $"Visit created for {patientName} by {actorName}",
                 actorName, // Use Real Name
-                actorUserId.ToString(),
+                effectiveUserId.ToString(),
                 true,
                 null,
                 null,
@@ -347,7 +348,7 @@ namespace SynOS.Services
             await _context.SaveChangesAsync();
 
             // Auto-consume reception stationery/receipt rolls
-            await _consumptionService.ConsumeForVisitAsync(visit.VisitId, actorUserId);
+            await _consumptionService.ConsumeForVisitAsync(visit.VisitId, effectiveUserId);
 
             return visit;
         }

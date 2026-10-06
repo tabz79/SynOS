@@ -372,6 +372,11 @@ namespace SynOS.Api.Controllers.Admin
                                   ALTER TABLE [AnalyzerListeners] ADD [WorklistMode] nvarchar(30) NOT NULL DEFAULT 'Unidirectional';
                               IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'IsActive')
                                   ALTER TABLE [AnalyzerListeners] ADD [IsActive] bit NOT NULL DEFAULT 1;
+                          END",
+                        // v18: Patients MRN expansion
+                        @"IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Patients') AND name = 'MRN' AND max_length < 100)
+                          BEGIN
+                              ALTER TABLE [Patients] ALTER COLUMN [MRN] nvarchar(50) NOT NULL;
                           END"
                     };
 

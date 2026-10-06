@@ -46,7 +46,21 @@ namespace SynOS.Services
         {
             if (patientDto == null) throw new ArgumentNullException(nameof(patientDto));
 
-            var newMrn = await GenerateNextMrnAsync();
+            // Deduplication / Idempotency check: If client provided an MRN, check if it already exists
+            if (!string.IsNullOrWhiteSpace(patientDto.MRN))
+            {
+                var existing = await _context.Patients
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.MRN == patientDto.MRN.Trim());
+                if (existing != null)
+                {
+                    return _mapper.Map<PatientDto>(existing);
+                }
+            }
+
+            var newMrn = !string.IsNullOrWhiteSpace(patientDto.MRN)
+                ? patientDto.MRN.Trim()
+                : await GenerateNextMrnAsync();
 
             DateTime calculatedDob = patientDto.DateOfBirth > DateTime.MinValue && patientDto.DateOfBirth.Year > 1900
                 ? patientDto.DateOfBirth
@@ -100,7 +114,23 @@ namespace SynOS.Services
                 _userContext.CurrentBranchId
             ));
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // Concurrency / duplicate index collision: Detach and load existing patient by MRN
+                _context.Entry(patient).State = EntityState.Detached;
+                var existing = await _context.Patients
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.MRN == newMrn);
+                if (existing != null)
+                {
+                    return _mapper.Map<PatientDto>(existing);
+                }
+                throw;
+            }
 
             var dto = _mapper.Map<PatientDto>(patient);
 

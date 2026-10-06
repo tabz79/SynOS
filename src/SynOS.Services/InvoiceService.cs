@@ -144,17 +144,23 @@ namespace SynOS.Services
                 throw new InvalidOperationException("Effective payment amount must be greater than zero.");
             }
 
+            var receiverId = paymentDto.ReceivedByUserId;
+            if (receiverId == Guid.Empty || !await _context.Users.AnyAsync(u => u.UserId == receiverId))
+            {
+                receiverId = await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+            }
+
             var payment = new Payment
             {
                 PaymentId = Guid.NewGuid(),
                 InvoiceId = invoice.InvoiceId,
-                Amount = paymentDto.Amount,
-                Method = paymentDto.Method,
+                Amount = recordedAmount,
+                Method = !string.IsNullOrWhiteSpace(paymentDto.Method) ? paymentDto.Method : "Cash",
                 ReceiptNo = !string.IsNullOrEmpty(paymentDto.ReceiptNo) 
                     ? paymentDto.ReceiptNo 
                     : $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
                 ReceivedAt = DateTime.UtcNow,
-                ReceivedByUserId = paymentDto.ReceivedByUserId
+                ReceivedByUserId = receiverId
             };
             _context.Payments.Add(payment);
 

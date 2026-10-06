@@ -358,7 +358,9 @@ builder.Services.AddDbContext<SynOSDbContext>(options =>
             errorNumbersToAdd: null);
         sqlOptions.CommandTimeout(60);
     })
-    .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor());
+    .AddInterceptors(
+        new SynOS.Services.Reporting.TemplateQueryInterceptor(),
+        new SynOS.Services.Reporting.SqlPoolEvictionInterceptor());
 
     if (isDevelopment)
     {
