@@ -23,6 +23,7 @@
 
 param (
     [string]$InstallerPath = "",
+    [string]$ApiPublishedDir = "src\SynOS.Api\bin\Release\net8.0\win-x64\publish",
     [string]$ResultsDir = "test-results\hostile-harness",
     [string]$SelectedTest = "ALL"
 )
@@ -296,6 +297,30 @@ function Run-Test-TC04 {
     $actions = "POST /api/v1/setup/test-middleware with bogus key 'INVALID-TEST-KEY-00000'."
     $expected = "HTTP 200 with { success: false, message: ... }; no unhandled exceptions; no corruption of lab profile."
 
+    $apiProc = $null
+    $apiLaunchedByTest = $false
+
+    # Check if port 59999 is already listening; if not, launch from published build directory
+    $isListening = $false
+    try {
+        $check = Invoke-RestMethod -Uri "http://localhost:59999/api/v1/setup/status" -TimeoutSec 3 -ErrorAction SilentlyContinue
+        if ($check) { $isListening = $true }
+    } catch {}
+
+    if (-not $isListening) {
+        $apiExeCandidate = Join-Path $ApiPublishedDir "SynOS.Api.exe"
+        if (-not (Test-Path $apiExeCandidate)) {
+            $apiExeCandidate = "C:\Program Files\TBZ Labs\SynOS\SynOS.Api.exe"
+        }
+
+        if (Test-Path $apiExeCandidate) {
+            Write-HarnessLog "Starting SynOS.Api in bootstrap mode from: $apiExeCandidate" "INFO"
+            $apiProc = Start-Process -FilePath $apiExeCandidate -ArgumentList "--setup" -PassThru
+            $apiLaunchedByTest = $true
+            Start-Sleep -Seconds 4
+        }
+    }
+
     $payload = @{
         apiUrl = "https://cloud.tbzlabs.in/api/events"
         apiKey = "INVALID-TEST-KEY-00000"
@@ -313,6 +338,10 @@ function Run-Test-TC04 {
         }
     } catch {
         $actualMessage = "Exception occurred during key validation: $_"
+    }
+
+    if ($apiLaunchedByTest -and $apiProc -and -not $apiProc.HasExited) {
+        Stop-Process -Id $apiProc.Id -Force -ErrorAction SilentlyContinue
     }
 
     $artifacts = Harvest-TestArtifacts -TestId $TestId
