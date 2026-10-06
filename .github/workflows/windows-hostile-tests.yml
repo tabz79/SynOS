@@ -3,24 +3,25 @@ name: SynOS Hostile Stress Testing Matrix
 on:
   workflow_dispatch:
     inputs:
-      test_scope:
-        description: 'Scope of hostile tests to execute'
+      test_suite:
+        description: 'Testing Suite to execute'
         required: true
-        default: 'ALL'
+        default: 'DESTRUCTION_STRESS'
         type: choice
         options:
-          - ALL
-          - TC-01
-          - TC-02
-          - TC-04
-          - TC-05
-          - TC-09
-          - TC-10
+          - DESTRUCTION_STRESS
+          - HOSTILE_ENVIRONMENT
+          - BOTH
+      test_scope:
+        description: 'Scope of hostile tests (if running Hostile Environment suite)'
+        required: false
+        default: 'ALL'
+        type: string
 
 jobs:
   hostile-matrix:
     runs-on: windows-2022
-    timeout-minutes: 60
+    timeout-minutes: 90
 
     steps:
       - name: Check out SynOS repository
@@ -36,7 +37,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Inno Setup
+      - name: Install Inno Setup & Python
         run: |
           choco install innosetup --no-progress -y
 
@@ -65,18 +66,28 @@ jobs:
           }
           Write-Host "Installer built successfully: SynOS_Setup_v239_testing.exe" -ForegroundColor Green
 
-      - name: Execute Hostile Stress-Testing Harness
+      - name: Execute Hostile Environment Testing Harness
+        if: github.event.inputs.test_suite == 'HOSTILE_ENVIRONMENT' || github.event.inputs.test_suite == 'BOTH'
         shell: powershell
         run: |
           $installer = "$((Get-Location).Path)\SynOS_Setup_v239_testing.exe"
           & scripts\testing\harness\run-hostile-tests.ps1 -InstallerPath $installer -SelectedTest "${{ github.event.inputs.test_scope || 'ALL' }}"
 
+      - name: Execute Post-Installation Destruction & Stress Testing Harness
+        if: github.event.inputs.test_suite == 'DESTRUCTION_STRESS' || github.event.inputs.test_suite == 'BOTH' || github.event.inputs.test_suite == ''
+        shell: powershell
+        run: |
+          $installer = "$((Get-Location).Path)\SynOS_Setup_v239_testing.exe"
+          & scripts\testing\harness\run-destruction-stress-orchestrator.ps1 -InstallerPath $installer
+
       - name: Upload Test Results & Forensic Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: hostile-stress-test-results
+          name: full-system-destruction-stress-results
           path: |
-            test-results/hostile-harness/
-            test-results/hostile-harness/test-summary.json
-            test-results/hostile-harness/harness-execution.log
+            test-results/
+            test-results/destruction-harness/
+            test-results/destruction-harness/destruction-stress-summary.json
+            test-results/destruction-harness/destruction-stress-report.md
+            test-results/destruction-harness/orchestrator-execution.log
