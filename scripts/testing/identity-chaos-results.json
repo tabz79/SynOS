@@ -1,0 +1,22 @@
+{
+  "inbox1": "727e203a-389b-4e99-98ac-918877f839f9",
+  "inbox2": "c7a525ba-7a63-43e7-9ed2-92afa4a1d211",
+  "import1": {
+    "inboxId": "727e203a-389b-4e99-98ac-918877f839f9",
+    "analyzerId": "c0000000-0000-0000-0000-000000000001",
+    "orderId": "f20955f8-22c3-4242-97b0-4e62215b606d",
+    "parameterCode": "CREATININE",
+    "resultId": "da67aacf-c1f1-4d8d-87b6-ff5f577b2970",
+    "status": "Imported",
+    "message": "Result successfully imported and submitted for verification."
+  },
+  "import2": {
+    "inboxId": "c7a525ba-7a63-43e7-9ed2-92afa4a1d211",
+    "analyzerId": "c0000000-0000-0000-0000-000000000001",
+    "orderId": "f20955f8-22c3-4242-97b0-4e62215b606d",
+    "parameterCode": "CREATININE",
+    "resultId": "da67aacf-c1f1-4d8d-87b6-ff5f577b2970",
+    "status": "Imported",
+    "message": "Result successfully imported and submitted for verification."
+  }
+}

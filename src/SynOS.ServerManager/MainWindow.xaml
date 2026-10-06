@@ -63,7 +63,7 @@
             <Border Grid.Column="2" Background="#1E293B" CornerRadius="8" Padding="14" BorderBrush="#334155" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="DATABASE ENGINE" FontSize="11" FontWeight="Bold" Foreground="#94A3B8"/>
-                    <TextBlock Text="SQL Server (SYNOS)" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" Margin="0,2,0,8"/>
+                    <TextBlock x:Name="DbSubtitleText" Text="SQL Server" FontSize="13" FontWeight="SemiBold" Foreground="#E2E8F0" Margin="0,2,0,8"/>
                     <Border x:Name="DbStatusBorder" Background="#065F46" CornerRadius="4" Padding="8,4" HorizontalAlignment="Left">
                         <TextBlock x:Name="DbStatusText" Text="CONNECTED" FontSize="11" FontWeight="Bold" Foreground="#34D399"/>
                     </Border>

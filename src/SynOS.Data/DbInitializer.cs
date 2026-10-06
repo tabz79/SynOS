@@ -185,10 +185,221 @@ BEGIN
     ALTER TABLE [IMS_StockRequests] ADD [RequesterRole] nvarchar(100) NULL;
 END
 
--- 13. Add LicenseKey to LabProfiles if it doesn't exist
+-- 13. Add columns to LabProfiles if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseKey')
 BEGIN
     ALTER TABLE [LabProfiles] ADD [LicenseKey] nvarchar(max) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LabId')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LabId] nvarchar(50) NOT NULL DEFAULT 'LAB001';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'OperatingRegion')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [OperatingRegion] nvarchar(100) NOT NULL DEFAULT 'Khammam';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LabCity')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LabCity] nvarchar(100) NOT NULL DEFAULT 'Khammam';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LabPincode')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LabPincode] nvarchar(20) NOT NULL DEFAULT '507001';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseType')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LicenseType] nvarchar(max) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'MaximumBranches')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [MaximumBranches] int NOT NULL DEFAULT 1;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseExpiryDate')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LicenseExpiryDate] datetime2 NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseStatus')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LicenseStatus] nvarchar(max) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'EnabledFeatures')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [EnabledFeatures] nvarchar(max) NOT NULL DEFAULT '[]';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LastLicenseValidationUtc')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [LastLicenseValidationUtc] datetime2 NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'MiddlewareApiUrl')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [MiddlewareApiUrl] nvarchar(max) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'MiddlewareApiKey')
+BEGIN
+    ALTER TABLE [LabProfiles] ADD [MiddlewareApiKey] nvarchar(max) NULL;
+END
+
+-- 14. Create RadiologyModalities table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'RadiologyModalities' AND type = 'U')
+BEGIN
+    CREATE TABLE [RadiologyModalities] (
+        [ModalityId] uniqueidentifier NOT NULL,
+        [BranchId] uniqueidentifier NOT NULL,
+        [Name] nvarchar(100) NOT NULL,
+        [ModalityType] nvarchar(20) NOT NULL,
+        [AeTitle] nvarchar(50) NOT NULL,
+        [HostIpAddress] nvarchar(50) NULL,
+        [Port] int NOT NULL DEFAULT 104,
+        [AllowCStore] bit NOT NULL DEFAULT 1,
+        [AllowMwl] bit NOT NULL DEFAULT 1,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [Notes] nvarchar(250) NULL,
+        [CreatedAt] datetimeoffset NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+        [CreatedBy] uniqueidentifier NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000',
+        [UpdatedAt] datetimeoffset NULL,
+        [UpdatedBy] uniqueidentifier NULL,
+        CONSTRAINT [PK_RadiologyModalities] PRIMARY KEY ([ModalityId])
+    );
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'HostIpAddress')
+        ALTER TABLE [RadiologyModalities] ADD [HostIpAddress] nvarchar(50) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'Port')
+        ALTER TABLE [RadiologyModalities] ADD [Port] int NOT NULL DEFAULT 104;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'AllowCStore')
+        ALTER TABLE [RadiologyModalities] ADD [AllowCStore] bit NOT NULL DEFAULT 1;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'AllowMwl')
+        ALTER TABLE [RadiologyModalities] ADD [AllowMwl] bit NOT NULL DEFAULT 1;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'IsActive')
+        ALTER TABLE [RadiologyModalities] ADD [IsActive] bit NOT NULL DEFAULT 1;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'Notes')
+        ALTER TABLE [RadiologyModalities] ADD [Notes] nvarchar(250) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'CreatedBy')
+        ALTER TABLE [RadiologyModalities] ADD [CreatedBy] uniqueidentifier NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'UpdatedBy')
+        ALTER TABLE [RadiologyModalities] ADD [UpdatedBy] uniqueidentifier NULL;
+END
+
+-- 15. Create AnalyzerListeners table if it doesn't exist, or ensure all columns exist
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AnalyzerListeners' AND type = 'U')
+BEGIN
+    CREATE TABLE [AnalyzerListeners] (
+        [AnalyzerListenerId] uniqueidentifier NOT NULL,
+        [AnalyzerId] uniqueidentifier NOT NULL,
+        [Protocol] nvarchar(50) NOT NULL DEFAULT 'ASTM',
+        [ConnectionMode] nvarchar(20) NOT NULL DEFAULT 'TcpServer',
+        [Port] int NOT NULL DEFAULT 5000,
+        [HostIpAddress] nvarchar(50) NULL,
+        [SerialPortName] nvarchar(20) NULL,
+        [BaudRate] int NOT NULL DEFAULT 9600,
+        [DataBits] int NOT NULL DEFAULT 8,
+        [Parity] nvarchar(max) NOT NULL DEFAULT 'None',
+        [StopBits] nvarchar(max) NOT NULL DEFAULT 'One',
+        [Handshake] nvarchar(max) NOT NULL DEFAULT 'None',
+        [WatchFolderPath] nvarchar(260) NULL,
+        [WorklistMode] nvarchar(30) NOT NULL DEFAULT 'Unidirectional',
+        [IsActive] bit NOT NULL DEFAULT 1,
+        CONSTRAINT [PK_AnalyzerListeners] PRIMARY KEY ([AnalyzerListenerId])
+    );
+END
+ELSE
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'Protocol')
+        ALTER TABLE [AnalyzerListeners] ADD [Protocol] nvarchar(50) NOT NULL DEFAULT 'ASTM';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'ConnectionMode')
+        ALTER TABLE [AnalyzerListeners] ADD [ConnectionMode] nvarchar(20) NOT NULL DEFAULT 'TcpServer';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'Port')
+        ALTER TABLE [AnalyzerListeners] ADD [Port] int NOT NULL DEFAULT 5000;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'HostIpAddress')
+        ALTER TABLE [AnalyzerListeners] ADD [HostIpAddress] nvarchar(50) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'SerialPortName')
+        ALTER TABLE [AnalyzerListeners] ADD [SerialPortName] nvarchar(20) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'BaudRate')
+        ALTER TABLE [AnalyzerListeners] ADD [BaudRate] int NOT NULL DEFAULT 9600;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'DataBits')
+        ALTER TABLE [AnalyzerListeners] ADD [DataBits] int NOT NULL DEFAULT 8;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'Parity')
+        ALTER TABLE [AnalyzerListeners] ADD [Parity] nvarchar(max) NOT NULL DEFAULT 'None';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'StopBits')
+        ALTER TABLE [AnalyzerListeners] ADD [StopBits] nvarchar(max) NOT NULL DEFAULT 'One';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'Handshake')
+        ALTER TABLE [AnalyzerListeners] ADD [Handshake] nvarchar(max) NOT NULL DEFAULT 'None';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'WatchFolderPath')
+        ALTER TABLE [AnalyzerListeners] ADD [WatchFolderPath] nvarchar(260) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'WorklistMode')
+        ALTER TABLE [AnalyzerListeners] ADD [WorklistMode] nvarchar(30) NOT NULL DEFAULT 'Unidirectional';
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'IsActive')
+        ALTER TABLE [AnalyzerListeners] ADD [IsActive] bit NOT NULL DEFAULT 1;
+END
+
+-- 16. Create RoleDepartmentConfigs table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'RoleDepartmentConfigs' AND type = 'U')
+BEGIN
+    CREATE TABLE [RoleDepartmentConfigs] (
+        [ConfigId] uniqueidentifier NOT NULL,
+        [RoleName] nvarchar(100) NOT NULL,
+        [DepartmentId] uniqueidentifier NOT NULL,
+        [OperatingHoursStart] nvarchar(10) NOT NULL DEFAULT '08:00',
+        [OperatingHoursEnd] nvarchar(10) NOT NULL DEFAULT '20:00',
+        [DefaultTATHours] int NOT NULL DEFAULT 24,
+        [CanSearchAll] bit NOT NULL DEFAULT 0,
+        [CreatedAt] datetimeoffset NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+        [UpdatedAt] datetimeoffset NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+        CONSTRAINT [PK_RoleDepartmentConfigs] PRIMARY KEY ([ConfigId])
+    );
+END
+
+-- 17. Create OutboxEvents table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OutboxEvents' AND type = 'U')
+BEGIN
+    CREATE TABLE [OutboxEvents] (
+        [Id] uniqueidentifier NOT NULL,
+        [EventVersion] int NOT NULL DEFAULT 1,
+        [EventType] nvarchar(100) NOT NULL,
+        [AggregateType] nvarchar(100) NOT NULL,
+        [AggregateId] nvarchar(100) NOT NULL,
+        [LabId] nvarchar(50) NOT NULL,
+        [BranchId] nvarchar(50) NULL,
+        [PayloadJson] nvarchar(max) NOT NULL,
+        [CreatedAt] datetime2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        [SentAt] datetime2 NULL,
+        [RetryCount] int NOT NULL DEFAULT 0,
+        [Status] nvarchar(20) NOT NULL DEFAULT 'Pending',
+        CONSTRAINT [PK_OutboxEvents] PRIMARY KEY ([Id])
+    );
+    CREATE INDEX [IX_OutboxEvents_Status_CreatedAt] ON [OutboxEvents] ([Status], [CreatedAt]);
+END
+
+-- 18. Create SupportTickets table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SupportTickets' AND type = 'U')
+BEGIN
+    CREATE TABLE [SupportTickets] (
+        [Id] uniqueidentifier NOT NULL,
+        [LabId] nvarchar(50) NOT NULL,
+        [Title] nvarchar(200) NOT NULL,
+        [Description] nvarchar(max) NOT NULL,
+        [Priority] nvarchar(50) NOT NULL,
+        [Category] nvarchar(100) NOT NULL,
+        [Status] nvarchar(50) NOT NULL,
+        [StatusMessage] nvarchar(500) NULL,
+        [DiagnosticBundleId] uniqueidentifier NULL,
+        [CreatedAt] datetime2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        [UpdatedAt] datetime2 NULL,
+        CONSTRAINT [PK_SupportTickets] PRIMARY KEY ([Id])
+    );
 END
 ";
             context.Database.ExecuteSqlRaw(sql);

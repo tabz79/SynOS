@@ -1,0 +1,162 @@
+[
+  {
+    "id": "ASTM-01",
+    "name": "CR-Only Line Endings (\\r Classical ASTM)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Status: 200",
+    "timestamp": "2026-10-05T10:56:19.065956"
+  },
+  {
+    "id": "ASTM-02",
+    "name": "LF-Only Line Endings (\\n)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Status: 200",
+    "timestamp": "2026-10-05T10:56:19.175319"
+  },
+  {
+    "id": "ASTM-03",
+    "name": "CRLF Line Endings (\\r\\n)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Status: 200",
+    "timestamp": "2026-10-05T10:56:19.270755"
+  },
+  {
+    "id": "ASTM-04",
+    "name": "Missing Header (H) Segment",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Parser successfully tolerates missing H segment (Status 200)",
+    "timestamp": "2026-10-05T10:56:19.292846"
+  },
+  {
+    "id": "ASTM-05",
+    "name": "Missing Patient (P) Segment",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingested as Pending, Matcher safely rejected unlinked sample (Status 404)",
+    "timestamp": "2026-10-05T10:56:19.497253"
+  },
+  {
+    "id": "ASTM-06",
+    "name": "Missing Result (R) Segment",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Correctly rejected with ParseError 400 Bad Request",
+    "timestamp": "2026-10-05T10:56:19.526659"
+  },
+  {
+    "id": "ASTM-07",
+    "name": "Out-of-Order Segments (R before P)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Parser extracted R and P regardless of segment ordering (Status 200)",
+    "timestamp": "2026-10-05T10:56:19.552027"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: Extreme High (99999999.99)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value='99999999.99'",
+    "timestamp": "2026-10-05T10:56:19.577113"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: Negative Value (-15.5)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value='-15.5'",
+    "timestamp": "2026-10-05T10:56:19.597088"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: Zero (0.00)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value='0.00'",
+    "timestamp": "2026-10-05T10:56:19.618289"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: Scientific Notation (1.25E+02)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value='1.25E+02'",
+    "timestamp": "2026-10-05T10:56:19.643009"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: Non-Numeric String (ERROR_CLOT)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value='ERROR_CLOT'",
+    "timestamp": "2026-10-05T10:56:19.701308"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: Empty String Result",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value=''",
+    "timestamp": "2026-10-05T10:56:19.730609"
+  },
+  {
+    "id": "ASTM-08",
+    "name": "Value Fuzzing: High Precision Decimal (1.234567891011)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingest Status 200, Parsed Value='1.234567891011'",
+    "timestamp": "2026-10-05T10:56:19.764253"
+  },
+  {
+    "id": "ASTM-09",
+    "name": "Patient Name Spoofing with Valid MRN",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Matched by canonical MRN 'A00012' regardless of spoofed name. Result attached to MRN owner.",
+    "timestamp": "2026-10-05T10:56:20.318219"
+  },
+  {
+    "id": "ASTM-10",
+    "name": "Unregistered / Unknown Patient MRN",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Correctly held in Pending status; matcher returned 404 (Did NOT attach to random patient)",
+    "timestamp": "2026-10-05T10:56:20.373120"
+  },
+  {
+    "id": "ASTM-11",
+    "name": "Unmapped Test Code Ingestion",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Inbox received result as Pending; matcher safely rejected unmapped test code with 404.",
+    "timestamp": "2026-10-05T10:56:20.423350"
+  },
+  {
+    "id": "ASTM-12",
+    "name": "Multi-Result Batch Packet (Multiple R-segments)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Status: 200. Ingested single DTO (AstmProtocolParser takes FirstOrDefault R-segment). Multi-analyte splitting limitation.",
+    "timestamp": "2026-10-05T10:56:20.448960"
+  },
+  {
+    "id": "ASTM-13",
+    "name": "Embedded Binary Garbage & Null Bytes",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Handled without server crash. Ingest Status: 200",
+    "timestamp": "2026-10-05T10:56:20.483953"
+  },
+  {
+    "id": "ASTM-14",
+    "name": "Concurrent Analyzer Burst (20 streams)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "20/20 concurrent requests completed in 0.56s (35.8 msgs/sec)",
+    "timestamp": "2026-10-05T10:56:21.043829"
+  }
+]

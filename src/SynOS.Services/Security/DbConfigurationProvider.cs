@@ -38,7 +38,17 @@ namespace SynOS.Services.Security
         public override void Load()
         {
             var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
-            optionsBuilder.UseSqlServer(_connectionString);
+            string effectiveConnStr = _connectionString;
+            try
+            {
+                var csb = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(_connectionString)
+                {
+                    ConnectTimeout = 3
+                };
+                effectiveConnStr = csb.ConnectionString;
+            }
+            catch {}
+            optionsBuilder.UseSqlServer(effectiveConnStr, sqlOptions => sqlOptions.CommandTimeout(3));
 
             using var context = new SynOSDbContext(optionsBuilder.Options);
             bool loaded = false;

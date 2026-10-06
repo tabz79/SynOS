@@ -955,6 +955,16 @@ namespace SynOS.Services
                         await newContext.Database.MigrateAsync();
                         _logger.LogInformation("EF Core migrations completed.");
 
+                        try
+                        {
+                            SynOS.Data.DbInitializer.EnsureTablesAndColumnsCreated(newContext);
+                            _logger.LogInformation("Post-restore schema tables and missing columns ensured successfully.");
+                        }
+                        catch (Exception schemaEx)
+                        {
+                            _logger.LogWarning(schemaEx, "Post-restore EnsureTablesAndColumnsCreated warning (non-fatal).");
+                        }
+
                         if (restoringLabProfile != null)
                         {
                             _logger.LogInformation("Restoring active LabProfile licensing and middleware settings...");

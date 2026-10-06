@@ -100,6 +100,10 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
     if (name && name.endsWith(' Patient')) {
         name = name.replace(' Patient', '');
     }
+    // DEF-006: Sanitize HTML tags from display name
+    if (name && typeof name === 'string') {
+        name = name.replace(/<[^>]*>?/gm, '').trim() || name;
+    }
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';

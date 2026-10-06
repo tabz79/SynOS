@@ -50,6 +50,8 @@ namespace SynOS.Models.DTOs.Radiology
 
         public int Port { get; set; } = 104;
 
+        public Guid? BranchId { get; set; }
+
         public bool AllowCStore { get; set; } = true;
         public bool AllowMwl { get; set; } = true;
         public string? Notes { get; set; }

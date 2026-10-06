@@ -24,7 +24,7 @@ if (Test-Path $ConfigPath) {
     $SynOSPort = 59999
     $SynOSService = "TBZSynOSService"
     $SynOSDisplayName = "TBZ SynOS Service"
-    $SynOSDbName = "SynOSDb"
+    $SynOSDbName = "SynOSDb-1"
 }
 
 # Resolve Log File Path
@@ -83,17 +83,24 @@ try {
 
 # 3. Optional Database removal
 if ($RemoveDb) {
-    Log-Message "Database removal requested. Connecting to local SQL Server ($InstanceName) to drop database [$SynOSDbName]..."
+    Log-Message "Database removal requested. Connecting to local SQL Server ($InstanceName) to drop database(s)..."
     try {
-        # Drop database via SQL command
-        $sqlCmd = "IF EXISTS(SELECT * FROM sys.databases WHERE name='$SynOSDbName') BEGIN ALTER DATABASE [$SynOSDbName] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [$SynOSDbName]; END"
+        # Drop all SynOS databases via SQL command
+        $sqlCmd = "DECLARE @sql NVARCHAR(MAX) = ''; SELECT @sql = @sql + 'ALTER DATABASE [' + name + '] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [' + name + ']; ' FROM sys.databases WHERE name IN ('SynOSDb', 'SynOSDb-1') OR name LIKE 'SynOSDb%'; IF LEN(@sql) > 0 EXEC sp_executesql @sql;"
         Invoke-Sqlcmd -Query $sqlCmd -ServerInstance ".\$InstanceName" -ErrorAction Stop
-        Log-Message "SQL Server database [$SynOSDbName] dropped successfully."
+        Log-Message "SQL Server database(s) dropped successfully."
     } catch {
         Log-Message "WARNING: Failed to drop database via SQL command: $_"
     }
 } else {
     Log-Message "Database preservation requested. Local database is left intact."
+}
+
+# Clean up setup state residue so reinstall starts with a clean slate
+$setupStateFile = "C:\ProgramData\TBZ Labs\SynOS\Config\setup_state.json"
+if (Test-Path $setupStateFile) {
+    Log-Message "Removing setup state residue: $setupStateFile"
+    Remove-Item -Path $setupStateFile -Force -ErrorAction SilentlyContinue
 }
 
 # 4. Optional Storage & PACS removal

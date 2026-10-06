@@ -101,10 +101,35 @@ if ($indexContent -match $regex) {
     
     $jsSize = (Get-Item $jsFilePath).Length
     Write-Host "  - File Size of ${jsFilename}: $jsSize bytes"
-    Write-Host "`n==================================================" -ForegroundColor Green
-    Write-Host " [BUILD PIPELINE SUCCESS] All checks passed!" -ForegroundColor Green
     Write-Host " Hash '${jsFilename}' exists exactly once in publish/wwwroot/assets." -ForegroundColor Green
-    Write-Host "==================================================" -ForegroundColor Green
 } else {
     Throw "VERIFICATION ERROR: Could not extract index-*.js asset reference from $publishedIndexHtml!"
 }
+
+# STEP 6: PUBLISH SERVER MANAGER
+Write-Host "`n[6/7] Publishing SynOS.ServerManager..." -ForegroundColor Yellow
+Set-Location -Path $rootDir
+& dotnet publish src/SynOS.ServerManager/SynOS.ServerManager.csproj -c Release -r win-x64 --self-contained true
+if ($LASTEXITCODE -ne 0) {
+    Throw "SynOS.ServerManager publish failed with exit code $LASTEXITCODE"
+}
+Write-Host "  -> ServerManager publish successful." -ForegroundColor Green
+
+# STEP 7: BUILD INNO SETUP INSTALLER
+Write-Host "`n[7/7] Compiling Inno Setup Installer (SynOS_Setup_v239_testing.exe)..." -ForegroundColor Yellow
+$isccPath = "C:\Users\Asus\AppData\Local\Programs\Inno Setup 6\iscc.exe"
+& $isccPath "$rootDir\SynOS_Setup.iss"
+if ($LASTEXITCODE -ne 0) {
+    Throw "Inno Setup compilation failed with exit code $LASTEXITCODE"
+}
+
+$outputInstaller = "$rootDir\SynOS_Setup_v239_testing.exe"
+if (-not (Test-Path $outputInstaller)) {
+    Throw "Installer file $outputInstaller was not created!"
+}
+$installerSize = [math]::Round((Get-Item $outputInstaller).Length / 1MB, 2)
+Write-Host "`n==================================================" -ForegroundColor Green
+Write-Host " [INSTALLER BUILD SUCCESS] Complete!" -ForegroundColor Green
+Write-Host " Installer generated: $outputInstaller ($installerSize MB)" -ForegroundColor Green
+Write-Host "==================================================" -ForegroundColor Green
+

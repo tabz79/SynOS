@@ -593,7 +593,7 @@ export function PathologistTerminal() {
             }
         } catch (err) {
             console.error("Save failed:", err);
-            alert("Verification Context Sync Failed: " + err.message);
+            // Non-blocking log to avoid freezing execution thread on concurrent triggers
             throw err;
         } finally {
             setIsSaving(false);

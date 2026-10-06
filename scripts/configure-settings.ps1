@@ -3,7 +3,7 @@
 
 param (
     [string]$AppDir = "",
-    [string]$DbName = "SynOSDb",
+    [string]$DbName = "SynOSDb-1",
     [string]$InstanceName = "SYNOS",
     [string]$AuthType = "Windows",
     [string]$Username = "",

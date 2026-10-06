@@ -135,5 +135,58 @@ if (-not $sqlInstalled) {
     Log-Message "SQL Server Express instance ($InstanceName) is already configured. Skipping installation."
 }
 
+# 2. Check and Install .NET 8.0 ASP.NET Core Runtime / Hosting Bundle if missing
+Log-Message "Checking .NET 8.0 ASP.NET Core runtime..."
+$dotnetInstalled = $false
+try {
+    $dotnetExe = "C:\Program Files\dotnet\dotnet.exe"
+    if (Test-Path $dotnetExe) {
+        $runtimes = & $dotnetExe --list-runtimes 2>&1
+        if ($runtimes -match "Microsoft\.AspNetCore\.App\s+8\.") {
+            $dotnetInstalled = $true
+            Log-Message ".NET 8.0 ASP.NET Core runtime is present."
+        }
+    }
+} catch {
+    Log-Message "WARNING: Error checking .NET runtimes: $_"
+}
+
+if (-not $dotnetInstalled) {
+    Log-Message ".NET 8.0 ASP.NET Core Runtime not found. Attempting automated installation..."
+    $installedViaWinget = $false
+    try {
+        $wingetCmd = Get-Command winget.exe -ErrorAction SilentlyContinue
+        if ($wingetCmd) {
+            Log-Message "Installing Microsoft.DotNet.HostingBundle.8 via winget..."
+            $wingetProcess = Start-Process -FilePath "winget.exe" -ArgumentList "install Microsoft.DotNet.HostingBundle.8 --silent --accept-source-agreements --accept-package-agreements" -Wait -PassThru -NoNewWindow
+            if ($wingetProcess.ExitCode -eq 0) {
+                $installedViaWinget = $true
+                Log-Message "SUCCESS: .NET 8 Hosting Bundle installed via winget."
+            }
+        }
+    } catch {
+        Log-Message "winget installation attempt failed: $_"
+    }
+
+    if (-not $installedViaWinget) {
+        try {
+            $tempDotnetDir = "C:\ProgramData\TBZ Labs\SynOS\Temp\DotnetPrereq"
+            New-Item -Path $tempDotnetDir -ItemType Directory -Force | Out-Null
+            $installerPath = Join-Path $tempDotnetDir "dotnet-hosting-8.0-win.exe"
+            $dotnetUrl = "https://download.visualstudio.microsoft.com/download/pr/9e3a79d3-f54c-4740-b6f7-1ba36a3070aa/2070f7cf479caad5cfeb908d1797d197/dotnet-hosting-8.0.12-win.exe"
+            Log-Message "Downloading .NET 8.0 Hosting Bundle from Microsoft: $dotnetUrl"
+            $webClient = New-Object System.Net.WebClient
+            $webClient.DownloadFile($dotnetUrl, $installerPath)
+            Log-Message "Installing .NET 8.0 Hosting Bundle silently..."
+            $installProcess = Start-Process -FilePath $installerPath -ArgumentList "/install /quiet /norestart" -Wait -PassThru -NoNewWindow
+            Log-Message ".NET Hosting Bundle installer finished with exit code: $($installProcess.ExitCode)"
+        } catch {
+            Log-Message "WARNING: Automated .NET 8 download/install encountered error: $_"
+        } finally {
+            Remove-Item -Path $tempDotnetDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 Log-Message "Prerequisite check completed successfully."
 exit 0

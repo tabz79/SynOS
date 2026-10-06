@@ -1,0 +1,7 @@
+Authorized security assessment of local SynOS staging instance.
+Target surface: OpenAPI REST endpoints at http://localhost:59999/swagger/v1/swagger.json.
+Focus on OWASP API Top 10: Broken Object Level Authorization (BOLA/IDOR), Broken Object Property Level Authorization (BOPLA), Broken Authentication, Function Level Authorization bypass, and injection weaknesses.
+STRICT SCOPE BOUNDARIES:
+- Do NOT test or send any requests to external domains, cloud middleware (cloud.tbzlabs.in), or third parties.
+- Only test local endpoints hosted on http://localhost:59999.
+- Do NOT execute destructive data operations or purge operational tables.

@@ -14,14 +14,16 @@ import {
     Server, 
     Lock,
     ShieldCheck,
-    RefreshCw
+    RefreshCw,
+    HardDrive,
+    Users
 } from 'lucide-react';
 
 export function FirstRunWizard() {
     const { isConfigured, setIsConfigured } = useAuth();
     const navigate = useNavigate();
 
-    // Wizard Steps: 1: Activation, 2: Admin Account, 3: Installation Progress, 4: Success
+    // Wizard Steps: 1: Activation, 'db_select': DB Selection (if existing DB found), 2: Admin Account, 3: Installation Progress, 4: Success
     const [step, setStep] = useState(1);
     const [isLoadingDefaults, setIsLoadingDefaults] = useState(true);
 
@@ -36,10 +38,16 @@ export function FirstRunWizard() {
 
     // Database configurations (hidden by default, editable in advanced drawer)
     const [dbServer, setDbServer] = useState('localhost');
-    const [dbName, setDbName] = useState('SynOSDb');
+    const [dbName, setDbName] = useState('SynOSDb-1');
     const [dbUser, setDbUser] = useState('sa');
     const [dbPassword, setDbPassword] = useState('');
     const [useWindowsAuth, setUseWindowsAuth] = useState(true);
+
+    // DB Configuration states (Single source of truth from installer)
+    const [configuredDbHasUsers, setConfiguredDbHasUsers] = useState(false);
+    const [configuredDbUserCount, setConfiguredDbUserCount] = useState(0);
+    const [configuredClinicName, setConfiguredClinicName] = useState('');
+    const [isReconnect, setIsReconnect] = useState(false);
 
     // Storage paths (hidden, configured automatically)
     const [pacsFolder, setPacsFolder] = useState('C:\\SynOS_Files\\PACS');
@@ -86,23 +94,42 @@ export function FirstRunWizard() {
                 if (resDefaults.ok) {
                     const data = await resDefaults.json();
                     setDbServer(data.databaseServer || 'localhost');
-                    setDbName(data.databaseName || 'SynOSDb');
+                    setDbName(data.databaseName || 'SynOSDb-1');
                     setDbUser(data.databaseUser || 'sa');
                     setDbPassword(data.databasePassword || '');
                     setPacsFolder(data.pacsStorageFolder || 'C:\\SynOS_Files\\PACS');
                     setDocumentFolder(data.documentStorageFolder || 'C:\\SynOS_Files');
                     setWorkingDir(data.workingDirectory || 'C:\\SynOS_Working');
+                    if (data.detectedLicenseKey) {
+                        setMiddlewareKey(data.detectedLicenseKey);
+                    }
+                    if (data.hasExistingUsers) {
+                        setConfiguredDbHasUsers(true);
+                        setConfiguredDbUserCount(data.userCount || 0);
+                        setConfiguredClinicName(data.labName || '');
+                        setIsReconnect(true);
+                    } else {
+                        setConfiguredDbHasUsers(false);
+                        setIsReconnect(false);
+                    }
                 }
 
                 // Fetch checkpoint progress to resume if needed
                 const resProgress = await fetch('/api/v1/setup/progress');
                 if (resProgress.ok) {
                     const data = await resProgress.json();
-                    if (data.currentStep) {
+                    if (data.completed) {
+                        navigate('/login', { replace: true });
+                        return;
+                    }
+                    if (data.currentStep && data.currentStep < 3) {
                         setStep(data.currentStep);
                     }
                     if (data.databaseServer) setDbServer(data.databaseServer);
-                    if (data.databaseName) setDbName(data.databaseName);
+                    if (data.databaseName) {
+                        setDbName(data.databaseName);
+                        setSelectedExistingDb(data.databaseName);
+                    }
                     if (data.adminUsername) setAdminEmail(data.adminUsername);
                     if (data.licenseActivated) {
                         setLicenseInfo({ success: true });
@@ -123,11 +150,11 @@ export function FirstRunWizard() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    currentStep: nextStep,
+                    currentStep: typeof nextStep === 'number' ? nextStep : 2,
                     licenseActivated: licenseActivatedVal !== undefined ? licenseActivatedVal : (licenseInfo !== null),
                     databaseServer: dbServer,
                     databaseName: dbName,
-                    adminUsername: adminEmail
+                    adminUsername: isReconnect ? 'ExistingAdministrator' : adminEmail
                 })
             });
         } catch (err) {
@@ -153,8 +180,30 @@ export function FirstRunWizard() {
             const data = await res.json();
             if (data.success) {
                 setLicenseInfo(data);
-                await saveProgress(2, true);
-                setStep(2);
+
+                // Enterprise Single Source of Truth:
+                // The database was already chosen in the Desktop Windows Installer!
+                if (configuredDbHasUsers) {
+                    // Database has existing users: preserve all accounts and skip to progress / login
+                    setIsReconnect(true);
+                    setSubSteps(prev => prev.map(s => {
+                        if (s.id === 'database') return { ...s, label: `Connecting to ${dbName}` };
+                        if (s.id === 'admin') return { ...s, label: `Preserving ${configuredDbUserCount} staff accounts (${configuredClinicName || dbName})` };
+                        return s;
+                    }));
+                    await saveProgress(3, true);
+                    setStep(3);
+                } else {
+                    // Clean / fresh database: prompt to create the first administrator account
+                    setIsReconnect(false);
+                    setSubSteps(prev => prev.map(s => {
+                        if (s.id === 'database') return { ...s, label: `Initializing local database (${dbName})` };
+                        if (s.id === 'admin') return { ...s, label: 'Creating administrator account' };
+                        return s;
+                    }));
+                    await saveProgress(2, true);
+                    setStep(2);
+                }
             } else {
                 setError(data.message || "License activation failed. Please check your key and try again.");
             }
@@ -256,7 +305,7 @@ export function FirstRunWizard() {
             return;
         }
 
-        // 4. Creating administrator account
+        // 4. Administrator setup / Account preservation
         updateSubStepStatus('admin', 'running');
         await new Promise(r => setTimeout(r, 600));
         updateSubStepStatus('admin', 'success');
@@ -268,6 +317,7 @@ export function FirstRunWizard() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    isReconnect: isReconnect,
                     databaseServer: dbServer,
                     databaseName: dbName,
                     databaseUser: useWindowsAuth ? '' : dbUser,
@@ -283,8 +333,8 @@ export function FirstRunWizard() {
                     documentStorageFolder: documentFolder,
                     pacsStorageFolder: pacsFolder,
                     workingDirectory: workingDir,
-                    adminUsername: adminEmail, // Primary identity is email
-                    adminPassword: adminPassword
+                    adminUsername: isReconnect ? null : adminEmail,
+                    adminPassword: isReconnect ? null : adminPassword
                 })
             });
             const initRes = await initCheck.json();
@@ -473,13 +523,15 @@ export function FirstRunWizard() {
                         className="h-9 object-contain mb-4 filter brightness-125" 
                     />
                     <h1 className="text-2xl font-bold tracking-tight text-white">
-                        {step === 1 && "Activate SynOS"}
+                        {step === 1 && (configuredDbHasUsers ? "Activate & Reconnect" : "Activate SynOS")}
                         {step === 2 && "Create Administrator Account"}
-                        {step === 3 && "Setting up SynOS..."}
+                        {step === 3 && (isReconnect ? "Reconnecting SynOS..." : "Setting up SynOS...")}
                         {step === 4 && "System Configured!"}
                     </h1>
-                    <p className="text-zinc-400 text-xs mt-1 max-w-[320px]">
-                        {step === 1 && "Enter the activation key provided to you by TBZ Labs to start setup."}
+                    <p className="text-zinc-400 text-xs mt-1 max-w-[340px]">
+                        {step === 1 && (configuredDbHasUsers 
+                            ? `Verify your license key to reconnect to ${dbName}.` 
+                            : "Enter the activation key provided to you by TBZ Labs to start setup.")}
                         {step === 2 && "This email credentials will serve as your master sign-in profile."}
                         {step === 3 && "Please wait while we initialize local resources and database structures."}
                         {step === 4 && "Onboarding completed successfully. Your diagnostic suite is ready."}
@@ -518,13 +570,36 @@ export function FirstRunWizard() {
                                 />
                             </div>
 
+                            {/* Configured Database Info Card (Single Source of Truth from Installer) */}
+                            {configuredDbHasUsers ? (
+                                <div className="p-3.5 bg-emerald-950/20 border border-emerald-500/30 rounded-xl flex items-start gap-3">
+                                    <Database className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                                    <div className="text-xs">
+                                        <div className="font-semibold text-emerald-300">Configured Database: {dbName}</div>
+                                        <div className="text-zinc-400 mt-0.5 leading-relaxed">
+                                            {configuredDbUserCount} staff accounts detected {configuredClinicName ? `• ${configuredClinicName}` : ''}. All existing staff credentials and clinical records will be preserved.
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-3.5 bg-blue-950/20 border border-blue-500/25 rounded-xl flex items-start gap-3">
+                                    <Database className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
+                                    <div className="text-xs">
+                                        <div className="font-semibold text-blue-300">Target Database: {dbName}</div>
+                                        <div className="text-zinc-400 mt-0.5 leading-relaxed">
+                                            New database deployment. You will configure the primary administrator account in the next step.
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
                                 disabled={isValidating || !middlewareKey.trim()}
                                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             >
                                 {isValidating && <Loader2 className="w-4 h-4 animate-spin" />}
-                                Activate & Continue
+                                {configuredDbHasUsers ? 'Activate & Reconnect SynOS' : 'Activate & Continue'}
                             </button>
                         </form>
                     )}

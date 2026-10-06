@@ -68,8 +68,42 @@ namespace SynOS.Services
 
             var resultsToUpsert = new List<Result>();
 
+            // DEF-002: Clinical Data Integrity & Parameter Validation
+            var paramCodes = request.Results.Select(r => r.ParameterCode).Distinct().ToList();
+            var catalogParams = await _context.CatalogParameters
+                .Where(p => paramCodes.Contains(p.ParameterCode) && p.IsActive)
+                .ToListAsync();
+
             foreach (var resultDto in request.Results)
             {
+                var catalogParam = catalogParams.FirstOrDefault(p => p.ParameterCode == resultDto.ParameterCode);
+                var val = resultDto.Value?.Trim();
+
+                if (catalogParam != null && !string.IsNullOrEmpty(val))
+                {
+                    // DataType validation
+                    if (string.Equals(catalogParam.DataType, "Numeric", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!decimal.TryParse(val, out decimal numericVal))
+                        {
+                            return new SynOS.Models.DTOs.ResultEntryResponseDto
+                            {
+                                Status = SynOS.Models.DTOs.ResultEntryStatus.BadRequest,
+                                Message = $"Parameter '{catalogParam.ParameterName}' ({catalogParam.ParameterCode}) requires a numeric value, but received '{val}'."
+                            };
+                        }
+
+                        if (numericVal < 0)
+                        {
+                            return new SynOS.Models.DTOs.ResultEntryResponseDto
+                            {
+                                Status = SynOS.Models.DTOs.ResultEntryStatus.BadRequest,
+                                Message = $"Parameter '{catalogParam.ParameterName}' ({catalogParam.ParameterCode}) cannot be negative ({numericVal})."
+                            };
+                        }
+                    }
+                }
+
                 var existingResult = await _context.Results
                     .FirstOrDefaultAsync(r =>
                         r.OrderId == request.OrderId &&
@@ -78,7 +112,6 @@ namespace SynOS.Services
                 if (existingResult != null)
                 {
                     // GPT-5: Clinical Flag Update
-                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode && p.IsActive);
                     existingResult.Flag = CalculateFlag(resultDto.Value, catalogParam?.ReferenceRange);
                     existingResult.ReferenceRange = catalogParam?.ReferenceRange;
                     existingResult.Unit = catalogParam?.Unit;
@@ -92,7 +125,6 @@ namespace SynOS.Services
                 else
                 {
                     // GPT-5: Clinical Flag Calculation
-                    var catalogParam = await _context.CatalogParameters.FirstOrDefaultAsync(p => p.ParameterCode == resultDto.ParameterCode && p.IsActive);
                     var flag = CalculateFlag(resultDto.Value, catalogParam?.ReferenceRange);
 
                     var newResult = new Result

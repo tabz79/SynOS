@@ -41,17 +41,18 @@ namespace SynOS.Api.Controllers.Admin
         [HttpGet("status")]
         public async Task<IActionResult> GetSetupStatus()
         {
-            var isSetupProcess = System.Environment.GetCommandLineArgs().Contains("--setup");
-            if (isSetupProcess)
-            {
-                var isConfigured = CheckIsConfiguredViaStateFile();
-                return Ok(new { isConfigured });
-            }
-
             try
             {
-                var isConfigured = await CheckIsConfiguredInternal();
-                return Ok(new { isConfigured });
+                // Must have a completed setup_state.json record to be considered configured
+                var stateConfigured = CheckIsConfiguredViaStateFile();
+                if (!stateConfigured)
+                {
+                    return Ok(new { isConfigured = false });
+                }
+
+                // If state file is marked complete, verify database connectivity and operational structure
+                var internalConfigured = await CheckIsConfiguredInternal();
+                return Ok(new { isConfigured = internalConfigured });
             }
             catch
             {
@@ -144,10 +145,10 @@ namespace SynOS.Api.Controllers.Admin
 
             try
             {
-                // Lock down: if already configured, reject
-                if (CheckIsConfiguredViaStateFile())
+                // Lock down: reject only if the system is ALREADY actively configured and operational
+                if (await CheckIsConfiguredInternal() && CheckIsConfiguredViaStateFile())
                 {
-                    return BadRequest(new { message = "System is already configured and locked down." });
+                    return BadRequest(new { message = "System is already configured and operational. Use Admin Settings to modify configurations." });
                 }
 
                 // Build Connection String
@@ -334,6 +335,38 @@ namespace SynOS.Api.Controllers.Admin
                         @"IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('LabProfiles') AND name = 'LicenseKey')
                           BEGIN
                               ALTER TABLE [LabProfiles] ADD [LicenseKey] nvarchar(max) NULL;
+                          END",
+                        // v16: RadiologyModalities HostIpAddress
+                        @"IF EXISTS (SELECT * FROM sys.tables WHERE name = 'RadiologyModalities' AND type = 'U')
+                          BEGIN
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('RadiologyModalities') AND name = 'HostIpAddress')
+                                  ALTER TABLE [RadiologyModalities] ADD [HostIpAddress] nvarchar(50) NULL;
+                          END",
+                        // v17: AnalyzerListeners HostIpAddress & columns
+                        @"IF EXISTS (SELECT * FROM sys.tables WHERE name = 'AnalyzerListeners' AND type = 'U')
+                          BEGIN
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'HostIpAddress')
+                                  ALTER TABLE [AnalyzerListeners] ADD [HostIpAddress] nvarchar(50) NULL;
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'ConnectionMode')
+                                  ALTER TABLE [AnalyzerListeners] ADD [ConnectionMode] nvarchar(20) NOT NULL DEFAULT 'TcpServer';
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'SerialPortName')
+                                  ALTER TABLE [AnalyzerListeners] ADD [SerialPortName] nvarchar(20) NULL;
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'BaudRate')
+                                  ALTER TABLE [AnalyzerListeners] ADD [BaudRate] int NOT NULL DEFAULT 9600;
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'DataBits')
+                                  ALTER TABLE [AnalyzerListeners] ADD [DataBits] int NOT NULL DEFAULT 8;
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'Parity')
+                                  ALTER TABLE [AnalyzerListeners] ADD [Parity] nvarchar(max) NOT NULL DEFAULT 'None';
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'StopBits')
+                                  ALTER TABLE [AnalyzerListeners] ADD [StopBits] nvarchar(max) NOT NULL DEFAULT 'One';
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'Handshake')
+                                  ALTER TABLE [AnalyzerListeners] ADD [Handshake] nvarchar(max) NOT NULL DEFAULT 'None';
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'WatchFolderPath')
+                                  ALTER TABLE [AnalyzerListeners] ADD [WatchFolderPath] nvarchar(260) NULL;
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'WorklistMode')
+                                  ALTER TABLE [AnalyzerListeners] ADD [WorklistMode] nvarchar(30) NOT NULL DEFAULT 'Unidirectional';
+                              IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AnalyzerListeners') AND name = 'IsActive')
+                                  ALTER TABLE [AnalyzerListeners] ADD [IsActive] bit NOT NULL DEFAULT 1;
                           END"
                     };
 
@@ -431,12 +464,20 @@ namespace SynOS.Api.Controllers.Admin
                 // Ensure storage directories exist
                 EnsureDirectoriesExist(dto.DocumentStorageFolder, dto.WorkingDirectory);
 
-                // Create Admin User
-                var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "admin");
-                if (adminRole == null)
+                // Create or Preserve Admin User
+                var hasExistingUsers = await context.Users.AnyAsync();
+                if (!dto.IsReconnect || !hasExistingUsers)
                 {
-                    return StatusCode(500, new { message = "Seeded Admin role not found. Please contact support." });
-                }
+                    if (string.IsNullOrWhiteSpace(dto.AdminUsername) || string.IsNullOrWhiteSpace(dto.AdminPassword))
+                    {
+                        return BadRequest(new { message = "Administrator credentials are required for a fresh installation." });
+                    }
+
+                    var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "admin");
+                    if (adminRole == null)
+                    {
+                        return StatusCode(500, new { message = "Seeded Admin role not found. Please contact support." });
+                    }
 
                 User newUser = null;
                 var adminUsernameClean = dto.AdminUsername.Contains("@") ? dto.AdminUsername.Split('@')[0] : dto.AdminUsername;
@@ -512,7 +553,7 @@ namespace SynOS.Api.Controllers.Admin
                     existingUser.IsActive = true;
                 }
 
-                // Delete default seeded "admin" if different to prevent default security vulnerability
+                // Deactivate default seeded "admin" if a custom admin is configured, to prevent default credential vulnerability
                 if (!string.Equals(dto.AdminUsername, "admin", StringComparison.OrdinalIgnoreCase))
                 {
                     var defaultSeedAdmin = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == "admin");
@@ -529,32 +570,37 @@ namespace SynOS.Api.Controllers.Admin
                             template.CreatedBy = targetUserId;
                         }
 
-                        // Remove related UserWorkspaceAccesses
+                        // Deactivate default seed admin and scramble password so it can never be used to log in
+                        defaultSeedAdmin.IsActive = false;
+                        defaultSeedAdmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"));
+
+                        // Revoke workspace access
                         var uwa = await context.UserWorkspaceAccesses
                             .Where(x => x.UserId == defaultSeedAdmin.UserId)
                             .ToListAsync();
                         context.UserWorkspaceAccesses.RemoveRange(uwa);
 
-                        // Remove related UserRoles
+                        // Revoke roles
                         var ur = await context.UserRoles
                             .Where(x => x.UserId == defaultSeedAdmin.UserId)
                             .ToListAsync();
                         context.UserRoles.RemoveRange(ur);
 
-                        // Remove related UserBranchRoles
                         var ubr = await context.UserBranchRoles
                             .Where(x => x.UserId == defaultSeedAdmin.UserId)
                             .ToListAsync();
                         context.UserBranchRoles.RemoveRange(ubr);
 
-                        // Remove related Employees
+                        // Deactivate employee profile
                         var emp = await context.Employees
                             .Where(x => x.UserId == defaultSeedAdmin.UserId)
                             .ToListAsync();
-                        context.Employees.RemoveRange(emp);
-
-                        context.Users.Remove(defaultSeedAdmin);
+                        foreach (var e in emp)
+                        {
+                            e.IsActive = false;
+                        }
                     }
+                }
                 }
 
                 try
@@ -683,11 +729,6 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("test-db")]
         public async Task<IActionResult> TestDbConnection([FromBody] DbConnectionDto dto)
         {
-            if (CheckIsConfiguredViaStateFile())
-            {
-                return BadRequest(new { message = "System is already configured." });
-            }
-
             try
             {
                 var connBuilder = new SqlConnectionStringBuilder
@@ -719,14 +760,151 @@ namespace SynOS.Api.Controllers.Admin
             }
         }
 
+        [HttpPost("discover-databases")]
+        public async Task<IActionResult> DiscoverDatabases([FromBody] DiscoverDatabasesDto dto)
+        {
+            try
+            {
+                var server = string.IsNullOrWhiteSpace(dto?.Server) ? @".\SYNOS" : dto.Server;
+                var connBuilder = new SqlConnectionStringBuilder
+                {
+                    DataSource = server,
+                    InitialCatalog = "master",
+                    TrustServerCertificate = true,
+                    MultipleActiveResultSets = true,
+                    Encrypt = true
+                };
+
+                if (string.IsNullOrEmpty(dto?.User))
+                {
+                    connBuilder.IntegratedSecurity = true;
+                }
+                else
+                {
+                    connBuilder.UserID = dto.User;
+                    connBuilder.Password = dto.Password;
+                }
+
+                using var conn = new SqlConnection(connBuilder.ConnectionString);
+                await conn.OpenAsync();
+
+                var query = @"
+                    SELECT name 
+                    FROM sys.databases 
+                    WHERE state = 0 AND name NOT IN ('master', 'tempdb', 'model', 'msdb')
+                    ORDER BY create_date DESC";
+
+                var dbNames = new List<string>();
+                using (var cmd = new SqlCommand(query, conn))
+                using (var reader = await cmd.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        dbNames.Add(reader.GetString(0));
+                    }
+                }
+
+                var results = new List<DiscoveredDatabaseDto>();
+                foreach (var dbName in dbNames)
+                {
+                    try
+                    {
+                        var targetBuilder = new SqlConnectionStringBuilder(connBuilder.ConnectionString)
+                        {
+                            InitialCatalog = dbName
+                        };
+                        using var targetConn = new SqlConnection(targetBuilder.ConnectionString);
+                        await targetConn.OpenAsync();
+
+                        var checkQuery = @"
+                            SELECT 
+                                (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='Users') AS HasUsers,
+                                (SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME='LabProfiles') AS HasProfiles";
+
+                        bool hasUsersTable = false;
+                        bool hasProfilesTable = false;
+                        using (var checkCmd = new SqlCommand(checkQuery, targetConn))
+                        using (var reader = await checkCmd.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                hasUsersTable = !reader.IsDBNull(0) && reader.GetInt32(0) > 0;
+                                hasProfilesTable = !reader.IsDBNull(1) && reader.GetInt32(1) > 0;
+                            }
+                        }
+
+                        if (hasUsersTable)
+                        {
+                            int userCount = 0;
+                            var usernames = new List<string>();
+                            try
+                            {
+                                using (var userCmd = new SqlCommand("SELECT COUNT(*) FROM Users", targetConn))
+                                {
+                                    var val = await userCmd.ExecuteScalarAsync();
+                                    if (val != null && val != DBNull.Value) userCount = Convert.ToInt32(val);
+                                }
+                            }
+                            catch { }
+
+                            try
+                            {
+                                using (var adminCmd = new SqlCommand("SELECT TOP 5 Username FROM Users", targetConn))
+                                using (var reader = await adminCmd.ExecuteReaderAsync())
+                                {
+                                    while (await reader.ReadAsync())
+                                    {
+                                        if (!reader.IsDBNull(0)) usernames.Add(reader.GetString(0));
+                                    }
+                                }
+                            }
+                            catch { }
+
+                            string? labName = null;
+                            if (hasProfilesTable)
+                            {
+                                try
+                                {
+                                    using var labCmd = new SqlCommand("SELECT TOP 1 Name FROM LabProfiles", targetConn);
+                                    var labVal = await labCmd.ExecuteScalarAsync();
+                                    if (labVal != null && labVal != DBNull.Value) labName = labVal.ToString();
+                                }
+                                catch { }
+                            }
+
+                            results.Add(new DiscoveredDatabaseDto
+                            {
+                                Name = dbName,
+                                HasUsers = userCount > 0,
+                                UserCount = userCount,
+                                LabName = labName,
+                                AdminUsernames = usernames
+                            });
+                        }
+                        else if (dbName.Contains("SynOS", StringComparison.OrdinalIgnoreCase))
+                        {
+                            results.Add(new DiscoveredDatabaseDto
+                            {
+                                Name = dbName,
+                                HasUsers = false,
+                                UserCount = 0
+                            });
+                        }
+                    }
+                    catch { }
+                }
+
+                return Ok(new { success = true, databases = results });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = ex.Message, databases = new List<DiscoveredDatabaseDto>() });
+            }
+        }
+
         [HttpPost("test-path")]
         public async Task<IActionResult> TestPathPermissions([FromBody] PathDto dto)
         {
-            if (CheckIsConfiguredViaStateFile())
-            {
-                return BadRequest(new { message = "System is already configured." });
-            }
-
             try
             {
                 if (string.IsNullOrEmpty(dto.Path))
@@ -750,67 +928,142 @@ namespace SynOS.Api.Controllers.Admin
         [HttpPost("test-middleware")]
         public async Task<IActionResult> TestMiddlewareConnection([FromBody] MiddlewareDto dto)
         {
-            if (CheckIsConfiguredViaStateFile())
-            {
-                return BadRequest(new { message = "System is already configured." });
-            }
-
             try
             {
-                var connStr = _configuration.GetConnectionString("DefaultConnection");
-                if (string.IsNullOrWhiteSpace(connStr))
+                if (string.IsNullOrWhiteSpace(dto.ApiKey))
                 {
-                    return BadRequest(new { success = false, message = "DefaultConnection configuration string is missing." });
+                    return Ok(new { success = false, message = "Activation Key is required." });
                 }
 
-                var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
-                optionsBuilder.UseSqlServer(connStr);
-                using var context = new SynOSDbContext(optionsBuilder.Options);
+                var rawKey = dto.ApiKey.Trim();
+                var apiUrl = !string.IsNullOrWhiteSpace(dto.ApiUrl)
+                    ? dto.ApiUrl
+                    : (_configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events");
 
-                var profile = await context.LabProfiles.FirstOrDefaultAsync();
-                var success = await _licenseRecoveryService.ValidateKeyAndSyncProfileAsync(dto.ApiKey, context, profile);
+                var validateUrl = apiUrl.Replace("/api/events", "/api/labs/validate");
+                var urlsToTry = new List<string> { validateUrl };
+                if (!urlsToTry.Contains("http://localhost:5069/api/labs/validate")) urlsToTry.Add("http://localhost:5069/api/labs/validate");
+                if (!urlsToTry.Contains("http://127.0.0.1:5069/api/labs/validate")) urlsToTry.Add("http://127.0.0.1:5069/api/labs/validate");
 
-                if (success)
+                HttpResponseMessage? response = null;
+                using var client = new HttpClient(new SocketsHttpHandler
                 {
-                    var updatedProfile = await context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+                    ConnectCallback = async (connContext, token) =>
+                    {
+                        var entry = await System.Net.Dns.GetHostEntryAsync(connContext.DnsEndPoint.Host, System.Net.Sockets.AddressFamily.InterNetwork, token);
+                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+                        await socket.ConnectAsync(entry.AddressList[0], connContext.DnsEndPoint.Port, token);
+                        return new System.Net.Sockets.NetworkStream(socket, true);
+                    }
+                });
+
+                foreach (var targetUrl in urlsToTry)
+                {
+                    try
+                    {
+                        using var req = new HttpRequestMessage(HttpMethod.Post, targetUrl);
+                        req.Headers.Add("X-Api-Key", rawKey);
+                        var res = await client.SendAsync(req);
+                        if (res.IsSuccessStatusCode)
+                        {
+                            response = res;
+                            break;
+                        }
+                        else if (response == null)
+                        {
+                            response = res;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore connection failure on fallback url
+                    }
+                }
+
+                if (response != null && response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(responseBody);
+                    var root = doc.RootElement;
+
+                    var labId = root.TryGetProperty("labId", out var idProp) ? idProp.GetString() : null;
+                    var licenseStatus = root.TryGetProperty("licenseStatus", out var licProp) ? licProp.GetString() : "ACTIVE";
+                    var licenseType = root.TryGetProperty("licenseType", out var typeProp) ? typeProp.GetString() : "COMMERCIAL";
+                    int maximumBranches = 1;
+                    if (root.TryGetProperty("maximumBranches", out var maxProp) && maxProp.TryGetInt32(out var mv))
+                        maximumBranches = mv;
+                    else if (root.TryGetProperty("MaximumBranches", out var maxProp2) && maxProp2.TryGetInt32(out var mv2))
+                        maximumBranches = mv2;
+                    var expiryDate = root.TryGetProperty("expiryDate", out var expProp) && expProp.ValueKind != JsonValueKind.Null ? expProp.GetString() : null;
+
+                    var enabledFeatures = new List<string>();
+                    if (root.TryGetProperty("enabledFeatures", out var featProp) && featProp.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var item in featProp.EnumerateArray())
+                        {
+                            var str = item.GetString();
+                            if (str != null) enabledFeatures.Add(str);
+                        }
+                    }
+
+                    // Attempt graceful local profile sync if DB already exists (optional, non-fatal if DB not yet created)
+                    try
+                    {
+                        var connStr = _configuration.GetConnectionString("DefaultConnection");
+                        if (!string.IsNullOrWhiteSpace(connStr))
+                        {
+                            var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
+                            optionsBuilder.UseSqlServer(connStr);
+                            using var context = new SynOSDbContext(optionsBuilder.Options);
+                            var profile = await context.LabProfiles.FirstOrDefaultAsync();
+                            if (profile != null)
+                            {
+                                await _licenseRecoveryService.ValidateKeyAndSyncProfileAsync(rawKey, context, profile);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Database is not yet created on fresh install Step 1; ignored gracefully
+                    }
+
                     return Ok(new 
                     { 
                         success = true, 
                         message = "License activation successful.",
-                        labId = updatedProfile?.LabId,
-                        licenseStatus = updatedProfile?.LicenseStatus,
-                        licenseType = updatedProfile?.LicenseType,
-                        maximumBranches = updatedProfile?.MaximumBranches,
-                        expiryDate = updatedProfile?.LicenseExpiryDate,
-                        enabledFeatures = updatedProfile?.EnabledFeatures
+                        labId = labId,
+                        licenseStatus = licenseStatus,
+                        licenseType = licenseType,
+                        maximumBranches = maximumBranches,
+                        expiryDate = expiryDate,
+                        enabledFeatures = enabledFeatures
                     });
                 }
                 else
                 {
-                    return Ok(new { success = false, message = SynOS.Services.Security.MiddlewareSyncHealth.LastError ?? "License activation failed." });
+                    return Ok(new { success = false, message = "Invalid or unrecognized activation key. Please verify the key from TBZ Control Tower." });
                 }
             }
             catch (Exception ex)
             {
-                return Ok(new { success = false, message = ex.Message });
+                return Ok(new { success = false, message = $"Activation error: {ex.Message}" });
             }
         }
 
         [HttpGet("defaults")]
         public async Task<IActionResult> GetConfigDefaults()
         {
-            if (CheckIsConfiguredViaStateFile())
-            {
-                return BadRequest(new { message = "System is already configured." });
-            }
-
             try
             {
                 var connStr = _configuration.GetConnectionString("DefaultConnection");
                 var server = "localhost";
-                var database = "SynOSDb";
+                var database = "SynOSDb-1";
                 var user = "sa";
                 var password = "";
+                string? detectedKey = null;
+                bool hasExistingUsers = false;
+                int userCount = 0;
+                string? labName = null;
 
                 if (!string.IsNullOrEmpty(connStr))
                 {
@@ -821,6 +1074,31 @@ namespace SynOS.Api.Controllers.Admin
                         database = builder.InitialCatalog;
                         user = builder.UserID;
                         password = builder.Password;
+
+                        var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
+                        optionsBuilder.UseSqlServer(connStr);
+                        using var dbContext = new SynOSDbContext(optionsBuilder.Options);
+                        if (await dbContext.Database.CanConnectAsync())
+                        {
+                            var profile = await dbContext.LabProfiles.FirstOrDefaultAsync();
+                            if (profile != null)
+                            {
+                                labName = profile.Name;
+                                if (!string.IsNullOrWhiteSpace(profile.LicenseKey))
+                                {
+                                    detectedKey = LicenseKeyProtector.Unprotect(profile.LicenseKey);
+                                }
+                            }
+                            try
+                            {
+                                hasExistingUsers = await dbContext.Users.AnyAsync();
+                                if (hasExistingUsers)
+                                {
+                                    userCount = await dbContext.Users.CountAsync();
+                                }
+                            }
+                            catch { }
+                        }
                     }
                     catch { }
                 }
@@ -838,7 +1116,11 @@ namespace SynOS.Api.Controllers.Admin
                     pacsStorageFolder = pacsFolder,
                     documentStorageFolder = docFolder,
                     workingDirectory = workingDir,
-                    middlewareApiUrl = "https://cloud.tbzlabs.in/api/events"
+                    middlewareApiUrl = "https://cloud.tbzlabs.in/api/events",
+                    detectedLicenseKey = detectedKey,
+                    hasExistingUsers = hasExistingUsers,
+                    userCount = userCount,
+                    labName = labName
                 });
             }
             catch (Exception ex)
@@ -993,6 +1275,7 @@ namespace SynOS.Api.Controllers.Admin
 
     public class SetupInitializeDto
     {
+        public bool IsReconnect { get; set; } = false;
         public string DatabaseServer { get; set; } = null!;
         public string DatabaseName { get; set; } = null!;
         public string DatabaseUser { get; set; } = null!;
@@ -1012,8 +1295,8 @@ namespace SynOS.Api.Controllers.Admin
         public string PacsStorageFolder { get; set; } = null!;
         public string WorkingDirectory { get; set; } = null!;
 
-        public string AdminUsername { get; set; } = null!;
-        public string AdminPassword { get; set; } = null!;
+        public string? AdminUsername { get; set; }
+        public string? AdminPassword { get; set; }
     }
 
     public class SetupStateDto
@@ -1024,5 +1307,21 @@ namespace SynOS.Api.Controllers.Admin
         public string? DatabaseName { get; set; }
         public string? AdminUsername { get; set; }
         public bool Completed { get; set; }
+    }
+
+    public class DiscoverDatabasesDto
+    {
+        public string? Server { get; set; }
+        public string? User { get; set; }
+        public string? Password { get; set; }
+    }
+
+    public class DiscoveredDatabaseDto
+    {
+        public string Name { get; set; } = null!;
+        public bool HasUsers { get; set; }
+        public int UserCount { get; set; }
+        public string? LabName { get; set; }
+        public List<string> AdminUsernames { get; set; } = new();
     }
 }

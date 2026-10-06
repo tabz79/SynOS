@@ -16,7 +16,6 @@ namespace SynOS.ServerManager
         private const string ServiceName = "TBZSynOSService";
         private const string HealthUrl = "http://localhost:59999/health";
         private const string LoginUrl = "http://localhost:59999/login";
-        private const string ConnectionString = "Server=.\\SYNOS;Database=SynOSDb-1;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=3;";
         private const string LogDirectory = @"C:\ProgramData\TBZ Labs\SynOS\Logs";
 
         private readonly DispatcherTimer _healthTimer;
@@ -53,6 +52,52 @@ namespace SynOS.ServerManager
                 await RefreshHealthStateAsync();
                 RefreshLogStream();
             };
+        }
+
+        private string GetDynamicConnectionString(out string displayDbName)
+        {
+            try
+            {
+                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+                var candidatePaths = new[]
+                {
+                    Path.Combine(appDir, "appsettings.json"),
+                    Path.Combine(Directory.GetParent(appDir)?.FullName ?? appDir, "appsettings.json"),
+                    @"C:\Program Files\TBZ Labs\SynOS\appsettings.json"
+                };
+
+                foreach (var settingsPath in candidatePaths)
+                {
+                    if (File.Exists(settingsPath))
+                    {
+                        var jsonText = File.ReadAllText(settingsPath);
+                        using var doc = System.Text.Json.JsonDocument.Parse(jsonText);
+                        if (doc.RootElement.TryGetProperty("ConnectionStrings", out var csProp) &&
+                            csProp.TryGetProperty("DefaultConnection", out var defaultConnProp))
+                        {
+                            var connStr = defaultConnProp.GetString();
+                            if (!string.IsNullOrWhiteSpace(connStr))
+                            {
+                                try
+                                {
+                                    var builder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(connStr);
+                                    var server = string.IsNullOrWhiteSpace(builder.DataSource) ? "." : builder.DataSource;
+                                    displayDbName = $"SQL Server ({server})";
+                                    return connStr;
+                                }
+                                catch
+                                {
+                                    displayDbName = "SQL Server (Configured)";
+                                    return connStr;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch {}
+            displayDbName = "SQL Server (Local)";
+            return "Server=.;Database=SynOSDb;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=3;";
         }
 
         private async Task RefreshHealthStateAsync()
@@ -114,7 +159,9 @@ namespace SynOS.ServerManager
             {
                 try
                 {
-                    using var conn = new Microsoft.Data.SqlClient.SqlConnection(ConnectionString);
+                    var connStr = GetDynamicConnectionString(out string displayDbName);
+                    Dispatcher.Invoke(() => { DbSubtitleText.Text = displayDbName; });
+                    using var conn = new Microsoft.Data.SqlClient.SqlConnection(connStr);
                     conn.Open();
                     using var cmd = conn.CreateCommand();
                     cmd.CommandText = "SELECT 1";
@@ -204,20 +251,32 @@ namespace SynOS.ServerManager
         {
             try
             {
-                if (!Directory.Exists(LogDirectory))
+                var candidateDirs = new[]
                 {
-                    TxtLogs.Text = "Log directory does not exist: " + LogDirectory;
-                    return;
-                }
+                    @"C:\SynOS_Files\Logs",
+                    @"C:\ProgramData\TBZ Labs\SynOS\Logs",
+                    Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs")
+                };
 
-                var latestFile = new DirectoryInfo(LogDirectory)
-                    .GetFiles("synos-api-*.txt")
-                    .OrderByDescending(f => f.LastWriteTime)
-                    .FirstOrDefault();
+                FileInfo? latestFile = null;
+                foreach (var dir in candidateDirs)
+                {
+                    if (Directory.Exists(dir))
+                    {
+                        var file = new DirectoryInfo(dir)
+                            .GetFiles("synos-*.txt")
+                            .OrderByDescending(f => f.LastWriteTime)
+                            .FirstOrDefault();
+                        if (file != null && (latestFile == null || file.LastWriteTime > latestFile.LastWriteTime))
+                        {
+                            latestFile = file;
+                        }
+                    }
+                }
 
                 if (latestFile == null)
                 {
-                    TxtLogs.Text = "No log files found in " + LogDirectory;
+                    TxtLogs.Text = "System is starting up. Logs will appear here once service initializes.";
                     return;
                 }
 
@@ -227,7 +286,13 @@ namespace SynOS.ServerManager
 
                 var lines = content.Split('\n');
                 var lastLines = lines.Skip(Math.Max(0, lines.Length - 100));
-                TxtLogs.Text = string.Join("\n", lastLines);
+
+                bool isRunning = CheckServiceStatus(out var statusStr);
+                var header = $"[Log File: {latestFile.FullName} | Last Modified: {latestFile.LastWriteTime:yyyy-MM-dd HH:mm:ss} | Service: {statusStr}]\n" +
+                             (isRunning ? "" : "[NOTICE: Service is currently STOPPED. Logs below represent previous session output.]\n") +
+                             "----------------------------------------------------------------------------------------------------\n";
+
+                TxtLogs.Text = header + string.Join("\n", lastLines);
                 TxtLogs.ScrollToEnd();
             }
             catch (Exception ex)
@@ -240,20 +305,25 @@ namespace SynOS.ServerManager
         {
             try
             {
+                var psCommand = verb == "start"
+                    ? $"Start-Service -Name '{ServiceName}' -ErrorAction Stop"
+                    : $"Stop-Service -Name '{ServiceName}' -Force -ErrorAction Stop";
+
                 var psi = new ProcessStartInfo
                 {
-                    FileName = "cmd.exe",
-                    Arguments = $"/c net {verb} {ServiceName}",
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{psCommand}\"",
                     Verb = "runas",
                     UseShellExecute = true,
                     CreateNoWindow = true,
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
-                Process.Start(psi);
+                var proc = Process.Start(psi);
+                proc?.WaitForExit(10000);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to {verb} service: {ex.Message}", "Elevation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"Failed to {verb} service: {ex.Message}", "Service Control Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

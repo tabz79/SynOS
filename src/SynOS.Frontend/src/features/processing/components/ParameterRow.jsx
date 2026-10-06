@@ -14,8 +14,15 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
                     <input
                         ref={inputRef}
                         type="text"
+                        inputMode="decimal"
                         value={value}
-                        onChange={(e) => onChange(e.target.value)}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            // DEF-002: Only allow valid non-negative decimal numbers or empty
+                            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                onChange(val);
+                            }
+                        }}
                         onKeyDown={onKeyDown}
                         disabled={isDisabled}
                         className={cn(

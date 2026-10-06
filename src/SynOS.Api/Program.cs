@@ -50,18 +50,38 @@ using SynOS.Services.Inventory; // ADDED
 using SynOS.Services.Time; // ADDED
 
 System.IO.Directory.SetCurrentDirectory(System.AppContext.BaseDirectory);
-var builder = WebApplication.CreateBuilder(args);
-builder.Host.UseWindowsService();
 
-var isSetupMode = args.Contains("--setup");
-if (isSetupMode)
+var isSetupModeEarly = args.Contains("--setup");
+var earlyLogDir = AppContext.BaseDirectory.Contains("Program Files", StringComparison.OrdinalIgnoreCase) 
+    ? "C:\\SynOS_Files\\Logs" 
+    : System.IO.Path.Combine(AppContext.BaseDirectory, "Logs");
+try { System.IO.Directory.CreateDirectory(earlyLogDir); } catch {}
+var earlyLogFileName = isSetupModeEarly ? "synos-setup-.txt" : "synos-api-.txt";
+var earlyLogPath = System.IO.Path.Combine(earlyLogDir, earlyLogFileName);
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(earlyLogPath, rollingInterval: RollingInterval.Day, shared: true)
+    .CreateLogger();
+
+Log.Information("=== SynOS starting up (BaseDirectory: {BaseDir}) ===", AppContext.BaseDirectory);
+
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
-    builder.WebHost.UseUrls($"http://*:{SynOS.Api.Services.SystemSetupState.SetupPort}");
-}
-else
-{
-    builder.WebHost.UseUrls($"http://*:{SynOS.Api.Services.SystemSetupState.ServicePort}");
-}
+    Args = args,
+    ContentRootPath = System.AppContext.BaseDirectory
+});
+builder.Host.UseWindowsService();
+builder.Host.UseSerilog();
+
+var isSetupMode = isSetupModeEarly;
+var envPort = Environment.GetEnvironmentVariable("SYNOS_PORT");
+int activePort = !string.IsNullOrEmpty(envPort) && int.TryParse(envPort, out var p) 
+    ? p 
+    : (isSetupMode ? SynOS.Api.Services.SystemSetupState.SetupPort : SynOS.Api.Services.SystemSetupState.ServicePort);
+builder.WebHost.UseUrls($"http://*:{activePort}");
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrEmpty(connectionString))
@@ -110,7 +130,20 @@ if (!isSetupMode && !string.IsNullOrEmpty(connectionString) && !connectionString
             var count = Convert.ToInt32(cmd.ExecuteScalar());
             conn.Close();
             Console.WriteLine($"[Setup-Diag] sys.tables LabProfiles count={count}");
-            if (count > 0) isConfigured = true;
+            if (count > 0)
+            {
+                isConfigured = true;
+                try
+                {
+                    Console.WriteLine("[Boot-Schema] Ensuring schema tables and missing columns exist before service start...");
+                    DbInitializer.EnsureTablesAndColumnsCreated(context);
+                    Console.WriteLine("[Boot-Schema] Schema verified successfully.");
+                }
+                catch (Exception schemaEx)
+                {
+                    Console.WriteLine($"[Boot-Schema] Non-fatal warning verifying schema: {schemaEx.Message}");
+                }
+            }
         }
         catch (Exception connEx)
         {
@@ -128,29 +161,20 @@ Console.WriteLine($"[Setup-Diag] Final isConfigured={isConfigured}");
 
 SynOS.Api.Services.SystemSetupState.IsConfigured = isConfigured;
 
-if (!isSetupMode && !isConfigured)
+if (!isConfigured)
 {
-    Console.WriteLine("CRITICAL: SynOS is not configured. Service mode requires a completed configuration. Terminating service immediately.");
-    System.Environment.Exit(1);
+    Console.WriteLine("[Setup-Boot] SynOS is running in initial bootstrap mode. Port 59999 is open to serve the Setup Wizard.");
 }
-
-if (isConfigured)
+else
 {
     var jwtSecret = builder.Configuration["Jwt:Secret"];
-    if (string.IsNullOrWhiteSpace(jwtSecret))
+    if (string.IsNullOrWhiteSpace(jwtSecret) || (!isDevelopment && (jwtSecret == "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET" || jwtSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET"))))
     {
-        throw new System.Security.Cryptography.CryptographicException("CRITICAL CONFIGURATION ERROR: JWT Secret is missing in configuration.");
-    }
-
-    var middlewareApiKey = builder.Configuration["Middleware:ApiKey"];
-    var diagnosticsKey = builder.Configuration["Diagnostics:EncryptionKey"];
-
-    if (!isDevelopment)
-    {
-        if (jwtSecret == "REPLACE_THIS_WITH_A_REAL_SECRET_REPLACE_THIS_WITH_A_REAL_SECRET" || jwtSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET"))
-        {
-            throw new InvalidOperationException("Production Secret Validation Failed: JWT Secret is using default/placeholder value in non-Development environment.");
-        }
+        Log.Warning("Production Secret Validation: JWT Secret was unset or using placeholder. Generating secure ephemeral key for runtime...");
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        var secretBytes = new byte[64];
+        rng.GetBytes(secretBytes);
+        builder.Configuration["Jwt:Secret"] = Convert.ToBase64String(secretBytes);
     }
 }
 
@@ -185,23 +209,78 @@ if (args.Contains("--check-db"))
     return;
 }
 
-// Configure Serilog
-var logDir = AppContext.BaseDirectory.Contains("Program Files", StringComparison.OrdinalIgnoreCase) 
-    ? "C:\\SynOS_Files\\Logs" 
-    : Path.Combine(AppContext.BaseDirectory, "Logs");
-Directory.CreateDirectory(logDir);
-var logFileName = isSetupMode ? "synos-setup-.txt" : "synos-api-.txt";
-var logPath = Path.Combine(logDir, logFileName);
+if (args.Contains("--migrate-db"))
+{
+    var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connStr))
+    {
+        var appSettingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+        if (File.Exists(appSettingsPath))
+        {
+            var jsonText = File.ReadAllText(appSettingsPath);
+            using var doc = System.Text.Json.JsonDocument.Parse(jsonText);
+            if (doc.RootElement.TryGetProperty("ConnectionStrings", out var cs) &&
+                cs.TryGetProperty("DefaultConnection", out var cp))
+            {
+                connStr = cp.GetString();
+            }
+        }
+    }
 
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-builder.Host.UseSerilog();
+    if (!string.IsNullOrWhiteSpace(connStr) && !connStr.Contains("YOUR_SERVER"))
+    {
+        Console.WriteLine("[Migrate-Db] Connecting to database to apply schema and migrations...");
+        var options = new DbContextOptionsBuilder<SynOSDbContext>().UseSqlServer(connStr).Options;
+        using var ctx = new SynOSDbContext(options);
+        try
+        {
+            ctx.Database.Migrate();
+            Console.WriteLine("[Migrate-Db] EF Core migrations applied successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Migrate-Db] EF Core migration warning: {ex.Message}");
+        }
+
+        try
+        {
+            DbInitializer.EnsureTablesAndColumnsCreated(ctx);
+            Console.WriteLine("[Migrate-Db] Schema tables and missing columns ensured successfully.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Migrate-Db] EnsureTablesAndColumnsCreated warning: {ex.Message}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("[Migrate-Db] No configured database connection found. Skipping.");
+    }
+    return;
+}
+
+// Re-configure Serilog using application configuration if available
+try
+{
+    Log.Logger = new LoggerConfiguration()
+        .ReadFrom.Configuration(builder.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console()
+        .WriteTo.File(earlyLogPath, rollingInterval: RollingInterval.Day, shared: true)
+        .CreateLogger();
+}
+catch (Exception serilogEx)
+{
+    Log.Warning(serilogEx, "Failed to re-read Serilog configuration from appsettings, retaining bootstrap logger.");
+}
 
 // Add services to the container.
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+    options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+});
+
 builder.Services.Configure<FormOptions>(options =>
 {
     options.MultipartBodyLengthLimit = 524288000; // 500 MB
@@ -249,7 +328,8 @@ builder.Services.AddSwaggerGen(option =>
 // Configure DbContext
 builder.Services.AddDbContext<SynOSDbContext>(options =>
 {
-    options.UseSqlServer(connectionString)
+    var activeConnStr = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : "Server=.;Database=SynOSDb;Trusted_Connection=True;TrustServerCertificate=True";
+    options.UseSqlServer(activeConnStr)
            .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor());
 
     if (isDevelopment)
@@ -261,9 +341,12 @@ builder.Services.AddDbContext<SynOSDbContext>(options =>
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
-var secret = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret not configured.");
-var issuer = jwtSettings["Issuer"];
-var audience = jwtSettings["Audience"];
+var rawSecret = jwtSettings["Secret"];
+var secret = (!string.IsNullOrWhiteSpace(rawSecret) && !rawSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET"))
+    ? rawSecret
+    : "SynOS_Bootstrap_Secret_Key_For_Initial_Setup_Must_Be_Overridden_By_Setup_Wizard_64_Characters_Long";
+var issuer = jwtSettings["Issuer"] ?? "SynOS.Api";
+var audience = jwtSettings["Audience"] ?? "SynOS.Client";
 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
 builder.Services.AddAuthentication(options =>
@@ -689,14 +772,17 @@ appLifetime.ApplicationStarted.Register(() =>
 {
     if (isSetupMode)
     {
-        try
+        if (Environment.UserInteractive)
         {
-            var url = $"http://localhost:{SynOS.Api.Services.SystemSetupState.SetupPort}/setup";
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to automatically open browser: {ex.Message}");
+            try
+            {
+                var url = $"http://localhost:{SynOS.Api.Services.SystemSetupState.SetupPort}/setup";
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to automatically open browser: {ex.Message}");
+            }
         }
     }
     else
@@ -902,4 +988,19 @@ _ = Task.Run(async () =>
 });
 
 app.MapFallbackToFile("index.html");
-app.Run();
+
+try
+{
+    Log.Information("Starting SynOS Web Application Host...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "SynOS Host terminated unexpectedly during runtime or startup!");
+    throw;
+}
+finally
+{
+    Log.Information("SynOS Web Application Host is stopping. Flushing logs.");
+    Log.CloseAndFlush();
+}

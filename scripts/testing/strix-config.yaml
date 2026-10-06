@@ -1,0 +1,27 @@
+# Strix Security Assessment Configuration - Local SynOS Testing
+# Target: Local SynOS Development / Staging Instance Only
+target:
+  name: "SynOS Laboratory Intelligence System (Local Dev/Staging)"
+  url: "http://localhost:59999"
+  openapi_spec: "http://localhost:59999/swagger/v1/swagger.json"
+
+scope:
+  include:
+    - "http://localhost:59999/api/*"
+    - "http://localhost:59999/swagger/*"
+  exclude:
+    - "http://localhost:59999/api/v1/setup/test-middleware*"  # Exclude external cloud middleware testing
+    - "https://cloud.tbzlabs.in/*"                            # Strictly isolate from external cloud services
+    - "https://*.tbzlabs.in/*"
+    - "http*://*thirdparty*"
+
+boundaries:
+  environment: "local-staging"
+  allow_destructive_actions: false
+  allow_data_purge: false
+  allow_outbound_network: false
+
+auth:
+  # Credentials must be provided via environment variables at runtime, never hardcoded in repository
+  login_endpoint: "http://localhost:59999/api/v1/auth/login"
+  test_tenant_header: "X-Tenant-Id"

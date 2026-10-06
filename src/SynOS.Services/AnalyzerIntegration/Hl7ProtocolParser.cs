@@ -19,8 +19,9 @@ namespace SynOS.Services.AnalyzerIntegration
 
             try
             {
-                var segments = rawMessage.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                         .Select(s => s.TrimEnd('\r')) // Remove carriage return
+                var normalized = rawMessage.Replace("\r\n", "\n").Replace('\r', '\n');
+                var segments = normalized.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(s => s.Trim())
                                          .ToList();
 
                 // Extract Patient Identifier from PID segment
@@ -35,30 +36,38 @@ namespace SynOS.Services.AnalyzerIntegration
                     }
                 }
 
-                // Extract result from OBX segment
-                var obxSegment = segments.FirstOrDefault(s => s.StartsWith("OBX|"));
-                if (obxSegment == null)
+                // Extract results from all OBX segments
+                var obxSegments = segments.Where(s => s.StartsWith("OBX|")).ToList();
+                if (!obxSegments.Any())
                 {
                     result.ErrorMessage = "No OBX segment found in HL7 message.";
                     _logger.LogWarning("HL7 parsing failed: {ErrorMessage}", result.ErrorMessage);
                     return result;
                 }
 
-                var obxFields = obxSegment.Split('|');
+                foreach (var obxSeg in obxSegments)
+                {
+                    var obxFields = obxSeg.Split('|');
+                    if (obxFields.Length > 5)
+                    {
+                        var item = new AnalyzerParsedResultItem
+                        {
+                            AnalyzerTestCode = obxFields[3].Split('^').FirstOrDefault()?.Trim(),
+                            Value = obxFields[5]?.Trim(),
+                            Units = obxFields.Length > 6 ? obxFields[6]?.Trim() : null,
+                            Flags = obxFields.Length > 8 ? obxFields[8]?.Trim() : null
+                        };
 
-                // OBX|1|NM|HGB^Hemoglobin||13.1|g/dL|N||
-                if (obxFields.Length > 4)
-                {
-                    result.AnalyzerTestCode = obxFields[3].Split('^').FirstOrDefault(); // OBX-3.1
-                    result.Value = obxFields[5]; // OBX-5
-                }
-                if (obxFields.Length > 6)
-                {
-                    result.Units = obxFields[6]; // OBX-6
-                }
-                if (obxFields.Length > 8)
-                {
-                    result.Flags = obxFields[8]; // OBX-8
+                        result.SubResults.Add(item);
+
+                        if (string.IsNullOrEmpty(result.AnalyzerTestCode))
+                        {
+                            result.AnalyzerTestCode = item.AnalyzerTestCode;
+                            result.Value = item.Value;
+                            result.Units = item.Units;
+                            result.Flags = item.Flags;
+                        }
+                    }
                 }
             }
             catch (Exception ex)

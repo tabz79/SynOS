@@ -21,51 +21,60 @@ namespace SynOS.Services.AnalyzerIntegration
             try
             {
                 // ASTM messages often contain multiple lines (segments)
-                var segments = rawMessage.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                                         .Select(s => s.TrimEnd('\r')) // Remove carriage return
+                // Normalize carriage returns and line feeds to support standard \r\n as well as classical RS-232 \r-only
+                var normalized = rawMessage.Replace("\r\n", "\n").Replace('\r', '\n');
+                var segments = normalized.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(s => s.Trim())
                                          .ToList();
 
-                // Find result segment (R-segment)
-                var rSegment = segments.FirstOrDefault(s => s.StartsWith("R|"));
-                if (rSegment == null)
+                // Find result segments (R-segments)
+                var rSegments = segments.Where(s => s.StartsWith("R|")).ToList();
+                if (!rSegments.Any())
                 {
                     result.ErrorMessage = "No R-segment found in ASTM message.";
                     _logger.LogWarning("ASTM parsing failed: {ErrorMessage}", result.ErrorMessage);
                     return result;
                 }
 
-                var rFields = rSegment.Split('|');
-
                 // Patient Identifier (from P-segment, if available)
                 var pSegment = segments.FirstOrDefault(s => s.StartsWith("P|"));
                 if (pSegment != null)
                 {
                     var pFields = pSegment.Split('|');
-                    // Assuming patient identifier is in P|1|1 (patient sequence number, could be MRN)
-                    // Or P|1|||LAST^FIRST^MIDDLE. For now, let's try P|1|1
+                    // Look for Patient ID in P|3 (Patient ID segment) or P|2
                     if (pFields.Length > 2)
                     {
-                        // A common place for MRN is P|1|1 or P|3 in some variations
-                        // For this basic implementation, let's look for Patient ID in P|3 (Patient ID segment)
-                        // Example: P|1|MRN123^^^LabID
-                        result.PatientIdentifier = pFields.Length > 2 ? pFields[2].Split('^').FirstOrDefault() : null;
+                        result.PatientIdentifier = pFields.Length > 3 && !string.IsNullOrWhiteSpace(pFields[3])
+                            ? pFields[3].Split('^').FirstOrDefault()?.Trim()
+                            : pFields[2].Split('^').FirstOrDefault()?.Trim();
                     }
                 }
 
-                // Extract result from R-segment
-                // R|1|^^^HGB|12.8|g/dL|H|
-                if (rFields.Length > 3)
+                // Extract all R-segments
+                foreach (var rSeg in rSegments)
                 {
-                    result.AnalyzerTestCode = rFields[2].Split('^').LastOrDefault(); // e.g., ^^^HGB -> HGB
-                    result.Value = rFields[3];
-                }
-                if (rFields.Length > 4)
-                {
-                    result.Units = rFields[4];
-                }
-                if (rFields.Length > 5)
-                {
-                    result.Flags = rFields[5];
+                    var rFields = rSeg.Split('|');
+                    if (rFields.Length > 3)
+                    {
+                        var item = new AnalyzerParsedResultItem
+                        {
+                            AnalyzerTestCode = rFields[2].Split('^').LastOrDefault()?.Trim(),
+                            Value = rFields[3]?.Trim(),
+                            Units = rFields.Length > 4 ? rFields[4]?.Trim() : null,
+                            Flags = rFields.Length > 5 ? rFields[5]?.Trim() : null
+                        };
+
+                        result.SubResults.Add(item);
+
+                        // If primary result fields aren't populated yet, set them to the first item for backwards compatibility
+                        if (string.IsNullOrEmpty(result.AnalyzerTestCode))
+                        {
+                            result.AnalyzerTestCode = item.AnalyzerTestCode;
+                            result.Value = item.Value;
+                            result.Units = item.Units;
+                            result.Flags = item.Flags;
+                        }
+                    }
                 }
             }
             catch (Exception ex)

@@ -14,7 +14,7 @@ DefaultDirName=C:\Program Files\TBZ Labs\SynOS
 DefaultGroupName=SynOS
 DisableProgramGroupPage=yes
 OutputDir=.
-OutputBaseFilename=SynOS_Setup_v233_full_radiology_suite
+OutputBaseFilename=SynOS_Setup_v239_testing
 Compression=lzma
 SolidCompression=yes
 UninstallDisplayIcon={app}\SynOS.ico
@@ -67,6 +67,8 @@ Source: "scripts\installer-config.ps1"; DestDir: "{app}\scripts"; Flags: ignorev
 Source: "scripts\configure-settings.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
 Source: "scripts\export-config.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
 Source: "scripts\import-config.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
+Source: "scripts\discover-databases.ps1"; DestDir: "{tmp}"; Flags: dontcopy
+Source: "scripts\discover-databases.ps1"; DestDir: "{app}\scripts"; Flags: ignoreversion
 Source: "scripts\eula.txt"; DestDir: "{app}\scripts"; Flags: ignoreversion
 
 ; Bundled offline installer database package (Phase 1: Online/Offline build partition)
@@ -84,14 +86,16 @@ Name: "{group}\SynOS Server Manager"; Filename: "{app}\ServerManager\SynOS.Serve
 Name: "{group}\Uninstall SynOS"; Filename: "{uninstallexe}"; IconFilename: "{app}\SynOS.ico"; IconIndex: 0
 
 [Run]
-Filename: "net.exe"; Parameters: "start TBZSynOSService"; Flags: runhidden
-Filename: "{app}\SynOS.Api.exe"; Parameters: "--setup"; Description: "Configure and Launch SynOS Setup"; Flags: postinstall nowait runhidden; Check: NeedsFirstRunSetup
+Filename: "http://localhost:59999/setup"; Description: "Launch SynOS Setup in Web Browser"; Flags: postinstall shellexec skipifsilent; Check: NeedsFirstRunSetup
 Filename: "http://localhost:59999/login"; Description: "Launch SynOS in Web Browser"; Flags: postinstall shellexec skipifsilent; Check: not NeedsFirstRunSetup
 Filename: "{app}\ServerManager\SynOS.ServerManager.exe"; Description: "Launch SynOS Server Manager (Operations Console)"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 ; Run decommission script before removing application files
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\scripts\decommission.ps1"" -RemoveDb {code:GetRemoveDb} -RemoveReports {code:GetRemoveReports} -RemovePacs {code:GetRemovePacs} -RemoveBackups {code:GetRemoveBackups} -AppDir ""{app}"" -LogFile ""C:\ProgramData\TBZ Labs\SynOS\Logs\decommission.log"" -InstanceName ""{code:GetSelectedInstance}"""; Flags: runhidden; RunOnceId: "DecommissionService"
+
+[UninstallDelete]
+Type: files; Name: "C:\ProgramData\TBZ Labs\SynOS\Config\setup_state.json"
 
 [Code]
 var
@@ -117,7 +121,9 @@ var
   btnDownloadSql, btnCheckSql: TNewButton;
   
   DbConfigPage: TWizardPage;
-  txtDbName, txtUser, txtPass: TEdit;
+  rbUseExistingDb, rbCreateNewDb: TRadioButton;
+  cbDbName: TNewComboBox;
+  txtNewDbName, txtUser, txtPass: TEdit;
   cbAuthType: TNewComboBox;
   lblUser, lblPass: TLabel;
   
@@ -513,38 +519,152 @@ begin
   UpdateSqlPrereqStatus;
 end;
 
+procedure PopulateDatabasesForInstance(InstanceName: String);
+var
+  ScriptPath, OutPath, LineStr: String;
+  Lines: TArrayOfString;
+  I, ExitCode: Integer;
+  FoundDefault: Boolean;
+begin
+  cbDbName.Items.Clear;
+  if not FileExists(ExpandConstant('{tmp}\discover-databases.ps1')) then
+  begin
+    ExtractTemporaryFile('discover-databases.ps1');
+  end;
+  ScriptPath := ExpandConstant('{tmp}\discover-databases.ps1');
+  OutPath := ExpandConstant('{tmp}\synos_dbs.txt');
+  
+  if FileExists(OutPath) then
+    DeleteFile(OutPath);
+    
+  Exec('powershell.exe', '-ExecutionPolicy Bypass -File "' + ScriptPath + '" -InstanceName "' + InstanceName + '" -OutputFile "' + OutPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+  
+  FoundDefault := False;
+  if FileExists(OutPath) then
+  begin
+    if LoadStringsFromFile(OutPath, Lines) then
+    begin
+      for I := 0 to GetArrayLength(Lines) - 1 do
+      begin
+        LineStr := Trim(Lines[I]);
+        if LineStr <> '' then
+        begin
+          cbDbName.Items.Add(LineStr);
+          if CompareText(LineStr, 'SynOSDb-1') = 0 then
+            FoundDefault := True;
+        end;
+      end;
+    end;
+    DeleteFile(OutPath);
+  end;
+  
+  if cbDbName.Items.Count > 0 then
+  begin
+    rbUseExistingDb.Enabled := True;
+    rbUseExistingDb.Checked := True;
+    cbDbName.Enabled := True;
+    rbCreateNewDb.Checked := False;
+    txtNewDbName.Enabled := False;
+    
+    if FoundDefault then
+    begin
+      for I := 0 to cbDbName.Items.Count - 1 do
+      begin
+        if CompareText(cbDbName.Items[I], 'SynOSDb-1') = 0 then
+        begin
+          cbDbName.ItemIndex := I;
+          break;
+        end;
+      end;
+    end
+    else
+    begin
+      cbDbName.ItemIndex := 0;
+    end;
+  end
+  else
+  begin
+    rbUseExistingDb.Enabled := False;
+    rbUseExistingDb.Checked := False;
+    cbDbName.Enabled := False;
+    rbCreateNewDb.Checked := True;
+    txtNewDbName.Enabled := True;
+    txtNewDbName.Text := 'SynOSDb-1';
+  end;
+end;
+
+procedure DbChoiceChange(Sender: TObject);
+begin
+  cbDbName.Enabled := rbUseExistingDb.Checked;
+  txtNewDbName.Enabled := rbCreateNewDb.Checked;
+end;
+
+function GetSelectedDbName: String;
+begin
+  if rbCreateNewDb.Checked then
+  begin
+    Result := Trim(txtNewDbName.Text);
+    if Result = '' then Result := 'SynOSDb-New';
+  end
+  else
+  begin
+    Result := Trim(cbDbName.Text);
+    if Result = '' then Result := 'SynOSDb-1';
+  end;
+end;
+
 // RC3: SQL Authentication & DB Naming Page
 procedure CreateDbConfigPage;
 var
-  lblTitle, lblDb, lblAuth: TLabel;
+  lblTitle, lblAuth: TLabel;
 begin
   DbConfigPage := CreateCustomPage(SqlPrereqPage.ID, 'Database Configuration', 'Configure connection credentials for your SQL Server instance.');
 
   lblTitle := TLabel.Create(DbConfigPage);
   lblTitle.Parent := DbConfigPage.Surface;
   lblTitle.Font.Style := [fsBold];
-  lblTitle.Caption := 'Database Credentials:';
-  lblTitle.Top := ScaleY(10);
+  lblTitle.Caption := 'Choose Database Mode:';
+  lblTitle.Top := ScaleY(5);
   lblTitle.Left := ScaleX(10);
 
-  lblDb := TLabel.Create(DbConfigPage);
-  lblDb.Parent := DbConfigPage.Surface;
-  lblDb.Caption := 'Database Name:';
-  lblDb.Top := lblTitle.Top + ScaleY(25);
-  lblDb.Left := ScaleX(20);
+  rbUseExistingDb := TRadioButton.Create(DbConfigPage);
+  rbUseExistingDb.Parent := DbConfigPage.Surface;
+  rbUseExistingDb.Caption := 'Connect to an existing detected database (retains staff & clinic records):';
+  rbUseExistingDb.Checked := True;
+  rbUseExistingDb.Top := lblTitle.Top + ScaleY(22);
+  rbUseExistingDb.Left := ScaleX(15);
+  rbUseExistingDb.Width := DbConfigPage.SurfaceWidth - ScaleX(25);
+  rbUseExistingDb.OnClick := @DbChoiceChange;
 
-  txtDbName := TEdit.Create(DbConfigPage);
-  txtDbName.Parent := DbConfigPage.Surface;
-  txtDbName.Text := 'SynOSDb';
-  txtDbName.Top := lblDb.Top + ScaleY(18);
-  txtDbName.Left := ScaleX(20);
-  txtDbName.Width := ScaleX(180);
+  cbDbName := TNewComboBox.Create(DbConfigPage);
+  cbDbName.Parent := DbConfigPage.Surface;
+  cbDbName.Style := csDropDownList;
+  cbDbName.Top := rbUseExistingDb.Top + ScaleY(20);
+  cbDbName.Left := ScaleX(35);
+  cbDbName.Width := ScaleX(250);
+
+  rbCreateNewDb := TRadioButton.Create(DbConfigPage);
+  rbCreateNewDb.Parent := DbConfigPage.Surface;
+  rbCreateNewDb.Caption := 'Create a brand new database (clean setup for new facility):';
+  rbCreateNewDb.Checked := False;
+  rbCreateNewDb.Top := cbDbName.Top + ScaleY(28);
+  rbCreateNewDb.Left := ScaleX(15);
+  rbCreateNewDb.Width := DbConfigPage.SurfaceWidth - ScaleX(25);
+  rbCreateNewDb.OnClick := @DbChoiceChange;
+
+  txtNewDbName := TEdit.Create(DbConfigPage);
+  txtNewDbName.Parent := DbConfigPage.Surface;
+  txtNewDbName.Text := 'SynOSDb-New';
+  txtNewDbName.Top := rbCreateNewDb.Top + ScaleY(20);
+  txtNewDbName.Left := ScaleX(35);
+  txtNewDbName.Width := ScaleX(200);
+  txtNewDbName.Enabled := False;
 
   lblAuth := TLabel.Create(DbConfigPage);
   lblAuth.Parent := DbConfigPage.Surface;
   lblAuth.Caption := 'Authentication Mode:';
-  lblAuth.Top := txtDbName.Top + ScaleY(30);
-  lblAuth.Left := ScaleX(20);
+  lblAuth.Top := txtNewDbName.Top + ScaleY(28);
+  lblAuth.Left := ScaleX(15);
 
   cbAuthType := TNewComboBox.Create(DbConfigPage);
   cbAuthType.Parent := DbConfigPage.Surface;
@@ -553,38 +673,38 @@ begin
   cbAuthType.Items.Add('SQL Server Authentication');
   cbAuthType.ItemIndex := 0;
   cbAuthType.Top := lblAuth.Top + ScaleY(18);
-  cbAuthType.Left := ScaleX(20);
+  cbAuthType.Left := ScaleX(15);
   cbAuthType.Width := ScaleX(250);
   cbAuthType.OnChange := @AuthTypeChange;
 
   lblUser := TLabel.Create(DbConfigPage);
   lblUser.Parent := DbConfigPage.Surface;
   lblUser.Caption := 'SQL Username:';
-  lblUser.Top := cbAuthType.Top + ScaleY(30);
-  lblUser.Left := ScaleX(20);
+  lblUser.Top := cbAuthType.Top + ScaleY(26);
+  lblUser.Left := ScaleX(15);
   lblUser.Enabled := False;
 
   txtUser := TEdit.Create(DbConfigPage);
   txtUser.Parent := DbConfigPage.Surface;
   txtUser.Text := 'sa';
-  txtUser.Top := lblUser.Top + ScaleY(18);
-  txtUser.Left := ScaleX(20);
-  txtUser.Width := ScaleX(150);
+  txtUser.Top := lblUser.Top - ScaleY(3);
+  txtUser.Left := ScaleX(110);
+  txtUser.Width := ScaleX(100);
   txtUser.Enabled := False;
 
   lblPass := TLabel.Create(DbConfigPage);
   lblPass.Parent := DbConfigPage.Surface;
   lblPass.Caption := 'SQL Password:';
-  lblPass.Top := txtUser.Top + ScaleY(30);
-  lblPass.Left := ScaleX(20);
+  lblPass.Top := txtUser.Top + ScaleY(24);
+  lblPass.Left := ScaleX(15);
   lblPass.Enabled := False;
 
   txtPass := TEdit.Create(DbConfigPage);
   txtPass.Parent := DbConfigPage.Surface;
   txtPass.PasswordChar := '*';
-  txtPass.Top := lblPass.Top + ScaleY(18);
-  txtPass.Left := ScaleX(20);
-  txtPass.Width := ScaleX(150);
+  txtPass.Top := lblPass.Top - ScaleY(3);
+  txtPass.Left := ScaleX(110);
+  txtPass.Width := ScaleX(100);
   txtPass.Enabled := False;
 end;
 
@@ -699,6 +819,7 @@ begin
         exit;
       end;
       SelectedInstanceName := cbInstances.Items[cbInstances.ItemIndex];
+      PopulateDatabasesForInstance(SelectedInstanceName);
     end;
   end;
 
@@ -797,17 +918,18 @@ begin
     // 2. Run database connection configuration setup (Only if New Install and NOT importing config)
     if (InstallTypeVal = 0) and (not ImportConfigVal) then
     begin
+      DeleteFile('C:\ProgramData\TBZ Labs\SynOS\Config\setup_state.json');
       WizardForm.StatusLabel.Caption := 'Configuring appsettings.json connection profiles...';
       if UseExistingRadio.Checked then
       begin
         if cbAuthType.ItemIndex = 1 then DbAuthType := 'SQL' else DbAuthType := 'Windows';
         DbUser := txtUser.Text;
         DbPass := txtPass.Text;
-        ConfigParams := '-AppDir "' + AppPath + '" -DbName "' + txtDbName.Text + '" -InstanceName "' + SelectedInstanceName + '" -AuthType "' + DbAuthType + '" -Username "' + DbUser + '" -Password "' + DbPass + '" -PacsDir "' + PacsFolderPage.Values[0] + '"';
+        ConfigParams := '-AppDir "' + AppPath + '" -DbName "' + GetSelectedDbName + '" -InstanceName "' + SelectedInstanceName + '" -AuthType "' + DbAuthType + '" -Username "' + DbUser + '" -Password "' + DbPass + '" -PacsDir "' + PacsFolderPage.Values[0] + '"';
       end
       else
       begin
-        ConfigParams := '-AppDir "' + AppPath + '" -DbName "SynOSDb" -InstanceName "SYNOS" -AuthType "Windows" -PacsDir "' + PacsFolderPage.Values[0] + '"';
+        ConfigParams := '-AppDir "' + AppPath + '" -DbName "SynOSDb-1" -InstanceName "SYNOS" -AuthType "Windows" -PacsDir "' + PacsFolderPage.Values[0] + '"';
       end;
 
       RunPowerShellScript(ConfigScript, ConfigParams, ExitCode);
@@ -823,7 +945,11 @@ begin
     if (InstallTypeVal = 0) or (InstallTypeVal = 2) then
     begin
       WizardForm.StatusLabel.Caption := 'Registering TBZ Labs - SynOS service...';
-      Exec('sc.exe', 'create TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS" depend= MSSQL$SYNOS', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      Exec('sc.exe', 'create TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      if ExitCode = 1073 then
+      begin
+        Exec('sc.exe', 'config TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      end;
       if (ExitCode <> 0) and (ExitCode <> 1073) then
       begin
         InstallSuccess := False;
@@ -905,6 +1031,7 @@ begin
   UninstallForm.ClientHeight := ScaleY(280);
   UninstallForm.Caption := 'Decommission SynOS Data';
   UninstallForm.Position := poScreenCenter;
+  UninstallForm.FormStyle := fsStayOnTop;
 
   lblTitle := TLabel.Create(UninstallForm);
   lblTitle.Parent := UninstallForm;
@@ -927,7 +1054,7 @@ begin
   DbCheck.Top := lblDesc.Top + lblDesc.Height + ScaleY(20);
   DbCheck.Left := ScaleX(20);
   DbCheck.Width := UninstallForm.ClientWidth - ScaleX(40);
-  DbCheck.Caption := 'Remove local SQL Server Database (SynOSDb)';
+  DbCheck.Caption := 'Remove local SQL Server Database (SynOSDb-1)';
   DbCheck.Checked := False;
 
   ReportsCheck := TNewCheckBox.Create(UninstallForm);

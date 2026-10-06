@@ -29,13 +29,40 @@ namespace SynOS.Services.Reception
             // RegisterPatient = Create New Patient. Always.
             // The Frontend Search is responsible for displaying existing patients.
 
-            // 2. Name Handling (Culturally Safe)
-            // Legacy columns (FirstName/LastName) are required, so we provide safe defaults derived from input.
-            // DisplayName is the source of truth.
-            var rawName = request.Name?.Trim() ?? "Unknown";
+            // 2. Name Handling (Culturally Safe & Length Protected)
+            // Legacy columns (FirstName/LastName) are max 100 chars, DisplayName is max 256.
+            var rawName = (request.Name?.Trim() ?? "Unknown");
+            if (rawName.Length > 200)
+            {
+                rawName = rawName.Substring(0, 200).Trim();
+            }
+
             var names = rawName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
             var firstName = names.Length > 0 ? names[0] : "Unknown";
             var lastName = names.Length > 1 ? names[1] : ""; // Default if mononym
+
+            if (firstName.Length > 100) firstName = firstName.Substring(0, 100);
+            if (lastName.Length > 100) lastName = lastName.Substring(0, 100);
+
+            // Phone Sanitization & Validation
+            var rawPhone = request.Phone?.Trim() ?? "";
+            if (rawPhone.Length > 20) rawPhone = rawPhone.Substring(0, 20);
+
+            // DOB Sanity Bounds (DEF-003): cannot be in the future, cannot exceed 130 years ago
+            var now = DateTime.UtcNow.Date;
+            var minDob = now.AddYears(-130);
+            DateTime validDob = request.Dob ?? new DateTime(1900, 1, 1);
+            if (request.Dob.HasValue)
+            {
+                if (request.Dob.Value.Date > now)
+                {
+                    validDob = now; // Future DOB capped to today
+                }
+                else if (request.Dob.Value.Date < minDob)
+                {
+                    validDob = minDob; // Older than 130 years capped
+                }
+            }
 
             // 3. Generate MRN (Canonical Authority via Sequence + Base36)
             var nextMrn = await GenerateCanonicalMrnAsync();
@@ -48,22 +75,22 @@ namespace SynOS.Services.Reception
                 DisplayName = rawName,
                 FirstName = firstName,
                 LastName = lastName,
-                DateOfBirth = request.Dob ?? new DateTime(1900, 1, 1),
+                DateOfBirth = validDob,
                 IsDateOfBirthKnown = request.IsDateOfBirthKnown ?? request.Dob.HasValue,
                 Gender = request.Gender ?? "Unknown",
-                CurrentPhoneNumber = request.Phone,
+                CurrentPhoneNumber = rawPhone,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
             
             // Ensure phone history is initialized if phone is present
-             if (!string.IsNullOrEmpty(request.Phone))
+            if (!string.IsNullOrEmpty(rawPhone))
             {
-                 patient.PhoneHistory = new System.Collections.Generic.List<PatientPhoneHistory>
+                patient.PhoneHistory = new System.Collections.Generic.List<PatientPhoneHistory>
                 {
                     new PatientPhoneHistory
                     {
-                        PhoneNumber = request.Phone,
+                        PhoneNumber = rawPhone,
                         StartDate = DateTime.UtcNow
                     }
                 };

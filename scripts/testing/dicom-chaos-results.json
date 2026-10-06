@@ -1,0 +1,178 @@
+[
+  {
+    "id": "DICOM-01",
+    "name": "100-Slice Rapid Burst",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingested 100/100 slices in 7.71s (13.0 slices/sec)",
+    "timestamp": "2026-10-05T10:56:47.306049"
+  },
+  {
+    "id": "DICOM-02",
+    "name": "10 Concurrent Modality Associations",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "10/10 concurrent associations completed in 2.42s",
+    "timestamp": "2026-10-05T10:56:49.726157"
+  },
+  {
+    "id": "DICOM-03",
+    "name": "Reconnect Storm & Mid-Transfer Abort",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Successfully reconnected and ingested slice 2 after hard abort on slice 1",
+    "timestamp": "2026-10-05T10:56:50.450149"
+  },
+  {
+    "id": "DICOM-04",
+    "name": "Series UID Collision (Conflicting Modality)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Both slices accepted (CT st=0, MR st=0). SynOS series entity handles conflicting modalities.",
+    "timestamp": "2026-10-05T10:56:50.773064"
+  },
+  {
+    "id": "DICOM-05",
+    "name": "SOP UID Collision (Altered Payload)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Re-transmission with altered payload returned st1=0, st2=0. Filesystem overwrites file cleanly.",
+    "timestamp": "2026-10-05T10:56:51.108822"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Missing StudyInstanceUID",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:51.525228"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Missing SeriesInstanceUID",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:51.583519"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Missing SOPInstanceUID",
+    "status": "FAIL",
+    "severity": "INFO",
+    "details": "Client-side or serialization error: Unable to send the dataset as one or more required element are missing: SOPInstanceUID",
+    "timestamp": "2026-10-05T10:56:51.584422"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Missing Modality",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:51.642002"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Empty PatientID",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:51.714685"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Empty PatientName",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:51.794808"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Empty StudyDescription",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:51.992485"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Whitespace-only PatientID",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:52.063673"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Extremely Long Patient Name (500 chars)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:52.128416"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Special/Unicode Characters in Patient Name",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:52.232249"
+  },
+  {
+    "id": "DICOM-06",
+    "name": "Tag Fuzzing: Invalid/Impossible Study Date (99999999)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Returned Status: 0",
+    "timestamp": "2026-10-05T10:56:52.294593"
+  },
+  {
+    "id": "DICOM-07",
+    "name": "AE Title Variation: Calling AE: UNKNOWN_SCANNER_99",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Association accepted and processed C-STORE (Status 0). SynOS is AE-agnostic.",
+    "timestamp": "2026-10-05T10:56:52.556355"
+  },
+  {
+    "id": "DICOM-07",
+    "name": "AE Title Variation: Called AE: WRONG_CALLED_AET",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Association accepted and processed C-STORE (Status 0). SynOS is AE-agnostic.",
+    "timestamp": "2026-10-05T10:56:52.792461"
+  },
+  {
+    "id": "DICOM-07",
+    "name": "AE Title Variation: Calling AE: Extremely Long (30 chars)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Association accepted and processed C-STORE (Status 0). SynOS is AE-agnostic.",
+    "timestamp": "2026-10-05T10:56:53.379614"
+  },
+  {
+    "id": "DICOM-07",
+    "name": "AE Title Variation: Calling AE: Special Chars (!@#$)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Association accepted and processed C-STORE (Status 0). SynOS is AE-agnostic.",
+    "timestamp": "2026-10-05T10:56:53.622378"
+  },
+  {
+    "id": "DICOM-08",
+    "name": "Out-of-Order Instance Numbers",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Ingested slices with non-sequential instance numbers: [42, 1, 999, 5, 2, 88, 3]",
+    "timestamp": "2026-10-05T10:56:54.390464"
+  },
+  {
+    "id": "DICOM-09",
+    "name": "Large Payload (512x512 matrix / 524KB)",
+    "status": "PASS",
+    "severity": "INFO",
+    "details": "Transmitted 524KB slice. Status: 0",
+    "timestamp": "2026-10-05T10:56:54.726743"
+  }
+]

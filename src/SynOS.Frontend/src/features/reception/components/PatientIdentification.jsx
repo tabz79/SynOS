@@ -265,8 +265,23 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.name || !formData.mobile) {
+        const cleanName = (formData.name || '').trim();
+        const cleanMobile = (formData.mobile || '').trim();
+
+        if (!cleanName || !cleanMobile) {
             setError("Name and Mobile are required");
+            return;
+        }
+
+        if (cleanName.length > 100) {
+            setError("Name cannot exceed 100 characters");
+            return;
+        }
+
+        // Phone validation: 10-15 digits
+        const phoneRegex = /^[0-9]{10,15}$/;
+        if (!phoneRegex.test(cleanMobile)) {
+            setError("Mobile number must be a valid 10 to 15 digit number");
             return;
         }
 
@@ -274,24 +289,40 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
         let isDateOfBirthKnown = true;
         let finalAge = null;
 
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
         if (entryMode === "dob") {
             if (!dob) {
                 setError("Date of Birth is required");
+                return;
+            }
+            if (dob > todayStr) {
+                setError("Date of Birth cannot be in the future");
+                return;
+            }
+            const birthYear = new Date(dob).getFullYear();
+            if (birthYear < today.getFullYear() - 130) {
+                setError("Date of Birth cannot be older than 130 years");
                 return;
             }
             finalDob = dob;
             isDateOfBirthKnown = true;
             
             // simple year difference for fallback
-            const diffYears = new Date().getFullYear() - new Date(dob).getFullYear();
+            const diffYears = today.getFullYear() - birthYear;
             finalAge = diffYears >= 0 ? diffYears : 0;
         } else {
             if (!age || isNaN(parseInt(age, 10))) {
                 setError("Age is required");
                 return;
             }
-            isDateOfBirthKnown = false;
             const num = parseInt(age, 10);
+            if (num < 0 || num > 130) {
+                setError("Age must be between 0 and 130");
+                return;
+            }
+            isDateOfBirthKnown = false;
             const d = new Date();
             if (ageUnit === "Years") {
                 d.setFullYear(d.getFullYear() - num);
@@ -342,6 +373,8 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                     <div className="relative">
                         <User className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
                         <input
+                            type="text"
+                            maxLength={100}
                             className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 outline-none", ui.input)}
                             placeholder="e.g. Rahul Sharma"
                             value={formData.name}
@@ -356,6 +389,8 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                     <div>
                         <label className={ui.label}>Mobile <span className="text-red-400">*</span></label>
                         <input
+                            type="tel"
+                            maxLength={15}
                             className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
                             placeholder="987..."
                             value={formData.mobile}

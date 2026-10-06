@@ -153,21 +153,36 @@ namespace SynOS.Api.BackgroundServices
                         return;
                     }
 
-                    var manualResultDto = new Models.DTOs.LabAnalyzers.ManualAnalyzerResultDto
-                    {
-                        RawMessage = parsedResult.RawMessage,
-                        PatientIdentifier = parsedResult.PatientIdentifier,
-                        AnalyzerTestCode = parsedResult.AnalyzerTestCode,
-                        ResultValue = parsedResult.Value,
-                        Units = parsedResult.Units,
-                        Flags = parsedResult.Flags,
-                        MeasuredAt = DateTimeOffset.UtcNow // Assuming measurement time is now if not in parsed result
-                    };
+                    var itemsToEnqueue = parsedResult.SubResults.Any()
+                        ? parsedResult.SubResults
+                        : new List<AnalyzerParsedResultItem>
+                        {
+                            new AnalyzerParsedResultItem
+                            {
+                                AnalyzerTestCode = parsedResult.AnalyzerTestCode,
+                                Value = parsedResult.Value,
+                                Units = parsedResult.Units,
+                                Flags = parsedResult.Flags
+                            }
+                        };
 
-                    // Use currentUserId = Guid.Empty since it's from machine, or a specific system user ID
-                    await labAnalyzerService.EnqueueManualResultAsync(analyzerId, manualResultDto, Guid.Empty); 
-                    logger.LogInformation("Successfully enqueued result from Analyzer {AnalyzerId}, Protocol {Protocol}. Patient: {PatientIdentifier}, Test: {TestCode}",
-                        analyzerId, protocolType, parsedResult.PatientIdentifier, parsedResult.AnalyzerTestCode);
+                    foreach (var item in itemsToEnqueue)
+                    {
+                        var manualResultDto = new Models.DTOs.LabAnalyzers.ManualAnalyzerResultDto
+                        {
+                            RawMessage = parsedResult.RawMessage,
+                            PatientIdentifier = parsedResult.PatientIdentifier,
+                            AnalyzerTestCode = item.AnalyzerTestCode,
+                            ResultValue = item.Value,
+                            Units = item.Units,
+                            Flags = item.Flags,
+                            MeasuredAt = DateTimeOffset.UtcNow
+                        };
+
+                        await labAnalyzerService.EnqueueManualResultAsync(analyzerId, manualResultDto, Guid.Empty);
+                        logger.LogInformation("Successfully enqueued result from Analyzer {AnalyzerId}, Protocol {Protocol}. Patient: {PatientIdentifier}, Test: {TestCode}, Value: {Value}",
+                            analyzerId, protocolType, parsedResult.PatientIdentifier, item.AnalyzerTestCode, item.Value);
+                    }
                 }
                 catch (Exception ex)
                 {

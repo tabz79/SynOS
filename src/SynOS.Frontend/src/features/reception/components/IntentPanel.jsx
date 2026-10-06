@@ -237,8 +237,10 @@ export function IntentPanel() {
     };
 
     // UNIFIED FOOTER ACTION HANDLER
+    const [isActionSubmitting, setIsActionSubmitting] = useState(false);
+
     const handleUnifiedAction = async () => {
-        if (!snapshot?.billing) return;
+        if (!snapshot?.billing || isActionSubmitting) return;
 
         // 1. CONFIRM & LOCK PREPAID
         if (isPrepaidIntent && !snapshot.billing.isLocked) {
@@ -246,11 +248,12 @@ export function IntentPanel() {
             const hasReferralIdentity = snapshot.billing.referral?.partner || snapshot.billing?.referral?.draft;
 
             if (!hasReferralIdentity) {
-                alert("For Prepaid visits, you MUST select a Referral Partner or add a Draft.");
+                setError("For Prepaid visits, you MUST select a Referral Partner or add a Draft.");
                 return;
             }
 
             setIsLoading(true);
+            setIsActionSubmitting(true);
             try {
                 await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
                 
@@ -258,8 +261,10 @@ export function IntentPanel() {
                 handleClearPatient(); 
                 closePanel(); 
             } catch (err) {
-                alert(err.message);
+                setError(err.message);
                 setIsLoading(false);
+            } finally {
+                setIsActionSubmitting(false);
             }
             return;
         }
@@ -267,14 +272,17 @@ export function IntentPanel() {
         // 2. CHECKOUT (ACCEPT PAYMENT)
         if (canCheckout && !snapshot.billing.isLocked) {
             setIsLoading(true);
+            setIsActionSubmitting(true);
             try {
                 await ReceptionApi.collectPayment(snapshot.visit.visitId, remainingDue, paymentMethod);
 
                 handleClearPatient();
                 closePanel();
             } catch (err) {
-                alert(err.message);
+                setError(err.message);
                 setIsLoading(false);
+            } finally {
+                setIsActionSubmitting(false);
             }
             return;
         }
@@ -420,16 +428,16 @@ export function IntentPanel() {
                     hasVisit && (
                         <button
                             onClick={handleUnifiedAction}
-                            disabled={!isActionEnabled || isLoading}
+                            disabled={!isActionEnabled || isLoading || isActionSubmitting}
                             className={cn(
                                 "w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mx-auto",
                                 hasPatient ? "max-w-md" : "w-full",
-                                isActionEnabled
+                                (isActionEnabled && !isActionSubmitting)
                                     ? ui.actionBtn.enabled
                                     : ui.actionBtn.disabled
                             )}
                         >
-                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                            {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                 <>
                                     {mainActionLabel} <ArrowRight className="w-4 h-4" />
                                 </>

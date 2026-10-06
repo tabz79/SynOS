@@ -33,18 +33,38 @@ namespace SynOS.Api.BackgroundServices
         {
             _logger.LogInformation("Serial Port Listener Service (RS-232 ASTM/HL7) starting...");
 
+            try
+            {
+                // Allow initial host startup and background database migrations to complete
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                try
+                if (SynOS.Api.Services.SystemSetupState.IsConfigured)
                 {
-                    await SyncSerialListenersAsync(stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error syncing serial port listeners.");
+                    try
+                    {
+                        await SyncSerialListenersAsync(stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Error syncing serial port listeners (will retry).");
+                    }
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
 
             CloseAllPorts();
@@ -56,9 +76,18 @@ namespace SynOS.Api.BackgroundServices
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
 
-            var serialConfigs = context.AnalyzerListeners
-                .Where(l => l.IsActive && l.ConnectionMode == "SerialCom" && !string.IsNullOrEmpty(l.SerialPortName))
-                .ToList();
+            List<AnalyzerListener> serialConfigs;
+            try
+            {
+                serialConfigs = context.AnalyzerListeners
+                    .Where(l => l.IsActive && l.ConnectionMode == "SerialCom" && !string.IsNullOrEmpty(l.SerialPortName))
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not query AnalyzerListeners table (database may be initializing).");
+                return;
+            }
 
             var activeIds = serialConfigs.Select(c => c.AnalyzerId).ToHashSet();
 
@@ -161,18 +190,36 @@ namespace SynOS.Api.BackgroundServices
                 if (parsedResult != null && string.IsNullOrEmpty(parsedResult.ErrorMessage))
                 {
                     parsedResult.AnalyzerId = analyzerId;
-                    var manualResultDto = new Models.DTOs.LabAnalyzers.ManualAnalyzerResultDto
+
+                    var itemsToEnqueue = parsedResult.SubResults.Any()
+                        ? parsedResult.SubResults
+                        : new List<AnalyzerParsedResultItem>
+                        {
+                            new AnalyzerParsedResultItem
+                            {
+                                AnalyzerTestCode = parsedResult.AnalyzerTestCode,
+                                Value = parsedResult.Value,
+                                Units = parsedResult.Units,
+                                Flags = parsedResult.Flags
+                            }
+                        };
+
+                    foreach (var item in itemsToEnqueue)
                     {
-                        RawMessage = rawMessage,
-                        PatientIdentifier = parsedResult.PatientIdentifier,
-                        AnalyzerTestCode = parsedResult.AnalyzerTestCode,
-                        ResultValue = parsedResult.Value,
-                        Units = parsedResult.Units,
-                        Flags = parsedResult.Flags
-                    };
-                    await labAnalyzerService.EnqueueManualResultAsync(analyzerId, manualResultDto, Guid.Empty);
-                    _logger.LogInformation("RS-232 Serial Ingest: Enqueued result from Analyzer {AnalyzerId}. Patient: {PatientIdentifier}, Test: {TestCode}",
-                        analyzerId, parsedResult.PatientIdentifier, parsedResult.AnalyzerTestCode);
+                        var manualResultDto = new Models.DTOs.LabAnalyzers.ManualAnalyzerResultDto
+                        {
+                            RawMessage = rawMessage,
+                            PatientIdentifier = parsedResult.PatientIdentifier,
+                            AnalyzerTestCode = item.AnalyzerTestCode,
+                            ResultValue = item.Value,
+                            Units = item.Units,
+                            Flags = item.Flags
+                        };
+
+                        await labAnalyzerService.EnqueueManualResultAsync(analyzerId, manualResultDto, Guid.Empty);
+                        _logger.LogInformation("RS-232 Serial Ingest: Enqueued result from Analyzer {AnalyzerId}. Patient: {PatientIdentifier}, Test: {TestCode}, Value: {Value}",
+                            analyzerId, parsedResult.PatientIdentifier, item.AnalyzerTestCode, item.Value);
+                    }
                 }
             }
             catch (Exception ex)

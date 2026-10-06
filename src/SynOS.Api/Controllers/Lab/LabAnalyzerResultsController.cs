@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs.LabAnalyzers;
+using SynOS.Models.Entities;
 using SynOS.Models.Enums;
 using SynOS.Services;
 using SynOS.Services.AnalyzerIntegration;
@@ -82,20 +83,38 @@ namespace SynOS.Api.Controllers.Lab
                 return BadRequest(_mapper.Map<ManualResultEnqueueResponseDto>(errorInboxItem));
             }
 
-            // If parsing successful, enqueue as Pending
-            var manualResultDto = new ManualAnalyzerResultDto
-            {
-                RawMessage = parsedResult.RawMessage,
-                PatientIdentifier = parsedResult.PatientIdentifier,
-                AnalyzerTestCode = parsedResult.AnalyzerTestCode,
-                ResultValue = parsedResult.Value,
-                Units = parsedResult.Units,
-                Flags = parsedResult.Flags,
-                MeasuredAt = DateTimeOffset.UtcNow // Assuming measurement time is now if not in parsed result
-            };
+            // If parsing successful, enqueue all parsed analytes as Pending
+            var itemsToEnqueue = parsedResult.SubResults.Any()
+                ? parsedResult.SubResults
+                : new List<AnalyzerParsedResultItem>
+                {
+                    new AnalyzerParsedResultItem
+                    {
+                        AnalyzerTestCode = parsedResult.AnalyzerTestCode,
+                        Value = parsedResult.Value,
+                        Units = parsedResult.Units,
+                        Flags = parsedResult.Flags
+                    }
+                };
 
-            var inboxItem = await _labAnalyzerService.EnqueueManualResultAsync(analyzerId, manualResultDto, currentUserId);
-            return Ok(_mapper.Map<ManualResultEnqueueResponseDto>(inboxItem));
+            LabAnalyzerResultInbox? lastInboxItem = null;
+            foreach (var item in itemsToEnqueue)
+            {
+                var manualResultDto = new ManualAnalyzerResultDto
+                {
+                    RawMessage = parsedResult.RawMessage,
+                    PatientIdentifier = parsedResult.PatientIdentifier,
+                    AnalyzerTestCode = item.AnalyzerTestCode,
+                    ResultValue = item.Value,
+                    Units = item.Units,
+                    Flags = item.Flags,
+                    MeasuredAt = DateTimeOffset.UtcNow
+                };
+
+                lastInboxItem = await _labAnalyzerService.EnqueueManualResultAsync(analyzerId, manualResultDto, currentUserId);
+            }
+
+            return Ok(_mapper.Map<ManualResultEnqueueResponseDto>(lastInboxItem));
         }
 
         [HttpGet("inbox")]

@@ -73,6 +73,32 @@ namespace SynOS.Data.Migrations
                     b.Property<Guid>("AnalyzerId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("BaudRate")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConnectionMode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("DataBits")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Handshake")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HostIpAddress")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Parity")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Port")
                         .HasColumnType("int");
 
@@ -80,6 +106,23 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SerialPortName")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("StopBits")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WatchFolderPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("WorklistMode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.HasKey("AnalyzerListenerId");
 
@@ -3612,6 +3655,59 @@ namespace SynOS.Data.Migrations
                     b.ToTable("OutboxEvents");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsImportAuditLog", b =>
+                {
+                    b.Property<Guid>("AuditLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ImagesImported")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ImagesSkipped")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ImportedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RadiologyStudyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SeriesCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudyInstanceUid")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WarningCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WarningsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("AuditLogId");
+
+                    b.HasIndex("ImportedAt");
+
+                    b.HasIndex("RadiologyStudyId");
+
+                    b.ToTable("PacsImportAuditLogs");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.PACS.PacsInstance", b =>
                 {
                     b.Property<Guid>("InstanceId")
@@ -3691,6 +3787,9 @@ namespace SynOS.Data.Migrations
 
                     b.HasIndex("RadiologyStudyId");
 
+                    b.HasIndex("RadiologyStudyId", "SopInstanceUid")
+                        .IsUnique();
+
                     b.HasIndex("SeriesId", "SopInstanceUid");
 
                     b.ToTable("PacsInstances");
@@ -3751,7 +3850,8 @@ namespace SynOS.Data.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.HasIndex("RadiologyStudyId", "StudyInstanceUid", "SeriesInstanceUid");
+                    b.HasIndex("RadiologyStudyId", "SeriesInstanceUid")
+                        .IsUnique();
 
                     b.ToTable("PacsSeries");
                 });
@@ -4913,6 +5013,68 @@ namespace SynOS.Data.Migrations
                     b.ToTable("RadiologyImages");
                 });
 
+            modelBuilder.Entity("SynOS.Models.Entities.RadiologyModality", b =>
+                {
+                    b.Property<Guid>("ModalityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AeTitle")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("AllowCStore")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowMwl")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("HostIpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ModalityType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("Port")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ModalityId");
+
+                    b.ToTable("RadiologyModalities");
+                });
+
             modelBuilder.Entity("SynOS.Models.Entities.RadiologyReport", b =>
                 {
                     b.Property<Guid>("ReportId")
@@ -5828,6 +5990,10 @@ namespace SynOS.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SnapshotMetadataJson")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
 
                     b.Property<string>("TemplateJson")
                         .IsRequired()
@@ -8322,7 +8488,7 @@ namespace SynOS.Data.Migrations
                     b.HasOne("SynOS.Models.Entities.RadiologyStudy", "RadiologyStudy")
                         .WithMany()
                         .HasForeignKey("RadiologyStudyId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("SynOS.Models.Entities.PACS.PacsSeries", "PacsSeries")
