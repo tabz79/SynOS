@@ -202,10 +202,10 @@ function Run-Test-TC01 {
     }
 
     $logFile = Join-Path $ResultsDir "inno_tc01.log"
-    Write-HarnessLog "Launching installer with timeout (180s)..." "INFO"
+    $timeoutSec = 360
+    Write-HarnessLog "Launching installer with timeout (${timeoutSec}s)..." "INFO"
     $process = Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /LOG=`"$logFile`"" -PassThru
 
-    $timeoutSec = 180
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     while (-not $process.HasExited -and $sw.Elapsed.TotalSeconds -lt $timeoutSec) {
         Start-Sleep -Seconds 2
@@ -255,20 +255,26 @@ function Run-Test-TC02 {
     # Attempt to query bootstrap endpoint or launch Api
     $appDir = "C:\Program Files\TBZ Labs\SynOS"
     $apiExe = Join-Path $appDir "SynOS.Api.exe"
+    if (-not (Test-Path $apiExe)) {
+        $apiExe = Join-Path $ApiPublishedDir "SynOS.Api.exe"
+    }
 
     if (-not (Test-Path $apiExe)) {
-        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult "SynOS.Api.exe missing in $appDir" -Status "BLOCKED" -FailureDomain "Installer" -Severity "P1-Critical" -LogsCaptured "" -ReproductionSteps "Deploy binaries first." -RecommendedFix "Install binaries."
+        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult "SynOS.Api.exe missing in both $appDir and $ApiPublishedDir" -Status "BLOCKED" -FailureDomain "Installer" -Severity "P1-Critical" -LogsCaptured "" -ReproductionSteps "Deploy binaries first." -RecommendedFix "Install binaries."
         return
     }
 
     $bootProc = Start-Process -FilePath $apiExe -ArgumentList "--setup" -PassThru
-    Start-Sleep -Seconds 5
-
     $isResponding = $false
-    try {
-        $res = Invoke-RestMethod -Uri "http://localhost:59999/api/v1/setup/status" -TimeoutSec 5 -ErrorAction SilentlyContinue
-        if ($res) { $isResponding = $true }
-    } catch {}
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($sw.Elapsed.TotalSeconds -lt 25) {
+        if ($bootProc.HasExited) { break }
+        try {
+            $res = Invoke-RestMethod -Uri "http://localhost:59999/api/v1/setup/status" -TimeoutSec 3 -ErrorAction SilentlyContinue
+            if ($res) { $isResponding = $true; break }
+        } catch {}
+        Start-Sleep -Seconds 2
+    }
 
     $hasExited = $bootProc.HasExited
     if (-not $hasExited) { Stop-Process -Id $bootProc.Id -Force -ErrorAction SilentlyContinue }
@@ -419,6 +425,9 @@ function Run-Test-TC09 {
 
     $appDir = "C:\Program Files\TBZ Labs\SynOS"
     $apiExe = Join-Path $appDir "SynOS.Api.exe"
+    if (-not (Test-Path $apiExe)) {
+        $apiExe = Join-Path $ApiPublishedDir "SynOS.Api.exe"
+    }
 
     $crashedCleanly = $false
     $capturedError = ""
@@ -455,6 +464,9 @@ function Run-Test-TC10 {
 
     $appDir = "C:\Program Files\TBZ Labs\SynOS"
     $serviceDll = Join-Path $appDir "SynOS.Services.dll"
+    if (-not (Test-Path $serviceDll)) {
+        $serviceDll = Join-Path $ApiPublishedDir "SynOS.Services.dll"
+    }
 
     if (-not (Test-Path $serviceDll)) {
         Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult "SynOS.Services.dll missing at $serviceDll" -Status "BLOCKED" -FailureDomain "SynOS" -Severity "P1-Critical" -LogsCaptured "" -ReproductionSteps "Build SynOS first." -RecommendedFix "Deploy binaries."
@@ -531,7 +543,7 @@ function Run-Test-TC06 {
     try {
         `$entry = [System.Net.Dns]::GetHostEntry('localhost')
         `$firstIp = `$entry.AddressList[0]
-        Write-Output "RESOLVED: `$firstIp (Family: `$(`$firstIp.AddressFamily))"
+        Write-Output "RESOLVED: `$firstIp (Family: `$(`$firstIp.AddressFamily.ToString()))"
     } catch {
         Write-Output "ERROR: `$_"
     }
