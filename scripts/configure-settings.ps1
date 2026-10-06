@@ -59,14 +59,6 @@ try {
     }
 
     $dbServer = $serverName
-    # Force Shared Memory protocol (lpc:) for local connections to allow Windows Service (SYSTEM) authentication
-    if ($serverName -eq "." -or $serverName -eq "localhost" -or $serverName -eq "127.0.0.1" -or $serverName -like "*$env:COMPUTERNAME*") {
-        if ($serverName -eq ".") {
-            $dbServer = "lpc:."
-        } else {
-            $dbServer = "lpc:$serverName"
-        }
-    }
 
     $connStr = ""
     if ($AuthType -eq "SQL") {

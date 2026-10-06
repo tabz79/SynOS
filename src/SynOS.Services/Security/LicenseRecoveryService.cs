@@ -74,6 +74,12 @@ namespace SynOS.Services.Security
                 {
                     return decrypted;
                 }
+
+                // If unprotect failed (e.g. key was stored in plain text or DPAPI scope issue), check if raw key matches standard format
+                if (profile.LicenseKey.StartsWith("TBZ-", StringComparison.OrdinalIgnoreCase))
+                {
+                    return profile.LicenseKey;
+                }
             }
 
             var configKey = _configuration["Middleware:ApiKey"];
@@ -82,7 +88,7 @@ namespace SynOS.Services.Security
                 return configKey;
             }
 
-            return "TBZ-LAB-KEY-12345";
+            return string.Empty;
         }
 
         public async Task<bool> TriggerSelfHealingRecoveryAsync(SynOSDbContext dbContext, LabProfile? profile, CancellationToken stoppingToken = default, bool force = false)

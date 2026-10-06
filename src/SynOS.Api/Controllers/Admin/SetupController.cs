@@ -665,58 +665,62 @@ namespace SynOS.Api.Controllers.Admin
                 }
                 catch {}
 
-                // 2. Start the Windows Service
-                try
-                {
-                    Serilog.Log.Information("[Setup] Starting Windows Service (TBZSynOSService)...");
-                    using var sc = new System.ServiceProcess.ServiceController("TBZSynOSService");
-                    if (sc.Status != System.ServiceProcess.ServiceControllerStatus.Running && sc.Status != System.ServiceProcess.ServiceControllerStatus.StartPending)
-                    {
-                        try
-                        {
-                            sc.Start();
-                            Serilog.Log.Information("[Setup] Windows Service start command issued successfully.");
-                        }
-                        catch (Exception serviceEx)
-                        {
-                            Serilog.Log.Warning($"[Setup] Standard service start failed ({serviceEx.Message}). Attempting elevated startup...");
-                            // Fallback: Start the service via an elevated cmd process (triggers UAC if not elevated)
-                            var psi = new System.Diagnostics.ProcessStartInfo
-                            {
-                                FileName = "cmd.exe",
-                                Arguments = "/c net start TBZSynOSService",
-                                Verb = "runas",
-                                UseShellExecute = true,
-                                WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
-                            };
-                            using (var p = System.Diagnostics.Process.Start(psi))
-                            {
-                                if (p != null)
-                                {
-                                    await p.WaitForExitAsync();
-                                }
-                            }
-                            Serilog.Log.Information("[Setup] Elevated service start command completed.");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Serilog.Log.Error($"[Setup] Failed to start Windows Service: {ex.Message}");
-                }
-
-                // 3. Trigger self-termination after 1.5 seconds to ensure clean handover
-                _ = Task.Run(async () =>
-                {
-                    await Task.Delay(1500);
-                    Serilog.Log.Information("[Setup] Terminating setup server instance to force service handover...");
-                    Environment.Exit(0);
-                });
-
                 var host = Request.Host.Host ?? "localhost";
                 var servicePort = SynOS.Api.Services.SystemSetupState.ServicePort;
                 var serviceStatusUrl = $"http://{host}:{servicePort}/api/v1/setup/status";
                 var loginUrl = $"http://{host}:{servicePort}/login";
+
+                // 2. Perform service startup and port handover asynchronously after response is sent
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        // Allow 500ms for HTTP 200 response to cleanly flush across network
+                        await Task.Delay(500);
+
+                        Serilog.Log.Information("[Setup] Stopping setup server lifetime to release port 59999...");
+                        _lifetime.StopApplication();
+                        await Task.Delay(500);
+
+                        Serilog.Log.Information("[Setup] Starting Windows Service (TBZSynOSService)...");
+                        using var sc = new System.ServiceProcess.ServiceController("TBZSynOSService");
+                        if (sc.Status != System.ServiceProcess.ServiceControllerStatus.Running && sc.Status != System.ServiceProcess.ServiceControllerStatus.StartPending)
+                        {
+                            try
+                            {
+                                sc.Start();
+                                Serilog.Log.Information("[Setup] Windows Service start command issued successfully.");
+                            }
+                            catch (Exception serviceEx)
+                            {
+                                Serilog.Log.Warning($"[Setup] Standard service start failed ({serviceEx.Message}). Attempting elevated startup...");
+                                var psi = new System.Diagnostics.ProcessStartInfo
+                                {
+                                    FileName = "cmd.exe",
+                                    Arguments = "/c net start TBZSynOSService",
+                                    Verb = "runas",
+                                    UseShellExecute = true,
+                                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden
+                                };
+                                using var p = System.Diagnostics.Process.Start(psi);
+                                if (p != null)
+                                {
+                                    await p.WaitForExitAsync();
+                                }
+                                Serilog.Log.Information("[Setup] Elevated service start command completed.");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Serilog.Log.Error($"[Setup] Failed to transition to Windows Service: {ex.Message}");
+                    }
+                    finally
+                    {
+                        Serilog.Log.Information("[Setup] Terminating setup server process to finalize handover.");
+                        Environment.Exit(0);
+                    }
+                });
 
                 return Ok(new { success = true, serviceStatusUrl = serviceStatusUrl, loginUrl = loginUrl });
             }
@@ -950,10 +954,31 @@ namespace SynOS.Api.Controllers.Admin
                 {
                     ConnectCallback = async (connContext, token) =>
                     {
-                        var entry = await System.Net.Dns.GetHostEntryAsync(connContext.DnsEndPoint.Host, System.Net.Sockets.AddressFamily.InterNetwork, token);
-                        var socket = new System.Net.Sockets.Socket(System.Net.Sockets.AddressFamily.InterNetwork, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
-                        await socket.ConnectAsync(entry.AddressList[0], connContext.DnsEndPoint.Port, token);
-                        return new System.Net.Sockets.NetworkStream(socket, true);
+                        var addresses = await System.Net.Dns.GetHostAddressesAsync(connContext.DnsEndPoint.Host, token);
+                        var candidates = addresses.OrderBy(ip => ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 0 : 1).ToArray();
+
+                        System.Net.Sockets.SocketException? lastSocketEx = null;
+                        foreach (var targetIp in candidates)
+                        {
+                            var socket = new System.Net.Sockets.Socket(targetIp.AddressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp);
+                            try
+                            {
+                                await socket.ConnectAsync(targetIp, connContext.DnsEndPoint.Port, token);
+                                return new System.Net.Sockets.NetworkStream(socket, true);
+                            }
+                            catch (System.Net.Sockets.SocketException ex)
+                            {
+                                socket.Dispose();
+                                lastSocketEx = ex;
+                            }
+                            catch
+                            {
+                                socket.Dispose();
+                                throw;
+                            }
+                        }
+
+                        throw lastSocketEx ?? new System.Net.Sockets.SocketException((int)System.Net.Sockets.SocketError.HostNotFound);
                     }
                 });
 

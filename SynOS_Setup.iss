@@ -785,10 +785,10 @@ begin
     Result := True;
   end;
 
-  // Skip SQL Prerequisite page if using existing SQL instance or if SYNOS instance is already installed
+  // Skip SQL Prerequisite page if silent install, using existing SQL instance, or if SYNOS instance is already installed
   if PageID = SqlPrereqPage.ID then
   begin
-    if UseExistingRadio.Checked or IsSqlInstanceInstalled('SYNOS') then
+    if WizardSilent or UseExistingRadio.Checked or IsSqlInstanceInstalled('SYNOS') then
       Result := True;
   end;
 end;
@@ -814,7 +814,8 @@ begin
     begin
       if cbInstances.Items.Count = 0 then
       begin
-        MsgBox('No valid SQL Server instances were detected on this machine. Please select the automatic option to install SQL Server Express.', mbError, MB_OK);
+        if not WizardSilent then
+          MsgBox('No valid SQL Server instances were detected on this machine. Please select the automatic option to install SQL Server Express.', mbError, MB_OK);
         Result := False;
         exit;
       end;
@@ -825,7 +826,7 @@ begin
 
   if CurPageID = SqlPrereqPage.ID then
   begin
-    if not IsSqlInstanceInstalled('SYNOS') then
+    if (not WizardSilent) and (not IsSqlInstanceInstalled('SYNOS')) then
     begin
       MsgBox('The SQL Server instance ''SYNOS'' was not detected on this machine.' + #13#10 +
              'Please download and install SQL Server 2022 Express, naming the instance ''SYNOS'', and verify the status before clicking Next.', mbError, MB_OK);
@@ -882,8 +883,8 @@ procedure CurStepChanged(CurStep: TSetupStep);
 var
   ExitCode: Integer;
   AppPath: String;
-  VerifyScript, DecomScript, ConfigScript, ImportScript: String;
-  DecomParams, ConfigParams, ImportParams: String;
+  VerifyScript, DecomScript, ConfigScript, ImportScript, PrereqScript: String;
+  DecomParams, ConfigParams, ImportParams, PrereqParams: String;
   DbAuthType, DbUser, DbPass: String;
 begin
   if CurStep = ssInstall then
@@ -894,12 +895,27 @@ begin
   if CurStep = ssPostInstall then
   begin
     AppPath := ExpandConstant('{app}');
+    PrereqScript := AppPath + '\scripts\install-prereqs.ps1';
     VerifyScript := AppPath + '\scripts\verify-installation.ps1';
     DecomScript := AppPath + '\scripts\decommission.ps1';
     ConfigScript := AppPath + '\scripts\configure-settings.ps1';
     ImportScript := AppPath + '\scripts\import-config.ps1';
 
     InstallSuccess := True;
+
+    // 0. Automatically install SQL Server Express prerequisite if not present and using automatic install
+    if (InstallTypeVal = 0) and (not UseExistingRadio.Checked) and (not IsSqlInstanceInstalled('SYNOS')) then
+    begin
+      WizardForm.StatusLabel.Caption := 'Installing SQL Server 2022 Express prerequisite...';
+      PrereqParams := '-LogFile "C:\ProgramData\TBZ Labs\SynOS\Logs\install.log" -UseExistingSql "false" -InstanceName "SYNOS"';
+      RunPowerShellScript(PrereqScript, PrereqParams, ExitCode);
+      if ExitCode <> 0 then
+      begin
+        InstallSuccess := False;
+        InstallErrorMsg := 'Failed to install SQL Server Express prerequisite.';
+        exit;
+      end;
+    end;
 
     // 1. Run configuration import (RC4: Configuration Import engine)
     if (InstallTypeVal = 0) and ImportConfigVal then
