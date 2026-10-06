@@ -154,5 +154,6 @@ $report = @{
 $outputJson = Join-Path $PSScriptRoot "pillar7_results.json"
 $report | ConvertTo-Json -Depth 4 | Set-Content -Path $outputJson -Force
 
-Write-Host "[$([string](if ($passed) { 'PASS' } else { 'FAIL' }))] Memory Leak & Stability: RAM Delta=${apiRamDeltaMB}MB, Zero-Byte Files=$($orphanFiles.Count)" -ForegroundColor $(if ($passed) { 'Green' } else { 'Red' })
+$statusStr = if ($passed) { 'PASS' } else { 'FAIL' }
+Write-Host "[$statusStr] Memory Leak & Stability: RAM Delta=${apiRamDeltaMB}MB, Zero-Byte Files=$($orphanFiles.Count)" -ForegroundColor $(if ($passed) { 'Green' } else { 'Red' })
 if (-not $passed) { exit 1 } else { exit 0 }

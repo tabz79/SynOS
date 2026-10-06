@@ -62,8 +62,9 @@ $bgJob = Start-Job -ScriptBlock {
     param($url, $tok)
     for ($i = 1; $i -le 10; $i++) {
         $p = @{ mrn = "CRASH-$i-$(Get-Random)"; firstName = "Crash"; lastName = "Test$i"; gender = "Male"; dateOfBirth = "1990-01-01" } | ConvertTo-Json
+        $idemKey = [System.Guid]::NewGuid().ToString()
         try {
-            Invoke-RestMethod -Uri "$url/api/v1/patients" -Method Post -Body $p -ContentType "application/json" -Headers @{ Authorization = "Bearer $tok" } -TimeoutSec 5
+            Invoke-RestMethod -Uri "$url/api/v1/patients" -Method Post -Body $p -ContentType "application/json" -Headers @{ Authorization = "Bearer $tok"; "Idempotency-Key" = $idemKey } -TimeoutSec 5
         } catch {}
         Start-Sleep -Milliseconds 200
     }
@@ -112,7 +113,8 @@ Get-Service -Name "MSSQL*" | Stop-Service -Force -ErrorAction SilentlyContinue
 $handledGracefully = $false
 try {
     $p = @{ mrn = "DBDOWN-$(Get-Random)"; firstName = "Db"; lastName = "Down"; gender = "Male"; dateOfBirth = "1990-01-01" } | ConvertTo-Json
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Method Post -Body $p -ContentType "application/json" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 5
+    $idemKey = [System.Guid]::NewGuid().ToString()
+    $res = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Method Post -Body $p -ContentType "application/json" -Headers @{ Authorization = "Bearer $token"; "Idempotency-Key" = $idemKey } -TimeoutSec 5
 } catch {
     # It must throw 500 or 503, NOT crash the Kestrel host completely
     $handledGracefully = $true
@@ -137,17 +139,17 @@ Record-Fault "DatabaseReconnectionResilience" $apiAlive "SynOS re-established co
 # ------------------------------------------------------------------------------
 Write-Host "`n--- Fault 3: Auditing Database Consistency & Atomicity ---" -ForegroundColor Yellow
 
-$orphanedVisits = Run-SqlScalar "SELECT COUNT(*) FROM Visits v LEFT JOIN Patients p ON v.PatientId = p.PatientId WHERE p.PatientId IS NULL"
-$orphanedInvoices = Run-SqlScalar "SELECT COUNT(*) FROM Invoices i LEFT JOIN Visits v ON i.VisitId = v.VisitId WHERE v.VisitId IS NULL"
-$negativeBalances = Run-SqlScalar "SELECT COUNT(*) FROM Visits WHERE BalanceAmount < 0"
+$orphanedVisits = (Run-SqlScalar "SET NOCOUNT ON; SELECT COUNT(*) FROM Visits v LEFT JOIN Patients p ON v.PatientId = p.PatientId WHERE p.PatientId IS NULL").Trim()
+$orphanedInvoices = (Run-SqlScalar "SET NOCOUNT ON; SELECT COUNT(*) FROM Invoices i LEFT JOIN Visits v ON i.VisitId = v.VisitId WHERE v.VisitId IS NULL").Trim()
+$negativeInvoices = (Run-SqlScalar "SET NOCOUNT ON; SELECT COUNT(*) FROM Invoices WHERE Total < 0").Trim()
 
 Write-Host "Database Audit Results:" -ForegroundColor Cyan
 Write-Host "  Orphaned visits without patients: $orphanedVisits"
 Write-Host "  Orphaned invoices without visits: $orphanedInvoices"
-Write-Host "  Negative visit balances:          $negativeBalances"
+Write-Host "  Negative invoice totals:          $negativeInvoices"
 
-$dbConsistent = ($orphanedVisits -eq "0") -and ($orphanedInvoices -eq "0") -and ($negativeBalances -eq "0")
-Record-Fault "DatabaseTransactionalIntegrity" $dbConsistent "No half-created or orphaned entities discovered after crash injection (Orphans: $orphanedVisits, NegBalances: $negativeBalances)."
+$dbConsistent = ($orphanedVisits -eq "0") -and ($orphanedInvoices -eq "0") -and ($negativeInvoices -eq "0")
+Record-Fault "DatabaseTransactionalIntegrity" $dbConsistent "No half-created or orphaned entities discovered after crash injection (OrphanVisits: $orphanedVisits, OrphanInvoices: $orphanedInvoices, NegInvoices: $negativeInvoices)."
 
 $outputJson = Join-Path $PSScriptRoot "pillar4_results.json"
 $results | ConvertTo-Json -Depth 4 | Set-Content -Path $outputJson -Force

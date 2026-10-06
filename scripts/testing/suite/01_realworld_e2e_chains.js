@@ -100,7 +100,11 @@ async function runPillar1() {
 
         const createPatRes = await fetch(`${BASE_URL}/api/v1/patients`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${receptionToken}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${receptionToken}`,
+                'Idempotency-Key': `idem-${mrn}`
+            },
             body: JSON.stringify(patientPayload)
         });
 
@@ -114,38 +118,24 @@ async function runPillar1() {
         recordStep('PatientRegistration', true, `Created Patient MRN=${mrn}, ID=${patientId}`);
 
         // SQL Verification: Patient row exists
-        const sqlPat = sql(`SELECT COUNT(*) FROM Patients WHERE PatientId = '${patientId}'`);
+        const sqlPat = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Patients WHERE PatientId = '${patientId}'`);
         recordStep('SQL:PatientExists', sqlPat === '1', `SQL count for patient=${sqlPat}`);
 
-        // Step 3: Visit Creation & Diagnostic Ordering (CBC + Lipid Profile)
+        // Step 3: Visit Creation & Diagnostic Ordering (CBC)
         console.log('\n--- Step 3: Diagnostic Order & Visit Initiation ---');
-        // Lookup available tests
-        const testsRes = await fetch(`${BASE_URL}/api/v1/TestGovernance/tests`, {
-            headers: { 'Authorization': `Bearer ${receptionToken}` }
-        });
-        let testList = [];
-        if (testsRes.ok) {
-            testList = await testsRes.json();
-        }
-
-        const testIds = Array.isArray(testList) && testList.length > 0
-            ? [testList[0].testId || testList[0].id]
-            : [];
-
         const visitPayload = {
             patientId: patientId,
             department: 'Pathology',
-            tokenDate: new Date().toISOString(),
-            testIds: testIds,
-            status: 'Registered',
-            paymentMethod: 'Cash',
-            totalAmount: 1500.0,
-            paidAmount: 1500.0
+            testCodes: ['CBC']
         };
 
         const visitRes = await fetch(`${BASE_URL}/api/v1/visits`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${receptionToken}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${receptionToken}`,
+                'Idempotency-Key': `idem-vis-${mrn}`
+            },
             body: JSON.stringify(visitPayload)
         });
 
@@ -160,7 +150,7 @@ async function runPillar1() {
 
         if (visitId) {
             // SQL Verification: Visit and Invoice consistency
-            const sqlVisit = sql(`SELECT Status, TotalAmount, BalanceAmount FROM Visits WHERE VisitId = '${visitId}'`);
+            const sqlVisit = sql(`SET NOCOUNT ON; SELECT Status, Token FROM Visits WHERE VisitId = '${visitId}'`);
             recordStep('SQL:VisitStatus', sqlVisit.length > 0 && !sqlVisit.includes('SQL_ERROR'), `Visit state: ${sqlVisit}`);
 
             // Step 4: Sample Collection by Phlebotomy

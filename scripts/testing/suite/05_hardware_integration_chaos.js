@@ -75,12 +75,17 @@ async function runHardwareChaos() {
     // 1. Concurrently launch 15 active patient registrations
     console.log('\n--- 1. Generating Active Patient Load in Background ---');
     const backgroundPatients = Array.from({ length: 15 }, async (_, i) => {
+        const mrnVal = `LOAD-${i}-${Date.now().toString().slice(-4)}`;
         try {
             const pRes = await fetch(`${BASE_URL}/api/v1/patients`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    'Idempotency-Key': `load-pat-${mrnVal}`
+                },
                 body: JSON.stringify({
-                    mrn: `LOAD-${i}-${Date.now().toString().slice(-4)}`,
+                    mrn: mrnVal,
                     firstName: `LoadPat${i}`,
                     lastName: 'Chaos',
                     gender: 'Male',

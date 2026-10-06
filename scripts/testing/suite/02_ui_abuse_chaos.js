@@ -73,7 +73,11 @@ async function runPillar2() {
     const spamPromises = Array.from({ length: 5 }, () =>
         fetch(`${BASE_URL}/api/v1/patients`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Idempotency-Key': `spam-${mrnSpam}`
+            },
             body: JSON.stringify(patPayload)
         })
     );
@@ -82,7 +86,7 @@ async function runPillar2() {
     const okCount = spamResponses.filter(r => r.ok).length;
 
     // Check database: How many patients with this MRN exist?
-    const countInDb = sql(`SELECT COUNT(*) FROM Patients WHERE MRN = '${mrnSpam}'`);
+    const countInDb = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Patients WHERE MRN = '${mrnSpam}'`);
     console.log(`Spam registration sent 5 concurrent requests. HTTP OKs: ${okCount}, Records in DB: ${countInDb}`);
 
     if (countInDb === '1') {
@@ -98,7 +102,11 @@ async function runPillar2() {
     // First create a clean patient & visit
     const pRes = await fetch(`${BASE_URL}/api/v1/patients`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Idempotency-Key': `pay-pat-${Date.now()}`
+        },
         body: JSON.stringify({ mrn: 'PAY-' + Date.now().toString().slice(-6), firstName: 'Payment', lastName: 'Racer', gender: 'Female', dateOfBirth: '1992-02-02' })
     });
     const pData = await pRes.json();
@@ -106,15 +114,19 @@ async function runPillar2() {
 
     const vRes = await fetch(`${BASE_URL}/api/v1/visits`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ patientId: pid, department: 'Pathology', totalAmount: 1000.0, paidAmount: 0.0, status: 'Registered' })
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Idempotency-Key': `pay-vis-${Date.now()}`
+        },
+        body: JSON.stringify({ patientId: pid, department: 'Pathology', testCodes: ['CBC'] })
     });
     const vData = await vRes.json();
     const vid = vData.visitId || vData.id || vData.data?.visitId;
 
     // Send 3 concurrent payments for the same visit simultaneously
     const payPromises = Array.from({ length: 3 }, () =>
-        fetch(`${BASE_URL}/api/v1/invoices/${vid}/payments`, {
+        fetch(`${BASE_URL}/api/v1/visits/${vid}/payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ amount: 1000.0, paymentMethod: 'Cash', notes: 'Double click test' })
@@ -124,11 +136,10 @@ async function runPillar2() {
     const payResponses = await Promise.all(payPromises);
     const payOkCount = payResponses.filter(r => r.ok).length;
 
-    // Check database: How many payments recorded? Is total paid > total amount?
-    const totalPaidInDb = sql(`SELECT ISNULL(SUM(Amount), 0) FROM Payments WHERE VisitId = '${vid}'`);
-    const balanceInDb = sql(`SELECT BalanceAmount FROM Visits WHERE VisitId = '${vid}'`);
+    // Check database: How many payments recorded for this visit's invoices?
+    const totalPaidInDb = sql(`SET NOCOUNT ON; SELECT ISNULL(SUM(p.Amount), 0) FROM Payments p JOIN Invoices i ON p.InvoiceId = i.InvoiceId WHERE i.VisitId = '${vid}'`);
 
-    console.log(`Payment spam sent 3 concurrent requests. HTTP OKs: ${payOkCount}, Total Paid in DB: ${totalPaidInDb}, Balance: ${balanceInDb}`);
+    console.log(`Payment spam sent 3 concurrent requests. HTTP OKs: ${payOkCount}, Total Paid in DB: ${totalPaidInDb}`);
     const totalPaidNum = parseFloat(totalPaidInDb) || 0;
 
     if (totalPaidNum === 1000.0) {
@@ -153,7 +164,11 @@ async function runPillar2() {
 
     const fuzzRes = await fetch(`${BASE_URL}/api/v1/patients`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Idempotency-Key': `fuzz-${Date.now()}`
+        },
         body: JSON.stringify(fuzzPayload)
     });
 
@@ -178,18 +193,22 @@ async function runPillar2() {
 
     const sqliRes = await fetch(`${BASE_URL}/api/v1/patients`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Idempotency-Key': `sqli-${Date.now()}`
+        },
         body: JSON.stringify(sqliPayload)
     });
 
     // Verify DB integrity - Ensure Patients table is still intact
-    const patTableCheck = sql("SELECT COUNT(*) FROM Patients");
+    const patTableCheck = sql("SET NOCOUNT ON; SELECT COUNT(*) FROM Patients");
     const sqlIntact = !patTableCheck.includes('SQL_ERROR') && parseInt(patTableCheck) >= 1;
     record('SqlInjectionHardening', sqlIntact, `Database remained intact after SQLi payload (Total patients: ${patTableCheck})`);
 
     // SUB-TEST 2.5: Negative Money & Balance Tampering
     console.log('\n--- Test 2.5: Financial Logic Attack (Negative Payment Amount) ---');
-    const negPayRes = await fetch(`${BASE_URL}/api/v1/invoices/${vid}/payments`, {
+    const negPayRes = await fetch(`${BASE_URL}/api/v1/visits/${vid}/payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ amount: -500.0, paymentMethod: 'Cash', notes: 'Negative money injection' })

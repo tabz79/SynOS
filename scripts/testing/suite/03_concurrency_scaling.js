@@ -43,7 +43,11 @@ async function executePatientJourney(workerId, batchIndex, token) {
         // 1. Create Patient
         const pRes = await fetch(`${BASE_URL}/api/v1/patients`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Idempotency-Key': `idem-${mrn}`
+            },
             body: JSON.stringify({
                 mrn: mrn,
                 firstName: `StressUser${workerId}`,
@@ -61,13 +65,15 @@ async function executePatientJourney(workerId, batchIndex, token) {
         // 2. Create Visit
         const vRes = await fetch(`${BASE_URL}/api/v1/visits`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'Idempotency-Key': `idem-v-${mrn}`
+            },
             body: JSON.stringify({
                 patientId: patientId,
                 department: 'Pathology',
-                totalAmount: 500.0,
-                paidAmount: 500.0,
-                status: 'Registered'
+                testCodes: ['CBC']
             })
         });
 
@@ -112,8 +118,8 @@ async function runConcurrencyStage(concurrencyLevel, token) {
     const throughput = (concurrencyLevel / (totalTimeMs / 1000)).toFixed(2);
 
     // Query SQL Server Deadlock & Lock Wait Stats
-    const deadlockSql = sql("SELECT cntr_value FROM sys.dm_os_performance_counters WHERE counter_name = 'Number of Deadlocks/sec' AND instance_name = '_Total'");
-    const activeLocks = sql("SELECT COUNT(*) FROM sys.dm_tran_locks WHERE request_status = 'WAIT'");
+    const deadlockSql = sql("SET NOCOUNT ON; SELECT cntr_value FROM sys.dm_os_performance_counters WHERE counter_name = 'Number of Deadlocks/sec' AND instance_name = '_Total'");
+    const activeLocks = sql("SET NOCOUNT ON; SELECT COUNT(*) FROM sys.dm_tran_locks WHERE request_status = 'WAIT'");
 
     console.log(`Outcomes:`);
     console.log(`  Total Requests:  ${concurrencyLevel}`);
@@ -174,16 +180,8 @@ async function runPillar3() {
 
     // Verify Cross-Patient Association Race Conditions in SQL
     console.log('\n--- Auditing Cross-Patient Association Integrity in SQL ---');
-    const corruptedVisits = sql(`
-        SELECT COUNT(*) FROM Visits v 
-        LEFT JOIN Patients p ON v.PatientId = p.PatientId 
-        WHERE p.PatientId IS NULL
-    `);
-    const duplicateTokens = sql(`
-        SELECT COUNT(*) FROM (
-            SELECT Token, COUNT(*) as c FROM Visits GROUP BY Token HAVING COUNT(*) > 1
-        ) as d
-    `);
+    const corruptedVisits = sql("SET NOCOUNT ON; SELECT COUNT(*) FROM Visits v LEFT JOIN Patients p ON v.PatientId = p.PatientId WHERE p.PatientId IS NULL");
+    const duplicateTokens = sql("SET NOCOUNT ON; SELECT COUNT(*) FROM (SELECT Token, COUNT(*) as c FROM Visits GROUP BY Token HAVING COUNT(*) > 1) as d");
 
     console.log(`Orphaned visits in DB: ${corruptedVisits}`);
     console.log(`Duplicate token collisions: ${duplicateTokens}`);
