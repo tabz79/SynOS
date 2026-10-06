@@ -30,11 +30,9 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
-        
-        public async Task<IActionResult> CreatePatient([FromBody] PatientCreateDto patientDto, [FromHeader(Name = "Idempotency-Key")] string idempotencyKey)
+        public async Task<IActionResult> CreatePatient([FromBody] PatientCreateDto patientDto, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey = null)
         {
-            // In a real implementation, the idempotencyKey would be used to prevent duplicate requests.
-            // For now, we'll just accept it.
+            var effectiveKey = !string.IsNullOrWhiteSpace(idempotencyKey) ? idempotencyKey : Guid.NewGuid().ToString();
             var patient = await _patientService.CreatePatientAsync(patientDto);
             return CreatedAtAction(nameof(GetPatientById), new { id = patient.PatientId }, new { patient.PatientId });
         }

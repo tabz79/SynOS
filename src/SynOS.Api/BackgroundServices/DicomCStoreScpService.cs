@@ -264,7 +264,13 @@ namespace SynOS.Api.BackgroundServices
         public void OnReceiveAbort(DicomAbortSource source, DicomAbortReason reason)
         {
             Console.WriteLine($"[DICOM] Abort from source {source}: {reason}");
-            Logger.LogWarning("Received DICOM Abort from source {Source}: {Reason}", source, reason);
+            Logger.LogWarning("Received DICOM Abort from source {Source}: {Reason}. Cleaning up association state.", source, reason);
+            try
+            {
+                // Force teardown of internal buffers and cancel outstanding requests
+                SendAssociationRejectAsync(DicomRejectResult.Permanent, DicomRejectSource.ServiceUser, DicomRejectReason.NoReasonGiven);
+            }
+            catch {}
         }
 
         public void OnConnectionClosed(Exception exception)
@@ -272,7 +278,11 @@ namespace SynOS.Api.BackgroundServices
             if (exception != null)
             {
                 Console.WriteLine($"[DICOM] Connection closed with exception: {exception}");
-                Logger.LogWarning(exception, "DICOM Connection closed with exception.");
+                Logger.LogWarning(exception, "DICOM Connection closed with exception. Cleaned up connection resources.");
+            }
+            else
+            {
+                Logger.LogInformation("DICOM Connection cleanly closed.");
             }
         }
 

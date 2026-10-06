@@ -350,8 +350,15 @@ builder.Services.AddSwaggerGen(option =>
 builder.Services.AddDbContext<SynOSDbContext>(options =>
 {
     var activeConnStr = !string.IsNullOrWhiteSpace(connectionString) ? connectionString : "Server=.;Database=SynOSDb;Trusted_Connection=True;TrustServerCertificate=True";
-    options.UseSqlServer(activeConnStr)
-           .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor());
+    options.UseSqlServer(activeConnStr, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+        sqlOptions.CommandTimeout(60);
+    })
+    .AddInterceptors(new SynOS.Services.Reporting.TemplateQueryInterceptor());
 
     if (isDevelopment)
     {

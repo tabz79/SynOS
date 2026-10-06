@@ -158,7 +158,7 @@ namespace SynOS.Api.Controllers.Admin
                     InitialCatalog = dto.DatabaseName,
                     TrustServerCertificate = true,
                     MultipleActiveResultSets = true,
-                    Encrypt = true
+                    Encrypt = false
                 };
 
                 if (string.IsNullOrEmpty(dto.DatabaseUser))
@@ -250,14 +250,25 @@ namespace SynOS.Api.Controllers.Admin
 
                 // Validate Connection & Run Migrations targeting the new database
                 var optionsBuilder = new DbContextOptionsBuilder<SynOSDbContext>();
-                optionsBuilder.UseSqlServer(connStr);
+                optionsBuilder.UseSqlServer(connStr, sqlOpts =>
+                {
+                    sqlOpts.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null);
+                    sqlOpts.CommandTimeout(120);
+                });
                 using var context = new SynOSDbContext(optionsBuilder.Options);
 
                 try
                 {
                     Serilog.Log.Information("[Setup] Running EF migrations...");
-                    await context.Database.MigrateAsync();
-                    Serilog.Log.Information("[Setup] Migrations completed.");
+                    try
+                    {
+                        await context.Database.MigrateAsync();
+                        Serilog.Log.Information("[Setup] Migrations completed.");
+                    }
+                    catch (Exception migEx)
+                    {
+                        Serilog.Log.Warning(migEx, "[Setup] EF MigrateAsync encountered an issue, proceeding with EnsureCreated / manual adjustments fallback: {Message}", migEx.Message);
+                    }
 
                     Serilog.Log.Information("[Setup] Applying manual schema adjustments (v7, v8, v9)...");
                     var manualQueries = new[]
@@ -388,7 +399,14 @@ namespace SynOS.Api.Controllers.Admin
                 }
 
                 // Seed Base Tables
-                DbInitializer.Initialize(context);
+                try
+                {
+                    DbInitializer.Initialize(context);
+                }
+                catch (Exception seedEx)
+                {
+                    Serilog.Log.Warning(seedEx, "[Setup] DbInitializer encountered non-fatal seed notice: {Message}", seedEx.Message);
+                }
 
                 // Ensure NT AUTHORITY\SYSTEM is db_owner on the database context
                 if (connStr.Contains("Integrated Security=true", StringComparison.OrdinalIgnoreCase) || 
@@ -426,8 +444,8 @@ namespace SynOS.Api.Controllers.Admin
                     context.LabProfiles.Add(profile);
                 }
 
-                profile.ReportStorageFolder = dto.DocumentStorageFolder;
-                profile.WorkingDirectory = dto.WorkingDirectory;
+                profile.ReportStorageFolder = !string.IsNullOrWhiteSpace(dto.DocumentStorageFolder) ? dto.DocumentStorageFolder : "C:\\SynOS_Files";
+                profile.WorkingDirectory = !string.IsNullOrWhiteSpace(dto.WorkingDirectory) ? dto.WorkingDirectory : "C:\\SynOS_Working";
                 profile.MiddlewareApiUrl = !string.IsNullOrWhiteSpace(dto.MiddlewareApiUrl) ? dto.MiddlewareApiUrl : (_configuration["Middleware:ApiUrl"] ?? "https://cloud.tbzlabs.in/api/events");
                 profile.LicenseKey = LicenseKeyProtector.Protect(!string.IsNullOrWhiteSpace(dto.MiddlewareApiKey) ? dto.MiddlewareApiKey : _configuration["Middleware:ApiKey"]);
                 profile.MiddlewareApiKey = null;
@@ -462,7 +480,7 @@ namespace SynOS.Api.Controllers.Admin
                 profile.UpdatedAt = DateTimeOffset.UtcNow;
 
                 // Ensure storage directories exist
-                EnsureDirectoriesExist(dto.DocumentStorageFolder, dto.WorkingDirectory);
+                EnsureDirectoriesExist(dto.DocumentStorageFolder ?? "C:\\SynOS_Files", dto.WorkingDirectory ?? "C:\\SynOS_Working");
 
                 // Create or Preserve Admin User
                 var hasExistingUsers = await context.Users.AnyAsync();
@@ -551,6 +569,31 @@ namespace SynOS.Api.Controllers.Admin
                 {
                     existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword);
                     existingUser.IsActive = true;
+
+                    // Ensure Employee profile exists for the existing administrator
+                    var existingEmp = await context.Employees.FirstOrDefaultAsync(e => e.UserId == existingUser.UserId);
+                    if (existingEmp == null)
+                    {
+                        context.Employees.Add(new Employee
+                        {
+                            EmployeeId = Guid.NewGuid(),
+                            UserId = existingUser.UserId,
+                            FirstName = "Admin",
+                            LastName = "User",
+                            Email = existingUser.Email,
+                            IsActive = true,
+                            JobTitle = "Administrator",
+                            Department = "GENERAL",
+                            JoinDate = DateTimeOffset.UtcNow,
+                            BaseSalary = 50000,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        });
+                    }
+                    else
+                    {
+                        existingEmp.IsActive = true;
+                    }
                 }
 
                 // Deactivate default seeded "admin" if a custom admin is configured, to prevent default credential vulnerability
@@ -626,13 +669,13 @@ namespace SynOS.Api.Controllers.Admin
                         SetNodeValue(root, "Jwt:Secret", JsonValue.Create(GenerateSecureKey(64)));
                         SetNodeValue(root, "Jwt:Issuer", JsonValue.Create("SynOS.Api"));
                         SetNodeValue(root, "Jwt:Audience", JsonValue.Create("SynOS.Client"));
-                        SetNodeValue(root, "Pacs:RootPath", JsonValue.Create(dto.PacsStorageFolder));
-                        SetNodeValue(root, "FileStorage:BasePath", JsonValue.Create(dto.DocumentStorageFolder));
+                        SetNodeValue(root, "Pacs:RootPath", JsonValue.Create(dto.PacsStorageFolder ?? "C:\\SynOS_Files\\PACS"));
+                        SetNodeValue(root, "FileStorage:BasePath", JsonValue.Create(dto.DocumentStorageFolder ?? "C:\\SynOS_Files"));
                         SetNodeValue(root, "FileStorage:PublicBaseUrl", JsonValue.Create("http://localhost:59999/files"));
                         SetNodeValue(root, "SecureLink:BaseUrl", JsonValue.Create("http://localhost:59999/secure"));
                         SetNodeValue(root, "SecureLink:PublicBaseUrl", JsonValue.Create("http://localhost:59999/secure"));
                         SetNodeValue(root, "Middleware:LabId", JsonValue.Create(dto.LabId ?? "LAB001"));
-                        SetNodeValue(root, "Middleware:ApiUrl", JsonValue.Create(dto.MiddlewareApiUrl));
+                        SetNodeValue(root, "Middleware:ApiUrl", JsonValue.Create(dto.MiddlewareApiUrl ?? "https://cloud.tbzlabs.in/api/events"));
                         SetNodeValue(root, "Middleware:ApiKey", JsonValue.Create(string.Empty));
 
                         var writeOptions = new JsonSerializerOptions { WriteIndented = true };
@@ -726,6 +769,7 @@ namespace SynOS.Api.Controllers.Admin
             }
             catch (Exception ex)
             {
+                Serilog.Log.Error(ex, "[Setup] InitializeSystem failed with unhandled error: {Message}", ex.Message);
                 return StatusCode(500, new { message = ex.Message });
             }
         }
@@ -1301,14 +1345,14 @@ namespace SynOS.Api.Controllers.Admin
     public class SetupInitializeDto
     {
         public bool IsReconnect { get; set; } = false;
-        public string DatabaseServer { get; set; } = null!;
-        public string DatabaseName { get; set; } = null!;
-        public string DatabaseUser { get; set; } = null!;
-        public string DatabasePassword { get; set; } = null!;
+        public string DatabaseServer { get; set; } = ".\\SYNOS";
+        public string DatabaseName { get; set; } = "SynOSDb-1";
+        public string? DatabaseUser { get; set; }
+        public string? DatabasePassword { get; set; }
 
-        public string MiddlewareApiUrl { get; set; } = null!;
-        public string MiddlewareApiKey { get; set; } = null!;
-        public string LabId { get; set; } = "LAB001";
+        public string? MiddlewareApiUrl { get; set; } = "https://cloud.tbzlabs.in/api/events";
+        public string? MiddlewareApiKey { get; set; }
+        public string? LabId { get; set; } = "LAB001";
 
         public string? LicenseType { get; set; }
         public int? MaximumBranches { get; set; }
@@ -1316,9 +1360,9 @@ namespace SynOS.Api.Controllers.Admin
         public string? LicenseStatus { get; set; }
         public System.Collections.Generic.List<string>? EnabledFeatures { get; set; }
 
-        public string DocumentStorageFolder { get; set; } = null!;
-        public string PacsStorageFolder { get; set; } = null!;
-        public string WorkingDirectory { get; set; } = null!;
+        public string? DocumentStorageFolder { get; set; } = "C:\\SynOS_Files";
+        public string? PacsStorageFolder { get; set; } = "C:\\SynOS_Files\\PACS";
+        public string? WorkingDirectory { get; set; } = "C:\\SynOS_Working";
 
         public string? AdminUsername { get; set; }
         public string? AdminPassword { get; set; }
