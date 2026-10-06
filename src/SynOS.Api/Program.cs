@@ -353,7 +353,7 @@ builder.Services.AddDbContext<SynOSDbContext>(options =>
     options.UseSqlServer(activeConnStr, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
+            maxRetryCount: 10,
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null);
         sqlOptions.CommandTimeout(60);
@@ -377,7 +377,26 @@ var secret = (!string.IsNullOrWhiteSpace(rawSecret) && !rawSecret.Contains("REPL
     : "SynOS_Bootstrap_Secret_Key_For_Initial_Setup_Must_Be_Overridden_By_Setup_Wizard_64_Characters_Long";
 var issuer = jwtSettings["Issuer"] ?? "SynOS.Api";
 var audience = jwtSettings["Audience"] ?? "SynOS.Client";
-var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+var allowedAudiences = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SynOS.Client", "SynOS.App", audience };
+var allowedIssuers = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SynOS.Api", issuer };
+
+var signingKeys = new List<SecurityKey>
+{
+    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+    new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secret))
+};
+
+var fallbackSecrets = new[]
+{
+    "SynOS_Bootstrap_Secret_Key_For_Initial_Setup_Must_Be_Overridden_By_Setup_Wizard_64_Characters_Long",
+    "uWJCwFIh7oHGYbFhmi4hICrXu3PA55pH0lxWx0mbCgg="
+};
+
+foreach (var fb in fallbackSecrets)
+{
+    signingKeys.Add(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(fb)));
+    signingKeys.Add(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(fb)));
+}
 
 builder.Services.AddAuthentication(options =>
 {
@@ -392,9 +411,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = issuer,
-        ValidAudience = audience,
-        IssuerSigningKey = securityKey
+        ValidIssuers = allowedIssuers,
+        ValidAudiences = allowedAudiences,
+        IssuerSigningKeys = signingKeys
     };
 
     options.Events = new JwtBearerEvents
@@ -726,7 +745,7 @@ if (app.Environment.IsDevelopment())
             audience: audience,
             claims: claims,
             expires: DateTime.UtcNow.AddHours(24),
-            signingCredentials: new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256));
+            signingCredentials: new SigningCredentials(signingKeys[0], SecurityAlgorithms.HmacSha256));
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return Results.Ok(new { token = tokenHandler.WriteToken(token) });

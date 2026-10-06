@@ -25,7 +25,7 @@ public class DeliveryController : ControllerBase
 
     private Guid GetCurrentUserId()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
         if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var parsedUserId))
         {
             _logger.LogWarning("Current user ID not found or invalid in claims.");
@@ -111,6 +111,53 @@ public class DeliveryController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("send")]
+    public async Task<IActionResult> SendOmnichannel([FromBody] SendOmnichannelRequestDto request, [FromServices] SynOS.Data.SynOSDbContext db)
+    {
+        if (request == null) return BadRequest("Invalid request");
+        var userId = GetCurrentUserId();
+
+        Guid targetReportId = request.ReportId ?? Guid.Empty;
+        if (targetReportId == Guid.Empty && request.VisitId.HasValue && request.VisitId.Value != Guid.Empty)
+        {
+            var report = await db.Reports.FirstOrDefaultAsync(r => r.VisitId == request.VisitId.Value || r.ReportId == request.VisitId.Value);
+            if (report != null)
+            {
+                targetReportId = report.ReportId;
+            }
+        }
+
+        if (targetReportId == Guid.Empty)
+        {
+            return BadRequest("ReportId or VisitId could not be resolved");
+        }
+
+        var channel = request.Channel?.ToLowerInvariant() ?? "whatsapp";
+        if (channel.Contains("what") || channel.Contains("wa"))
+        {
+            var phone = request.RecipientPhone ?? "9876543210";
+            var result = await _deliveryService.DeliverViaWhatsAppAsync(targetReportId, phone, userId, includeDicomZip: false);
+            return Ok(result);
+        }
+        else if (channel.Contains("sms"))
+        {
+            var phone = request.RecipientPhone ?? "9876543210";
+            var result = await _deliveryService.DeliverViaSmsAsync(targetReportId, phone, userId);
+            return Ok(result);
+        }
+        else if (channel.Contains("print"))
+        {
+            var result = await _deliveryService.DeliverViaPrintAsync(targetReportId, userId);
+            return Ok(result);
+        }
+        else
+        {
+            var email = request.RecipientEmail ?? "patient@example.com";
+            var result = await _deliveryService.DeliverViaEmailAsync(targetReportId, email, userId);
+            return Ok(result);
+        }
+    }
+
     [HttpPost("handed-over")]
     [ProducesResponseType(typeof(DeliveryResultDto), 200)]
     [ProducesResponseType(404)]
@@ -149,3 +196,11 @@ public class DeliveryController : ControllerBase
 public record DeliveryRequestDto(Guid ReportId);
 public record DeliveryWithPhoneRequestDto(Guid ReportId, string Phone, bool IncludeDicom = false);
 public record DeliveryWithEmailRequestDto(Guid ReportId, string Email);
+public class SendOmnichannelRequestDto
+{
+    public Guid? ReportId { get; set; }
+    public Guid? VisitId { get; set; }
+    public string? Channel { get; set; }
+    public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }
+}

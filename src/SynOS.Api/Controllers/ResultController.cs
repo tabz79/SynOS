@@ -13,6 +13,7 @@ namespace SynOS.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/results")]
+    [Route("api/v1/Result")]
     [Authorize(Roles = "Pathologist,LabTech,Technician,Admin")] // Updated roles to include Technician
     public class ResultController : ControllerBase
     {
@@ -33,10 +34,9 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPost]
-        
         public async Task<IActionResult> EnterResults([FromBody] ResultEntryRequestDto requestDto)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized("User ID not found in token.");
             
             var userId = Guid.Parse(userIdClaim);
@@ -48,6 +48,82 @@ namespace SynOS.Api.Controllers
                 ResultEntryStatus.Forbidden => StatusCode(403, response.Message),
                 ResultEntryStatus.BadRequest => BadRequest(response.Message),
                 _ => StatusCode(500, "An unexpected error occurred.")
+            };
+        }
+
+        public class DynamicResultEntryDto
+        {
+            public Guid? OrderId { get; set; }
+            public Guid? VisitId { get; set; }
+            public List<DynamicResultItemDto> Results { get; set; } = new();
+        }
+
+        public class DynamicResultItemDto
+        {
+            public string ParameterCode { get; set; } = string.Empty;
+            public string? ParameterName { get; set; }
+            public string Value { get; set; } = string.Empty;
+            public string? Unit { get; set; }
+            public string? TechComments { get; set; }
+        }
+
+        [HttpPost("enter")]
+        public async Task<IActionResult> EnterResultsDynamic([FromBody] DynamicResultEntryDto requestDto, [FromServices] SynOS.Data.SynOSDbContext db)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized("User ID not found in token.");
+            
+            var userId = Guid.Parse(userIdClaim);
+            Guid targetOrderId = requestDto.OrderId ?? Guid.Empty;
+
+            if (targetOrderId == Guid.Empty && requestDto.VisitId.HasValue && requestDto.VisitId.Value != Guid.Empty)
+            {
+                var order = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                    db.Orders, o => o.VisitId == requestDto.VisitId.Value && o.Department == "Pathology");
+                if (order != null)
+                {
+                    targetOrderId = order.OrderId;
+                }
+            }
+
+            if (targetOrderId == Guid.Empty)
+            {
+                return BadRequest("OrderId or VisitId must be provided");
+            }
+
+            var entryDto = new ResultEntryRequestDto
+            {
+                OrderId = targetOrderId,
+                Results = requestDto.Results.Select(r => new ParameterResultDto
+                {
+                    OrderId = targetOrderId,
+                    ParameterCode = r.ParameterCode,
+                    Value = r.Value,
+                    TechComments = r.TechComments
+                }).ToList()
+            };
+
+            var response = await _resultService.EnterResultsAsync(userId, entryDto);
+
+            if (response.Status == ResultEntryStatus.Success)
+            {
+                try
+                {
+                    await _resultService.SubmitForVerificationAsync(targetOrderId);
+                }
+                catch
+                {
+                    // Non-fatal if auto-submit fails
+                }
+
+                return Ok(response.Results);
+            }
+
+            return response.Status switch
+            {
+                ResultEntryStatus.Forbidden => StatusCode(403, response.Message),
+                ResultEntryStatus.BadRequest => BadRequest(response.Message),
+                _ => StatusCode(500, response.Message ?? "An unexpected error occurred.")
             };
         }
 

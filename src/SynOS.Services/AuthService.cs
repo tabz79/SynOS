@@ -338,7 +338,7 @@ namespace SynOS.Services
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtSecret = _configuration["Jwt:Secret"] ?? throw new InvalidOperationException("Jwt:Secret not configured");
-            var key = Encoding.ASCII.GetBytes(jwtSecret);
+            var key = Encoding.UTF8.GetBytes(jwtSecret);
             
             var claimsList = new System.Collections.Generic.List<Claim>
             {

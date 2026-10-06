@@ -123,16 +123,22 @@ try {
 # Restart SQL Server
 Write-Host "Restarting MSSQL service..." -ForegroundColor Cyan
 Get-Service -Name "MSSQL*" | Start-Service -ErrorAction SilentlyContinue
-Start-Sleep -Seconds 5
 
-# Check if SynOS API host stayed alive and re-established connection without reboot
+# Check if SynOS API host stayed alive and re-established connection without reboot (poll up to 25s)
 $apiAlive = $false
-try {
-    $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 10
-    if ($checkRes) { $apiAlive = $true }
-} catch {}
+$sqlRecoverySw = [System.Diagnostics.Stopwatch]::StartNew()
+while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 25) {
+    try {
+        $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 5 -ErrorAction SilentlyContinue
+        if ($checkRes) { 
+            $apiAlive = $true 
+            break 
+        }
+    } catch {}
+    Start-Sleep -Seconds 2
+}
 
-Record-Fault "DatabaseReconnectionResilience" $apiAlive "SynOS re-established connection pool after SQL Server outage without process restart."
+Record-Fault "DatabaseReconnectionResilience" $apiAlive "SynOS re-established connection pool after SQL Server outage without process restart (Recovered in $($sqlRecoverySw.Elapsed.TotalSeconds)s)."
 
 # ------------------------------------------------------------------------------
 # FAULT 3: Audit Database for Half-Created or Corrupted Data

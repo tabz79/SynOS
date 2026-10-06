@@ -40,14 +40,49 @@ namespace SynOS.Api.Controllers
 
         [HttpPost("{reportId}/sign")]
         [Authorize(Policy = "PathologyPolicy")]
-        public async Task<IActionResult> SignReport(Guid reportId)
+        public async Task<IActionResult> SignReport(Guid reportId, [FromServices] SynOS.Data.SynOSDbContext db)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
             if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
 
             try
             {
-                var result = await _reportService.SignReportAsync(reportId, userId);
+                // Check if report exists; if not, check if reportId is actually a visitId
+                var report = await db.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
+                if (report == null)
+                {
+                    report = await db.Reports.FirstOrDefaultAsync(r => r.VisitId == reportId);
+                    if (report == null)
+                    {
+                        // Check if visit exists and has pathology order
+                        var order = await db.Orders
+                            .Include(o => o.Visit)
+                            .Include(o => o.Test)
+                            .FirstOrDefaultAsync(o => o.VisitId == reportId && o.Department == "Pathology");
+
+                        if (order != null)
+                        {
+                            report = new SynOS.Models.Entities.Report
+                            {
+                                ReportId = Guid.NewGuid(),
+                                SourceId = order.OrderId,
+                                SourceType = "Order",
+                                VisitId = order.VisitId,
+                                PatientId = order.Visit.PatientId,
+                                Department = order.Department,
+                                ReportTemplateId = order.Test?.ReportTemplateId,
+                                Status = "ReadyForVerification",
+                                CreatedAt = DateTimeOffset.UtcNow,
+                                UpdatedAt = DateTimeOffset.UtcNow
+                            };
+                            db.Reports.Add(report);
+                            await db.SaveChangesAsync();
+                        }
+                    }
+                }
+
+                var targetReportId = report?.ReportId ?? reportId;
+                var result = await _reportService.SignReportAsync(targetReportId, userId);
                 return Ok(result);
             }
             catch (KeyNotFoundException ex)
@@ -75,6 +110,32 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected failure during digital sign-off for report {ReportId}", reportId);
+                return StatusCode(500, new { message = ex.Message, details = ex.ToString() });
+            }
+        }
+
+        [HttpGet("{id}/pdf")]
+        [Authorize]
+        public async Task<IActionResult> GetReportPdf(Guid id, [FromServices] SynOS.Data.SynOSDbContext db, [FromServices] SynOS.Services.Storage.IFileStorageService fileStorage)
+        {
+            try
+            {
+                var report = await db.Reports
+                    .Include(r => r.ReportVersions)
+                    .FirstOrDefaultAsync(r => r.ReportId == id || r.VisitId == id);
+
+                if (report == null)
+                {
+                    return NotFound(new { message = "Report not found" });
+                }
+
+                var relativePath = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: false);
+                var stream = await fileStorage.GetFileStreamAsync(relativePath);
+                return File(stream, "application/pdf", $"{report.ReportId}.pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to render PDF for id {Id}", id);
                 return StatusCode(500, new { message = ex.Message, details = ex.ToString() });
             }
         }

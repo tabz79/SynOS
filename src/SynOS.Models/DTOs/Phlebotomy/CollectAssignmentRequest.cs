@@ -5,7 +5,8 @@ namespace SynOS.Models.DTOs.Phlebotomy
 {
     public class CollectAssignmentRequest
     {
-        [Required]
-        public Guid AssignmentId { get; set; }
+        public Guid? AssignmentId { get; set; }
+        public Guid? VisitId { get; set; }
+        public string? Notes { get; set; }
     }
 }

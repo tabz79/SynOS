@@ -38,7 +38,11 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var visit = await _visitService.CreateVisitAsync(visitDto, idempotencyKey);
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+                Guid actorUserId = Guid.Empty;
+                if (!string.IsNullOrEmpty(userIdString)) Guid.TryParse(userIdString, out actorUserId);
+
+                var visit = await _visitService.CreateVisitAsync(visitDto, idempotencyKey, actorUserId);
                 return CreatedAtAction(nameof(GetVisitDetails), new { id = visit.VisitId }, visit);
             }
             catch (KeyNotFoundException ex)
@@ -54,7 +58,7 @@ namespace SynOS.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred during visit creation.");
-                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message, details = ex.ToString() });
             }
         }
         

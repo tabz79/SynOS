@@ -10,6 +10,8 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Services.Operational;
 using SynOS.Data;
+using SynOS.Models.Entities.Operations;
+using SynOS.Models.Enums;
 
 namespace SynOS.Api.Controllers
 {
@@ -76,12 +78,53 @@ namespace SynOS.Api.Controllers
         [HttpPost("collect")]
         public async Task<IActionResult> Collect([FromBody] CollectAssignmentRequest request)
         {
-            if (!ModelState.IsValid)
+            if (request == null)
             {
-                return BadRequest(ModelState);
+                return BadRequest("Invalid collect request");
             }
 
-            var result = await _phlebotomyService.CollectAssignmentAsync(request.AssignmentId);
+            Guid assignmentId = request.AssignmentId ?? Guid.Empty;
+
+            if (assignmentId == Guid.Empty && request.VisitId.HasValue && request.VisitId.Value != Guid.Empty)
+            {
+                var visitId = request.VisitId.Value;
+                var assignment = await _db.WorkAssignments
+                    .FirstOrDefaultAsync(a => a.SourceReferenceId == visitId && a.WorkType == WorkType.SampleCollection);
+
+                if (assignment == null)
+                {
+                    var visit = await _db.Visits.FirstOrDefaultAsync(v => v.VisitId == visitId);
+                    if (visit != null)
+                    {
+                        var branchId = visit.BranchId ?? SynOS.Data.DbInitializer.DefaultBranchId;
+                        assignment = new WorkAssignment
+                        {
+                            AssignmentId = Guid.NewGuid(),
+                            WorkType = WorkType.SampleCollection,
+                            SourceReferenceId = visitId,
+                            Department = "PATH",
+                            RequiredRole = "Phlebotomist",
+                            BranchId = branchId,
+                            Status = WorkAssignmentStatus.PendingClaim,
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _db.WorkAssignments.Add(assignment);
+                        await _db.SaveChangesAsync();
+                    }
+                }
+
+                if (assignment != null)
+                {
+                    assignmentId = assignment.AssignmentId;
+                }
+            }
+
+            if (assignmentId == Guid.Empty)
+            {
+                return BadRequest("AssignmentId or VisitId must be provided");
+            }
+
+            var result = await _phlebotomyService.CollectAssignmentAsync(assignmentId);
 
             return result switch
             {

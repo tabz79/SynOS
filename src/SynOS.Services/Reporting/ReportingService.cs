@@ -1260,16 +1260,13 @@ namespace SynOS.Services.Reporting
 
         private static void EvictPool(Exception? ex)
         {
-            if (ex is Microsoft.Data.SqlClient.SqlException || ex is System.IO.IOException || ex is System.Net.Sockets.SocketException)
+            try
             {
-                try
-                {
-                    Microsoft.Data.SqlClient.SqlConnection.ClearAllPools();
-                }
-                catch
-                {
-                    // Non-fatal pool eviction
-                }
+                Microsoft.Data.SqlClient.SqlConnection.ClearAllPools();
+            }
+            catch
+            {
+                // Non-fatal pool eviction
             }
         }
     }

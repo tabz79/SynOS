@@ -445,6 +445,7 @@ END
 
             SeedIMS(context);
             SeedWorkforcePolicies(context);
+            SeedTestDefinitions(context);
         }
 
         private static void SeedBranches(SynOSDbContext context)
@@ -716,6 +717,10 @@ END
                                            userData.Email == "pathologist@lab.com" ? "Consultant Pathologist" :
                                            userData.Email == "radiologist@lab.com" ? "Consultant Radiologist" : user.Designation;
                     }
+                    if (string.IsNullOrEmpty(user.SignatureImageUrl) && (userData.RoleName == "Pathologist" || userData.RoleName == "Radiologist" || userData.RoleName == "Admin"))
+                    {
+                        user.SignatureImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+                    }
                 }
                 else
                 {
@@ -730,6 +735,9 @@ END
                         Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" :
                                       userData.Email == "pathologist@lab.com" ? "Consultant Pathologist" :
                                       userData.Email == "radiologist@lab.com" ? "Consultant Radiologist" : null,
+                        SignatureImageUrl = (userData.RoleName == "Pathologist" || userData.RoleName == "Radiologist" || userData.RoleName == "Admin")
+                            ? "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                            : null,
                         IsDefaultSignatory = userData.Email == "admin@synos.com",
                         CanUseOperationalMode = userData.CanUseOperational,
                         CanUseOversightMode = userData.CanUseOversight
@@ -779,11 +787,191 @@ END
             context.SaveChanges();
         }
 
-        // SeedTestDefinitions is now obsolete due to the new Test Master module and CSV import.
-        // It is left here for reference but should not be used.
         private static void SeedTestDefinitions(SynOSDbContext context)
         {
-            // This method is obsolete.
+            var adminUser = context.Users.FirstOrDefault(u => u.Username == "admin") ?? context.Users.FirstOrDefault();
+            var adminUserId = adminUser?.UserId ?? Guid.Empty;
+            var hemDept = context.DepartmentMasters.FirstOrDefault(d => d.Code == "HEM" || d.Code == "PATHOLOGY") ?? context.DepartmentMasters.FirstOrDefault();
+            var radDept = context.DepartmentMasters.FirstOrDefault(d => d.Code == "RAD") ?? context.DepartmentMasters.FirstOrDefault();
+            var ctModality = context.ModalityMasters.FirstOrDefault(m => m.Code == "CT");
+
+            // 1. Seed CBC
+            var cbcTest = context.Tests.FirstOrDefault(t => t.TestCode == "CBC");
+            if (cbcTest == null)
+            {
+                cbcTest = new Test
+                {
+                    TestId = Guid.Parse("11B863AC-C844-4442-8234-B5408B7866A2"),
+                    TestCode = "CBC",
+                    TestName = "Complete Blood Count (CBC)",
+                    Category = "Hematology",
+                    SpecimenTypeCode = "EDTA",
+                    DepartmentId = hemDept?.DepartmentId,
+                    IsProfile = false,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                context.Tests.Add(cbcTest);
+                context.SaveChanges();
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(cbcTest.SpecimenTypeCode))
+                {
+                    cbcTest.SpecimenTypeCode = "EDTA";
+                    context.SaveChanges();
+                }
+            }
+
+            // Ensure Pricing for CBC
+            if (!context.TestPricings.Any(tp => tp.TestId == cbcTest.TestId))
+            {
+                context.TestPricings.Add(new TestPricing
+                {
+                    PricingId = Guid.NewGuid(),
+                    TestId = cbcTest.TestId,
+                    BasePrice = 250.00m,
+                    EffectiveFrom = DateTime.UtcNow.AddMonths(-1),
+                    CreatedByUserId = adminUserId,
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+                context.SaveChanges();
+            }
+
+            // Ensure Parameters for CBC
+            var cbcParams = new[]
+            {
+                new { Code = "WBC", Name = "White Blood Cells", Unit = "/mcL", Min = 4000m, Max = 11000m, Sort = 1 },
+                new { Code = "RBC", Name = "Red Blood Cells", Unit = "10^6/uL", Min = 4.2m, Max = 5.8m, Sort = 2 },
+                new { Code = "HGB", Name = "Hemoglobin", Unit = "g/dL", Min = 12.0m, Max = 16.0m, Sort = 3 },
+                new { Code = "PLT", Name = "Platelets", Unit = "10^3/uL", Min = 150m, Max = 450m, Sort = 4 }
+            };
+
+            foreach (var p in cbcParams)
+            {
+                var existingParam = context.Parameters.FirstOrDefault(param => param.TestId == cbcTest.TestId && param.ParameterCode == p.Code);
+                if (existingParam == null)
+                {
+                    var paramEntity = new Parameter
+                    {
+                        ParameterId = Guid.NewGuid(),
+                        TestId = cbcTest.TestId,
+                        ParameterCode = p.Code,
+                        ParameterName = p.Name,
+                        Unit = p.Unit,
+                        DataType = "Numeric",
+                        SortOrder = p.Sort,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.Parameters.Add(paramEntity);
+                    context.SaveChanges();
+
+                    context.ReferenceRanges.Add(new ReferenceRange
+                    {
+                        ReferenceRangeId = Guid.NewGuid(),
+                        ParameterId = paramEntity.ParameterId,
+                        Sex = "ALL",
+                        AgeGroup = "ALL",
+                        RefLow = p.Min,
+                        RefHigh = p.Max,
+                        EffectiveFrom = DateTime.UtcNow.AddMonths(-1),
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                    context.SaveChanges();
+                }
+            }
+
+            // 2. Seed CT_CHEST
+            var ctTest = context.Tests.FirstOrDefault(t => t.TestCode == "CT_CHEST" || t.TestCode == "CT_PNS");
+            if (ctTest == null)
+            {
+                ctTest = new Test
+                {
+                    TestId = Guid.NewGuid(),
+                    TestCode = "CT_CHEST",
+                    TestName = "CT Chest Plain",
+                    Category = "CT Scan",
+                    SpecimenTypeCode = "NO_SPECIMEN",
+                    DepartmentId = radDept?.DepartmentId,
+                    ModalityId = ctModality?.ModalityId,
+                    IsProfile = false,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                context.Tests.Add(ctTest);
+                context.SaveChanges();
+
+                context.TestPricings.Add(new TestPricing
+                {
+                    PricingId = Guid.NewGuid(),
+                    TestId = ctTest.TestId,
+                    BasePrice = 2500.00m,
+                    EffectiveFrom = DateTime.UtcNow.AddMonths(-1),
+                    CreatedByUserId = adminUserId,
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+                context.SaveChanges();
+            }
+
+            // 3. Ensure a Scheduled CT Study exists for MWL C-FIND modality simulation
+            var hasScheduledCtStudy = context.RadiologyStudies.Any(s => !s.IsSoftDeleted && s.Modality == "CT" && (s.Status == "Scheduled" || s.Status == "Ordered" || s.Status == "Active"));
+            if (!hasScheduledCtStudy)
+            {
+                var patient = context.Patients.FirstOrDefault(p => p.MRN == "A00001") ?? context.Patients.FirstOrDefault();
+                if (patient != null)
+                {
+                    var defaultBranch = context.Branches.FirstOrDefault(b => b.BranchId == DefaultBranchId) ?? context.Branches.FirstOrDefault();
+                    var studyVisit = new Visit
+                    {
+                        VisitId = Guid.NewGuid(),
+                        PatientId = patient.PatientId,
+                        BranchId = defaultBranch?.BranchId ?? DefaultBranchId,
+                        Department = "Radiology",
+                        Token = $"RAD-SCHED-{Guid.NewGuid().ToString("N")[..6].ToUpper()}",
+                        TokenDate = DateTime.Today,
+                        Status = SynOS.Models.Enums.VisitStatus.Completed,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.Visits.Add(studyVisit);
+
+                    var studyOrder = new Order
+                    {
+                        OrderId = Guid.NewGuid(),
+                        VisitId = studyVisit.VisitId,
+                        TestId = ctTest.TestId,
+                        TestCode = ctTest.TestCode,
+                        Department = "Radiology",
+                        Status = SynOS.Models.Enums.OrderStatus.Active,
+                        Price = 2500.00m,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    context.Orders.Add(studyOrder);
+
+                    var scheduledStudy = new RadiologyStudy
+                    {
+                        RadiologyStudyId = Guid.NewGuid(),
+                        VisitId = studyVisit.VisitId,
+                        VisitTestId = studyOrder.OrderId,
+                        PatientId = patient.PatientId,
+                        Modality = "CT",
+                        ModalityId = ctModality?.ModalityId ?? Guid.Empty,
+                        AccessionNumber = "ACC-CT-" + DateTime.Now.ToString("yyMMddHHmmss"),
+                        ExternalStudyInstanceUid = "1.2.826.0.1.3680043.8.498." + Random.Shared.Next(1000, 9999),
+                        Status = "Scheduled",
+                        CreatedBy = adminUserId,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.RadiologyStudies.Add(scheduledStudy);
+                    context.SaveChanges();
+                }
+            }
         }
 
         private static void SeedPatients(SynOSDbContext context)

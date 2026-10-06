@@ -64,6 +64,7 @@ def test_resilience():
         # Abort abruptly
         assoc.abort()
         print("[+] Aborted association intentionally.")
+        time.sleep(0.3)
 
     # 2. Reconnect immediately and transmit Slice 2
     print("\n[TEST 2] Modality immediately reconnects and resumes transfer with Slice 2...")

@@ -35,7 +35,7 @@ namespace SynOS.Models.Entities
         public virtual Branch? Branch { get; set; } // Nullable navigation property
 
         [Required]
-        [StringLength(12)] // Increased length for new token format
+        [StringLength(64)] // Accommodates all token formats including drafts and modality tokens
         public string Token { get; set; } = string.Empty;
 
         [Required]
