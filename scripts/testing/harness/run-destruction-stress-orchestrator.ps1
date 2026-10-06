@@ -206,34 +206,41 @@ $MasterReport | ConvertTo-Json -Depth 5 | Set-Content -Path $summaryJsonPath -Fo
 
 # Generate Markdown Summary
 $reportMdPath = Join-Path $ResultsDir "destruction-stress-report.md"
-$verdictBadge = if ($MasterReport.allPassed) { "🟢 PASS — safe for pilot/client deployment" } else { "🔴 FAIL — do not deploy" }
+$verdictBadge = if ($MasterReport.allPassed) { "PASS - Safe for pilot/client deployment" } else { "FAIL - Do not deploy" }
 
-$mdContent = @"
-# SynOS Post-Installation Destruction & Stress Test Report
+$p1Status = if ($p1Passed) { "PASSED" } else { "FAILED" }
+$p2Status = if ($p2Passed) { "PASSED" } else { "FAILED" }
+$p3Status = if ($p3Passed) { "PASSED" } else { "FAILED" }
+$p4Status = if ($p4Passed) { "PASSED" } else { "FAILED" }
+$p5Status = if ($p5Passed) { "PASSED" } else { "FAILED" }
+$p6Status = if ($p6Passed) { "PASSED" } else { "FAILED" }
 
-**Execution Timestamp:** $($MasterReport.startTime)  
-**Final Forensic Verdict:** **$verdictBadge**
+$mdLines = @(
+    "# SynOS Post-Installation Destruction & Stress Test Report",
+    "",
+    "**Execution Timestamp:** $($MasterReport.startTime)",
+    "**Final Forensic Verdict:** **$verdictBadge**",
+    "",
+    "---",
+    "",
+    "### Pillar Execution Matrix",
+    "",
+    "| Pillar | Focus Area | Status | Key Forensic Observations |",
+    "| :--- | :--- | :---: | :--- |",
+    "| **Pillar 1** | Real-World Multi-Role Workflows | $p1Status | Patient intake, Phlebotomy, Results, Digital Signature, Report PDF, Delivery, DICOM |",
+    "| **Pillar 2** | UI Abuse & Hostile Injections | $p2Status | Double-click registration dedup, payment race idempotency, 10KB fuzzing, SQLi hardening |",
+    "| **Pillar 3** | Progressive Concurrency Scaling | $p3Status | 10 -> 25 -> 50 -> 100 simultaneous workflows; SQL lock waits & cross-patient data leaks |",
+    "| **Pillar 4** | Active Destruction & Hard Crashes | $p4Status | Killed SynOS process & stopped SQL Server during active transactions; consistency audit |",
+    "| **Pillar 5** | Hardware & Integration Layer Chaos | $p5Status | ASTM E1381 TCP injection & DICOM C-STORE flood during simultaneous patient load |",
+    "| **Pillar 6** | Sustained Stress & Memory Leak Audit | $p6Status | Memory deltas, private bytes, handle count leaks, and zero-byte file orphan scan |",
+    "",
+    "---",
+    "",
+    "### Overall Verdict Details",
+    "$verdictBadge"
+)
 
----
-
-### Pillar Execution Matrix
-
-| Pillar | Focus Area | Status | Key Forensic Observations |
-| :--- | :--- | :---: | :--- |
-| **Pillar 1** | Real-World Multi-Role Workflows | $(if ($p1Passed) { ' PASSED' } else { '❌ FAILED' }) | Patient intake -> Phlebotomy -> Results -> Digital Signature -> Report PDF -> Delivery -> DICOM |
-| **Pillar 2** | UI Abuse & Hostile Injections | $(if ($p2Passed) { ' PASSED' } else { '❌ FAILED' }) | Double-click registration dedup, payment race idempotency, 10KB fuzzing, SQLi hardening |
-| **Pillar 3** | Progressive Concurrency Scaling | $(if ($p3Passed) { ' PASSED' } else { '❌ FAILED' }) | 10 -> 25 -> 50 -> 100 simultaneous workflows; SQL lock waits & cross-patient data leaks |
-| **Pillar 4** | Active Destruction & Hard Crashes | $(if ($p4Passed) { ' PASSED' } else { '❌ FAILED' }) | Killed SynOS process & stopped SQL Server during active transactions; consistency audit |
-| **Pillar 5** | Hardware & Integration Layer Chaos | $(if ($p5Passed) { ' PASSED' } else { '❌ FAILED' }) | ASTM E1381 TCP injection & DICOM C-STORE flood during simultaneous patient load |
-| **Pillar 6** | Sustained Stress & Memory Leak Audit | $(if ($p6Passed) { ' PASSED' } else { '❌ FAILED' }) | Memory deltas, private bytes, handle count leaks, and zero-byte file orphan scan |
-
----
-
-### Overall Verdict Details
-$verdictBadge
-"@
-
-Set-Content -Path $reportMdPath -Value $mdContent -Force
+$mdLines -join "`n" | Set-Content -Path $reportMdPath -Force
 
 Log-Master "================================================================================" "INFO"
 Log-Master "FINAL VERDICT: $verdictBadge" $(if ($MasterReport.allPassed) { "SUCCESS" } else { "ERROR" })
