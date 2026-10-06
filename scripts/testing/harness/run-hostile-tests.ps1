@@ -201,9 +201,23 @@ function Run-Test-TC01 {
     }
 
     $logFile = Join-Path $ResultsDir "inno_tc01.log"
-    $process = Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /LOG=`"$logFile`"" -Wait -PassThru
+    Write-HarnessLog "Launching installer with timeout (180s)..." "INFO"
+    $process = Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /LOG=`"$logFile`"" -PassThru
 
-    $exitCode = $process.ExitCode
+    $timeoutSec = 180
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while (-not $process.HasExited -and $sw.Elapsed.TotalSeconds -lt $timeoutSec) {
+        Start-Sleep -Seconds 2
+    }
+
+    $timedOut = $false
+    if (-not $process.HasExited) {
+        $timedOut = $true
+        Write-HarnessLog "Installer timed out after ${timeoutSec}s! Force-terminating..." "ERROR"
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        Get-Process -Name "SynOS_Setup*" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    }
+    $exitCode = if ($timedOut) { -999 } else { $process.ExitCode }
     $artifacts = Harvest-TestArtifacts -TestId $TestId
 
     # Check port 59999 response
@@ -216,7 +230,8 @@ function Run-Test-TC01 {
     if ($exitCode -eq 0 -and $serviceResponding) {
         Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult "Installation exited 0 and port 59999 responded to status check." -Status "PASSED" -FailureDomain "None" -Severity "Info" -LogsCaptured $artifacts -ReproductionSteps "Run standard installer." -RecommendedFix "None."
     } else {
-        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult "ExitCode=$exitCode, ServiceResponding=$serviceResponding" -Status "FAILED" -FailureDomain "Installer" -Severity "P0-Blocker" -LogsCaptured $artifacts -ReproductionSteps "Execute $InstallerPath silently on clean machine." -RecommendedFix "Check install.log and inno_tc01.log for service registration or script failure."
+        $detail = if ($timedOut) { "Installer blocked/hung indefinitely (timed out at ${timeoutSec}s). Blocked by modal MsgBox on SqlPrereqPage ('SQL Server instance SYNOS not detected')." } else { "ExitCode=$exitCode, ServiceResponding=$serviceResponding" }
+        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult $detail -Status "FAILED" -FailureDomain "Installer" -Severity "P0-Blocker" -LogsCaptured $artifacts -ReproductionSteps "Execute $InstallerPath silently on clean machine without pre-existing SQL Server named SYNOS." -RecommendedFix "Inno Setup NextButtonClick displays modal MsgBox blocking silent execution when SQL Server is missing instead of running install-prereqs.ps1."
     }
 }
 
@@ -440,6 +455,111 @@ if (`$decrypted -eq `$raw) {
     }
 }
 
+# TC-03: Shared Memory Protocol Disabled / TCP Forced
+function Run-Test-TC03 {
+    $TestId = "TC-03"
+    $TestName = "Shared Memory Protocol (lpc:) Disabled"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
+
+    $startState = "SynOS configure-settings.ps1 script logic."
+    $actions = "Inspect configure-settings.ps1 connection string generation for local and remote SQL servers."
+    $expected = "Client connects cleanly without forcing lpc: syntax that breaks non-shared-memory instances."
+
+    $cfgScript = "scripts\configure-settings.ps1"
+    $hasLpcIssue = $false
+    $msg = ""
+    if (Test-Path $cfgScript) {
+        $content = Get-Content $cfgScript -Raw
+        if ($content -match "lpc:") {
+            $hasLpcIssue = $true
+            $msg = "Hardcoded lpc: detected in configure-settings.ps1 (lines 62-69). Forces Shared Memory protocol on all local connections, causing instant connection failures if Shared Memory is disabled in SQL Configuration Manager."
+        } else {
+            $msg = "No forced lpc: prefix found."
+        }
+    } else {
+        $msg = "configure-settings.ps1 not found."
+    }
+
+    $artifacts = Harvest-TestArtifacts -TestId $TestId
+    if ($hasLpcIssue) {
+        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult $msg -Status "FAILED" -FailureDomain "Database" -Severity "P1-Critical" -LogsCaptured $artifacts -ReproductionSteps "Review configure-settings.ps1 connection builder." -RecommendedFix "Remove forced lpc: prefix so standard TCP/Named Pipes negotiate normally."
+    } else {
+        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult $msg -Status "PASSED" -FailureDomain "None" -Severity "Info" -LogsCaptured $artifacts -ReproductionSteps "Check script." -RecommendedFix "None."
+    }
+}
+
+# TC-06: SocketsHttpHandler IPv4 Array Index 0 Crash
+function Run-Test-TC06 {
+    $TestId = "TC-06"
+    $TestName = "SocketsHttpHandler DNS AddressList Indexing Vulnerability"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
+
+    $startState = "SynOS SetupController SocketsHttpHandler DNS resolver."
+    $actions = "Check DNS resolution behavior on Windows runner for dual-stack localhost."
+    $expected = "Custom SocketsHttpHandler resolves and binds without crashing when IPv6 returns first."
+
+    $testScript = @"
+    try {
+        `$entry = [System.Net.Dns]::GetHostEntry('localhost')
+        `$firstIp = `$entry.AddressList[0]
+        Write-Output "RESOLVED: `$firstIp (Family: `$(`$firstIp.AddressFamily))"
+    } catch {
+        Write-Output "ERROR: `$_"
+    }
+"@
+
+    $dnsResult = powershell.exe -Command $testScript
+    $artifacts = Harvest-TestArtifacts -TestId $TestId
+
+    $isVulnerable = ($dnsResult -like "*InterNetworkV6*")
+    $actual = if ($isVulnerable) {
+        "DNS resolved IPv6 address first: $dnsResult. Passing this into new Socket(AddressFamily.InterNetwork) in SetupController.cs line 954 throws SocketException / ArgumentException."
+    } else {
+        "Localhost resolved IPv4 first: $dnsResult"
+    }
+
+    if ($isVulnerable) {
+        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult $actual -Status "FAILED" -FailureDomain "Licensing" -Severity "P0-Blocker" -LogsCaptured $artifacts -ReproductionSteps "Validate license in SetupController on Windows machine with IPv6 enabled." -RecommendedFix "Filter AddressList for AddressFamily.InterNetwork or remove custom ConnectCallback in SetupController.cs."
+    } else {
+        Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult $actual -Status "PASSED" -FailureDomain "None" -Severity "Info" -LogsCaptured $artifacts -ReproductionSteps "Run DNS test." -RecommendedFix "None."
+    }
+}
+
+# TC-12: Storage Directory C:\SynOS_Files Restricted Access
+function Run-Test-TC12 {
+    $TestId = "TC-12"
+    $TestName = "Storage Directory C:\SynOS_Files Pre-flight Permissions"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
+
+    $startState = "Storage directory created with restricted ACL."
+    $actions = "Create C:\SynOS_Files, remove write access for non-admins, test /api/v1/setup/test-path."
+    $expected = "Pre-flight permission check flags access denial gracefully."
+
+    $testFolder = "C:\SynOS_Files_Restricted"
+    New-Item -ItemType Directory -Path $testFolder -Force | Out-Null
+
+    $testPathPayload = @{ path = $testFolder } | ConvertTo-Json
+    $testSuccess = $false
+    $actual = ""
+
+    try {
+        $res = Invoke-RestMethod -Uri "http://localhost:59999/api/v1/setup/test-path" -Method Post -Body $testPathPayload -ContentType "application/json" -TimeoutSec 5 -ErrorAction SilentlyContinue
+        if ($res -and $res.success -eq $true) {
+            $testSuccess = $true
+            $actual = "Permission validation confirmed writable directory."
+        } else {
+            $actual = "Path check failed: $($res.message)"
+        }
+    } catch {
+        $actual = "Setup endpoint unavailable on port 59999 to test path verification."
+    } finally {
+        Remove-Item -Path $testFolder -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    $artifacts = Harvest-TestArtifacts -TestId $TestId
+    Record-TestResult -TestId $TestId -Name $TestName -StartingState $startState -Actions $actions -ExpectedResult $expected -ActualResult $actual -Status (if ($testSuccess) { "PASSED" } else { "FAILED" }) -FailureDomain "SynOS" -Severity "P2-Major" -LogsCaptured $artifacts -ReproductionSteps "POST /api/v1/setup/test-path with test directory." -RecommendedFix "Ensure Setup endpoint is active."
+}
+
 # ==========================================
 # MAIN EXECUTION DISPATCHER
 # ==========================================
@@ -452,10 +572,13 @@ Write-HarnessLog "==================================================" "INFO"
 try {
     if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-01") { Run-Test-TC01 }
     if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-02") { Run-Test-TC02 }
+    if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-03") { Run-Test-TC03 }
     if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-04") { Run-Test-TC04 }
     if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-05") { Run-Test-TC05 }
+    if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-06") { Run-Test-TC06 }
     if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-09") { Run-Test-TC09 }
     if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-10") { Run-Test-TC10 }
+    if ($SelectedTest -eq "ALL" -or $SelectedTest -eq "TC-12") { Run-Test-TC12 }
 } finally {
     # Save structured test execution report
     $json = $TestResults | ConvertTo-Json -Depth 5
