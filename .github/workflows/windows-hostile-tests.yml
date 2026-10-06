@@ -45,7 +45,7 @@ jobs:
         run: |
           Write-Host "=== 1. Building Frontend ===" -ForegroundColor Cyan
           cd src/SynOS.Frontend
-          npm ci
+          npm install
           npx vite build
           cd ../..
 
