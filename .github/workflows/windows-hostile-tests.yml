@@ -1,0 +1,82 @@
+name: SynOS Hostile Stress Testing Matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Scope of hostile tests to execute'
+        required: true
+        default: 'ALL'
+        type: choice
+        options:
+          - ALL
+          - TC-01
+          - TC-02
+          - TC-04
+          - TC-05
+          - TC-09
+          - TC-10
+
+jobs:
+  hostile-matrix:
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out SynOS repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress -y
+
+      - name: Build SynOS Binaries & Inno Setup Installer (As-Is)
+        shell: powershell
+        run: |
+          Write-Host "=== 1. Building Frontend ===" -ForegroundColor Cyan
+          cd src/SynOS.Frontend
+          npm ci
+          npx vite build
+          cd ../..
+
+          Write-Host "=== 2. Copying Dist Build to Api wwwroot ===" -ForegroundColor Cyan
+          if (-not (Test-Path "src/SynOS.Api/wwwroot")) { New-Item -ItemType Directory -Force -Path "src/SynOS.Api/wwwroot" }
+          Copy-Item -Path "src/SynOS.Frontend/dist-build/*" -Destination "src/SynOS.Api/wwwroot" -Recurse -Force
+
+          Write-Host "=== 3. Publishing Api & ServerManager ===" -ForegroundColor Cyan
+          dotnet publish src/SynOS.Api/SynOS.Api.csproj -c Release -r win-x64 --self-contained true
+          dotnet publish src/SynOS.ServerManager/SynOS.ServerManager.csproj -c Release -r win-x64 --self-contained true
+
+          Write-Host "=== 4. Compiling Inno Setup Installer ===" -ForegroundColor Cyan
+          & "C:\Program Files (x86)\Inno Setup 6\iscc.exe" SynOS_Setup.iss
+          
+          if (-not (Test-Path "SynOS_Setup_v239_testing.exe")) {
+            Throw "Installer compilation failed!"
+          }
+          Write-Host "Installer built successfully: SynOS_Setup_v239_testing.exe" -ForegroundColor Green
+
+      - name: Execute Hostile Stress-Testing Harness
+        shell: powershell
+        run: |
+          $installer = "$((Get-Location).Path)\SynOS_Setup_v239_testing.exe"
+          & scripts\testing\harness\run-hostile-tests.ps1 -InstallerPath $installer -SelectedTest "${{ github.event.inputs.test_scope || 'ALL' }}"
+
+      - name: Upload Test Results & Forensic Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hostile-stress-test-results
+          path: |
+            test-results/hostile-harness/
+            test-results/hostile-harness/test-summary.json
+            test-results/hostile-harness/harness-execution.log
