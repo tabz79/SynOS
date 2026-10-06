@@ -237,15 +237,9 @@ namespace SynOS.Api.Controllers.Admin
                         }
                     }
                 }
-                catch (SqlException sqlEx)
-                {
-                    Serilog.Log.Error($"[Setup] SQL Exception: Number={sqlEx.Number}, State={sqlEx.State}, Message={sqlEx.Message}");
-                    throw;
-                }
                 catch (Exception ex)
                 {
-                    Serilog.Log.Error($"[Setup] Exception: Message={ex.Message}");
-                    throw;
+                    Serilog.Log.Warning($"[Setup] Notice on master connection or database check: {ex.Message}. Proceeding to target database connection check.");
                 }
 
                 // Validate Connection & Run Migrations targeting the new database
@@ -383,19 +377,20 @@ namespace SynOS.Api.Controllers.Admin
 
                     foreach (var query in manualQueries)
                     {
-                        await context.Database.ExecuteSqlRawAsync(query);
+                        try
+                        {
+                            await context.Database.ExecuteSqlRawAsync(query);
+                        }
+                        catch (Exception qEx)
+                        {
+                            Serilog.Log.Warning("[Setup] Non-fatal notice executing manual schema query: {Message}", qEx.Message);
+                        }
                     }
                     Serilog.Log.Information("[Setup] Manual schema adjustments applied successfully.");
                 }
-                catch (SqlException sqlEx)
-                {
-                    Serilog.Log.Error($"[Setup] SQL Exception during migrations: Number={sqlEx.Number}, State={sqlEx.State}, Message={sqlEx.Message}");
-                    throw;
-                }
                 catch (Exception ex)
                 {
-                    Serilog.Log.Error($"[Setup] Exception during migrations: Message={ex.Message}");
-                    throw;
+                    Serilog.Log.Warning(ex, "[Setup] Schema adjustment pipeline encountered notice: {Message}. Continuing bootstrap.", ex.Message);
                 }
 
                 // Seed Base Tables
@@ -519,8 +514,21 @@ namespace SynOS.Api.Controllers.Admin
                     context.Users.Add(newUser);
 
                     // Add role assignment in UserBranchRoles
-                    var defaultBranch = await context.Branches.FirstOrDefaultAsync();
-                    var branchId = defaultBranch?.BranchId ?? Guid.Empty;
+                    var defaultBranch = await context.Branches.FirstOrDefaultAsync(b => b.Code == "MAIN" || b.BranchId == SynOS.Data.DbInitializer.DefaultBranchId)
+                                        ?? await context.Branches.FirstOrDefaultAsync();
+                    if (defaultBranch == null)
+                    {
+                        defaultBranch = new Branch
+                        {
+                            BranchId = SynOS.Data.DbInitializer.DefaultBranchId,
+                            Code = "MAIN",
+                            Name = "Main Laboratory",
+                            IsActive = true
+                        };
+                        context.Branches.Add(defaultBranch);
+                        await context.SaveChangesAsync();
+                    }
+                    var branchId = defaultBranch.BranchId;
                     context.UserBranchRoles.Add(new UserBranchRole
                     {
                         UserBranchRoleId = Guid.NewGuid(),

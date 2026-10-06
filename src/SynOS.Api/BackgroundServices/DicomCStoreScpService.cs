@@ -265,12 +265,9 @@ namespace SynOS.Api.BackgroundServices
         {
             Console.WriteLine($"[DICOM] Abort from source {source}: {reason}");
             Logger.LogWarning("Received DICOM Abort from source {Source}: {Reason}. Cleaning up association state.", source, reason);
-            try
-            {
-                // Force teardown of internal buffers and cancel outstanding requests
-                SendAssociationRejectAsync(DicomRejectResult.Permanent, DicomRejectSource.ServiceUser, DicomRejectReason.NoReasonGiven);
-            }
-            catch {}
+            // OnReceiveAbort is invoked when an A-ABORT PDU has already been received.
+            // Sending an Association Reject on an already aborted association is a DICOM protocol violation
+            // that corrupts the SCP state. We only clean up local association state.
         }
 
         public void OnConnectionClosed(Exception exception)
