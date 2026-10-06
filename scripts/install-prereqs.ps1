@@ -111,7 +111,7 @@ if (-not $sqlInstalled) {
         }
         
         Log-Message "Installing SQL Server Express $InstanceName instance silently..."
-        $installArgs = "/QS /ACTION=Install /FEATURES=SQL /INSTANCENAME=$InstanceName /SQLSVCACCOUNT=""NT AUTHORITY\NetworkService"" /SQLSYSADMINACCOUNTS=""BUILTIN\Administrators"" /TCPENABLED=1 /IACCEPTSQLSERVERLICENSETERMS"
+        $installArgs = "/Q /ACTION=Install /FEATURES=SQL /INSTANCENAME=$InstanceName /SQLSVCACCOUNT=""NT AUTHORITY\NetworkService"" /SQLSYSADMINACCOUNTS=""BUILTIN\Administrators"" /TCPENABLED=1 /IACCEPTSQLSERVERLICENSETERMS /SUPPRESSPRIVACYSTATEMENTNOTICE"
         Log-Message "Running installation file: $sqlPackagePath with args: $installArgs"
         
         $installProcess = Start-Process -FilePath $sqlPackagePath -ArgumentList $installArgs -Wait -PassThru -NoNewWindow

@@ -81,6 +81,27 @@ var envPort = Environment.GetEnvironmentVariable("SYNOS_PORT");
 int activePort = !string.IsNullOrEmpty(envPort) && int.TryParse(envPort, out var p) 
     ? p 
     : (isSetupMode ? SynOS.Api.Services.SystemSetupState.SetupPort : SynOS.Api.Services.SystemSetupState.ServicePort);
+
+// Pre-flight Port Availability Check (Fail-fast if port is already bound)
+try
+{
+    var testListener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Any, activePort);
+    testListener.ExclusiveAddressUse = true;
+    testListener.Start();
+    testListener.Stop();
+}
+catch (System.Net.Sockets.SocketException sockEx) when (sockEx.SocketErrorCode == System.Net.Sockets.SocketError.AddressAlreadyInUse)
+{
+    Log.Fatal("PORT CONFLICT: Port {ActivePort} is already in use by another process or service! Terminating immediately.", activePort);
+    Console.Error.WriteLine($"[FATAL] Port {activePort} is already in use. SynOS cannot start.");
+    Log.CloseAndFlush();
+    Environment.Exit(1);
+}
+catch (Exception portEx)
+{
+    Log.Warning(portEx, "Pre-flight port availability check warning on port {ActivePort}", activePort);
+}
+
 builder.WebHost.UseUrls($"http://*:{activePort}");
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
