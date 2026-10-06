@@ -126,7 +126,7 @@ function Reset-CleanMachineState {
             try {
                 Remove-Item -Path $folder -Recurse -Force -ErrorAction SilentlyContinue
             } catch {
-                Write-HarnessLog "Could not fully delete $folder: $_" "WARN"
+                Write-HarnessLog "Could not fully delete ${folder}: $_" "WARN"
             }
         }
     }
@@ -188,7 +188,7 @@ function Harvest-TestArtifacts {
 function Run-Test-TC01 {
     $TestId = "TC-01"
     $TestName = "Pristine Silent Installation"
-    Write-HarnessLog "Running $TestId: $TestName..." "HOSTILE"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
     Reset-CleanMachineState
 
     $startState = "Pristine OS, no SynOS service, no directories, no registry keys."
@@ -224,7 +224,7 @@ function Run-Test-TC01 {
 function Run-Test-TC02 {
     $TestId = "TC-02"
     $TestName = "Database Unavailable During Service Boot"
-    Write-HarnessLog "Running $TestId: $TestName..." "HOSTILE"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
 
     $startState = "SynOS installed or ready to boot; SQL Server service forcibly stopped."
     $actions = "Stop MSSQL service, attempt to run SynOS.Api.exe or start TBZSynOSService."
@@ -275,7 +275,7 @@ function Run-Test-TC02 {
 function Run-Test-TC04 {
     $TestId = "TC-04"
     $TestName = "Invalid License Key Rejection Integrity"
-    Write-HarnessLog "Running $TestId: $TestName..." "HOSTILE"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
 
     $startState = "SynOS Setup API running on port 59999."
     $actions = "POST /api/v1/setup/test-middleware with bogus key 'INVALID-TEST-KEY-00000'."
@@ -313,7 +313,7 @@ function Run-Test-TC04 {
 function Run-Test-TC05 {
     $TestId = "TC-05"
     $TestName = "License Server Unreachable (DNS / Network Blackhole)"
-    Write-HarnessLog "Running $TestId: $TestName..." "HOSTILE"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
 
     $startState = "SynOS Setup API running on port 59999."
     $actions = "Blackhole cloud.tbzlabs.in in hosts file, POST /test-middleware, verify timeout and error response."
@@ -360,7 +360,7 @@ function Run-Test-TC05 {
 function Run-Test-TC09 {
     $TestId = "TC-09"
     $TestName = "Port 59999 Already in Use Conflict"
-    Write-HarnessLog "Running $TestId: $TestName..." "HOSTILE"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
 
     $startState = "Clean state, port 59999 pre-bound by rogue TCP listener."
     $actions = "Start raw TcpListener on 0.0.0.0:59999, run installer or start SynOS.Api.exe."
@@ -403,7 +403,7 @@ function Run-Test-TC09 {
 function Run-Test-TC10 {
     $TestId = "TC-10"
     $TestName = "DPAPI Key Protection Across User Profiles"
-    Write-HarnessLog "Running $TestId: $TestName..." "HOSTILE"
+    Write-HarnessLog "Running ${TestId}: ${TestName}..." "HOSTILE"
 
     $startState = "SynOS assemblies available."
     $actions = "Protect license key under current admin user context, unprotect via simulated SYSTEM/another thread context."
