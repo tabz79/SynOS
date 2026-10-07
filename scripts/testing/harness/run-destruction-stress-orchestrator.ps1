@@ -135,7 +135,32 @@ if ($setupState -and $setupState.isConfigured -eq $false) {
     try {
         $initRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/setup/initialize" -Method Post -Body $initPayload -ContentType "application/json" -TimeoutSec 90
         Log-Master "Setup initialization succeeded: $($initRes | ConvertTo-Json -Compress)" "SUCCESS"
+        
+        # Setup stops the bootstrap server and starts TBZSynOSService. Wait for port 59999 to respond again.
+        Log-Master "Waiting for TBZSynOSService handover on port 59999..." "INFO"
         Start-Sleep -Seconds 5
+        $handoverReady = $false
+        $swHandover = [System.Diagnostics.Stopwatch]::StartNew()
+        while ($swHandover.Elapsed.TotalSeconds -lt 60) {
+            try {
+                $statusRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/setup/status" -TimeoutSec 3 -ErrorAction SilentlyContinue
+                if ($statusRes -and $statusRes.isConfigured -eq $true) {
+                    $handoverReady = $true
+                    Log-Master "TBZSynOSService successfully online in operational mode (handover completed in $([math]::Round($swHandover.Elapsed.TotalSeconds, 1))s)." "SUCCESS"
+                    break
+                }
+            } catch {}
+            
+            # Ensure service is running
+            $s = Get-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
+            if ($s -and $s.Status -ne "Running") {
+                Start-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
+            }
+            Start-Sleep -Seconds 2
+        }
+        if (-not $handoverReady) {
+            Log-Master "WARNING: Handover wait exceeded 60s. Continuing to test suite..." "ERROR"
+        }
     } catch {
         Log-Master "Setup initialization response/warning: $_" "INFO"
     }
