@@ -404,7 +404,7 @@ async function runInteractionProfiler() {
         })
     ];
     const doubleSignResults = await Promise.all(doubleSignPromises);
-    const dbSignatures = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM DiagnosticReports WHERE VisitId = '${spVisId}' AND Status = 'Signed'`);
+    const dbSignatures = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Reports WHERE VisitId = '${spVisId}' AND Status = 'Signed'`);
     console.log(`- Rapid double-sign results: [${doubleSignResults.map(r => r.status).join(', ')}]`);
     console.log(`- SQL Reports in Signed status: ${dbSignatures}`);
 
@@ -438,7 +438,7 @@ async function runInteractionProfiler() {
         })
     ];
     const concurrentAddResults = await Promise.all(concurrentAdds);
-    const dbOrderCount = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM DiagnosticOrders WHERE VisitId = '${dirtyVisId}'`);
+    const dbOrderCount = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Orders WHERE VisitId = '${dirtyVisId}'`);
     console.log(`- Concurrent test add responses: [${concurrentAddResults.map(r => r.status).join(', ')}]`);
     console.log(`- Database diagnostic orders created: ${dbOrderCount}`);
 
