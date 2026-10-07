@@ -41,37 +41,57 @@ export function LoginPage() {
 
     const handleBranchSelect = async (branchId) => {
         setIsSubmitting(true);
+        setError(null);
         try {
             await login(username, password, branchId);
             navigate('/');
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Branch authentication failed');
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (user) {
-        setTimeout(() => navigate('/'), 100);
-    }
+    useEffect(() => {
+        if (user) {
+            navigate('/', { replace: true });
+        }
+    }, [user, navigate]);
 
     // Render Branch Selection
     if (authData?.requiresBranchSelection) {
         return (
             <div className="h-screen w-screen bg-synos-background flex items-center justify-center p-4">
                 <div className="w-full max-w-sm bg-white border border-zinc-200/80 rounded-2xl p-8 shadow-xl">
-                    <h2 className="text-xl font-bold text-zinc-900 mb-6 text-center">Select Branch</h2>
+                    <h2 className="text-xl font-bold text-zinc-900 mb-2 text-center">Select Branch</h2>
+                    <p className="text-zinc-500 text-xs mb-6 text-center">Select your active operating branch to proceed</p>
+                    
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded mb-4 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                            <span>{error}</span>
+                        </div>
+                    )}
+
                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                         {authData.availableBranches.map(branch => (
                             <button
                                 key={branch.branchId}
+                                disabled={isSubmitting}
                                 onClick={() => handleBranchSelect(branch.branchId)}
-                                className="w-full bg-zinc-50 border border-zinc-200 hover:border-synos-primary hover:bg-zinc-100/50 text-zinc-900 p-3 rounded-xl text-left transition-all font-medium"
+                                className="w-full bg-zinc-50 border border-zinc-200 hover:border-synos-primary hover:bg-zinc-100/50 text-zinc-900 p-3 rounded-xl text-left transition-all font-medium flex items-center justify-between disabled:opacity-50"
                             >
-                                {branch.name}
+                                <span>{branch.name}</span>
+                                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin text-synos-primary" />}
                             </button>
                         ))}
                     </div>
+                    <button
+                        onClick={() => { setAuthData(null); setError(null); }}
+                        className="mt-4 text-xs text-zinc-400 hover:text-zinc-600 w-full text-center"
+                    >
+                        ← Back to login
+                    </button>
                 </div>
             </div>
         );
