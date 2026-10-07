@@ -91,20 +91,33 @@ while ($sw.Elapsed.TotalSeconds -lt $DurationSeconds) {
 
 Write-Host "Sustained load generation complete. Total workflows executed: $totalWorkflows in $($sw.Elapsed.TotalSeconds)s."
 
-# 3. Capture Post-Load Metrics & Calculate Memory Growth
-Write-Host "`n--- 3. Measuring Post-Load Health & Memory Deltas ---" -ForegroundColor Yellow
-Start-Sleep -Seconds 3 # Allow GC cycle
+# 3. Capture Post-Load Metrics & Calculate Memory Growth Across Observation Window
+Write-Host "`n--- 3. Measuring Post-Load Health & Memory Deltas Across Observation Window ---" -ForegroundColor Yellow
 
-$finalApi = Get-ProcessMetrics "SynOS.Api"
+# Forensic Investigation: Sample memory at T+3s, T+10s, T+20s, T+30s to verify GC settling vs leak
+$samplingIntervals = @(3, 10, 20, 30)
+$lastSampleApi = $null
+$samples = @()
+
+foreach ($sec in $samplingIntervals) {
+    Start-Sleep -Seconds $(if ($samples.Count -eq 0) { $sec } else { $sec - $samples[-1].Second })
+    $sampleApi = Get-ProcessMetrics "SynOS.Api"
+    $deltaFromBaseline = [math]::Round($sampleApi.WorkingSetMB - $baselineApi.WorkingSetMB, 2)
+    Write-Host "  [Post-Load T+${sec}s] SynOS.Api RAM: $($sampleApi.WorkingSetMB) MB (Delta: +${deltaFromBaseline} MB) | Handles: $($sampleApi.Handles)" -ForegroundColor Gray
+    $samples += @{ Second = $sec; WorkingSetMB = $sampleApi.WorkingSetMB; DeltaMB = $deltaFromBaseline; Handles = $sampleApi.Handles }
+    $lastSampleApi = $sampleApi
+}
+
+$finalApi = $lastSampleApi
 $finalSql = Get-ProcessMetrics "sqlservr"
 
 $apiRamDeltaMB = [math]::Round($finalApi.WorkingSetMB - $baselineApi.WorkingSetMB, 2)
 $apiHandleDelta = $finalApi.Handles - $baselineApi.Handles
 
-Write-Host "Post-Load SynOS.Api: RAM=$($finalApi.WorkingSetMB) MB (Delta: +$apiRamDeltaMB MB) | Handles=$($finalApi.Handles) (Delta: +$apiHandleDelta)"
+Write-Host "`nFinal Settled SynOS.Api (at T+30s): RAM=$($finalApi.WorkingSetMB) MB (Delta: +$apiRamDeltaMB MB) | Handles=$($finalApi.Handles) (Delta: +$apiHandleDelta)"
 Write-Host "Post-Load SQL Server: RAM=$($finalSql.WorkingSetMB) MB | Handles=$($finalSql.Handles)"
 
-# Leak Detection Gate: SynOS.Api memory growth must not exceed 250 MB for this load
+# Leak Detection Gate: SynOS.Api memory growth must not exceed 250 MB after the 30s settling window
 $leakDetected = ($apiRamDeltaMB -gt 250)
 
 # 4. File System Orphan Scan in C:\SynOS_Files
