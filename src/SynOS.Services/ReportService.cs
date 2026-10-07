@@ -211,7 +211,22 @@ namespace SynOS.Services
             if (report == null) throw new KeyNotFoundException("Report not found.");
 
             if (report.Status == "Signed" || report.Status == "Finalized")
-                throw new InvalidOperationException($"Report is already signed or finalized. Current status: {report.Status}");
+            {
+                var existingSig = await _context.ReportSignatures
+                    .OrderByDescending(s => s.SignedAt)
+                    .FirstOrDefaultAsync(s => s.ReportId == reportId);
+
+                return new ReportSignatureResponseDto
+                {
+                    ReportId = report.ReportId,
+                    SignedByUserId = existingSig?.SignedByUserId ?? signedByUserId,
+                    SignedAt = existingSig?.SignedAt ?? DateTimeOffset.UtcNow,
+                    SignatureHash = existingSig?.SignatureHash ?? string.Empty,
+                    ContentHash = existingSig?.ContentHash ?? string.Empty,
+                    Status = report.Status,
+                    ReportVersion = report.CurrentVersion == 0 ? 1 : report.CurrentVersion
+                };
+            }
 
             // Branch Context Check via Engine happens downstream, but we need Order/Visit for logic below
             var order = await _context.Orders

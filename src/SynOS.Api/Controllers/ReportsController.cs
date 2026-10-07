@@ -116,7 +116,9 @@ namespace SynOS.Api.Controllers
             catch (InvalidOperationException ex)
             {
                 if (ex.Message.Contains("already signed", StringComparison.OrdinalIgnoreCase) || 
-                    ex.Message.Contains("finalized", StringComparison.OrdinalIgnoreCase))
+                    ex.Message.Contains("finalized", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("Cannot sign report in state", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("state Signed", StringComparison.OrdinalIgnoreCase))
                 {
                     return Ok(new { reportId = reportId, status = "Signed", message = ex.Message });
                 }
