@@ -96,9 +96,9 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
-                if (report != null && (report.Status == "Signed" || report.Status == "Verified"))
+                if (report != null && (report.Status == "Signed" || report.Status == "Verified" || report.Status == "Finalized"))
                 {
-                    return Ok(new { reportId = report.ReportId, status = report.Status });
+                    return Ok(new { reportId = report.ReportId, status = report.Status, message = "Report is already signed or verified." });
                 }
 
                 var targetReportId = report?.ReportId ?? reportId;
@@ -115,6 +115,11 @@ namespace SynOS.Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                if (ex.Message.Contains("already signed", StringComparison.OrdinalIgnoreCase) || 
+                    ex.Message.Contains("finalized", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Ok(new { reportId = reportId, status = "Signed", message = ex.Message });
+                }
                 return UnprocessableEntity(new { message = ex.Message });
             }
             catch (UnauthorizedAccessException ex)
