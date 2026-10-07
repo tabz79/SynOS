@@ -166,21 +166,35 @@ namespace SynOS.Api.BackgroundServices
                     if (!matchedStudies.Any())
                     {
                         var patient = await db.Patients.FirstOrDefaultAsync(p => p.MRN == "A00001") ?? await db.Patients.FirstOrDefaultAsync();
-                        if (patient != null)
+                        if (patient == null)
                         {
-                            var syntheticStudy = new RadiologyStudy
+                            patient = new Patient
                             {
-                                RadiologyStudyId = Guid.NewGuid(),
-                                PatientId = patient.PatientId,
-                                Patient = patient,
-                                Modality = !string.IsNullOrEmpty(filterModality) ? filterModality : "CT",
-                                AccessionNumber = "ACC-" + DateTime.UtcNow.ToString("yyMMddHHmmss"),
-                                ExternalStudyInstanceUid = DicomUID.Generate().UID,
-                                Status = "Scheduled",
-                                CreatedAt = DateTimeOffset.UtcNow
+                                PatientId = Guid.NewGuid(),
+                                MRN = "A00001",
+                                FirstName = "Test",
+                                LastName = "Patient1",
+                                DisplayName = "Test Patient1",
+                                Gender = "Male",
+                                DateOfBirth = new DateTime(1985, 1, 1),
+                                CreatedAt = DateTime.UtcNow
                             };
-                            matchedStudies.Add(syntheticStudy);
+                            db.Patients.Add(patient);
                         }
+
+                        var syntheticStudy = new RadiologyStudy
+                        {
+                            RadiologyStudyId = Guid.NewGuid(),
+                            PatientId = patient.PatientId,
+                            Patient = patient,
+                            Modality = !string.IsNullOrEmpty(filterModality) ? filterModality : "CT",
+                            AccessionNumber = "ACC-" + DateTime.UtcNow.ToString("yyMMddHHmmss"),
+                            ExternalStudyInstanceUid = DicomUID.Generate().UID,
+                            Status = "Scheduled",
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        db.RadiologyStudies.Add(syntheticStudy);
+                        matchedStudies.Add(syntheticStudy);
                     }
 
                     bool needsSave = false;
@@ -192,7 +206,11 @@ namespace SynOS.Api.BackgroundServices
                             needsSave = true;
                         }
                     }
-                    if (needsSave)
+                    if (needsSave || !matchedStudies.Any())
+                    {
+                        await db.SaveChangesAsync();
+                    }
+                    else
                     {
                         await db.SaveChangesAsync();
                     }
@@ -233,6 +251,7 @@ namespace SynOS.Api.BackgroundServices
                 var respDataset = new DicomDataset
                 {
                     { DicomTag.SpecificCharacterSet, "ISO_IR 100" },
+                    { DicomTag.Modality, modality },
                     { DicomTag.PatientName, patientName },
                     { DicomTag.PatientID, study.Patient?.MRN ?? "UNKNOWN" },
                     { DicomTag.PatientBirthDate, study.Patient?.DateOfBirth.ToString("yyyyMMdd") ?? "19900101" },

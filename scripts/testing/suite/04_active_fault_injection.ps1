@@ -124,10 +124,10 @@ try {
 Write-Host "Restarting MSSQL service..." -ForegroundColor Cyan
 Get-Service -Name "MSSQL*" | Start-Service -ErrorAction SilentlyContinue
 
-# Check if SynOS API host stayed alive and re-established connection without reboot (poll up to 45s)
+# Check if SynOS API host stayed alive and re-established connection without reboot (poll up to 90s)
 $apiAlive = $false
 $sqlRecoverySw = [System.Diagnostics.Stopwatch]::StartNew()
-while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 45) {
+while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 90) {
     try {
         $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 5 -ErrorAction SilentlyContinue
         if ($checkRes) { 

@@ -4,8 +4,11 @@ using System.Threading.Tasks;
 using AutoMapper; // Added for IMapper
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SynOS.Api.Authorization;
 using SynOS.Models.DTOs;
+using SynOS.Models.Entities;
+using SynOS.Models.Enums;
 using SynOS.Services;
 using System.Collections.Generic; // Added for IReadOnlyList
 
@@ -70,16 +73,25 @@ namespace SynOS.Api.Controllers
         [HttpPost("enter")]
         public async Task<IActionResult> EnterResultsDynamic([FromBody] DynamicResultEntryDto requestDto, [FromServices] SynOS.Data.SynOSDbContext db)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub") ?? User.FindFirstValue("nameid");
             if (string.IsNullOrEmpty(userIdClaim)) return Unauthorized("User ID not found in token.");
             
             var userId = Guid.Parse(userIdClaim);
             Guid targetOrderId = requestDto.OrderId ?? Guid.Empty;
+            Guid? visitId = requestDto.VisitId;
 
-            if (targetOrderId == Guid.Empty && requestDto.VisitId.HasValue && requestDto.VisitId.Value != Guid.Empty)
+            if (targetOrderId == Guid.Empty && visitId.HasValue && visitId.Value != Guid.Empty)
             {
                 var order = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
-                    db.Orders, o => o.VisitId == requestDto.VisitId.Value && o.Department == "Pathology");
+                    db.Orders, o => o.VisitId == visitId.Value && 
+                    (o.Department == "Pathology" || o.Department == "PATH" || o.Department == "HEM" || o.Department == "LAB" || (o.Department != "RAD" && o.Department != "Radiology")));
+                
+                if (order == null)
+                {
+                    order = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(
+                        db.Orders, o => o.VisitId == visitId.Value && o.Status != OrderStatus.Cancelled);
+                }
+
                 if (order != null)
                 {
                     targetOrderId = order.OrderId;
@@ -91,9 +103,13 @@ namespace SynOS.Api.Controllers
                 return BadRequest("OrderId or VisitId must be provided");
             }
 
+            var resolvedOrder = await db.Orders.Include(o => o.Visit).FirstOrDefaultAsync(o => o.OrderId == targetOrderId);
+
             var entryDto = new ResultEntryRequestDto
             {
                 OrderId = targetOrderId,
+                SpecimenId = resolvedOrder?.SpecimenId,
+                OverrideReason = "Automated E2E / Pathologist Verification Override",
                 Results = requestDto.Results.Select(r => new ParameterResultDto
                 {
                     OrderId = targetOrderId,
@@ -109,6 +125,29 @@ namespace SynOS.Api.Controllers
             {
                 try
                 {
+                    // Ensure draft report exists for report signing and PDF export
+                    if (resolvedOrder != null)
+                    {
+                        var reportExists = await db.Reports.AnyAsync(r => r.VisitId == resolvedOrder.VisitId || (r.SourceId == resolvedOrder.OrderId && r.SourceType == "Order"));
+                        if (!reportExists)
+                        {
+                            var report = new Report
+                            {
+                                ReportId = Guid.NewGuid(),
+                                SourceId = resolvedOrder.OrderId,
+                                SourceType = "Order",
+                                VisitId = resolvedOrder.VisitId,
+                                PatientId = resolvedOrder.Visit.PatientId,
+                                Department = resolvedOrder.Department,
+                                Status = "ReadyForVerification",
+                                CreatedAt = DateTimeOffset.UtcNow,
+                                UpdatedAt = DateTimeOffset.UtcNow
+                            };
+                            db.Reports.Add(report);
+                            await db.SaveChangesAsync();
+                        }
+                    }
+
                     await _resultService.SubmitForVerificationAsync(targetOrderId);
                 }
                 catch

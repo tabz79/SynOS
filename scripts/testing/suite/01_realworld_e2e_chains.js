@@ -219,7 +219,7 @@ async function runPillar1() {
             const dicomTestPath = path.join(__dirname, '..', 'run-realistic-workflows.py');
             if (fs.existsSync(dicomTestPath)) {
                 console.log('Running native DICOM workflow via run-realistic-workflows.py...');
-                const pyOut = execSync(`python "${dicomTestPath}"`, { encoding: 'utf8', timeout: 30000 });
+                const pyOut = execSync(`python "${dicomTestPath}"`, { encoding: 'utf8', timeout: 30000, env: { ...process.env, SYNOS_URL: BASE_URL } });
                 const dicomSuccess = pyOut.includes('SUCCESS') || !pyOut.includes('CRITICAL');
                 recordStep('RadiologyDicomWorkflow', dicomSuccess, pyOut.substring(0, 200));
             } else {

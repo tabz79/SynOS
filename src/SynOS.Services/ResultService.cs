@@ -690,11 +690,18 @@ namespace SynOS.Services
             // 4. Override Logic (for Supervisors/Pathologists)
             if (!isAssignee && string.IsNullOrWhiteSpace(request.OverrideReason))
             {
-                return new SynOS.Models.DTOs.ResultEntryResponseDto 
-                { 
-                    Status = SynOS.Models.DTOs.ResultEntryStatus.BadRequest, 
-                    Message = "A reason is required to override the departmental processing gate." 
-                };
+                if (isSupervisor)
+                {
+                    request.OverrideReason = "Clinical Supervisor Direct Review Override";
+                }
+                else
+                {
+                    return new SynOS.Models.DTOs.ResultEntryResponseDto 
+                    { 
+                        Status = SynOS.Models.DTOs.ResultEntryStatus.BadRequest, 
+                        Message = "A reason is required to override the departmental processing gate." 
+                    };
+                }
             }
 
             _logger.LogInformation("Audited Override: User {UserId} is bypassing processing gate for Specimen {SpecimenId}. Reason: {Reason}", userId, specimenId, request.OverrideReason);

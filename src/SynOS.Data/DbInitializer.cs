@@ -452,6 +452,32 @@ END
             SeedIMS(context);
             SeedWorkforcePolicies(context);
             SeedTestDefinitions(context);
+            SeedLabAnalyzers(context);
+        }
+
+        private static void SeedLabAnalyzers(SynOSDbContext context)
+        {
+            var defaultAnalyzerId = Guid.Parse("C0000000-0000-0000-0000-000000000001");
+            var analyzer = context.LabAnalyzers.FirstOrDefault(a => a.AnalyzerId == defaultAnalyzerId);
+            if (analyzer == null)
+            {
+                analyzer = new LabAnalyzer
+                {
+                    AnalyzerId = defaultAnalyzerId,
+                    OrgId = Guid.Empty,
+                    BranchId = Guid.Empty,
+                    Name = "Automated Hematology Analyzer",
+                    Model = "SYSMEX_XN",
+                    Manufacturer = "Sysmex",
+                    ConnectionType = "ASTM",
+                    IsEnabled = true,
+                    Notes = "Default host 127.0.0.1:5000 TcpServer",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                context.LabAnalyzers.Add(analyzer);
+                context.SaveChanges();
+            }
         }
 
         private static void SeedBranches(SynOSDbContext context)

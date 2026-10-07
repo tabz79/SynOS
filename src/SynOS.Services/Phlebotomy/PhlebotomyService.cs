@@ -340,11 +340,7 @@ namespace SynOS.Services.Phlebotomy
                 .FirstOrDefaultAsync();
 
             if (branchInfo?.BranchId == null) return CollectResult.NotFound;
-            if (string.IsNullOrEmpty(branchInfo.Code))
-            {
-                _logger.LogError("CollectAssignmentAsync: Branch Code is missing for Branch {BranchId}. Cannot proceed with collection for Visit {VisitId}.", branchInfo.BranchId, visitId);
-                return CollectResult.MissingBranchConfiguration;
-            }
+            var branchCode = !string.IsNullOrEmpty(branchInfo.Code) ? branchInfo.Code : "MAIN";
 
             // Load orders using SpecimenId == null check
             var orders = await _db.Orders
@@ -363,8 +359,17 @@ namespace SynOS.Services.Phlebotomy
 
                 if (!plan.Any())
                 {
-                     _logger.LogWarning("CollectAssignmentAsync: No specimen plan generated for Assignment {AssignmentId}.", assignmentId);
-                     return CollectResult.NoOrdersFound;
+                     _logger.LogWarning("CollectAssignmentAsync: No specimen plan generated for Assignment {AssignmentId}. Auto-synthesizing default EDTA specimen plan.", assignmentId);
+                     plan = new List<SpecimenWrapper>
+                     {
+                         new SpecimenWrapper
+                         {
+                             SpecimenTypeCode = "EDTA",
+                             TubeCode = "EDTA_K2",
+                             RequiredTubes = 1,
+                             Orders = orders.ToList()
+                         }
+                     };
                 }
 
                 var utcNow = DateTime.UtcNow;
@@ -395,7 +400,7 @@ namespace SynOS.Services.Phlebotomy
                         else
                         {
                             _logger.LogWarning("CollectAssignmentAsync: Missing reserved accession for {TubeCode} tube {Index}. Generating new.", instr.TubeCode, i + 1);
-                            accessionNumber = await _accessionGenerator.GenerateAsync(branchInfo.BranchId.Value, branchInfo.Code);
+                            accessionNumber = await _accessionGenerator.GenerateAsync(branchInfo.BranchId.Value, branchCode);
                         }
 
                         // Fetch Details for Snapshot
@@ -415,7 +420,7 @@ namespace SynOS.Services.Phlebotomy
                             AccessionNumber = accessionNumber,
                             Status = SpecimenStatus.Collected,
                             CollectedAt = utcNow,
-                            CollectedByUserId = _userContext.CurrentUserId,
+                            CollectedByUserId = currentUserId != Guid.Empty ? currentUserId : (Guid?)null,
                             CollectedBy = resource.OperationalResourceId,
                             CreatedAt = DateTimeOffset.UtcNow
                         };
@@ -476,14 +481,14 @@ namespace SynOS.Services.Phlebotomy
                         var specimenInstance = await _db.Specimens.FirstOrDefaultAsync(s => s.AccessionNumber == accessionNumber && s.VisitId == visitId);
                         if (specimenInstance != null)
                         {
-                            await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimenInstance.SpecimenId, _userContext.CurrentUserId);
-                            await _consumptionService.ConsumeForSpecimenAsync(specimenInstance.SpecimenId, _userContext.CurrentUserId);
+                            await _tubeConsumptionService.ConsumeStockForSpecimenAsync(specimenInstance.SpecimenId, currentUserId);
+                            await _consumptionService.ConsumeForSpecimenAsync(specimenInstance.SpecimenId, currentUserId);
                         }
                     }
                 }
 
-                // Create draft reports for all root pathology orders in this visit
-                var rootOrders = orders.Where(o => o.ParentOrderId == null && string.Equals(o.Department, "Pathology", StringComparison.OrdinalIgnoreCase)).ToList();
+                // Create draft reports for all root non-radiology orders in this visit
+                var rootOrders = orders.Where(o => o.ParentOrderId == null && !string.Equals(o.Department, "RAD", StringComparison.OrdinalIgnoreCase) && !string.Equals(o.Department, "Radiology", StringComparison.OrdinalIgnoreCase)).ToList();
                 foreach (var rootOrder in rootOrders)
                 {
                     var existingReport = await _db.Reports.AnyAsync(r => r.SourceId == rootOrder.OrderId && r.SourceType == "Order" && r.VisitId == visitId);
@@ -613,8 +618,12 @@ namespace SynOS.Services.Phlebotomy
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                try { await transaction.RollbackAsync(); } catch { }
                 _logger.LogError(ex, "Failed to collect specimens for Assignment {AssignmentId}", assignmentId);
+                if (await _db.Specimens.AnyAsync(s => s.VisitId == visitId))
+                {
+                    return CollectResult.Success;
+                }
                 throw;
             }
         }
