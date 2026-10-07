@@ -731,7 +731,17 @@ namespace SynOS.Api.Controllers.Admin
                 var serviceStatusUrl = $"http://{host}:{servicePort}/api/v1/setup/status";
                 var loginUrl = $"http://{host}:{servicePort}/login";
 
-                // 2. Perform service startup and port handover asynchronously after response is sent
+                // 2. Determine runtime mode: Windows Service vs. Standalone interactive console
+                var isWindowsService = Microsoft.Extensions.Hosting.WindowsServices.WindowsServiceHelpers.IsWindowsService() || !Environment.UserInteractive;
+
+                if (isWindowsService)
+                {
+                    Serilog.Log.Information("[Setup] SynOS is running as a Windows Service (TBZSynOSService) on port {Port}. System is configured and operational; continuing in-process without restarting.", servicePort);
+                    return Ok(new { success = true, isConfigured = true, serviceStatusUrl = serviceStatusUrl, loginUrl = loginUrl });
+                }
+
+                // If running interactively as a standalone console (e.g. SynOS.Api.exe --setup in development),
+                // release port 59999 and hand over to TBZSynOSService in background
                 _ = Task.Run(async () =>
                 {
                     try
@@ -739,7 +749,7 @@ namespace SynOS.Api.Controllers.Admin
                         // Allow 500ms for HTTP 200 response to cleanly flush across network
                         await Task.Delay(500);
 
-                        Serilog.Log.Information("[Setup] Stopping setup server lifetime to release port 59999...");
+                        Serilog.Log.Information("[Setup] Stopping standalone setup server lifetime to release port 59999...");
                         _lifetime.StopApplication();
                         await Task.Delay(500);
 
@@ -778,12 +788,12 @@ namespace SynOS.Api.Controllers.Admin
                     }
                     finally
                     {
-                        Serilog.Log.Information("[Setup] Terminating setup server process to finalize handover.");
+                        Serilog.Log.Information("[Setup] Terminating standalone setup server process to finalize handover.");
                         Environment.Exit(0);
                     }
                 });
 
-                return Ok(new { success = true, serviceStatusUrl = serviceStatusUrl, loginUrl = loginUrl });
+                return Ok(new { success = true, isConfigured = true, serviceStatusUrl = serviceStatusUrl, loginUrl = loginUrl });
             }
             catch (Exception ex)
             {

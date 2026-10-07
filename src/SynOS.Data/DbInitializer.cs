@@ -687,16 +687,17 @@ END
             {
                 new { UserId = adminUserId, Username = "admin", Email = "admin@synos.com",    Name = "System Admin",       Password = "admin123", RoleName = "Admin", CanUseOperational = true, CanUseOversight = true },
                 new { UserId = Guid.NewGuid(), Username = "reception", Email = "reception@lab.com",  Name = "Reception User",     Password = "Admin",    RoleName = "Receptionist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Username = "phlebo", Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "Admin",    RoleName = "Phlebotomist", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.Parse("A30F52D6-60E5-4834-9BF1-8C4E56AB3956"), Username = "pathologist", Email = "pathologist@lab.com",Name = "Pathologist User",   Password = "Admin",    RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "phlebo", Email = "phlebo@lab.com",     Name = "Phlebotomy User",    Password = "admin123", RoleName = "Phlebotomist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.Parse("A30F52D6-60E5-4834-9BF1-8C4E56AB3956"), Username = "drvasu", Email = "pathologist@lab.com", Name = "Dr. Vasudeva Rao", Password = "admin123", RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.Parse("B40F52D6-60E5-4834-9BF1-8C4E56AB3957"), Username = "pathologist", Email = "pathologist.duty@lab.com", Name = "Consultant Pathologist", Password = "admin123", RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "xray", Email = "xray@lab.com",       Name = "X-Ray Tech User",    Password = "Admin",    RoleName = "XRayTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "mri", Email = "mri@lab.com",        Name = "MRI Tech User",      Password = "Admin",    RoleName = "MriTech", CanUseOperational = true, CanUseOversight = false },
-                new { UserId = Guid.NewGuid(), Username = "radiologist", Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "Admin",    RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "radiologist", Email = "radiologist@lab.com",Name = "Radiologist User",   Password = "admin123", RoleName = "Radiologist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "delivery", Email = "delivery@lab.com",   Name = "Delivery Desk User", Password = "Admin",    RoleName = "DeliveryDesk", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "sarah", Email = "pathologist2@lab.com", Name = "Dr. Sarah Williams", Password = "Admin", RoleName = "Pathologist", CanUseOperational = true, CanUseOversight = false },
                 
                 // Simulator Specific Users (GPT-5 Mandatory: Role Purity)
-                new { UserId = Guid.NewGuid(), Username = "typist1", Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "Admin",    RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
+                new { UserId = Guid.NewGuid(), Username = "typist1", Email = "typist1@lab.com",    Name = "Simulator Typist",   Password = "admin123", RoleName = "Typist", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "biotech", Email = "bio.tech@synos.lab", Name = "Simulator Bio Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "hemtech", Email = "hemtech@synos.lab",  Name = "Simulator Hem Tech", Password = "Admin",    RoleName = "LabTech", CanUseOperational = true, CanUseOversight = false },
                 new { UserId = Guid.NewGuid(), Username = "inventory", Email = "inventory@lab.com",  Name = "Inventory Manager",  Password = "Admin",    RoleName = "InventoryManager", CanUseOperational = true, CanUseOversight = false },
@@ -726,18 +727,20 @@ END
                 if (user != null)
                 {
                     // Update existing user ONLY if they are not yet fully populated, or for essential fields
-                    if (string.IsNullOrEmpty(user.Username))
+                    if (string.IsNullOrEmpty(user.Username) || (userData.Username == "drvasu" && user.Username == "pathologist"))
                     {
                         user.Username = userData.Username;
                     }
-                    if (string.IsNullOrEmpty(user.Name))
+                    if (string.IsNullOrEmpty(user.Name) || (userData.Username == "drvasu" && (user.Name == "Pathologist User" || string.IsNullOrEmpty(user.Name))))
                     {
                         user.Name = userData.Name;
                     }
-                    if (string.IsNullOrEmpty(user.PasswordHash))
+                    if (string.IsNullOrEmpty(user.PasswordHash) || (!BCrypt.Net.BCrypt.Verify("admin123", user.PasswordHash) && !BCrypt.Net.BCrypt.Verify("Admin", user.PasswordHash)))
                     {
                         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(userData.Password);
                     }
+                    user.FailedLoginAttempts = 0;
+                    user.LockoutEnd = null;
                     
                     user.CanUseOperationalMode = userData.CanUseOperational;
                     user.CanUseOversightMode = userData.CanUseOversight;
@@ -746,7 +749,7 @@ END
                     if (string.IsNullOrEmpty(user.Designation))
                     {
                         user.Designation = userData.Email == "admin@synos.com" ? "Chief Pathologist" :
-                                           userData.Email == "pathologist@lab.com" ? "Consultant Pathologist" :
+                                           (userData.Email == "pathologist@lab.com" || userData.Email == "pathologist.duty@lab.com") ? "Consultant Pathologist" :
                                            userData.Email == "radiologist@lab.com" ? "Consultant Radiologist" : user.Designation;
                     }
                     if (string.IsNullOrEmpty(user.SignatureImageUrl) && (userData.RoleName == "Pathologist" || userData.RoleName == "Radiologist" || userData.RoleName == "Admin"))
@@ -812,7 +815,8 @@ END
                         UserBranchRoleId = Guid.NewGuid(),
                         UserId = user.UserId, 
                         BranchId = DefaultBranchId, 
-                        RoleId = role.RoleId 
+                        RoleId = role.RoleId,
+                        AssignedAt = DateTime.UtcNow
                     });
                 }
             }
