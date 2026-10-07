@@ -253,6 +253,24 @@ Log-Master "Pillar 7 Result: $(if ($p7Passed) { 'PASS' } else { 'FAIL' })" $(if 
 $MasterReport.pillars += @{ id = "Pillar-7"; name = "UI Interaction Profiler"; passed = $p7Passed; output = ($p7Out -join "`n") }
 if (-not $p7Passed) { $MasterReport.allPassed = $false }
 
+# Pillar 8: Flaky Network & Dirty Concurrency Suite
+Log-Master "LAUNCHING PILLAR 8: Flaky Network & Dirty Concurrency Suite..." "HOSTILE"
+$p8Script = Join-Path $SuiteDir "08_flaky_network_concurrency.js"
+$p8Out = & node $p8Script 2>&1
+$p8Passed = ($LASTEXITCODE -eq 0)
+Log-Master "Pillar 8 Result: $(if ($p8Passed) { 'PASS' } else { 'FAIL' })" $(if ($p8Passed) { "SUCCESS" } else { "ERROR" })
+$MasterReport.pillars += @{ id = "Pillar-8"; name = "Flaky Network & Concurrency"; passed = $p8Passed; output = ($p8Out -join "`n") }
+if (-not $p8Passed) { $MasterReport.allPassed = $false }
+
+# Pillar 9: Operational Chaos & Disaster Recovery Drill
+Log-Master "LAUNCHING PILLAR 9: Operational Chaos & Disaster Recovery Drill..." "HOSTILE"
+$p9Script = Join-Path $SuiteDir "09_operational_disaster_recovery.ps1"
+$p9Out = & powershell.exe -ExecutionPolicy Bypass -File $p9Script 2>&1
+$p9Passed = ($LASTEXITCODE -eq 0)
+Log-Master "Pillar 9 Result: $(if ($p9Passed) { 'PASS' } else { 'FAIL' })" $(if ($p9Passed) { "SUCCESS" } else { "ERROR" })
+$MasterReport.pillars += @{ id = "Pillar-9"; name = "Operational Chaos & Recovery"; passed = $p9Passed; output = ($p9Out -join "`n") }
+if (-not $p9Passed) { $MasterReport.allPassed = $false }
+
 # ------------------------------------------------------------------------------
 # STEP 5: Final Forensic Verdict Generation
 # ------------------------------------------------------------------------------
@@ -273,6 +291,8 @@ $p4Status = if ($p4Passed) { "PASSED" } else { "FAILED" }
 $p5Status = if ($p5Passed) { "PASSED" } else { "FAILED" }
 $p6Status = if ($p6Passed) { "PASSED" } else { "FAILED" }
 $p7Status = if ($p7Passed) { "PASSED" } else { "FAILED" }
+$p8Status = if ($p8Passed) { "PASSED" } else { "FAILED" }
+$p9Status = if ($p9Passed) { "PASSED" } else { "FAILED" }
 
 $mdLines = @(
     "# SynOS Post-Installation Destruction & Stress Test Report",
@@ -293,6 +313,8 @@ $mdLines = @(
     "| **Pillar 5** | Hardware & Integration Layer Chaos | $p5Status | ASTM E1381 TCP injection & DICOM C-STORE flood during simultaneous patient load |",
     "| **Pillar 6** | Sustained Stress & Memory Leak Audit | $p6Status | Memory deltas, private bytes, handle count leaks, and zero-byte file orphan scan |",
     "| **Pillar 7** | UI Interaction & Abuse Profiling | $p7Status | Granular click-to-render latency breakdown, debounce thrashing, and button abuse |",
+    "| **Pillar 8** | Flaky Network & Dirty Concurrency | $p8Status | Mid-flight connection cuts, retry idempotency, and concurrent record modifications |",
+    "| **Pillar 9** | Operational Chaos & Disaster Recovery | $p9Status | Automated backup export/restore drill, midnight token partitioning, and storage checks |",
     "",
     "---",
     "",
