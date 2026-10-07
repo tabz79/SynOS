@@ -54,16 +54,22 @@ if (-not (Test-Path $apiExe)) {
 
 # Ensure service is started
 $svc = Get-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
-if ($svc -and $svc.Status -ne "Running") {
-    Log-Master "Starting Windows Service (TBZSynOSService)..." "INFO"
-    Start-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
+if ($svc) {
+    Log-Master "TBZSynOSService status: $($svc.Status)" "INFO"
+    if ($svc.Status -ne "Running") {
+        Log-Master "Starting Windows Service (TBZSynOSService)..." "INFO"
+        Start-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 3
+    }
+} else {
+    Log-Master "WARNING: TBZSynOSService not registered as Windows Service. Checking SynOS.Api.exe..." "ERROR"
 }
 
 # Wait for HTTP endpoint on port 59999
 Log-Master "Waiting for port 59999 to become ready..." "INFO"
 $isReady = $false
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
-while ($sw.Elapsed.TotalSeconds -lt 45) {
+while ($sw.Elapsed.TotalSeconds -lt 90) {
     try {
         $res = Invoke-RestMethod -Uri "$BaseUrl/api/v1/setup/status" -TimeoutSec 3 -ErrorAction SilentlyContinue
         if ($res) { $isReady = $true; break }
@@ -74,11 +80,28 @@ while ($sw.Elapsed.TotalSeconds -lt 45) {
     } catch {
         if ($_.Exception.Response.StatusCode.value__ -eq 401) { $isReady = $true; break }
     }
+
+    # If service crashed or stopped, restart it
+    $svcCheck = Get-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
+    if ($svcCheck -and $svcCheck.Status -ne "Running") {
+        Log-Master "Service stopped during boot; restarting TBZSynOSService..." "HOSTILE"
+        Start-Service -Name "TBZSynOSService" -ErrorAction SilentlyContinue
+    }
+
     Start-Sleep -Seconds 2
 }
 
 if (-not $isReady) {
-    Log-Master "WARNING: SynOS port 59999 not responding within 45s. Checking process state..." "ERROR"
+    Log-Master "WARNING: SynOS port 59999 not responding within 90s. Checking running processes..." "ERROR"
+    Get-Process -Name "*SynOS*" -ErrorAction SilentlyContinue | ForEach-Object { Log-Master "Process: $($_.Name) PID=$($_.Id) WS=$([math]::Round($_.WorkingSet64/1MB, 2))MB" "INFO" }
+    
+    # Fallback: start directly if service fails
+    $apiProc = Get-Process -Name "SynOS.Api" -ErrorAction SilentlyContinue
+    if (-not $apiProc -and (Test-Path $apiExe)) {
+        Log-Master "Attempting direct background launch of $apiExe..." "HOSTILE"
+        Start-Process -FilePath $apiExe -WorkingDirectory (Split-Path $apiExe) -WindowStyle Hidden
+        Start-Sleep -Seconds 10
+    }
 }
 
 # ------------------------------------------------------------------------------
