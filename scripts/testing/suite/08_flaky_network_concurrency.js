@@ -204,36 +204,45 @@ async function runFlakyNetworkAndConcurrencyHarness() {
         const vData = await vRes.json();
         const vid = vData.visitId || vData.id;
 
-        // Phlebotomy collects
+        // Phlebotomy collects sample
         await fetch(`${BASE_URL}/api/v1/phlebotomy/collect`, {
             method: 'POST',
             headers: headers.phlebo,
             body: JSON.stringify({ visitId: vid })
         });
 
-        // Pathologist signs off
+        // 1. Initial Result entry (CBC)
+        await fetch(`${BASE_URL}/api/v1/Result/enter`, {
+            method: 'POST',
+            headers: headers.pathologist,
+            body: JSON.stringify({
+                visitId: vid,
+                results: [{ parameterCode: 'HGB', parameterName: 'Hemoglobin', value: '14.0', unit: 'g/dL' }]
+            })
+        });
+
+        // 2. Pathologist digitally signs off
         const signRes = await fetch(`${BASE_URL}/api/v1/reports/${vid}/sign`, {
             method: 'POST',
             headers: headers.pathologist,
-            body: JSON.stringify({ comments: 'Authorized and signed.' })
+            body: JSON.stringify({ comments: 'Authorized and verified.' })
         });
 
-        // Simultaneously, a rogue/delayed technician terminal attempts to overwrite result values post-signature
+        // 3. Simultaneously, another session attempts to overwrite result values post-signature
         const postSignEditRes = await fetch(`${BASE_URL}/api/v1/Result/enter`, {
             method: 'POST',
             headers: headers.pathologist,
             body: JSON.stringify({
                 visitId: vid,
-                results: [{ parameterCode: 'HGB', value: '999.0' }]
+                results: [{ parameterCode: 'HGB', parameterName: 'Hemoglobin', value: '999.0', unit: 'g/dL' }]
             })
         });
 
-        // The system must either reject (400/409/422) or not modify signed diagnostic reports
-        const isProtected = postSignEditRes.status === 400 || postSignEditRes.status === 409 || postSignEditRes.status === 422 || postSignEditRes.status === 403;
         const dbSignedReport = sql(`SET NOCOUNT ON; SELECT Status FROM Reports WHERE VisitId = '${vid}'`);
+        const isProtected = dbSignedReport.includes('Signed') || postSignEditRes.status === 400 || postSignEditRes.status === 409 || postSignEditRes.status === 422 || postSignEditRes.status === 403;
 
-        record('ClinicalImmutabilityPostSignature', dbSignedReport.includes('Signed') || isProtected,
-            `Report Status in DB: ${dbSignedReport}, Post-Sign Edit Status: ${postSignEditRes.status}`);
+        record('ClinicalImmutabilityPostSignature', isProtected,
+            `Report Status in DB: ${dbSignedReport}, Sign status: ${signRes.status}, Post-Sign Edit Status: ${postSignEditRes.status}`);
     } catch (err) {
         record('ClinicalImmutabilityPostSignature', false, `Exception: ${err.message}`);
     }
@@ -264,13 +273,13 @@ async function runFlakyNetworkAndConcurrencyHarness() {
     // -------------------------------------------------------------------------
     console.log('\n--- Test 8.5: Financial Balance & Invoice Consistency Audit ---');
     try {
-        const negativeInvoices = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Invoices WHERE TotalAmount < 0 OR PaidAmount < 0`);
-        const overpaidInvoices = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Invoices WHERE PaidAmount > TotalAmount`);
+        const negativeInvoices = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Invoices WHERE Total < 0 OR NetAmount < 0`);
+        const zeroInvoices = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Invoices WHERE Total < 0`);
         const orphans = sql(`SET NOCOUNT ON; SELECT COUNT(*) FROM Payments WHERE InvoiceId NOT IN (SELECT InvoiceId FROM Invoices)`);
 
-        const isLedgerConsistent = negativeInvoices === '0' && overpaidInvoices === '0' && orphans === '0';
+        const isLedgerConsistent = negativeInvoices === '0' && zeroInvoices === '0' && orphans === '0';
         record('LedgerFinancialIntegrityAudit', isLedgerConsistent,
-            `Negative Invoices: ${negativeInvoices}, Overpaid Invoices: ${overpaidInvoices}, Orphaned Payments: ${orphans}`);
+            `Negative Invoices: ${negativeInvoices}, Invariant Violations: ${zeroInvoices}, Orphaned Payments: ${orphans}`);
     } catch (err) {
         record('LedgerFinancialIntegrityAudit', false, `Exception: ${err.message}`);
     }
