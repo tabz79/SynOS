@@ -9,6 +9,7 @@ namespace SynOS.Models.DTOs
     public class LoginResponse
     {
         public string AccessToken { get; set; } = string.Empty;
+        public string Token => AccessToken;
         public string RefreshToken { get; set; } = string.Empty;
         public int ExpiresIn { get; set; } // in seconds
         public UserDto User { get; set; } = new UserDto();

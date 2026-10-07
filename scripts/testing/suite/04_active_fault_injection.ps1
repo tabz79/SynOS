@@ -45,12 +45,23 @@ function Record-Fault([string]$faultName, [bool]$ok, [string]$details, [string]$
 
 # Login Helper
 function Get-AuthToken([string]$user, [string]$pass) {
-    $payload = @{ username = $user; password = $pass } | ConvertTo-Json
-    $res = Invoke-RestMethod -Uri "$BaseUrl/api/v1/auth/login" -Method Post -Body $payload -ContentType "application/json" -TimeoutSec 10
-    return $res.token
+    try {
+        $payload = @{ username = $user; password = $pass } | ConvertTo-Json
+        $res = Invoke-RestMethod -Uri "$BaseUrl/api/v1/auth/login" -Method Post -Body $payload -ContentType "application/json" -TimeoutSec 10
+        if ($res.token) { return $res.token }
+        if ($res.accessToken) { return $res.accessToken }
+        if ($res.data -and $res.data.accessToken) { return $res.data.accessToken }
+    } catch {}
+    return ""
 }
 
-$token = Get-AuthToken "reception" "Admin"
+function Get-FreshToken {
+    $t = Get-AuthToken "admin" "admin123"
+    if (-not $t) { $t = Get-AuthToken "reception" "Admin" }
+    return $t
+}
+
+$token = Get-FreshToken
 
 # ------------------------------------------------------------------------------
 # FAULT 1: Forcibly Kill SynOS Windows Service Mid-Workflow & Measure Auto-Recovery
@@ -95,7 +106,7 @@ while ($sw.Elapsed.TotalSeconds -lt 25) {
         $health = Invoke-RestMethod -Uri "$BaseUrl/api/v1/health" -TimeoutSec 3 -ErrorAction SilentlyContinue
         if ($health) { 
             $recovered = $true
-            try { $token = Get-AuthToken "reception" "Admin" } catch {}
+            try { $token = Get-FreshToken } catch {}
             break 
         }
     } catch {}
@@ -110,7 +121,7 @@ Record-Fault "ServiceRecoveryAfterCrash" $recovered "SynOS resumed responding af
 Write-Host "`n--- Fault 2: Forcibly Stop MSSQL Server During Transaction ---" -ForegroundColor Yellow
 
 # Ensure fresh auth token before fault 2
-try { $token = Get-AuthToken "reception" "Admin" } catch {}
+try { $token = Get-FreshToken } catch {}
 
 # Stop SQL Server service
 Write-Host "Stopping MSSQL service forcibly..." -ForegroundColor Magenta
@@ -155,7 +166,7 @@ $sqlRecoverySw = [System.Diagnostics.Stopwatch]::StartNew()
 while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 150) {
     try {
         if (-not $token) {
-            $token = Get-AuthToken "reception" "Admin"
+            $token = Get-FreshToken
         }
         $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 35 -ErrorAction Stop
         if ($checkRes) { 
@@ -165,7 +176,7 @@ while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 150) {
     } catch {
         if ($_.Exception.Response -and $_.Exception.Response.StatusCode.value__ -eq 401) {
             try {
-                $token = Get-AuthToken "reception" "Admin"
+                $token = Get-FreshToken
                 Write-Host "Re-authenticated token after service restart." -ForegroundColor Cyan
             } catch {}
         }
