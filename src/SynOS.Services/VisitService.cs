@@ -118,7 +118,7 @@ namespace SynOS.Services
             }
 
             var labLocalToday = _labTimeProvider.GetLabToday();
-            var token = $"DRAFT-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
+            var token = $"D-{Guid.NewGuid():N}"[..12].ToUpperInvariant();
 
             if (visitDto.ReferralPartnerId.HasValue)
             {
@@ -243,7 +243,7 @@ namespace SynOS.Services
                 catch (DbUpdateException dbEx) when (attempt < maxRetries)
                 {
                     _logger.LogWarning(dbEx, "Concurrency retry during CreateVisit SaveChangesAsync (Attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
-                    visit.Token = $"DRAFT-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
+                    visit.Token = $"D-{Guid.NewGuid():N}"[..12].ToUpperInvariant();
                     await Task.Delay(50 * attempt);
                 }
             }

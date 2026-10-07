@@ -695,6 +695,7 @@ namespace SynOS.Data
             modelBuilder.Entity<Visit>(entity => {
                 entity.HasIndex(e => new { e.BranchId, e.AssignedReceptionistId, e.TokenDate });
                 entity.HasIndex(e => new { e.TokenDate, e.Department });
+                entity.Property(e => e.Token).HasMaxLength(64).IsRequired();
                 entity.Property(e => e.RowVersion).IsRowVersion();
                 entity.HasOne(v => v.Branch).WithMany().HasForeignKey(v => v.BranchId).OnDelete(DeleteBehavior.Restrict).IsRequired(false);
             });

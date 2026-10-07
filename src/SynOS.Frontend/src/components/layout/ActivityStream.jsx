@@ -34,8 +34,8 @@ export function ActivityStream({ serverTime }) {
                 const titleStr = (e.title || e.summaryText || e.SummaryText || '').toLowerCase();
                 const tokenStr = (e.tokenId || e.TokenId || e.token || '').trim();
 
-                // Suppress draft tokens (DRAFT-...)
-                if (tokenStr.toUpperCase().startsWith('DRAFT-') || titleStr.includes('draft-')) {
+                // Suppress draft tokens (DRAFT-... or D-...)
+                if (tokenStr.toUpperCase().startsWith('DRAFT-') || tokenStr.toUpperCase().startsWith('D-') || titleStr.includes('draft-')) {
                     return false;
                 }
 
@@ -128,7 +128,8 @@ export function ActivityStream({ serverTime }) {
 
         // 2. Visit Started / Token Assigned
         if (type === 'VISIT_STARTED' || lowerMsg.includes('visit started') || lowerMsg.includes('token id') || lowerMsg.includes('token assigned')) {
-            return token && !token.toUpperCase().startsWith('DRAFT-') && token !== 'System'
+            const isDraftToken = token && (token.toUpperCase().startsWith('DRAFT-') || token.toUpperCase().startsWith('D-'));
+            return token && !isDraftToken && token !== 'System'
                 ? `Token ID ${token} assigned to ${patientName}`
                 : `Visit started for ${patientName}`;
         }
@@ -205,11 +206,12 @@ export function ActivityStream({ serverTime }) {
             const rawToken = event.tokenId || event.TokenId || event.token || event.metadataObj?.TokenId;
             if (visitId && rawToken) {
                 const cleanToken = rawToken.trim();
-                const isDraft = cleanToken.toUpperCase().startsWith("DRAFT-");
+                const isDraft = cleanToken.toUpperCase().startsWith("DRAFT-") || cleanToken.toUpperCase().startsWith("D-");
                 const current = latestTokenMap[visitId];
+                const currentIsDraft = current && (current.toUpperCase().startsWith("DRAFT-") || current.toUpperCase().startsWith("D-"));
                 if (!current) {
                     latestTokenMap[visitId] = cleanToken;
-                } else if (current.toUpperCase().startsWith("DRAFT-") && !isDraft) {
+                } else if (currentIsDraft && !isDraft) {
                     latestTokenMap[visitId] = cleanToken;
                 }
             }

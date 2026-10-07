@@ -21606,8 +21606,8 @@ Details: ${a.inner}`);
             Q.metadataObj = {};
           }
           if (Q.visibility === "Hide") return false;
-          const D = (Q.eventType || "").toUpperCase(), S = (Q.title || Q.summaryText || Q.SummaryText || "").toLowerCase();
-          return !((Q.tokenId || Q.TokenId || Q.token || "").trim().toUpperCase().startsWith("DRAFT-") || S.includes("draft-") || S.includes("referral partner updated") || S.includes("sample collection requested") || S.includes("collection requested") || D.includes("INVENTORY") || S.includes("inventory") || S.includes("stock") || S.includes("insufficient stock") || D === "VISIT_CREATED" || Q.eventType === "BILL_GENERATED" && (S.includes("0.00") || parseFloat(Q.metadataObj.Total || Q.metadataObj.Amount || 0) === 0));
+          const D = (Q.eventType || "").toUpperCase(), S = (Q.title || Q.summaryText || Q.SummaryText || "").toLowerCase(), k = (Q.tokenId || Q.TokenId || Q.token || "").trim();
+          return !(k.toUpperCase().startsWith("DRAFT-") || k.toUpperCase().startsWith("D-") || S.includes("draft-") || S.includes("referral partner updated") || S.includes("sample collection requested") || S.includes("collection requested") || D.includes("INVENTORY") || S.includes("inventory") || S.includes("stock") || S.includes("insufficient stock") || D === "VISIT_CREATED" || Q.eventType === "BILL_GENERATED" && (S.includes("0.00") || parseFloat(Q.metadataObj.Total || Q.metadataObj.Amount || 0) === 0));
         }).sort((Q, D) => {
           const S = new Date(Q.occurredAt).getTime();
           return new Date(D.occurredAt).getTime() - S;
@@ -21644,7 +21644,10 @@ Details: ${a.inner}`);
       var _a;
       const x = (p.eventType || "").toUpperCase(), m = p.messageResolved || p.title || p.summaryText || p.SummaryText || "", Q = p.metadataObj || {}, D = Q.PatientName || p.patientName || "Patient", S = (p.tokenId || p.TokenId || p.token || "").trim(), k = p.actorName || Q.ActorName || Q.CreatedBy || p.actorType, T = d(k), G = m.toLowerCase();
       if (x === "PATIENT_REGISTERED" || G.includes("registered patient") || G.includes("patient registered") || G.includes("new patient registered")) return `Patient ${D} registered`;
-      if (x === "VISIT_STARTED" || G.includes("visit started") || G.includes("token id") || G.includes("token assigned")) return S && !S.toUpperCase().startsWith("DRAFT-") && S !== "System" ? `Token ID ${S} assigned to ${D}` : `Visit started for ${D}`;
+      if (x === "VISIT_STARTED" || G.includes("visit started") || G.includes("token id") || G.includes("token assigned")) {
+        const K = S && (S.toUpperCase().startsWith("DRAFT-") || S.toUpperCase().startsWith("D-"));
+        return S && !K && S !== "System" ? `Token ID ${S} assigned to ${D}` : `Visit started for ${D}`;
+      }
       if (x === "BILL_GENERATED" || x === "PAYMENT_RECEIVED" || G.includes("payment received") || G.includes("billed") || G.includes("prepaid")) {
         const K = Q.TestCodes && Array.isArray(Q.TestCodes) && Q.TestCodes.length > 0 ? Q.TestCodes.join("_") : Q.TestNames || Q.Services || "tests", Y = Q.DoctorName || Q.PartnerName || Q.ReferralPartner || (G.includes("dr.") ? (_a = m.match(/dr\.\s*[\w\s]+/i)) == null ? void 0 : _a[0] : ""), _ = T ? `by ${T}` : "", W = Y ? `, referred by ${Y}` : "";
         return `Billed ${_} for ${K} test${W}`.replace(/\s+/g, " ").trim();
@@ -21695,8 +21698,8 @@ Details: ${a.inner}`);
         var _a, _b;
         const D = Q.visitId || Q.VisitId || ((_a = Q.metadataObj) == null ? void 0 : _a.VisitId), S = Q.tokenId || Q.TokenId || Q.token || ((_b = Q.metadataObj) == null ? void 0 : _b.TokenId);
         if (D && S) {
-          const k = S.trim(), T = k.toUpperCase().startsWith("DRAFT-"), G = p[D];
-          G ? G.toUpperCase().startsWith("DRAFT-") && !T && (p[D] = k) : p[D] = k;
+          const k = S.trim(), T = k.toUpperCase().startsWith("DRAFT-") || k.toUpperCase().startsWith("D-"), G = p[D], H = G && (G.toUpperCase().startsWith("DRAFT-") || G.toUpperCase().startsWith("D-"));
+          G ? H && !T && (p[D] = k) : p[D] = k;
         }
       });
       const x = [];

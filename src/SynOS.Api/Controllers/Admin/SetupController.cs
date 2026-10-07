@@ -377,6 +377,11 @@ namespace SynOS.Api.Controllers.Admin
                         @"IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Patients') AND name = 'MRN' AND max_length < 100)
                           BEGIN
                               ALTER TABLE [Patients] ALTER COLUMN [MRN] nvarchar(50) NOT NULL;
+                          END",
+                        // v19: Visits Token column expansion to 64 chars
+                        @"IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'Token' AND max_length < 128)
+                          BEGIN
+                              ALTER TABLE [Visits] ALTER COLUMN [Token] nvarchar(64) NOT NULL;
                           END"
                     };
 

@@ -80,6 +80,12 @@ BEGIN
     ALTER TABLE [Patients] ALTER COLUMN [MRN] nvarchar(50) NOT NULL;
 END
 
+-- 3b. Alter Visits Token column to 64 chars
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'Token' AND max_length < 128)
+BEGIN
+    ALTER TABLE [Visits] ALTER COLUMN [Token] nvarchar(64) NOT NULL;
+END
+
 -- 4. Add columns to DiscountMasters if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
 BEGIN
