@@ -2197,7 +2197,7 @@ Error generating stack: ` + z.message + `
       32
     ], qs = Bt && "CompositionEvent" in window, Zs = null;
     Bt && "documentMode" in document && (Zs = document.documentMode);
-    var Jc = Bt && "TextEvent" in window && !Zs, Qe = Bt && (!qs || Zs && 8 < Zs && 11 >= Zs), rn = " ", Sr = false;
+    var Jc = Bt && "TextEvent" in window && !Zs, Qe = Bt && (!qs || Zs && 8 < Zs && 11 >= Zs), rn = " ", kr = false;
     function ai(E, b) {
       switch (E) {
         case "keyup":
@@ -2221,9 +2221,9 @@ Error generating stack: ` + z.message + `
         case "compositionend":
           return sa(b);
         case "keypress":
-          return b.which !== 32 ? null : (Sr = true, rn);
+          return b.which !== 32 ? null : (kr = true, rn);
         case "textInput":
-          return E = b.data, E === rn && Sr ? null : E;
+          return E = b.data, E === rn && kr ? null : E;
         default:
           return null;
       }
@@ -2262,7 +2262,7 @@ Error generating stack: ` + z.message + `
       url: true,
       week: true
     };
-    function pA(E) {
+    function BA(E) {
       var b = E && E.nodeName && E.nodeName.toLowerCase();
       return b === "input" ? !!lB[E.type] : b === "textarea";
     }
@@ -2420,7 +2420,7 @@ Error generating stack: ` + z.message + `
       for (F in b) if (b.hasOwnProperty(F) && F in bn) return at[E] = b[F];
       return E;
     }
-    var nn = Cn("animationend"), Ln = Cn("animationiteration"), fn = Cn("animationstart"), yA = Cn("transitionrun"), wA = Cn("transitionstart"), kr = Cn("transitioncancel"), Rn = Cn("transitionend"), KA = /* @__PURE__ */ new Map(), si = "abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");
+    var nn = Cn("animationend"), Ln = Cn("animationiteration"), fn = Cn("animationstart"), yA = Cn("transitionrun"), wA = Cn("transitionstart"), Rr = Cn("transitioncancel"), Rn = Cn("transitionend"), KA = /* @__PURE__ */ new Map(), si = "abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");
     si.push("scrollEnd");
     function fr(E, b) {
       KA.set(E, b), Yt(b, [
@@ -6864,7 +6864,7 @@ Error generating stack: ` + z.message + `
       var uC = si[AI], M5 = uC.toLowerCase(), ev = uC[0].toUpperCase() + uC.slice(1);
       fr(M5, "on" + ev);
     }
-    fr(nn, "onAnimationEnd"), fr(Ln, "onAnimationIteration"), fr(fn, "onAnimationStart"), fr("dblclick", "onDoubleClick"), fr("focusin", "onFocus"), fr("focusout", "onBlur"), fr(yA, "onTransitionRun"), fr(wA, "onTransitionStart"), fr(kr, "onTransitionCancel"), fr(Rn, "onTransitionEnd"), hn("onMouseEnter", [
+    fr(nn, "onAnimationEnd"), fr(Ln, "onAnimationIteration"), fr(fn, "onAnimationStart"), fr("dblclick", "onDoubleClick"), fr("focusin", "onFocus"), fr("focusout", "onBlur"), fr(yA, "onTransitionRun"), fr(wA, "onTransitionStart"), fr(Rr, "onTransitionCancel"), fr(Rn, "onTransitionEnd"), hn("onMouseEnter", [
       "mouseout",
       "mouseover"
     ]), hn("onMouseLeave", [
@@ -7099,7 +7099,7 @@ Error generating stack: ` + z.message + `
           }
           e: {
             if (Kt = Pt ? dr(Pt) : window, Xt = Kt.nodeName && Kt.nodeName.toLowerCase(), Xt === "select" || Xt === "input" && Kt.type === "file") var wi = Tg;
-            else if (pA(Kt)) if (Pd) wi = Yd;
+            else if (BA(Kt)) if (Pd) wi = Yd;
             else {
               wi = Nf;
               var uA = Df;
@@ -7113,7 +7113,7 @@ Error generating stack: ` + z.message + `
           }
           switch (uA = Pt ? dr(Pt) : window, E) {
             case "focusin":
-              (pA(uA) || uA.contentEditable === "true") && (Ic = uA, Dh = Pt, Kd = null);
+              (BA(uA) || uA.contentEditable === "true") && (Ic = uA, Dh = Pt, Kd = null);
               break;
             case "focusout":
               Kd = Dh = Ic = null;
@@ -16389,7 +16389,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
         key: "4dfq90"
       }
     ]
-  ], Mr = Vt("circle-alert", i0e);
+  ], Sr = Vt("circle-alert", i0e);
   const a0e = [
     [
       "path",
@@ -17891,7 +17891,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
         key: "13zald"
       }
     ]
-  ], mA = Vt("loader-circle", pue);
+  ], pA = Vt("loader-circle", pue);
   const Bue = [
     [
       "rect",
@@ -20414,7 +20414,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
                 children: s ? i.jsxs("div", {
                   className: "flex flex-col items-center justify-center py-10 opacity-40",
                   children: [
-                    i.jsx(mA, {
+                    i.jsx(pA, {
                       className: "h-8 w-8 animate-spin"
                     }),
                     i.jsx("p", {
@@ -20618,7 +20618,7 @@ Please change the parent <Route path="${m}"> to <Route path="${m === "/" ? "*" :
             onClick: ie,
             disabled: !m || l,
             className: "w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-30 uppercase tracking-wider",
-            children: l ? i.jsx(mA, {
+            children: l ? i.jsx(pA, {
               className: "h-4 w-4 animate-spin"
             }) : i.jsxs(i.Fragment, {
               children: [
@@ -22244,7 +22244,7 @@ Details: ${a.inner}`);
                             className: Je("w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 transition-all type-code", h ? "bg-black border-zinc-700 focus:ring-synos-primary" : f.input),
                             autoFocus: true
                           }),
-                          o && i.jsx(mA, {
+                          o && i.jsx(pA, {
                             className: "absolute right-3 top-2.5 w-4 h-4 text-zinc-500 animate-spin"
                           })
                         ]
@@ -22444,7 +22444,7 @@ Details: ${a.inner}`);
         h && i.jsxs("div", {
           className: "flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 p-2 rounded-lg",
           children: [
-            i.jsx(Mr, {
+            i.jsx(Sr, {
               className: "w-3 h-3"
             }),
             h
@@ -22696,7 +22696,7 @@ Details: ${a.inner}`);
               disabled: C,
               className: Je("flex-[2] text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95", m ? "bg-emerald-600 hover:bg-emerald-500" : "bg-gradient-to-r from-zinc-800 to-zinc-950 hover:to-black border-t border-white/20"),
               children: [
-                C ? i.jsx(mA, {
+                C ? i.jsx(pA, {
                   className: "w-4 h-4 animate-spin"
                 }) : i.jsx(Ld, {
                   className: "w-4 h-4"
@@ -23150,7 +23150,7 @@ Details: ${a.inner}`);
                   disabled: W || !c.trim() || !g,
                   className: Je("px-4 py-2 text-xs font-bold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2", a ? "text-white bg-amber-600 border border-amber-500/30 hover:bg-amber-500" : "text-white bg-zinc-900 border border-black/10 hover:bg-black"),
                   children: [
-                    W ? i.jsx(mA, {
+                    W ? i.jsx(pA, {
                       className: "w-3 h-3 animate-spin"
                     }) : i.jsx(ji, {
                       className: "w-3 h-3"
@@ -23392,7 +23392,7 @@ Details: ${a.inner}`);
                   className: Je("tracking-tight", rt.headerText),
                   children: "Visit Details"
                 }),
-                k && i.jsx(mA, {
+                k && i.jsx(pA, {
                   className: "w-3 h-3 animate-spin text-synos-primary"
                 })
               ]
@@ -23412,7 +23412,7 @@ Details: ${a.inner}`);
               onClick: G,
               disabled: k,
               className: "px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-95 flex items-center gap-1 shadow-sm disabled:opacity-50",
-              children: k ? i.jsx(mA, {
+              children: k ? i.jsx(pA, {
                 className: "w-3 h-3 animate-spin"
               }) : "Delete Draft"
             })
@@ -23818,7 +23818,7 @@ Details: ${a.inner}`);
                           }) : i.jsxs("div", {
                             className: "flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-amber-500 animate-pulse",
                             children: [
-                              i.jsx(Mr, {
+                              i.jsx(Sr, {
                                 className: "w-2 h-2"
                               }),
                               " Pending Intel"
@@ -23877,7 +23877,7 @@ Details: ${a.inner}`);
                   i.jsxs("h3", {
                     className: "type-page-title flex items-center gap-2",
                     children: [
-                      i.jsx(Mr, {
+                      i.jsx(Sr, {
                         className: "w-5 h-5 text-amber-500"
                       }),
                       "Confirm Correction"
@@ -23927,7 +23927,7 @@ Details: ${a.inner}`);
                     onClick: it,
                     disabled: !Me.reason.trim() || k,
                     className: "px-4 py-2 rounded-lg type-value bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed",
-                    children: k ? i.jsx(mA, {
+                    children: k ? i.jsx(pA, {
                       className: "w-4 h-4 animate-spin"
                     }) : "Confirm Correction"
                   })
@@ -24162,7 +24162,7 @@ Details: ${a.inner}`);
                   className: Je("tracking-tight", x.headerText),
                   children: "Financials"
                 }),
-                s && i.jsx(mA, {
+                s && i.jsx(pA, {
                   className: "w-3 h-3 animate-spin text-synos-primary"
                 })
               ]
@@ -24402,7 +24402,7 @@ Details: ${a.inner}`);
                   i.jsxs("h3", {
                     className: "type-page-title flex items-center gap-2",
                     children: [
-                      i.jsx(Mr, {
+                      i.jsx(Sr, {
                         className: "w-5 h-5 text-amber-500"
                       }),
                       "Confirm Financial Change"
@@ -24452,7 +24452,7 @@ Details: ${a.inner}`);
                     onClick: G,
                     disabled: !d.reason.trim() || s,
                     className: "px-4 py-2 rounded-lg type-value bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed",
-                    children: s ? i.jsx(mA, {
+                    children: s ? i.jsx(pA, {
                       className: "w-4 h-4 animate-spin"
                     }) : "Confirm Change"
                   })
@@ -24653,7 +24653,7 @@ Details: ${a.inner}`);
           children: [
             h && !g && i.jsx("div", {
               className: "flex items-center justify-center h-40",
-              children: i.jsx(mA, {
+              children: i.jsx(pA, {
                 className: "w-8 h-8 text-synos-primary animate-spin"
               })
             }),
@@ -24711,7 +24711,7 @@ Details: ${a.inner}`);
             className: Je("w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 mx-auto", q ? "max-w-md" : "w-full", T.actionBtn.enabled),
             children: [
               "Finish Correction ",
-              i.jsx(Mr, {
+              i.jsx(Sr, {
                 className: "w-4 h-4"
               })
             ]
@@ -24719,7 +24719,7 @@ Details: ${a.inner}`);
             onClick: W,
             disabled: !ve || h || Y,
             className: Je("w-full py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mx-auto", q ? "max-w-md" : "w-full", ve && !Y ? T.actionBtn.enabled : T.actionBtn.disabled),
-            children: h || Y ? i.jsx(mA, {
+            children: h || Y ? i.jsx(pA, {
               className: "w-4 h-4 animate-spin"
             }) : i.jsxs(i.Fragment, {
               children: [
@@ -25142,7 +25142,7 @@ Details: ${a.inner}`);
                           children: i.jsxs("div", {
                             className: "flex flex-col items-center gap-2",
                             children: [
-                              i.jsx(mA, {
+                              i.jsx(pA, {
                                 className: "w-6 h-6 animate-spin dark:text-zinc-600 text-zinc-400"
                               }),
                               i.jsx("span", {
@@ -30649,7 +30649,7 @@ Details: ${a.inner}`);
             children: i.jsxs("div", {
               className: "p-3 flex items-start gap-2 text-sm text-red-600 dark:text-red-400",
               children: [
-                i.jsx(Mr, {
+                i.jsx(Sr, {
                   className: "w-4 h-4 shrink-0 mt-0.5"
                 }),
                 i.jsx("span", {
@@ -30673,7 +30673,7 @@ Details: ${a.inner}`);
             children: D.map((q, se) => i.jsxs("div", {
               className: "p-3 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400",
               children: [
-                i.jsx(Mr, {
+                i.jsx(Sr, {
                   className: "w-4 h-4 shrink-0 mt-0.5"
                 }),
                 i.jsxs("div", {
@@ -30774,7 +30774,7 @@ Details: ${a.inner}`);
             onClick: K,
             disabled: u || l,
             className: Je("w-full py-3.5 rounded-xl font-bold text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2", u ? W.actionBtn.disabled : W.actionBtn.claim),
-            children: u ? i.jsx(mA, {
+            children: u ? i.jsx(pA, {
               className: "w-5 h-5 animate-spin"
             }) : "Assign to Me"
           }) : H ? i.jsxs("div", {
@@ -30787,7 +30787,7 @@ Details: ${a.inner}`);
                 children: [
                   k ? i.jsx(Zr, {
                     className: "w-4 h-4"
-                  }) : p ? i.jsx(mA, {
+                  }) : p ? i.jsx(pA, {
                     className: "w-4 h-4 animate-spin"
                   }) : i.jsx(Rd, {
                     className: "w-4 h-4"
@@ -30800,7 +30800,7 @@ Details: ${a.inner}`);
                 disabled: f || l,
                 className: Je("py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-transform active:scale-95", f ? W.actionBtn.disabled : W.actionBtn.collect),
                 children: [
-                  f ? i.jsx(mA, {
+                  f ? i.jsx(pA, {
                     className: "w-5 h-5 animate-spin"
                   }) : "Complete",
                   " ",
@@ -30958,7 +30958,7 @@ Details: ${a.inner}`);
         value: se,
         label: "Pending Samples",
         qualifier: "Awaiting Draw",
-        icon: Mr,
+        icon: Sr,
         color: "red"
       },
       {
@@ -31858,7 +31858,7 @@ Details: ${a.inner}`);
             disabled: g,
             className: "w-full h-12 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl shadow-black/10 disabled:opacity-50",
             children: [
-              g ? i.jsx(mA, {
+              g ? i.jsx(pA, {
                 className: "w-5 h-5 animate-spin"
               }) : "Assign to Me",
               !g && i.jsx(P0, {
@@ -31890,7 +31890,7 @@ Details: ${a.inner}`);
                     className: "flex-1 h-11 rounded-xl text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition-all flex items-center justify-center gap-1.5 active:scale-[0.98] disabled:opacity-50",
                     title: "Query connected lab analyzer and populate test parameter results",
                     children: [
-                      h ? i.jsx(mA, {
+                      h ? i.jsx(pA, {
                         className: "w-4 h-4 animate-spin"
                       }) : i.jsx(Lm, {
                         className: "w-4 h-4 text-indigo-500"
@@ -32265,31 +32265,68 @@ Details: ${a.inner}`);
         o(false);
       }
     }, x = async (m) => {
-      o(true);
+      o(true), a(null);
       try {
         await u(t, n, m), C("/");
       } catch (Q) {
-        a(Q.message);
+        a(Q.message || "Branch authentication failed");
       } finally {
         o(false);
       }
     };
-    return h && setTimeout(() => C("/"), 100), (l == null ? void 0 : l.requiresBranchSelection) ? i.jsx("div", {
+    return j.useEffect(() => {
+      h && C("/", {
+        replace: true
+      });
+    }, [
+      h,
+      C
+    ]), (l == null ? void 0 : l.requiresBranchSelection) ? i.jsx("div", {
       className: "h-screen w-screen bg-synos-background flex items-center justify-center p-4",
       children: i.jsxs("div", {
         className: "w-full max-w-sm bg-white border border-zinc-200/80 rounded-2xl p-8 shadow-xl",
         children: [
           i.jsx("h2", {
-            className: "text-xl font-bold text-zinc-900 mb-6 text-center",
+            className: "text-xl font-bold text-zinc-900 mb-2 text-center",
             children: "Select Branch"
+          }),
+          i.jsx("p", {
+            className: "text-zinc-500 text-xs mb-6 text-center",
+            children: "Select your active operating branch to proceed"
+          }),
+          r && i.jsxs("div", {
+            className: "bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded mb-4 flex items-center gap-2",
+            children: [
+              i.jsx(Sr, {
+                className: "w-4 h-4 text-red-500 shrink-0"
+              }),
+              i.jsx("span", {
+                children: r
+              })
+            ]
           }),
           i.jsx("div", {
             className: "space-y-2 max-h-64 overflow-y-auto pr-2",
-            children: l.availableBranches.map((m) => i.jsx("button", {
+            children: l.availableBranches.map((m) => i.jsxs("button", {
+              disabled: s,
               onClick: () => x(m.branchId),
-              className: "w-full bg-zinc-50 border border-zinc-200 hover:border-synos-primary hover:bg-zinc-100/50 text-zinc-900 p-3 rounded-xl text-left transition-all font-medium",
-              children: m.name
+              className: "w-full bg-zinc-50 border border-zinc-200 hover:border-synos-primary hover:bg-zinc-100/50 text-zinc-900 p-3 rounded-xl text-left transition-all font-medium flex items-center justify-between disabled:opacity-50",
+              children: [
+                i.jsx("span", {
+                  children: m.name
+                }),
+                s && i.jsx(pA, {
+                  className: "w-4 h-4 animate-spin text-synos-primary"
+                })
+              ]
             }, m.branchId))
+          }),
+          i.jsx("button", {
+            onClick: () => {
+              c(null), a(null);
+            },
+            className: "mt-4 text-xs text-zinc-400 hover:text-zinc-600 w-full text-center",
+            children: "\u2190 Back to login"
           })
         ]
       })
@@ -32319,7 +32356,7 @@ Details: ${a.inner}`);
               r && i.jsxs("div", {
                 className: "bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded flex items-center gap-2",
                 children: [
-                  i.jsx(Mr, {
+                  i.jsx(Sr, {
                     className: "w-4 h-4 text-red-500"
                   }),
                   r
@@ -32364,7 +32401,7 @@ Details: ${a.inner}`);
                 disabled: s,
                 className: "w-full bg-synos-primary hover:bg-synos-primary/90 text-white font-bold py-2.5 rounded transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
                 children: [
-                  s && i.jsx(mA, {
+                  s && i.jsx(pA, {
                     className: "w-4 h-4 animate-spin"
                   }),
                   s ? "Authenticating..." : "Access Portal"
@@ -32626,7 +32663,7 @@ Details: ${a.inner}`);
     return a ? i.jsxs("div", {
       className: "h-screen w-screen bg-zinc-950 flex flex-col items-center justify-center text-white",
       children: [
-        i.jsx(mA, {
+        i.jsx(pA, {
           className: "w-10 h-10 animate-spin text-blue-500 mb-4"
         }),
         i.jsx("p", {
@@ -32648,7 +32685,7 @@ Details: ${a.inner}`);
           children: [
             i.jsx("div", {
               className: "flex justify-center",
-              children: i.jsx(mA, {
+              children: i.jsx(pA, {
                 className: "w-12 h-12 animate-spin text-emerald-500"
               })
             }),
@@ -32806,7 +32843,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
               children: i.jsxs("div", {
                 className: "bg-red-950/40 border border-red-900/50 text-red-300 text-xs p-4 rounded-xl flex items-start gap-3",
                 children: [
-                  i.jsx(Mr, {
+                  i.jsx(Sr, {
                     className: "w-5 h-5 text-red-500 shrink-0 mt-0.5"
                   }),
                   i.jsxs("div", {
@@ -32906,7 +32943,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
                       disabled: lt || !o.trim(),
                       className: "w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm",
                       children: [
-                        lt && i.jsx(mA, {
+                        lt && i.jsx(pA, {
                           className: "w-4 h-4 animate-spin"
                         }),
                         Y ? "Activate & Reconnect SynOS" : "Activate & Continue"
@@ -33019,13 +33056,13 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
                               et.status === "idle" && i.jsx("div", {
                                 className: "w-4 h-4 rounded-full border border-zinc-800"
                               }),
-                              et.status === "running" && i.jsx(mA, {
+                              et.status === "running" && i.jsx(pA, {
                                 className: "w-4 h-4 animate-spin text-blue-500"
                               }),
                               et.status === "success" && i.jsx(ua, {
                                 className: "w-4 h-4 text-emerald-500 font-bold"
                               }),
-                              et.status === "failed" && i.jsx(Mr, {
+                              et.status === "failed" && i.jsx(Sr, {
                                 className: "w-4 h-4 text-red-500"
                               })
                             ]
@@ -35351,7 +35388,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
             t.abnormalCount > 0 && i.jsxs("div", {
               className: "flex items-center gap-1 text-amber-500 transition-all",
               children: [
-                i.jsx(Mr, {
+                i.jsx(Sr, {
                   className: "w-2.5 h-2.5"
                 }),
                 i.jsx("span", {
@@ -55616,7 +55653,7 @@ ${n}
         K && i.jsxs("div", {
           className: "animate-in fade-in slide-in-from-bottom-2 duration-300 flex items-center gap-2 dark:bg-zinc-900 bg-white border border-red-500/30 text-red-500 text-xs px-4 py-3 rounded-xl shadow-xl max-w-xs",
           children: [
-            i.jsx(Mr, {
+            i.jsx(Sr, {
               className: "w-4 h-4 shrink-0"
             }),
             i.jsx("span", {
@@ -56550,7 +56587,7 @@ ${n}
                       children: g ? i.jsxs("div", {
                         className: "flex flex-col items-center justify-center py-12 opacity-50",
                         children: [
-                          i.jsx(mA, {
+                          i.jsx(pA, {
                             className: "w-8 h-8 animate-spin mb-2"
                           }),
                           i.jsx("span", {
@@ -56603,7 +56640,7 @@ ${n}
                   children: h ? i.jsxs("div", {
                     className: "flex-1 flex flex-col items-center justify-center opacity-50",
                     children: [
-                      i.jsx(mA, {
+                      i.jsx(pA, {
                         className: "w-10 h-10 animate-spin mb-4 text-indigo-500"
                       }),
                       i.jsx("h3", {
@@ -56646,7 +56683,7 @@ ${n}
                             children: [
                               i.jsx("div", {
                                 className: "w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center text-white shrink-0",
-                                children: i.jsx(Mr, {
+                                children: i.jsx(Sr, {
                                   className: "w-5 h-5"
                                 })
                               }),
@@ -57038,7 +57075,7 @@ ${n}
                                             disabled: T || !o || !WA,
                                             className: "flex-1 px-6 py-2 rounded-xl text-xs font-black bg-synos-primary text-white hover:bg-synos-primary/95 shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-wider shrink-0",
                                             children: [
-                                              T ? i.jsx(mA, {
+                                              T ? i.jsx(pA, {
                                                 className: "w-3.5 h-3.5 animate-spin"
                                               }) : i.jsx(Ez, {
                                                 className: "w-3.5 h-3.5"
@@ -57141,7 +57178,7 @@ ${n}
                       children: h || ye ? i.jsxs("div", {
                         className: "h-full flex flex-col items-center justify-center opacity-30 no-print",
                         children: [
-                          i.jsx(mA, {
+                          i.jsx(pA, {
                             className: "w-6 h-6 animate-spin mb-4"
                           }),
                           i.jsx("span", {
@@ -57295,7 +57332,7 @@ ${n}
                             }),
                             Ce ? i.jsxs(i.Fragment, {
                               children: [
-                                i.jsx(mA, {
+                                i.jsx(pA, {
                                   className: "w-12 h-12 text-indigo-500 animate-spin mb-4"
                                 }),
                                 i.jsx("span", {
@@ -57877,7 +57914,7 @@ ${n}
                       children: g ? i.jsxs("div", {
                         className: "h-full flex items-center justify-center flex-col gap-2",
                         children: [
-                          i.jsx(mA, {
+                          i.jsx(pA, {
                             className: "h-6 w-6 animate-spin text-zinc-500"
                           }),
                           i.jsx("span", {
@@ -58013,7 +58050,7 @@ ${n}
                             disabled: h || t.studyStatus === "AwaitingSignature" || t.status === "AwaitingSignature",
                             className: `px-4 py-2 text-white font-bold rounded text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 ${t.studyStatus === "AwaitingSignature" || t.status === "AwaitingSignature" ? "bg-zinc-500 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"}`,
                             children: [
-                              h ? i.jsx(mA, {
+                              h ? i.jsx(pA, {
                                 className: "h-3.5 w-3.5 animate-spin"
                               }) : i.jsx(ZT, {
                                 className: "h-3.5 w-3.5"
@@ -58118,7 +58155,7 @@ ${n}
                               se || q ? i.jsxs("div", {
                                 className: "h-full flex flex-col items-center justify-center opacity-40",
                                 children: [
-                                  i.jsx(mA, {
+                                  i.jsx(pA, {
                                     className: "w-6 h-6 animate-spin mb-2 text-synos-primary"
                                   }),
                                   i.jsx("span", {
@@ -58715,7 +58752,7 @@ ${n}
                       children: p ? i.jsxs("div", {
                         className: "flex flex-col items-center justify-center py-12 opacity-50",
                         children: [
-                          i.jsx(mA, {
+                          i.jsx(pA, {
                             className: "w-8 h-8 animate-spin mb-2"
                           }),
                           i.jsx("span", {
@@ -58768,7 +58805,7 @@ ${n}
                   children: m ? i.jsxs("div", {
                     className: "flex-1 flex flex-col items-center justify-center opacity-50",
                     children: [
-                      i.jsx(mA, {
+                      i.jsx(pA, {
                         className: "w-10 h-10 animate-spin mb-4 text-synos-primary"
                       }),
                       i.jsx("h3", {
@@ -59094,7 +59131,7 @@ ${n}
                                           disabled: K || k || !D.interpretation,
                                           className: "flex-1 px-4 py-2 rounded-xl text-xs font-black bg-synos-primary text-white hover:bg-synos-primary/95 shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-wider shrink-0",
                                           children: [
-                                            K ? i.jsx(mA, {
+                                            K ? i.jsx(pA, {
                                               className: "w-3.5 h-3.5 animate-spin"
                                             }) : i.jsx(xa, {
                                               className: "w-3.5 h-3.5"
@@ -59232,7 +59269,7 @@ ${n}
                       children: m || ht ? i.jsxs("div", {
                         className: "h-full flex flex-col items-center justify-center opacity-30 no-print",
                         children: [
-                          i.jsx(mA, {
+                          i.jsx(pA, {
                             className: "w-6 h-6 animate-spin mb-4"
                           }),
                           i.jsx("span", {
@@ -59608,7 +59645,7 @@ ${n}
                       className: "flex-1 overflow-y-auto p-4 pt-0 pb-24 space-y-2 custom-scrollbar",
                       children: x ? i.jsx("div", {
                         className: "flex items-center justify-center py-12 opacity-30",
-                        children: i.jsx(mA, {
+                        children: i.jsx(pA, {
                           className: "w-8 h-8 animate-spin"
                         })
                       }) : Se.length === 0 ? i.jsx("div", {
@@ -59645,7 +59682,7 @@ ${n}
                     className: "flex-1 overflow-hidden relative",
                     children: Q || be ? i.jsx("div", {
                       className: "absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-synos-background/90 z-10",
-                      children: i.jsx(mA, {
+                      children: i.jsx(pA, {
                         className: "w-12 h-12 animate-spin text-synos-primary"
                       })
                     }) : h && _e ? i.jsx("div", {
@@ -59767,7 +59804,7 @@ ${n}
                                 disabled: S,
                                 className: "bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-100 text-white dark:text-zinc-900 px-6 rounded-2xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-black/10 active:scale-95 transition-all flex items-center justify-center gap-2 border dark:border-white/10 border-zinc-800/20 disabled:opacity-50",
                                 children: [
-                                  S ? i.jsx(mA, {
+                                  S ? i.jsx(pA, {
                                     className: "w-4 h-4 animate-spin"
                                   }) : i.jsx(xa, {
                                     className: "w-4 h-4"
@@ -59874,7 +59911,7 @@ ${n}
                           i.jsxs("span", {
                             className: "text-lg font-semibold tracking-tight flex items-center gap-2",
                             children: [
-                              T ? i.jsx(mA, {
+                              T ? i.jsx(pA, {
                                 className: "w-6 h-6 animate-spin"
                               }) : i.jsx(S4, {
                                 className: "w-6 h-6"
@@ -59948,7 +59985,7 @@ ${n}
                                 disabled: T || !Ce || Ce.length < 10,
                                 className: "flex-[2] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 py-3 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2",
                                 children: [
-                                  T ? i.jsx(mA, {
+                                  T ? i.jsx(pA, {
                                     className: "w-4 h-4 animate-spin"
                                   }) : i.jsx(Zr, {
                                     className: "w-4 h-4"
@@ -60595,7 +60632,7 @@ ${n}
     };
     if (s) return i.jsx("div", {
       className: "h-full w-full flex items-center justify-center",
-      children: i.jsx(mA, {
+      children: i.jsx(pA, {
         className: "w-8 h-8 text-synos-primary animate-spin"
       })
     });
@@ -60830,7 +60867,7 @@ ${n}
                           onClick: Q,
                           disabled: x,
                           className: "px-3 py-1.5 bg-synos-primary text-white rounded-lg text-[10px] font-black hover:opacity-90 transition-all shadow-xs uppercase tracking-wider shrink-0 flex items-center justify-center gap-1",
-                          children: x ? i.jsx(mA, {
+                          children: x ? i.jsx(pA, {
                             className: "h-3 w-3 animate-spin"
                           }) : "Sync License"
                         }),
@@ -62036,7 +62073,7 @@ ${n}
                       i.jsxs("div", {
                         className: "flex items-center gap-2 text-[10px] font-bold text-zinc-500",
                         children: [
-                          i.jsx(Mr, {
+                          i.jsx(Sr, {
                             className: "h-3 w-3"
                           }),
                           "FIFO DEDUCTION WILL BE APPLIED"
@@ -62232,7 +62269,7 @@ ${n}
     });
     return A ? i.jsx("div", {
       className: "h-full flex items-center justify-center",
-      children: i.jsx(mA, {
+      children: i.jsx(pA, {
         className: "h-10 w-10 animate-spin text-zinc-700 dark:text-zinc-300"
       })
     }) : i.jsxs("div", {
@@ -62667,13 +62704,13 @@ ${n}
                       className: "flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar",
                       children: e === "roles" ? x ? i.jsx("div", {
                         className: "h-full flex items-center justify-center opacity-25",
-                        children: i.jsx(mA, {
+                        children: i.jsx(pA, {
                           className: "h-6 w-6 animate-spin text-synos-primary"
                         })
                       }) : C.length === 0 ? i.jsxs("div", {
                         className: "h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 py-12 text-center",
                         children: [
-                          i.jsx(Mr, {
+                          i.jsx(Sr, {
                             className: "h-9 w-9 mb-2 opacity-65 text-zinc-400"
                           }),
                           i.jsx("p", {
@@ -64483,7 +64520,7 @@ ${n}
       }
     };
     function ne({ selectedTest: He }) {
-      const [Qt, at] = j.useState(null), [bn, Cn] = j.useState(true), [nn, Ln] = j.useState([]), [fn, yA] = j.useState([]), [wA, kr] = j.useState([]), [Rn, KA] = j.useState([]), [si, fr] = j.useState([]), [mr, Mi] = j.useState(""), [la, sl] = j.useState(""), [AA, Ii] = j.useState(1), [ca, Tt] = j.useState("units"), [fc, Cc] = j.useState(0), Ls = wA.find((vn) => vn.consumableId === mr);
+      const [Qt, at] = j.useState(null), [bn, Cn] = j.useState(true), [nn, Ln] = j.useState([]), [fn, yA] = j.useState([]), [wA, Rr] = j.useState([]), [Rn, KA] = j.useState([]), [si, fr] = j.useState([]), [mr, Mi] = j.useState(""), [la, sl] = j.useState(""), [AA, Ii] = j.useState(1), [ca, Tt] = j.useState("units"), [fc, Cc] = j.useState(0), Ls = wA.find((vn) => vn.consumableId === mr);
       j.useEffect(() => {
         Ls && Tt(rJ(Ls.unitOfMeasure));
       }, [
@@ -64505,7 +64542,7 @@ ${n}
             ar.getTubes().catch(() => []),
             Mn.getRoles().catch(() => [])
           ]);
-          Ln(Array.isArray(rr) ? rr : []), yA(Array.isArray(Da) ? Da : []), kr(Array.isArray(Gr) ? Gr : []), KA(Array.isArray(lr) ? lr : []), fr(Array.isArray(ga) ? ga : []);
+          Ln(Array.isArray(rr) ? rr : []), yA(Array.isArray(Da) ? Da : []), Rr(Array.isArray(Gr) ? Gr : []), KA(Array.isArray(lr) ? lr : []), fr(Array.isArray(ga) ? ga : []);
         } catch (vn) {
           console.error("Failed loading inventory mappings for test", vn);
         } finally {
@@ -64587,7 +64624,7 @@ ${n}
       });
       if (bn) return i.jsx("div", {
         className: "h-full flex items-center justify-center p-12",
-        children: i.jsx(mA, {
+        children: i.jsx(pA, {
           className: "h-8 w-8 animate-spin text-synos-primary"
         })
       });
@@ -64632,7 +64669,7 @@ ${n}
                     disabled: Ug,
                     className: "flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 text-white border border-emerald-500 rounded-xl text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm",
                     children: [
-                      Ug ? i.jsx(mA, {
+                      Ug ? i.jsx(pA, {
                         className: "w-3.5 h-3.5 animate-spin"
                       }) : i.jsx(Rc, {
                         className: "w-3.5 h-3.5"
@@ -65268,8 +65305,8 @@ ${n}
     }, []);
     const tr = (He, Qt, at, bn, Cn, nn, Ln = false) => {
       He.preventDefault(), He.stopPropagation();
-      const fn = He.clientX, yA = He.clientY, kr = 1 / ((Fr || 1) * 3.78095), Rn = (si) => {
-        const fr = si.clientX - fn, mr = si.clientY - yA, Mi = fr * kr, la = mr * kr;
+      const fn = He.clientX, yA = He.clientY, Rr = 1 / ((Fr || 1) * 3.78095), Rn = (si) => {
+        const fr = si.clientX - fn, mr = si.clientY - yA, Mi = fr * Rr, la = mr * Rr;
         let sl = Cn + Mi, AA = Ln ? nn - la : nn + la;
         sl = Math.max(0, Math.min(210, sl)), AA = Math.max(0, Math.min(297, AA)), tA((Ii) => Ii.map((ca) => ca.id === Qt ? {
           ...ca,
@@ -65296,7 +65333,7 @@ ${n}
         });
       };
       document.addEventListener("pointermove", Rn), document.addEventListener("pointerup", KA);
-    }, [ki, gA] = j.useState((A == null ? void 0 : A.name) || ""), [zA, Qi] = j.useState((A == null ? void 0 : A.code) || ""), [Lr, DA] = j.useState((A == null ? void 0 : A.department) || ""), [Xr, Jr] = j.useState((A == null ? void 0 : A.isProfile) || false), [ri, dr] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [$r, nr] = j.useState((A == null ? void 0 : A.category) || "General"), [Ct, jt] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Yt, hn] = j.useState(false), [Nn, Tn] = j.useState("formula"), [qA, Oi] = j.useState(""), [Jn, aA] = j.useState(""), [or, vi] = j.useState(false), [ba, ii] = j.useState(""), [Ms, Cs] = j.useState(false), [Ht, Ha] = j.useState(""), [yt, tn] = j.useState(""), [Gn, Wn] = j.useState(false), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(false), [pi, Fs] = j.useState(""), [SA, IA] = j.useState(""), [xA, Br] = j.useState(false), [Di, ke] = j.useState(""), [ze, Ze] = j.useState(""), [We, ut] = j.useState(false), [dt, Gt] = j.useState(""), [Bt, Ut] = j.useState(""), [vt, cn] = j.useState(""), [An, an] = j.useState(""), [En, $e] = j.useState(""), [pt, Jt] = j.useState(false), [In, fA] = j.useState(""), [dA, ti] = j.useState(""), [ni, Er] = j.useState(""), [ZA, OA] = j.useState(false), [Ir, xr] = j.useState(""), [LA, Si] = j.useState(""), [sA, Kn] = j.useState(""), [Kr, Zi] = j.useState(false), [Hi, Go] = j.useState(""), [Ws, kg] = j.useState(""), [Ll, W0] = j.useState(""), [rl, Hc] = j.useState(false), [Gl, Rg] = j.useState(""), [Pc, q0] = j.useState(""), [zd, Z0] = j.useState(""), [Uo, il] = j.useState(false), [uc, _c] = j.useState(""), [Mg, xh] = j.useState(""), [Yc, X0] = j.useState(""), [qs, Zs] = j.useState(false), [Jc, Qe] = j.useState(""), [rn, Sr] = j.useState(""), [ai, sa] = j.useState(""), [va, vf] = j.useState(false), [Od, lB] = j.useState(""), [pA, oa] = j.useState(""), [Fg, Kc] = j.useState(""), [al, Hd] = j.useState(false), [Tg, Pd] = j.useState(""), [hc, _d] = j.useState(""), [Ul, yh] = j.useState(""), Lg = (He) => {
+    }, [ki, gA] = j.useState((A == null ? void 0 : A.name) || ""), [zA, Qi] = j.useState((A == null ? void 0 : A.code) || ""), [Lr, DA] = j.useState((A == null ? void 0 : A.department) || ""), [Xr, Jr] = j.useState((A == null ? void 0 : A.isProfile) || false), [ri, dr] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [$r, nr] = j.useState((A == null ? void 0 : A.category) || "General"), [Ct, jt] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Yt, hn] = j.useState(false), [Nn, Tn] = j.useState("formula"), [qA, Oi] = j.useState(""), [Jn, aA] = j.useState(""), [or, vi] = j.useState(false), [ba, ii] = j.useState(""), [Ms, Cs] = j.useState(false), [Ht, Ha] = j.useState(""), [yt, tn] = j.useState(""), [Gn, Wn] = j.useState(false), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(false), [pi, Fs] = j.useState(""), [SA, IA] = j.useState(""), [xA, Br] = j.useState(false), [Di, ke] = j.useState(""), [ze, Ze] = j.useState(""), [We, ut] = j.useState(false), [dt, Gt] = j.useState(""), [Bt, Ut] = j.useState(""), [vt, cn] = j.useState(""), [An, an] = j.useState(""), [En, $e] = j.useState(""), [pt, Jt] = j.useState(false), [In, fA] = j.useState(""), [dA, ti] = j.useState(""), [ni, Er] = j.useState(""), [ZA, OA] = j.useState(false), [Ir, xr] = j.useState(""), [LA, Si] = j.useState(""), [sA, Kn] = j.useState(""), [Kr, Zi] = j.useState(false), [Hi, Go] = j.useState(""), [Ws, kg] = j.useState(""), [Ll, W0] = j.useState(""), [rl, Hc] = j.useState(false), [Gl, Rg] = j.useState(""), [Pc, q0] = j.useState(""), [zd, Z0] = j.useState(""), [Uo, il] = j.useState(false), [uc, _c] = j.useState(""), [Mg, xh] = j.useState(""), [Yc, X0] = j.useState(""), [qs, Zs] = j.useState(false), [Jc, Qe] = j.useState(""), [rn, kr] = j.useState(""), [ai, sa] = j.useState(""), [va, vf] = j.useState(false), [Od, lB] = j.useState(""), [BA, oa] = j.useState(""), [Fg, Kc] = j.useState(""), [al, Hd] = j.useState(false), [Tg, Pd] = j.useState(""), [hc, _d] = j.useState(""), [Ul, yh] = j.useState(""), Lg = (He) => {
       r(He), localStorage.setItem("synos_selected_test_id", He.id), gA(He.name), Qi(He.code), DA(He.department), Jr(He.isProfile), dr(He.specimenTypeCode || "SERUM"), nr(He.category || "General"), jt(He.modalityId || ""), WA(false), hn(false), !He.isProfile && Lt === "profile-builder" && gn("parameters");
     }, Df = () => {
       const He = ae.find((Cn) => Cn.name === Lr), Qt = He ? He.macroDepartment === "Radiology" : Lr === "Radiology" || Lr === "RAD";
@@ -65437,8 +65474,8 @@ IMPRESSION:`,
         let fn = "", yA = "";
         const wA = (at || "").trim();
         if (wA.includes(" - ")) {
-          const kr = wA.split(" - ");
-          kr.length === 2 && !isNaN(kr[0].trim()) && !isNaN(kr[1].trim()) && (fn = Number(kr[0].trim()), yA = Number(kr[1].trim()));
+          const Rr = wA.split(" - ");
+          Rr.length === 2 && !isNaN(Rr[0].trim()) && !isNaN(Rr[1].trim()) && (fn = Number(Rr[0].trim()), yA = Number(Rr[1].trim()));
         }
         Cn[He] = {
           ...Cn[He],
@@ -65521,12 +65558,12 @@ IMPRESSION:`,
       Oi(He), Tn(Qt), aA(at.formula || ""), vi(at.hasFormula || false), ii(at.narrativeTemplate || ""), Cs(at.showNarrative || false), Ha(at.analyzerModel || ""), tn(at.analyzerChannel || ""), NA(at.maleMin !== void 0 && at.maleMin !== null && at.maleMin !== "" ? at.maleMin : ((_a2 = at.genderRanges) == null ? void 0 : _a2.maleMin) ?? ""), Ar(at.maleMax !== void 0 && at.maleMax !== null && at.maleMax !== "" ? at.maleMax : ((_b2 = at.genderRanges) == null ? void 0 : _b2.maleMax) ?? ""), Fs(at.femaleMin !== void 0 && at.femaleMin !== null && at.femaleMin !== "" ? at.femaleMin : ((_c3 = at.genderRanges) == null ? void 0 : _c3.femaleMin) ?? ""), IA(at.femaleMax !== void 0 && at.femaleMax !== null && at.femaleMax !== "" ? at.femaleMax : ((_d3 = at.genderRanges) == null ? void 0 : _d3.femaleMax) ?? ""), Wn(at.useMale ?? (at.maleMin !== void 0 && at.maleMin !== "" && at.maleMin !== null) ?? (((_e2 = at.genderRanges) == null ? void 0 : _e2.maleMin) !== void 0 && ((_f = at.genderRanges) == null ? void 0 : _f.maleMin) !== 0)), ei(at.useFemale ?? (at.femaleMin !== void 0 && at.femaleMin !== "" && at.femaleMin !== null) ?? (((_g = at.genderRanges) == null ? void 0 : _g.femaleMin) !== void 0 && ((_h = at.genderRanges) == null ? void 0 : _h.femaleMin) !== 0)), Br(!!at.useInfant), ke(at.infantMin !== void 0 && at.infantMin !== null ? at.infantMin : ""), Ze(at.infantMax !== void 0 && at.infantMax !== null ? at.infantMax : ""), ut(!!at.useChild), Gt(at.childMin !== void 0 && at.childMin !== null ? at.childMin : ""), Ut(at.childMax !== void 0 && at.childMax !== null ? at.childMax : ""), cn(at.adultMin !== void 0 && at.adultMin !== null ? at.adultMin : ""), an(at.adultMax !== void 0 && at.adultMax !== null ? at.adultMax : ""), $e(at.referenceRange || "");
       const bn = at.useMale ?? (at.maleMin !== void 0 && at.maleMin !== "" && at.maleMin !== null), Cn = at.maleMin !== void 0 && at.maleMin !== null ? at.maleMin : "", nn = at.maleMax !== void 0 && at.maleMax !== null ? at.maleMax : "", Ln = at.useFemale ?? (at.femaleMin !== void 0 && at.femaleMin !== "" && at.femaleMin !== null), fn = at.femaleMin !== void 0 && at.femaleMin !== null ? at.femaleMin : "", yA = at.femaleMax !== void 0 && at.femaleMax !== null ? at.femaleMax : "";
       at.useInfant;
-      const wA = at.infantMin !== void 0 && at.infantMin !== null ? at.infantMin : "", kr = at.infantMax !== void 0 && at.infantMax !== null ? at.infantMax : "";
+      const wA = at.infantMin !== void 0 && at.infantMin !== null ? at.infantMin : "", Rr = at.infantMax !== void 0 && at.infantMax !== null ? at.infantMax : "";
       at.useChild;
       const Rn = at.childMin !== void 0 && at.childMin !== null ? at.childMin : "", KA = at.childMax !== void 0 && at.childMax !== null ? at.childMax : "";
       at.useAdult;
       const si = at.adultMin !== void 0 && at.adultMin !== null ? at.adultMin : "", fr = at.adultMax !== void 0 && at.adultMax !== null ? at.adultMax : "";
-      Jt(at.useNewbornMale ?? false), fA(at.newbornMaleMin !== void 0 && at.newbornMaleMin !== null ? at.newbornMaleMin : ""), ti(at.newbornMaleMax !== void 0 && at.newbornMaleMax !== null ? at.newbornMaleMax : ""), Er(at.newbornMaleText || ""), OA(at.useNewbornFemale ?? false), xr(at.newbornFemaleMin !== void 0 && at.newbornFemaleMin !== null ? at.newbornFemaleMin : ""), Si(at.newbornFemaleMax !== void 0 && at.newbornFemaleMax !== null ? at.newbornFemaleMax : ""), Kn(at.newbornFemaleText || ""), Zi(at.useInfantMale ?? (at.useInfant ? true : bn)), Go(at.infantMaleMin !== void 0 && at.infantMaleMin !== null ? at.infantMaleMin : wA || Cn), kg(at.infantMaleMax !== void 0 && at.infantMaleMax !== null ? at.infantMaleMax : kr || nn), W0(at.infantMaleText || ""), Hc(at.useInfantFemale ?? (at.useInfant ? true : Ln)), Rg(at.infantFemaleMin !== void 0 && at.infantFemaleMin !== null ? at.infantFemaleMin : wA || fn), q0(at.infantFemaleMax !== void 0 && at.infantFemaleMax !== null ? at.infantFemaleMax : kr || yA), Z0(at.infantFemaleText || ""), il(at.useChildMale ?? (at.useChild ? true : bn)), _c(at.childMaleMin !== void 0 && at.childMaleMin !== null ? at.childMaleMin : Rn || Cn), xh(at.childMaleMax !== void 0 && at.childMaleMax !== null ? at.childMaleMax : KA || nn), X0(at.childMaleText || ""), Zs(at.useChildFemale ?? (at.useChild ? true : Ln)), Qe(at.childFemaleMin !== void 0 && at.childFemaleMin !== null ? at.childFemaleMin : Rn || fn), Sr(at.childFemaleMax !== void 0 && at.childFemaleMax !== null ? at.childFemaleMax : KA || yA), sa(at.childFemaleText || ""), vf(at.useAdultMale ?? (at.useAdult ? true : bn)), lB(at.adultMaleMin !== void 0 && at.adultMaleMin !== null ? at.adultMaleMin : si || Cn), oa(at.adultMaleMax !== void 0 && at.adultMaleMax !== null ? at.adultMaleMax : fr || nn), Kc(at.adultMaleText || ""), Hd(at.useAdultFemale ?? (at.useAdult ? true : Ln)), Pd(at.adultFemaleMin !== void 0 && at.adultFemaleMin !== null ? at.adultFemaleMin : si || fn), _d(at.adultFemaleMax !== void 0 && at.adultFemaleMax !== null ? at.adultFemaleMax : fr || yA), yh(at.adultFemaleText || ""), hn(true);
+      Jt(at.useNewbornMale ?? false), fA(at.newbornMaleMin !== void 0 && at.newbornMaleMin !== null ? at.newbornMaleMin : ""), ti(at.newbornMaleMax !== void 0 && at.newbornMaleMax !== null ? at.newbornMaleMax : ""), Er(at.newbornMaleText || ""), OA(at.useNewbornFemale ?? false), xr(at.newbornFemaleMin !== void 0 && at.newbornFemaleMin !== null ? at.newbornFemaleMin : ""), Si(at.newbornFemaleMax !== void 0 && at.newbornFemaleMax !== null ? at.newbornFemaleMax : ""), Kn(at.newbornFemaleText || ""), Zi(at.useInfantMale ?? (at.useInfant ? true : bn)), Go(at.infantMaleMin !== void 0 && at.infantMaleMin !== null ? at.infantMaleMin : wA || Cn), kg(at.infantMaleMax !== void 0 && at.infantMaleMax !== null ? at.infantMaleMax : Rr || nn), W0(at.infantMaleText || ""), Hc(at.useInfantFemale ?? (at.useInfant ? true : Ln)), Rg(at.infantFemaleMin !== void 0 && at.infantFemaleMin !== null ? at.infantFemaleMin : wA || fn), q0(at.infantFemaleMax !== void 0 && at.infantFemaleMax !== null ? at.infantFemaleMax : Rr || yA), Z0(at.infantFemaleText || ""), il(at.useChildMale ?? (at.useChild ? true : bn)), _c(at.childMaleMin !== void 0 && at.childMaleMin !== null ? at.childMaleMin : Rn || Cn), xh(at.childMaleMax !== void 0 && at.childMaleMax !== null ? at.childMaleMax : KA || nn), X0(at.childMaleText || ""), Zs(at.useChildFemale ?? (at.useChild ? true : Ln)), Qe(at.childFemaleMin !== void 0 && at.childFemaleMin !== null ? at.childFemaleMin : Rn || fn), kr(at.childFemaleMax !== void 0 && at.childFemaleMax !== null ? at.childFemaleMax : KA || yA), sa(at.childFemaleText || ""), vf(at.useAdultMale ?? (at.useAdult ? true : bn)), lB(at.adultMaleMin !== void 0 && at.adultMaleMin !== null ? at.adultMaleMin : si || Cn), oa(at.adultMaleMax !== void 0 && at.adultMaleMax !== null ? at.adultMaleMax : fr || nn), Kc(at.adultMaleText || ""), Hd(at.useAdultFemale ?? (at.useAdult ? true : Ln)), Pd(at.adultFemaleMin !== void 0 && at.adultFemaleMin !== null ? at.adultFemaleMin : si || fn), _d(at.adultFemaleMax !== void 0 && at.adultFemaleMax !== null ? at.adultFemaleMax : fr || yA), yh(at.adultFemaleText || ""), hn(true);
     }, bh = () => {
       const He = A.parameters.map((bn) => bn.code === qA ? {
         ...bn,
@@ -65551,7 +65588,7 @@ IMPRESSION:`,
         childMax: Uo ? Mg !== "" ? Number(Mg) : null : qs && rn !== "" ? Number(rn) : null,
         useAdult: va || al,
         adultMin: va ? Od !== "" ? Number(Od) : null : al && Tg !== "" ? Number(Tg) : null,
-        adultMax: va ? pA !== "" ? Number(pA) : null : al && hc !== "" ? Number(hc) : null,
+        adultMax: va ? BA !== "" ? Number(BA) : null : al && hc !== "" ? Number(hc) : null,
         useNewbornMale: pt,
         newbornMaleMin: pt && In !== "" ? Number(In) : null,
         newbornMaleMax: pt && dA !== "" ? Number(dA) : null,
@@ -65578,7 +65615,7 @@ IMPRESSION:`,
         childFemaleText: qs ? ai : null,
         useAdultMale: va,
         adultMaleMin: va && Od !== "" ? Number(Od) : null,
-        adultMaleMax: va && pA !== "" ? Number(pA) : null,
+        adultMaleMax: va && BA !== "" ? Number(BA) : null,
         adultMaleText: va ? Fg : null,
         useAdultFemale: al,
         adultFemaleMin: al && Tg !== "" ? Number(Tg) : null,
@@ -65586,7 +65623,7 @@ IMPRESSION:`,
         adultFemaleText: al ? Ul : null,
         genderRanges: {
           maleMin: va && Number(Od) || 0,
-          maleMax: va && Number(pA) || 0,
+          maleMax: va && Number(BA) || 0,
           femaleMin: al && Number(Tg) || 0,
           femaleMax: al && Number(hc) || 0
         }
@@ -65752,7 +65789,7 @@ Please use a unique code.`);
               return fc ? fc.code : null;
             }).filter(Boolean)
           };
-        }, wA = g.find((AA) => (AA.testCode || AA.TestCode || AA.code || "").toLowerCase() === fn.code.toLowerCase()), kr = wA ? wA.testId || wA.TestId || wA.id : null, Rn = kr && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(kr), KA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) || Rn, si = KA ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) ? fn.id : kr : fn.id;
+        }, wA = g.find((AA) => (AA.testCode || AA.TestCode || AA.code || "").toLowerCase() === fn.code.toLowerCase()), Rr = wA ? wA.testId || wA.TestId || wA.id : null, Rn = Rr && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(Rr), KA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) || Rn, si = KA ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) ? fn.id : Rr : fn.id;
         let fr = null, mr = [];
         if (KA) {
           const AA = {
@@ -65810,7 +65847,7 @@ ${AA}`);
       const He = OSe(A, MA), Qt = HSe(He), at = He.columns && He.columns.length > 0, bn = at ? He.columns.reduce((Rn, KA) => Rn + KA.weight, 0) : 1, Cn = n(A, t), nn = new Set(Cn.map((Rn) => Rn.code)), Ln = (A.parameters || []).filter((Rn) => !nn.has(Rn.code)), fn = [
         ...Cn,
         ...Ln
-      ], yA = Lt === "interpretation" ? A.defaultInterpretation || "" : A.defaultInterpretation || ((A.reportStyle === "Descriptive Narrative" || ((_a2 = A.department) == null ? void 0 : _a2.toUpperCase()) === "RADIOLOGY") && fn && ((_b2 = fn[0]) == null ? void 0 : _b2.narrativeTemplate) ? (_c3 = fn[0]) == null ? void 0 : _c3.narrativeTemplate : ""), wA = (Lt === "interpretation" || A.showInterpretation) && !!yA, kr = rP(yA);
+      ], yA = Lt === "interpretation" ? A.defaultInterpretation || "" : A.defaultInterpretation || ((A.reportStyle === "Descriptive Narrative" || ((_a2 = A.department) == null ? void 0 : _a2.toUpperCase()) === "RADIOLOGY") && fn && ((_b2 = fn[0]) == null ? void 0 : _b2.narrativeTemplate) ? (_c3 = fn[0]) == null ? void 0 : _c3.narrativeTemplate : ""), wA = (Lt === "interpretation" || A.showInterpretation) && !!yA, Rr = rP(yA);
       return i.jsxs("div", {
         className: "lg:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar flex flex-col min-h-0",
         children: [
@@ -66397,7 +66434,7 @@ ${AA}`);
                                   }),
                                   i.jsx("div", {
                                     className: "text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal",
-                                    children: kr
+                                    children: Rr
                                   })
                                 ]
                               })
@@ -66423,7 +66460,7 @@ ${AA}`);
                                 }),
                                 i.jsx("div", {
                                   className: "text-[7.5px] italic text-zinc-655 mt-0.5 leading-normal",
-                                  children: kr
+                                  children: Rr
                                 })
                               ]
                             })
@@ -66557,7 +66594,7 @@ ${AA}`);
                   className: "px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-700 dark:text-zinc-300 font-medium text-xs rounded-lg flex items-center gap-1.5 transition-all active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
                   children: Ft ? i.jsxs(i.Fragment, {
                     children: [
-                      i.jsx(mA, {
+                      i.jsx(pA, {
                         className: "w-3.5 h-3.5 animate-spin"
                       }),
                       " Syncing..."
@@ -67155,10 +67192,10 @@ ${AA}`);
                             genderRanges: {}
                           });
                           const fn = (yA, wA) => {
-                            const kr = [
+                            const Rr = [
                               ...nn
                             ];
-                            kr.length === 0 && kr.push({
+                            Rr.length === 0 && Rr.push({
                               code: "FINDINGS",
                               name: "Findings & Impressions",
                               unit: "",
@@ -67173,13 +67210,13 @@ ${AA}`);
                               genderRanges: {}
                             });
                             let Rn = wA;
-                            yA === "code" && (Rn = wA.toUpperCase()), kr[0] = {
-                              ...kr[0],
+                            yA === "code" && (Rn = wA.toUpperCase()), Rr[0] = {
+                              ...Rr[0],
                               [yA]: Rn
                             };
                             const KA = {
                               ...A,
-                              parameters: kr
+                              parameters: Rr
                             }, si = t.map((fr) => fr.id === A.id ? KA : fr);
                             e(si), r(KA);
                           };
@@ -67444,9 +67481,9 @@ Normal chest study.`);
                                                   max: Cn.length,
                                                   value: Ln + 1,
                                                   onChange: (wA) => {
-                                                    const kr = parseInt(wA.target.value, 10);
-                                                    if (!isNaN(kr)) {
-                                                      const Rn = Math.max(1, Math.min(Cn.length, kr)), KA = Math.max(0, Math.min(bn.length - 1, Rn - 1 - Qt.length));
+                                                    const Rr = parseInt(wA.target.value, 10);
+                                                    if (!isNaN(Rr)) {
+                                                      const Rn = Math.max(1, Math.min(Cn.length, Rr)), KA = Math.max(0, Math.min(bn.length - 1, Rn - 1 - Qt.length));
                                                       Sf(yA, KA);
                                                     }
                                                   },
@@ -67523,7 +67560,7 @@ Normal chest study.`);
                                               className: "flex justify-center items-center",
                                               children: fn ? i.jsx("button", {
                                                 onClick: () => {
-                                                  const wA = t.find((kr) => kr.code === nn.childTestCode);
+                                                  const wA = t.find((Rr) => Rr.code === nn.childTestCode);
                                                   wA ? window.confirm(`This parameter is inherited from the child test "${nn.childTestName}" (${nn.childTestCode}).
 
 To edit its reference ranges or overrides, you must modify the child test directly.
@@ -67857,12 +67894,12 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                                                 let Ln = nn;
                                                 if (!nn.startsWith("{")) {
                                                   const wA = nn.split(`
-`).map((kr) => ({
+`).map((Rr) => ({
                                                     type: "paragraph",
-                                                    content: kr.trim() ? [
+                                                    content: Rr.trim() ? [
                                                       {
                                                         type: "text",
-                                                        text: kr.trim()
+                                                        text: Rr.trim()
                                                       }
                                                     ] : []
                                                   }));
@@ -68579,7 +68616,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                         femaleMin: Jc,
                         setFemaleMin: Qe,
                         femaleMax: rn,
-                        setFemaleMax: Sr,
+                        setFemaleMax: kr,
                         femaleText: ai,
                         setFemaleText: sa,
                         colorClass: "text-emerald-600 dark:text-emerald-400"
@@ -68590,7 +68627,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                         setUseMale: vf,
                         maleMin: Od,
                         setMaleMin: lB,
-                        maleMax: pA,
+                        maleMax: BA,
                         setMaleMax: oa,
                         maleText: Fg,
                         setMaleText: Kc,
@@ -69059,7 +69096,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                             className: "flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs rounded-xl font-bold transition-all text-center flex items-center justify-center gap-2 disabled:opacity-50",
                             children: ye ? i.jsxs(i.Fragment, {
                               children: [
-                                i.jsx(mA, {
+                                i.jsx(pA, {
                                   className: "w-3.5 h-3.5 animate-spin"
                                 }),
                                 " Validating..."
@@ -69073,7 +69110,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                             className: "flex-1 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white text-xs rounded-xl font-bold transition-all text-center flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-synos-primary/10",
                             children: ht ? i.jsxs(i.Fragment, {
                               children: [
-                                i.jsx(mA, {
+                                i.jsx(pA, {
                                   className: "w-3.5 h-3.5 animate-spin"
                                 }),
                                 " Provisioning..."
@@ -69098,7 +69135,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                               ]
                             }) : i.jsxs(i.Fragment, {
                               children: [
-                                i.jsx(Mr, {
+                                i.jsx(Sr, {
                                   className: "w-4 h-4 text-red-500"
                                 }),
                                 i.jsxs("span", {
@@ -69237,7 +69274,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
           children: [
             ot.type === "success" ? i.jsx(ua, {
               className: "w-4 h-4"
-            }) : i.jsx(Mr, {
+            }) : i.jsx(Sr, {
               className: "w-4 h-4"
             }),
             i.jsx("span", {
@@ -73808,7 +73845,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                         i.jsxs("div", {
                           className: "text-amber-400 font-bold text-xs flex items-center gap-1.5",
                           children: [
-                            i.jsx(Mr, {
+                            i.jsx(Sr, {
                               className: "w-4 h-4 shrink-0"
                             }),
                             i.jsx("span", {
@@ -74905,7 +74942,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                         children: [
                           Ce.success ? i.jsx(Zr, {
                             className: "w-6 h-6 text-emerald-400 shrink-0"
-                          }) : i.jsx(Mr, {
+                          }) : i.jsx(Sr, {
                             className: "w-6 h-6 text-red-400 shrink-0"
                           }),
                           i.jsxs("div", {
@@ -75130,13 +75167,13 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
     }), [En, $e] = j.useState(false), pt = async () => {
       l(true);
       try {
-        const [Qe, rn, Sr, ai] = await Promise.all([
+        const [Qe, rn, kr, ai] = await Promise.all([
           Mn.getBranchPrinters(),
           Mn.getTerminalPrinterConfigs(),
           Mn.getBranches(),
           Mn.getGlobalThermalSettings()
         ]);
-        ke(Qe || []), Ze(rn || []), ye(Sr || []);
+        ke(Qe || []), Ze(rn || []), ye(kr || []);
         const sa = localStorage.getItem("synos_thermal_layout_settings");
         if (sa) try {
           const va = JSON.parse(sa);
@@ -75288,8 +75325,8 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
         nA && (Qe += `&actorUserId=${nA}`), hi && (Qe += `&resourceType=${hi}`), Ri && (Qe += `&action=${Ri}`), pi && (Qe += `&startDate=${R2(pi)}`), SA && (Qe += `&endDate=${R2(SA)}`);
         const rn = await Mn.getAuditLogs(Qe);
         if (Ms((rn == null ? void 0 : rn.logs) || []), Ht((rn == null ? void 0 : rn.totalCount) || 0), Gn.length === 0) {
-          const Sr = await Mn.getUsers();
-          Wn(Sr || []);
+          const kr = await Mn.getUsers();
+          Wn(kr || []);
         }
       } catch {
         u("Failed to load audit history.");
@@ -75404,10 +75441,10 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
       if (window.confirm(`Are you sure you want to restore database to backup "${rn}"? This will restart host operations.`)) {
         m(Qe), d(null), u(null);
         try {
-          const Sr = await on.post(`/api/v1/admin/operations/backups/restore?backupId=${Qe}&fileName=${rn}`);
-          d((Sr == null ? void 0 : Sr.message) || "Restore completed successfully"), Ws();
-        } catch (Sr) {
-          u(Sr.message || "Failed to restore database.");
+          const kr = await on.post(`/api/v1/admin/operations/backups/restore?backupId=${Qe}&fileName=${rn}`);
+          d((kr == null ? void 0 : kr.message) || "Restore completed successfully"), Ws();
+        } catch (kr) {
+          u(kr.message || "Failed to restore database.");
         } finally {
           m(null);
         }
@@ -75416,10 +75453,10 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
       const rn = Qe.target.files[0];
       if (!rn) return;
       D(true), d(null), u(null);
-      const Sr = new FormData();
-      Sr.append("file", rn);
+      const kr = new FormData();
+      kr.append("file", rn);
       try {
-        const ai = await on.post("/api/v1/admin/operations/backups/upload", Sr);
+        const ai = await on.post("/api/v1/admin/operations/backups/upload", kr);
         d((ai == null ? void 0 : ai.message) || "Backup uploaded successfully."), Ws();
       } catch (ai) {
         u(ai.message || "Failed to upload backup.");
@@ -75519,13 +75556,13 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
     }, zd = async (Qe, rn) => {
       Ee(true), d(null), u(null), Se(null);
       try {
-        const Sr = {
+        const kr = {
           ...Qe,
           backupId: rn
-        }, ai = await on.post("/api/v1/admin/operations/updates/apply", Sr);
+        }, ai = await on.post("/api/v1/admin/operations/updates/apply", kr);
         d((ai == null ? void 0 : ai.message) || "Update successfully applied."), Rg();
-      } catch (Sr) {
-        u(Sr.message || "Failed to apply update.");
+      } catch (kr) {
+        u(kr.message || "Failed to apply update.");
       } finally {
         Ee(false);
       }
@@ -75599,16 +75636,16 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
       if (Qe === "jwt" ? rn = "Regenerating the JWT secret logs out all users. Are you sure you want to proceed?" : Qe === "backup" ? rn = "Rotating the backup key affects future backups. Are you sure you want to proceed?" : Qe === "diagnostics" ? rn = "Rotating the diagnostics key affects future diagnostic bundles. Are you sure you want to proceed?" : Qe === "middleware" && (rn = "Generating a new Middleware API Key will invalidate the current key immediately, disconnecting the Middleware until the new key is updated in its configuration. Are you sure you want to proceed?"), !!window.confirm(rn)) {
         u(null), d(null);
         try {
-          const Sr = await Mn.rotateSecret(Qe);
-          Sr.success && (d(`${Qe.toUpperCase()} secret rotated successfully.`), Qe === "middleware" && Sr.key && (QA(Sr.key), eA(true)), OA());
-        } catch (Sr) {
-          u(Sr.message || "Secret rotation failed.");
+          const kr = await Mn.rotateSecret(Qe);
+          kr.success && (d(`${Qe.toUpperCase()} secret rotated successfully.`), Qe === "middleware" && kr.key && (QA(kr.key), eA(true)), OA());
+        } catch (kr) {
+          u(kr.message || "Secret rotation failed.");
         }
       }
     }, _c = async (Qe, rn) => {
-      const Sr = wn.some((sa) => sa.roleId === Qe && sa.capabilityId === rn);
+      const kr = wn.some((sa) => sa.roleId === Qe && sa.capabilityId === rn);
       let ai = [];
-      Sr ? ai = wn.filter((sa) => sa.roleId === Qe && sa.capabilityId !== rn).map((sa) => sa.capabilityId) : ai = [
+      kr ? ai = wn.filter((sa) => sa.roleId === Qe && sa.capabilityId !== rn).map((sa) => sa.capabilityId) : ai = [
         ...wn.filter((sa) => sa.roleId === Qe).map((sa) => sa.capabilityId),
         rn
       ];
@@ -75616,7 +75653,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
         await Mn.updateRoleCapabilities({
           roleId: Qe,
           capabilityIds: ai
-        }), Dn((sa) => Sr ? sa.filter((va) => !(va.roleId === Qe && va.capabilityId === rn)) : [
+        }), Dn((sa) => kr ? sa.filter((va) => !(va.roleId === Qe && va.capabilityId === rn)) : [
           ...sa,
           {
             roleId: Qe,
@@ -76705,12 +76742,12 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   children: Qe.module
                                 }),
                                 me.map((rn) => {
-                                  const Sr = wn.some((ai) => ai.roleId === rn.roleId && ai.capabilityId === Qe.capabilityId);
+                                  const kr = wn.some((ai) => ai.roleId === rn.roleId && ai.capabilityId === Qe.capabilityId);
                                   return i.jsx("td", {
                                     className: "p-4 text-center",
                                     children: i.jsx("input", {
                                       type: "checkbox",
-                                      checked: Sr,
+                                      checked: kr,
                                       onChange: () => _c(rn.roleId, Qe.capabilityId),
                                       className: "form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                                     })
@@ -78289,7 +78326,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                       ...xA.New || xA.new || {}
                                     }).map((Qe) => {
                                       var _a2, _b;
-                                      const rn = (_a2 = xA.Old || xA.old) == null ? void 0 : _a2[Qe], Sr = (_b = xA.New || xA.new) == null ? void 0 : _b[Qe], ai = JSON.stringify(rn) !== JSON.stringify(Sr);
+                                      const rn = (_a2 = xA.Old || xA.old) == null ? void 0 : _a2[Qe], kr = (_b = xA.New || xA.new) == null ? void 0 : _b[Qe], ai = JSON.stringify(rn) !== JSON.stringify(kr);
                                       return i.jsxs("tr", {
                                         className: ai ? "bg-synos-primary/5" : "opacity-55",
                                         children: [
@@ -78303,7 +78340,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                           }),
                                           i.jsx("td", {
                                             className: "p-3 text-emerald-300 break-all font-semibold",
-                                            children: Sr !== void 0 ? String(Sr) : "\u2014"
+                                            children: kr !== void 0 ? String(kr) : "\u2014"
                                           })
                                         ]
                                       }, Qe);
@@ -81212,13 +81249,13 @@ Please verify or update your License Key in System Settings.`);
                             i.jsx("div", {
                               className: "space-y-3",
                               children: Me.report.checks.map((Qe) => {
-                                const rn = (ai) => ai === 0 || ai === "Success" ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" : ai === 1 || ai === "Warning" ? "text-amber-500 bg-amber-500/10 border-amber-500/20" : "text-rose-500 bg-rose-500/10 border-rose-500/20", Sr = (ai) => ai === 0 || ai === "Success" ? "\u2713" : ai === 1 || ai === "Warning" ? "\u26A0" : "\u2717";
+                                const rn = (ai) => ai === 0 || ai === "Success" ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" : ai === 1 || ai === "Warning" ? "text-amber-500 bg-amber-500/10 border-amber-500/20" : "text-rose-500 bg-rose-500/10 border-rose-500/20", kr = (ai) => ai === 0 || ai === "Success" ? "\u2713" : ai === 1 || ai === "Warning" ? "\u26A0" : "\u2717";
                                 return i.jsxs("div", {
                                   className: "flex items-start gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50",
                                   children: [
                                     i.jsx("span", {
                                       className: `flex items-center justify-center h-5 w-5 rounded-full border text-[10px] font-bold shrink-0 ${rn(Qe.severity)}`,
-                                      children: Sr(Qe.severity)
+                                      children: kr(Qe.severity)
                                     }),
                                     i.jsxs("div", {
                                       children: [
@@ -82179,7 +82216,7 @@ Please verify or update your License Key in System Settings.`);
             i.jsxs("div", {
               className: "flex items-center gap-3",
               children: [
-                i.jsx(Mr, {
+                i.jsx(Sr, {
                   className: "w-5 h-5 shrink-0"
                 }),
                 i.jsx("p", {
@@ -83766,7 +83803,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     i.jsxs("div", {
                       className: "flex items-center gap-2",
                       children: [
-                        i.jsx(Mr, {
+                        i.jsx(Sr, {
                           className: "w-5 h-5 text-amber-500"
                         }),
                         i.jsx("h4", {
@@ -84581,7 +84618,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   value: (s == null ? void 0 : s.criticalStockCount.toString()) || "0",
                   label: "Critical Items",
                   qualifier: "Stock Out",
-                  icon: Mr,
+                  icon: Sr,
                   color: (s == null ? void 0 : s.criticalStockCount) > 0 ? "red" : "zinc"
                 },
                 {
@@ -84777,7 +84814,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           disabled: ie,
                           className: "flex items-center gap-2 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-sm",
                           children: [
-                            ie ? i.jsx(mA, {
+                            ie ? i.jsx(pA, {
                               className: "w-3.5 h-3.5 animate-spin"
                             }) : i.jsx(Rc, {
                               className: "w-3.5 h-3.5"
@@ -84970,7 +85007,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           children: ue.status === "Critical" ? i.jsxs("span", {
                             className: "flex items-center gap-1.5 text-[9px] font-semibold uppercase text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full w-fit border border-red-500/20",
                             children: [
-                              i.jsx(Mr, {
+                              i.jsx(Sr, {
                                 className: "w-3 h-3"
                               }),
                               "Stock Out"
@@ -84978,7 +85015,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                           }) : ue.status === "Low" ? i.jsxs("span", {
                             className: "flex items-center gap-1.5 text-[9px] font-semibold uppercase text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full w-fit border border-amber-500/20",
                             children: [
-                              i.jsx(Mr, {
+                              i.jsx(Sr, {
                                 className: "w-3 h-3"
                               }),
                               "Low Stock"
@@ -87460,7 +87497,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               d && i.jsxs("div", {
                 className: "p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-3 text-rose-500",
                 children: [
-                  i.jsx(Mr, {
+                  i.jsx(Sr, {
                     className: "w-4 h-4 shrink-0"
                   }),
                   i.jsx("p", {
@@ -88001,7 +88038,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       children: [
         i.jsx("div", {
           className: "w-12 h-12 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto",
-          children: i.jsx(Mr, {
+          children: i.jsx(Sr, {
             className: "text-rose-500 w-6 h-6"
           })
         }),
@@ -90411,7 +90448,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           n === "negative" && i.jsx(U1, {
             className: "w-4 h-4 text-rose-500"
           }),
-          n === "warning" && i.jsx(Mr, {
+          n === "warning" && i.jsx(Sr, {
             className: "w-4 h-4 text-amber-500"
           })
         ]
@@ -91608,7 +91645,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   i.jsxs("p", {
                     className: "text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1",
                     children: [
-                      i.jsx(Mr, {
+                      i.jsx(Sr, {
                         className: "w-3 h-3"
                       }),
                       " Organic Discovery"
@@ -91939,7 +91976,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                             }),
                             className: "px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-1.5",
                             children: [
-                              i.jsx(Mr, {
+                              i.jsx(Sr, {
                                 className: "w-3 h-3"
                               }),
                               " Resolve"
@@ -93530,7 +93567,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       {
         id: "pricing",
         label: "Pending Pricing",
-        icon: Mr
+        icon: Sr
       },
       {
         id: "labs",
@@ -94322,7 +94359,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               }) : r ? i.jsxs("div", {
                 className: "flex items-center gap-1.5 px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-amber-500/20",
                 children: [
-                  i.jsx(Mr, {
+                  i.jsx(Sr, {
                     size: 10
                   }),
                   " Pending Approval"
@@ -94330,7 +94367,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               }) : i.jsxs("div", {
                 className: "flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/10 text-zinc-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-zinc-500/20",
                 children: [
-                  i.jsx(Mr, {
+                  i.jsx(Sr, {
                     size: 10
                   }),
                   " Suspended"
@@ -94391,7 +94428,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 i.jsxs("p", {
                   className: "text-xs font-bold text-amber-600 dark:text-amber-500 flex items-center gap-2",
                   children: [
-                    i.jsx(Mr, {
+                    i.jsx(Sr, {
                       size: 14
                     }),
                     " Retroactive Backfill Triggered"
@@ -96076,7 +96113,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             }) : i.jsxs("div", {
               className: "flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/10 text-zinc-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-zinc-500/20",
               children: [
-                i.jsx(Mr, {
+                i.jsx(Sr, {
                   size: 10
                 }),
                 " Suspended"
@@ -97961,7 +97998,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       {
         id: "UnpaidLeave",
         label: "Unpaid Leave (LOP)",
-        icon: Mr,
+        icon: Sr,
         color: "text-rose-500",
         bg: "bg-rose-500/10"
       },
@@ -99386,7 +99423,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     i.jsxs("div", {
                       className: "flex items-center gap-2 text-amber-600",
                       children: [
-                        i.jsx(Mr, {
+                        i.jsx(Sr, {
                           className: "w-4 h-4"
                         }),
                         i.jsx("h3", {
@@ -101943,7 +101980,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                   i.jsxs("div", {
                     className: "flex items-center gap-2 mb-3",
                     children: [
-                      n.convertedToLopDays > 0 ? i.jsx(Mr, {
+                      n.convertedToLopDays > 0 ? i.jsx(Sr, {
                         className: "w-4 h-4 text-rose-500"
                       }) : i.jsx(xa, {
                         className: "w-4 h-4 text-emerald-500"
@@ -104646,7 +104683,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             i.jsx(L2, {
               label: "Absences",
               value: e.absentDays,
-              icon: Mr,
+              icon: Sr,
               color: "rose"
             }),
             i.jsx(L2, {
@@ -104961,7 +104998,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                 children: [
                   A.type === "success" ? i.jsx(qT, {
                     className: "w-4 h-4"
-                  }) : i.jsx(Mr, {
+                  }) : i.jsx(Sr, {
                     className: "w-4 h-4"
                   }),
                   A.message
@@ -105702,7 +105739,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
               className: "flex-1 overflow-y-auto p-4 pt-0 space-y-2 custom-scrollbar",
               children: fe ? i.jsx("div", {
                 className: "flex items-center justify-center py-20 opacity-30",
-                children: i.jsx(mA, {
+                children: i.jsx(pA, {
                   className: "w-8 h-8 animate-spin"
                 })
               }) : G.length === 0 ? i.jsx("div", {
@@ -105854,7 +105891,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           className: "flex-1 flex flex-col min-w-0 bg-white dark:bg-synos-background relative z-10",
           children: _e || lt ? i.jsx("div", {
             className: "absolute inset-0 flex items-center justify-center bg-white/90 dark:bg-synos-background/90 z-50",
-            children: i.jsx(mA, {
+            children: i.jsx(pA, {
               className: "w-10 h-10 animate-spin text-synos-primary"
             })
           }) : q && rt ? i.jsx("div", {
@@ -107841,7 +107878,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                     children: c ? i.jsxs("div", {
                       className: "flex items-center justify-center h-28 text-zinc-500 text-xs gap-2",
                       children: [
-                        i.jsx(mA, {
+                        i.jsx(pA, {
                           className: "w-3.5 h-3.5 animate-spin text-zinc-700"
                         }),
                         i.jsx("span", {
@@ -107965,7 +108002,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
                               disabled: h,
                               className: "px-4 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs rounded-lg uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 shadow-xs active:scale-[0.98]",
                               children: [
-                                h ? i.jsx(mA, {
+                                h ? i.jsx(pA, {
                                   className: "h-3 w-3 animate-spin"
                                 }) : i.jsx(Gd, {
                                   className: "h-3 w-3"
@@ -119433,7 +119470,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     JRe(t, e);
   }
   const d9 = Ci(g9, "vtkDataArray");
-  var EA = {
+  var mA = {
     newInstance: d9,
     extend: g9,
     ...a$,
@@ -119442,7 +119479,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
   const VRe = Object.freeze(Object.defineProperty({
     __proto__: null,
     STATIC: a$,
-    default: EA,
+    default: mA,
     extend: g9,
     newInstance: d9
   }, Symbol.toStringTag, {
@@ -119481,7 +119518,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     GetArray: XRe,
     ScalarMode: ZRe
   };
-  const { ScalarMappingTarget: KP, VectorMode: m0 } = u9, { VtkDataTypes: BI } = EA, { ColorMode: j2 } = n5, { vtkErrorMacro: VP } = je;
+  const { ScalarMappingTarget: KP, VectorMode: m0 } = u9, { VtkDataTypes: BI } = mA, { ColorMode: j2 } = n5, { vtkErrorMacro: VP } = je;
   function $Re(t) {
     return t;
   }
@@ -119544,7 +119581,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           numberOfComponents: 4,
           dataType: BI.UNSIGNED_CHAR
         }, l = je.newTypedArray(o.dataType, 4 * n.getNumberOfTuples());
-        o.values = l, o.size = l.length, s = EA.newInstance(o);
+        o.values = l, o.size = l.length, s = mA.newInstance(o);
         let c = r;
         c < 0 && a > 1 ? t.mapVectorsThroughTable(n, s, KP.RGBA, -1, -1) : (c < 0 && (c = 0), c >= a && (c = a - 1), t.mapScalarsThroughTable(n, s, KP.RGBA, c));
       }
@@ -119570,7 +119607,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
           break;
         case m0.MAGNITUDE:
         default: {
-          const u = EA.newInstance({
+          const u = mA.newInstance({
             numberOfComponents: 1,
             values: new Float32Array(n.getNumberOfTuples())
           });
@@ -119603,7 +119640,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     }, t.convertToRGBA = (n, A, r) => {
       let { alpha: a } = e;
       if (A === 4 && a >= 1 && n.getDataType() === BI.UNSIGNED_CHAR) return n;
-      const s = EA.newInstance({
+      const s = mA.newInstance({
         numberOfComponents: 4,
         empty: true,
         size: 4 * r,
@@ -120184,7 +120221,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       const d = r(c, A, n);
       return l.concat(d, c, c, c, 0.5, 0);
     }, []), o = ff.newInstance();
-    return o.buildFunctionFromArray(EA.newInstance({
+    return o.buildFunctionFromArray(mA.newInstance({
       values: s,
       numberOfComponents: 6
     })), o;
@@ -121506,7 +121543,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
   function wMe(t, e, n, A, r, a, s, o, l, c, d, g, u, h, f, C, p) {
     return t[0] = e, t[1] = n, t[2] = A, t[3] = r, t[4] = a, t[5] = s, t[6] = o, t[7] = l, t[8] = c, t[9] = d, t[10] = g, t[11] = u, t[12] = h, t[13] = f, t[14] = C, t[15] = p, t;
   }
-  function BA(t) {
+  function EA(t) {
     return t[0] = 1, t[1] = 0, t[2] = 0, t[3] = 0, t[4] = 0, t[5] = 1, t[6] = 0, t[7] = 0, t[8] = 0, t[9] = 0, t[10] = 1, t[11] = 0, t[12] = 0, t[13] = 0, t[14] = 0, t[15] = 1, t;
   }
   function Pr(t, e) {
@@ -121639,7 +121676,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
   }
   function Y$(t, e, n, A) {
     var r, a, s, o, l, c, d, g, u, h, f = e[0], C = e[1], p = e[2], x = A[0], m = A[1], Q = A[2], D = n[0], S = n[1], k = n[2];
-    return Math.abs(f - D) < mi && Math.abs(C - S) < mi && Math.abs(p - k) < mi ? BA(t) : (d = f - D, g = C - S, u = p - k, h = 1 / Math.hypot(d, g, u), d *= h, g *= h, u *= h, r = m * u - Q * g, a = Q * d - x * u, s = x * g - m * d, h = Math.hypot(r, a, s), h ? (h = 1 / h, r *= h, a *= h, s *= h) : (r = 0, a = 0, s = 0), o = g * s - u * a, l = u * r - d * s, c = d * a - g * r, h = Math.hypot(o, l, c), h ? (h = 1 / h, o *= h, l *= h, c *= h) : (o = 0, l = 0, c = 0), t[0] = r, t[1] = o, t[2] = d, t[3] = 0, t[4] = a, t[5] = l, t[6] = g, t[7] = 0, t[8] = s, t[9] = c, t[10] = u, t[11] = 0, t[12] = -(r * f + a * C + s * p), t[13] = -(o * f + l * C + c * p), t[14] = -(d * f + g * C + u * p), t[15] = 1, t);
+    return Math.abs(f - D) < mi && Math.abs(C - S) < mi && Math.abs(p - k) < mi ? EA(t) : (d = f - D, g = C - S, u = p - k, h = 1 / Math.hypot(d, g, u), d *= h, g *= h, u *= h, r = m * u - Q * g, a = Q * d - x * u, s = x * g - m * d, h = Math.hypot(r, a, s), h ? (h = 1 / h, r *= h, a *= h, s *= h) : (r = 0, a = 0, s = 0), o = g * s - u * a, l = u * r - d * s, c = d * a - g * r, h = Math.hypot(o, l, c), h ? (h = 1 / h, o *= h, l *= h, c *= h) : (o = 0, l = 0, c = 0), t[0] = r, t[1] = o, t[2] = d, t[3] = 0, t[4] = a, t[5] = l, t[6] = g, t[7] = 0, t[8] = s, t[9] = c, t[10] = u, t[11] = 0, t[12] = -(r * f + a * C + s * p), t[13] = -(o * f + l * C + c * p), t[14] = -(d * f + g * C + u * p), t[15] = 1, t);
   }
   function jMe(t, e, n, A) {
     var r = e[0], a = e[1], s = e[2], o = A[0], l = A[1], c = A[2], d = r - n[0], g = a - n[1], u = s - n[2], h = d * d + g * g + u * u;
@@ -121700,7 +121737,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     getRotation: aT,
     getScaling: z$,
     getTranslation: RMe,
-    identity: BA,
+    identity: EA,
     invert: ks,
     lookAt: Y$,
     mul: zS,
@@ -122470,7 +122507,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             const c = s.getNumberOfComponents();
             let d = s.getNumberOfValues();
             const g = a > -1 ? a : r;
-            d <= g * c && (d = (g + 1) * c), l = EA.newInstance({
+            d <= g * c && (d = (g + 1) * c), l = mA.newInstance({
               name: s.getName(),
               dataType: s.getDataType(),
               numberOfComponents: c,
@@ -122500,7 +122537,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
             const g = l.getNumberOfComponents();
             let u = l.getNumberOfValues();
             const h = s > -1 ? s : r;
-            u <= h * g && (u = (h + 1) * g), d = EA.newInstance({
+            u <= h * g && (u = (h + 1) * g), d = mA.newInstance({
               name: l.getName(),
               dataType: l.getDataType(),
               numberOfComponents: g,
@@ -122657,7 +122694,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
         e.copyAttributeFlags[JC[s]] = Object.keys(EI).filter((o) => o !== "NUM_ATTRIBUTES").reduce((o, l) => (o[EI[l]] = true, o), []);
       }), e.copyAttributeFlags[JC.COPYTUPLE][EI.GLOBALIDS] = false, e.copyAttributeFlags[JC.INTERPOLATE][EI.GLOBALIDS] = false, e.copyAttributeFlags[JC.COPYTUPLE][EI.PEDIGREEIDS] = false;
     }, t.initialize = je.chain(t.initialize, t.initializeAttributeCopyFlags), e.dataArrays && Object.keys(e.dataArrays).length && Object.keys(e.dataArrays).forEach((s) => {
-      !e.dataArrays[s].ref && e.dataArrays[s].type === "vtkDataArray" && t.addArray(EA.newInstance(e.dataArrays[s]));
+      !e.dataArrays[s].ref && e.dataArrays[s].type === "vtkDataArray" && t.addArray(mA.newInstance(e.dataArrays[s]));
     });
     const a = t.shallowCopy;
     t.shallowCopy = (s, o) => {
@@ -123280,7 +123317,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     newInstance: iFe,
     extend: Uee
   };
-  const { Wrap: $u, Filter: yo } = Mee, { VtkDataTypes: Ei } = EA, { vtkDebugMacro: HM, vtkErrorMacro: KE, vtkWarningMacro: h_ } = Lo, { toHalf: sFe } = jI;
+  const { Wrap: $u, Filter: yo } = Mee, { VtkDataTypes: Ei } = mA, { vtkDebugMacro: HM, vtkErrorMacro: KE, vtkWarningMacro: h_ } = Lo, { toHalf: sFe } = jI;
   function oFe(t, e) {
     e.classHierarchy.push("vtkOpenGLTexture"), t.render = function() {
       let c = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : null;
@@ -123594,7 +123631,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
     }
     t.create2DFilterableFromRaw = function(c, d, g, u, h) {
       let f = arguments.length > 5 && arguments[5] !== void 0 ? arguments[5] : false;
-      return t.create2DFilterableFromDataArray(c, d, EA.newInstance({
+      return t.create2DFilterableFromDataArray(c, d, mA.newInstance({
         numberOfComponents: g,
         dataType: u,
         values: h
@@ -123612,7 +123649,7 @@ Inventory Dept.`, S = `https://wa.me/${((_b = n.supplier) == null ? void 0 : _b.
       return e.context.pixelStorei(e.context.UNPACK_ALIGNMENT, 1), r(h) ? (e.context.texStorage3D(e.target, 1, e.internalFormat, e.width, e.height, e.depth), m[0] != null && e.context.texSubImage3D(e.target, 0, 0, 0, 0, e.width, e.height, e.depth, e.format, e.openGLDataType, m[0])) : e.context.texImage3D(e.target, 0, e.internalFormat, e.width, e.height, e.depth, 0, e.format, e.openGLDataType, m[0]), e.generateMipmap && e.context.generateMipmap(e.target), e.allocatedGPUMemoryInBytes = e.width * e.height * e.depth * e.components * e._openGLRenderWindow.getDefaultTextureByteSize(h, e.oglNorm16Ext, e.useHalfFloat), t.deactivate(), true;
     }, t.create3DFilterableFromRaw = function(c, d, g, u, h, f) {
       let C = arguments.length > 6 && arguments[6] !== void 0 ? arguments[6] : false;
-      return t.create3DFilterableFromDataArray(c, d, g, EA.newInstance({
+      return t.create3DFilterableFromDataArray(c, d, g, mA.newInstance({
         numberOfComponents: u,
         dataType: h,
         values: f
@@ -124741,17 +124778,17 @@ void main()
         1,
         3,
         2
-      ]), a = EA.newInstance({
+      ]), a = mA.newInstance({
         numberOfComponents: 3,
         values: n
       });
       a.setName("points");
-      const s = EA.newInstance({
+      const s = mA.newInstance({
         numberOfComponents: 2,
         values: A
       });
       s.setName("tcoords");
-      const o = EA.newInstance({
+      const o = mA.newInstance({
         numberOfComponents: 1,
         values: r
       });
@@ -126589,7 +126626,7 @@ void main()
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: bg(new Float64Array(9)),
-      mcwc: BA(new Float64Array(16))
+      mcwc: EA(new Float64Array(16))
     }, ds(t, e, [
       "context"
     ]), Tl(t, e, [
@@ -127047,7 +127084,7 @@ void main()
     otherStaticMethods: cT,
     CATEGORIES: Y9
   };
-  const { FieldAssociations: b_ } = wQ, { staticOffsetAPI: y8e, otherStaticMethods: w8e } = g5, { ColorMode: JM, ScalarMode: VC, GetArray: KM } = n5, { VectorMode: b8e } = u9, { VtkDataTypes: v8e } = EA;
+  const { FieldAssociations: b_ } = wQ, { staticOffsetAPI: y8e, otherStaticMethods: w8e } = g5, { ColorMode: JM, ScalarMode: VC, GetArray: KM } = n5, { VectorMode: b8e } = u9, { VtkDataTypes: v8e } = mA;
   function Oy(t) {
     return () => je.vtkErrorMacro(`vtkMapper::${t} - NOT IMPLEMENTED`);
   }
@@ -127140,7 +127177,7 @@ void main()
         for (let g = 0; g < o; ++g) c[g] = r[0] + g * l - l / 2, a && (c[g] = 10 ** c[g]);
         for (let g = 0; g < o; ++g) c[g + o] = NaN;
         e.colorTextureMap = bf.newInstance(), e.colorTextureMap.setExtent(0, o - 1, 0, 1, 0, 0);
-        const d = EA.newInstance({
+        const d = mA.newInstance({
           numberOfComponents: 1,
           values: c
         });
@@ -127149,7 +127186,7 @@ void main()
       if (!e.colorCoordinates || t.getMTime() > e.colorCoordinates.getMTime() || t.getInputData(0).getMTime() > e.colorCoordinates.getMTime() || e.lookupTable.getMTime() > e.colorCoordinates.getMTime()) {
         e.colorCoordinates = null;
         const o = n.getNumberOfComponents(), l = n.getNumberOfTuples();
-        e.colorCoordinates = EA.newInstance({
+        e.colorCoordinates = mA.newInstance({
           numberOfComponents: 2,
           values: new Float32Array(l * 2)
         });
@@ -128124,7 +128161,7 @@ void main()
       } : e.openGLActor.getKeyMatrices();
       if (a.getCoordinateSystem() === j8e.DISPLAY) {
         const C = e._openGLRenderer.getTiledSizeAndOrigin();
-        BA(e.tmpMat4), e.tmpMat4[0] = 2 / C.usize, e.tmpMat4[12] = -1, e.tmpMat4[5] = 2 / C.vsize, e.tmpMat4[13] = -1, _r(e.tmpMat4, e.tmpMat4, u), s.setUniformMatrix("MCPCMatrix", e.tmpMat4);
+        EA(e.tmpMat4), e.tmpMat4[0] = 2 / C.usize, e.tmpMat4[12] = -1, e.tmpMat4[5] = 2 / C.vsize, e.tmpMat4[13] = -1, _r(e.tmpMat4, e.tmpMat4, u), s.setUniformMatrix("MCPCMatrix", e.tmpMat4);
       } else s.setUniformMatrix("MCPCMatrix", n([
         o.wcpc,
         f.mcwc,
@@ -128293,7 +128330,7 @@ void main()
   };
   function yte(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, H8e, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.primitives = [], e.primTypes = _s, e.tmpMat3 = bg(new Float64Array(9)), e.tmpMat4 = BA(new Float64Array(16));
+    Object.assign(e, H8e, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.primitives = [], e.primTypes = _s, e.tmpMat3 = bg(new Float64Array(9)), e.tmpMat4 = EA(new Float64Array(16));
     for (let A = _s.Start; A < _s.End; A++) e.primitives[A] = V0.newInstance(), e.primitives[A].setPrimitiveType(A), e.primitives[A].set({
       lastLightComplexity: 0,
       lastLightCount: 0,
@@ -128487,7 +128524,7 @@ void main()
   };
   function W8e(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, V8e, n), d5.extend(t, e, n), e.tmpMat3 = bg(new Float64Array(9)), e.normalMatrix = bg(new Float64Array(9)), e.mcpcMatrix = BA(new Float64Array(16)), e.mcvcMatrix = BA(new Float64Array(16)), e.tmpColor = [], e.glyphBOBuildTime = {}, ia(e.glyphBOBuildTime, {
+    Object.assign(e, V8e, n), d5.extend(t, e, n), e.tmpMat3 = bg(new Float64Array(9)), e.normalMatrix = bg(new Float64Array(9)), e.mcpcMatrix = EA(new Float64Array(16)), e.mcvcMatrix = EA(new Float64Array(16)), e.tmpColor = [], e.glyphBOBuildTime = {}, ia(e.glyphBOBuildTime, {
       mtime: 0
     }), K8e(t, e);
   }
@@ -129012,19 +129049,19 @@ void main()
         } else S === gd.K || S === gd.NONE ? (ie = Ce.subarray(H * _, (H + 1) * _), W[0] = ae[0], W[1] = ae[2], W[2] = se, W[3] = ae[1], W[4] = ae[2], W[5] = se, W[6] = ae[0], W[7] = ae[3], W[8] = se, W[9] = ae[1], W[10] = ae[3], W[11] = se) : WE("Reformat slicing not yet supported.");
         const ce = e._openGLRenderWindow.getGraphicsResourceForObject(ie);
         (ce == null ? void 0 : ce.vtkObj) ? (e.openGLTexture = ce.vtkObj, e.VBOBuildString = ce.hash) : (e._scalars !== ie && (e._openGLRenderWindow.releaseGraphicsResourcesForObject(e._scalars), e._scalars = ie), e.openGLTexture.resetFormatAndType(), e.openGLTexture.create2DFilterableFromRaw(Y[0], Y[1], o, a.getDataType(), ie, (_b = (_a = e.renderable).getPreferSizeOverAccuracy) == null ? void 0 : _b.call(_a)), e._openGLRenderWindow.setGraphicsResourceForObject(ie, e.openGLTexture, e.VBOBuildString)), e.openGLTexture.activate(), e.openGLTexture.sendParameters(), e.openGLTexture.deactivate();
-        const de = EA.newInstance({
+        const de = mA.newInstance({
           numberOfComponents: 3,
           values: W
         });
         de.setName("points");
-        const ue = EA.newInstance({
+        const ue = mA.newInstance({
           numberOfComponents: 2,
           values: q
         });
         ue.setName("tcoords");
         const fe = new Uint16Array(8);
         fe[0] = 3, fe[1] = 0, fe[2] = 1, fe[3] = 3, fe[4] = 3, fe[5] = 0, fe[6] = 3, fe[7] = 2;
-        const ve = EA.newInstance({
+        const ve = mA.newInstance({
           numberOfComponents: 1,
           values: fe
         });
@@ -129083,7 +129120,7 @@ void main()
   };
   function nLe(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, tLe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.tris = V0.newInstance(), e.imagemat = BA(new Float64Array(16)), e.imagematinv = BA(new Float64Array(16)), e.projectionToWorld = BA(new Float64Array(16)), e.idxToView = BA(new Float64Array(16)), e.idxNormalMatrix = bg(new Float64Array(9)), e.modelToView = BA(new Float64Array(16)), e.projectionToView = BA(new Float64Array(16)), ds(t, e, []), e.VBOBuildTime = {}, ia(e.VBOBuildTime), eLe(t, e);
+    Object.assign(e, tLe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.tris = V0.newInstance(), e.imagemat = EA(new Float64Array(16)), e.imagematinv = EA(new Float64Array(16)), e.projectionToWorld = EA(new Float64Array(16)), e.idxToView = EA(new Float64Array(16)), e.idxNormalMatrix = bg(new Float64Array(9)), e.modelToView = EA(new Float64Array(16)), e.projectionToView = EA(new Float64Array(16)), ds(t, e, []), e.VBOBuildTime = {}, ia(e.VBOBuildTime), eLe(t, e);
   }
   const vte = Ci(nLe, "vtkOpenGLImageMapper");
   var ALe = {
@@ -129129,7 +129166,7 @@ void main()
     Object.assign(e, iLe, n), Vi.extend(t, e, n), e.keyMatrixTime = {}, ia(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
-      mcwc: BA(new Float64Array(16))
+      mcwc: EA(new Float64Array(16))
     }, ds(t, e, [
       "context"
     ]), rLe(t, e);
@@ -129274,14 +129311,14 @@ void main()
       if (!e.tris.getCABO().getElementCount()) {
         const A = new Float32Array(12);
         for (let o = 0; o < 4; o++) A[o * 3] = o % 2 * 2 - 1, A[o * 3 + 1] = o > 1 ? 1 : -1, A[o * 3 + 2] = 1;
-        const r = EA.newInstance({
+        const r = mA.newInstance({
           numberOfComponents: 3,
           values: A
         });
         r.setName("points");
         const a = new Uint16Array(8);
         a[0] = 3, a[1] = 0, a[2] = 1, a[3] = 3, a[4] = 3, a[5] = 0, a[6] = 3, a[7] = 2;
-        const s = EA.newInstance({
+        const s = mA.newInstance({
           numberOfComponents: 1,
           values: a
         });
@@ -129346,7 +129383,7 @@ void main()
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: bg(new Float64Array(9)),
-      mcwc: BA(new Float64Array(16))
+      mcwc: EA(new Float64Array(16))
     }, ds(t, e, [
       "context"
     ]), Tl(t, e, [
@@ -132223,12 +132260,12 @@ void main()
         for (let G = 0; G < 4; G++) D[G * 3] = G % 2 * 2 - 1, D[G * 3 + 1] = G > 1 ? 1 : -1, D[G * 3 + 2] = -1;
         const S = new Uint16Array(8);
         S[0] = 3, S[1] = 0, S[2] = 1, S[3] = 3, S[4] = 3, S[5] = 0, S[6] = 3, S[7] = 2;
-        const k = EA.newInstance({
+        const k = mA.newInstance({
           numberOfComponents: 3,
           values: D
         });
         k.setName("points");
-        const T = EA.newInstance({
+        const T = mA.newInstance({
           numberOfComponents: 1,
           values: S
         });
@@ -132284,7 +132321,7 @@ void main()
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
     Object.assign(e, HLe, n), Vi.extend(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.VBOBuildTime = {}, ia(e.VBOBuildTime, {
       mtime: 0
-    }), e.tris = V0.newInstance(), e.scalarTexture = za.newInstance(), e.opacityTexture = za.newInstance(), e.colorTexture = za.newInstance(), e.jitterTexture = za.newInstance(), e.jitterTexture.setWrapS(p1.REPEAT), e.jitterTexture.setWrapT(p1.REPEAT), e.labelOutlineThicknessTexture = za.newInstance(), e.framebuffer = o5.newInstance(), e.idxToView = BA(new Float64Array(16)), e.idxNormalMatrix = bg(new Float64Array(9)), e.modelToView = BA(new Float64Array(16)), e.projectionToView = BA(new Float64Array(16)), e.projectionToWorld = BA(new Float64Array(16)), ds(t, e, [
+    }), e.tris = V0.newInstance(), e.scalarTexture = za.newInstance(), e.opacityTexture = za.newInstance(), e.colorTexture = za.newInstance(), e.jitterTexture = za.newInstance(), e.jitterTexture.setWrapS(p1.REPEAT), e.jitterTexture.setWrapT(p1.REPEAT), e.labelOutlineThicknessTexture = za.newInstance(), e.framebuffer = o5.newInstance(), e.idxToView = EA(new Float64Array(16)), e.idxNormalMatrix = bg(new Float64Array(9)), e.modelToView = EA(new Float64Array(16)), e.projectionToView = EA(new Float64Array(16)), e.projectionToWorld = EA(new Float64Array(16)), ds(t, e, [
       "context"
     ]), OLe(t, e);
   }
@@ -132350,12 +132387,12 @@ void main()
         for (let C = 0; C < 4; C++) g[C * 3] = C % 2 * 2 - 1, g[C * 3 + 1] = C > 1 ? 1 : -1, g[C * 3 + 2] = -1;
         const u = new Uint16Array(8);
         u[0] = 3, u[1] = 0, u[2] = 1, u[3] = 3, u[4] = 3, u[5] = 0, u[6] = 3, u[7] = 2;
-        const h = EA.newInstance({
+        const h = mA.newInstance({
           numberOfComponents: 3,
           values: g
         });
         h.setName("points");
-        const f = EA.newInstance({
+        const f = mA.newInstance({
           numberOfComponents: 1,
           values: u
         });
@@ -132435,7 +132472,7 @@ void main()
       0,
       1,
       0
-    ]), a = BA(new Float64Array(16)), s = BA(new Float64Array(16)), o = new Float64Array(3), l = new Float64Array(3), c = new Float64Array(3), d = BA(new Float64Array(16)), g = BA(new Float64Array(16)), u = new Float64Array(3), h = new Float64Array(3);
+    ]), a = EA(new Float64Array(16)), s = EA(new Float64Array(16)), o = new Float64Array(3), l = new Float64Array(3), c = new Float64Array(3), d = EA(new Float64Array(16)), g = EA(new Float64Array(16)), u = new Float64Array(3), h = new Float64Array(3);
     function f() {
       e.viewPlaneNormal[0] = -e.directionOfProjection[0], e.viewPlaneNormal[1] = -e.directionOfProjection[1], e.viewPlaneNormal[2] = -e.directionOfProjection[2];
     }
@@ -132470,7 +132507,7 @@ void main()
         m[2],
         0
       ]);
-      BA(d);
+      EA(d);
       const D = new Float64Array([
         x[0] - p[0],
         x[1] - p[1],
@@ -132479,14 +132516,14 @@ void main()
       pd(d, d, Ga(C), D), Qp(Q, Q, d), e.viewUp[0] = Q[0], e.viewUp[1] = Q[1], e.viewUp[2] = Q[2], t.modified();
     }, t.azimuth = (C) => {
       const p = e.focalPoint;
-      BA(g), Ua(g, g, p), pd(g, g, Ga(C), e.viewUp), Ua(g, g, [
+      EA(g), Ua(g, g, p), pd(g, g, Ga(C), e.viewUp), Ua(g, g, [
         -p[0],
         -p[1],
         -p[2]
       ]), Hr(u, e.position, g), t.setPosition(u[0], u[1], u[2]);
     }, t.yaw = (C) => {
       const p = e.position;
-      BA(g), Ua(g, g, p), pd(g, g, Ga(C), e.viewUp), Ua(g, g, [
+      EA(g), Ua(g, g, p), pd(g, g, Ga(C), e.viewUp), Ua(g, g, [
         -p[0],
         -p[1],
         -p[2]
@@ -132497,7 +132534,7 @@ void main()
         -x[1],
         -x[2]
       ];
-      BA(g), Ua(g, g, p), pd(g, g, Ga(C), m), Ua(g, g, [
+      EA(g), Ua(g, g, p), pd(g, g, Ga(C), m), Ua(g, g, [
         -p[0],
         -p[1],
         -p[2]
@@ -132508,7 +132545,7 @@ void main()
         x[1],
         x[2]
       ];
-      BA(g), Ua(g, g, p), pd(g, g, Ga(C), m), Ua(g, g, [
+      EA(g), Ua(g, g, p), pd(g, g, Ga(C), m), Ua(g, g, [
         -p[0],
         -p[1],
         -p[2]
@@ -132551,7 +132588,7 @@ void main()
         e.distance,
         e.distance,
         e.distance
-      ]), _r(a, a, s), BA(e.cameraLightTransform), Ua(e.cameraLightTransform, a, [
+      ]), _r(a, a, s), EA(e.cameraLightTransform), Ua(e.cameraLightTransform, a, [
         0,
         0,
         -1
@@ -132567,7 +132604,7 @@ void main()
     }, t.getPhysicalToWorldMatrix = (C) => {
       t.getWorldToPhysicalMatrix(C), ks(C, C);
     }, t.getWorldToPhysicalMatrix = (C) => {
-      BA(C);
+      EA(C);
       const p = [
         3
       ];
@@ -132589,11 +132626,11 @@ void main()
       e.projectionMatrix = C;
     }, t.getProjectionMatrix = (C, p, x) => {
       const m = new Float64Array(16);
-      if (BA(m), e.projectionMatrix) {
+      if (EA(m), e.projectionMatrix) {
         const S = 1 / e.physicalScale;
         return Wi(o, S, S, S), qa(m, e.projectionMatrix), Cf(m, m, o), Pr(m, m), m;
       }
-      BA(a);
+      EA(a);
       const Q = e.clippingRange[1] - e.clippingRange[0], D = [
         e.clippingRange[0] + (p + 1) * Q / 2,
         e.clippingRange[0] + (x + 1) * Q / 2
@@ -132625,7 +132662,7 @@ void main()
         3
       ];
       wg(e.physicalViewNorth, e.physicalViewUp, Q);
-      const D = BA(new Float64Array(16));
+      const D = EA(new Float64Array(16));
       pd(D, D, Ga(C), e.physicalViewUp), pd(D, D, Ga(p), Q), pd(D, D, Ga(x), e.physicalViewNorth), pd(D, D, Ga(-m), e.physicalViewUp);
       const S = new Float64Array([
         -e.physicalViewUp[0],
@@ -132634,7 +132671,7 @@ void main()
       ]), k = new Float64Array(e.physicalViewNorth);
       Hr(S, S, D), Hr(k, k, D), t.setDirectionOfProjection(S[0], S[1], S[2]), t.setViewUp(k[0], k[1], k[2]), t.modified();
     }, t.setOrientationWXYZ = (C, p, x, m) => {
-      const Q = BA(new Float64Array(16));
+      const Q = EA(new Float64Array(16));
       if (C !== 0 && (p !== 0 || x !== 0 || m !== 0)) {
         const k = Ga(C), T = Zp();
         D9(T, [
@@ -133905,7 +133942,7 @@ void main()
   };
   function q9(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, N9e, n), EA.extend(t, e, n), D9e(t, e);
+    Object.assign(e, N9e, n), mA.extend(t, e, n), D9e(t, e);
   }
   const qte = je.newInstance(q9, "vtkPoints");
   var qm = {
@@ -133967,7 +134004,7 @@ void main()
   }
   function Z9(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    EA.extend(t, e, R9e(n)), k9e(t, e);
+    mA.extend(t, e, R9e(n)), k9e(t, e);
   }
   const ene = je.newInstance(Z9, "vtkCellArray");
   var Zm = {
@@ -134795,9 +134832,9 @@ void main()
       A,
       r,
       a
-    ], BA(e.rotation), t.rotateZ(a), t.rotateX(A), t.rotateY(r), t.modified(), true), t.setUserMatrix = (A) => QQ(e.userMatrix, A) ? false : (qa(e.userMatrix, A), t.modified(), true), t.getMatrix = () => (t.computeMatrix(), e.matrix), t.computeMatrix = () => {
+    ], EA(e.rotation), t.rotateZ(a), t.rotateX(A), t.rotateY(r), t.modified(), true), t.setUserMatrix = (A) => QQ(e.userMatrix, A) ? false : (qa(e.userMatrix, A), t.modified(), true), t.getMatrix = () => (t.computeMatrix(), e.matrix), t.computeMatrix = () => {
       if (t.getMTime() > e.matrixMTime.getMTime()) {
-        BA(e.matrix), e.userMatrix && _r(e.matrix, e.matrix, e.userMatrix), Ua(e.matrix, e.matrix, e.origin), Ua(e.matrix, e.matrix, e.position), _r(e.matrix, e.matrix, e.rotation), Cf(e.matrix, e.matrix, e.scale), Ua(e.matrix, e.matrix, [
+        EA(e.matrix), e.userMatrix && _r(e.matrix, e.matrix, e.userMatrix), Ua(e.matrix, e.matrix, e.origin), Ua(e.matrix, e.matrix, e.position), _r(e.matrix, e.matrix, e.rotation), Cf(e.matrix, e.matrix, e.scale), Ua(e.matrix, e.matrix, [
           -e.origin[0],
           -e.origin[1],
           -e.origin[2]
@@ -134858,7 +134895,7 @@ void main()
       "origin",
       "position",
       "scale"
-    ], 3), e.matrix = BA(new Float64Array(16)), e.rotation = BA(new Float64Array(16)), e.userMatrix = BA(new Float64Array(16)), e.transform = null, fGe(t, e);
+    ], 3), e.matrix = EA(new Float64Array(16)), e.rotation = EA(new Float64Array(16)), e.userMatrix = EA(new Float64Array(16)), e.transform = null, fGe(t, e);
   }
   const pGe = je.newInstance(gne, "vtkProp3D");
   var eG = {
@@ -137170,7 +137207,7 @@ void main()
       const { imageIds: n, scalarData: A, scaling: r, dimensions: a, spacing: s, origin: o, direction: l, volumeId: c, referencedVolumeId: d, sizeInBytes: g, imageData: u, metadata: h, referencedImageIds: f, additionalDetails: C } = e;
       if (this.imageIds = n, this.volumeId = c, this.metadata = h, this.dimensions = a, this.spacing = s, this.origin = o, this.direction = l, this.scalarData = A, this.sizeInBytes = g, this.vtkOpenGLTexture = PGe.newInstance(), this.numVoxels = this.dimensions[0] * this.dimensions[1] * this.dimensions[2], u) this.imageData = u;
       else {
-        const p = bf.newInstance(), x = EA.newInstance({
+        const p = bf.newInstance(), x = mA.newInstance({
           name: "Pixels",
           numberOfComponents: 1,
           values: A
@@ -137913,7 +137950,7 @@ void main()
   let kAe = class {
     constructor() {
       let e = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : false;
-      this.matrix = BA(new Float64Array(16)), this.tmp = new Float64Array(3), this.angleConv = e ? Z3e : rHe;
+      this.matrix = EA(new Float64Array(16)), this.tmp = new Float64Array(3), this.angleConv = e ? Z3e : rHe;
     }
     rotateFromDirections(e, n) {
       const A = new Float64Array(3), r = new Float64Array(3), a = new Float64Array(16);
@@ -137974,7 +138011,7 @@ void main()
       return ks(this.matrix, this.matrix), this;
     }
     identity() {
-      return BA(this.matrix), this;
+      return EA(this.matrix), this;
     }
     apply(e) {
       let n = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0, A = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : -1;
@@ -138082,7 +138119,7 @@ void main()
       r[0] = a;
       const s = 24, o = je.newTypedArray(e.pointType, s * 3);
       a.getPoints().setData(o, 3);
-      const l = je.newTypedArray(e.pointType, s * 3), c = EA.newInstance({
+      const l = je.newTypedArray(e.pointType, s * 3), c = mA.newInstance({
         name: "Normals",
         values: l,
         numberOfComponents: 3
@@ -138090,7 +138127,7 @@ void main()
       a.getPointData().setNormals(c);
       let d = 2;
       e.generate3DTextureCoordinates === true && (d = 3);
-      const g = je.newTypedArray(e.pointType, s * d), u = EA.newInstance({
+      const g = je.newTypedArray(e.pointType, s * d), u = mA.newInstance({
         name: "TextureCoordinates",
         values: g,
         numberOfComponents: d
@@ -138499,12 +138536,12 @@ void main()
       } else e.pwfTexture = Q.vtkObj, e.pwfTextureString = Q.hash;
       const S = `${e.resliceGeom.getMTime()}A${e.renderable.getSlabThickness()}`;
       if (!e.tris.getCABO().getElementCount() || e.VBOBuildString !== S) {
-        const k = EA.newInstance({
+        const k = mA.newInstance({
           numberOfComponents: 3,
           values: e.resliceGeom.getPoints().getData()
         });
         k.setName("points");
-        const T = EA.newInstance({
+        const T = mA.newInstance({
           numberOfComponents: 1,
           values: e.resliceGeom.getPolys().getData()
         }), G = {
@@ -138547,11 +138584,11 @@ void main()
       }
     }, t.setCameraShaderParameters = (A, r, a) => {
       const s = e._openGLCamera.getKeyMatrices(r), o = e._openGLImageSlice.getKeyMatrices(), c = A.getCABO().getCoordShiftAndScaleEnabled() ? A.getCABO().getInverseShiftAndScaleMatrix() : null, d = A.getProgram();
-      d.isUniformUsed("MCPCMatrix") && (BA(e.tmpMat4), d.setUniformMatrix("MCPCMatrix", O_([
+      d.isUniformUsed("MCPCMatrix") && (EA(e.tmpMat4), d.setUniformMatrix("MCPCMatrix", O_([
         s.wcpc,
         o.mcwc,
         c
-      ], f1, e.tmpMat4))), d.isUniformUsed("MCVCMatrix") && (BA(e.tmpMat4), d.setUniformMatrix("MCVCMatrix", O_([
+      ], f1, e.tmpMat4))), d.isUniformUsed("MCVCMatrix") && (EA(e.tmpMat4), d.setUniformMatrix("MCVCMatrix", O_([
         s.wcvc,
         o.mcwc,
         c
@@ -138932,7 +138969,7 @@ void main()
           const m = new Float32Array(12);
           for (let D = 0; D < 4; ++D) m[3 * D] = x[0], m[3 * D + 1] = x[1], m[3 * D + 2] = x[2];
           e.resliceGeom || (e.resliceGeom = go.newInstance()), e.resliceGeom.getPoints().setData(d, 3), e.resliceGeom.getPolys().setData(p, 1);
-          const Q = EA.newInstance({
+          const Q = mA.newInstance({
             numberOfComponents: 3,
             values: m,
             name: "Normals"
@@ -138946,7 +138983,7 @@ void main()
           fg.normalize(g);
           const h = new Float32Array(u * 3);
           for (let C = 0; C < u; ++C) h[3 * C] = g[0], h[3 * C + 1] = g[1], h[3 * C + 2] = g[2];
-          const f = EA.newInstance({
+          const f = mA.newInstance({
             numberOfComponents: 3,
             values: h,
             name: "Normals"
@@ -138984,7 +139021,7 @@ void main()
   };
   function yHe(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, xHe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.tris = V0.newInstance(), e.openGLTexture = null, e.colorTexture = null, e.pwfTexture = null, e.VBOBuildTime = {}, ia(e.VBOBuildTime), e.tmpMat4 = BA(new Float64Array(16)), e.outlineFilter = fHe.newInstance(), e.outlineFilter.setGenerateFaces(true), e.outlineFilter.setGenerateLines(false), e.cubePolyData = go.newInstance(), e.cutter = AHe.newInstance(), e.lineToSurfaceFilter = XOe.newInstance(), e.transform = BHe.newInstance(), Tl(t, e, [
+    Object.assign(e, xHe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.tris = V0.newInstance(), e.openGLTexture = null, e.colorTexture = null, e.pwfTexture = null, e.VBOBuildTime = {}, ia(e.VBOBuildTime), e.tmpMat4 = EA(new Float64Array(16)), e.outlineFilter = fHe.newInstance(), e.outlineFilter.setGenerateFaces(true), e.outlineFilter.setGenerateLines(false), e.cubePolyData = go.newInstance(), e.cutter = AHe.newInstance(), e.lineToSurfaceFilter = XOe.newInstance(), e.transform = BHe.newInstance(), Tl(t, e, [
       "openGLTexture"
     ]), QHe(t, e);
   }
@@ -139094,7 +139131,7 @@ void main()
           Q - m[ie + 1],
           0
         ], ce), ce += 3;
-        const T = EA.newInstance({
+        const T = mA.newInstance({
           numberOfComponents: 3,
           values: S
         });
@@ -139107,12 +139144,12 @@ void main()
           de + 1,
           de
         ], ce), ce += 5, de += 4;
-        const H = EA.newInstance({
+        const H = mA.newInstance({
           numberOfComponents: 1,
           values: G
         }), K = a.getPoints(), Y = new Float32Array(3 * D), _ = new Array(3), W = new Array(3);
         for (let ie = 0, ce = 0; ie < x; ++ie) K.getPoint(ie, _), K.getPoint(ie + 1, W), Y.set(_, ce), ce += 3, Y.set(_, ce), ce += 3, Y.set(W, ce), ce += 3, Y.set(W, ce), ce += 3;
-        const q = EA.newInstance({
+        const q = mA.newInstance({
           numberOfComponents: 3,
           values: Y,
           name: "centerlinePosition"
@@ -139123,7 +139160,7 @@ void main()
           3,
           2
         ], ce), ce += 4;
-        const ae = EA.newInstance({
+        const ae = mA.newInstance({
           numberOfComponents: 1,
           values: se,
           name: "quadIndex"
@@ -139140,11 +139177,11 @@ void main()
               ce.set(_e, rt), de.set(be, rt);
             }
           }
-          const ue = EA.newInstance({
+          const ue = mA.newInstance({
             numberOfComponents: 4,
             values: ce,
             name: "centerlineTopOrientation"
-          }), fe = EA.newInstance({
+          }), fe = mA.newInstance({
             numberOfComponents: 4,
             values: de,
             name: "centerlineBotOrientation"
@@ -139519,7 +139556,7 @@ void main()
   };
   function DHe(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, vHe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), je.algo(t, e, 2, 0), e.tris = V0.newInstance(), e.volumeTexture = za.newInstance(), e.colorTexture = za.newInstance(), e.pwfTexture = za.newInstance(), e.imagemat = BA(new Float64Array(16)), e.imagematinv = BA(new Float64Array(16)), e.VBOBuildTime = {}, je.obj(e.VBOBuildTime, {
+    Object.assign(e, vHe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), je.algo(t, e, 2, 0), e.tris = V0.newInstance(), e.volumeTexture = za.newInstance(), e.colorTexture = za.newInstance(), e.pwfTexture = za.newInstance(), e.imagemat = EA(new Float64Array(16)), e.imagematinv = EA(new Float64Array(16)), e.VBOBuildTime = {}, je.obj(e.VBOBuildTime, {
       mtime: 0
     }), bHe(t, e);
   }
@@ -139540,7 +139577,7 @@ void main()
   je.newInstance(RHe, "vtkWebGPUViewNodeFactory");
   function MHe(t, e) {
     e.classHierarchy.push("vtkWebGPUCamera"), t.getProjectionMatrix = (n, A, r, a) => {
-      if (BA(n), e.renderable.getParallelProjection()) {
+      if (EA(n), e.renderable.getParallelProjection()) {
         const s = e.renderable.getParallelScale(), o = s * A, l = s, c = (a[0] - 1) * o, d = (a[0] + 1) * o, g = (a[1] - 1) * l, u = (a[1] + 1) * l, h = 1 / (d - c), f = 1 / (u - g);
         n[0] = 2 * h, n[5] = 2 * f, n[10] = 1 / (r[1] - r[0]), n[12] = (d + c) * h, n[13] = (u + g) * f, n[14] = r[1] / (r[1] - r[0]);
       } else {
@@ -140757,7 +140794,7 @@ fn main(
     extend: VAe,
     ...lb
   };
-  const { BufferUsage: QI } = lb, { vtkErrorMacro: TPe } = Lo, { VtkDataTypes: XC } = EA, LPe = {};
+  const { BufferUsage: QI } = lb, { vtkErrorMacro: TPe } = Lo, { VtkDataTypes: XC } = mA, LPe = {};
   function GPe(t) {
     let e;
     switch (t.getDataType()) {
@@ -141493,7 +141530,7 @@ fn main(
     }), e.bindGroup.setBindables([
       e.UBO,
       e.SSBO
-    ]), e.tmpMat4 = BA(new Float64Array(16)), e.stabilizedTime = {}, ia(e.stabilizedTime, {
+    ]), e.tmpMat4 = EA(new Float64Array(16)), e.stabilizedTime = {}, ia(e.stabilizedTime, {
       mtime: 0
     }), Tl(t, e, [
       "bindGroup",
@@ -141603,7 +141640,7 @@ fn main(
       const r = e.UBO.getSendTime(), a = e.WebGPUImageSlice.getRenderable(), s = a.getMapper();
       if (t.getMTime() > r || e.renderable.getMTime() > r || a.getProperty().getMTime() > r) {
         const o = s.getInputData(), l = e.WebGPURenderer.getStabilizedCenterByReference();
-        BA(Sc), Ua(Sc, Sc, l);
+        EA(Sc), Ua(Sc, Sc, l);
         const c = a.getMatrix();
         Pr(E0, c), ks(E0, E0), _r(Sc, E0, Sc);
         const d = o.getWorldToIndex();
@@ -141613,7 +141650,7 @@ fn main(
           0.5
         ]), _r(Sc, E0, Sc);
         const g = o.getDimensions();
-        BA(E0), Cf(E0, E0, [
+        EA(E0), Cf(E0, E0, [
           1 / g[0],
           1 / g[1],
           1 / g[2]
@@ -141743,7 +141780,7 @@ fn main(
       label: "mapperUBO"
     }), e.UBO.addEntry("SCTCMatrix", "mat4x4<f32>"), e.UBO.addEntry("Origin", "vec4<f32>"), e.UBO.addEntry("Axis2", "vec4<f32>"), e.UBO.addEntry("Axis1", "vec4<f32>"), e.UBO.addEntry("cScale", "vec4<f32>"), e.UBO.addEntry("cShift", "vec4<f32>"), e.lutBuildTime = {}, ia(e.lutBuildTime, {
       mtime: 0
-    }), e.imagemat = BA(new Float64Array(16)), e.imagematinv = BA(new Float64Array(16)), e.VBOBuildTime = {}, ia(e.VBOBuildTime), c_e(t, e);
+    }), e.imagemat = EA(new Float64Array(16)), e.imagematinv = EA(new Float64Array(16)), e.VBOBuildTime = {}, ia(e.VBOBuildTime), c_e(t, e);
   }
   const u_e = Ci(d_e, "vtkWebGPUImageMapper");
   Sg("vtkImageMapper", u_e);
@@ -141770,7 +141807,7 @@ fn main(
       if (Math.max(e.renderable.getMTime(), n.getStabilizedTime()) > e.keyMatricesTime.getMTime()) {
         e.renderable.computeMatrix();
         const A = e.renderable.getMatrix(), r = n.getStabilizedCenterByReference();
-        e.bufferShift[0] = A[3] - r[0], e.bufferShift[1] = A[7] - r[1], e.bufferShift[2] = A[11] - r[2], Pr(e.keyMatrices.bcwc, A), e.renderable.getIsIdentity() ? BA(e.keyMatrices.normalMatrix) : (qa(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, ks(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Pr(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), Ua(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
+        e.bufferShift[0] = A[3] - r[0], e.bufferShift[1] = A[7] - r[1], e.bufferShift[2] = A[11] - r[2], Pr(e.keyMatrices.bcwc, A), e.renderable.getIsIdentity() ? EA(e.keyMatrices.normalMatrix) : (qa(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, ks(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Pr(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), Ua(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
           -e.bufferShift[0],
           -e.bufferShift[1],
           -e.bufferShift[2]
@@ -141800,7 +141837,7 @@ fn main(
     }, e.keyMatrixTime = {}, ia(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
-      mcwc: BA(new Float64Array(16))
+      mcwc: EA(new Float64Array(16))
     }, e.bufferShift = [
       0,
       0,
@@ -142367,7 +142404,7 @@ fn main(
     value: "Module"
   }));
   function k_e(t, e, n) {
-    const A = EA.newInstance({
+    const A = mA.newInstance({
       name: "Pixels",
       values: e,
       ...n
@@ -142376,7 +142413,7 @@ fn main(
   }
   function R_e(t, e, n) {
     e.forEach((A, r) => {
-      const a = EA.newInstance({
+      const a = mA.newInstance({
         name: `timePoint-${r}`,
         values: A,
         ...n
@@ -142444,7 +142481,7 @@ fn main(
     let { volumeId: A } = e;
     const { targetBuffer: r } = e;
     A === void 0 && (A = yf());
-    const { metadata: a, dimensions: s, spacing: o, origin: l, direction: c } = n, g = n.getScalarData().length, { volumeScalarData: u, numBytes: h } = ore(r, g), f = EA.newInstance({
+    const { metadata: a, dimensions: s, spacing: o, origin: l, direction: c } = n, g = n.getScalarData().length, { volumeScalarData: u, numBytes: h } = ore(r, g), f = mA.newInstance({
       name: "Pixels",
       numberOfComponents: 1,
       values: u
@@ -142489,7 +142526,7 @@ fn main(
     if (u) return u;
     const h = c ? c.buffer.byteLength : g * 4;
     if (!$n.isCacheable(h)) throw new Error(jn.CACHE_SIZE_EXCEEDED);
-    const C = EA.newInstance({
+    const C = mA.newInstance({
       name: "Pixels",
       numberOfComponents: 1,
       values: c
@@ -163168,7 +163205,7 @@ fn main(
       };
     }
     createVTKImageData({ origin: e, direction: n, dimensions: A, spacing: r, numComps: a, pixelArray: s }) {
-      const o = new s.constructor(s.length), l = EA.newInstance({
+      const o = new s.constructor(s.length), l = mA.newInstance({
         name: "Pixels",
         numberOfComponents: a,
         values: o
@@ -166299,7 +166336,7 @@ fn main(
         for (let x = 0; x < e.renderable.getTickCounts()[u]; x++) t.createPolyDataForOneLabel(f[g], d, n, c4, p, e.renderable.getTickLabelPixelOffset(), c), d++, g++;
         u++;
       }
-      const C = EA.newInstance({
+      const C = mA.newInstance({
         numberOfComponents: 2,
         values: l,
         name: "TextureCoordinates"
@@ -166969,7 +167006,7 @@ void main()
       const D = -x;
       let S = -x + d[1];
       m === Q && (Q = m + 1), D === S && (S = D + 1);
-      const k = BA(new Float64Array(16));
+      const k = EA(new Float64Array(16));
       k[0] = 2 / (Q - m), k[5] = 2 / (S - D), k[3] = -1 * (Q + m) / (Q - m), k[7] = -1 * (S + D) / (S - D), k[10] = 0, k[11] = a.getProperty().getDisplayLocation() === die.FOREGROUND ? -1 : 1, k[15] = 1, Pr(k, k), s.setUniformMatrix("WCVCMatrix", n([
         k,
         l
@@ -166991,7 +167028,7 @@ void main()
   };
   function lVe(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, oVe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.primitives = [], e.primTypes = md, e.tmpMat4 = BA(new Float64Array(16));
+    Object.assign(e, oVe, n), Vi.extend(t, e, n), O0.implementReplaceShaderCoincidentOffset(t, e, n), O0.implementBuildShadersWithReplacements(t, e, n), e.primitives = [], e.primTypes = md, e.tmpMat4 = EA(new Float64Array(16));
     for (let A = md.Start; A < md.End; A++) e.primitives[A] = V0.newInstance(), e.primitives[A].setPrimitiveType(A), e.primitives[A].set({
       lastLightComplexity: 0,
       lastLightCount: 0,
@@ -167270,7 +167307,7 @@ void main()
         const T = (Q[k] - e.lastTickBounds[0]) / (e.lastTickBounds[1] - e.lastTickBounds[0]);
         A[u] = x + m * T, t.createPolyDataForOneLabel(D[k], A, h, "horizontal", C, d);
       }
-      const S = EA.newInstance({
+      const S = mA.newInstance({
         numberOfComponents: 2,
         values: c,
         name: "TextureCoordinates"
@@ -167295,7 +167332,7 @@ void main()
         }
         d[h * 5] = 4, d[h * 5 + 1] = u - 4, d[h * 5 + 2] = u - 3, d[h * 5 + 3] = u - 2, d[h * 5 + 4] = u - 1, h++;
       }
-      const f = EA.newInstance({
+      const f = mA.newInstance({
         numberOfComponents: l,
         values: g,
         name: "Scalars"
@@ -167484,7 +167521,7 @@ void main()
         const A = e.renderable.getMatrix();
         e.bufferShift[0] = A[3], e.bufferShift[1] = A[7], e.bufferShift[2] = A[11];
         const r = n.getStabilizedCenterByReference();
-        e.renderable.getCoordinateSystem() === R7.WORLD && (e.bufferShift[0] -= r[0], e.bufferShift[1] -= r[1], e.bufferShift[2] -= r[2]), Pr(e.keyMatrices.bcwc, A), e.renderable.getIsIdentity() ? BA(e.keyMatrices.normalMatrix) : (qa(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, ks(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Pr(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), Ua(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
+        e.renderable.getCoordinateSystem() === R7.WORLD && (e.bufferShift[0] -= r[0], e.bufferShift[1] -= r[1], e.bufferShift[2] -= r[2]), Pr(e.keyMatrices.bcwc, A), e.renderable.getIsIdentity() ? EA(e.keyMatrices.normalMatrix) : (qa(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, ks(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Pr(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), Ua(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
           -e.bufferShift[0],
           -e.bufferShift[1],
           -e.bufferShift[2]
@@ -167540,7 +167577,7 @@ void main()
       if (Math.max(e.renderable.getMTime(), n.getStabilizedTime()) > e.keyMatricesTime.getMTime()) {
         e.bufferShift[0] = 0, e.bufferShift[1] = 0, e.bufferShift[2] = 0;
         const A = n.getStabilizedCenterByReference();
-        e.renderable.getCoordinateSystem() === M7.WORLD && (e.bufferShift[0] -= A[0], e.bufferShift[1] -= A[1], e.bufferShift[2] -= A[2]), BA(e.keyMatrices.bcwc), BA(e.keyMatrices.normalMatrix), Ua(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
+        e.renderable.getCoordinateSystem() === M7.WORLD && (e.bufferShift[0] -= A[0], e.bufferShift[1] -= A[1], e.bufferShift[2] -= A[2]), EA(e.keyMatrices.bcwc), EA(e.keyMatrices.normalMatrix), Ua(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
           -e.bufferShift[0],
           -e.bufferShift[1],
           -e.bufferShift[2]
@@ -168424,7 +168461,7 @@ fn main(
   };
   function pie(t, e) {
     let n = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, HVe, n), YAe.extend(t, e, n), e.fragmentShaderTemplate = zVe, e.vertexShaderTemplate = jVe, e._tmpMat3 = bg(new Float64Array(9)), e._tmpMat4 = BA(new Float64Array(16)), e.UBO = km.newInstance({
+    Object.assign(e, HVe, n), YAe.extend(t, e, n), e.fragmentShaderTemplate = zVe, e.vertexShaderTemplate = jVe, e._tmpMat3 = bg(new Float64Array(9)), e._tmpMat4 = EA(new Float64Array(16)), e.UBO = km.newInstance({
       label: "mapperUBO"
     }), e.UBO.addEntry("BCWCMatrix", "mat4x4<f32>"), e.UBO.addEntry("BCSCMatrix", "mat4x4<f32>"), e.UBO.addEntry("MCWCNormals", "mat4x4<f32>"), e.UBO.addEntry("AmbientColor", "vec4<f32>"), e.UBO.addEntry("DiffuseColor", "vec4<f32>"), e.UBO.addEntry("EdgeColor", "vec4<f32>"), e.UBO.addEntry("SpecularColor", "vec4<f32>"), e.UBO.addEntry("AmbientIntensity", "f32"), e.UBO.addEntry("DiffuseIntensity", "f32"), e.UBO.addEntry("Roughness", "f32"), e.UBO.addEntry("Metallic", "f32"), e.UBO.addEntry("Ambient", "f32"), e.UBO.addEntry("Normal", "f32"), e.UBO.addEntry("Emission", "f32"), e.UBO.addEntry("NormalStrength", "f32"), e.UBO.addEntry("BaseIOR", "f32"), e.UBO.addEntry("SpecularIntensity", "f32"), e.UBO.addEntry("LineWidth", "f32"), e.UBO.addEntry("Opacity", "f32"), e.UBO.addEntry("ZValue", "f32"), e.UBO.addEntry("PropID", "u32"), e.UBO.addEntry("ClipNear", "f32"), e.UBO.addEntry("ClipFar", "f32"), e.UBO.addEntry("Time", "u32"), ds(t, e, [
       "cellArray",
@@ -169438,7 +169475,7 @@ fn main(
       type: "vtkImageData"
     });
     l.setOrigin(0, 0, 0), l.setSpacing(1, 1, 1), l.setExtent(0, (r || t.width) - 1, 0, (a || t.height) - 1, 0, 0);
-    const c = EA.newInstance({
+    const c = mA.newInstance({
       numberOfComponents: 4,
       values: new Uint8Array(o.data.buffer)
     });
@@ -169668,7 +169705,7 @@ fn main(
       const K = n[r - 1];
       if (f) {
         const Y = K.getPointData().getNormals();
-        T = EA.newInstance({
+        T = mA.newInstance({
           numberOfComponents: 3,
           numberOfTuples: s,
           size: 3 * s,
@@ -169678,7 +169715,7 @@ fn main(
       }
       if (C) {
         const Y = K.getPointData().getTCoords();
-        G = EA.newInstance({
+        G = mA.newInstance({
           numberOfComponents: 2,
           numberOfTuples: s,
           size: 2 * s,
@@ -169688,7 +169725,7 @@ fn main(
       }
       if (p) {
         const Y = K.getPointData().getScalars();
-        H = EA.newInstance({
+        H = mA.newInstance({
           numberOfComponents: Y.getNumberOfComponents(),
           numberOfTuples: s,
           size: s * Y.getNumberOfComponents(),
@@ -169797,11 +169834,11 @@ fn main(
       e.capping && (o = 4 * e.resolution, l = 7 * e.resolution + 2);
       const c = je.newTypedArray(e.pointType, o * 3);
       let d = 0;
-      const g = new Uint32Array(l), u = new Float32Array(o * 3), h = EA.newInstance({
+      const g = new Uint32Array(l), u = new Float32Array(o * 3), h = mA.newInstance({
         numberOfComponents: 3,
         values: u,
         name: "Normals"
-      }), f = new Float32Array(o * 2), C = EA.newInstance({
+      }), f = new Float32Array(o * 2), C = mA.newInstance({
         numberOfComponents: 2,
         values: f,
         name: "TCoords"
@@ -169976,7 +170013,7 @@ fn main(
     const r = t.getPoints().getData().length, a = new Uint8ClampedArray(r);
     let s = 0;
     for (; s < r; ) a[s++] = e, a[s++] = n, a[s++] = A;
-    t.getPointData().setScalars(EA.newInstance({
+    t.getPointData().setScalars(mA.newInstance({
       name: "color",
       numberOfComponents: 3,
       values: a
@@ -190982,7 +191019,7 @@ Input: ` + this.err.str);
       });
       const c = e.getElementsByTagName("DataArray"), d = c.length;
       for (let g = 0; g < d; g++) {
-        const u = c[g], h = EA.newInstance(R1(t, u, A, r, a, s)), f = h.getName();
+        const u = c[g], h = mA.newInstance(R1(t, u, A, r, a, s)), f = h.getName();
         (l[f] || n.addArray)(h);
       }
     }
@@ -190990,7 +191027,7 @@ Input: ` + this.err.str);
   function QZe(t, e, n, A, r) {
     const a = [
       ...t.getElementsByTagName("DataArray")
-    ].map((o) => EA.newInstance(R1(Number(o.getAttribute("NumberOfTuples")), o, e, n, A, r))), s = [
+    ].map((o) => mA.newInstance(R1(Number(o.getAttribute("NumberOfTuples")), o, e, n, A, r))), s = [
       ...t.getElementsByTagName("Array")
     ].filter((o) => o.getAttribute("type") === "String").map((o) => tZe.newInstance(BZe(o, e, n, A, r)));
     return [
@@ -191915,7 +191952,7 @@ Input: ` + this.err.str);
           });
           var q = {};
           k.r(q), k.d(q, {
-            copyPoints: () => kr,
+            copyPoints: () => Rr,
             copyPointsList: () => wA,
             getDeltaDistance: () => Ln,
             getDeltaDistanceBetweenIPoints: () => yA,
@@ -193299,7 +193336,7 @@ Input: ` + this.err.str);
               event: N
             };
             !(0, ne.triggerEvent)(I, Qe, v) && (N.stopImmediatePropagation(), N.preventDefault());
-          }, { MOUSE_DOWN: Sr, MOUSE_DOWN_ACTIVATE: ai, MOUSE_CLICK: sa, MOUSE_UP: va, MOUSE_DRAG: vf } = me, Od = 3, lB = {
+          }, { MOUSE_DOWN: kr, MOUSE_DOWN_ACTIVATE: ai, MOUSE_CLICK: sa, MOUSE_UP: va, MOUSE_DRAG: vf } = me, Od = 3, lB = {
             mouseButton: void 0,
             element: null,
             renderingEngineId: void 0,
@@ -193346,7 +193383,7 @@ Input: ` + this.err.str);
               ]
             }
           };
-          let pA = {
+          let BA = {
             mouseButton: void 0,
             renderingEngineId: void 0,
             viewportId: void 0,
@@ -193400,7 +193437,7 @@ Input: ` + this.err.str);
             ignoreDoubleClick: false
           };
           function Fg(N) {
-            const I = Zs(N, pA.element), B = yh(pA.element, pA.lastPoints), y = Lg(I, B);
+            const I = Zs(N, BA.element), B = yh(BA.element, BA.lastPoints), y = Lg(I, B);
             if (oa.doubleClickTimeout) {
               if (!Hd(y.canvas)) return;
               Pd();
@@ -193408,31 +193445,31 @@ Input: ` + this.err.str);
             const w = {
               event: N,
               eventName: vf,
-              mouseButton: pA.mouseButton,
-              renderingEngineId: pA.renderingEngineId,
-              viewportId: pA.viewportId,
+              mouseButton: BA.mouseButton,
+              renderingEngineId: BA.renderingEngineId,
+              viewportId: BA.viewportId,
               camera: {},
-              element: pA.element,
-              startPoints: Ul(pA.startPoints),
+              element: BA.element,
+              startPoints: Ul(BA.startPoints),
               lastPoints: Ul(B),
               currentPoints: I,
               deltaPoints: y
             };
-            !(0, ne.triggerEvent)(pA.element, vf, w) && (N.stopImmediatePropagation(), N.preventDefault()), pA.lastPoints = Ul(I);
+            !(0, ne.triggerEvent)(BA.element, vf, w) && (N.stopImmediatePropagation(), N.preventDefault()), BA.lastPoints = Ul(I);
           }
           function Kc(N) {
-            if (clearTimeout(pA.preventClickTimeout), oa.doubleClickTimeout) oa.mouseUpEvent ? _d() : (oa.mouseUpEvent = N, pA.element.addEventListener("mousemove", al));
+            if (clearTimeout(BA.preventClickTimeout), oa.doubleClickTimeout) oa.mouseUpEvent ? _d() : (oa.mouseUpEvent = N, BA.element.addEventListener("mousemove", al));
             else {
-              const I = pA.isClickEvent ? sa : va, B = Zs(N, pA.element), y = Lg(B, pA.lastPoints), w = {
+              const I = BA.isClickEvent ? sa : va, B = Zs(N, BA.element), y = Lg(B, BA.lastPoints), w = {
                 event: N,
                 eventName: I,
-                mouseButton: pA.mouseButton,
-                element: pA.element,
-                renderingEngineId: pA.renderingEngineId,
-                viewportId: pA.viewportId,
+                mouseButton: BA.mouseButton,
+                element: BA.element,
+                renderingEngineId: BA.renderingEngineId,
+                viewportId: BA.viewportId,
                 camera: {},
-                startPoints: Ul(pA.startPoints),
-                lastPoints: Ul(pA.lastPoints),
+                startPoints: Ul(BA.startPoints),
+                lastPoints: Ul(BA.lastPoints),
                 currentPoints: B,
                 deltaPoints: y
               };
@@ -193441,32 +193478,32 @@ Input: ` + this.err.str);
             document.removeEventListener("mousemove", Fg);
           }
           function al(N) {
-            Hd(Lg(Zs(N, pA.element), yh(pA.element, pA.lastPoints)).canvas) && (Pd(), rn(N));
+            Hd(Lg(Zs(N, BA.element), yh(BA.element, BA.lastPoints)).canvas) && (Pd(), rn(N));
           }
           function Hd(N) {
             return Math.abs(N[0]) + Math.abs(N[1]) > Od;
           }
           function Tg() {
-            pA.isClickEvent = false;
+            BA.isClickEvent = false;
           }
           function Pd() {
             oa.ignoreDoubleClick = true;
             const N = oa.mouseDownEvent, I = oa.mouseUpEvent;
             hc(), (function(B) {
-              const y = Lg(pA.startPoints, pA.startPoints), w = {
+              const y = Lg(BA.startPoints, BA.startPoints), w = {
                 event: B,
-                eventName: Sr,
-                element: pA.element,
-                mouseButton: pA.mouseButton,
-                renderingEngineId: pA.renderingEngineId,
-                viewportId: pA.viewportId,
+                eventName: kr,
+                element: BA.element,
+                mouseButton: BA.mouseButton,
+                renderingEngineId: BA.renderingEngineId,
+                viewportId: BA.viewportId,
                 camera: {},
-                startPoints: pA.startPoints,
-                lastPoints: pA.startPoints,
-                currentPoints: pA.startPoints,
+                startPoints: BA.startPoints,
+                lastPoints: BA.startPoints,
+                currentPoints: BA.startPoints,
                 deltaPoints: y
               };
-              pA.lastPoints = Ul(w.lastPoints), (0, ne.triggerEvent)(w.element, Sr, w) && (0, ne.triggerEvent)(w.element, ai, w);
+              BA.lastPoints = Ul(w.lastPoints), (0, ne.triggerEvent)(w.element, kr, w) && (0, ne.triggerEvent)(w.element, ai, w);
             })(N), I && Kc(I);
           }
           function hc() {
@@ -193474,7 +193511,7 @@ Input: ` + this.err.str);
           }
           function _d() {
             var N, I;
-            document.removeEventListener("mouseup", Kc), (N = pA.element) === null || N === void 0 || N.removeEventListener("mousemove", al), (I = pA.element) === null || I === void 0 || I.addEventListener("mousemove", rn), hc(), pA = JSON.parse(JSON.stringify(lB));
+            document.removeEventListener("mouseup", Kc), (N = BA.element) === null || N === void 0 || N.removeEventListener("mousemove", al), (I = BA.element) === null || I === void 0 || I.addEventListener("mousemove", rn), hc(), BA = JSON.parse(JSON.stringify(lB));
           }
           function Ul(N) {
             return JSON.parse(JSON.stringify(N));
@@ -193512,11 +193549,11 @@ Input: ` + this.err.str);
           }
           const cB = function(N) {
             if (oa.doubleClickTimeout) return N.buttons === oa.mouseDownEvent.buttons ? void 0 : (oa.mouseDownEvent = N, void Pd());
-            oa.doubleClickTimeout = setTimeout(Pd, N.buttons === 1 ? 400 : 150), oa.mouseDownEvent = N, oa.ignoreDoubleClick = false, pA.element = N.currentTarget, pA.mouseButton = N.buttons;
-            const I = (0, ne.getEnabledElement)(pA.element), { renderingEngineId: B, viewportId: y } = I;
-            pA.renderingEngineId = B, pA.viewportId = y, pA.preventClickTimeout = setTimeout(Tg, pA.clickDelay), pA.element.removeEventListener("mousemove", rn);
-            const w = Zs(N, pA.element);
-            pA.startPoints = Ul(w), pA.lastPoints = Ul(w), document.addEventListener("mouseup", Kc), document.addEventListener("mousemove", Fg);
+            oa.doubleClickTimeout = setTimeout(Pd, N.buttons === 1 ? 400 : 150), oa.mouseDownEvent = N, oa.ignoreDoubleClick = false, BA.element = N.currentTarget, BA.mouseButton = N.buttons;
+            const I = (0, ne.getEnabledElement)(BA.element), { renderingEngineId: B, viewportId: y } = I;
+            BA.renderingEngineId = B, BA.viewportId = y, BA.preventClickTimeout = setTimeout(Tg, BA.clickDelay), BA.element.removeEventListener("mousemove", rn);
+            const w = Zs(N, BA.element);
+            BA.startPoints = Ul(w), BA.lastPoints = Ul(w), document.addEventListener("mouseup", Kc), document.addEventListener("mousemove", Fg);
           };
           function Yd(N) {
             N.removeEventListener("dblclick", Jc), N.removeEventListener("mousedown", cB), N.removeEventListener("mousemove", rn), N.removeEventListener("dblclick", Nf, {
@@ -193688,7 +193725,7 @@ Input: ` + this.err.str);
           function wA(N) {
             return JSON.parse(JSON.stringify(N));
           }
-          function kr(N) {
+          function Rr(N) {
             return JSON.parse(JSON.stringify(N));
           }
           function Rn(N) {
@@ -193986,8 +194023,8 @@ Input: ` + this.err.str);
                 element: Pn.element,
                 startPointsList: wA(Pn.startPointsList),
                 lastPointsList: wA(Pn.lastPointsList),
-                startPoints: kr(KA(Pn.startPointsList)),
-                lastPoints: kr(KA(Pn.lastPointsList))
+                startPoints: Rr(KA(Pn.startPointsList)),
+                lastPoints: Rr(KA(Pn.lastPointsList))
               };
               pc(v.element, AA, v);
             })(N)), Pn.pressDelay), (function(w) {
@@ -194942,15 +194979,15 @@ Input: ` + this.err.str);
                 const { segmentSpecificConfig: ft, segmentationRepresentationSpecificConfig: It } = Ye, xt = It[vt.Labelmap], gt = Yc(Re), Et = Math.min(256, gt.length), { uid: Mt } = Ie, { outlineWidth: $t, renderOutline: qt, outlineOpacity: Qn } = zQ(Ge, xt, Ke);
                 for (let Yn = 0; Yn < Et; Yn++) {
                   var xn;
-                  const Un = Yn, Xn = gt[Un], $A = (xn = ft[Un]) === null || xn === void 0 ? void 0 : xn[vt.Labelmap], { fillAlpha: GA, outlineWidth: Dr, renderFill: Rr, renderOutline: Va } = zQ(Ge, xt, Ke, $A), { forceOpacityUpdate: io, forceColorUpdate: Bl } = jh(ge, Mt, Un, {
+                  const Un = Yn, Xn = gt[Un], $A = (xn = ft[Un]) === null || xn === void 0 ? void 0 : xn[vt.Labelmap], { fillAlpha: GA, outlineWidth: Dr, renderFill: Mr, renderOutline: Va } = zQ(Ge, xt, Ke, $A), { forceOpacityUpdate: io, forceColorUpdate: Bl } = jh(ge, Mt, Un, {
                     fillAlpha: GA,
-                    renderFill: Rr,
+                    renderFill: Mr,
                     renderOutline: Va,
                     segmentColor: Xn,
                     outlineWidth: Dr,
                     segmentsHidden: ct
                   });
-                  if (Bl && Be.addRGBPoint(Un, Xn[0] / 255, Xn[1] / 255, Xn[2] / 255), io) if (Rr) {
+                  if (Bl && Be.addRGBPoint(Un, Xn[0] / 255, Xn[1] / 255, Xn[2] / 255), io) if (Mr) {
                     const Nc = ct.has(Un) ? 0 : Xn[3] / 255 * GA;
                     we.removePoint(Un), we.addPointLong(Un, Nc, 0.5, 1);
                   } else we.addPointLong(Un, 0.01, 0.5, 1);
@@ -198376,20 +198413,20 @@ Input: ` + this.err.str);
                     for (let Xn = 0; Xn < Vn; Xn++) {
                       const $A = yn.getPoint(Xn), GA = yn.getPoint(Xn - Sn), Dr = yn.getPoint((Xn + Sn) % Vn);
                       Te.vec3.sub(Hn, $A, GA), Te.vec3.sub(Yn, Dr, $A);
-                      const Rr = Te.vec3.dot(Hn, Yn) / (Te.vec3.len(Hn) * Te.vec3.len(Yn));
-                      Un[Xn] = Rr;
+                      const Mr = Te.vec3.dot(Hn, Yn) / (Te.vec3.len(Hn) * Te.vec3.len(Yn));
+                      Un[Xn] = Mr;
                     }
                     return Un;
                   })(ft, 5), Qn = (function(yn, Sn) {
                     const { max: Vn, deviation: Hn } = (function(Dr) {
-                      const { length: Rr } = Dr;
+                      const { length: Mr } = Dr;
                       let Va = 0, io = 1 / 0, Bl = -1 / 0, Nc = 0;
-                      for (let El = 0; El < Rr; El++) {
+                      for (let El = 0; El < Mr; El++) {
                         const $l = Dr[El];
                         Va += $l, io = Math.min(io, $l), Bl = Math.max(Bl, $l);
                       }
-                      const fI = Va / Rr;
-                      for (let El = 0; El < Rr; El++) {
+                      const fI = Va / Mr;
+                      for (let El = 0; El < Mr; El++) {
                         const $l = Dr[El] - fI;
                         Nc += $l * $l;
                       }
@@ -198398,15 +198435,15 @@ Input: ` + this.err.str);
                         max: Bl,
                         min: io,
                         sumSq: Nc,
-                        deviation: Math.sqrt(Nc / Rr)
+                        deviation: Math.sqrt(Nc / Mr)
                       };
                     })(yn), { length: Yn } = yn;
                     if (Hn < 0.01 || Yn < 3 * Sn) return [];
                     const Un = [];
                     let Xn, $A = null, GA = 0;
                     for (let Dr = 0; Dr < Yn; Dr++) {
-                      const Rr = yn[Dr];
-                      Rr < Vn - Hn ? $A ? ($A[2] = Dr, Rr < Xn && (Xn = Rr, GA = Dr), $A[1] = GA) : (Xn = Rr, GA = Dr, $A = [
+                      const Mr = yn[Dr];
+                      Mr < Vn - Hn ? $A ? ($A[2] = Dr, Mr < Xn && (Xn = Mr, GA = Dr), $A[1] = GA) : (Xn = Mr, GA = Dr, $A = [
                         Dr,
                         Dr,
                         Dr
@@ -205493,13 +205530,13 @@ Input: ` + this.err.str);
               let Vn = 0, Hn = [], Yn = 0;
               const Un = eo(M, (($A, GA) => {
                 let Dr = true;
-                const Rr = v.worldToCanvas($A);
-                return Rr[1] != Vn && (Yn = 0, Vn = Rr[1], Hn = Hx(J, Rr, [
+                const Mr = v.worldToCanvas($A);
+                return Mr[1] != Vn && (Yn = 0, Vn = Mr[1], Hn = Hx(J, Mr, [
                   Sn[0],
-                  Rr[1]
+                  Mr[1]
                 ]), Hn.sort((function(Va, io) {
                   return Va[0] === io[0] ? 0 : Va[0] < io[0] ? -1 : 1;
-                }))), Hn.length && Rr[0] > Hn[0][0] && (Hn.shift(), Yn++), Yn % 2 == 0 && (Dr = false), Dr;
+                }))), Hn.length && Mr[0] > Hn[0][0] && (Hn.shift(), Yn++), Yn % 2 == 0 && (Dr = false), Dr;
               }), this.configuration.statsCalculator.statsCallback, xn), Xn = this.configuration.statsCalculator.getStatistics();
               U[O] = {
                 Modality: L.Modality,
@@ -206206,7 +206243,7 @@ Input: ` + this.err.str);
             }
           }, { Active: Oae } = yt;
           function SU(N) {
-            const { renderingEngineId: I, viewportId: B } = N.detail, y = pA.mouseButton, w = Bs.getModifierKey(), v = Gr(B, I);
+            const { renderingEngineId: I, viewportId: B } = N.detail, y = BA.mouseButton, w = Bs.getModifierKey(), v = Gr(B, I);
             if (!v) return null;
             const R = Object.keys(v.toolOptions), M = v.getDefaultMousePrimary();
             for (let L = 0; L < R.length; L++) {
@@ -209643,16 +209680,16 @@ Input: ` + this.err.str);
                     0
                   ];
                   cr().subtract(Yn, Un, $A);
-                  const GA = U.worldToCanvas(Xn), Dr = U.worldToCanvas(Yn), Rr = Te.vec2.create();
-                  Te.vec2.subtract(Rr, GA, Dr), Te.vec2.normalize(Rr, Rr);
+                  const GA = U.worldToCanvas(Xn), Dr = U.worldToCanvas(Yn), Mr = Te.vec2.create();
+                  Te.vec2.subtract(Mr, GA, Dr), Te.vec2.normalize(Mr, Mr);
                   const Va = Te.vec2.create();
-                  Te.vec2.scale(Va, Rr, 100 * Be);
+                  Te.vec2.scale(Va, Mr, 100 * Be);
                   const io = Te.vec2.create();
-                  Te.vec2.scale(io, Rr, 0.4 * we);
+                  Te.vec2.scale(io, Mr, 0.4 * we);
                   const Bl = Te.vec2.create();
-                  Te.vec2.scale(Bl, Rr, 0.2 * we);
+                  Te.vec2.scale(Bl, Mr, 0.2 * we);
                   const Nc = Te.vec2.create(), fI = this.configuration.referenceLinesCenterGapRadius;
-                  Te.vec2.scale(Nc, Rr, Ye.length === 2 ? fI : 0);
+                  Te.vec2.scale(Nc, Mr, Ye.length === 2 ? fI : 0);
                   const El = Te.vec2.create(), $l = Te.vec2.create(), RC = Te.vec2.create(), MC = Te.vec2.create();
                   let Fu = Te.vec2.clone(Ge);
                   Qn && qt || (Fu = Te.vec2.clone(Dr)), Te.vec2.add(El, Fu, Nc), Te.vec2.add($l, Fu, Va), Te.vec2.subtract(RC, Fu, Nc), Te.vec2.subtract(MC, Fu, Va), rI(El, $l, At), rI(RC, MC, At);
@@ -209781,12 +209818,12 @@ Input: ` + this.err.str);
                       gt[8]
                     ];
                     if (ft.push(jv, zv, qR, ld), (Un || ($A = this.configuration.mobile) !== null && $A !== void 0 && $A.enabled) && !Tu && !TC && yn && Sn) {
-                      var GA, Dr, Rr, Va, io, Bl, Nc, fI;
+                      var GA, Dr, Mr, Va, io, Bl, Nc, fI;
                       let ml = "".concat(Et, "One");
                       li(M, te, ml, FC, {
                         color: Hn,
                         handleRadius: (GA = this.configuration.mobile) !== null && GA !== void 0 && GA.enabled ? (Dr = this.configuration.mobile) === null || Dr === void 0 ? void 0 : Dr.handleRadius : 3,
-                        opacity: (Rr = this.configuration.mobile) !== null && Rr !== void 0 && Rr.enabled ? (Va = this.configuration.mobile) === null || Va === void 0 ? void 0 : Va.opacity : 1,
+                        opacity: (Mr = this.configuration.mobile) !== null && Mr !== void 0 && Mr.enabled ? (Va = this.configuration.mobile) === null || Va === void 0 ? void 0 : Va.opacity : 1,
                         type: "circle"
                       }), ml = "".concat(Et, "Two"), li(M, te, ml, Cy, {
                         color: Hn,
@@ -211549,7 +211586,7 @@ Input: ` + this.err.str);
                     ], { scale: Sn, units: Vn, areaUnits: Hn } = $s(At, yn), Yn = Qc(At), Un = Math.abs(Math.PI * (qt / Sn / 2) * (Qn / Yn / Sn / 2)), Xn = {
                       isPreScaled: rg(B, Ke),
                       isSuvScaled: this.isSuvScaled(B, Ke, I.metadata.referencedImageId)
-                    }, $A = bu(It.Modality, I.metadata.referencedImageId, Xn), GA = eo(ft, ((Rr) => Eu($t, Rr, {
+                    }, $A = bu(It.Modality, I.metadata.referencedImageId, Xn), GA = eo(ft, ((Mr) => Eu($t, Mr, {
                       fast: true
                     })), this.configuration.statsCalculator.statsCallback, Mt), Dr = this.configuration.statsCalculator.getStatistics();
                     te[Ke] = {
@@ -214112,10 +214149,10 @@ Input: ` + this.err.str);
                       ...Qn,
                       padding: 3
                     });
-                    const Dr = "arcAngle2", Rr = [
+                    const Dr = "arcAngle2", Mr = [
                       "".concat(qt.toFixed(2), " ").concat("\xB0")
                     ], Va = Mu(Mt, Et);
-                    Ad(y, ge, Dr, Rr, Va, {
+                    Ad(y, ge, Dr, Mr, Va, {
                       ...Qn,
                       padding: 3
                     });
@@ -216984,7 +217021,7 @@ Input: ` + this.err.str);
                     if (!Hn || Hn.length === 0) continue;
                     let Yn;
                     P.handles.textBox.hasMoved || (Yn = ro(Ke), P.handles.textBox.worldPosition = v.canvasToWorld(Yn));
-                    const Un = v.worldToCanvas(P.handles.textBox.worldPosition), Xn = js(B, O, "1", Hn, Un, we, {}, Vn), { x: $A, y: GA, width: Dr, height: Rr } = Xn;
+                    const Un = v.worldToCanvas(P.handles.textBox.worldPosition), Xn = js(B, O, "1", Hn, Un, we, {}, Vn), { x: $A, y: GA, width: Dr, height: Mr } = Xn;
                     P.handles.textBox.worldBoundingBox = {
                       topLeft: v.canvasToWorld([
                         $A,
@@ -216996,11 +217033,11 @@ Input: ` + this.err.str);
                       ]),
                       bottomLeft: v.canvasToWorld([
                         $A,
-                        GA + Rr
+                        GA + Mr
                       ]),
                       bottomRight: v.canvasToWorld([
                         $A + Dr,
-                        GA + Rr
+                        GA + Mr
                       ])
                     };
                   }
@@ -217049,12 +217086,12 @@ Input: ` + this.err.str);
                       Math.min(Un[2], GA[2]),
                       Math.max(Un[2], GA[2])
                     ]
-                  ], Rr = {
+                  ], Mr = {
                     center: Mt,
                     xRadius: Math.abs(xn[0] - yn[0]) / 2,
                     yRadius: Math.abs(xn[1] - yn[1]) / 2,
                     zRadius: Math.abs(xn[2] - yn[2]) / 2
-                  }, Va = eo(Yn, ((io) => Eu(Rr, io)), this.configuration.statsCalculator.statsCallback, Dr);
+                  }, Va = eo(Yn, ((io) => Eu(Mr, io)), this.configuration.statsCalculator.statsCallback, Dr);
                   te.push(Va);
                 }
               }
@@ -225482,7 +225519,7 @@ Input: ` + this.err.str);
                     children: o ? i.jsxs("div", {
                       className: "h-full flex items-center justify-center flex-col gap-2",
                       children: [
-                        i.jsx(mA, {
+                        i.jsx(pA, {
                           className: "h-6 w-6 animate-spin text-zinc-500"
                         }),
                         i.jsx("span", {
@@ -225770,7 +225807,7 @@ Input: ` + this.err.str);
                       bt || Fe ? i.jsxs("div", {
                         className: "h-full flex flex-col items-center justify-center opacity-40",
                         children: [
-                          i.jsx(mA, {
+                          i.jsx(pA, {
                             className: "w-6 h-6 animate-spin mb-2 text-synos-primary"
                           }),
                           i.jsx("span", {
@@ -225845,7 +225882,7 @@ Input: ` + this.err.str);
                         disabled: c || gA || !Se && a.studyStatus !== "Signed",
                         className: `flex-1 py-1.5 font-bold text-xs uppercase tracking-wider rounded-lg transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${gA ? "bg-emerald-600 text-white cursor-default opacity-90" : "bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white"}`,
                         children: [
-                          c ? i.jsx(mA, {
+                          c ? i.jsx(pA, {
                             className: "h-3.5 w-3.5 animate-spin"
                           }) : gA ? i.jsx(Zr, {
                             className: "h-3.5 w-3.5 text-white"
@@ -225905,7 +225942,7 @@ Input: ` + this.err.str);
                       disabled: c,
                       className: "w-full py-3.5 bg-synos-red hover:opacity-90 disabled:opacity-40 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-260 ease-synos active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm",
                       children: [
-                        c ? i.jsx(mA, {
+                        c ? i.jsx(pA, {
                           className: "h-4 w-4 animate-spin"
                         }) : i.jsx(im, {
                           className: "h-4 w-4"
@@ -225926,7 +225963,7 @@ Input: ` + this.err.str);
                       disabled: c,
                       className: "w-full py-3.5 bg-synos-primary hover:opacity-90 disabled:opacity-40 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-260 ease-synos active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm",
                       children: [
-                        c ? i.jsx(mA, {
+                        c ? i.jsx(pA, {
                           className: "h-4 w-4 animate-spin"
                         }) : i.jsx(ua, {
                           className: "h-4 w-4"
@@ -226046,7 +226083,7 @@ Input: ` + this.err.str);
     return t ? i.jsxs("div", {
       className: "h-screen w-screen bg-zinc-950 text-white flex flex-col items-center justify-center gap-4 font-sans",
       children: [
-        i.jsx(mA, {
+        i.jsx(pA, {
           className: "w-10 h-10 animate-spin text-emerald-500"
         }),
         i.jsx("p", {
@@ -226059,7 +226096,7 @@ Input: ` + this.err.str);
       children: [
         i.jsx("div", {
           className: "w-14 h-14 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center mb-4 border border-red-500/20",
-          children: i.jsx(Mr, {
+          children: i.jsx(Sr, {
             className: "w-8 h-8"
           })
         }),
