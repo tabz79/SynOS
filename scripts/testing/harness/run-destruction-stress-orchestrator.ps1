@@ -195,6 +195,15 @@ Log-Master "Pillar 6 Result: $(if ($p6Passed) { 'PASS' } else { 'FAIL' })" $(if 
 $MasterReport.pillars += @{ id = "Pillar-6"; name = "Sustained Health Audit"; passed = $p6Passed; output = ($p6Out -join "`n") }
 if (-not $p6Passed) { $MasterReport.allPassed = $false }
 
+# Pillar 7: UI Interaction Profiler & Abuse Stress
+Log-Master "LAUNCHING PILLAR 7: UI Interaction Latency & Interaction Abuse Profiler..." "HOSTILE"
+$p7Script = Join-Path $SuiteDir "07_ui_interaction_profiler.js"
+$p7Out = & node $p7Script 2>&1
+$p7Passed = ($LASTEXITCODE -eq 0)
+Log-Master "Pillar 7 Result: $(if ($p7Passed) { 'PASS' } else { 'FAIL' })" $(if ($p7Passed) { "SUCCESS" } else { "ERROR" })
+$MasterReport.pillars += @{ id = "Pillar-7"; name = "UI Interaction Profiler"; passed = $p7Passed; output = ($p7Out -join "`n") }
+if (-not $p7Passed) { $MasterReport.allPassed = $false }
+
 # ------------------------------------------------------------------------------
 # STEP 5: Final Forensic Verdict Generation
 # ------------------------------------------------------------------------------
@@ -214,6 +223,7 @@ $p3Status = if ($p3Passed) { "PASSED" } else { "FAILED" }
 $p4Status = if ($p4Passed) { "PASSED" } else { "FAILED" }
 $p5Status = if ($p5Passed) { "PASSED" } else { "FAILED" }
 $p6Status = if ($p6Passed) { "PASSED" } else { "FAILED" }
+$p7Status = if ($p7Passed) { "PASSED" } else { "FAILED" }
 
 $mdLines = @(
     "# SynOS Post-Installation Destruction & Stress Test Report",
@@ -233,6 +243,7 @@ $mdLines = @(
     "| **Pillar 4** | Active Destruction & Hard Crashes | $p4Status | Killed SynOS process & stopped SQL Server during active transactions; consistency audit |",
     "| **Pillar 5** | Hardware & Integration Layer Chaos | $p5Status | ASTM E1381 TCP injection & DICOM C-STORE flood during simultaneous patient load |",
     "| **Pillar 6** | Sustained Stress & Memory Leak Audit | $p6Status | Memory deltas, private bytes, handle count leaks, and zero-byte file orphan scan |",
+    "| **Pillar 7** | UI Interaction & Abuse Profiling | $p7Status | Granular click-to-render latency breakdown, debounce thrashing, and button abuse |",
     "",
     "---",
     "",
