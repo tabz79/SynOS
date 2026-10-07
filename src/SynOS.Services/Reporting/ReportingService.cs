@@ -1241,21 +1241,21 @@ namespace SynOS.Services.Reporting
     }
 
     /// <summary>
-    /// Resilient ADO.NET Connection Interceptor:
-    /// Evicts poisoned socket pools when SQL Server restarts or mid-flight connection drops occur.
+    /// Resilient ADO.NET Connection and Command Interceptor:
+    /// Evicts poisoned socket pools when SQL Server restarts, crash recovery occurs, or mid-flight connection drops occur.
     /// </summary>
-    public class SqlPoolEvictionInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
+    public class SqlPoolEvictionInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbCommandInterceptor
     {
-        public override void ConnectionFailed(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionErrorEventData eventData)
+        public override void CommandFailed(System.Data.Common.DbCommand command, Microsoft.EntityFrameworkCore.Diagnostics.CommandErrorEventData eventData)
         {
             EvictPool(eventData.Exception);
-            base.ConnectionFailed(connection, eventData);
+            base.CommandFailed(command, eventData);
         }
 
-        public override System.Threading.Tasks.Task ConnectionFailedAsync(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionErrorEventData eventData, System.Threading.CancellationToken cancellationToken = default)
+        public override System.Threading.Tasks.Task CommandFailedAsync(System.Data.Common.DbCommand command, Microsoft.EntityFrameworkCore.Diagnostics.CommandErrorEventData eventData, System.Threading.CancellationToken cancellationToken = default)
         {
             EvictPool(eventData.Exception);
-            return base.ConnectionFailedAsync(connection, eventData, cancellationToken);
+            return base.CommandFailedAsync(command, eventData, cancellationToken);
         }
 
         private static void EvictPool(Exception? ex)

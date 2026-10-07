@@ -130,6 +130,18 @@ foreach ($svc in $sqlServices) {
     } catch {}
 }
 
+# Wait for MSSQL engine to mount databases before API probe
+$dbReady = $false
+for ($i = 0; $i -lt 30; $i++) {
+    $res = & sqlcmd -S "$SqlInstance" -d "$SqlDb" -E -Q "SET NOCOUNT ON; SELECT 1" -h -1 2>&1
+    if ($LASTEXITCODE -eq 0 -and ($res -join "") -match "1") {
+        $dbReady = $true
+        Write-Host "Database $SqlDb mounted and accepting queries directly." -ForegroundColor Green
+        break
+    }
+    Start-Sleep -Seconds 1
+}
+
 # Check if SynOS API host stayed alive and re-established connection without reboot (poll up to 150s)
 $apiAlive = $false
 $sqlRecoverySw = [System.Diagnostics.Stopwatch]::StartNew()

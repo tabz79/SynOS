@@ -354,9 +354,9 @@ builder.Services.AddDbContext<SynOSDbContext>(options =>
     {
         sqlOptions.EnableRetryOnFailure(
             maxRetryCount: 10,
-            maxRetryDelay: TimeSpan.FromSeconds(30),
-            errorNumbersToAdd: null);
-        sqlOptions.CommandTimeout(60);
+            maxRetryDelay: TimeSpan.FromSeconds(5),
+            errorNumbersToAdd: new[] { 10054, 233, 2, 53 });
+        sqlOptions.CommandTimeout(30);
     })
     .AddInterceptors(
         new SynOS.Services.Reporting.TemplateQueryInterceptor(),

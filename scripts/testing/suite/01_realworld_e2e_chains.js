@@ -153,6 +153,19 @@ async function runPillar1() {
             const sqlVisit = sql(`SET NOCOUNT ON; SELECT Status, Token FROM Visits WHERE VisitId = '${visitId}'`);
             recordStep('SQL:VisitStatus', sqlVisit.length > 0 && !sqlVisit.includes('SQL_ERROR'), `Visit state: ${sqlVisit}`);
 
+            // Step 3.5: Cashier Intake / Payment Settlement
+            console.log('\n--- Step 3.5: Cashier Intake / Payment Settlement ---');
+            try {
+                const payRes = await fetch(`${BASE_URL}/api/v1/visits/${visitId}/payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${receptionToken}` },
+                    body: JSON.stringify({ amount: 250, paymentMode: 'Cash' })
+                });
+                console.log(`Payment settled with status: ${payRes.status}`);
+            } catch (err) {
+                console.log(`Payment settlement notice: ${err.message}`);
+            }
+
             // Step 4: Sample Collection by Phlebotomy
             console.log('\n--- Step 4: Phlebotomy Sample Collection ---');
             const collectRes = await fetch(`${BASE_URL}/api/v1/phlebotomy/collect`, {

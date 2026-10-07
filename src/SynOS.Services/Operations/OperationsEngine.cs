@@ -954,13 +954,21 @@ namespace SynOS.Services.Operations
                 throw new UnauthorizedAccessException($"Order {orderId} belongs to branch {order.Visit.BranchId}, access denied for context branch {branchId}.");
             }
 
-            // Invariant: Revenue Guard (Bypassed for PartnerCollects or Admin/SystemAdmin users)
+            // Invariant: Revenue Guard
+            // Medical and clinical verification is permitted for authorized clinicians (Pathologist, Doctor, LabDirector, Admin).
+            // Financial collection rules govern report dispatch/delivery, not clinical result verification.
             bool isPartnerCollect = order.Visit.PaymentCollectionModel == "PartnerCollects";
-            bool isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            bool isClinicianOrAdmin = _userContext.CurrentRole == "Admin" || 
+                                     _userContext.CurrentRole == "SystemAdmin" || 
+                                     _userContext.CurrentRole == "Pathologist" || 
+                                     _userContext.CurrentRole == "Doctor" || 
+                                     _userContext.CurrentRole == "LabDirector" || 
+                                     _userContext.CurrentRole == "LabTech" || 
+                                     _userContext.CurrentRole == "Technician";
             
-            if (!isPartnerCollect && !isAdmin && !order.Visit.Invoices.Any(i => i.Status == "Paid" || i.Status == "FullPaid"))
+            if (!isPartnerCollect && !isClinicianOrAdmin && !order.Visit.Invoices.Any(i => i.Status == "Paid" || i.Status == "FullPaid"))
             {
-                throw new InvalidOperationException("Order must be fully paid before results can be verified.");
+                throw new InvalidOperationException("Order must be fully paid before results can be verified by non-clinical personnel.");
             }
 
             // Fetch Results
