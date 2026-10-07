@@ -43,9 +43,10 @@ if (-not (Test-Path $apiExe)) {
 
     if (Test-Path $InstallerPath) {
         Log-Master "Executing silent installation: $InstallerPath..." "INFO"
-        $proc = Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /LOG=`"$ResultsDir\inno_install.log`"" -PassThru
-        $proc.WaitForExit(360000)
-        Log-Master "Installer finished with exit code $($proc.ExitCode)." "SUCCESS"
+        $installLog = Join-Path (Resolve-Path $ResultsDir).Path "inno_install.log"
+        $installProcess = Start-Process -FilePath $InstallerPath -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /LOG=`"$installLog`"" -Wait -PassThru
+        Log-Master "Installer process exited with code $($installProcess.ExitCode)." "SUCCESS"
+        Start-Sleep -Seconds 10
     } else {
         Log-Master "FATAL: Cannot proceed without installed SynOS or installer binary." "ERROR"
         exit 1
