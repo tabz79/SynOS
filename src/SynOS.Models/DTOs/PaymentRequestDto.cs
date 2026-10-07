@@ -6,6 +6,7 @@ namespace SynOS.Models.DTOs
     public class PaymentRequestDto
     {
         [Required]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Payment amount must be greater than zero.")]
         public decimal Amount { get; set; }
 
         public string? Method { get; set; }

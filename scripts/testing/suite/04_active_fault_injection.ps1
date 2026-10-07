@@ -93,7 +93,11 @@ $sw = [System.Diagnostics.Stopwatch]::StartNew()
 while ($sw.Elapsed.TotalSeconds -lt 25) {
     try {
         $health = Invoke-RestMethod -Uri "$BaseUrl/api/v1/health" -TimeoutSec 3 -ErrorAction SilentlyContinue
-        if ($health) { $recovered = $true; break }
+        if ($health) { 
+            $recovered = $true
+            try { $token = Get-AuthToken "reception" "Admin" } catch {}
+            break 
+        }
     } catch {}
     Start-Sleep -Seconds 2
 }
@@ -104,6 +108,9 @@ Record-Fault "ServiceRecoveryAfterCrash" $recovered "SynOS resumed responding af
 # FAULT 2: Forcibly Stop SQL Server During Active Operations & Restart
 # ------------------------------------------------------------------------------
 Write-Host "`n--- Fault 2: Forcibly Stop MSSQL Server During Transaction ---" -ForegroundColor Yellow
+
+# Ensure fresh auth token before fault 2
+try { $token = Get-AuthToken "reception" "Admin" } catch {}
 
 # Stop SQL Server service
 Write-Host "Stopping MSSQL service forcibly..." -ForegroundColor Magenta
@@ -147,12 +154,21 @@ $apiAlive = $false
 $sqlRecoverySw = [System.Diagnostics.Stopwatch]::StartNew()
 while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 150) {
     try {
+        if (-not $token) {
+            $token = Get-AuthToken "reception" "Admin"
+        }
         $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 35 -ErrorAction Stop
         if ($checkRes) { 
             $apiAlive = $true 
             break 
         }
     } catch {
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode.value__ -eq 401) {
+            try {
+                $token = Get-AuthToken "reception" "Admin"
+                Write-Host "Re-authenticated token after service restart." -ForegroundColor Cyan
+            } catch {}
+        }
         Write-Host "Waiting for connection pool re-establishment ($([int]$sqlRecoverySw.Elapsed.TotalSeconds)s): $($_.Exception.Message)" -ForegroundColor DarkGray
     }
     Start-Sleep -Seconds 2

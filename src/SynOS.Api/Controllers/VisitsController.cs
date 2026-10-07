@@ -102,6 +102,11 @@ namespace SynOS.Api.Controllers
         
         public async Task<IActionResult> RecordPayment(Guid id, [FromBody] PaymentRequestDto paymentDto)
         {
+            if (paymentDto == null || paymentDto.Amount <= 0)
+            {
+                return BadRequest(new { code = "INVALID_AMOUNT", message = "Payment amount must be greater than zero." });
+            }
+
             try
             {
                 var visit = await _visitService.GetVisitDetailsAsync(id);
@@ -133,6 +138,13 @@ namespace SynOS.Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                if (ex.Message.Contains("greater than zero", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("effective payment amount", StringComparison.OrdinalIgnoreCase) ||
+                    ex.Message.Contains("invalid amount", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest(new { code = "INVALID_AMOUNT", message = ex.Message });
+                }
+
                 _logger.LogInformation(ex, "Payment operation idempotent note for visit {VisitId}: {Message}", id, ex.Message);
                 return Ok(new ApiResponse<object>(new { status = "Paid", message = ex.Message, isIdempotent = true }));
             }
