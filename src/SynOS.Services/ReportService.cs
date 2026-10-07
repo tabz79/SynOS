@@ -417,21 +417,23 @@ namespace SynOS.Services
 
                 if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue && visit.ReferralPartner != null && visit.ReferralPartner.IsActive)
                 {
-                    var invoice = visit.Invoices.Single(); 
-
-                    var newReceivableFact = new ReceivableFact
+                    var invoice = visit.Invoices.FirstOrDefault(); 
+                    if (invoice != null)
                     {
-                        ReceivableFactId = Guid.NewGuid(),
-                        SourceVisitId = visit.VisitId,
-                        ReferralPartnerId = visit.ReferralPartnerId.Value,
-                        Amount = invoice.Total,
-                        Currency = invoice.Currency,
-                        OccurredAt = timestamp,
-                        RecordedAt = DateTimeOffset.UtcNow
-                    };
+                        var newReceivableFact = new ReceivableFact
+                        {
+                            ReceivableFactId = Guid.NewGuid(),
+                            SourceVisitId = visit.VisitId,
+                            ReferralPartnerId = visit.ReferralPartnerId.Value,
+                            Amount = invoice.Total,
+                            Currency = invoice.Currency,
+                            OccurredAt = timestamp,
+                            RecordedAt = DateTimeOffset.UtcNow
+                        };
 
-                    _context.ReceivableFacts.Add(newReceivableFact);
-                    await _context.SaveChangesAsync();
+                        _context.ReceivableFacts.Add(newReceivableFact);
+                        await _context.SaveChangesAsync();
+                    }
                 }
             }
             // --- END FLOW B ---

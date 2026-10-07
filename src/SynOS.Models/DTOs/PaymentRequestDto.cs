@@ -17,6 +17,12 @@ namespace SynOS.Models.DTOs
             set => Method = value;
         }
 
+        public string? PaymentMode
+        {
+            get => Method;
+            set => Method = value;
+        }
+
         public string? Notes { get; set; }
 
         public string? ReceiptNo { get; set; }

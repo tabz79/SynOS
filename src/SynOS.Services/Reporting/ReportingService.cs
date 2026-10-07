@@ -1270,5 +1270,24 @@ namespace SynOS.Services.Reporting
             }
         }
     }
+
+    /// <summary>
+    /// Resilient ADO.NET Connection Interceptor:
+    /// Evicts poisoned socket pools immediately when connection opening fails.
+    /// </summary>
+    public class SqlConnectionEvictionInterceptor : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
+    {
+        public override void ConnectionFailed(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionErrorEventData eventData)
+        {
+            try { Microsoft.Data.SqlClient.SqlConnection.ClearAllPools(); } catch {}
+            base.ConnectionFailed(connection, eventData);
+        }
+
+        public override System.Threading.Tasks.Task ConnectionFailedAsync(System.Data.Common.DbConnection connection, Microsoft.EntityFrameworkCore.Diagnostics.ConnectionErrorEventData eventData, System.Threading.CancellationToken cancellationToken = default)
+        {
+            try { Microsoft.Data.SqlClient.SqlConnection.ClearAllPools(); } catch {}
+            return base.ConnectionFailedAsync(connection, eventData, cancellationToken);
+        }
+    }
 }
 

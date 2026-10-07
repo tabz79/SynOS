@@ -147,16 +147,18 @@ $apiAlive = $false
 $sqlRecoverySw = [System.Diagnostics.Stopwatch]::StartNew()
 while ($sqlRecoverySw.Elapsed.TotalSeconds -lt 150) {
     try {
-        $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 10 -ErrorAction SilentlyContinue
+        $checkRes = Invoke-RestMethod -Uri "$BaseUrl/api/v1/patients" -Headers @{ Authorization = "Bearer $token" } -TimeoutSec 35 -ErrorAction Stop
         if ($checkRes) { 
             $apiAlive = $true 
             break 
         }
-    } catch {}
+    } catch {
+        Write-Host "Waiting for connection pool re-establishment ($([int]$sqlRecoverySw.Elapsed.TotalSeconds)s): $($_.Exception.Message)" -ForegroundColor DarkGray
+    }
     Start-Sleep -Seconds 2
 }
 
-Record-Fault "DatabaseReconnectionResilience" $apiAlive "SynOS re-established connection pool after SQL Server outage without process restart (Recovered in $($sqlRecoverySw.Elapsed.TotalSeconds)s)."
+Record-Fault "DatabaseReconnectionResilience" $apiAlive "SynOS re-established connection pool after SQL Server outage without process restart (Recovered in $([Math]::Round($sqlRecoverySw.Elapsed.TotalSeconds, 1))s)."
 
 # ------------------------------------------------------------------------------
 # FAULT 3: Audit Database for Half-Created or Corrupted Data

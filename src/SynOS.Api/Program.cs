@@ -353,14 +353,15 @@ builder.Services.AddDbContext<SynOSDbContext>(options =>
     options.UseSqlServer(activeConnStr, sqlOptions =>
     {
         sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 10,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(2),
             errorNumbersToAdd: new[] { 10054, 233, 2, 53 });
         sqlOptions.CommandTimeout(30);
     })
     .AddInterceptors(
         new SynOS.Services.Reporting.TemplateQueryInterceptor(),
-        new SynOS.Services.Reporting.SqlPoolEvictionInterceptor());
+        new SynOS.Services.Reporting.SqlPoolEvictionInterceptor(),
+        new SynOS.Services.Reporting.SqlConnectionEvictionInterceptor());
 
     if (isDevelopment)
     {

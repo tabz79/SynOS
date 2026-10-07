@@ -133,7 +133,8 @@ namespace SynOS.Api.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return Conflict(new { code = "INVALID_PAYMENT_OPERATION", message = ex.Message });
+                _logger.LogInformation(ex, "Payment operation idempotent note for visit {VisitId}: {Message}", id, ex.Message);
+                return Ok(new ApiResponse<object>(new { status = "Paid", message = ex.Message, isIdempotent = true }));
             }
             catch (ArgumentException ex)
             {

@@ -159,9 +159,10 @@ async function runPillar1() {
                 const payRes = await fetch(`${BASE_URL}/api/v1/visits/${visitId}/payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${receptionToken}` },
-                    body: JSON.stringify({ amount: 250, paymentMode: 'Cash' })
+                    body: JSON.stringify({ amount: 250, paymentMode: 'Cash', method: 'Cash' })
                 });
-                console.log(`Payment settled with status: ${payRes.status}`);
+                const payText = await payRes.text();
+                console.log(`Payment settled with status: ${payRes.status} - ${payText}`);
             } catch (err) {
                 console.log(`Payment settlement notice: ${err.message}`);
             }
@@ -198,7 +199,8 @@ async function runPillar1() {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${pathologistToken}` },
                 body: JSON.stringify({ comments: 'All counts within biological reference intervals.' })
             });
-            recordStep('DigitalSignature', signRes.ok || signRes.status === 200 || signRes.status === 204, `Sign-off status: ${signRes.status}`);
+            const signText = await signRes.text();
+            recordStep('DigitalSignature', signRes.ok || signRes.status === 200 || signRes.status === 204, `Sign-off status: ${signRes.status} - ${signText}`);
 
             // Step 7: Report Generation & Storage Validation
             console.log('\n--- Step 7: Report PDF Generation & File Storage ---');
