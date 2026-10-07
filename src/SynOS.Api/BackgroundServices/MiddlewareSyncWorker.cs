@@ -563,6 +563,43 @@ namespace SynOS.Api.BackgroundServices
                                 success = await _licenseRecoveryService.TriggerSelfHealingRecoveryAsync(dbContext, dbProfile, stoppingToken);
                                 _logger.LogInformation("Command type {CommandType} executed. Result: {Success}", commandType, success);
                             }
+                            else if (commandType == "ExecuteApiOrAction")
+                            {
+                                // Remote support action relayed from Cloud Relay / AI agent
+                                using var payloadDoc = JsonDocument.Parse(payloadJson);
+                                var root = payloadDoc.RootElement;
+                                var method = root.TryGetProperty("Method", out var m) ? m.GetString() ?? "GET" : "GET";
+                                var path = root.TryGetProperty("Path", out var p) ? p.GetString() ?? "" : "";
+                                var body = root.TryGetProperty("Body", out var b) ? b.GetRawText() : null;
+
+                                _logger.LogInformation("Executing remote support action via local loopback: {Method} {Path}", method, path);
+
+                                try
+                                {
+                                    using var localClient = new HttpClient();
+                                    // Target local running Kestrel endpoint on default loopback
+                                    var localUrl = $"http://localhost:59999{path}";
+                                    var localReq = new HttpRequestMessage(new HttpMethod(method), localUrl);
+                                    if (!string.IsNullOrEmpty(body) && (method == "POST" || method == "PUT" || method == "PATCH"))
+                                    {
+                                        localReq.Content = new StringContent(body, Encoding.UTF8, "application/json");
+                                    }
+
+                                    var localResp = await localClient.SendAsync(localReq, stoppingToken);
+                                    success = localResp.IsSuccessStatusCode;
+                                    if (!success)
+                                    {
+                                        errorMessage = $"Local request returned {localResp.StatusCode}: {await localResp.Content.ReadAsStringAsync(stoppingToken)}";
+                                    }
+                                    _logger.LogInformation("Remote support action {Method} {Path} finished with status: {Status}", method, path, localResp.StatusCode);
+                                }
+                                catch (Exception exAction)
+                                {
+                                    _logger.LogError(exAction, "Failed to execute loopback action for {Method} {Path}", method, path);
+                                    success = false;
+                                    errorMessage = exAction.Message;
+                                }
+                            }
                             else
                             {
                                 _logger.LogWarning("Unsupported command type {CommandType} received.", commandType);

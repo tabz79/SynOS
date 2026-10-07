@@ -1,0 +1,23 @@
+{
+  "name": "synos-mcp",
+  "version": "1.0.0",
+  "description": "Full-Access Model Context Protocol (MCP) Server for SynOS Diagnostic & Operations Management",
+  "main": "dist/index.js",
+  "bin": {
+    "synos-mcp": "./dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "axios": "^1.7.9",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}
