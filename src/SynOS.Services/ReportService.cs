@@ -244,151 +244,155 @@ namespace SynOS.Services
             string? contentHash = null;
             string? signatureImageHash = null;
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                // 1. Build Forensic Payload (Spec V3)
-                var structure = await _reportingService.GetReportStructureAsync(reportId);
-                var interpretation = await _context.ReportInterpretations
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(ri => ri.ReportId == reportId);
-
-                var forensicPayload = new ForensicPayload
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    Ancillary = new AncillaryData
+                    // 1. Build Forensic Payload (Spec V3)
+                    var structure = await _reportingService.GetReportStructureAsync(reportId);
+                    var interpretation = await _context.ReportInterpretations
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(ri => ri.ReportId == reportId);
+
+                    var forensicPayload = new ForensicPayload
                     {
-                        LabId = order.Visit?.BranchId.ToString() ?? "GLOBAL",
-                        Mrn = order.Visit?.Patient?.MRN ?? "UNKNOWN",
-                        PatientId = report.PatientId.ToString()
-                    },
-                    Diagnostics = new DiagnosticData
-                    {
-                        Interpretation = ForensicHasher.NormalizeText(interpretation?.Summary),
-                        Notes = ForensicHasher.NormalizeText(interpretation?.Notes)
-                    },
-                    Lineage = new LineageData
-                    {
-                        ReportVersion = requestedVersion
-                    },
-                    Results = structure.Groups.SelectMany(g => g.Parameters.Select(p => new ForensicResult
-                    {
-                        ResultId = p.ResultId?.ToString() ?? p.ParameterCode, 
-                        TestCode = order.Test?.TestCode ?? "UNKNOWN",
-                        ParameterCode = p.ParameterCode,
-                        Value = p.Value ?? string.Empty, // Strict Byte Truth (Forensic Lock)
-                        Unit = (p.Unit ?? string.Empty).ToUpperInvariant(),
-                        Range = (p.ReferenceRange ?? string.Empty).Trim(),
-                        Flag = (p.Flag ?? string.Empty).ToUpperInvariant(),
-                        Method = (p.Methodology ?? string.Empty).ToUpperInvariant()
-                    })).OrderBy(r => r.ParameterCode).ThenBy(r => r.ResultId).ToList()
-                };
-
-                contentHash = ForensicHasher.GenerateHash(forensicPayload);
-                
-                // Keep legacy signatureImageHash for compatibility with image validation
-                using (var sha256 = System.Security.Cryptography.SHA256.Create())
-                {
-                    var hashBytes = sha256.ComputeHash(signatureImageBytes);
-                    signatureImageHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
-                }
-
-                var reportSignature = new ReportSignature
-                {
-                    ReportSignatureId = Guid.NewGuid(),
-                    ReportId = reportId,
-                    SignedByUserId = signedByUserId,
-                    SignedAt = timestamp,
-                    SignatureImageUrl = user.SignatureImageUrl,
-                    SignatureHash = signatureImageHash,
-                    ReportVersion = requestedVersion,
-                    ContentHash = contentHash,
-                    // GPT-5 Rule: Immutable snapshots (Strict - No Fallbacks)
-                    DoctorName = user.Name,
-                    DoctorDesignation = user.Designation
-                };
-
-                await _context.ReportSignatures.AddAsync(reportSignature);
-                await _context.SaveChangesAsync();
-
-                // 2. DELEGATE LIFECYCLE TRUTH TO ENGINE
-                var branchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : (order.Visit?.BranchId ?? Guid.Empty);
-                await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
-
-                // 3. Finalize Lifecycle State & Snapshot
-                report.Status = "Signed";
-                report.VerificationMode = "Digital";
-                if (report.CurrentVersion == 0) report.CurrentVersion = 1;
-                report.SignedByUserId = signedByUserId;
-                report.SignedAt = timestamp;
-
-                var reportVersion = await _context.ReportVersions
-                    .Include(rv => rv.Snapshot)
-                    .FirstOrDefaultAsync(rv => rv.ReportId == reportId && rv.VersionNumber == requestedVersion);
-
-                if (reportVersion != null)
-                {
-                    reportVersion.SignedByUserId = signedByUserId;
-                    reportVersion.SignedAt = timestamp;
-                    var domainState = structure.ToDomain();
-                    domainState.Status = "Signed";
-                    domainState.SignedAt = timestamp;
-                    domainState.SignedBy = user.Name;
-
-                    if (interpretation != null)
-                    {
-                        domainState.Comments = interpretation.Notes ?? string.Empty;
-                        domainState.Interpretation = interpretation.Summary ?? string.Empty;
-                    }
-                    domainState.Recommendations = report.PathologyReport?.Recommendations ?? string.Empty;
-
-                    domainState.Signatures = new List<SignatureState>
-                    {
-                        new SignatureState
+                        Ancillary = new AncillaryData
                         {
-                            Name = user.Name,
-                            Designation = user.Designation,
-                            SignatureImageUrl = user.SignatureImageUrl,
-                            Hash = signatureImageHash,
-                            SignedAt = timestamp
-                        }
+                            LabId = order.Visit?.BranchId.ToString() ?? "GLOBAL",
+                            Mrn = order.Visit?.Patient?.MRN ?? "UNKNOWN",
+                            PatientId = report.PatientId.ToString()
+                        },
+                        Diagnostics = new DiagnosticData
+                        {
+                            Interpretation = ForensicHasher.NormalizeText(interpretation?.Summary),
+                            Notes = ForensicHasher.NormalizeText(interpretation?.Notes)
+                        },
+                        Lineage = new LineageData
+                        {
+                            ReportVersion = requestedVersion
+                        },
+                        Results = structure.Groups.SelectMany(g => g.Parameters.Select(p => new ForensicResult
+                        {
+                            ResultId = p.ResultId?.ToString() ?? p.ParameterCode, 
+                            TestCode = order.Test?.TestCode ?? "UNKNOWN",
+                            ParameterCode = p.ParameterCode,
+                            Value = p.Value ?? string.Empty, // Strict Byte Truth (Forensic Lock)
+                            Unit = (p.Unit ?? string.Empty).ToUpperInvariant(),
+                            Range = (p.ReferenceRange ?? string.Empty).Trim(),
+                            Flag = (p.Flag ?? string.Empty).ToUpperInvariant(),
+                            Method = (p.Methodology ?? string.Empty).ToUpperInvariant()
+                        })).OrderBy(r => r.ParameterCode).ThenBy(r => r.ResultId).ToList()
                     };
 
-                    domainState.Verification = new VerificationState
+                    contentHash = ForensicHasher.GenerateHash(forensicPayload);
+                    
+                    // Keep legacy signatureImageHash for compatibility with image validation
+                    using (var sha256 = System.Security.Cryptography.SHA256.Create())
                     {
-                        QrCodeContent = $"https://synos.com/verify/{report.ReportId}",
+                        var hashBytes = sha256.ComputeHash(signatureImageBytes);
+                        signatureImageHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                    }
+
+                    var reportSignature = new ReportSignature
+                    {
+                        ReportSignatureId = Guid.NewGuid(),
+                        ReportId = reportId,
+                        SignedByUserId = signedByUserId,
+                        SignedAt = timestamp,
+                        SignatureImageUrl = user.SignatureImageUrl,
+                        SignatureHash = signatureImageHash,
                         ReportVersion = requestedVersion,
-                        VersionHash = contentHash,
-                        Status = "SIGNED"
+                        ContentHash = contentHash,
+                        // GPT-5 Rule: Immutable snapshots (Strict - No Fallbacks)
+                        DoctorName = user.Name,
+                        DoctorDesignation = user.Designation
                     };
 
-                    var updatedJson = System.Text.Json.JsonSerializer.Serialize(domainState);
-                    if (reportVersion.Snapshot != null)
+                    await _context.ReportSignatures.AddAsync(reportSignature);
+                    await _context.SaveChangesAsync();
+
+                    // 2. DELEGATE LIFECYCLE TRUTH TO ENGINE
+                    var branchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : (order.Visit?.BranchId ?? Guid.Empty);
+                    await _operationsEngine.RecordReportSignedAsync(reportId, branchId, signedByUserId);
+
+                    // 3. Finalize Lifecycle State & Snapshot
+                    report.Status = "Signed";
+                    report.VerificationMode = "Digital";
+                    if (report.CurrentVersion == 0) report.CurrentVersion = 1;
+                    report.SignedByUserId = signedByUserId;
+                    report.SignedAt = timestamp;
+
+                    var reportVersion = await _context.ReportVersions
+                        .Include(rv => rv.Snapshot)
+                        .FirstOrDefaultAsync(rv => rv.ReportId == reportId && rv.VersionNumber == requestedVersion);
+
+                    if (reportVersion != null)
                     {
-                        reportVersion.Snapshot.SnapshotJson = updatedJson;
-                    }
-                    else
-                    {
-                        var snapshot = new ReportSnapshot
+                        reportVersion.SignedByUserId = signedByUserId;
+                        reportVersion.SignedAt = timestamp;
+                        var domainState = structure.ToDomain();
+                        domainState.Status = "Signed";
+                        domainState.SignedAt = timestamp;
+                        domainState.SignedBy = user.Name;
+
+                        if (interpretation != null)
                         {
-                            ReportVersionId = reportVersion.ReportVersionId,
-                            SnapshotJson = updatedJson,
-                            CreatedAt = timestamp
+                            domainState.Comments = interpretation.Notes ?? string.Empty;
+                            domainState.Interpretation = interpretation.Summary ?? string.Empty;
+                        }
+                        domainState.Recommendations = report.PathologyReport?.Recommendations ?? string.Empty;
+
+                        domainState.Signatures = new List<SignatureState>
+                        {
+                            new SignatureState
+                            {
+                                Name = user.Name,
+                                Designation = user.Designation,
+                                SignatureImageUrl = user.SignatureImageUrl,
+                                Hash = signatureImageHash,
+                                SignedAt = timestamp
+                            }
                         };
-                        _context.ReportSnapshots.Add(snapshot);
+
+                        domainState.Verification = new VerificationState
+                        {
+                            QrCodeContent = $"https://synos.com/verify/{report.ReportId}",
+                            ReportVersion = requestedVersion,
+                            VersionHash = contentHash,
+                            Status = "SIGNED"
+                        };
+
+                        var updatedJson = System.Text.Json.JsonSerializer.Serialize(domainState);
+                        if (reportVersion.Snapshot != null)
+                        {
+                            reportVersion.Snapshot.SnapshotJson = updatedJson;
+                        }
+                        else
+                        {
+                            var snapshot = new ReportSnapshot
+                            {
+                                ReportVersionId = reportVersion.ReportVersionId,
+                                SnapshotJson = updatedJson,
+                                CreatedAt = timestamp
+                            };
+                            _context.ReportSnapshots.Add(snapshot);
+                        }
                     }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    await _auditService.LogAsync(signedByUserId, "ReportDigitallySigned", "Report", reportId, new { NewVersion = requestedVersion, Hash = contentHash });
                 }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                await _auditService.LogAsync(signedByUserId, "ReportDigitallySigned", "Report", reportId, new { NewVersion = requestedVersion, Hash = contentHash });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Forensic integrity rollback: Sign-off failed for report {ReportId}", reportId);
-                throw;
-            }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Forensic integrity rollback: Sign-off failed for report {ReportId}", reportId);
+                    throw;
+                }
+            });
 
             // Note: Engine emits REPORT_SIGNED event. We don't need to emit REPORT_READY here manually anymore, 
             // but if frontend expects "REPORT_READY" specifically, we might need to map it. 

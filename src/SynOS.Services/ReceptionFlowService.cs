@@ -1162,99 +1162,103 @@ namespace SynOS.Services
 
         public async Task TransitionToSpecimenPlannedAsync(Guid visitId)
         {
-            // 1. Transaction Boundary (Serializable for Accession Safety overlap check)
-            // Note: AccessionService uses UPDLOCK, so Serializable here is for the HOLISTIC visit state.
-            using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                // 2. Lock Visit & Re-fetch Orders (Ensure we have fresh state)
-                var visit = await _context.Visits
-                    .Include(v => v.Orders)
-                        .ThenInclude(o => o.Test) // Ensure Test navigation is loaded for specimen grouping
-                    .FirstOrDefaultAsync(v => v.VisitId == visitId);
-
-                if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
-
-                // 2.5. RADIOLOGY DEPT BYPASS: Completely bypass phlebotomy/specimen queue for radiology
-                if (string.Equals(visit.Department, "Radiology", StringComparison.OrdinalIgnoreCase) || string.Equals(visit.Department, "RAD", StringComparison.OrdinalIgnoreCase))
+                // 1. Transaction Boundary (Serializable for Accession Safety overlap check)
+                // Note: AccessionService uses UPDLOCK, so Serializable here is for the HOLISTIC visit state.
+                using var transaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+                try
                 {
-                    _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} is for Radiology. Bypassing specimen planning and phlebotomy assignments.", visitId);
+                    // 2. Lock Visit & Re-fetch Orders (Ensure we have fresh state)
+                    var visit = await _context.Visits
+                        .Include(v => v.Orders)
+                            .ThenInclude(o => o.Test) // Ensure Test navigation is loaded for specimen grouping
+                        .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+                    if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+                    // 2.5. RADIOLOGY DEPT BYPASS: Completely bypass phlebotomy/specimen queue for radiology
+                    if (string.Equals(visit.Department, "Radiology", StringComparison.OrdinalIgnoreCase) || string.Equals(visit.Department, "RAD", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} is for Radiology. Bypassing specimen planning and phlebotomy assignments.", visitId);
+                        await transaction.CommitAsync();
+                        return;
+                    }
+                    
+                    // 3. WHITELISTED STATUS GUARD: Only allow Draft, Paid, or FullPaid
+                    if (visit.Status != VisitStatus.Draft && visit.Status != VisitStatus.Paid && visit.Status != VisitStatus.FullPaid)
+                    {
+                        _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} is in status {Status}. Guards restricted to Draft/Paid/FullPaid. Skipping.", visitId, visit.Status);
+                        return;
+                    }
+
+                    // 4. IDEMPOTENCY GUARD: Return immediately if specimens already exist
+                    if (visit.Specimens != null && visit.Specimens.Any())
+                    {
+                        _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} already has specimens. Idempotency guard triggered. Skipping.", visitId);
+                        return;
+                    }
+
+                    // 5. VALIDATION GUARD: Ensure visit contains at least one non-cancelled order
+                    var activeOrders = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).ToList();
+                    if (!activeOrders.Any())
+                    {
+                        _logger.LogWarning("TransitionToSpecimenPlanned: Visit {VisitId} has no non-cancelled orders. Specimen planning aborted.", visitId);
+                        return;
+                    }
+
+                    _logger.LogInformation($"[DebugSpecimen] Planning for Visit {visitId}, Active Orders: {activeOrders.Count}");
+
+                    // 6. Group Orders
+                    var plan = await _groupingService.CreateSpecimenPlanAsync(activeOrders);
+
+                    if (!plan.Any())
+                    {
+                        _logger.LogWarning("TransitionToSpecimenPlanned: No specimen plan generated for Visit {VisitId}. Potentially non-sample tests?", visitId);
+                    }
+
+                    // 7. Delegate to Work Assignment
+                    var branchId = visit.BranchId ?? throw new InvalidOperationException("BranchId required for Phlebotomy Assignment");
+
+                    var assignment = await _routingEngine.CreateUnclaimedWorkAssignmentAsync(
+                        WorkType.SampleCollection,
+                        visit.VisitId,
+                        branchId,
+                        "Pathology", 
+                        "Phlebotomist"
+                    );
+
+                    // 8. LINKING: Update Visit with current assignment
+                    visit.CurrentAssignmentId = assignment.AssignmentId;
+
+                    // 9. EMIT EVENT: Notify subscribers of new specimen order (updates Reality Summary stats)
+                    await _operationalEventWriter.WriteEventAsync(
+                        BranchEventType.SPECIMEN_ORDERED,
+                        branchId.ToString(),
+                        visit.VisitId.ToString(),
+                        visit.Token,
+                        $"Sample collection requested for {activeOrders.Count} tests",
+                        "System",
+                        null,
+                        false, // Atomically saved with the transaction
+                        visit.VisitId,
+                        "Visit",
+                        TimelineVisibility.Surface
+                    );
+
+                    await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
-                    return;
+
+                    _logger.LogInformation("TransitionToSpecimenPlanned: Successfully planned {Count} specimens for Visit {VisitId}. Assignment: {AssignmentId}", plan.Count, visitId, assignment.AssignmentId);
                 }
-                
-                // 3. WHITELISTED STATUS GUARD: Only allow Draft, Paid, or FullPaid
-                if (visit.Status != VisitStatus.Draft && visit.Status != VisitStatus.Paid && visit.Status != VisitStatus.FullPaid)
+                catch (Exception ex)
                 {
-                    _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} is in status {Status}. Guards restricted to Draft/Paid/FullPaid. Skipping.", visitId, visit.Status);
-                    return;
+                    _logger.LogError(ex, "TransitionToSpecimenPlanned failed for Visit {VisitId}", visitId);
+                    await transaction.RollbackAsync();
+                    throw; // Rethrow to bubble up failure
                 }
-
-                // 4. IDEMPOTENCY GUARD: Return immediately if specimens already exist
-                if (visit.Specimens != null && visit.Specimens.Any())
-                {
-                    _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} already has specimens. Idempotency guard triggered. Skipping.", visitId);
-                    return;
-                }
-
-                // 5. VALIDATION GUARD: Ensure visit contains at least one non-cancelled order
-                var activeOrders = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).ToList();
-                if (!activeOrders.Any())
-                {
-                    _logger.LogWarning("TransitionToSpecimenPlanned: Visit {VisitId} has no non-cancelled orders. Specimen planning aborted.", visitId);
-                    return;
-                }
-
-                _logger.LogInformation($"[DebugSpecimen] Planning for Visit {visitId}, Active Orders: {activeOrders.Count}");
-
-                // 6. Group Orders
-                var plan = await _groupingService.CreateSpecimenPlanAsync(activeOrders);
-
-                if (!plan.Any())
-                {
-                    _logger.LogWarning("TransitionToSpecimenPlanned: No specimen plan generated for Visit {VisitId}. Potentially non-sample tests?", visitId);
-                }
-
-                // 7. Delegate to Work Assignment
-                var branchId = visit.BranchId ?? throw new InvalidOperationException("BranchId required for Phlebotomy Assignment");
-
-                var assignment = await _routingEngine.CreateUnclaimedWorkAssignmentAsync(
-                    WorkType.SampleCollection,
-                    visit.VisitId,
-                    branchId,
-                    "Pathology", 
-                    "Phlebotomist"
-                );
-
-                // 8. LINKING: Update Visit with current assignment
-                visit.CurrentAssignmentId = assignment.AssignmentId;
-
-                // 9. EMIT EVENT: Notify subscribers of new specimen order (updates Reality Summary stats)
-                await _operationalEventWriter.WriteEventAsync(
-                    BranchEventType.SPECIMEN_ORDERED,
-                    branchId.ToString(),
-                    visit.VisitId.ToString(),
-                    visit.Token,
-                    $"Sample collection requested for {activeOrders.Count} tests",
-                    "System",
-                    null,
-                    false, // Atomically saved with the transaction
-                    visit.VisitId,
-                    "Visit",
-                    TimelineVisibility.Surface
-                );
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                _logger.LogInformation("TransitionToSpecimenPlanned: Successfully planned {Count} specimens for Visit {VisitId}. Assignment: {AssignmentId}", plan.Count, visitId, assignment.AssignmentId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "TransitionToSpecimenPlanned failed for Visit {VisitId}", visitId);
-                await transaction.RollbackAsync();
-                throw; // Rethrow to bubble up failure
-            }
+            });
         }
 
         public async Task ResolveReferralDraftAsync(Guid draftId, Guid targetPartnerId, Guid actorUserId)

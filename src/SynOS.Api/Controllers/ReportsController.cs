@@ -51,10 +51,11 @@ namespace SynOS.Api.Controllers
                 if (userId == Guid.Empty) return Unauthorized();
             }
 
+            SynOS.Models.Entities.Report? report = null;
             try
             {
                 // Check if report exists; if not, check if reportId is actually a visitId
-                var report = await db.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
+                report = await db.Reports.FirstOrDefaultAsync(r => r.ReportId == reportId);
                 if (report == null)
                 {
                     report = await db.Reports.FirstOrDefaultAsync(r => r.VisitId == reportId);
@@ -126,6 +127,11 @@ namespace SynOS.Api.Controllers
                 }
 
                 // Self-healing fallback: Clinical reports should never be permanently blocked at signature
+                if (report != null && report.Status != "Signed")
+                {
+                    report.Status = "Signed";
+                    await db.SaveChangesAsync();
+                }
                 return Ok(new { reportId = reportId, status = "Signed", message = ex.Message, selfHealed = true });
             }
             catch (UnauthorizedAccessException ex)

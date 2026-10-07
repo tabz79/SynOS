@@ -222,7 +222,10 @@ async function runFlakyNetworkAndConcurrencyHarness() {
         });
 
         // 2. Pathologist digitally signs off
-        const signRes = await fetch(`${BASE_URL}/api/v1/reports/${vid}/sign`, {
+        const reportIdRaw = sql(`SET NOCOUNT ON; SELECT TOP 1 ReportId FROM Reports WHERE VisitId = '${vid}'`);
+        const targetSignId = reportIdRaw && reportIdRaw.trim().length > 10 ? reportIdRaw.trim() : vid;
+
+        const signRes = await fetch(`${BASE_URL}/api/v1/reports/${targetSignId}/sign`, {
             method: 'POST',
             headers: headers.pathologist,
             body: JSON.stringify({ comments: 'Authorized and verified.' })
