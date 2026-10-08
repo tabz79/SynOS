@@ -1355,12 +1355,12 @@ Error generating stack: ` + z.message + `
     function nr(E) {
       E[DA] = true;
     }
-    var Ct = /* @__PURE__ */ new Set(), jt = {};
+    var pt = /* @__PURE__ */ new Set(), Gt = {};
     function Yt(E, b) {
       hn(E, b), hn(E + "Capture", b);
     }
     function hn(E, b) {
-      for (jt[E] = b, E = 0; E < b.length; E++) Ct.add(b[E]);
+      for (Gt[E] = b, E = 0; E < b.length; E++) pt.add(b[E]);
     }
     var Nn = RegExp("^[:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD][:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$"), Tn = {}, qA = {};
     function Oi(E) {
@@ -1938,7 +1938,7 @@ Error generating stack: ` + z.message + `
         if (ut = false, (ze !== null || Ze !== null) && (oC(), ze && (b = ze, E = Ze, Ze = ze = null, We(b), E))) for (b = 0; b < E.length; b++) We(E[b]);
       }
     }
-    function Gt(E, b) {
+    function Ut(E, b) {
       var F = E.stateNode;
       if (F === null) return null;
       var z = F[tr] || null;
@@ -1965,16 +1965,16 @@ Error generating stack: ` + z.message + `
       if (F && typeof F != "function") throw Error(A(231, b, typeof F));
       return F;
     }
-    var Bt = !(typeof window > "u" || typeof window.document > "u" || typeof window.document.createElement > "u"), Ut = false;
+    var Bt = !(typeof window > "u" || typeof window.document > "u" || typeof window.document.createElement > "u"), jt = false;
     if (Bt) try {
       var vt = {};
       Object.defineProperty(vt, "passive", {
         get: function() {
-          Ut = true;
+          jt = true;
         }
       }), window.addEventListener("test", vt, vt), window.removeEventListener("test", vt, vt);
     } catch {
-      Ut = false;
+      jt = false;
     }
     var cn = null, An = null, an = null;
     function En() {
@@ -1989,7 +1989,7 @@ Error generating stack: ` + z.message + `
       var b = E.keyCode;
       return "charCode" in E ? (E = E.charCode, E === 0 && b === 13 && (E = 13)) : E = b, E === 10 && (E = 13), 32 <= E || E === 13 ? E : 0;
     }
-    function pt() {
+    function Ct() {
       return true;
     }
     function Jt() {
@@ -1999,21 +1999,21 @@ Error generating stack: ` + z.message + `
       function b(F, z, ee, oe, Le) {
         this._reactName = F, this._targetInst = ee, this.type = z, this.nativeEvent = oe, this.target = Le, this.currentTarget = null;
         for (var nt in E) E.hasOwnProperty(nt) && (F = E[nt], this[nt] = F ? F(oe) : oe[nt]);
-        return this.isDefaultPrevented = (oe.defaultPrevented != null ? oe.defaultPrevented : oe.returnValue === false) ? pt : Jt, this.isPropagationStopped = Jt, this;
+        return this.isDefaultPrevented = (oe.defaultPrevented != null ? oe.defaultPrevented : oe.returnValue === false) ? Ct : Jt, this.isPropagationStopped = Jt, this;
       }
       return g(b.prototype, {
         preventDefault: function() {
           this.defaultPrevented = true;
           var F = this.nativeEvent;
-          F && (F.preventDefault ? F.preventDefault() : typeof F.returnValue != "unknown" && (F.returnValue = false), this.isDefaultPrevented = pt);
+          F && (F.preventDefault ? F.preventDefault() : typeof F.returnValue != "unknown" && (F.returnValue = false), this.isDefaultPrevented = Ct);
         },
         stopPropagation: function() {
           var F = this.nativeEvent;
-          F && (F.stopPropagation ? F.stopPropagation() : typeof F.cancelBubble != "unknown" && (F.cancelBubble = true), this.isPropagationStopped = pt);
+          F && (F.stopPropagation ? F.stopPropagation() : typeof F.cancelBubble != "unknown" && (F.cancelBubble = true), this.isPropagationStopped = Ct);
         },
         persist: function() {
         },
-        isPersistent: pt
+        isPersistent: Ct
       }), b;
     }
     var fA = {
@@ -6927,7 +6927,7 @@ Error generating stack: ` + z.message + `
     var IC = "_reactListening" + Math.random().toString(36).slice(2);
     function gE(E) {
       if (!E[IC]) {
-        E[IC] = true, Ct.forEach(function(F) {
+        E[IC] = true, pt.forEach(function(F) {
           F !== "selectionchange" && (F5.has(F) || cE(F, false, E), cE(F, true, E));
         });
         var b = E.nodeType === 9 ? E : E.ownerDocument;
@@ -6945,7 +6945,7 @@ Error generating stack: ` + z.message + `
         default:
           ee = f0;
       }
-      F = ee.bind(null, b, F, E), ee = void 0, !Ut || b !== "touchstart" && b !== "touchmove" && b !== "wheel" || (ee = true), z ? ee !== void 0 ? E.addEventListener(b, F, {
+      F = ee.bind(null, b, F, E), ee = void 0, !jt || b !== "touchstart" && b !== "touchmove" && b !== "wheel" || (ee = true), z ? ee !== void 0 ? E.addEventListener(b, F, {
         capture: true,
         passive: ee
       }) : E.addEventListener(b, F, true) : ee !== void 0 ? E.addEventListener(b, F, {
@@ -7065,7 +7065,7 @@ Error generating stack: ` + z.message + `
             PA = [];
             for (var St = Pt, _t; St !== null; ) {
               var ln = St;
-              if (_t = ln.stateNode, ln = ln.tag, ln !== 5 && ln !== 26 && ln !== 27 || _t === null || zt === null || (ln = Gt(St, zt), ln != null && PA.push(d0(St, ln, _t))), _i) break;
+              if (_t = ln.stateNode, ln = ln.tag, ln !== 5 && ln !== 26 && ln !== 27 || _t === null || zt === null || (ln = Ut(St, zt), ln != null && PA.push(d0(St, ln, _t))), _i) break;
               St = St.return;
             }
             0 < PA.length && (Kt = new Xt(Kt, iA, null, F, sn), un.push({
@@ -7169,7 +7169,7 @@ Error generating stack: ` + z.message + `
     function uE(E, b) {
       for (var F = b + "Capture", z = []; E !== null; ) {
         var ee = E, oe = ee.stateNode;
-        if (ee = ee.tag, ee !== 5 && ee !== 26 && ee !== 27 || oe === null || (ee = Gt(E, F), ee != null && z.unshift(d0(E, ee, oe)), ee = Gt(E, b), ee != null && z.push(d0(E, ee, oe))), E.tag === 3) return z;
+        if (ee = ee.tag, ee !== 5 && ee !== 26 && ee !== 27 || oe === null || (ee = Ut(E, F), ee != null && z.unshift(d0(E, ee, oe)), ee = Ut(E, b), ee != null && z.push(d0(E, ee, oe))), E.tag === 3) return z;
         E = E.return;
       }
       return [];
@@ -7185,7 +7185,7 @@ Error generating stack: ` + z.message + `
       for (var oe = b._reactName, Le = []; F !== null && F !== z; ) {
         var nt = F, mt = nt.alternate, Pt = nt.stateNode;
         if (nt = nt.tag, mt !== null && mt === z) break;
-        nt !== 5 && nt !== 26 && nt !== 27 || Pt === null || (mt = Pt, ee ? (Pt = Gt(F, oe), Pt != null && Le.unshift(d0(F, Pt, mt))) : ee || (Pt = Gt(F, oe), Pt != null && Le.push(d0(F, Pt, mt)))), F = F.return;
+        nt !== 5 && nt !== 26 && nt !== 27 || Pt === null || (mt = Pt, ee ? (Pt = Ut(F, oe), Pt != null && Le.unshift(d0(F, Pt, mt))) : ee || (Pt = Ut(F, oe), Pt != null && Le.push(d0(F, Pt, mt)))), F = F.return;
       }
       Le.length !== 0 && E.push({
         event: b,
@@ -7414,7 +7414,7 @@ Error generating stack: ` + z.message + `
         case "textContent":
           break;
         default:
-          if (!jt.hasOwnProperty(F)) e: {
+          if (!Gt.hasOwnProperty(F)) e: {
             if (F[0] === "o" && F[1] === "n" && (ee = F.endsWith("Capture"), b = F.slice(2, ee ? F.length - 7 : void 0), oe = E[tr] || null, oe = oe != null ? oe[F] : null, typeof oe == "function" && E.removeEventListener(b, oe, ee), typeof z == "function")) {
               typeof oe != "function" && oe !== null && (F in E ? E[F] = null : E.hasAttribute(F) && E.removeAttribute(F)), E.addEventListener(b, z, ee);
               break e;
@@ -32491,7 +32491,7 @@ Details: ${a.inner}`);
             licenseActivated: ot !== void 0 ? ot : be !== null,
             databaseServer: x,
             databaseName: Q,
-            adminUsername: Ce ? "ExistingAdministrator" : g
+            adminUsername: g || "Administrator"
           })
         });
       } catch (Oe) {
@@ -32515,14 +32515,14 @@ Details: ${a.inner}`);
           label: `Connecting to ${Q}`
         } : tt.id === "admin" ? {
           ...tt,
-          label: `Preserving ${W} staff accounts (${se || Q})`
-        } : tt)), await Ve(3, true), r(3)) : (ie(false), xe((Ue) => Ue.map((tt) => tt.id === "database" ? {
+          label: `Configuring administrator account (${se || Q})`
+        } : tt))) : (ie(false), xe((Ue) => Ue.map((tt) => tt.id === "database" ? {
           ...tt,
           label: `Initializing local database (${Q})`
         } : tt.id === "admin" ? {
           ...tt,
           label: "Creating administrator account"
-        } : tt)), await Ve(2, true), r(2))) : rt(Oe.message || "License activation failed. Please check your key and try again.");
+        } : tt))), await Ve(2, true), r(2)) : rt(Oe.message || "License activation failed. Please check your key and try again.");
       } catch {
         rt("Could not connect to the activation server. Please check your internet connection.");
       } finally {
@@ -32624,8 +32624,8 @@ Details: ${a.inner}`);
             documentStorageFolder: ue,
             pacsStorageFolder: ce,
             workingDirectory: ve,
-            adminUsername: Ce ? null : g,
-            adminPassword: Ce ? null : h
+            adminUsername: g,
+            adminPassword: h
           })
         }), ot = await et.json();
         et.ok && ot.success ? (bt("finalize", "success"), await new Promise((Oe) => setTimeout(Oe, 800)), ye({
@@ -32822,7 +32822,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
                   className: "text-2xl font-bold tracking-tight text-white",
                   children: [
                     A === 1 && (Y ? "Activate & Reconnect" : "Activate SynOS"),
-                    A === 2 && "Create Administrator Account",
+                    A === 2 && (Y ? "Administrator Account Setup" : "Create Administrator Account"),
                     A === 3 && (Ce ? "Reconnecting SynOS..." : "Setting up SynOS..."),
                     A === 4 && "System Configured!"
                   ]
@@ -32831,7 +32831,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
                   className: "text-zinc-400 text-xs mt-1 max-w-[340px]",
                   children: [
                     A === 1 && (Y ? `Verify your license key to reconnect to ${Q}.` : "Enter the activation key provided to you by TBZ Labs to start setup."),
-                    A === 2 && "This email credentials will serve as your master sign-in profile.",
+                    A === 2 && (Y ? "Set credentials for the primary administrator. If this username already exists, it will be elevated to Administrator." : "These credentials will serve as your master administrator sign-in profile."),
                     A === 3 && "Please wait while we initialize local resources and database structures.",
                     A === 4 && "Onboarding completed successfully. Your diagnostic suite is ready."
                   ]
@@ -33031,7 +33031,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
                     i.jsx("button", {
                       type: "submit",
                       className: "w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2 text-sm",
-                      children: "Set Up SynOS"
+                      children: Y ? "Complete Setup & Elevate Administrator" : "Set Up SynOS"
                     })
                   ]
                 }),
@@ -56085,10 +56085,10 @@ ${n}
       y: 0
     }), Se = j.useRef(null), [st, Ne] = j.useState(550), it = j.useRef(false), he = j.useRef(null), { template: le, loading: ye } = pQ(x), Pe = j.useRef(0), [xe, Ve] = j.useState("Disconnected"), [ht, Fe] = j.useState(false), [bt, Rt] = j.useState(false), Ft = j.useRef(null), et = j.useRef(null), ot = j.useRef(false), Oe = j.useMemo(() => {
       if (o) {
-        const Ct = A.find((jt) => jt.reportId === o);
+        const pt = A.find((Gt) => Gt.reportId === o);
         return {
           reportId: o,
-          patientName: (c == null ? void 0 : c.patientName) || (Ct == null ? void 0 : Ct.patientName) || "Unknown Patient"
+          patientName: (c == null ? void 0 : c.patientName) || (pt == null ? void 0 : pt.patientName) || "Unknown Patient"
         };
       }
       return null;
@@ -56099,7 +56099,7 @@ ${n}
     ]);
     j.useEffect(() => {
       ot.current = false, v2++;
-      const Ct = (Jn) => {
+      const pt = (Jn) => {
         try {
           const aA = JSON.parse(Jn);
           (aA.interpretation !== void 0 || aA.comments !== void 0) && p((or) => {
@@ -56114,7 +56114,7 @@ ${n}
         } catch (aA) {
           console.error("Failed to parse live report draft packet:", aA);
         }
-      }, jt = (Jn) => {
+      }, Gt = (Jn) => {
         Fe(true);
       }, Yt = (Jn) => {
         Fe(false);
@@ -56128,9 +56128,9 @@ ${n}
         const Jn = et.current;
         Jn && Fr(Jn);
       }, qA = (Jn) => {
-        Jn.on("ReceiveReportDraftUpdate", Ct), Jn.on("UserJoined", jt), Jn.on("UserLeft", Yt), Jn.on("ReceiveReportDraftSaved", hn), Jn.on("ReceiveReportDraftResumed", Nn), Jn.on("ReceiveReportSignRequest", Tn);
+        Jn.on("ReceiveReportDraftUpdate", pt), Jn.on("UserJoined", Gt), Jn.on("UserLeft", Yt), Jn.on("ReceiveReportDraftSaved", hn), Jn.on("ReceiveReportDraftResumed", Nn), Jn.on("ReceiveReportSignRequest", Tn);
       }, Oi = (Jn) => {
-        Jn.off("ReceiveReportDraftUpdate", Ct), Jn.off("UserJoined", jt), Jn.off("UserLeft", Yt), Jn.off("ReceiveReportDraftSaved", hn), Jn.off("ReceiveReportDraftResumed", Nn), Jn.off("ReceiveReportSignRequest", Tn);
+        Jn.off("ReceiveReportDraftUpdate", pt), Jn.off("UserJoined", Gt), Jn.off("UserLeft", Yt), Jn.off("ReceiveReportDraftSaved", hn), Jn.off("ReceiveReportDraftResumed", Nn), Jn.off("ReceiveReportSignRequest", Tn);
       };
       return _C ? (clearTimeout(_C), _C = null, ns && (Ft.current = ns, qA(ns), ns.state === zr.Connected ? (Ve("Connected"), Rt(true)) : ns.state === zr.Connecting ? (Ve("Connecting"), Rt(false)) : ns.state === zr.Reconnecting ? (Ve("Reconnecting"), Rt(false)) : (Ve("Disconnected"), Rt(false)))) : Nt(qA), () => {
         ot.current = true;
@@ -56140,23 +56140,23 @@ ${n}
         }, 2e3));
       };
     }, []), j.useEffect(() => {
-      const Ct = Ft.current;
-      if (!(!Ct || Ct.state !== "Connected" || !bt)) if (o) {
-        const jt = o.toString();
-        et.current && et.current !== jt && Ct.invoke("LeaveReportSession", et.current).catch((Yt) => console.error(Yt)), et.current = jt, Ct.invoke("JoinReportSession", jt).catch((Yt) => console.error(Yt));
-      } else et.current && (Ct.invoke("LeaveReportSession", et.current).catch((jt) => console.error(jt)), et.current = null);
+      const pt = Ft.current;
+      if (!(!pt || pt.state !== "Connected" || !bt)) if (o) {
+        const Gt = o.toString();
+        et.current && et.current !== Gt && pt.invoke("LeaveReportSession", et.current).catch((Yt) => console.error(Yt)), et.current = Gt, pt.invoke("JoinReportSession", Gt).catch((Yt) => console.error(Yt));
+      } else et.current && (pt.invoke("LeaveReportSession", et.current).catch((Gt) => console.error(Gt)), et.current = null);
     }, [
       o,
       xe,
       bt
     ]);
-    const Ue = async (Ct, jt) => {
+    const Ue = async (pt, Gt) => {
       let Yt = {};
       p((Nn) => ({
         ...Nn,
-        interpretation: jt
+        interpretation: Gt
       })), Yt = {
-        interpretation: jt,
+        interpretation: Gt,
         comments: C.comments
       };
       const hn = Ft.current;
@@ -56165,11 +56165,11 @@ ${n}
       } catch (Nn) {
         console.error("SignalR report broadcast failed:", Nn);
       }
-    }, tt = async (Ct, jt) => {
+    }, tt = async (pt, Gt) => {
       _((Yt) => {
         const hn = {
           ...Yt,
-          [Ct]: jt
+          [pt]: Gt
         }, Nn = Ft.current;
         if (Nn && Nn.state === "Connected" && o) {
           const Tn = {
@@ -56179,17 +56179,17 @@ ${n}
         }
         return hn;
       });
-    }, Nt = async (Ct) => {
+    }, Nt = async (pt) => {
       if (ns && ns.state === zr.Connected) {
-        Ft.current = ns, Ct(ns), Ve("Connected"), Rt(true);
+        Ft.current = ns, pt(ns), Ve("Connected"), Rt(true);
         return;
       }
       if (ns && ns.state === zr.Connecting) {
-        Ft.current = ns, Ct(ns), Ve("Connecting"), Rt(false);
+        Ft.current = ns, pt(ns), Ve("Connecting"), Rt(false);
         return;
       }
       Ve("Connecting"), Rt(false);
-      const jt = new G1().withUrl("/radiologyCollaborationHub", {
+      const Gt = new G1().withUrl("/radiologyCollaborationHub", {
         accessTokenFactory: () => localStorage.getItem("synos_jwt"),
         skipNegotiation: true,
         transport: La.WebSockets
@@ -56199,25 +56199,25 @@ ${n}
         5e3,
         1e4
       ]).build();
-      ns = jt, Ft.current = jt, jt.onreconnecting((Yt) => {
-        Ft.current === jt && (Ve("Reconnecting"), Rt(false));
-      }), jt.onreconnected((Yt) => {
-        Ft.current === jt && (Ve("Connected"), Rt(true), jt.invoke("RegisterPresence", "Pathologist").catch((hn) => console.error(hn)));
-      }), jt.onclose((Yt) => {
-        Ft.current === jt && (Ve("Disconnected"), Rt(false));
-      }), Ct(jt), jt.start().then(async () => {
-        if (Ft.current === jt) {
+      ns = Gt, Ft.current = Gt, Gt.onreconnecting((Yt) => {
+        Ft.current === Gt && (Ve("Reconnecting"), Rt(false));
+      }), Gt.onreconnected((Yt) => {
+        Ft.current === Gt && (Ve("Connected"), Rt(true), Gt.invoke("RegisterPresence", "Pathologist").catch((hn) => console.error(hn)));
+      }), Gt.onclose((Yt) => {
+        Ft.current === Gt && (Ve("Disconnected"), Rt(false));
+      }), pt(Gt), Gt.start().then(async () => {
+        if (Ft.current === Gt) {
           if (ot.current) {
-            jt.stop().catch(() => {
-            }), ns === jt && (ns = null), Ft.current = null;
+            Gt.stop().catch(() => {
+            }), ns === Gt && (ns = null), Ft.current = null;
             return;
           }
-          Ve("Connected"), Rt(true), await jt.invoke("RegisterPresence", "Pathologist");
+          Ve("Connected"), Rt(true), await Gt.invoke("RegisterPresence", "Pathologist");
         }
       }).catch((Yt) => {
-        if (Ft.current === jt) {
+        if (Ft.current === Gt) {
           if (ot.current) {
-            ns === jt && (ns = null), Ft.current = null;
+            ns === Gt && (ns = null), Ft.current = null;
             return;
           }
           Ve("Disconnected"), Rt(false), console.error("Failed to connect to SignalR hub:", Yt);
@@ -56233,17 +56233,24 @@ ${n}
     }, []);
     const Wt = async () => {
       try {
-        const Ct = await Wy.getProfile();
-        q(Ct), _e({
-          name: Ct.name,
-          designation: Ct.designation || ""
+        const pt = await Wy.getProfile();
+        q(pt), _e({
+          name: (pt == null ? void 0 : pt.name) || "Dr. Vasudeva Rao",
+          designation: (pt == null ? void 0 : pt.designation) || "Consultant Pathologist"
         });
-      } catch (Ct) {
-        en(Ct, "Failed to fetch profile");
+      } catch (pt) {
+        console.warn("Failed to fetch profile (non-fatal):", pt), q((Gt) => Gt || {
+          name: (t == null ? void 0 : t.name) || "Dr. Vasudeva Rao",
+          designation: "Consultant Pathologist",
+          role: "Pathologist"
+        }), _e((Gt) => Gt || {
+          name: (t == null ? void 0 : t.name) || "Dr. Vasudeva Rao",
+          designation: "Consultant Pathologist"
+        });
       }
-    }, en = (Ct, jt) => {
-      var _a2, _b2, _c2;
-      console.error(`${jt}:`, Ct), (((_a2 = Ct.response) == null ? void 0 : _a2.status) === 401 || ((_b2 = Ct.message) == null ? void 0 : _b2.includes("401")) || ((_c2 = Ct.message) == null ? void 0 : _c2.includes("Unauthorized"))) && fe(true);
+    }, en = (pt, Gt) => {
+      var _a2;
+      console.error(`${Gt}:`, pt), ((_a2 = pt.response) == null ? void 0 : _a2.status) === 401 && fe(true);
     };
     j.useEffect(() => {
       o ? (Fr(o), Xe(true), pe(0.6), Ee({
@@ -56256,84 +56263,84 @@ ${n}
     }, [
       o
     ]), j.useEffect(() => {
-      const Ct = Se.current;
-      if (!Ct) return;
-      const jt = (Yt) => {
+      const pt = Se.current;
+      if (!pt) return;
+      const Gt = (Yt) => {
         if (Yt.ctrlKey) {
           Yt.preventDefault();
           const Nn = -Yt.deltaY > 0 ? 1.05 : 0.95;
           pe((Tn) => Math.min(Math.max(Tn * Nn, 0.2), 3));
         }
       };
-      return Ct.addEventListener("wheel", jt, {
+      return pt.addEventListener("wheel", Gt, {
         passive: false
       }), () => {
-        Ct.removeEventListener("wheel", jt);
+        pt.removeEventListener("wheel", Gt);
       };
     }, [
       x
     ]);
-    const Fn = (Ct) => {
-      Ct.button === 0 && (De(true), Me.current = {
-        x: Ct.clientX - Z.x,
-        y: Ct.clientY - Z.y
+    const Fn = (pt) => {
+      pt.button === 0 && (De(true), Me.current = {
+        x: pt.clientX - Z.x,
+        y: pt.clientY - Z.y
       });
-    }, QA = (Ct) => {
+    }, QA = (pt) => {
       Ae && Ee({
-        x: Ct.clientX - Me.current.x,
-        y: Ct.clientY - Me.current.y
+        x: pt.clientX - Me.current.x,
+        y: pt.clientY - Me.current.y
       });
     }, vA = () => {
       De(false);
-    }, eA = (Ct) => {
-      Ct.preventDefault(), it.current = true, document.body.style.cursor = "col-resize", document.body.style.userSelect = "none";
+    }, eA = (pt) => {
+      pt.preventDefault(), it.current = true, document.body.style.cursor = "col-resize", document.body.style.userSelect = "none";
     };
     j.useEffect(() => {
-      const Ct = (Yt) => {
+      const pt = (Yt) => {
         if (!he.current || !it.current) return;
         const hn = he.current.getBoundingClientRect(), Nn = Math.max(320, Math.min(850, hn.right - Yt.clientX));
         Ne(Nn);
-      }, jt = () => {
+      }, Gt = () => {
         it.current && (it.current = false, document.body.style.cursor = "", document.body.style.userSelect = "");
       };
-      return window.addEventListener("pointermove", Ct), window.addEventListener("pointerup", jt), () => {
-        window.removeEventListener("pointermove", Ct), window.removeEventListener("pointerup", jt);
+      return window.addEventListener("pointermove", pt), window.addEventListener("pointerup", Gt), () => {
+        window.removeEventListener("pointermove", pt), window.removeEventListener("pointerup", Gt);
       };
     }, []);
     const ne = async () => {
       u(true);
       try {
-        const Ct = a ? "Signed,ManualVerified,Finalized,Delivered" : "Draft,ReadyForVerification,Signed,ManualVerified,Delivered", jt = await _A.getReportsByStatus(Ct, "Pathology", a);
-        r(jt);
-      } catch (Ct) {
-        en(Ct, "Failed to fetch worklist");
+        const pt = a ? "Signed,ManualVerified,Finalized,Delivered" : "Draft,ReadyForVerification,Signed,ManualVerified,Delivered", Gt = await _A.getReportsByStatus(pt, "Pathology", a);
+        r(Gt);
+      } catch (pt) {
+        en(pt, "Failed to fetch worklist");
       } finally {
         u(false);
       }
-    }, Fr = async (Ct) => {
+    }, Fr = async (pt) => {
       var _a2, _b2, _c2;
       f(true);
       try {
-        const jt = await _A.getFullReportContext(Ct, true);
-        d(jt.report), m(jt.reportData), p({
-          interpretation: ((_a2 = jt.interpretation) == null ? void 0 : _a2.summary) || "",
-          comments: ((_b2 = jt.interpretation) == null ? void 0 : _b2.notes) || ""
+        const Gt = await _A.getFullReportContext(pt, true);
+        d(Gt.report), m(Gt.reportData), p({
+          interpretation: ((_a2 = Gt.interpretation) == null ? void 0 : _a2.summary) || "",
+          comments: ((_b2 = Gt.interpretation) == null ? void 0 : _b2.notes) || ""
         });
         const Yt = {};
-        ((_c2 = jt.report) == null ? void 0 : _c2.groups) && jt.report.groups.forEach((hn) => {
+        ((_c2 = Gt.report) == null ? void 0 : _c2.groups) && Gt.report.groups.forEach((hn) => {
           hn.parameters && hn.parameters.forEach((Nn) => {
             Yt[Nn.parameterCode] = Nn.value;
           });
         }), _(Yt), k(null);
-      } catch (jt) {
-        en(jt, "Failed to fetch report detail");
+      } catch (Gt) {
+        en(Gt, "Failed to fetch report detail");
       } finally {
         f(false);
       }
     }, re = async () => {
       if (!o || Q) return;
       D(true);
-      const Ct = ++Pe.current;
+      const pt = ++Pe.current;
       try {
         if (Lr && !Lr.verifiedByUserId) try {
           await _A.claimReport(o);
@@ -56347,49 +56354,49 @@ ${n}
           }));
           await _A.saveResults(c.sourceId, Yt);
         }
-        const jt = await _A.getFullReportContext(o, true);
-        Ct === Pe.current && (d(jt.report), m(jt.reportData), k(/* @__PURE__ */ new Date()), setTimeout(() => k(null), 3e3));
-      } catch (jt) {
-        throw console.error("Save failed:", jt), jt;
+        const Gt = await _A.getFullReportContext(o, true);
+        pt === Pe.current && (d(Gt.report), m(Gt.reportData), k(/* @__PURE__ */ new Date()), setTimeout(() => k(null), 3e3));
+      } catch (Gt) {
+        throw console.error("Save failed:", Gt), Gt;
       } finally {
         D(false);
       }
     }, wt = async () => {
       if (o && window.confirm("Reject this draft back to the Typist?")) try {
         await _A.reopenReport(o), await ne(), l(null);
-      } catch (Ct) {
-        alert("Failed to reopen: " + Ct.message);
+      } catch (pt) {
+        alert("Failed to reopen: " + pt.message);
       }
     }, Lt = async () => {
       var _a2, _b2;
       if (!o || T) return;
-      const Ct = Dn && MA;
-      if (!(W == null ? void 0 : W.signatureImageUrl) && !Ct) {
+      const pt = Dn && MA;
+      if (!(W == null ? void 0 : W.signatureImageUrl) && !pt) {
         ae(true);
         return;
       }
       if (!window.confirm("Are you sure you want to sign this report? This action is irreversible.")) return;
       G(true);
-      const jt = o;
+      const Gt = o;
       try {
-        await re(), await _A.signReport(jt);
-        const Yt = DA.filter((hn) => hn.status !== "Signed" && hn.status !== "ManualVerified" && hn.reportId !== jt);
-        await ne(), Yt.length > 0 ? (alert(`Reminder: This patient has ${Yt.length} other report(s) remaining (e.g. ${Yt.map((hn) => hn.testName).join(", ")}). Please ensure all are completed.`), l(Yt[0].reportId)) : await Fr(jt);
+        await re(), await _A.signReport(Gt);
+        const Yt = DA.filter((hn) => hn.status !== "Signed" && hn.status !== "ManualVerified" && hn.reportId !== Gt);
+        await ne(), Yt.length > 0 ? (alert(`Reminder: This patient has ${Yt.length} other report(s) remaining (e.g. ${Yt.map((hn) => hn.testName).join(", ")}). Please ensure all are completed.`), l(Yt[0].reportId)) : await Fr(Gt);
       } catch (Yt) {
         console.error("Signing failed:", Yt), alert("Digital Signature Protocol Failed: " + (((_b2 = (_a2 = Yt.response) == null ? void 0 : _a2.data) == null ? void 0 : _b2.message) || Yt.message));
       } finally {
         G(false);
       }
-    }, gn = async (Ct) => {
+    }, gn = async (pt) => {
       var _a2, _b2, _c2;
-      const jt = Ct.target.files[0];
-      if (jt) {
+      const Gt = pt.target.files[0];
+      if (Gt) {
         ie(true);
         try {
           await Wy.updateProfile({
             name: ve.name,
             designation: ve.designation
-          }), await Wy.uploadSignature(t.id, jt), await Wt(), ae(false);
+          }), await Wy.uploadSignature(t.id, Gt), await Wt(), ae(false);
         } catch (Yt) {
           console.error("Upload failed:", Yt), alert("Identity Setup Failed: " + (((_b2 = (_a2 = Yt.response) == null ? void 0 : _a2.data) == null ? void 0 : _b2.message) || ((_c2 = Yt.response) == null ? void 0 : _c2.data) || Yt.message));
         } finally {
@@ -56403,38 +56410,38 @@ ${n}
           name: ve.name,
           designation: ve.designation
         }), await Wt(), WA && ae(false);
-      } catch (Ct) {
-        en(Ct, "Failed to update profile");
+      } catch (pt) {
+        en(pt, "Failed to update profile");
       } finally {
         ie(false);
       }
     }, [JA, gr] = j.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), Bn = () => {
       if (!o) return;
-      const Ct = JA ? "&preprinted=true" : "";
-      window.open(`/print/report/${o}?forceLive=true${Ct}`, "_blank");
+      const pt = JA ? "&preprinted=true" : "";
+      window.open(`/print/report/${o}?forceLive=true${pt}`, "_blank");
     }, wn = (c == null ? void 0 : c.status) === "Signed" || (c == null ? void 0 : c.status) === "ManualVerified" || (c == null ? void 0 : c.status) === "Finalized", Dn = (t == null ? void 0 : t.role) === "Admin" || (t == null ? void 0 : t.role) === "SystemAdmin", MA = j.useMemo(() => {
       var _a2;
-      return ((_a2 = x == null ? void 0 : x.signatures) == null ? void 0 : _a2.some((Ct) => Ct.role === "Chief Pathologist / Director" || Ct.hash === "BASELINE_IDENTITY" || Ct.signatureImageBase64)) || false;
+      return ((_a2 = x == null ? void 0 : x.signatures) == null ? void 0 : _a2.some((pt) => pt.role === "Chief Pathologist / Director" || pt.hash === "BASELINE_IDENTITY" || pt.signatureImageBase64)) || false;
     }, [
       x
-    ]), tA = (Ct) => Ct && Ct.trim().length > 0, VA = [];
+    ]), tA = (pt) => pt && pt.trim().length > 0, VA = [];
     Dn && MA || (tA(W == null ? void 0 : W.name) || VA.push("Full Name"), tA(W == null ? void 0 : W.designation) || VA.push("Professional Designation"), (W == null ? void 0 : W.signatureImageUrl) || VA.push("Digital Signature Image"));
-    const WA = VA.length === 0, [tr, ki] = j.useState("available"), gA = A.filter((Ct) => !Ct.verifiedByUserId).length, zA = A.filter((Ct) => Ct.patientName.toLowerCase().includes(H.toLowerCase()) || Ct.testName.toLowerCase().includes(H.toLowerCase()) ? a ? tr === "available" ? Ct.verifiedByUserId !== (t == null ? void 0 : t.id) : Ct.verifiedByUserId === (t == null ? void 0 : t.id) : tr === "available" ? !Ct.verifiedByUserId : Dn ? !!Ct.verifiedByUserId : Ct.verifiedByUserId === (t == null ? void 0 : t.id) : false), Qi = async (Ct) => {
+    const WA = VA.length === 0, [tr, ki] = j.useState("available"), gA = A.filter((pt) => !pt.verifiedByUserId).length, zA = A.filter((pt) => pt.patientName.toLowerCase().includes(H.toLowerCase()) || pt.testName.toLowerCase().includes(H.toLowerCase()) ? a ? tr === "available" ? pt.verifiedByUserId !== (t == null ? void 0 : t.id) : pt.verifiedByUserId === (t == null ? void 0 : t.id) : tr === "available" ? !pt.verifiedByUserId : Dn ? !!pt.verifiedByUserId : pt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Qi = async (pt) => {
       try {
-        await _A.claimReport(Ct), await ne(), ki("assigned"), l(Ct);
-      } catch (jt) {
-        alert("Failed to claim report: " + jt.message);
+        await _A.claimReport(pt), await ne(), ki("assigned"), l(pt);
+      } catch (Gt) {
+        alert("Failed to claim report: " + Gt.message);
       }
-    }, Lr = A.find((Ct) => Ct.reportId === o), DA = Lr ? A.filter((Ct) => Ct.visitId === Lr.visitId) : [], Xr = Lr ? DA.findIndex((Ct) => Ct.reportId === o) : -1, Jr = DA.filter((Ct) => Ct.status !== "Signed" && Ct.status !== "ManualVerified").length, ri = (c == null ? void 0 : c.patientName) || ((_a = c == null ? void 0 : c.patient) == null ? void 0 : _a.name), dr = (c == null ? void 0 : c.patientAgeGender) || (((_b = c == null ? void 0 : c.patient) == null ? void 0 : _b.age) ? `${c.patient.age} / ${c.patient.gender}` : ""), $r = (c == null ? void 0 : c.token) || ((_c = c == null ? void 0 : c.patient) == null ? void 0 : _c.mrn) || "---", nr = j.useMemo(() => {
+    }, Lr = A.find((pt) => pt.reportId === o), DA = Lr ? A.filter((pt) => pt.visitId === Lr.visitId) : [], Xr = Lr ? DA.findIndex((pt) => pt.reportId === o) : -1, Jr = DA.filter((pt) => pt.status !== "Signed" && pt.status !== "ManualVerified").length, ri = (c == null ? void 0 : c.patientName) || ((_a = c == null ? void 0 : c.patient) == null ? void 0 : _a.name), dr = (c == null ? void 0 : c.patientAgeGender) || (((_b = c == null ? void 0 : c.patient) == null ? void 0 : _b.age) ? `${c.patient.age} / ${c.patient.gender}` : ""), $r = (c == null ? void 0 : c.token) || ((_c = c == null ? void 0 : c.patient) == null ? void 0 : _c.mrn) || "---", nr = j.useMemo(() => {
       var _a2;
       if (!x || !le) return null;
-      const Ct = {
+      const pt = {
         ...x,
-        results: (_a2 = x.results) == null ? void 0 : _a2.map((jt) => {
+        results: (_a2 = x.results) == null ? void 0 : _a2.map((Gt) => {
           var _a3;
           return {
-            ...jt,
-            parameters: (_a3 = jt.parameters) == null ? void 0 : _a3.map((Yt) => {
+            ...Gt,
+            parameters: (_a3 = Gt.parameters) == null ? void 0 : _a3.map((Yt) => {
               const hn = Y[Yt.code], Nn = hn !== void 0 ? hn : Yt.value, Tn = XH(Nn, Yt.referenceRangeText || Yt.referenceRange);
               return {
                 ...Yt,
@@ -56450,7 +56457,7 @@ ${n}
         comments: C.comments
       };
       return i.jsx(nB, {
-        reportData: Ct,
+        reportData: pt,
         template: le,
         forcePreprinted: JA
       });
@@ -56575,7 +56582,7 @@ ${n}
                               type: "text",
                               placeholder: "Search reports...",
                               value: H,
-                              onChange: (Ct) => K(Ct.target.value),
+                              onChange: (pt) => K(pt.target.value),
                               className: "w-full dark:bg-zinc-950/50 bg-zinc-50 border dark:border-white/10 border-zinc-200 rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:text-zinc-200 transition-all"
                             })
                           ]
@@ -56601,11 +56608,11 @@ ${n}
                           className: "dark:text-zinc-500 text-zinc-400 text-sm italic",
                           children: "No reports to sign"
                         })
-                      }) : zA.map((Ct) => i.jsx(pV, {
-                        report: Ct,
-                        isSelected: o === Ct.reportId,
-                        onClick: () => l(Ct.reportId)
-                      }, Ct.reportId))
+                      }) : zA.map((pt) => i.jsx(pV, {
+                        report: pt,
+                        isSelected: o === pt.reportId,
+                        onClick: () => l(pt.reportId)
+                      }, pt.reportId))
                     }),
                     i.jsx("div", {
                       className: "absolute bottom-6 left-6 z-20",
@@ -56718,7 +56725,7 @@ ${n}
                             className: "flex items-center gap-3",
                             children: [
                               i.jsx("button", {
-                                onClick: () => Xe((Ct) => !Ct),
+                                onClick: () => Xe((pt) => !pt),
                                 className: "p-1 hover:bg-zinc-500/10 rounded-lg text-zinc-500 transition-all active:scale-95 shrink-0 font-bold border dark:border-white/5 border-zinc-200 text-xs flex items-center justify-center w-6 h-6",
                                 title: be ? "Show Patient Queue" : "Collapse Workspace",
                                 children: be ? "\u2192" : "\u2190"
@@ -56879,20 +56886,20 @@ ${n}
                                   })
                                 }),
                                 i.jsx("tbody", {
-                                  children: (_e2 = c == null ? void 0 : c.groups) == null ? void 0 : _e2.map((Ct, jt) => i.jsxs(Is.Fragment, {
+                                  children: (_e2 = c == null ? void 0 : c.groups) == null ? void 0 : _e2.map((pt, Gt) => i.jsxs(Is.Fragment, {
                                     children: [
-                                      Ct.groupName && i.jsx("tr", {
+                                      pt.groupName && i.jsx("tr", {
                                         className: "contents",
                                         children: i.jsx("td", {
                                           colSpan: 5,
                                           className: "pt-2 pb-1",
                                           children: i.jsx("span", {
                                             className: "text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider",
-                                            children: Ct.groupName
+                                            children: pt.groupName
                                           })
                                         })
                                       }),
-                                      Ct.parameters.map((Yt, hn) => {
+                                      pt.parameters.map((Yt, hn) => {
                                         const Nn = Y[Yt.parameterCode] !== void 0 ? Y[Yt.parameterCode] : Yt.value || "", Tn = XH(Nn, Yt.referenceRange), qA = Tn !== "Normal" && Tn !== "";
                                         return i.jsxs("tr", {
                                           className: Je("group transition-colors", qA ? "bg-amber-50 hover:bg-amber-100/70" : "hover:bg-slate-50"),
@@ -56932,7 +56939,7 @@ ${n}
                                         }, hn);
                                       })
                                     ]
-                                  }, jt))
+                                  }, Gt))
                                 })
                               ]
                             })
@@ -56952,7 +56959,7 @@ ${n}
                                   }),
                                   i.jsx(Vm, {
                                     value: C.interpretation,
-                                    onChange: (Ct) => Ue("interpretation", Ct),
+                                    onChange: (pt) => Ue("interpretation", pt),
                                     disabled: wn || Q,
                                     patientContext: c,
                                     onSaveDraft: re,
@@ -56991,8 +56998,8 @@ ${n}
                                               i.jsx("input", {
                                                 type: "checkbox",
                                                 checked: JA,
-                                                onChange: (Ct) => {
-                                                  gr(Ct.target.checked), localStorage.setItem("synos_preprinted_mode", Ct.target.checked ? "true" : "false");
+                                                onChange: (pt) => {
+                                                  gr(pt.target.checked), localStorage.setItem("synos_preprinted_mode", pt.target.checked ? "true" : "false");
                                                 },
                                                 className: "w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
                                               }),
@@ -57048,8 +57055,8 @@ ${n}
                                               i.jsx("input", {
                                                 type: "checkbox",
                                                 checked: JA,
-                                                onChange: (Ct) => {
-                                                  gr(Ct.target.checked), localStorage.setItem("synos_preprinted_mode", Ct.target.checked ? "true" : "false");
+                                                onChange: (pt) => {
+                                                  gr(pt.target.checked), localStorage.setItem("synos_preprinted_mode", pt.target.checked ? "true" : "false");
                                                 },
                                                 className: "w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
                                               }),
@@ -57278,9 +57285,9 @@ ${n}
                           i.jsx("input", {
                             type: "text",
                             value: ve.name,
-                            onChange: (Ct) => _e({
+                            onChange: (pt) => _e({
                               ...ve,
-                              name: Ct.target.value
+                              name: pt.target.value
                             }),
                             className: "w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/5 rounded-2xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all",
                             placeholder: "Dr. John Doe"
@@ -57297,9 +57304,9 @@ ${n}
                           i.jsx("input", {
                             type: "text",
                             value: ve.designation,
-                            onChange: (Ct) => _e({
+                            onChange: (pt) => _e({
                               ...ve,
-                              designation: Ct.target.value
+                              designation: pt.target.value
                             }),
                             className: "w-full bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-white/5 rounded-2xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all",
                             placeholder: "Consultant Pathologist"
@@ -57454,7 +57461,7 @@ ${n}
         i.jsx(NL, {
           hubConnection: Ft.current,
           selectedStudy: Oe,
-          onSelectStudy: async (Ct) => l(Ct),
+          onSelectStudy: async (pt) => l(pt),
           role: "Pathologist",
           targetRole: "Typist"
         })
@@ -64512,7 +64519,7 @@ ${n}
         ce((bn) => [
           ...bn,
           at
-        ]), jt(at.modalityId), Ae(""), Me(""), ve(false);
+        ]), Gt(at.modalityId), Ae(""), Me(""), ve(false);
       } catch (at) {
         console.error("Failed to create modality:", at), alert(at.message || "Failed to create modality");
       } finally {
@@ -65333,11 +65340,11 @@ ${n}
         });
       };
       document.addEventListener("pointermove", Rn), document.addEventListener("pointerup", KA);
-    }, [ki, gA] = j.useState((A == null ? void 0 : A.name) || ""), [zA, Qi] = j.useState((A == null ? void 0 : A.code) || ""), [Lr, DA] = j.useState((A == null ? void 0 : A.department) || ""), [Xr, Jr] = j.useState((A == null ? void 0 : A.isProfile) || false), [ri, dr] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [$r, nr] = j.useState((A == null ? void 0 : A.category) || "General"), [Ct, jt] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Yt, hn] = j.useState(false), [Nn, Tn] = j.useState("formula"), [qA, Oi] = j.useState(""), [Jn, aA] = j.useState(""), [or, vi] = j.useState(false), [ba, ii] = j.useState(""), [Ms, Cs] = j.useState(false), [Ht, Ha] = j.useState(""), [yt, tn] = j.useState(""), [Gn, Wn] = j.useState(false), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(false), [pi, Fs] = j.useState(""), [SA, IA] = j.useState(""), [xA, Br] = j.useState(false), [Di, ke] = j.useState(""), [ze, Ze] = j.useState(""), [We, ut] = j.useState(false), [dt, Gt] = j.useState(""), [Bt, Ut] = j.useState(""), [vt, cn] = j.useState(""), [An, an] = j.useState(""), [En, $e] = j.useState(""), [pt, Jt] = j.useState(false), [In, fA] = j.useState(""), [dA, ti] = j.useState(""), [ni, Er] = j.useState(""), [ZA, OA] = j.useState(false), [Ir, xr] = j.useState(""), [LA, Si] = j.useState(""), [sA, Kn] = j.useState(""), [Kr, Zi] = j.useState(false), [Hi, Go] = j.useState(""), [Ws, kg] = j.useState(""), [Ll, W0] = j.useState(""), [rl, Hc] = j.useState(false), [Gl, Rg] = j.useState(""), [Pc, q0] = j.useState(""), [zd, Z0] = j.useState(""), [Uo, il] = j.useState(false), [uc, _c] = j.useState(""), [Mg, xh] = j.useState(""), [Yc, X0] = j.useState(""), [qs, Zs] = j.useState(false), [Jc, Qe] = j.useState(""), [rn, kr] = j.useState(""), [ai, sa] = j.useState(""), [va, vf] = j.useState(false), [Od, lB] = j.useState(""), [BA, oa] = j.useState(""), [Fg, Kc] = j.useState(""), [al, Hd] = j.useState(false), [Tg, Pd] = j.useState(""), [hc, _d] = j.useState(""), [Ul, yh] = j.useState(""), Lg = (He) => {
-      r(He), localStorage.setItem("synos_selected_test_id", He.id), gA(He.name), Qi(He.code), DA(He.department), Jr(He.isProfile), dr(He.specimenTypeCode || "SERUM"), nr(He.category || "General"), jt(He.modalityId || ""), WA(false), hn(false), !He.isProfile && Lt === "profile-builder" && gn("parameters");
+    }, [ki, gA] = j.useState((A == null ? void 0 : A.name) || ""), [zA, Qi] = j.useState((A == null ? void 0 : A.code) || ""), [Lr, DA] = j.useState((A == null ? void 0 : A.department) || ""), [Xr, Jr] = j.useState((A == null ? void 0 : A.isProfile) || false), [ri, dr] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [$r, nr] = j.useState((A == null ? void 0 : A.category) || "General"), [pt, Gt] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Yt, hn] = j.useState(false), [Nn, Tn] = j.useState("formula"), [qA, Oi] = j.useState(""), [Jn, aA] = j.useState(""), [or, vi] = j.useState(false), [ba, ii] = j.useState(""), [Ms, Cs] = j.useState(false), [Ht, Ha] = j.useState(""), [yt, tn] = j.useState(""), [Gn, Wn] = j.useState(false), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(false), [pi, Fs] = j.useState(""), [SA, IA] = j.useState(""), [xA, Br] = j.useState(false), [Di, ke] = j.useState(""), [ze, Ze] = j.useState(""), [We, ut] = j.useState(false), [dt, Ut] = j.useState(""), [Bt, jt] = j.useState(""), [vt, cn] = j.useState(""), [An, an] = j.useState(""), [En, $e] = j.useState(""), [Ct, Jt] = j.useState(false), [In, fA] = j.useState(""), [dA, ti] = j.useState(""), [ni, Er] = j.useState(""), [ZA, OA] = j.useState(false), [Ir, xr] = j.useState(""), [LA, Si] = j.useState(""), [sA, Kn] = j.useState(""), [Kr, Zi] = j.useState(false), [Hi, Go] = j.useState(""), [Ws, kg] = j.useState(""), [Ll, W0] = j.useState(""), [rl, Hc] = j.useState(false), [Gl, Rg] = j.useState(""), [Pc, q0] = j.useState(""), [zd, Z0] = j.useState(""), [Uo, il] = j.useState(false), [uc, _c] = j.useState(""), [Mg, xh] = j.useState(""), [Yc, X0] = j.useState(""), [qs, Zs] = j.useState(false), [Jc, Qe] = j.useState(""), [rn, kr] = j.useState(""), [ai, sa] = j.useState(""), [va, vf] = j.useState(false), [Od, lB] = j.useState(""), [BA, oa] = j.useState(""), [Fg, Kc] = j.useState(""), [al, Hd] = j.useState(false), [Tg, Pd] = j.useState(""), [hc, _d] = j.useState(""), [Ul, yh] = j.useState(""), Lg = (He) => {
+      r(He), localStorage.setItem("synos_selected_test_id", He.id), gA(He.name), Qi(He.code), DA(He.department), Jr(He.isProfile), dr(He.specimenTypeCode || "SERUM"), nr(He.category || "General"), Gt(He.modalityId || ""), WA(false), hn(false), !He.isProfile && Lt === "profile-builder" && gn("parameters");
     }, Df = () => {
       const He = ae.find((Cn) => Cn.name === Lr), Qt = He ? He.macroDepartment === "Radiology" : Lr === "Radiology" || Lr === "RAD";
-      if (Qt && !Ct) {
+      if (Qt && !pt) {
         alert("Imaging Modality is required for Radiology tests.");
         return;
       }
@@ -65371,10 +65378,10 @@ IMPRESSION:`,
             name: ki,
             code: zA.toUpperCase(),
             department: Lr,
-            modalityId: Qt ? Ct : null,
+            modalityId: Qt ? pt : null,
             isProfile: Xr,
             specimenTypeCode: Qt ? "NO_SPECIMEN" : ri,
-            category: Qt ? ((_a2 = ie.find((Ln) => Ln.modalityId === Ct)) == null ? void 0 : _a2.name) || $r : "General",
+            category: Qt ? ((_a2 = ie.find((Ln) => Ln.modalityId === pt)) == null ? void 0 : _a2.name) || $r : "General",
             parameters: nn
           };
         }
@@ -65440,7 +65447,7 @@ IMPRESSION:`,
         ...t,
         nn
       ];
-      e(Ln), r(nn), gA(nn.name), Qi(nn.code), DA(nn.department), Jr(nn.isProfile), dr(bn ? "NO_SPECIMEN" : "SERUM"), nr(nn.category), jt(Cn), WA(true), hn(false);
+      e(Ln), r(nn), gA(nn.name), Qi(nn.code), DA(nn.department), Jr(nn.isProfile), dr(bn ? "NO_SPECIMEN" : "SERUM"), nr(nn.category), Gt(Cn), WA(true), hn(false);
     }, cB = async (He, Qt) => {
       if (Qt.stopPropagation(), t.length <= 1) return;
       const at = t.find((Cn) => Cn.id === He);
@@ -65555,7 +65562,7 @@ IMPRESSION:`,
       var _a2, _b2, _c3, _d3, _e2, _f, _g, _h;
       const at = A.parameters.find((mr) => mr.code === He);
       if (console.log("OPEN_DRAWER_PARAM", at), !at) return;
-      Oi(He), Tn(Qt), aA(at.formula || ""), vi(at.hasFormula || false), ii(at.narrativeTemplate || ""), Cs(at.showNarrative || false), Ha(at.analyzerModel || ""), tn(at.analyzerChannel || ""), NA(at.maleMin !== void 0 && at.maleMin !== null && at.maleMin !== "" ? at.maleMin : ((_a2 = at.genderRanges) == null ? void 0 : _a2.maleMin) ?? ""), Ar(at.maleMax !== void 0 && at.maleMax !== null && at.maleMax !== "" ? at.maleMax : ((_b2 = at.genderRanges) == null ? void 0 : _b2.maleMax) ?? ""), Fs(at.femaleMin !== void 0 && at.femaleMin !== null && at.femaleMin !== "" ? at.femaleMin : ((_c3 = at.genderRanges) == null ? void 0 : _c3.femaleMin) ?? ""), IA(at.femaleMax !== void 0 && at.femaleMax !== null && at.femaleMax !== "" ? at.femaleMax : ((_d3 = at.genderRanges) == null ? void 0 : _d3.femaleMax) ?? ""), Wn(at.useMale ?? (at.maleMin !== void 0 && at.maleMin !== "" && at.maleMin !== null) ?? (((_e2 = at.genderRanges) == null ? void 0 : _e2.maleMin) !== void 0 && ((_f = at.genderRanges) == null ? void 0 : _f.maleMin) !== 0)), ei(at.useFemale ?? (at.femaleMin !== void 0 && at.femaleMin !== "" && at.femaleMin !== null) ?? (((_g = at.genderRanges) == null ? void 0 : _g.femaleMin) !== void 0 && ((_h = at.genderRanges) == null ? void 0 : _h.femaleMin) !== 0)), Br(!!at.useInfant), ke(at.infantMin !== void 0 && at.infantMin !== null ? at.infantMin : ""), Ze(at.infantMax !== void 0 && at.infantMax !== null ? at.infantMax : ""), ut(!!at.useChild), Gt(at.childMin !== void 0 && at.childMin !== null ? at.childMin : ""), Ut(at.childMax !== void 0 && at.childMax !== null ? at.childMax : ""), cn(at.adultMin !== void 0 && at.adultMin !== null ? at.adultMin : ""), an(at.adultMax !== void 0 && at.adultMax !== null ? at.adultMax : ""), $e(at.referenceRange || "");
+      Oi(He), Tn(Qt), aA(at.formula || ""), vi(at.hasFormula || false), ii(at.narrativeTemplate || ""), Cs(at.showNarrative || false), Ha(at.analyzerModel || ""), tn(at.analyzerChannel || ""), NA(at.maleMin !== void 0 && at.maleMin !== null && at.maleMin !== "" ? at.maleMin : ((_a2 = at.genderRanges) == null ? void 0 : _a2.maleMin) ?? ""), Ar(at.maleMax !== void 0 && at.maleMax !== null && at.maleMax !== "" ? at.maleMax : ((_b2 = at.genderRanges) == null ? void 0 : _b2.maleMax) ?? ""), Fs(at.femaleMin !== void 0 && at.femaleMin !== null && at.femaleMin !== "" ? at.femaleMin : ((_c3 = at.genderRanges) == null ? void 0 : _c3.femaleMin) ?? ""), IA(at.femaleMax !== void 0 && at.femaleMax !== null && at.femaleMax !== "" ? at.femaleMax : ((_d3 = at.genderRanges) == null ? void 0 : _d3.femaleMax) ?? ""), Wn(at.useMale ?? (at.maleMin !== void 0 && at.maleMin !== "" && at.maleMin !== null) ?? (((_e2 = at.genderRanges) == null ? void 0 : _e2.maleMin) !== void 0 && ((_f = at.genderRanges) == null ? void 0 : _f.maleMin) !== 0)), ei(at.useFemale ?? (at.femaleMin !== void 0 && at.femaleMin !== "" && at.femaleMin !== null) ?? (((_g = at.genderRanges) == null ? void 0 : _g.femaleMin) !== void 0 && ((_h = at.genderRanges) == null ? void 0 : _h.femaleMin) !== 0)), Br(!!at.useInfant), ke(at.infantMin !== void 0 && at.infantMin !== null ? at.infantMin : ""), Ze(at.infantMax !== void 0 && at.infantMax !== null ? at.infantMax : ""), ut(!!at.useChild), Ut(at.childMin !== void 0 && at.childMin !== null ? at.childMin : ""), jt(at.childMax !== void 0 && at.childMax !== null ? at.childMax : ""), cn(at.adultMin !== void 0 && at.adultMin !== null ? at.adultMin : ""), an(at.adultMax !== void 0 && at.adultMax !== null ? at.adultMax : ""), $e(at.referenceRange || "");
       const bn = at.useMale ?? (at.maleMin !== void 0 && at.maleMin !== "" && at.maleMin !== null), Cn = at.maleMin !== void 0 && at.maleMin !== null ? at.maleMin : "", nn = at.maleMax !== void 0 && at.maleMax !== null ? at.maleMax : "", Ln = at.useFemale ?? (at.femaleMin !== void 0 && at.femaleMin !== "" && at.femaleMin !== null), fn = at.femaleMin !== void 0 && at.femaleMin !== null ? at.femaleMin : "", yA = at.femaleMax !== void 0 && at.femaleMax !== null ? at.femaleMax : "";
       at.useInfant;
       const wA = at.infantMin !== void 0 && at.infantMin !== null ? at.infantMin : "", Rr = at.infantMax !== void 0 && at.infantMax !== null ? at.infantMax : "";
@@ -65589,10 +65596,10 @@ IMPRESSION:`,
         useAdult: va || al,
         adultMin: va ? Od !== "" ? Number(Od) : null : al && Tg !== "" ? Number(Tg) : null,
         adultMax: va ? BA !== "" ? Number(BA) : null : al && hc !== "" ? Number(hc) : null,
-        useNewbornMale: pt,
-        newbornMaleMin: pt && In !== "" ? Number(In) : null,
-        newbornMaleMax: pt && dA !== "" ? Number(dA) : null,
-        newbornMaleText: pt ? ni : null,
+        useNewbornMale: Ct,
+        newbornMaleMin: Ct && In !== "" ? Number(In) : null,
+        newbornMaleMax: Ct && dA !== "" ? Number(dA) : null,
+        newbornMaleText: Ct ? ni : null,
         useNewbornFemale: ZA,
         newbornFemaleMin: ZA && Ir !== "" ? Number(Ir) : null,
         newbornFemaleMax: ZA && LA !== "" ? Number(LA) : null,
@@ -66900,8 +66907,8 @@ ${AA}`);
                                     const at = ae.find((Cn) => Cn.name === Qt);
                                     if (at ? at.macroDepartment === "Radiology" : Qt === "Radiology" || Qt === "RAD") {
                                       const Cn = ie.find((nn) => nn.departmentId === (at == null ? void 0 : at.departmentId));
-                                      jt(Cn ? Cn.modalityId : "");
-                                    } else jt("");
+                                      Gt(Cn ? Cn.modalityId : "");
+                                    } else Gt("");
                                   },
                                   children: Q.filter((He) => He !== "All").map((He) => i.jsx("option", {
                                     value: He,
@@ -66936,8 +66943,8 @@ ${AA}`);
                                   }),
                                   i.jsxs("select", {
                                     className: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary",
-                                    value: Ct,
-                                    onChange: (at) => jt(at.target.value),
+                                    value: pt,
+                                    onChange: (at) => Gt(at.target.value),
                                     children: [
                                       i.jsx("option", {
                                         value: "",
@@ -68563,7 +68570,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
                       }),
                       i.jsx(S2, {
                         title: "Newborn Overrides (0-28 days)",
-                        useMale: pt,
+                        useMale: Ct,
                         setUseMale: Jt,
                         maleMin: In,
                         setMaleMin: fA,
@@ -75150,7 +75157,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
       tA.current && MA.current && (tA.current.scrollLeft = MA.current.scrollLeft);
     }, ki = () => {
       tA.current && MA.current && (MA.current.scrollLeft = tA.current.scrollLeft);
-    }, [gA, zA] = j.useState([]), [Qi, Lr] = j.useState([]), [DA, Xr] = j.useState(null), [Jr, ri] = j.useState(false), [dr, $r] = j.useState(null), [nr, Ct] = j.useState(false), [jt, Yt] = j.useState([]), [hn, Nn] = j.useState([]), [Tn, qA] = j.useState(null), [Oi, Jn] = j.useState(false), [aA, or] = j.useState(null), [vi, ba] = j.useState(false), [ii, Ms] = j.useState([]), [Cs, Ht] = j.useState(0), [Ha] = j.useState(15), [yt, tn] = j.useState(0), [Gn, Wn] = j.useState([]), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(""), [pi, Fs] = j.useState(""), [SA, IA] = j.useState(""), [xA, Br] = j.useState(null), [Di, ke] = j.useState([]), [ze, Ze] = j.useState([]), [We, ut] = j.useState(null), [dt, Gt] = j.useState(false), [Bt, Ut] = j.useState(null), [vt, cn] = j.useState(false), [An, an] = j.useState({
+    }, [gA, zA] = j.useState([]), [Qi, Lr] = j.useState([]), [DA, Xr] = j.useState(null), [Jr, ri] = j.useState(false), [dr, $r] = j.useState(null), [nr, pt] = j.useState(false), [Gt, Yt] = j.useState([]), [hn, Nn] = j.useState([]), [Tn, qA] = j.useState(null), [Oi, Jn] = j.useState(false), [aA, or] = j.useState(null), [vi, ba] = j.useState(false), [ii, Ms] = j.useState([]), [Cs, Ht] = j.useState(0), [Ha] = j.useState(15), [yt, tn] = j.useState(0), [Gn, Wn] = j.useState([]), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(""), [pi, Fs] = j.useState(""), [SA, IA] = j.useState(""), [xA, Br] = j.useState(null), [Di, ke] = j.useState([]), [ze, Ze] = j.useState([]), [We, ut] = j.useState(null), [dt, Ut] = j.useState(false), [Bt, jt] = j.useState(null), [vt, cn] = j.useState(false), [An, an] = j.useState({
       paperWidth: "80mm",
       textSize: "standard",
       fontFamily: "sans-serif",
@@ -75164,7 +75171,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
       upiId: "",
       headerSubtext: "",
       footerDisclaimer: "* Clinical correlation required"
-    }), [En, $e] = j.useState(false), pt = async () => {
+    }), [En, $e] = j.useState(false), Ct = async () => {
       l(true);
       try {
         const [Qe, rn, kr, ai] = await Promise.all([
@@ -75203,7 +75210,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
           printerType: We.printerType || "Thermal80mm",
           isActive: We.isActive ?? true,
           branchId: We.branchId
-        }), d("New branch printer registered successfully.")), Gt(false), ut(null), await pt();
+        }), d("New branch printer registered successfully.")), Ut(false), ut(null), await Ct();
       } catch (rn) {
         u(rn.message || "Failed to save printer.");
       } finally {
@@ -75213,7 +75220,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
       if (window.confirm("Are you sure you want to delete this branch printer?")) {
         l(true), u(null), d(null);
         try {
-          await Mn.deleteBranchPrinter(Qe), d("Printer deleted successfully."), await pt();
+          await Mn.deleteBranchPrinter(Qe), d("Printer deleted successfully."), await Ct();
         } catch (rn) {
           u(rn.message || "Failed to delete printer.");
         } finally {
@@ -75232,7 +75239,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
           isLeadPrintTerminal: Bt.isLeadPrintTerminal ?? false,
           specificReceiptPrinterId: Bt.specificReceiptPrinterId || null
         };
-        ze.some((ai) => ai.terminalIdentifier === Bt.terminalIdentifier) ? (await Mn.updateTerminalPrinterConfig(Bt.terminalIdentifier, rn), d("Terminal printer configuration updated successfully.")) : (await Mn.createTerminalPrinterConfig(rn), d("Terminal printer configuration registered successfully.")), cn(false), Ut(null), await pt();
+        ze.some((ai) => ai.terminalIdentifier === Bt.terminalIdentifier) ? (await Mn.updateTerminalPrinterConfig(Bt.terminalIdentifier, rn), d("Terminal printer configuration updated successfully.")) : (await Mn.createTerminalPrinterConfig(rn), d("Terminal printer configuration registered successfully.")), cn(false), jt(null), await Ct();
       } catch (rn) {
         u(rn.message || "Failed to save terminal configuration.");
       } finally {
@@ -75242,7 +75249,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
       if (window.confirm("Are you sure you want to remove this terminal authorization?")) {
         l(true), u(null), d(null);
         try {
-          await Mn.deleteTerminalPrinterConfig(Qe), d("Terminal authorization removed successfully."), await pt();
+          await Mn.deleteTerminalPrinterConfig(Qe), d("Terminal authorization removed successfully."), await Ct();
         } catch (rn) {
           u(rn.message || "Failed to delete terminal configuration.");
         } finally {
@@ -75261,7 +75268,7 @@ Would you like to switch to "${nn.childTestName}" now?`) && Lg(wA) : alert(`Chil
     }, ni = () => {
       localStorage.setItem("synos_thermal_layout_settings", JSON.stringify(An)), $e(true), d("Workstation-specific print layout override applied locally.");
     }, Er = async () => {
-      localStorage.removeItem("synos_thermal_layout_settings"), $e(false), d("Workstation-specific override cleared. Reverted to global server fallback."), await pt();
+      localStorage.removeItem("synos_thermal_layout_settings"), $e(false), d("Workstation-specific override cleared. Reverted to global server fallback."), await Ct();
     }, ZA = async () => {
       l(true);
       try {
@@ -75595,7 +75602,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
       }
     };
     j.useEffect(() => {
-      u(null), d(null), e === "settings" && ZA(), e === "permissions" && Ir(), e === "departments" && xr(), e === "pricing" && LA(), e === "branches" && sA(), e === "workspaces" && Zi(), e === "printing" && pt(), e === "audit" && Si(), e === "backup" && Ws(), e === "advanced" && OA(), e === "about" && (Rg(), ZA());
+      u(null), d(null), e === "settings" && ZA(), e === "permissions" && Ir(), e === "departments" && xr(), e === "pricing" && LA(), e === "branches" && sA(), e === "workspaces" && Zi(), e === "printing" && Ct(), e === "audit" && Si(), e === "backup" && Ws(), e === "advanced" && OA(), e === "about" && (Rg(), ZA());
     }, [
       e,
       yt
@@ -75667,7 +75674,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
       if (Qe.preventDefault(), !!dr) {
         l(true);
         try {
-          await Mn.saveDepartmentPolicy(dr), Ct(false), $r(null), d("Department operating config saved."), xr();
+          await Mn.saveDepartmentPolicy(dr), pt(false), $r(null), d("Department operating config saved."), xr();
         } catch (rn) {
           u(rn.message || "Conflict mapping or invalid database payload.");
         } finally {
@@ -76900,7 +76907,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   operatingHoursEnd: "20:00",
                                   defaultTATHours: 24,
                                   canSearchAll: false
-                                }), Ct(true);
+                                }), pt(true);
                               },
                               className: "px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all",
                               children: "+ Add Operating Policy"
@@ -76976,7 +76983,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   children: [
                                     i.jsx("button", {
                                       onClick: () => {
-                                        $r(Qe), Ct(true);
+                                        $r(Qe), pt(true);
                                       },
                                       className: "p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors",
                                       title: "Edit",
@@ -77322,7 +77329,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   i.jsx("button", {
                                     type: "button",
                                     onClick: () => {
-                                      Ct(false), $r(null);
+                                      pt(false), $r(null);
                                     },
                                     className: "px-4 py-2 border border-zinc-250 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-650 dark:text-zinc-400 rounded-xl",
                                     children: "Cancel"
@@ -77381,7 +77388,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                         }),
                         i.jsx("div", {
                           className: "grid grid-cols-1 md:grid-cols-3 gap-6",
-                          children: jt.map((Qe) => i.jsxs("div", {
+                          children: Gt.map((Qe) => i.jsxs("div", {
                             className: "synos-dept-card rounded-2xl p-6 flex flex-col justify-between hover:scale-[1.01] transition-all duration-200",
                             children: [
                               i.jsxs("div", {
@@ -78878,7 +78885,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                           onClick: () => {
                             var _a2;
                             const Qe = localStorage.getItem("synos_terminal_id") || `web-${Math.random().toString(36).substr(2, 9)}`;
-                            localStorage.getItem("synos_terminal_id") || localStorage.setItem("synos_terminal_id", Qe), Ut({
+                            localStorage.getItem("synos_terminal_id") || localStorage.setItem("synos_terminal_id", Qe), jt({
                               terminalIdentifier: Qe,
                               branchId: ((_a2 = le[0]) == null ? void 0 : _a2.branchId) || "",
                               isLeadPrintTerminal: true,
@@ -78916,7 +78923,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   printerType: "Thermal80mm",
                                   isActive: true,
                                   branchId: ((_a2 = le[0]) == null ? void 0 : _a2.branchId) || ""
-                                }), Gt(true);
+                                }), Ut(true);
                               },
                               className: "px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all",
                               children: "+ Register Printer"
@@ -78989,7 +78996,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                             children: [
                                               i.jsx("button", {
                                                 onClick: () => {
-                                                  ut(Qe), Gt(true);
+                                                  ut(Qe), Ut(true);
                                                 },
                                                 className: "p-1.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg transition-colors",
                                                 title: "Edit",
@@ -79046,7 +79053,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                             i.jsx("button", {
                               onClick: () => {
                                 var _a2;
-                                Ut({
+                                jt({
                                   terminalIdentifier: "",
                                   branchId: ((_a2 = le[0]) == null ? void 0 : _a2.branchId) || "",
                                   isLeadPrintTerminal: false,
@@ -79147,7 +79154,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                             children: [
                                               i.jsx("button", {
                                                 onClick: () => {
-                                                  Ut(Qe), cn(true);
+                                                  jt(Qe), cn(true);
                                                 },
                                                 className: "p-1.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg transition-colors",
                                                 title: "Edit",
@@ -79678,7 +79685,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   i.jsx("button", {
                                     type: "button",
                                     onClick: () => {
-                                      Gt(false), ut(null);
+                                      Ut(false), ut(null);
                                     },
                                     className: "px-4 py-2 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xxs uppercase tracking-wider font-bold transition-all text-zinc-650 dark:text-zinc-400",
                                     children: "Cancel"
@@ -79721,7 +79728,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                     type: "text",
                                     required: true,
                                     value: Bt.terminalIdentifier,
-                                    onChange: (Qe) => Ut({
+                                    onChange: (Qe) => jt({
                                       ...Bt,
                                       terminalIdentifier: Qe.target.value
                                     }),
@@ -79740,7 +79747,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   i.jsxs("select", {
                                     required: true,
                                     value: Bt.branchId,
-                                    onChange: (Qe) => Ut({
+                                    onChange: (Qe) => jt({
                                       ...Bt,
                                       branchId: Qe.target.value,
                                       specificReceiptPrinterId: ""
@@ -79767,7 +79774,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   }),
                                   i.jsxs("select", {
                                     value: Bt.specificReceiptPrinterId || "",
-                                    onChange: (Qe) => Ut({
+                                    onChange: (Qe) => jt({
                                       ...Bt,
                                       specificReceiptPrinterId: Qe.target.value
                                     }),
@@ -79797,7 +79804,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                     type: "checkbox",
                                     id: "terminal-lead",
                                     checked: Bt.isLeadPrintTerminal ?? false,
-                                    onChange: (Qe) => Ut({
+                                    onChange: (Qe) => jt({
                                       ...Bt,
                                       isLeadPrintTerminal: Qe.target.checked
                                     }),
@@ -79816,7 +79823,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                                   i.jsx("button", {
                                     type: "button",
                                     onClick: () => {
-                                      cn(false), Ut(null);
+                                      cn(false), jt(null);
                                     },
                                     className: "px-4 py-2 border border-zinc-300 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded-xl text-xxs uppercase tracking-wider font-bold transition-all text-zinc-650 dark:text-zinc-400",
                                     children: "Cancel"
@@ -141933,57 +141940,57 @@ fn main(
       var n = 200, A = "__lodash_hash_undefined__", r = 9007199254740991, a = "[object Arguments]", s = "[object Array]", o = "[object Boolean]", l = "[object Date]", c = "[object Error]", d = "[object Function]", g = "[object GeneratorFunction]", u = "[object Map]", h = "[object Number]", f = "[object Object]", C = "[object Promise]", p = "[object RegExp]", x = "[object Set]", m = "[object String]", Q = "[object Symbol]", D = "[object WeakMap]", S = "[object ArrayBuffer]", k = "[object DataView]", T = "[object Float32Array]", G = "[object Float64Array]", H = "[object Int8Array]", K = "[object Int16Array]", Y = "[object Int32Array]", _ = "[object Uint8Array]", W = "[object Uint8ClampedArray]", q = "[object Uint16Array]", se = "[object Uint32Array]", ae = /[\\^$.*+?()[\]{}|]/g, Ce = /\w*$/, ie = /^\[object .+?Constructor\]$/, ce = /^(?:0|[1-9]\d*)$/, de = {};
       de[a] = de[s] = de[S] = de[k] = de[o] = de[l] = de[T] = de[G] = de[H] = de[K] = de[Y] = de[u] = de[h] = de[f] = de[p] = de[x] = de[m] = de[Q] = de[_] = de[W] = de[q] = de[se] = true, de[c] = de[d] = de[D] = false;
       var ue = typeof eh == "object" && eh && eh.Object === Object && eh, fe = typeof self == "object" && self && self.Object === Object && self, ve = ue || fe || Function("return this")(), _e = e && !e.nodeType && e, be = _e && true && t && !t.nodeType && t, Xe = be && be.exports === _e;
-      function qe($e, pt) {
-        return $e.set(pt[0], pt[1]), $e;
+      function qe($e, Ct) {
+        return $e.set(Ct[0], Ct[1]), $e;
       }
-      function rt($e, pt) {
-        return $e.add(pt), $e;
+      function rt($e, Ct) {
+        return $e.add(Ct), $e;
       }
-      function lt($e, pt) {
-        for (var Jt = -1, In = $e ? $e.length : 0; ++Jt < In && pt($e[Jt], Jt, $e) !== false; ) ;
+      function lt($e, Ct) {
+        for (var Jt = -1, In = $e ? $e.length : 0; ++Jt < In && Ct($e[Jt], Jt, $e) !== false; ) ;
         return $e;
       }
-      function pe($e, pt) {
-        for (var Jt = -1, In = pt.length, fA = $e.length; ++Jt < In; ) $e[fA + Jt] = pt[Jt];
+      function pe($e, Ct) {
+        for (var Jt = -1, In = Ct.length, fA = $e.length; ++Jt < In; ) $e[fA + Jt] = Ct[Jt];
         return $e;
       }
-      function Z($e, pt, Jt, In) {
-        for (var fA = -1, dA = $e ? $e.length : 0; ++fA < dA; ) Jt = pt(Jt, $e[fA], fA, $e);
+      function Z($e, Ct, Jt, In) {
+        for (var fA = -1, dA = $e ? $e.length : 0; ++fA < dA; ) Jt = Ct(Jt, $e[fA], fA, $e);
         return Jt;
       }
-      function Ee($e, pt) {
-        for (var Jt = -1, In = Array($e); ++Jt < $e; ) In[Jt] = pt(Jt);
+      function Ee($e, Ct) {
+        for (var Jt = -1, In = Array($e); ++Jt < $e; ) In[Jt] = Ct(Jt);
         return In;
       }
-      function Ae($e, pt) {
-        return $e == null ? void 0 : $e[pt];
+      function Ae($e, Ct) {
+        return $e == null ? void 0 : $e[Ct];
       }
       function De($e) {
-        var pt = false;
+        var Ct = false;
         if ($e != null && typeof $e.toString != "function") try {
-          pt = !!($e + "");
+          Ct = !!($e + "");
         } catch {
         }
-        return pt;
+        return Ct;
       }
       function Me($e) {
-        var pt = -1, Jt = Array($e.size);
+        var Ct = -1, Jt = Array($e.size);
         return $e.forEach(function(In, fA) {
-          Jt[++pt] = [
+          Jt[++Ct] = [
             fA,
             In
           ];
         }), Jt;
       }
-      function Se($e, pt) {
+      function Se($e, Ct) {
         return function(Jt) {
-          return $e(pt(Jt));
+          return $e(Ct(Jt));
         };
       }
       function st($e) {
-        var pt = -1, Jt = Array($e.size);
+        var Ct = -1, Jt = Array($e.size);
         return $e.forEach(function(In) {
-          Jt[++pt] = In;
+          Jt[++Ct] = In;
         }), Jt;
       }
       var Ne = Array.prototype, it = Function.prototype, he = Object.prototype, le = ve["__core-js_shared__"], ye = (function() {
@@ -141991,9 +141998,9 @@ fn main(
         return $e ? "Symbol(src)_1." + $e : "";
       })(), Pe = it.toString, xe = he.hasOwnProperty, Ve = he.toString, ht = RegExp("^" + Pe.call(xe).replace(ae, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), Fe = Xe ? ve.Buffer : void 0, bt = ve.Symbol, Rt = ve.Uint8Array, Ft = Se(Object.getPrototypeOf, Object), et = Object.create, ot = he.propertyIsEnumerable, Oe = Ne.splice, Ue = Object.getOwnPropertySymbols, tt = Fe ? Fe.isBuffer : void 0, Nt = Se(Object.keys, Object), Wt = hi(ve, "DataView"), en = hi(ve, "Map"), Fn = hi(ve, "Promise"), QA = hi(ve, "Set"), vA = hi(ve, "WeakMap"), eA = hi(Object, "create"), ne = Di(Wt), Fr = Di(en), re = Di(Fn), wt = Di(QA), Lt = Di(vA), gn = bt ? bt.prototype : void 0, me = gn ? gn.valueOf : void 0;
       function JA($e) {
-        var pt = -1, Jt = $e ? $e.length : 0;
-        for (this.clear(); ++pt < Jt; ) {
-          var In = $e[pt];
+        var Ct = -1, Jt = $e ? $e.length : 0;
+        for (this.clear(); ++Ct < Jt; ) {
+          var In = $e[Ct];
           this.set(In[0], In[1]);
         }
       }
@@ -142004,26 +142011,26 @@ fn main(
         return this.has($e) && delete this.__data__[$e];
       }
       function wn($e) {
-        var pt = this.__data__;
+        var Ct = this.__data__;
         if (eA) {
-          var Jt = pt[$e];
+          var Jt = Ct[$e];
           return Jt === A ? void 0 : Jt;
         }
-        return xe.call(pt, $e) ? pt[$e] : void 0;
+        return xe.call(Ct, $e) ? Ct[$e] : void 0;
       }
       function Dn($e) {
-        var pt = this.__data__;
-        return eA ? pt[$e] !== void 0 : xe.call(pt, $e);
+        var Ct = this.__data__;
+        return eA ? Ct[$e] !== void 0 : xe.call(Ct, $e);
       }
-      function MA($e, pt) {
+      function MA($e, Ct) {
         var Jt = this.__data__;
-        return Jt[$e] = eA && pt === void 0 ? A : pt, this;
+        return Jt[$e] = eA && Ct === void 0 ? A : Ct, this;
       }
       JA.prototype.clear = gr, JA.prototype.delete = Bn, JA.prototype.get = wn, JA.prototype.has = Dn, JA.prototype.set = MA;
       function tA($e) {
-        var pt = -1, Jt = $e ? $e.length : 0;
-        for (this.clear(); ++pt < Jt; ) {
-          var In = $e[pt];
+        var Ct = -1, Jt = $e ? $e.length : 0;
+        for (this.clear(); ++Ct < Jt; ) {
+          var In = $e[Ct];
           this.set(In[0], In[1]);
         }
       }
@@ -142031,30 +142038,30 @@ fn main(
         this.__data__ = [];
       }
       function Tr($e) {
-        var pt = this.__data__, Jt = hn(pt, $e);
+        var Ct = this.__data__, Jt = hn(Ct, $e);
         if (Jt < 0) return false;
-        var In = pt.length - 1;
-        return Jt == In ? pt.pop() : Oe.call(pt, Jt, 1), true;
+        var In = Ct.length - 1;
+        return Jt == In ? Ct.pop() : Oe.call(Ct, Jt, 1), true;
       }
       function WA($e) {
-        var pt = this.__data__, Jt = hn(pt, $e);
-        return Jt < 0 ? void 0 : pt[Jt][1];
+        var Ct = this.__data__, Jt = hn(Ct, $e);
+        return Jt < 0 ? void 0 : Ct[Jt][1];
       }
       function tr($e) {
         return hn(this.__data__, $e) > -1;
       }
-      function ki($e, pt) {
+      function ki($e, Ct) {
         var Jt = this.__data__, In = hn(Jt, $e);
         return In < 0 ? Jt.push([
           $e,
-          pt
-        ]) : Jt[In][1] = pt, this;
+          Ct
+        ]) : Jt[In][1] = Ct, this;
       }
       tA.prototype.clear = VA, tA.prototype.delete = Tr, tA.prototype.get = WA, tA.prototype.has = tr, tA.prototype.set = ki;
       function gA($e) {
-        var pt = -1, Jt = $e ? $e.length : 0;
-        for (this.clear(); ++pt < Jt; ) {
-          var In = $e[pt];
+        var Ct = -1, Jt = $e ? $e.length : 0;
+        for (this.clear(); ++Ct < Jt; ) {
+          var In = $e[Ct];
           this.set(In[0], In[1]);
         }
       }
@@ -142074,8 +142081,8 @@ fn main(
       function DA($e) {
         return NA(this, $e).has($e);
       }
-      function Xr($e, pt) {
-        return NA(this, $e).set($e, pt), this;
+      function Xr($e, Ct) {
+        return NA(this, $e).set($e, Ct), this;
       }
       gA.prototype.clear = zA, gA.prototype.delete = Qi, gA.prototype.get = Lr, gA.prototype.has = DA, gA.prototype.set = Xr;
       function Jr($e) {
@@ -142093,51 +142100,51 @@ fn main(
       function nr($e) {
         return this.__data__.has($e);
       }
-      function Ct($e, pt) {
+      function pt($e, Ct) {
         var Jt = this.__data__;
         if (Jt instanceof tA) {
           var In = Jt.__data__;
           if (!en || In.length < n - 1) return In.push([
             $e,
-            pt
+            Ct
           ]), this;
           Jt = this.__data__ = new gA(In);
         }
-        return Jt.set($e, pt), this;
+        return Jt.set($e, Ct), this;
       }
-      Jr.prototype.clear = ri, Jr.prototype.delete = dr, Jr.prototype.get = $r, Jr.prototype.has = nr, Jr.prototype.set = Ct;
-      function jt($e, pt) {
+      Jr.prototype.clear = ri, Jr.prototype.delete = dr, Jr.prototype.get = $r, Jr.prototype.has = nr, Jr.prototype.set = pt;
+      function Gt($e, Ct) {
         var Jt = We($e) || Ze($e) ? Ee($e.length, String) : [], In = Jt.length, fA = !!In;
         for (var dA in $e) xe.call($e, dA) && !(fA && (dA == "length" || SA(dA, In))) && Jt.push(dA);
         return Jt;
       }
-      function Yt($e, pt, Jt) {
-        var In = $e[pt];
-        (!(xe.call($e, pt) && ze(In, Jt)) || Jt === void 0 && !(pt in $e)) && ($e[pt] = Jt);
+      function Yt($e, Ct, Jt) {
+        var In = $e[Ct];
+        (!(xe.call($e, Ct) && ze(In, Jt)) || Jt === void 0 && !(Ct in $e)) && ($e[Ct] = Jt);
       }
-      function hn($e, pt) {
-        for (var Jt = $e.length; Jt--; ) if (ze($e[Jt][0], pt)) return Jt;
+      function hn($e, Ct) {
+        for (var Jt = $e.length; Jt--; ) if (ze($e[Jt][0], Ct)) return Jt;
         return -1;
       }
-      function Nn($e, pt) {
-        return $e && Gn(pt, An(pt), $e);
+      function Nn($e, Ct) {
+        return $e && Gn(Ct, An(Ct), $e);
       }
-      function Tn($e, pt, Jt, In, fA, dA, ti) {
+      function Tn($e, Ct, Jt, In, fA, dA, ti) {
         var ni;
         if (In && (ni = dA ? In($e, fA, dA, ti) : In($e)), ni !== void 0) return ni;
         if (!vt($e)) return $e;
         var Er = We($e);
         if (Er) {
-          if (ni = ei($e), !pt) return tn($e, ni);
+          if (ni = ei($e), !Ct) return tn($e, ni);
         } else {
           var ZA = Ri($e), OA = ZA == d || ZA == g;
-          if (Gt($e)) return vi($e, pt);
+          if (Ut($e)) return vi($e, Ct);
           if (ZA == f || ZA == a || OA && !dA) {
             if (De($e)) return dA ? $e : {};
-            if (ni = pi(OA ? {} : $e), !pt) return Wn($e, Nn(ni, $e));
+            if (ni = pi(OA ? {} : $e), !Ct) return Wn($e, Nn(ni, $e));
           } else {
             if (!de[ZA]) return dA ? $e : {};
-            ni = Fs($e, ZA, Tn, pt);
+            ni = Fs($e, ZA, Tn, Ct);
           }
         }
         ti || (ti = new Jr());
@@ -142145,14 +142152,14 @@ fn main(
         if (Ir) return Ir;
         if (ti.set($e, ni), !Er) var xr = Jt ? nA($e) : An($e);
         return lt(xr || $e, function(LA, Si) {
-          xr && (Si = LA, LA = $e[Si]), Yt(ni, Si, Tn(LA, pt, Jt, In, Si, $e, ti));
+          xr && (Si = LA, LA = $e[Si]), Yt(ni, Si, Tn(LA, Ct, Jt, In, Si, $e, ti));
         }), ni;
       }
       function qA($e) {
         return vt($e) ? et($e) : {};
       }
-      function Oi($e, pt, Jt) {
-        var In = pt($e);
+      function Oi($e, Ct, Jt) {
+        var In = Ct($e);
         return We($e) ? In : pe(In, Jt($e));
       }
       function Jn($e) {
@@ -142160,77 +142167,77 @@ fn main(
       }
       function aA($e) {
         if (!vt($e) || xA($e)) return false;
-        var pt = Bt($e) || De($e) ? ht : ie;
-        return pt.test(Di($e));
+        var Ct = Bt($e) || De($e) ? ht : ie;
+        return Ct.test(Di($e));
       }
       function or($e) {
         if (!Br($e)) return Nt($e);
-        var pt = [];
-        for (var Jt in Object($e)) xe.call($e, Jt) && Jt != "constructor" && pt.push(Jt);
-        return pt;
+        var Ct = [];
+        for (var Jt in Object($e)) xe.call($e, Jt) && Jt != "constructor" && Ct.push(Jt);
+        return Ct;
       }
-      function vi($e, pt) {
-        if (pt) return $e.slice();
+      function vi($e, Ct) {
+        if (Ct) return $e.slice();
         var Jt = new $e.constructor($e.length);
         return $e.copy(Jt), Jt;
       }
       function ba($e) {
-        var pt = new $e.constructor($e.byteLength);
-        return new Rt(pt).set(new Rt($e)), pt;
+        var Ct = new $e.constructor($e.byteLength);
+        return new Rt(Ct).set(new Rt($e)), Ct;
       }
-      function ii($e, pt) {
-        var Jt = pt ? ba($e.buffer) : $e.buffer;
+      function ii($e, Ct) {
+        var Jt = Ct ? ba($e.buffer) : $e.buffer;
         return new $e.constructor(Jt, $e.byteOffset, $e.byteLength);
       }
-      function Ms($e, pt, Jt) {
-        var In = pt ? Jt(Me($e), true) : Me($e);
+      function Ms($e, Ct, Jt) {
+        var In = Ct ? Jt(Me($e), true) : Me($e);
         return Z(In, qe, new $e.constructor());
       }
       function Cs($e) {
-        var pt = new $e.constructor($e.source, Ce.exec($e));
-        return pt.lastIndex = $e.lastIndex, pt;
+        var Ct = new $e.constructor($e.source, Ce.exec($e));
+        return Ct.lastIndex = $e.lastIndex, Ct;
       }
-      function Ht($e, pt, Jt) {
-        var In = pt ? Jt(st($e), true) : st($e);
+      function Ht($e, Ct, Jt) {
+        var In = Ct ? Jt(st($e), true) : st($e);
         return Z(In, rt, new $e.constructor());
       }
       function Ha($e) {
         return me ? Object(me.call($e)) : {};
       }
-      function yt($e, pt) {
-        var Jt = pt ? ba($e.buffer) : $e.buffer;
+      function yt($e, Ct) {
+        var Jt = Ct ? ba($e.buffer) : $e.buffer;
         return new $e.constructor(Jt, $e.byteOffset, $e.length);
       }
-      function tn($e, pt) {
+      function tn($e, Ct) {
         var Jt = -1, In = $e.length;
-        for (pt || (pt = Array(In)); ++Jt < In; ) pt[Jt] = $e[Jt];
-        return pt;
+        for (Ct || (Ct = Array(In)); ++Jt < In; ) Ct[Jt] = $e[Jt];
+        return Ct;
       }
-      function Gn($e, pt, Jt, In) {
+      function Gn($e, Ct, Jt, In) {
         Jt || (Jt = {});
-        for (var fA = -1, dA = pt.length; ++fA < dA; ) {
-          var ti = pt[fA], ni = void 0;
+        for (var fA = -1, dA = Ct.length; ++fA < dA; ) {
+          var ti = Ct[fA], ni = void 0;
           Yt(Jt, ti, ni === void 0 ? $e[ti] : ni);
         }
         return Jt;
       }
-      function Wn($e, pt) {
-        return Gn($e, Ar($e), pt);
+      function Wn($e, Ct) {
+        return Gn($e, Ar($e), Ct);
       }
       function nA($e) {
         return Oi($e, An, Ar);
       }
-      function NA($e, pt) {
+      function NA($e, Ct) {
         var Jt = $e.__data__;
-        return IA(pt) ? Jt[typeof pt == "string" ? "string" : "hash"] : Jt.map;
+        return IA(Ct) ? Jt[typeof Ct == "string" ? "string" : "hash"] : Jt.map;
       }
-      function hi($e, pt) {
-        var Jt = Ae($e, pt);
+      function hi($e, Ct) {
+        var Jt = Ae($e, Ct);
         return aA(Jt) ? Jt : void 0;
       }
       var Ar = Ue ? Se(Ue, Object) : an, Ri = Jn;
       (Wt && Ri(new Wt(new ArrayBuffer(1))) != k || en && Ri(new en()) != u || Fn && Ri(Fn.resolve()) != C || QA && Ri(new QA()) != x || vA && Ri(new vA()) != D) && (Ri = function($e) {
-        var pt = Ve.call($e), Jt = pt == f ? $e.constructor : void 0, In = Jt ? Di(Jt) : void 0;
+        var Ct = Ve.call($e), Jt = Ct == f ? $e.constructor : void 0, In = Jt ? Di(Jt) : void 0;
         if (In) switch (In) {
           case ne:
             return k;
@@ -142243,18 +142250,18 @@ fn main(
           case Lt:
             return D;
         }
-        return pt;
+        return Ct;
       });
       function ei($e) {
-        var pt = $e.length, Jt = $e.constructor(pt);
-        return pt && typeof $e[0] == "string" && xe.call($e, "index") && (Jt.index = $e.index, Jt.input = $e.input), Jt;
+        var Ct = $e.length, Jt = $e.constructor(Ct);
+        return Ct && typeof $e[0] == "string" && xe.call($e, "index") && (Jt.index = $e.index, Jt.input = $e.input), Jt;
       }
       function pi($e) {
         return typeof $e.constructor == "function" && !Br($e) ? qA(Ft($e)) : {};
       }
-      function Fs($e, pt, Jt, In) {
+      function Fs($e, Ct, Jt, In) {
         var fA = $e.constructor;
-        switch (pt) {
+        switch (Ct) {
           case S:
             return ba($e);
           case o:
@@ -142285,18 +142292,18 @@ fn main(
             return Ha($e);
         }
       }
-      function SA($e, pt) {
-        return pt = pt ?? r, !!pt && (typeof $e == "number" || ce.test($e)) && $e > -1 && $e % 1 == 0 && $e < pt;
+      function SA($e, Ct) {
+        return Ct = Ct ?? r, !!Ct && (typeof $e == "number" || ce.test($e)) && $e > -1 && $e % 1 == 0 && $e < Ct;
       }
       function IA($e) {
-        var pt = typeof $e;
-        return pt == "string" || pt == "number" || pt == "symbol" || pt == "boolean" ? $e !== "__proto__" : $e === null;
+        var Ct = typeof $e;
+        return Ct == "string" || Ct == "number" || Ct == "symbol" || Ct == "boolean" ? $e !== "__proto__" : $e === null;
       }
       function xA($e) {
         return !!ye && ye in $e;
       }
       function Br($e) {
-        var pt = $e && $e.constructor, Jt = typeof pt == "function" && pt.prototype || he;
+        var Ct = $e && $e.constructor, Jt = typeof Ct == "function" && Ct.prototype || he;
         return $e === Jt;
       }
       function Di($e) {
@@ -142315,36 +142322,36 @@ fn main(
       function ke($e) {
         return Tn($e, true, true);
       }
-      function ze($e, pt) {
-        return $e === pt || $e !== $e && pt !== pt;
+      function ze($e, Ct) {
+        return $e === Ct || $e !== $e && Ct !== Ct;
       }
       function Ze($e) {
         return dt($e) && xe.call($e, "callee") && (!ot.call($e, "callee") || Ve.call($e) == a);
       }
       var We = Array.isArray;
       function ut($e) {
-        return $e != null && Ut($e.length) && !Bt($e);
+        return $e != null && jt($e.length) && !Bt($e);
       }
       function dt($e) {
         return cn($e) && ut($e);
       }
-      var Gt = tt || En;
+      var Ut = tt || En;
       function Bt($e) {
-        var pt = vt($e) ? Ve.call($e) : "";
-        return pt == d || pt == g;
+        var Ct = vt($e) ? Ve.call($e) : "";
+        return Ct == d || Ct == g;
       }
-      function Ut($e) {
+      function jt($e) {
         return typeof $e == "number" && $e > -1 && $e % 1 == 0 && $e <= r;
       }
       function vt($e) {
-        var pt = typeof $e;
-        return !!$e && (pt == "object" || pt == "function");
+        var Ct = typeof $e;
+        return !!$e && (Ct == "object" || Ct == "function");
       }
       function cn($e) {
         return !!$e && typeof $e == "object";
       }
       function An($e) {
-        return ut($e) ? jt($e) : or($e);
+        return ut($e) ? Gt($e) : or($e);
       }
       function an() {
         return [];
@@ -191247,11 +191254,11 @@ Input: ` + this.err.str);
               var Wn = yt[tn];
               eA.call(yt, tn) && vi(Wn, Gn) && (Gn !== void 0 || tn in yt) || (yt[tn] = Gn);
             }
-            function Ct(yt, tn) {
+            function pt(yt, tn) {
               for (var Gn = yt.length; Gn--; ) if (vi(yt[Gn][0], tn)) return Gn;
               return -1;
             }
-            function jt(yt, tn, Gn, Wn, nA, NA, hi) {
+            function Gt(yt, tn, Gn, Wn, nA, NA, hi) {
               var Ar;
               if (Wn && (Ar = NA ? Wn(yt, nA, NA, hi) : Wn(yt)), Ar !== void 0) return Ar;
               if (!Ht(yt)) return yt;
@@ -191329,7 +191336,7 @@ Input: ` + this.err.str);
                       case be:
                         return ke = IA, Xr ? Object(Xr.call(ke)) : {};
                     }
-                  })(yt, ei, jt, tn);
+                  })(yt, ei, Gt, tn);
                 }
               }
               hi || (hi = new $r());
@@ -191347,7 +191354,7 @@ Input: ` + this.err.str);
               return (function(IA, xA) {
                 for (var Br = -1, Di = IA ? IA.length : 0; ++Br < Di && xA(IA[Br], Br) !== false; ) ;
               })(SA || yt, (function(IA, xA) {
-                SA && (IA = yt[xA = IA]), nr(Ar, xA, jt(IA, tn, Gn, Wn, xA, yt, hi));
+                SA && (IA = yt[xA = IA]), nr(Ar, xA, Gt(IA, tn, Gn, Wn, xA, yt, hi));
               })), Ar;
             }
             function Yt(yt) {
@@ -191394,15 +191401,15 @@ Input: ` + this.err.str);
             }, ri.prototype.clear = function() {
               this.__data__ = [];
             }, ri.prototype.delete = function(yt) {
-              var tn = this.__data__, Gn = Ct(tn, yt);
+              var tn = this.__data__, Gn = pt(tn, yt);
               return !(Gn < 0 || (Gn == tn.length - 1 ? tn.pop() : gr.call(tn, Gn, 1), 0));
             }, ri.prototype.get = function(yt) {
-              var tn = this.__data__, Gn = Ct(tn, yt);
+              var tn = this.__data__, Gn = pt(tn, yt);
               return Gn < 0 ? void 0 : tn[Gn][1];
             }, ri.prototype.has = function(yt) {
-              return Ct(this.__data__, yt) > -1;
+              return pt(this.__data__, yt) > -1;
             }, ri.prototype.set = function(yt, tn) {
-              var Gn = this.__data__, Wn = Ct(Gn, yt);
+              var Gn = this.__data__, Wn = pt(Gn, yt);
               return Wn < 0 ? Gn.push([
                 yt,
                 tn
@@ -191524,7 +191531,7 @@ Input: ` + this.err.str);
               })(yt);
             }
             G.exports = function(yt) {
-              return jt(yt, true, true);
+              return Gt(yt, true, true);
             };
           },
           485: (G, H, K) => {
@@ -191890,8 +191897,8 @@ Input: ` + this.err.str);
           k.r(K), k.d(K, {
             checkAndDefineIsVisibleProperty: () => hn,
             isAnnotationVisible: () => Yt,
-            setAnnotationVisibility: () => Ct,
-            showAllAnnotations: () => jt
+            setAnnotationVisibility: () => pt,
+            showAllAnnotations: () => Gt
           });
           var Y = {};
           k.r(Y), k.d(Y, {
@@ -191908,7 +191915,7 @@ Input: ` + this.err.str);
             invalidateAnnotation: () => Bt,
             removeAllAnnotations: () => dt,
             removeAnnotation: () => We,
-            removeAnnotations: () => Gt,
+            removeAnnotations: () => Ut,
             resetAnnotationManager: () => Fs,
             setAnnotationManager: () => pi
           });
@@ -192537,14 +192544,14 @@ Input: ` + this.err.str);
             })), (0, ne.triggerEvent)(ne.eventTarget, me.ANNOTATION_SELECTION_CHANGE, N));
           }
           const nr = /* @__PURE__ */ new Set();
-          function Ct(N) {
+          function pt(N) {
             let I = !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
             const B = Nn();
             N && (I ? Tn(N, nr, B) : (function(y, w, v) {
               w.has(y) || (w.add(y), Xr(y) && Qi(y), v.lastHidden.push(y));
             })(N, nr, B)), qA(B);
           }
-          function jt() {
+          function Gt() {
             const N = Nn();
             nr.forEach(((I) => {
               Tn(I, nr, N);
@@ -192565,7 +192572,7 @@ Input: ` + this.err.str);
                 enumerable: true,
                 set: Oi,
                 get: Jn
-              }), Ct(N.annotationUID, B);
+              }), pt(N.annotationUID, B);
             }
           }
           function Nn() {
@@ -192584,7 +192591,7 @@ Input: ` + this.err.str);
             })), (0, ne.triggerEvent)(ne.eventTarget, me.ANNOTATION_VISIBILITY_CHANGE, N));
           }
           function Oi(N) {
-            Ct(this.annotationUID, N);
+            pt(this.annotationUID, N);
           }
           function Jn() {
             return Yt(this.annotationUID);
@@ -192849,7 +192856,7 @@ Input: ` + this.err.str);
               annotationManagerUID: N.uid
             });
           }
-          function Gt(N, I) {
+          function Ut(N, I) {
             const B = ei(), y = B.getGroupKey(I), w = B.removeAnnotations(y, N);
             for (const v of w) Wn({
               annotation: v,
@@ -192860,10 +192867,10 @@ Input: ` + this.err.str);
             let I = N;
             for (; I; ) I.invalidated = true, I = I.parentAnnotationUID ? ut(I.parentAnnotationUID) : void 0;
           }
-          var Ut = (function(N) {
+          var jt = (function(N) {
             return N.Labelmap = "LABELMAP", N.Contour = "CONTOUR", N.Surface = "SURFACE", N;
-          })(Ut || {});
-          const vt = Ut, cn = {
+          })(jt || {});
+          const vt = jt, cn = {
             renderOutline: true,
             outlineWidthAutoGenerated: 3,
             outlineWidthActive: 1,
@@ -192894,14 +192901,14 @@ Input: ` + this.err.str);
           }, En = {
             renderFill: true,
             fillAlpha: 1
-          }, $e = an(), pt = cn, Jt = En, In = {
+          }, $e = an(), Ct = cn, Jt = En, In = {
             colorLUT: [],
             segmentations: [],
             globalConfig: {
               renderInactiveSegmentations: true,
               representations: {
                 [vt.Labelmap]: $e,
-                [vt.Contour]: pt,
+                [vt.Contour]: Ct,
                 [vt.Surface]: Jt
               }
             },
@@ -219662,42 +219669,42 @@ Input: ` + this.err.str);
             if (ke.length % 3 != 0) throw new Error(`decodeRGB: rgbBuffer length ${ke.length} must be divisible by 3`);
             const We = ke.length / 3;
             let ut = 0, dt = 0;
-            if (Ze) for (let Gt = 0; Gt < We; Gt++) ze[dt++] = ke[ut++], ze[dt++] = ke[ut++], ze[dt++] = ke[ut++], ze[dt++] = 255;
+            if (Ze) for (let Ut = 0; Ut < We; Ut++) ze[dt++] = ke[ut++], ze[dt++] = ke[ut++], ze[dt++] = ke[ut++], ze[dt++] = 255;
             else ze.set(ke);
           }
           function d(ke, ze, Ze) {
             if (ke === void 0) throw new Error("decodeRGB: rgbBuffer must be defined");
             if (ke.length % 3 != 0) throw new Error(`decodeRGB: rgbBuffer length ${ke.length} must be divisible by 3`);
             const We = ke.length / 3;
-            let ut = 0, dt = 0, Gt = We, Bt = 2 * We;
-            if (Ze) for (let Ut = 0; Ut < We; Ut++) ze[ut++] = ke[dt++], ze[ut++] = ke[Gt++], ze[ut++] = ke[Bt++], ze[ut++] = 255;
-            else for (let Ut = 0; Ut < We; Ut++) ze[ut++] = ke[dt++], ze[ut++] = ke[Gt++], ze[ut++] = ke[Bt++];
+            let ut = 0, dt = 0, Ut = We, Bt = 2 * We;
+            if (Ze) for (let jt = 0; jt < We; jt++) ze[ut++] = ke[dt++], ze[ut++] = ke[Ut++], ze[ut++] = ke[Bt++], ze[ut++] = 255;
+            else for (let jt = 0; jt < We; jt++) ze[ut++] = ke[dt++], ze[ut++] = ke[Ut++], ze[ut++] = ke[Bt++];
           }
           function g(ke, ze, Ze) {
             if (ke === void 0) throw new Error("convertYBRFullByPixel: ybrBuffer must be defined");
             if (ke.length % 3 != 0) throw new Error(`convertYBRFullByPixel: ybrBuffer length ${ke.length} must be divisible by 3`);
             const We = ke.length / 3;
             let ut = 0, dt = 0;
-            if (Ze) for (let Gt = 0; Gt < We; Gt++) {
-              const Bt = ke[ut++], Ut = ke[ut++], vt = ke[ut++];
-              ze[dt++] = Bt + 1.402 * (vt - 128), ze[dt++] = Bt - 0.34414 * (Ut - 128) - 0.71414 * (vt - 128), ze[dt++] = Bt + 1.772 * (Ut - 128), ze[dt++] = 255;
+            if (Ze) for (let Ut = 0; Ut < We; Ut++) {
+              const Bt = ke[ut++], jt = ke[ut++], vt = ke[ut++];
+              ze[dt++] = Bt + 1.402 * (vt - 128), ze[dt++] = Bt - 0.34414 * (jt - 128) - 0.71414 * (vt - 128), ze[dt++] = Bt + 1.772 * (jt - 128), ze[dt++] = 255;
             }
-            else for (let Gt = 0; Gt < We; Gt++) {
-              const Bt = ke[ut++], Ut = ke[ut++], vt = ke[ut++];
-              ze[dt++] = Bt + 1.402 * (vt - 128), ze[dt++] = Bt - 0.34414 * (Ut - 128) - 0.71414 * (vt - 128), ze[dt++] = Bt + 1.772 * (Ut - 128);
+            else for (let Ut = 0; Ut < We; Ut++) {
+              const Bt = ke[ut++], jt = ke[ut++], vt = ke[ut++];
+              ze[dt++] = Bt + 1.402 * (vt - 128), ze[dt++] = Bt - 0.34414 * (jt - 128) - 0.71414 * (vt - 128), ze[dt++] = Bt + 1.772 * (jt - 128);
             }
           }
           function u(ke, ze, Ze) {
             if (ke === void 0) throw new Error("convertYBRFullByPlane: ybrBuffer must be defined");
             if (ke.length % 3 != 0) throw new Error(`convertYBRFullByPlane: ybrBuffer length ${ke.length} must be divisible by 3`);
             const We = ke.length / 3;
-            let ut = 0, dt = 0, Gt = We, Bt = 2 * We;
-            if (Ze) for (let Ut = 0; Ut < We; Ut++) {
-              const vt = ke[dt++], cn = ke[Gt++], An = ke[Bt++];
+            let ut = 0, dt = 0, Ut = We, Bt = 2 * We;
+            if (Ze) for (let jt = 0; jt < We; jt++) {
+              const vt = ke[dt++], cn = ke[Ut++], An = ke[Bt++];
               ze[ut++] = vt + 1.402 * (An - 128), ze[ut++] = vt - 0.34414 * (cn - 128) - 0.71414 * (An - 128), ze[ut++] = vt + 1.772 * (cn - 128), ze[ut++] = 255;
             }
-            else for (let Ut = 0; Ut < We; Ut++) {
-              const vt = ke[dt++], cn = ke[Gt++], An = ke[Bt++];
+            else for (let jt = 0; jt < We; jt++) {
+              const vt = ke[dt++], cn = ke[Ut++], An = ke[Bt++];
               ze[ut++] = vt + 1.402 * (An - 128), ze[ut++] = vt - 0.34414 * (cn - 128) - 0.71414 * (An - 128), ze[ut++] = vt + 1.772 * (cn - 128);
             }
           }
@@ -219773,17 +219780,17 @@ Input: ` + this.err.str);
               if (We) return We;
               const ut = k._retrieveMultiframeMetadata(ze);
               if (!ut || !ut.metadata) return;
-              const { metadata: dt, frame: Gt } = ut;
+              const { metadata: dt, frame: Ut } = ut;
               if (dt) {
-                const Bt = (function(Ut, vt) {
+                const Bt = (function(jt, vt) {
                   const { PerFrameFunctionalGroupsSequence: cn, SharedFunctionalGroupsSequence: An, NumberOfFrames: an, rest: En } = D(vt);
                   if (cn || an > 1) {
-                    const { shared: $e, perFrame: pt } = Q(cn, An, Ut), Jt = Object.assign(vt, {
-                      frameNumber: Ut
+                    const { shared: $e, perFrame: Ct } = Q(cn, An, jt), Jt = Object.assign(vt, {
+                      frameNumber: jt
                     });
                     return [
                       ...$e,
-                      ...pt
+                      ...Ct
                     ].forEach(((In) => {
                       Object.entries(In).forEach((([fA, dA]) => {
                         Jt[fA] = dA;
@@ -219793,7 +219800,7 @@ Input: ` + this.err.str);
                     }, Jt);
                   }
                   return vt;
-                })(Gt, dt);
+                })(Ut, dt);
                 return G[ze] = Bt, Bt;
               }
             },
@@ -219844,9 +219851,9 @@ Input: ` + this.err.str);
             for (const ut of Ze) try {
               const dt = ze(ut, ke);
               if (dt) {
-                const Gt = {};
-                for (const Bt in dt) Bt in dt && (Gt[ae(Bt)] = dt[Bt]);
-                Object.assign(We, Gt);
+                const Ut = {};
+                for (const Bt in dt) Bt in dt && (Ut[ae(Bt)] = dt[Bt]);
+                Object.assign(We, Ut);
               }
             } catch (dt) {
               console.error(`Error retrieving ${ut} data:`, dt);
@@ -219882,7 +219889,7 @@ Input: ` + this.err.str);
           function de(ke) {
             const ze = ce(ke["00186011"]);
             return !ze || !ze.length ? null : ze.map(((Ze) => {
-              const We = ie(Ze, "0018602C"), ut = ie(Ze, "0018602E"), dt = ie(Ze, "00186024"), Gt = ie(Ze, "00186026");
+              const We = ie(Ze, "0018602C"), ut = ie(Ze, "0018602E"), dt = ie(Ze, "00186024"), Ut = ie(Ze, "00186026");
               return {
                 regionLocationMinY0: ie(Ze, "0018601A"),
                 regionLocationMaxY1: ie(Ze, "0018601E"),
@@ -219893,7 +219900,7 @@ Input: ` + this.err.str);
                 physicalDeltaX: We,
                 physicalDeltaY: ut,
                 physicalUnitsXDirection: dt,
-                physicalUnitsYDirection: Gt,
+                physicalUnitsYDirection: Ut,
                 referencePhysicalPixelValueY: ie(Ze, "0018602A"),
                 referencePhysicalPixelValueX: ie(Ze, "00186028"),
                 regionSpatialFormat: ie(Ze, "00186012"),
@@ -219911,11 +219918,11 @@ Input: ` + this.err.str);
           const fe = function ke(ze, Ze) {
             const { MetadataModules: We } = pi.cornerstone.Enums, { dicomParser: ut } = pi;
             if (ze === We.MULTIFRAME) {
-              const { metadata: Gt, frame: Bt } = k.retrieveMultiframeMetadata(Ze);
-              if (!Gt) return;
-              const { PerFrameFunctionalGroupsSequence: Ut, SharedFunctionalGroupsSequence: vt, NumberOfFrames: cn } = D(Gt);
-              if (Ut || cn > 1) {
-                const { shared: An, perFrame: an } = Q(Ut, vt, Bt);
+              const { metadata: Ut, frame: Bt } = k.retrieveMultiframeMetadata(Ze);
+              if (!Ut) return;
+              const { PerFrameFunctionalGroupsSequence: jt, SharedFunctionalGroupsSequence: vt, NumberOfFrames: cn } = D(Ut);
+              if (jt || cn > 1) {
+                const { shared: An, perFrame: an } = Q(jt, vt, Bt);
                 return {
                   NumberOfFrames: cn,
                   PerFrameFunctionalInformation: an,
@@ -219962,9 +219969,9 @@ Input: ` + this.err.str);
                 patientWeight: C(dt["00101030"])
               };
               if (ze === We.NM_MULTIFRAME_GEOMETRY) {
-                const Gt = h(dt["00080060"]), Bt = _(dt, 2);
+                const Ut = h(dt["00080060"]), Bt = _(dt, 2);
                 return {
-                  modality: Gt,
+                  modality: Ut,
                   imageType: h(dt["00080008"]),
                   imageSubType: Bt,
                   imageOrientationPatient: W(dt),
@@ -219973,33 +219980,33 @@ Input: ` + this.err.str);
                   spacingBetweenSlices: C(dt["00180088"]),
                   pixelSpacing: p(dt["00280030"], 2),
                   numberOfFrames: C(dt["00280008"]),
-                  isNMReconstructable: K(Bt) && Gt.includes("NM")
+                  isNMReconstructable: K(Bt) && Ut.includes("NM")
                 };
               }
               if (ze === We.IMAGE_PLANE) {
-                const Gt = W(dt), Bt = q(dt), Ut = p(dt["00280030"], 2);
+                const Ut = W(dt), Bt = q(dt), jt = p(dt["00280030"], 2);
                 let vt = null, cn = null;
-                Ut && (cn = Ut[0], vt = Ut[1]);
+                jt && (cn = jt[0], vt = jt[1]);
                 let An = null, an = null;
-                return Gt && (An = [
-                  parseFloat(Gt[0]),
-                  parseFloat(Gt[1]),
-                  parseFloat(Gt[2])
+                return Ut && (An = [
+                  parseFloat(Ut[0]),
+                  parseFloat(Ut[1]),
+                  parseFloat(Ut[2])
                 ], an = [
-                  parseFloat(Gt[3]),
-                  parseFloat(Gt[4]),
-                  parseFloat(Gt[5])
+                  parseFloat(Ut[3]),
+                  parseFloat(Ut[4]),
+                  parseFloat(Ut[5])
                 ]), {
                   frameOfReferenceUID: h(dt["00200052"]),
                   rows: C(dt["00280010"]),
                   columns: C(dt["00280011"]),
-                  imageOrientationPatient: Gt,
+                  imageOrientationPatient: Ut,
                   rowCosines: An,
                   columnCosines: an,
                   imagePositionPatient: Bt,
                   sliceThickness: C(dt["00180050"]),
                   sliceLocation: C(dt["00201041"]),
-                  pixelSpacing: Ut,
+                  pixelSpacing: jt,
                   rowPixelSpacing: cn,
                   columnPixelSpacing: vt
                 };
@@ -220008,8 +220015,8 @@ Input: ` + this.err.str);
               if (ze === We.CALIBRATION && h(dt["00080060"]) === "US") return {
                 sequenceOfUltrasoundRegions: de(dt)
               };
-              if (ze === We.IMAGE_URL) return (function(Gt, Bt) {
-                const { transferSyntaxUID: Ut } = ue(Gt, Bt), vt = pi.cornerstone.utilities.isVideoTransferSyntax(Ut), cn = Gt.substring(7), An = cn.replace("/frames/", "/thumbnail/");
+              if (ze === We.IMAGE_URL) return (function(Ut, Bt) {
+                const { transferSyntaxUID: jt } = ue(Ut, Bt), vt = pi.cornerstone.utilities.isVideoTransferSyntax(jt), cn = Ut.substring(7), An = cn.replace("/frames/", "/thumbnail/");
                 let an = cn.replace("/frames/", "/rendered/");
                 return vt && (an = an.replace("/rendered/1", "/rendered")), {
                   isVideo: vt,
@@ -220017,7 +220024,7 @@ Input: ` + this.err.str);
                   thumbnail: An
                 };
               })(Ze, dt);
-              if (ze === We.CINE) return (function(Gt, Bt) {
+              if (ze === We.CINE) return (function(Ut, Bt) {
                 return {
                   cineRate: h(Bt["00180040"]),
                   numberOfFrames: C(Bt["00280008"])
@@ -220057,40 +220064,40 @@ Input: ` + this.err.str);
                 sopInstanceUID: h(dt["00080018"])
               };
               if (ze === We.PET_ISOTOPE) {
-                const Gt = h(dt["00540016"]);
-                return Gt === void 0 ? void 0 : {
+                const Ut = h(dt["00540016"]);
+                return Ut === void 0 ? void 0 : {
                   radiopharmaceuticalInfo: {
-                    radiopharmaceuticalStartTime: ut.parseTM(h(Gt["00181072"], 0, "")),
-                    radiopharmaceuticalStartDateTime: h(Gt["00181078"], 0, ""),
-                    radionuclideTotalDose: C(Gt["00181074"]),
-                    radionuclideHalfLife: C(Gt["00181075"])
+                    radiopharmaceuticalStartTime: ut.parseTM(h(Ut["00181072"], 0, "")),
+                    radiopharmaceuticalStartDateTime: h(Ut["00181078"], 0, ""),
+                    radionuclideTotalDose: C(Ut["00181074"]),
+                    radionuclideHalfLife: C(Ut["00181075"])
                   }
                 };
               }
-              return ze === We.OVERLAY_PLANE ? (function(Gt) {
+              return ze === We.OVERLAY_PLANE ? (function(Ut) {
                 const Bt = [];
-                for (let Ut = 0; Ut <= 30; Ut += 2) {
-                  let vt = `x60${Ut.toString(16)}`;
-                  vt.length === 4 && (vt = `x600${Ut.toString(16)}`);
-                  const cn = h(Gt[`${vt}3000`]);
+                for (let jt = 0; jt <= 30; jt += 2) {
+                  let vt = `x60${jt.toString(16)}`;
+                  vt.length === 4 && (vt = `x600${jt.toString(16)}`);
+                  const cn = h(Ut[`${vt}3000`]);
                   if (!cn) continue;
                   const An = [];
                   for (let an = 0; an < cn.length; an++) for (let En = 0; En < 8; En++) {
-                    const $e = Gt.Value[cn.dataOffset + an];
+                    const $e = Ut.Value[cn.dataOffset + an];
                     An[8 * an + En] = $e >> En & 1;
                   }
                   Bt.push({
-                    rows: C(Gt[`${vt}0010`]),
-                    columns: C(Gt[`${vt}0011`]),
-                    type: h(Gt[`${vt}0040`]),
-                    x: C(Gt[`${vt}0050`], 1) - 1,
-                    y: C(Gt[`${vt}0050`], 0) - 1,
+                    rows: C(Ut[`${vt}0010`]),
+                    columns: C(Ut[`${vt}0011`]),
+                    type: h(Ut[`${vt}0040`]),
+                    x: C(Ut[`${vt}0050`], 1) - 1,
+                    y: C(Ut[`${vt}0050`], 0) - 1,
                     pixelData: An,
-                    description: h(Gt[`${vt}0022`]),
-                    label: h(Gt[`${vt}1500`]),
-                    roiArea: h(Gt[`${vt}1301`]),
-                    roiMean: h(Gt[`${vt}1302`]),
-                    roiStandardDeviation: h(Gt[`${vt}1303`])
+                    description: h(Ut[`${vt}0022`]),
+                    label: h(Ut[`${vt}1500`]),
+                    roiArea: h(Ut[`${vt}1301`]),
+                    roiMean: h(Ut[`${vt}1302`]),
+                    roiStandardDeviation: h(Ut[`${vt}1303`])
                   });
                 }
                 return {
@@ -220116,7 +220123,7 @@ Input: ` + this.err.str);
             Ze = Ze || 0;
             const We = (function(ut) {
               const dt = new Uint8Array(ut.length);
-              for (let Gt = 0, Bt = ut.length; Gt < Bt; Gt++) dt[Gt] = ut.charCodeAt(Gt);
+              for (let Ut = 0, Bt = ut.length; Ut < Bt; Ut++) dt[Ut] = ut.charCodeAt(Ut);
               return dt;
             })(ze);
             for (let ut = Ze; ut < ke.length; ut++) if (We[0] === ke[ut] && ve(We, ke, ut)) return ut;
@@ -220144,12 +220151,12 @@ Input: ` + this.err.str);
             return be;
           }
           const rt = function(ke, ze, Ze = {}, We = {}) {
-            const { cornerstone: ut } = pi, dt = qe(), Gt = (vt) => {
+            const { cornerstone: ut } = pi, dt = qe(), Ut = (vt) => {
               if (typeof dt.errorInterceptor == "function") {
                 const cn = new Error("request failed");
                 cn.request = vt, cn.response = vt.response, cn.status = vt.status, dt.errorInterceptor(cn);
               }
-            }, Bt = new XMLHttpRequest(), Ut = new Promise(((vt, cn) => {
+            }, Bt = new XMLHttpRequest(), jt = new Promise(((vt, cn) => {
               dt.open(Bt, ke, Ze, We);
               const An = dt.beforeSend(Bt, ze, Ze, We);
               Bt.responseType = "arraybuffer";
@@ -220175,19 +220182,19 @@ Input: ` + this.err.str);
                 ut.triggerEvent(ut.events, "cornerstoneimageloadend", $e);
               }, Bt.onreadystatechange = function(En) {
                 dt.onreadystatechange ? dt.onreadystatechange(En, We) : Bt.readyState === 4 && (Bt.status === 200 || Bt.status === 206 ? dt.beforeProcessing(Bt).then(vt).catch((() => {
-                  Gt(Bt), cn(Bt);
-                })) : (Gt(Bt), cn(Bt)));
+                  Ut(Bt), cn(Bt);
+                })) : (Ut(Bt), cn(Bt)));
               }, Bt.onprogress = function(En) {
                 const $e = En.loaded;
-                let pt;
-                En.lengthComputable && (pt = En.total, Math.round($e / pt * 100)), dt.onprogress && dt.onprogress(En, We);
+                let Ct;
+                En.lengthComputable && (Ct = En.total, Math.round($e / Ct * 100)), dt.onprogress && dt.onprogress(En, We);
               }, Bt.onerror = function() {
-                Gt(Bt), cn(Bt);
+                Ut(Bt), cn(Bt);
               }, Bt.onabort = function() {
-                Gt(Bt), cn(Bt);
+                Ut(Bt), cn(Bt);
               }, Bt.send();
             }));
-            return Ut.xhr = Bt, Ut;
+            return jt.xhr = Bt, jt;
           }, lt = {
             xhrRequest: rt,
             setOptions: Xe,
@@ -220239,13 +220246,13 @@ Input: ` + this.err.str);
                   const { done: dt } = this;
                   try {
                     await ze(ut, dt, We), We++;
-                  } catch (Gt) {
+                  } catch (Ut) {
                     if (!dt) {
-                      console.warn("Caught exception in intermediate value", Gt);
+                      console.warn("Caught exception in intermediate value", Ut);
                       continue;
                     }
-                    if (!Ze) throw Gt;
-                    Ze(Gt, dt);
+                    if (!Ze) throw Ut;
+                    Ze(Ut, dt);
                   }
                 }
               } catch (ut) {
@@ -220290,30 +220297,30 @@ Input: ` + this.err.str);
               imageQualityStatus: ut ? Ae.SUBRESOLUTION : Ae.FULL_RESOLUTION,
               pixelData: We
             };
-            let { tokenIndex: dt, responseHeaders: Gt, boundary: Bt, multipartContentType: Ut } = Ze;
+            let { tokenIndex: dt, responseHeaders: Ut, boundary: Bt, multipartContentType: jt } = Ze;
             if (dt || (dt = _e(We, `\r
 \r
 `)), dt === -1) throw new Error("invalid response - no multipart mime header");
-            if (!Bt && (Gt = (function(an, En, $e) {
+            if (!Bt && (Ut = (function(an, En, $e) {
               En = En || 0, $e = $e || an.length - En;
-              let pt = "";
-              for (let Jt = En; Jt < En + $e; Jt++) pt += String.fromCharCode(an[Jt]);
-              return pt;
+              let Ct = "";
+              for (let Jt = En; Jt < En + $e; Jt++) Ct += String.fromCharCode(an[Jt]);
+              return Ct;
             })(We, 0, dt).split(`\r
 `), Bt = (function(an) {
               for (let En = 0; En < an.length; En++) if (an[En].substr(0, 2) === "--") return an[En];
-            })(Gt), !Bt)) throw new Error("invalid response - no boundary marker");
+            })(Ut), !Bt)) throw new Error("invalid response - no boundary marker");
             const vt = dt + 4, cn = _e(We, Bt, vt);
             if (cn === -1 && !ut) throw new Error("invalid response - terminating boundary not found");
-            return Ut || (Ut = (function(An) {
+            return jt || (jt = (function(An) {
               for (let an = 0; an < An.length; an++) if (An[an].substr(0, 13) === "Content-Type:") return An[an].substr(13).trim();
-            })(Gt)), Ze.tokenIndex = dt, Ze.boundary = Bt, Ze.responseHeaders = Gt, Ze.multipartContentType = Ut, Ze.isPartial = cn === -1, {
-              contentType: Ut,
+            })(Ut)), Ze.tokenIndex = dt, Ze.boundary = Bt, Ze.responseHeaders = Ut, Ze.multipartContentType = jt, Ze.isPartial = cn === -1, {
+              contentType: jt,
               extractDone: !ut || cn !== -1,
               tokenIndex: dt,
-              responseHeaders: Gt,
+              responseHeaders: Ut,
               boundary: Bt,
-              multipartContentType: Ut,
+              multipartContentType: jt,
               pixelData: ze.slice(vt, cn - 2)
             };
           }
@@ -220323,8 +220330,8 @@ Input: ` + this.err.str);
           }
           const { ProgressiveIterator: st } = o;
           function Ne(ke, ze, Ze = {}, We = {}) {
-            const ut = qe(), { retrieveOptions: dt = {}, streamingData: Gt = {} } = We, Bt = dt.minChunkSize || 131072, Ut = new st("streamRequest");
-            return Ut.generate((async (vt, cn) => {
+            const ut = qe(), { retrieveOptions: dt = {}, streamingData: Ut = {} } = We, Bt = dt.minChunkSize || 131072, jt = new st("streamRequest");
+            return jt.generate((async (vt, cn) => {
               var _a, _b;
               const An = (_a = ut.beforeSend) == null ? void 0 : _a.call(ut, null, ke, Ze, {}), an = Object.assign({}, Ze, An);
               Object.keys(an).forEach((function(En) {
@@ -220336,17 +220343,17 @@ Input: ` + this.err.str);
                   signal: void 0
                 });
                 if (En.status !== 200) throw new Error(`Couldn't retrieve ${ke} got status ${En.status}`);
-                const $e = En.body.getReader(), pt = En.headers, Jt = pt.get("content-type"), In = Number(pt.get("Content-Length"));
-                let fA = false, dA = Gt.encodedData, ti = Gt.lastSize || 0;
-                for (Gt.isPartial = true; !fA; ) {
+                const $e = En.body.getReader(), Ct = En.headers, Jt = Ct.get("content-type"), In = Number(Ct.get("Content-Length"));
+                let fA = false, dA = Ut.encodedData, ti = Ut.lastSize || 0;
+                for (Ut.isPartial = true; !fA; ) {
                   const { done: ni, value: Er } = await $e.read();
                   if (dA = it(dA, Er), !dA) {
                     if (fA) throw new Error(`Done but no image frame available ${ze}`);
                     continue;
                   }
                   if (fA = ni || dA.byteLength === In, !fA && dA.length < ti + Bt) continue;
-                  ti = dA.length, Gt.isPartial = !ni;
-                  const ZA = De(Jt, dA, Gt), OA = Se(dt, fA), Ir = {
+                  ti = dA.length, Ut.isPartial = !ni;
+                  const ZA = De(Jt, dA, Ut), OA = Se(dt, fA), Ir = {
                     url: ke,
                     imageId: ze,
                     ...ZA,
@@ -220359,12 +220366,12 @@ Input: ` + this.err.str);
               } catch (En) {
                 (($e) => {
                   if (typeof ut.errorInterceptor == "function") {
-                    const pt = new Error("request failed");
-                    ut.errorInterceptor(pt);
+                    const Ct = new Error("request failed");
+                    ut.errorInterceptor(Ct);
                   }
                 })(), console.error(En), cn(En);
               }
-            })), Ut.getNextPromise();
+            })), jt.getNextPromise();
           }
           function it(ke, ze) {
             if (!ke) return ze;
@@ -220373,7 +220380,7 @@ Input: ` + this.err.str);
             return Ze.set(ke, 0), Ze.set(ze, ke.length), Ze;
           }
           function he(ke, ze, Ze = {}, We = {}) {
-            const ut = qe(), { retrieveOptions: dt = {}, streamingData: Gt } = We, Bt = Gt.chunkSize || (function(vt, cn, An) {
+            const ut = qe(), { retrieveOptions: dt = {}, streamingData: Ut } = We, Bt = Ut.chunkSize || (function(vt, cn, An) {
               const an = cn[An];
               if (typeof an != "function") return an;
               const En = H.get(vt);
@@ -220385,7 +220392,7 @@ Input: ` + this.err.str);
                 An[an] !== null && An[an] !== void 0 || delete An[an];
               }));
               try {
-                Gt.encodedData || (Gt.chunkSize = Bt, Gt.rangesFetched = 0);
+                Ut.encodedData || (Ut.chunkSize = Bt, Ut.rangesFetched = 0);
                 const an = (function(ti, ni) {
                   const { totalBytes: Er, encodedData: ZA, chunkSize: OA = 65536 } = ti, { rangeIndex: Ir = 0 } = ni;
                   return Ir !== -1 || Er && ZA ? Ir === -1 || (ZA == null ? void 0 : ZA.byteLength) > Er - OA ? [
@@ -220398,7 +220405,7 @@ Input: ` + this.err.str);
                     0,
                     ""
                   ];
-                })(Gt, dt), { encodedData: En, responseHeaders: $e } = await (async function(ti, ni, Er, ZA) {
+                })(Ut, dt), { encodedData: En, responseHeaders: $e } = await (async function(ti, ni, Er, ZA) {
                   Er && (ni = Object.assign(ni, {
                     Range: `bytes=${Er[0]}-${Er[1]}`
                   }));
@@ -220412,7 +220419,7 @@ Input: ` + this.err.str);
                   OA ? (sA = new Uint8Array(OA.length + LA.length), sA.set(OA, 0), sA.set(LA, OA.length), ZA.rangesFetched = 1) : (sA = new Uint8Array(LA.length), sA.set(LA, 0), ZA.rangesFetched++), ZA.encodedData = OA = sA, ZA.responseHeaders = Ir.headers;
                   const Kn = Ir.headers.get("Content-Range");
                   return Kn ? ZA.totalBytes = Number(Kn.split("/")[1]) : Si === 206 && Er ? Er[1] === "" || (OA == null ? void 0 : OA.length) < Er[1] ? ZA.totalBytes = OA.byteLength : ZA.totalBytes = Number.MAX_SAFE_INTEGER : ZA.totalBytes = OA == null ? void 0 : OA.byteLength, ZA;
-                })(ke, An, an, Gt), pt = $e.get("content-type"), { totalBytes: Jt } = Gt, In = Jt === En.byteLength, fA = De(pt, En, {
+                })(ke, An, an, Ut), Ct = $e.get("content-type"), { totalBytes: Jt } = Ut, In = Jt === En.byteLength, fA = De(Ct, En, {
                   isPartial: true
                 }), dA = Se(dt, In || fA.extractDone);
                 vt({
@@ -220431,16 +220438,16 @@ Input: ` + this.err.str);
             }));
           }
           const le = function(ke, ze, Ze = "application/octet-stream", We) {
-            const { streamingData: ut, retrieveOptions: dt = {} } = We || {}, Gt = {
+            const { streamingData: ut, retrieveOptions: dt = {} } = We || {}, Ut = {
               Accept: Ze
             };
             let Bt = dt.urlArguments ? `${ke}${ke.indexOf("?") === -1 ? "?" : "&"}${dt.urlArguments}` : ke;
             if (dt.framesPath && (Bt = Bt.replace("/frames/", dt.framesPath)), (ut == null ? void 0 : ut.url) !== Bt && (We.streamingData = {
               url: Bt
-            }), dt.rangeIndex !== void 0) return he(Bt, ze, Gt, We);
-            if (dt.streaming) return Ne(Bt, ze, Gt, We);
-            const Ut = rt(Bt, ze, Gt), { xhr: vt } = Ut;
-            return Ut.then((function(cn) {
+            }), dt.rangeIndex !== void 0) return he(Bt, ze, Ut, We);
+            if (dt.streaming) return Ne(Bt, ze, Ut, We);
+            const jt = rt(Bt, ze, Ut), { xhr: vt } = jt;
+            return jt.then((function(cn) {
               const An = De(vt.getResponseHeader("Content-Type") || "application/octet-stream", new Uint8Array(cn));
               return An.imageQualityStatus = Se(dt, true), An;
             }));
@@ -220464,15 +220471,15 @@ Input: ` + this.err.str);
             else if (ke.photometricInterpretation === "YBR_FULL_422") (function(We, ut, dt) {
               if (We === void 0) throw new Error("convertYBRFull422ByPixel: ybrBuffer must be defined");
               if (We.length % 2 != 0) throw new Error(`convertYBRFull422ByPixel: ybrBuffer length ${We.length} must be divisible by 2`);
-              const Gt = We.length / 2;
-              let Bt = 0, Ut = 0;
-              if (dt) for (let vt = 0; vt < Gt; vt += 2) {
+              const Ut = We.length / 2;
+              let Bt = 0, jt = 0;
+              if (dt) for (let vt = 0; vt < Ut; vt += 2) {
                 const cn = We[Bt++], An = We[Bt++], an = We[Bt++], En = We[Bt++];
-                ut[Ut++] = cn + 1.402 * (En - 128), ut[Ut++] = cn - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[Ut++] = cn + 1.772 * (an - 128), ut[Ut++] = 255, ut[Ut++] = An + 1.402 * (En - 128), ut[Ut++] = An - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[Ut++] = An + 1.772 * (an - 128), ut[Ut++] = 255;
+                ut[jt++] = cn + 1.402 * (En - 128), ut[jt++] = cn - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[jt++] = cn + 1.772 * (an - 128), ut[jt++] = 255, ut[jt++] = An + 1.402 * (En - 128), ut[jt++] = An - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[jt++] = An + 1.772 * (an - 128), ut[jt++] = 255;
               }
-              else for (let vt = 0; vt < Gt; vt += 2) {
+              else for (let vt = 0; vt < Ut; vt += 2) {
                 const cn = We[Bt++], An = We[Bt++], an = We[Bt++], En = We[Bt++];
-                ut[Ut++] = cn + 1.402 * (En - 128), ut[Ut++] = cn - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[Ut++] = cn + 1.772 * (an - 128), ut[Ut++] = An + 1.402 * (En - 128), ut[Ut++] = An - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[Ut++] = An + 1.772 * (an - 128);
+                ut[jt++] = cn + 1.402 * (En - 128), ut[jt++] = cn - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[jt++] = cn + 1.772 * (an - 128), ut[jt++] = An + 1.402 * (En - 128), ut[jt++] = An - 0.34414 * (an - 128) - 0.71414 * (En - 128), ut[jt++] = An + 1.772 * (an - 128);
               }
             })(ke.pixelData, ze, Ze);
             else {
@@ -220499,23 +220506,23 @@ Input: ` + this.err.str);
             ], {
               type: "image/jpeg"
             });
-            return new Promise(((dt, Gt) => {
+            return new Promise(((dt, Ut) => {
               const Bt = new FileReader();
               Bt.readAsBinaryString === void 0 ? Bt.readAsArrayBuffer(ut) : Bt.readAsBinaryString(ut), Bt.onload = function() {
-                const Ut = new Image();
-                Ut.onload = function() {
-                  Ze.height = Ut.height, Ze.width = Ut.width, ke.rows = Ut.height, ke.columns = Ut.width;
+                const jt = new Image();
+                jt.onload = function() {
+                  Ze.height = jt.height, Ze.width = jt.width, ke.rows = jt.height, ke.columns = jt.width;
                   const vt = Ze.getContext("2d");
                   vt.drawImage(this, 0, 0);
-                  const cn = vt.getImageData(0, 0, Ut.width, Ut.height), An = (/* @__PURE__ */ new Date()).getTime();
+                  const cn = vt.getImageData(0, 0, jt.width, jt.height), An = (/* @__PURE__ */ new Date()).getTime();
                   ke.pixelData = new Uint8Array(cn.data.buffer), ke.imageData = cn, ke.decodeTimeInMS = An - We;
                   const an = ye(ke.pixelData);
                   ke.smallestPixelValue = an.min, ke.largestPixelValue = an.max, ke.pixelDataLength = ke.pixelData.length, dt(ke);
-                }, Ut.onerror = function(vt) {
-                  Gt(vt);
-                }, Bt.readAsBinaryString === void 0 ? Ut.src = `data:image/jpeg;base64,${window.btoa(Ve(Bt.result))}` : Ut.src = `data:image/jpeg;base64,${window.btoa(Bt.result)}`;
-              }, Bt.onerror = (Ut) => {
-                Gt(Ut);
+                }, jt.onerror = function(vt) {
+                  Ut(vt);
+                }, Bt.readAsBinaryString === void 0 ? jt.src = `data:image/jpeg;base64,${window.btoa(Ve(Bt.result))}` : jt.src = `data:image/jpeg;base64,${window.btoa(Bt.result)}`;
+              }, Bt.onerror = (jt) => {
+                Ut(jt);
               };
             }));
           };
@@ -220608,16 +220615,16 @@ Input: ` + this.err.str);
                 resolve: void 0,
                 reject: void 0
               };
-              const dt = new Promise(((Ut, vt) => {
+              const dt = new Promise(((jt, vt) => {
                 ut = {
-                  resolve: Ut,
+                  resolve: jt,
                   reject: vt
                 };
               }));
-              let Gt;
-              for (Gt = 0; Gt < et.length && !(et[Gt].priority < Ze); Gt++) ;
+              let Ut;
+              for (Ut = 0; Ut < et.length && !(et[Ut].priority < Ze); Ut++) ;
               const Bt = Ft++;
-              return et.splice(Gt, 0, {
+              return et.splice(Ut, 0, {
                 taskId: Bt,
                 taskType: ke,
                 status: "ready",
@@ -220658,7 +220665,7 @@ Input: ` + this.err.str);
               ...We
             };
             delete dt.loader, delete dt.streamingData;
-            const Gt = dt.priority || void 0, Bt = dt.transferPixelData ? [
+            const Ut = dt.priority || void 0, Bt = dt.transferPixelData ? [
               Ze.buffer
             ] : void 0;
             return vA.addTask("decodeTask", {
@@ -220667,7 +220674,7 @@ Input: ` + this.err.str);
               pixelData: Ze,
               options: dt,
               decodeConfig: ut
-            }, Gt, Bt).promise;
+            }, Ut, Bt).promise;
           }
           window.pako = {
             inflateRaw: eA.Hq
@@ -220739,14 +220746,14 @@ Input: ` + this.err.str);
             if (We.preScale = {
               enabled: !(!We.preScale || We.preScale.enabled === void 0) && We.preScale.enabled
             }, !(ze == null ? void 0 : ze.length)) return Promise.reject(new Error("The pixel data is missing"));
-            const { cornerstone: dt } = pi, { MetadataModules: Gt } = dt.Enums, Bt = document.createElement("canvas"), Ut = re(ke);
-            if (Ut.decodeLevel = We.decodeLevel, We.allowFloatRendering = dt.canRenderFloatTextures(), We.preScale.enabled) {
-              const En = (function($e, pt) {
-                const Jt = $e.get("modalityLutModule", pt) || {}, In = $e.get("generalSeriesModule", pt) || {}, { modality: fA } = In, dA = {
+            const { cornerstone: dt } = pi, { MetadataModules: Ut } = dt.Enums, Bt = document.createElement("canvas"), jt = re(ke);
+            if (jt.decodeLevel = We.decodeLevel, We.allowFloatRendering = dt.canRenderFloatTextures(), We.preScale.enabled) {
+              const En = (function($e, Ct) {
+                const Jt = $e.get("modalityLutModule", Ct) || {}, In = $e.get("generalSeriesModule", Ct) || {}, { modality: fA } = In, dA = {
                   rescaleSlope: Jt.rescaleSlope,
                   rescaleIntercept: Jt.rescaleIntercept,
                   modality: fA
-                }, ti = $e.get("scalingModule", pt) || {};
+                }, ti = $e.get("scalingModule", Ct) || {};
                 return {
                   ...dA,
                   ...fA === "PT" && {
@@ -220761,77 +220768,77 @@ Input: ` + this.err.str);
             }
             We.isSharedArrayBuffer = ((_a = We.targetBuffer) == null ? void 0 : _a.arrayBuffer) && We.targetBuffer.arrayBuffer instanceof SharedArrayBuffer;
             const { decodeConfig: vt } = qe();
-            vt.use16BitDataType = !!(We && ((_b = We.targetBuffer) == null ? void 0 : _b.type) === "Uint16Array" || ((_c = We.targetBuffer) == null ? void 0 : _c.type) === "Int16Array") || We.useNativeDataType || vt.use16BitDataType, Object.keys(Ut).forEach(((En) => {
-              (typeof Ut[En] == "function" || Ut[En] instanceof Promise) && delete Ut[En];
+            vt.use16BitDataType = !!(We && ((_b = We.targetBuffer) == null ? void 0 : _b.type) === "Uint16Array" || ((_c = We.targetBuffer) == null ? void 0 : _c.type) === "Int16Array") || We.useNativeDataType || vt.use16BitDataType, Object.keys(jt).forEach(((En) => {
+              (typeof jt[En] == "function" || jt[En] instanceof Promise) && delete jt[En];
             }));
-            const cn = Fr(Ut, Ze, ze, Bt, We, vt), { use16BitDataType: An } = vt, an = wt(Ut.photometricInterpretation);
+            const cn = Fr(jt, Ze, ze, Bt, We, vt), { use16BitDataType: An } = vt, an = wt(jt.photometricInterpretation);
             return new Promise(((En, $e) => {
-              cn.then((function(pt) {
-                if (We.skipCreateImage) return En(pt);
+              cn.then((function(Ct) {
+                if (We.skipCreateImage) return En(Ct);
                 let Jt = false;
                 if (We.targetBuffer && We.targetBuffer.type && !an) {
-                  const { arrayBuffer: xr, type: LA, offset: Si = 0, length: sA } = We.targetBuffer, Kn = pt.pixelDataLength, Kr = Si, Zi = sA ?? Kn - Kr, Hi = {
+                  const { arrayBuffer: xr, type: LA, offset: Si = 0, length: sA } = We.targetBuffer, Kn = Ct.pixelDataLength, Kr = Si, Zi = sA ?? Kn - Kr, Hi = {
                     Uint8Array,
                     Uint16Array: An ? Uint16Array : void 0,
                     Int16Array: An ? Int16Array : void 0,
                     Float32Array
                   };
-                  if (Zi !== pt.pixelDataLength) throw new Error(`target array for image does not have the same length (${Zi}) as the decoded image length (${pt.pixelDataLength}).`);
-                  const Go = Hi[LA], Ws = xr ? new Go(xr, Kr, Zi) : new Go(pt.pixelData);
-                  if (Zi !== pt.pixelDataLength) throw new Error("target array for image does not have the same length as the decoded image length.");
-                  pt.pixelData = Ws, Jt = true;
+                  if (Zi !== Ct.pixelDataLength) throw new Error(`target array for image does not have the same length (${Zi}) as the decoded image length (${Ct.pixelDataLength}).`);
+                  const Go = Hi[LA], Ws = xr ? new Go(xr, Kr, Zi) : new Go(Ct.pixelData);
+                  if (Zi !== Ct.pixelDataLength) throw new Error("target array for image does not have the same length as the decoded image length.");
+                  Ct.pixelData = Ws, Jt = true;
                 }
-                Jt || gn(pt);
-                const In = dt.metaData.get(Gt.IMAGE_PLANE, ke) || {}, fA = dt.metaData.get(Gt.VOI_LUT, ke) || {}, dA = dt.metaData.get(Gt.MODALITY_LUT, ke) || {}, ti = dt.metaData.get(Gt.SOP_COMMON, ke) || {}, ni = dt.metaData.get(Gt.CALIBRATION, ke) || {}, { rows: Er, columns: ZA } = pt;
+                Jt || gn(Ct);
+                const In = dt.metaData.get(Ut.IMAGE_PLANE, ke) || {}, fA = dt.metaData.get(Ut.VOI_LUT, ke) || {}, dA = dt.metaData.get(Ut.MODALITY_LUT, ke) || {}, ti = dt.metaData.get(Ut.SOP_COMMON, ke) || {}, ni = dt.metaData.get(Ut.CALIBRATION, ke) || {}, { rows: Er, columns: ZA } = Ct;
                 if (an) {
                   if ((function(LA) {
                     if (LA === void 0) return false;
                     const { rows: Si, columns: sA, photometricInterpretation: Kn, pixelDataLength: Kr, planarConfiguration: Zi } = LA;
                     return Kr !== 4 * sA * Si && (Kn.endsWith("420") ? Kr === (3 * Math.ceil(sA / 2) + Math.floor(sA / 2)) * Si : Kn.endsWith("422") ? Kr === (3 * Math.ceil(sA / 2) + Math.floor(sA / 2)) * Math.ceil(Si / 2) + Math.floor(Si / 2) * sA : Kn !== "RGB" || Zi === 1);
-                  })(pt)) {
-                    Bt.height = pt.rows, Bt.width = pt.columns;
-                    let LA = Bt.getContext("2d").createImageData(pt.columns, pt.rows);
+                  })(Ct)) {
+                    Bt.height = Ct.rows, Bt.width = Ct.columns;
+                    let LA = Bt.getContext("2d").createImageData(Ct.columns, Ct.rows);
                     ut || (LA = {
                       ...LA,
-                      data: new Uint8ClampedArray(3 * pt.columns * pt.rows)
-                    }), xe(pt, LA.data, ut), pt.imageData = LA, pt.pixelData = LA.data, pt.pixelDataLength = LA.data.length;
-                  } else if (!ut && pt.pixelDataLength === 4 * Er * ZA) {
-                    const LA = new Uint8Array(pt.pixelData.length / 4 * 3);
-                    pt.pixelData = (function(Si, sA) {
+                      data: new Uint8ClampedArray(3 * Ct.columns * Ct.rows)
+                    }), xe(Ct, LA.data, ut), Ct.imageData = LA, Ct.pixelData = LA.data, Ct.pixelDataLength = LA.data.length;
+                  } else if (!ut && Ct.pixelDataLength === 4 * Er * ZA) {
+                    const LA = new Uint8Array(Ct.pixelData.length / 4 * 3);
+                    Ct.pixelData = (function(Si, sA) {
                       const Kn = Si.length / 4;
                       let Kr = 0, Zi = 0;
                       for (let Hi = 0; Hi < Kn; Hi++) sA[Zi++] = Si[Kr++], sA[Zi++] = Si[Kr++], sA[Zi++] = Si[Kr++], Kr++;
                       return sA;
-                    })(pt.pixelData, LA), pt.pixelDataLength = pt.pixelData.length;
+                    })(Ct.pixelData, LA), Ct.pixelDataLength = Ct.pixelData.length;
                   }
-                  const xr = ye(pt.pixelData);
-                  pt.smallestPixelValue = xr.min, pt.largestPixelValue = xr.max;
+                  const xr = ye(Ct.pixelData);
+                  Ct.smallestPixelValue = xr.min, Ct.largestPixelValue = xr.max;
                 }
                 const OA = {
                   imageId: ke,
                   color: an,
                   calibration: ni,
                   columnPixelSpacing: In.columnPixelSpacing,
-                  columns: pt.columns,
-                  height: pt.rows,
-                  preScale: pt.preScale,
+                  columns: Ct.columns,
+                  height: Ct.rows,
+                  preScale: Ct.preScale,
                   intercept: dA.rescaleIntercept ? dA.rescaleIntercept : 0,
                   slope: dA.rescaleSlope ? dA.rescaleSlope : 1,
-                  invert: pt.photometricInterpretation === "MONOCHROME1",
-                  minPixelValue: pt.smallestPixelValue,
-                  maxPixelValue: pt.largestPixelValue,
+                  invert: Ct.photometricInterpretation === "MONOCHROME1",
+                  minPixelValue: Ct.smallestPixelValue,
+                  maxPixelValue: Ct.largestPixelValue,
                   rowPixelSpacing: In.rowPixelSpacing,
-                  rows: pt.rows,
-                  sizeInBytes: pt.pixelData.byteLength,
-                  width: pt.columns,
+                  rows: Ct.rows,
+                  sizeInBytes: Ct.pixelData.byteLength,
+                  width: Ct.columns,
                   windowCenter: fA.windowCenter ? fA.windowCenter[0] : void 0,
                   windowWidth: fA.windowWidth ? fA.windowWidth[0] : void 0,
                   voiLUTFunction: fA.voiLUTFunction ? fA.voiLUTFunction : void 0,
-                  decodeTimeInMS: pt.decodeTimeInMS,
+                  decodeTimeInMS: Ct.decodeTimeInMS,
                   floatPixelData: void 0,
-                  imageFrame: pt,
+                  imageFrame: Ct,
                   rgba: an && ut,
-                  getPixelData: () => pt.pixelData,
+                  getPixelData: () => Ct.pixelData,
                   getCanvas: void 0,
                   numComps: void 0
                 };
@@ -220840,13 +220847,13 @@ Input: ` + this.err.str);
                   if (Lt === ke) return Bt;
                   const xr = OA.columns, LA = OA.rows;
                   Bt.height = LA, Bt.width = xr;
-                  const Si = Bt.getContext("2d"), sA = Si.createImageData(xr, LA), Kn = pt.pixelData;
+                  const Si = Bt.getContext("2d"), sA = Si.createImageData(xr, LA), Kn = Ct.pixelData;
                   if (Kn.length === xr * LA * 4) for (let Kr = 0; Kr < Kn.length; Kr++) sA.data[Kr] = Kn[Kr];
                   else if (Kn.length === xr * LA * 3) {
                     let Kr = 0;
                     for (let Zi = 0; Zi < Kn.length; Zi += 3) sA.data[Kr++] = Kn[Zi], sA.data[Kr++] = Kn[Zi + 1], sA.data[Kr++] = Kn[Zi + 2], sA.data[Kr++] = 255;
                   }
-                  return pt.pixelData = sA.data, pt.pixelDataLength = sA.data.length, pt.imageData = sA, Si.putImageData(pt.imageData, 0, 0), Lt = ke, Bt;
+                  return Ct.pixelData = sA.data, Ct.pixelDataLength = sA.data.length, Ct.imageData = sA, Si.putImageData(Ct.imageData, 0, 0), Lt = ke, Bt;
                 }), dA.modalityLUTSequence && dA.modalityLUTSequence.length > 0 && (Ir = ti.sopClassUID) !== "1.2.840.10008.5.1.4.1.1.12.1" && Ir !== "1.2.840.10008.5.1.4.1.1.12.2.1" && (OA.modalityLUT = dA.modalityLUTSequence[0]), fA.voiLUTSequence && fA.voiLUTSequence.length > 0 && (OA.voiLUT = fA.voiLUTSequence[0]), OA.color && (OA.windowWidth = 256, OA.windowCenter = 128), OA.windowCenter === void 0 || OA.windowWidth === void 0) {
                   const xr = OA.imageFrame.minAfterScale, LA = OA.imageFrame.maxAfterScale;
                   OA.windowWidth = LA - xr, OA.windowCenter = (LA + xr) / 2;
@@ -220864,10 +220871,10 @@ Input: ` + this.err.str);
             if (!ke) return ze;
             const Ze = ke.split(";"), We = {};
             Ze.forEach(((dt) => {
-              const Gt = dt.split("=");
-              if (Gt.length !== 2) return;
-              const Bt = Gt[1].trim().replace(/"/g, "");
-              We[Gt[0].trim()] = Bt;
+              const Ut = dt.split("=");
+              if (Ut.length !== 2) return;
+              const Bt = Ut[1].trim().replace(/"/g, "");
+              We[Ut[0].trim()] = Bt;
             }));
             const ut = {
               "image/jpeg": "1.2.840.10008.1.2.4.50",
@@ -220887,30 +220894,30 @@ Input: ` + this.err.str);
             return Ze > 1 / 4 ? Math.min(ze, 0) : Ze > 1 / 16 ? Math.min(ze, 1) : Ze > 1 / 64 ? Math.min(ze, 2) : Math.min(ze, 3);
           }
           const MA = function(ke, ze = {}) {
-            const Ze = pi.cornerstone.imageRetrievalPoolManager, We = (/* @__PURE__ */ new Date()).getTime(), ut = new JA("decompress"), dt = ze.requestType || "interaction", Gt = ze.additionalDetails || {
+            const Ze = pi.cornerstone.imageRetrievalPoolManager, We = (/* @__PURE__ */ new Date()).getTime(), ut = new JA("decompress"), dt = ze.requestType || "interaction", Ut = ze.additionalDetails || {
               imageId: ke
-            }, Bt = ze.priority === void 0 ? 5 : ze.priority, Ut = ze.addToBeginning || false, vt = ke.substring(7);
+            }, Bt = ze.priority === void 0 ? 5 : ze.priority, jt = ze.addToBeginning || false, vt = ke.substring(7);
             return Ze.addRequest((async function(cn, An, an) {
               ut.generate((async (En) => {
                 var _a;
                 const $e = JA.as(le(cn, An, an, ze));
-                let pt = 10;
+                let Ct = 10;
                 for await (const Jt of $e) {
                   const { pixelData: In, imageQualityStatus: fA = gr.FULL_RESOLUTION, percentComplete: dA, done: ti = true, extractDone: ni = true } = Jt, Er = wn(Jt.contentType);
                   if (!ni && !Bn.has(Er)) continue;
                   const ZA = Jt.decodeLevel ?? (fA === gr.FULL_RESOLUTION ? 0 : Dn(dA, (_a = ze.retrieveOptions) == null ? void 0 : _a.decodeLevel));
-                  if (ti || !(pt <= ZA)) try {
+                  if (ti || !(Ct <= ZA)) try {
                     const OA = {
                       ...ze,
                       decodeLevel: ZA
                     }, Ir = await me(An, In, Er, OA), xr = (/* @__PURE__ */ new Date()).getTime();
-                    Ir.loadTimeInMS = xr - We, Ir.transferSyntaxUID = Er, Ir.imageQualityStatus = fA, En.add(Ir, ti), pt = ZA;
+                    Ir.loadTimeInMS = xr - We, Ir.transferSyntaxUID = Er, Ir.imageQualityStatus = fA, En.add(Ir, ti), Ct = ZA;
                   } catch (OA) {
                     if (ni) throw console.warn("Couldn't decode", OA), OA;
                   }
                 }
               }));
-            }).bind(this, vt, ke, "multipart/related; type=application/octet-stream; transfer-syntax=*"), dt, Gt, Bt, Ut), {
+            }).bind(this, vt, ke, "multipart/related; type=application/octet-stream; transfer-syntax=*"), dt, Ut, Bt, jt), {
               promise: ut.getDonePromise(),
               cancelFn: void 0
             };
@@ -220990,15 +220997,15 @@ Input: ` + this.err.str);
             if (ze === "1.2.840.10008.5.1.4.1.1.2" || ze === "1.2.840.10008.5.1.4.1.1.2.1") return 1;
             const Ze = ke.floatString("x00281052"), We = ke.floatString("x00281053");
             return Ze !== void 0 && We !== void 0 ? (function(dt) {
-              const Gt = dt.uint16("x00280103"), Bt = dt.uint16("x00280101");
-              return Gt === 0 ? 0 : -1 << Bt - 1;
+              const Ut = dt.uint16("x00280103"), Bt = dt.uint16("x00280101");
+              return Ut === 0 ? 0 : -1 << Bt - 1;
             })(ke) * We + Ze < 0 ? 1 : 0 : ke.elements.x00283000 && ke.elements.x00283000.length > 0 ? 0 : ke.uint16("x00280103");
           }, zA = function(ke, ze, Ze) {
             const We = [], ut = ke.string(ze);
             if (!ut) return;
             const dt = ut.split("\\");
             if (!(Ze && dt.length < Ze)) {
-              for (let Gt = 0; Gt < dt.length; Gt++) We.push(parseFloat(dt[Gt]));
+              for (let Ut = 0; Ut < dt.length; Ut++) We.push(parseFloat(dt[Ut]));
               return We;
             }
           }, Qi = function(ke) {
@@ -221029,23 +221036,23 @@ Input: ` + this.err.str);
               console.error(ut), console.log("pixel data dataset:", ut.dataSet), Ze = ut.dataSet;
             }
             return We.elements.x7fe00010 = Ze.elements.x7fe00010, We = (function(ut) {
-              const dt = ut.elements.x7fe00010.fragments, Gt = ut.byteArray.length;
+              const dt = ut.elements.x7fe00010.fragments, Ut = ut.byteArray.length;
               for (const Bt of dt) {
-                const { position: Ut, length: vt } = Bt;
-                vt > Gt - Ut && (console.log(`Truncated fragment, changing fragment length from ${Bt.length} to ${Gt - Ut}`), Bt.length = Gt - Ut);
+                const { position: jt, length: vt } = Bt;
+                vt > Ut - jt && (console.log(`Truncated fragment, changing fragment length from ${Bt.length} to ${Ut - jt}`), Bt.length = Ut - jt);
               }
               return ut;
             })(We), We;
           }
           async function DA(ke, ze, Ze) {
-            const We = Lr(ke), { uri: ut, imageId: dt, fileTotalLength: Gt } = Ze;
+            const We = Lr(ke), { uri: ut, imageId: dt, fileTotalLength: Ut } = Ze;
             return We.fetchMore = async function(Bt) {
-              const Ut = Object.assign({
+              const jt = Object.assign({
                 uri: ut,
                 imageId: dt,
                 fetchedLength: ke.length,
-                lengthToFetch: Gt - ke.length
-              }, Bt), { fetchedLength: vt, lengthToFetch: cn } = Ut, { arrayBuffer: An } = await ze(ut, dt, {
+                lengthToFetch: Ut - ke.length
+              }, Bt), { fetchedLength: vt, lengthToFetch: cn } = jt, { arrayBuffer: An } = await ze(ut, dt, {
                 byteRange: `${vt}-${vt + cn}`
               }), an = new Uint8Array(An), En = new Uint8Array(We.byteArray.length + an.length);
               return En.set(We.byteArray), En.set(an, We.byteArray.length), DA(En, ze, Ze);
@@ -221072,7 +221079,7 @@ Input: ` + this.err.str);
             };
           }
           function ri(ke) {
-            if (Ct[ke]) return Ct[ke];
+            if (pt[ke]) return pt[ke];
           }
           function dr(ke) {
             if (!ke) return false;
@@ -221094,7 +221101,7 @@ Input: ` + this.err.str);
                 return dt.indexOf("&frame=");
               })(ke), Ze = ze === -1 ? ke : ke.slice(0, ze), We = parseInt(ke.slice(ze + 7), 10) || 1;
               let ut;
-              return ut = Ct[Ze] ? Ct[Ze].dataSet : void 0, {
+              return ut = pt[Ze] ? pt[Ze].dataSet : void 0, {
                 dataSet: ut,
                 frame: We
               };
@@ -221103,31 +221110,31 @@ Input: ` + this.err.str);
               return dr(ri(ke));
             }
           };
-          let nr = 0, Ct = {}, jt = {};
+          let nr = 0, pt = {}, Gt = {};
           function Yt() {
             return {
               cacheSizeInBytes: nr,
-              numberOfDataSetsCached: Object.keys(Ct).length
+              numberOfDataSetsCached: Object.keys(pt).length
             };
           }
           const hn = {
             isLoaded: function(ke) {
-              return Ct[ke] !== void 0;
+              return pt[ke] !== void 0;
             },
             load: function(ke, ze = rt, Ze) {
               const { cornerstone: We, dicomParser: ut } = pi;
-              if (Ct[ke]) return new Promise(((Bt) => {
-                Ct[ke].cacheCount++, Bt(Ct[ke].dataSet);
+              if (pt[ke]) return new Promise(((Bt) => {
+                pt[ke].cacheCount++, Bt(pt[ke].dataSet);
               }));
-              if (jt[ke]) return jt[ke].cacheCount++, jt[ke];
-              const dt = ze(ke, Ze), Gt = new Promise(((Bt, Ut) => {
+              if (Gt[ke]) return Gt[ke].cacheCount++, Gt[ke];
+              const dt = ze(ke, Ze), Ut = new Promise(((Bt, jt) => {
                 dt.then((async function(vt) {
                   const cn = {
                     isPartialContent: false,
                     fileTotalLength: null
                   };
                   if (!(vt instanceof ArrayBuffer)) {
-                    if (!vt.arrayBuffer) return Ut(new Error("If not returning ArrayBuffer, must return object with `arrayBuffer` parameter"));
+                    if (!vt.arrayBuffer) return jt(new Error("If not returning ArrayBuffer, must return object with `arrayBuffer` parameter"));
                     cn.isPartialContent = vt.flags.isPartialContent, cn.fileTotalLength = vt.flags.fileTotalLength, vt = vt.arrayBuffer;
                   }
                   const An = new Uint8Array(vt);
@@ -221139,27 +221146,27 @@ Input: ` + this.err.str);
                       fileTotalLength: cn.fileTotalLength
                     }) : ut.parseDicom(An);
                   } catch (En) {
-                    return Ut(En);
+                    return jt(En);
                   }
-                  Ct[ke] = {
+                  pt[ke] = {
                     dataSet: an,
-                    cacheCount: Gt.cacheCount
+                    cacheCount: Ut.cacheCount
                   }, nr += an.byteArray.length, Bt(an), We.triggerEvent(We.events, "datasetscachechanged", {
                     uri: ke,
                     action: "loaded",
                     cacheInfo: Yt()
                   });
-                }), Ut).then((() => {
-                  delete jt[ke];
+                }), jt).then((() => {
+                  delete Gt[ke];
                 }), (() => {
-                  delete jt[ke];
+                  delete Gt[ke];
                 }));
               }));
-              return Gt.cacheCount = 1, jt[ke] = Gt, Gt;
+              return Ut.cacheCount = 1, Gt[ke] = Ut, Ut;
             },
             unload: function(ke) {
               const { cornerstone: ze } = pi;
-              Ct[ke] && (Ct[ke].cacheCount--, Ct[ke].cacheCount === 0 && (nr -= Ct[ke].dataSet.byteArray.length, delete Ct[ke], ze.triggerEvent(ze.events, "datasetscachechanged", {
+              pt[ke] && (pt[ke].cacheCount--, pt[ke].cacheCount === 0 && (nr -= pt[ke].dataSet.byteArray.length, delete pt[ke], ze.triggerEvent(ze.events, "datasetscachechanged", {
                 uri: ke,
                 action: "unloaded",
                 cacheInfo: Yt()
@@ -221167,7 +221174,7 @@ Input: ` + this.err.str);
             },
             getInfo: Yt,
             purge: function() {
-              Ct = {}, jt = {}, nr = 0;
+              pt = {}, Gt = {}, nr = 0;
             },
             get: function(ke) {
               let ze;
@@ -221175,9 +221182,9 @@ Input: ` + this.err.str);
                 const { frame: Ze, dataSet: We } = $r.retrieveMultiframeDataset(ke);
                 ze = (function(ut, dt) {
                   if (!dt) return;
-                  const { NumberOfFrames: Gt, PerFrameFunctionalGroupsSequence: Bt, SharedFunctionalGroupsSequence: Ut, otherElements: vt } = Jr(dt);
-                  if (Bt || Gt > 1) {
-                    const { shared: cn, perFrame: An } = Xr(Bt, Ut, ut), an = {
+                  const { NumberOfFrames: Ut, PerFrameFunctionalGroupsSequence: Bt, SharedFunctionalGroupsSequence: jt, otherElements: vt } = Jr(dt);
+                  if (Bt || Ut > 1) {
+                    const { shared: cn, perFrame: An } = Xr(Bt, jt, ut), an = {
                       elements: {
                         ...vt,
                         ...cn,
@@ -221188,11 +221195,11 @@ Input: ` + this.err.str);
                   }
                   return dt;
                 })(Ze, We);
-              } else Ct[ke] && (ze = Ct[ke].dataSet);
+              } else pt[ke] && (ze = pt[ke].dataSet);
               return ze;
             },
             update: function(ke, ze) {
-              const Ze = Ct[ke];
+              const Ze = pt[ke];
               Ze ? (nr -= Ze.dataSet.byteArray.length, Ze.dataSet = ze, nr += ze.byteArray.length, pi.cornerstone.triggerEvent(pi.cornerstone.events, "datasetscachechanged", {
                 uri: ke,
                 action: "updated",
@@ -221242,7 +221249,7 @@ Input: ` + this.err.str);
           function aA(ke) {
             const ze = ke.elements.x00186011;
             return !ze || !ze.items ? [] : ze.items.map(((Ze) => {
-              const We = Ze.dataSet.double("x0018602c"), ut = Ze.dataSet.double("x0018602e"), dt = Ze.dataSet.uint16("x00186024"), Gt = Ze.dataSet.uint16("x00186026");
+              const We = Ze.dataSet.double("x0018602c"), ut = Ze.dataSet.double("x0018602e"), dt = Ze.dataSet.uint16("x00186024"), Ut = Ze.dataSet.uint16("x00186026");
               return {
                 regionLocationMinY0: Ze.dataSet.uint16("x0018601a"),
                 regionLocationMaxY1: Ze.dataSet.uint16("x0018601e"),
@@ -221253,7 +221260,7 @@ Input: ` + this.err.str);
                 physicalDeltaX: We,
                 physicalDeltaY: ut,
                 physicalUnitsXDirection: dt,
-                physicalUnitsYDirection: Gt,
+                physicalUnitsYDirection: Ut,
                 referencePhysicalPixelValueY: Ze.dataSet.uint16("x0018602a"),
                 referencePhysicalPixelValueX: Ze.dataSet.uint16("x00186028"),
                 regionSpatialFormat: Ze.dataSet.uint16("x00186012"),
@@ -221268,26 +221275,26 @@ Input: ` + this.err.str);
             if (Array.isArray(Ze)) return;
             const dt = Qi(Ze);
             if (ze === We.MULTIFRAME) {
-              const Ut = $r.retrieveMultiframeDataset(dt.url);
-              return Ut.dataSet ? (function(cn, An) {
+              const jt = $r.retrieveMultiframeDataset(dt.url);
+              return jt.dataSet ? (function(cn, An) {
                 if (!cn) return;
                 const { NumberOfFrames: an, PerFrameFunctionalGroupsSequence: En, SharedFunctionalGroupsSequence: $e } = Jr(cn);
                 if (En || an > 1) {
-                  const { shared: pt, perFrame: Jt } = Xr(En, $e, An);
+                  const { shared: Ct, perFrame: Jt } = Xr(En, $e, An);
                   return {
                     NumberOfFrames: an,
                     PerFrameFunctionalInformation: Jt,
-                    SharedFunctionalInformation: pt
+                    SharedFunctionalInformation: Ct
                   };
                 }
                 return {
                   NumberOfFrames: an
                 };
-              })(Ut.dataSet, Ut.frame) : void 0;
+              })(jt.dataSet, jt.frame) : void 0;
             }
-            let Gt = dt.url;
-            dt.frame && (Gt = `${Gt}&frame=${dt.frame}`);
-            const Bt = hn.get(Gt);
+            let Ut = dt.url;
+            dt.frame && (Ut = `${Ut}&frame=${dt.frame}`);
+            const Bt = hn.get(Ut);
             if (Bt) {
               if (ze === We.GENERAL_STUDY) return {
                 studyDescription: Bt.string("x00081030"),
@@ -221323,9 +221330,9 @@ Input: ` + this.err.str);
                 patientWeight: Bt.floatString("x00101030")
               };
               if (ze === We.NM_MULTIFRAME_GEOMETRY) {
-                const Ut = Bt.string("x00080060"), vt = Nn(Bt, 2);
+                const jt = Bt.string("x00080060"), vt = Nn(Bt, 2);
                 return {
-                  modality: Ut,
+                  modality: jt,
                   imageType: Bt.string("x00080008"),
                   imageSubType: vt,
                   imageOrientationPatient: Tn(Bt),
@@ -221333,29 +221340,29 @@ Input: ` + this.err.str);
                   sliceThickness: Jn(Bt),
                   pixelSpacing: Oi(Bt),
                   numberOfFrames: Bt.uint16("x00280008"),
-                  isNMReconstructable: K(vt) && Ut.includes("NM")
+                  isNMReconstructable: K(vt) && jt.includes("NM")
                 };
               }
               if (ze === We.IMAGE_PLANE) {
-                const Ut = Tn(Bt), vt = qA(Bt), cn = Oi(Bt), An = Jn(Bt);
+                const jt = Tn(Bt), vt = qA(Bt), cn = Oi(Bt), An = Jn(Bt);
                 let an = null, En = null;
                 cn && (En = cn[0], an = cn[1]);
-                let $e = null, pt = null;
-                return Ut && ($e = [
-                  parseFloat(Ut[0]),
-                  parseFloat(Ut[1]),
-                  parseFloat(Ut[2])
-                ], pt = [
-                  parseFloat(Ut[3]),
-                  parseFloat(Ut[4]),
-                  parseFloat(Ut[5])
+                let $e = null, Ct = null;
+                return jt && ($e = [
+                  parseFloat(jt[0]),
+                  parseFloat(jt[1]),
+                  parseFloat(jt[2])
+                ], Ct = [
+                  parseFloat(jt[3]),
+                  parseFloat(jt[4]),
+                  parseFloat(jt[5])
                 ]), {
                   frameOfReferenceUID: Bt.string("x00200052"),
                   rows: Bt.uint16("x00280010"),
                   columns: Bt.uint16("x00280011"),
-                  imageOrientationPatient: Ut,
+                  imageOrientationPatient: jt,
                   rowCosines: $e,
-                  columnCosines: pt,
+                  columnCosines: Ct,
                   imagePositionPatient: vt,
                   sliceThickness: An,
                   sliceLocation: Bt.floatString("x00201041"),
@@ -221369,11 +221376,11 @@ Input: ` + this.err.str);
               };
               if (ze === We.IMAGE_PIXEL) return WA(Bt);
               if (ze === We.VOI_LUT) {
-                const Ut = gA(Bt);
+                const jt = gA(Bt);
                 return {
                   windowCenter: zA(Bt, "x00281050", 1),
                   windowWidth: zA(Bt, "x00281051", 1),
-                  voiLUTSequence: ki(Ut, Bt.elements.x00283010)
+                  voiLUTSequence: ki(jt, Bt.elements.x00283010)
                 };
               }
               if (ze === We.MODALITY_LUT) return {
@@ -221387,9 +221394,9 @@ Input: ` + this.err.str);
                 sopInstanceUID: Bt.string("x00080018")
               };
               if (ze === We.PET_ISOTOPE) {
-                const Ut = Bt.elements.x00540016;
-                if (Ut === void 0) return;
-                const vt = Ut.items[0].dataSet;
+                const jt = Bt.elements.x00540016;
+                if (jt === void 0) return;
+                const vt = jt.items[0].dataSet;
                 return {
                   radiopharmaceuticalInfo: {
                     radiopharmaceuticalStartTime: ut.parseTM(vt.string("x00181072") || ""),
@@ -221398,30 +221405,30 @@ Input: ` + this.err.str);
                   }
                 };
               }
-              if (ze === We.OVERLAY_PLANE) return (function(Ut) {
+              if (ze === We.OVERLAY_PLANE) return (function(jt) {
                 const vt = [];
                 for (let cn = 0; cn <= 30; cn += 2) {
                   let An = `x60${cn.toString(16)}`;
                   An.length === 4 && (An = `x600${cn.toString(16)}`);
-                  const an = Ut.elements[`${An}3000`];
+                  const an = jt.elements[`${An}3000`];
                   if (!an) continue;
                   const En = [];
-                  for (let $e = 0; $e < an.length; $e++) for (let pt = 0; pt < 8; pt++) {
-                    const Jt = Ut.byteArray[an.dataOffset + $e];
-                    En[8 * $e + pt] = Jt >> pt & 1;
+                  for (let $e = 0; $e < an.length; $e++) for (let Ct = 0; Ct < 8; Ct++) {
+                    const Jt = jt.byteArray[an.dataOffset + $e];
+                    En[8 * $e + Ct] = Jt >> Ct & 1;
                   }
                   vt.push({
-                    rows: Ut.uint16(`${An}0010`),
-                    columns: Ut.uint16(`${An}0011`),
-                    type: Ut.string(`${An}0040`),
-                    x: Ut.int16(`${An}0050`, 1) - 1,
-                    y: Ut.int16(`${An}0050`, 0) - 1,
+                    rows: jt.uint16(`${An}0010`),
+                    columns: jt.uint16(`${An}0011`),
+                    type: jt.string(`${An}0040`),
+                    x: jt.int16(`${An}0050`, 1) - 1,
+                    y: jt.int16(`${An}0050`, 0) - 1,
                     pixelData: En,
-                    description: Ut.string(`${An}0022`),
-                    label: Ut.string(`${An}1500`),
-                    roiArea: Ut.string(`${An}1301`),
-                    roiMean: Ut.string(`${An}1302`),
-                    roiStandardDeviation: Ut.string(`${An}1303`)
+                    description: jt.string(`${An}0022`),
+                    label: jt.string(`${An}1500`),
+                    roiArea: jt.string(`${An}1301`),
+                    roiMean: jt.string(`${An}1302`),
+                    roiStandardDeviation: jt.string(`${An}1303`)
                   });
                 }
                 return {
@@ -221429,13 +221436,13 @@ Input: ` + this.err.str);
                 };
               })(Bt);
               if (ze === "transferSyntax") {
-                let Ut;
+                let jt;
                 try {
-                  Ut = Bt.string("x00020010");
+                  jt = Bt.string("x00020010");
                 } catch {
                 }
                 return {
-                  transferSyntaxUID: Ut
+                  transferSyntaxUID: jt
                 };
               }
               return ze === We.PET_SERIES ? {
@@ -221478,10 +221485,10 @@ Input: ` + this.err.str);
             const We = ke.elements.x7fe00010.fragments, ut = new ii.ByteStream(ke.byteArrayParser, ke.byteArray, ke.elements.x7fe00010.dataOffset), dt = (0, ii.readSequenceItem)(ut);
             if (dt.tag !== "xfffee000") throw "dicomParser.readEncapsulatedPixelData: missing basic offset table xfffee000";
             ut.seek(dt.length);
-            const Gt = ut.position;
+            const Ut = ut.position;
             if (ze + 1 > We.length) throw "dicomParser.readEncapsulatedPixelData: frame exceeds number of fragments";
-            const Bt = Gt + We[ze].offset + 8, Ut = We[ze].length;
-            return new Uint8Array(ut.byteArray.buffer.slice(ut.byteArray.byteOffset + Bt, ut.byteArray.byteOffset + Bt + Ut));
+            const Bt = Ut + We[ze].offset + 8, jt = We[ze].length;
+            return new Uint8Array(ut.byteArray.buffer.slice(ut.byteArray.byteOffset + Bt, ut.byteArray.byteOffset + Bt + jt));
           }
           function Cs(ke, ze) {
             return ke & 1 << ze;
@@ -221489,67 +221496,67 @@ Input: ` + this.err.str);
           const Ht = function(ke, ze, Ze) {
             const We = new Uint8Array(Ze);
             for (let ut = 0; ut < Ze; ut++) {
-              const dt = ke[Math.floor(ut / 8) + ze], Gt = ut % 8;
-              We[ut] = Cs(dt, Gt) ? 1 : 0;
+              const dt = ke[Math.floor(ut / 8) + ze], Ut = ut % 8;
+              We[ut] = Cs(dt, Ut) ? 1 : 0;
             }
             return We;
           }, Ha = function(ke, ze) {
             const Ze = ke.elements.x7fe00010 || ke.elements.x7fe00008, We = ke.uint16("x00280100"), ut = ke.uint16("x00280010"), dt = ke.uint16("x00280011");
-            let Gt = ke.uint16("x00280002");
-            ke.string("x00280004") === "YBR_FULL_422" && (Gt = 2, console.warn(`Using SamplesPerPixel of 2 for YBR_FULL_422 photometric interpretation.
+            let Ut = ke.uint16("x00280002");
+            ke.string("x00280004") === "YBR_FULL_422" && (Ut = 2, console.warn(`Using SamplesPerPixel of 2 for YBR_FULL_422 photometric interpretation.
       See http://dicom.nema.org/medical/dicom/current/output/chtml/part03/sect_C.7.6.3.html for more information.`));
-            const Bt = Ze.dataOffset, Ut = ut * dt * Gt;
+            const Bt = Ze.dataOffset, jt = ut * dt * Ut;
             let vt;
             if (We === 8) {
-              if (vt = Bt + ze * Ut, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
-              return new Uint8Array(ke.byteArray.buffer.slice(vt, vt + Ut));
+              if (vt = Bt + ze * jt, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
+              return new Uint8Array(ke.byteArray.buffer.slice(vt, vt + jt));
             }
             if (We === 16) {
-              if (vt = Bt + ze * Ut * 2, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
-              return new Uint8Array(ke.byteArray.buffer.slice(vt, vt + 2 * Ut));
+              if (vt = Bt + ze * jt * 2, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
+              return new Uint8Array(ke.byteArray.buffer.slice(vt, vt + 2 * jt));
             }
             if (We === 1) {
-              if (vt = Bt + ze * Ut * 0.125, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
-              return Ht(ke.byteArray, vt, Ut);
+              if (vt = Bt + ze * jt * 0.125, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
+              return Ht(ke.byteArray, vt, jt);
             }
             if (We === 32) {
-              if (vt = Bt + ze * Ut * 4, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
-              return new Uint8Array(ke.byteArray.buffer.slice(vt, vt + 4 * Ut));
+              if (vt = Bt + ze * jt * 4, vt >= ke.byteArray.length) throw new Error("frame exceeds size of pixelData");
+              return new Uint8Array(ke.byteArray.buffer.slice(vt, vt + 4 * jt));
             }
             throw new Error("unsupported pixel format");
           }, yt = function(ke) {
             const ze = Qi(ke), Ze = parseInt(ze.url, 10), We = ba.get(Ze);
             return new Promise(((ut, dt) => {
-              const Gt = new FileReader();
-              Gt.onload = (Bt) => {
-                const Ut = Bt.target.result;
-                ut(Ut);
-              }, Gt.onerror = dt, Gt.readAsArrayBuffer(We);
+              const Ut = new FileReader();
+              Ut.onload = (Bt) => {
+                const jt = Bt.target.result;
+                ut(jt);
+              }, Ut.onerror = dt, Ut.readAsArrayBuffer(We);
             }));
           }, tn = function(ke, ze = 0) {
             const Ze = ke.elements.x7fe00010 || ke.elements.x7fe00008;
             return Ze ? Ze.encapsulatedPixelData ? Ms(ke, ze) : Ha(ke, ze) : null;
           };
           function Gn(ke, ze, Ze = 0, We, ut, dt) {
-            const Gt = (/* @__PURE__ */ new Date()).getTime(), Bt = {
+            const Ut = (/* @__PURE__ */ new Date()).getTime(), Bt = {
               cancelFn: void 0,
               promise: void 0
             };
-            return Bt.promise = new Promise(((Ut, vt) => {
+            return Bt.promise = new Promise(((jt, vt) => {
               ke.then(((cn) => {
                 const An = tn(cn, Ze), an = cn.string("x00020010"), En = (/* @__PURE__ */ new Date()).getTime(), $e = me(ze, An, an, ut);
-                (function(pt, Jt) {
-                  pt.decache = function() {
+                (function(Ct, Jt) {
+                  Ct.decache = function() {
                     const In = Qi(Jt);
                     hn.unload(In.url);
                   };
-                })(Bt, ze), $e.then(((pt) => {
-                  pt.data = cn, pt.sharedCacheKey = We;
+                })(Bt, ze), $e.then(((Ct) => {
+                  Ct.data = cn, Ct.sharedCacheKey = We;
                   const Jt = (/* @__PURE__ */ new Date()).getTime();
-                  pt.loadTimeInMS = En - Gt, pt.totalTimeInMS = Jt - Gt, dt !== void 0 && dt.imageDoneCallback !== void 0 && dt.imageDoneCallback(pt), Ut(pt);
-                }), (function(pt) {
+                  Ct.loadTimeInMS = En - Ut, Ct.totalTimeInMS = Jt - Ut, dt !== void 0 && dt.imageDoneCallback !== void 0 && dt.imageDoneCallback(Ct), jt(Ct);
+                }), (function(Ct) {
                   vt({
-                    error: pt,
+                    error: Ct,
                     dataSet: cn
                   });
                 }));
@@ -221567,15 +221574,15 @@ Input: ` + this.err.str);
             const Ze = Qi(ke);
             delete (ze = Object.assign({}, ze)).loader;
             const We = Wn(Ze.scheme);
-            return hn.isLoaded(Ze.url) ? (function(ut, dt, Gt = 0, Bt, Ut) {
+            return hn.isLoaded(Ze.url) ? (function(ut, dt, Ut = 0, Bt, jt) {
               const vt = (/* @__PURE__ */ new Date()).getTime();
               return {
                 promise: new Promise(((cn, An) => {
                   const an = (/* @__PURE__ */ new Date()).getTime();
                   let En;
                   try {
-                    const $e = tn(ut, Gt), pt = ut.string("x00020010");
-                    En = me(dt, $e, pt, Ut);
+                    const $e = tn(ut, Ut), Ct = ut.string("x00020010");
+                    En = me(dt, $e, Ct, jt);
                   } catch ($e) {
                     return void An({
                       error: $e,
@@ -221584,8 +221591,8 @@ Input: ` + this.err.str);
                   }
                   En.then((($e) => {
                     $e.data = ut, $e.sharedCacheKey = Bt;
-                    const pt = (/* @__PURE__ */ new Date()).getTime();
-                    $e.loadTimeInMS = an - vt, $e.totalTimeInMS = pt - vt, cn($e);
+                    const Ct = (/* @__PURE__ */ new Date()).getTime();
+                    $e.loadTimeInMS = an - vt, $e.totalTimeInMS = Ct - vt, cn($e);
                   }), An);
                 })),
                 cancelFn: void 0
@@ -221656,18 +221663,18 @@ Input: ` + this.err.str);
               SA(ke, "red", null),
               SA(ke, "green", null),
               SA(ke, "blue", null)
-            ]).then((([dt, Gt, Bt]) => {
-              if (!dt || !Gt || !Bt) throw new Error("The image does not have a complete color palette. R, G, and B palette data are required.");
-              const Ut = dt.length;
+            ]).then((([dt, Ut, Bt]) => {
+              if (!dt || !Ut || !Bt) throw new Error("The image does not have a complete color palette. R, G, and B palette data are required.");
+              const jt = dt.length;
               let vt = 0, cn = 0;
-              const An = ke.redPaletteColorLookupTableDescriptor[1], an = ke.redPaletteColorLookupTableDescriptor[2] === 8 ? 0 : 8, En = Fs(dt, an), $e = Fs(Gt, an), pt = Fs(Bt, an);
+              const An = ke.redPaletteColorLookupTableDescriptor[1], an = ke.redPaletteColorLookupTableDescriptor[2] === 8 ? 0 : 8, En = Fs(dt, an), $e = Fs(Ut, an), Ct = Fs(Bt, an);
               if (Ze) for (let Jt = 0; Jt < We; ++Jt) {
                 let In = ut[vt++];
-                In < An ? In = 0 : In > An + Ut - 1 ? In = Ut - 1 : In -= An, ze[cn++] = En[In], ze[cn++] = $e[In], ze[cn++] = pt[In], ze[cn++] = 255;
+                In < An ? In = 0 : In > An + jt - 1 ? In = jt - 1 : In -= An, ze[cn++] = En[In], ze[cn++] = $e[In], ze[cn++] = Ct[In], ze[cn++] = 255;
               }
               else for (let Jt = 0; Jt < We; ++Jt) {
                 let In = ut[vt++];
-                In < An ? In = 0 : In > An + Ut - 1 ? In = Ut - 1 : In -= An, ze[cn++] = En[In], ze[cn++] = $e[In], ze[cn++] = pt[In];
+                In < An ? In = 0 : In > An + jt - 1 ? In = jt - 1 : In -= An, ze[cn++] = En[In], ze[cn++] = $e[In], ze[cn++] = Ct[In];
               }
             }));
           }
@@ -224959,12 +224966,12 @@ Input: ` + this.err.str);
   let As = null, np = null, ED = 0;
   function eXe() {
     var _a, _b, _c, _d, _e2, _f;
-    const { user: t } = ui(), [e, n] = j.useState([]), [A, r] = j.useState(false), [a, s] = j.useState(null), [o, l] = j.useState(true), [c, d] = j.useState(false), [g, u] = j.useState(null), [h, f] = j.useState([]), C = (Ct) => {
+    const { user: t } = ui(), [e, n] = j.useState([]), [A, r] = j.useState(false), [a, s] = j.useState(null), [o, l] = j.useState(true), [c, d] = j.useState(false), [g, u] = j.useState(null), [h, f] = j.useState([]), C = (pt) => {
       var _a2;
       if (!g) return;
-      const jt = (_a2 = g.series) == null ? void 0 : _a2.find((Yt) => Yt.seriesId === Ct);
-      if (jt && jt.instances) {
-        const Yt = jt.instances.map((hn) => {
+      const Gt = (_a2 = g.series) == null ? void 0 : _a2.find((Yt) => Yt.seriesId === pt);
+      if (Gt && Gt.instances) {
+        const Yt = Gt.instances.map((hn) => {
           const Nn = hn.wadouri || `/api/v1/radiology/pacs/instances/${hn.instanceId}/file`;
           return Nn.startsWith("wadouri:") ? Nn : `wadouri:${Nn}`;
         });
@@ -224987,8 +224994,8 @@ Input: ` + this.err.str);
     ]);
     j.useEffect(() => {
       if (Fn.current) {
-        const Ct = Fn.current.clientWidth || m || 450, jt = Math.min(Math.max((Ct - 32) / 794, 0.3), 1.2);
-        Oe(jt), tt({
+        const pt = Fn.current.clientWidth || m || 450, Gt = Math.min(Math.max((pt - 32) / 794, 0.3), 1.2);
+        Oe(Gt), tt({
           x: 0,
           y: 0
         });
@@ -224998,43 +225005,43 @@ Input: ` + this.err.str);
       m,
       Ft
     ]), j.useEffect(() => {
-      const Ct = Fn.current;
-      if (!Ct) return;
-      const jt = (Yt) => {
+      const pt = Fn.current;
+      if (!pt) return;
+      const Gt = (Yt) => {
         if (Yt.ctrlKey) {
           Yt.preventDefault();
           const Nn = -Yt.deltaY > 0 ? 1.05 : 0.95;
           Oe((Tn) => Math.min(Math.max(Tn * Nn, 0.2), 3));
         }
       };
-      return Ct.addEventListener("wheel", jt, {
+      return pt.addEventListener("wheel", Gt, {
         passive: false
       }), () => {
-        Ct.removeEventListener("wheel", jt);
+        pt.removeEventListener("wheel", Gt);
       };
     }, [
       xe,
       Ft
     ]);
-    const vA = (Ct) => {
-      Ct.button === 0 && (Wt(true), en.current = {
-        x: Ct.clientX - Ue.x,
-        y: Ct.clientY - Ue.y
+    const vA = (pt) => {
+      pt.button === 0 && (Wt(true), en.current = {
+        x: pt.clientX - Ue.x,
+        y: pt.clientY - Ue.y
       });
-    }, eA = (Ct) => {
+    }, eA = (pt) => {
       Nt && tt({
-        x: Ct.clientX - en.current.x,
-        y: Ct.clientY - en.current.y
+        x: pt.clientX - en.current.x,
+        y: pt.clientY - en.current.y
       });
     }, ne = () => {
       Wt(false);
-    }, Fr = (Ct) => {
-      Ct.preventDefault(), S.current = true, document.body.style.cursor = "col-resize", document.body.style.userSelect = "none";
-    }, re = (Ct) => {
-      Ct.preventDefault(), k.current = true, document.body.style.cursor = "col-resize", document.body.style.userSelect = "none";
+    }, Fr = (pt) => {
+      pt.preventDefault(), S.current = true, document.body.style.cursor = "col-resize", document.body.style.userSelect = "none";
+    }, re = (pt) => {
+      pt.preventDefault(), k.current = true, document.body.style.cursor = "col-resize", document.body.style.userSelect = "none";
     };
     j.useEffect(() => {
-      const Ct = (Yt) => {
+      const pt = (Yt) => {
         if (!D.current) return;
         const hn = D.current.getBoundingClientRect();
         if (S.current) {
@@ -225044,17 +225051,17 @@ Input: ` + this.err.str);
           const Nn = Math.max(320, Math.min(650, hn.right - Yt.clientX));
           Q(Nn), ue.current && ue.current.resize();
         }
-      }, jt = () => {
+      }, Gt = () => {
         (S.current || k.current) && (S.current = false, k.current = false, document.body.style.cursor = "", document.body.style.userSelect = "", ue.current && ue.current.resize());
       };
-      return window.addEventListener("pointermove", Ct), window.addEventListener("pointerup", jt), () => {
-        window.removeEventListener("pointermove", Ct), window.removeEventListener("pointerup", jt);
+      return window.addEventListener("pointermove", pt), window.addEventListener("pointerup", Gt), () => {
+        window.removeEventListener("pointermove", pt), window.removeEventListener("pointerup", Gt);
       };
     }, []);
     const wt = async () => {
       l(true);
       try {
-        const jt = [
+        const Gt = [
           "PendingImaging",
           "Assigned",
           "ImagingCompleted",
@@ -225065,7 +225072,7 @@ Input: ` + this.err.str);
           "Signed",
           "ManualVerified",
           "Finalized"
-        ].map((hn) => `status=${encodeURIComponent(hn)}`).join("&"), Yt = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${A}&${jt}`, {
+        ].map((hn) => `status=${encodeURIComponent(hn)}`).join("&"), Yt = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${A}&${Gt}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
@@ -225074,8 +225081,8 @@ Input: ` + this.err.str);
           const hn = await Yt.json();
           n(hn);
         }
-      } catch (Ct) {
-        console.error("Failed to load radiologist worklist:", Ct);
+      } catch (pt) {
+        console.error("Failed to load radiologist worklist:", pt);
       } finally {
         l(false);
       }
@@ -225085,11 +225092,11 @@ Input: ` + this.err.str);
     }, [
       A
     ]);
-    const Lt = async (Ct) => {
-      const jt = Ct.studyId || Ct.radiologyStudyId, Yt = (a == null ? void 0 : a.studyId) || (a == null ? void 0 : a.radiologyStudyId);
-      Yt && Yt !== jt && ue.current && (ue.current.destroy(), ue.current = null), l(true);
+    const Lt = async (pt) => {
+      const Gt = pt.studyId || pt.radiologyStudyId, Yt = (a == null ? void 0 : a.studyId) || (a == null ? void 0 : a.radiologyStudyId);
+      Yt && Yt !== Gt && ue.current && (ue.current.destroy(), ue.current = null), l(true);
       try {
-        const hn = await fetch(`/api/v1/radiology/reports/${jt}`, {
+        const hn = await fetch(`/api/v1/radiology/reports/${Gt}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
@@ -225097,33 +225104,33 @@ Input: ` + this.err.str);
         if (hn.ok) {
           const Nn = await hn.json();
           s(Nn);
-        } else s(Ct);
+        } else s(pt);
       } catch (hn) {
-        console.error("Failed to load study details:", hn), s(Ct);
+        console.error("Failed to load study details:", hn), s(pt);
       } finally {
         l(false);
       }
     }, [gn, me] = j.useState("available"), JA = async () => {
       if (!a) return;
       d(true);
-      const Ct = a.studyId || a.radiologyStudyId;
+      const pt = a.studyId || a.radiologyStudyId;
       try {
-        const jt = await fetch(`/api/v1/radiology/studies/${Ct}/claim`, {
+        const Gt = await fetch(`/api/v1/radiology/studies/${pt}/claim`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
             "Content-Type": "application/json"
           }
         });
-        if (jt.ok) {
+        if (Gt.ok) {
           me("assigned"), r(false);
-          const Yt = await fetch(`/api/v1/radiology/studies/${Ct}/session/start`, {
+          const Yt = await fetch(`/api/v1/radiology/studies/${pt}/session/start`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
               "Content-Type": "application/json"
             }
-          }), hn = await fetch(`/api/v1/radiology/reports/${Ct}`, {
+          }), hn = await fetch(`/api/v1/radiology/reports/${pt}`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
             }
@@ -225139,42 +225146,42 @@ Input: ` + this.err.str);
           }
           wt();
         } else {
-          const Yt = await jt.json();
+          const Yt = await Gt.json();
           throw new Error(Yt.message || "Failed to claim study");
         }
-      } catch (jt) {
-        console.error("Claim study error:", jt), alert(jt.message || "Failed to claim study");
+      } catch (Gt) {
+        console.error("Claim study error:", Gt), alert(Gt.message || "Failed to claim study");
       } finally {
         d(false);
       }
     }, gr = async () => {
       if (!a) return;
       d(true);
-      const Ct = a.studyId || a.radiologyStudyId;
+      const pt = a.studyId || a.radiologyStudyId;
       try {
-        const jt = await fetch(`/api/v1/radiology/studies/${Ct}/release`, {
+        const Gt = await fetch(`/api/v1/radiology/studies/${pt}/release`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
             "Content-Type": "application/json"
           }
         });
-        if (jt.ok) alert("Study successfully released."), await Lt({
-          radiologyStudyId: Ct
+        if (Gt.ok) alert("Study successfully released."), await Lt({
+          radiologyStudyId: pt
         }), wt();
         else {
-          const Yt = await jt.json();
+          const Yt = await Gt.json();
           throw new Error(Yt.message || "Failed to release study");
         }
-      } catch (jt) {
-        alert(jt.message);
+      } catch (Gt) {
+        alert(Gt.message);
       } finally {
         d(false);
       }
     };
     j.useEffect(() => {
       wn.current = false, ED++;
-      const Ct = (Jn) => {
+      const pt = (Jn) => {
         try {
           const aA = JSON.parse(Jn);
           if (!de.current) return;
@@ -225182,7 +225189,7 @@ Input: ` + this.err.str);
         } catch (aA) {
           console.error("Failed to parse live draft packet:", aA);
         }
-      }, jt = (Jn) => {
+      }, Gt = (Jn) => {
         q(true);
       }, Yt = (Jn) => {
         q(false);
@@ -225199,9 +225206,9 @@ Input: ` + this.err.str);
           radiologyStudyId: de.current
         });
       }, qA = (Jn) => {
-        Jn.on("ReceiveDraftUpdate", Ct), Jn.on("UserJoined", jt), Jn.on("UserLeft", Yt), Jn.on("ReceiveDraftSaved", hn), Jn.on("ReceiveDraftResumed", Nn), Jn.on("ReceiveSignRequest", Tn);
+        Jn.on("ReceiveDraftUpdate", pt), Jn.on("UserJoined", Gt), Jn.on("UserLeft", Yt), Jn.on("ReceiveDraftSaved", hn), Jn.on("ReceiveDraftResumed", Nn), Jn.on("ReceiveSignRequest", Tn);
       }, Oi = (Jn) => {
-        Jn.off("ReceiveDraftUpdate", Ct), Jn.off("UserJoined", jt), Jn.off("UserLeft", Yt), Jn.off("ReceiveDraftSaved", hn), Jn.off("ReceiveDraftResumed", Nn), Jn.off("ReceiveSignRequest", Tn);
+        Jn.off("ReceiveDraftUpdate", pt), Jn.off("UserJoined", Gt), Jn.off("UserLeft", Yt), Jn.off("ReceiveDraftSaved", hn), Jn.off("ReceiveDraftResumed", Nn), Jn.off("ReceiveSignRequest", Tn);
       };
       return np ? (clearTimeout(np), np = null, As && (ce.current = As, qA(As), As.state === zr.Connected ? (ae("Connected"), ie(true)) : As.state === zr.Connecting ? (ae("Connecting"), ie(false)) : As.state === zr.Reconnecting ? (ae("Reconnecting"), ie(false)) : (ae("Disconnected"), ie(false)))) : Dn(qA), () => {
         wn.current = true;
@@ -225213,12 +225220,12 @@ Input: ` + this.err.str);
     }, []), j.useEffect(() => {
       if (a) {
         G(true);
-        const Ct = a.studyId || a.radiologyStudyId;
-        if (Ct) {
+        const pt = a.studyId || a.radiologyStudyId;
+        if (pt) {
           (async () => {
             let hn = [];
             if (a.images && a.images.length > 0 && (hn = a.images.map((Nn) => Nn.fileUrl)), hn.length === 0) try {
-              const Nn = await fetch(`/api/v1/radiology/reports/${Ct}`, {
+              const Nn = await fetch(`/api/v1/radiology/reports/${pt}`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
                 }
@@ -225231,7 +225238,7 @@ Input: ` + this.err.str);
               console.warn("Failed to fetch study report details for PACS viewer:", Nn);
             }
             try {
-              const Nn = await Mc.getSeriesTree(Ct);
+              const Nn = await Mc.getSeriesTree(pt);
               Nn && Nn.series && (u(Nn), Nn.series.forEach((Tn) => {
                 Tn.instances && Tn.instances.forEach((qA) => {
                   const Oi = `/api/v1/radiology/pacs/instances/${qA.instanceId}/file`;
@@ -225243,8 +225250,8 @@ Input: ` + this.err.str);
             }
             f(hn);
           })();
-          const Yt = Ct.toString();
-          de.current && de.current !== Yt && ce.current && ce.current.state === "Connected" && Ce && ce.current.invoke("LeaveSession", de.current).catch((hn) => console.error(hn)), de.current = Yt, ce.current && ce.current.state === "Connected" && Ce && ce.current.invoke("JoinSession", Yt).catch((hn) => console.error(hn)), Bn(Ct);
+          const Yt = pt.toString();
+          de.current && de.current !== Yt && ce.current && ce.current.state === "Connected" && Ce && ce.current.invoke("LeaveSession", de.current).catch((hn) => console.error(hn)), de.current = Yt, ce.current && ce.current.state === "Connected" && Ce && ce.current.invoke("JoinSession", Yt).catch((hn) => console.error(hn)), Bn(pt);
         }
       }
     }, [
@@ -225253,30 +225260,30 @@ Input: ` + this.err.str);
       Ce
     ]), j.useEffect(() => {
       if (ue.current) {
-        const Ct = setTimeout(() => {
+        const pt = setTimeout(() => {
           try {
             ue.current.resize();
-          } catch (jt) {
-            console.error("Layout transition resize failed:", jt);
+          } catch (Gt) {
+            console.error("Layout transition resize failed:", Gt);
           }
         }, 350);
-        return () => clearTimeout(Ct);
+        return () => clearTimeout(pt);
       }
     }, [
       T
     ]);
-    const Bn = async (Ct) => {
+    const Bn = async (pt) => {
       try {
-        const jt = await fetch(`/api/v1/radiology/reports/${Ct}`, {
+        const Gt = await fetch(`/api/v1/radiology/reports/${pt}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
         });
-        if (jt.ok) {
-          const hn = await jt.json();
+        if (Gt.ok) {
+          const hn = await Gt.json();
           hn.report && (st(hn.report.findings || ""), it(hn.report.impression || ""), le(hn.report.additionalNotes || ""));
         }
-        const Yt = await fetch(`/api/v1/reports/source/RadiologyStudy/${Ct}`, {
+        const Yt = await fetch(`/api/v1/reports/source/RadiologyStudy/${pt}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
@@ -225285,25 +225292,25 @@ Input: ` + this.err.str);
           const hn = await Yt.json();
           Pe(hn.reportId);
         }
-      } catch (jt) {
-        console.error("Failed to load report draft:", jt);
+      } catch (Gt) {
+        console.error("Failed to load report draft:", Gt);
       }
     };
     j.useEffect(() => {
       a && ye ? (async () => {
         Rt(true);
         try {
-          const jt = await fetch(`/api/v1/reports/${ye}/data?forceLive=true`, {
+          const Gt = await fetch(`/api/v1/reports/${ye}/data?forceLive=true`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
             }
           });
-          if (jt.ok) {
-            const Yt = await jt.json();
+          if (Gt.ok) {
+            const Yt = await Gt.json();
             Ve(Yt);
           }
-        } catch (jt) {
-          console.error("Failed to load report data for preview:", jt);
+        } catch (Gt) {
+          console.error("Failed to load report data for preview:", Gt);
         } finally {
           Rt(false);
         }
@@ -225312,17 +225319,17 @@ Input: ` + this.err.str);
       (a == null ? void 0 : a.studyId) || (a == null ? void 0 : a.radiologyStudyId),
       ye
     ]);
-    const wn = j.useRef(false), Dn = async (Ct) => {
+    const wn = j.useRef(false), Dn = async (pt) => {
       if (As && As.state === zr.Connected) {
-        ce.current = As, Ct(As), ae("Connected"), ie(true);
+        ce.current = As, pt(As), ae("Connected"), ie(true);
         return;
       }
       if (As && As.state === zr.Connecting) {
-        ce.current = As, Ct(As), ae("Connecting"), ie(false);
+        ce.current = As, pt(As), ae("Connecting"), ie(false);
         return;
       }
       ae("Connecting"), ie(false);
-      const jt = new G1().withUrl("/radiologyCollaborationHub", {
+      const Gt = new G1().withUrl("/radiologyCollaborationHub", {
         accessTokenFactory: () => localStorage.getItem("synos_jwt"),
         skipNegotiation: true,
         transport: La.WebSockets
@@ -225332,34 +225339,34 @@ Input: ` + this.err.str);
         5e3,
         1e4
       ]).build();
-      As = jt, ce.current = jt, jt.onreconnecting((Yt) => {
-        ce.current === jt && (ae("Reconnecting"), ie(false));
-      }), jt.onreconnected((Yt) => {
-        ce.current === jt && (ae("Connected"), ie(true), jt.invoke("RegisterPresence", "Radiologist").catch((hn) => console.error(hn)), de.current && (jt.invoke("JoinSession", de.current).catch((hn) => console.error(hn)), Bn(de.current)));
-      }), jt.onclose((Yt) => {
-        ce.current === jt && (ae("Disconnected"), ie(false));
-      }), Ct(jt), jt.start().then(async () => {
-        if (ce.current === jt) {
+      As = Gt, ce.current = Gt, Gt.onreconnecting((Yt) => {
+        ce.current === Gt && (ae("Reconnecting"), ie(false));
+      }), Gt.onreconnected((Yt) => {
+        ce.current === Gt && (ae("Connected"), ie(true), Gt.invoke("RegisterPresence", "Radiologist").catch((hn) => console.error(hn)), de.current && (Gt.invoke("JoinSession", de.current).catch((hn) => console.error(hn)), Bn(de.current)));
+      }), Gt.onclose((Yt) => {
+        ce.current === Gt && (ae("Disconnected"), ie(false));
+      }), pt(Gt), Gt.start().then(async () => {
+        if (ce.current === Gt) {
           if (wn.current) {
-            jt.stop().catch((Yt) => console.error("Error stopping connection on cleanup:", Yt)), As === jt && (As = null), ce.current = null;
+            Gt.stop().catch((Yt) => console.error("Error stopping connection on cleanup:", Yt)), As === Gt && (As = null), ce.current = null;
             return;
           }
-          ae("Connected"), ie(true), await jt.invoke("RegisterPresence", "Radiologist"), de.current && await jt.invoke("JoinSession", de.current);
+          ae("Connected"), ie(true), await Gt.invoke("RegisterPresence", "Radiologist"), de.current && await Gt.invoke("JoinSession", de.current);
         }
       }).catch((Yt) => {
-        if (ce.current === jt) {
+        if (ce.current === Gt) {
           if (wn.current) {
-            As === jt && (As = null), ce.current = null;
+            As === Gt && (As = null), ce.current = null;
             return;
           }
           Yt && Yt.name === "AbortError" || (ae("Disconnected"), ie(false), console.error("Failed to connect to SignalR hub:", Yt));
         }
       });
-    }, MA = async (Ct, jt) => {
+    }, MA = async (pt, Gt) => {
       let Yt = {};
       const hn = a.radiologyStudyId || a.studyId;
-      if (st(jt), Yt = {
-        findings: jt,
+      if (st(Gt), Yt = {
+        findings: Gt,
         impression: Ne,
         additionalNotes: he
       }, ce.current && ce.current.state === "Connected" && a) try {
@@ -225369,10 +225376,10 @@ Input: ` + this.err.str);
     }, tA = async () => {
       if (!a) return;
       d(true);
-      const Ct = a.radiologyStudyId || a.studyId;
+      const pt = a.radiologyStudyId || a.studyId;
       try {
-        const jt = {
-          studyId: Ct,
+        const Gt = {
+          studyId: pt,
           findings: Se,
           impression: Ne,
           additionalNotes: he
@@ -225383,26 +225390,26 @@ Input: ` + this.err.str);
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(jt)
+          body: JSON.stringify(Gt)
         })).ok && (await Lt({
-          radiologyStudyId: Ct
-        }), ce.current && await ce.current.invoke("SendDraftSaved", Ct.toString()), alert("Draft Saved Successfully"));
-      } catch (jt) {
-        alert(jt.message);
+          radiologyStudyId: pt
+        }), ce.current && await ce.current.invoke("SendDraftSaved", pt.toString()), alert("Draft Saved Successfully"));
+      } catch (Gt) {
+        alert(Gt.message);
       } finally {
         d(false);
       }
     }, VA = async () => {
       if (!a) return;
       d(true);
-      const Ct = a.radiologyStudyId || a.studyId;
+      const pt = a.radiologyStudyId || a.studyId;
       if (!Se || typeof Se == "string" && !Se.trim()) {
         alert("Cannot sign report: Findings content is empty. Please enter your findings before signing."), d(false);
         return;
       }
       try {
         const Yt = {
-          studyId: Ct,
+          studyId: pt,
           findings: Se,
           impression: Ne,
           additionalNotes: he
@@ -225422,7 +225429,7 @@ Input: ` + this.err.str);
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            studyId: Ct
+            studyId: pt
           })
         });
         if (!hn.ok) {
@@ -225430,25 +225437,25 @@ Input: ` + this.err.str);
           throw new Error(Nn.message || "Failed to digitally sign report");
         }
         tr("Clinical Report Digitally Signed and Released successfully"), await Lt({
-          radiologyStudyId: Ct
+          radiologyStudyId: pt
         }), wt();
       } catch (Yt) {
         alert(Yt.message);
       } finally {
         d(false);
       }
-    }, [Tr, WA] = j.useState(null), tr = (Ct) => {
-      WA(Ct), setTimeout(() => WA(null), 4e3);
+    }, [Tr, WA] = j.useState(null), tr = (pt) => {
+      WA(pt), setTimeout(() => WA(null), 4e3);
     }, ki = ((a == null ? void 0 : a.studyStatus) || (a == null ? void 0 : a.status) || "").toLowerCase(), gA = !!(a && (ki === "signed" || ki === "finalized" || ki === "manualverified")), zA = !!(a && (gA || a.claimedByUserId && (t == null ? void 0 : t.id) && a.claimedByUserId.toLowerCase() === t.id.toLowerCase() || a.claimedByUserId && (t == null ? void 0 : t.resourceId) && a.claimedByUserId.toLowerCase() === t.resourceId.toLowerCase() || a.claimedByUserName && (t == null ? void 0 : t.name) && a.claimedByUserName.toLowerCase() === t.name.toLowerCase())), Qi = a && !gA && a.claimedByUserId && !zA, Lr = a && a.claimedAt && /* @__PURE__ */ new Date() - new Date(a.claimedAt) > 1800 * 1e3, DA = a && a.lastActivityAt && /* @__PURE__ */ new Date() - new Date(a.lastActivityAt) > 300 * 1e3, Xr = ((_a = t == null ? void 0 : t.role) == null ? void 0 : _a.toLowerCase()) === "admin" || ((_b = t == null ? void 0 : t.role) == null ? void 0 : _b.toLowerCase()) === "systemadmin", Jr = Lr || DA || Xr, ri = a ? {
       patientName: a.patientName || ((_c = a.patient) == null ? void 0 : _c.name) || "",
       age: a.patientAge || a.age || ((_d = a.patient) == null ? void 0 : _d.age) || "",
       gender: a.patientGender || a.gender || a.sex || ((_e2 = a.patient) == null ? void 0 : _e2.gender) || "",
       token: a.tokenNumber || a.token || ((_f = a.patient) == null ? void 0 : _f.mrn) || ""
-    } : null, dr = (Ct) => {
-      const jt = ((Ct == null ? void 0 : Ct.studyStatus) || (Ct == null ? void 0 : Ct.status) || "").toLowerCase();
-      return jt === "signed" || jt === "finalized" || jt === "manualverified";
-    }, $r = e.filter((Ct) => !Ct.claimedByUserId && !dr(Ct)).length, nr = e.filter((Ct) => {
-      const jt = dr(Ct), Yt = !Ct.claimedByUserId && !jt;
+    } : null, dr = (pt) => {
+      const Gt = ((pt == null ? void 0 : pt.studyStatus) || (pt == null ? void 0 : pt.status) || "").toLowerCase();
+      return Gt === "signed" || Gt === "finalized" || Gt === "manualverified";
+    }, $r = e.filter((pt) => !pt.claimedByUserId && !dr(pt)).length, nr = e.filter((pt) => {
+      const Gt = dr(pt), Yt = !pt.claimedByUserId && !Gt;
       return gn === "available" ? Yt : !Yt;
     });
     return i.jsxs("div", {
@@ -225542,11 +225549,11 @@ Input: ` + this.err.str);
                           children: "No studies awaiting reporting."
                         })
                       ]
-                    }) : nr.map((Ct) => {
-                      const jt = (a == null ? void 0 : a.studyId) === Ct.radiologyStudyId || (a == null ? void 0 : a.radiologyStudyId) === Ct.radiologyStudyId, Yt = !!(Ct.claimedByUserId && ((t == null ? void 0 : t.id) && Ct.claimedByUserId.toLowerCase() === t.id.toLowerCase() || (t == null ? void 0 : t.resourceId) && Ct.claimedByUserId.toLowerCase() === t.resourceId.toLowerCase() || (t == null ? void 0 : t.name) && Ct.claimedByUserName && Ct.claimedByUserName.toLowerCase() === t.name.toLowerCase())), hn = !!(Ct.claimedByUserId && !Yt), Nn = dr(Ct);
+                    }) : nr.map((pt) => {
+                      const Gt = (a == null ? void 0 : a.studyId) === pt.radiologyStudyId || (a == null ? void 0 : a.radiologyStudyId) === pt.radiologyStudyId, Yt = !!(pt.claimedByUserId && ((t == null ? void 0 : t.id) && pt.claimedByUserId.toLowerCase() === t.id.toLowerCase() || (t == null ? void 0 : t.resourceId) && pt.claimedByUserId.toLowerCase() === t.resourceId.toLowerCase() || (t == null ? void 0 : t.name) && pt.claimedByUserName && pt.claimedByUserName.toLowerCase() === t.name.toLowerCase())), hn = !!(pt.claimedByUserId && !Yt), Nn = dr(pt);
                       return i.jsxs("div", {
-                        onClick: () => Lt(Ct),
-                        className: `p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${jt ? "bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm" : "dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm"}`,
+                        onClick: () => Lt(pt),
+                        className: `p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${Gt ? "bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm" : "dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm"}`,
                         children: [
                           i.jsxs("div", {
                             className: "flex justify-between items-center mb-1",
@@ -225555,38 +225562,38 @@ Input: ` + this.err.str);
                                 className: "text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded",
                                 children: [
                                   "Token #",
-                                  Ct.tokenNumber
+                                  pt.tokenNumber
                                 ]
                               }),
                               i.jsx("span", {
                                 className: "text-[10px] font-black uppercase text-synos-primary",
-                                children: Ct.modality
+                                children: pt.modality
                               })
                             ]
                           }),
                           i.jsx("h4", {
                             className: "font-bold text-sm dark:text-zinc-200 text-zinc-800",
-                            children: Ct.patientName
+                            children: pt.patientName
                           }),
                           i.jsx("p", {
                             className: "text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1",
-                            children: Ct.testName
+                            children: pt.testName
                           }),
                           i.jsxs("div", {
                             className: "mt-2 flex items-center justify-between text-[10px]",
                             children: [
                               i.jsx("span", {
                                 className: `px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${Nn || Yt ? "dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200" : hn ? "dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-emerald-200" : "dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200"}`,
-                                children: Nn ? "Signed" : Yt ? "Claimed by Me" : hn ? `Locked (${Ct.claimedByUserName || "Other"})` : "Unclaimed"
+                                children: Nn ? "Signed" : Yt ? "Claimed by Me" : hn ? `Locked (${pt.claimedByUserName || "Other"})` : "Unclaimed"
                               }),
-                              Ct.status && i.jsx("span", {
+                              pt.status && i.jsx("span", {
                                 className: "dark:text-zinc-500 text-zinc-400 font-mono text-[9px]",
-                                children: Ct.status
+                                children: pt.status
                               })
                             ]
                           })
                         ]
-                      }, Ct.radiologyStudyId);
+                      }, pt.radiologyStudyId);
                     })
                   }),
                   i.jsx("div", {
@@ -225635,7 +225642,7 @@ Input: ` + this.err.str);
                   mode: "internal",
                   onSeriesSelect: C,
                   leftAction: i.jsx("button", {
-                    onClick: () => G((Ct) => !Ct),
+                    onClick: () => G((pt) => !pt),
                     className: `flex flex-col items-center justify-center px-3 py-1 rounded-lg border text-xxs font-bold transition shadow-sm ${T ? "bg-indigo-600 hover:bg-indigo-500 text-white border-indigo-400" : "bg-zinc-800 hover:bg-zinc-700 text-cyan-300 border-zinc-700"}`,
                     title: T ? "Expand Patient Queue Cards" : "Collapse Patient Queue Cards",
                     children: T ? i.jsxs(i.Fragment, {
@@ -225857,7 +225864,7 @@ Input: ` + this.err.str);
                         }),
                         i.jsx(Vm, {
                           value: Se,
-                          onChange: (Ct) => MA("findings", Ct),
+                          onChange: (pt) => MA("findings", pt),
                           disabled: c || !zA,
                           patientContext: ri,
                           onSaveDraft: tA,
@@ -225995,8 +226002,8 @@ Input: ` + this.err.str);
         i.jsx(NL, {
           hubConnection: ce.current,
           selectedStudy: a,
-          onSelectStudy: (Ct) => Lt({
-            radiologyStudyId: Ct
+          onSelectStudy: (pt) => Lt({
+            radiologyStudyId: pt
           }),
           role: "Radiologist"
         }),
