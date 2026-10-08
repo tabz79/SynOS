@@ -43,6 +43,16 @@ namespace SynOS.Api.Controllers.Radiology
             return false;
         }
 
+        private static string GetRootExceptionMessage(Exception ex)
+        {
+            var root = ex;
+            while (root.InnerException != null)
+            {
+                root = root.InnerException;
+            }
+            return root.Message;
+        }
+
         [HttpPost("{radiologyStudyId:guid}/upload")]
         [DisableRequestSizeLimit]
         [RequestFormLimits(MultipartBodyLengthLimit = 524288000)]
@@ -63,7 +73,7 @@ namespace SynOS.Api.Controllers.Radiology
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
             }
         }
 
@@ -85,7 +95,7 @@ namespace SynOS.Api.Controllers.Radiology
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
             }
         }
 
@@ -101,7 +111,7 @@ namespace SynOS.Api.Controllers.Radiology
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
             }
         }
 
@@ -127,7 +137,7 @@ namespace SynOS.Api.Controllers.Radiology
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
             }
         }
 
@@ -136,12 +146,19 @@ namespace SynOS.Api.Controllers.Radiology
         public async Task<IActionResult> ReindexStudy(Guid radiologyStudyId)
         {
             if (!TryGetUserId(out var userId)) return Unauthorized();
-            var result = await _pacsService.ReindexStudyAsync(radiologyStudyId, userId);
-            return Ok(result);
+            try
+            {
+                var result = await _pacsService.ReindexStudyAsync(radiologyStudyId, userId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
+            }
         }
 
         [HttpGet("studies/{radiologyStudyId:guid}/series-tree")]
-        [Authorize(Roles = "Admin,Radiologist,XRayTech,MriTech,CTTech,USTech,Pathologist,LabTech,Technician")]
+        [Authorize(Roles = "Admin,Radiologist,XRayTech,MriTech,CTTech,USTTech,Pathologist,LabTech,Technician")]
         public async Task<IActionResult> GetSeriesTree(Guid radiologyStudyId)
         {
             if (!TryGetUserId(out var userId)) return Unauthorized();
@@ -149,13 +166,19 @@ namespace SynOS.Api.Controllers.Radiology
             var request = HttpContext.Request;
             var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";
 
-            var result = await _pacsService.GetSeriesTreeAsync(radiologyStudyId, userId, apiBaseUrl);
-            
-            return Ok(result);
+            try
+            {
+                var result = await _pacsService.GetSeriesTreeAsync(radiologyStudyId, userId, apiBaseUrl);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
+            }
         }
 
         [HttpGet("studies/{radiologyStudyId:guid}/download-zip")]
-        [Authorize(Roles = "Admin,SuperAdmin,Radiologist,XRayTech,MriTech,CTTech,USTech,Pathologist,LabTech,Technician,Receptionist,Typist")]
+        [Authorize(Roles = "Admin,SuperAdmin,Radiologist,XRayTech,MriTech,CTTech,USTTech,Pathologist,LabTech,Technician,Receptionist,Typist")]
         public async Task<IActionResult> DownloadStudyZip(Guid radiologyStudyId)
         {
             TryGetUserId(out var userId);
@@ -166,7 +189,7 @@ namespace SynOS.Api.Controllers.Radiology
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = GetRootExceptionMessage(ex) });
             }
         }
     }
