@@ -31260,7 +31260,8 @@ Details: ${s.inner}`);
                       i.jsx(t8, {
                         columns: ue,
                         data: Ne,
-                        isLoading: c
+                        isLoading: c,
+                        onAction: de
                       })
                     ]
                   })
