@@ -24518,7 +24518,7 @@ Details: ${s.inner}`);
     };
     j.useEffect(() => {
       if (!e) {
-        h(null), x(null), setPaymentReceipt(null), Q(null), S(null), c(false), g("Cash");
+        h(null), x(null), Q(null), S(null), c(false), g("Cash");
         return;
       }
       (o || s) && A.visitId && S(A.visitId);

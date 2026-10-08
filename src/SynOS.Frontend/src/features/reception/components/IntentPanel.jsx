@@ -87,7 +87,6 @@ export function IntentPanel({ onVisitUpdated }) {
             // Reset local state when closed
             setSnapshot(null);
             setError(null);
-            setPaymentReceipt(null);
             setCurrentPatientId(null);
             setCurrentVisitId(null);
             setIsPrepaidIntent(false);
