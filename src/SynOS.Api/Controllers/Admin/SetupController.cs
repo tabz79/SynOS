@@ -692,7 +692,11 @@ namespace SynOS.Api.Controllers.Admin
                     if (root != null)
                     {
                         SetNodeValue(root, "ConnectionStrings:DefaultConnection", JsonValue.Create(connStr));
-                        SetNodeValue(root, "Jwt:Secret", JsonValue.Create(GenerateSecureKey(64)));
+                        var existingSecret = root["Jwt"]?["Secret"]?.GetValue<string>();
+                        if (string.IsNullOrWhiteSpace(existingSecret) || existingSecret.Contains("REPLACE_THIS_WITH_A_REAL_SECRET") || existingSecret.Contains("SynOS_Bootstrap"))
+                        {
+                            SetNodeValue(root, "Jwt:Secret", JsonValue.Create(GenerateSecureKey(64)));
+                        }
                         SetNodeValue(root, "Jwt:Issuer", JsonValue.Create("SynOS.Api"));
                         SetNodeValue(root, "Jwt:Audience", JsonValue.Create("SynOS.Client"));
                         SetNodeValue(root, "Pacs:RootPath", JsonValue.Create(dto.PacsStorageFolder ?? "C:\\SynOS_Files\\PACS"));

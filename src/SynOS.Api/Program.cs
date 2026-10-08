@@ -414,7 +414,18 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuers = allowedIssuers,
         ValidAudiences = allowedAudiences,
-        IssuerSigningKeys = signingKeys
+        IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+        {
+            var keys = new List<SecurityKey>();
+            var currentSecret = builder.Configuration["Jwt:Secret"];
+            if (!string.IsNullOrWhiteSpace(currentSecret))
+            {
+                keys.Add(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(currentSecret)));
+                keys.Add(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(currentSecret)));
+            }
+            keys.AddRange(signingKeys);
+            return keys;
+        }
     };
 
     options.Events = new JwtBearerEvents
