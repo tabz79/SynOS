@@ -42,32 +42,30 @@ export function ReceptionScreen() {
     // Helper: Normalize Backend DTO using shared API method
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
+    const refreshDashboard = async () => {
+        try {
+            const [summaryData, queueData] = await Promise.all([
+                ReceptionApi.getDashboardSummary(),
+                ReceptionApi.getActionQueue(showHistoryRef.current)
+            ]);
+            if (summaryData) setSummary(summaryData);
+            if (Array.isArray(queueData)) {
+                setActionQueue(normalizeQueueData(queueData));
+            }
+        } catch (e) {
+            console.error("Failed to refresh dashboard data", e);
+        } finally {
+            setIsLoadingQueue(false);
+        }
+    };
+
     // Wiring: Initial Load + SignalR Subscription
     useEffect(() => {
         // Pre-warm master catalogs in background immediately on mount (< 1 ms start)
         prewarmReceptionCatalogs();
 
         // 1. Initial Snapshot
-        const loadInitial = async () => {
-            try {
-                const [summaryData, queueData] = await Promise.all([
-                    ReceptionApi.getDashboardSummary(),
-                    ReceptionApi.getActionQueue(showHistoryRef.current) // Initial load
-                ]);
-
-                if (summaryData) setSummary(summaryData);
-                if (Array.isArray(queueData)) {
-                    console.log("DEBUG: Action Queue Raw:", queueData);
-                    setActionQueue(normalizeQueueData(queueData));
-                }
-            } catch (e) {
-                console.error("Failed to fetch initial dashboard data", e);
-            } finally {
-                setIsLoadingQueue(false);
-            }
-        };
-
-        loadInitial();
+        refreshDashboard();
 
         // 2. Connect SignalR
         const connect = async () => {
@@ -390,7 +388,7 @@ export function ReceptionScreen() {
                     </div>
 
                     {/* GPU-Accelerated Registration Panel Drawer */}
-                    <IntentPanel />
+                    <IntentPanel onVisitUpdated={refreshDashboard} />
                     <StockRequestPanel
                         isOpen={isInventoryModalOpen}
                         onClose={() => setIsInventoryModalOpen(false)}

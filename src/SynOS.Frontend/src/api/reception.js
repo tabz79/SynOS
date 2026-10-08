@@ -554,6 +554,8 @@ export const ReceptionApi = {
             }
             throw new Error(errorMessage);
         }
+        const json = await response.json().catch(() => ({}));
+        return json.data || json;
     },
 
     /**

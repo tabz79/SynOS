@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { BranchOperationsSignalRService } from '../lib/signalr';
 import { useAuth } from './AuthContext';
-import { generateThermalInvoiceHtml, generateThermalSlipHtml } from '../utils/thermalPrinter';
+import { generateThermalInvoiceHtml, generateThermalSlipHtml, legacyTriggerPrint } from '../utils/thermalPrinter';
 
 const PrintOrchestratorContext = createContext();
 
@@ -69,7 +69,13 @@ export const PrintOrchestratorProvider = ({ children }) => {
                             console.error("PrintOrchestrator: Failed to spool print to Electron IPC", err);
                         }
                     } else {
-                        console.warn("PrintOrchestrator: Received print command, but not running in Electron. Web printing fallback not yet implemented.", eventPayload);
+                        // WEB BROWSER FALLBACK: Dispatch via hidden iframe print or native dialog
+                        try {
+                            const invoiceHtml = generateThermalInvoiceHtml(eventPayload);
+                            await legacyTriggerPrint(invoiceHtml);
+                        } catch (err) {
+                            console.warn("PrintOrchestrator: Web thermal print fallback error", err);
+                        }
                     }
                 });
 
