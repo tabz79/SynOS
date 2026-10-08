@@ -52,7 +52,7 @@ namespace SynOS.Services.Operational
 
             // 2. Get Resource (Branch-aware)
             var targetBranch = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : SynOS.Data.DbInitializer.DefaultBranchId;
-            var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranch);
+            var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
             var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
             if (resource == null)
             {
@@ -76,6 +76,13 @@ namespace SynOS.Services.Operational
                 {
                     return Enumerable.Empty<ProcessingQueueItemDto>();
                 }
+            }
+            else if (resource.BranchId != targetBranch)
+            {
+                resource.BranchId = targetBranch;
+                resource.IsOnline = true;
+                resource.IsActive = true;
+                await _db.SaveChangesAsync();
             }
 
             // 3. Query Queue (Live / History Window)
@@ -146,7 +153,7 @@ namespace SynOS.Services.Operational
             var targetBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : SynOS.Data.DbInitializer.DefaultBranchId;
 
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranchId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
 
             if (resource == null)
             {
@@ -170,6 +177,13 @@ namespace SynOS.Services.Operational
                 {
                     return ProcessingResult.NoOperationalResource;
                 }
+            }
+            else if (resource.BranchId != targetBranchId)
+            {
+                resource.BranchId = targetBranchId;
+                resource.IsOnline = true;
+                resource.IsActive = true;
+                await _db.SaveChangesAsync();
             }
 
             // 3. Snapshot for Validation & Context
@@ -303,7 +317,7 @@ namespace SynOS.Services.Operational
             var targetBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : SynOS.Data.DbInitializer.DefaultBranchId;
 
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranchId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
 
             if (resource == null)
             {
@@ -327,6 +341,13 @@ namespace SynOS.Services.Operational
                 {
                     return ProcessingResult.NoOperationalResource;
                 }
+            }
+            else if (resource.BranchId != targetBranchId)
+            {
+                resource.BranchId = targetBranchId;
+                resource.IsOnline = true;
+                resource.IsActive = true;
+                await _db.SaveChangesAsync();
             }
 
             // 3. Snapshot for Validation & Context

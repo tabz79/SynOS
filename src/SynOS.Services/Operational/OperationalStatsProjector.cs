@@ -118,11 +118,14 @@ namespace SynOS.Services.Operational
             var date = evt.OccurredAt.Date;
             try
             {
-                using var transaction = await _context.Database.BeginTransactionAsync();
+                var strategy = _context.Database.CreateExecutionStrategy();
+                await strategy.ExecuteAsync(async () =>
+                {
+                    using var transaction = await _context.Database.BeginTransactionAsync();
                 
-                // 2. Idempotency Check (Event ID)
-                var isProcessed = await _context.ProcessedProjectionEvents
-                    .AnyAsync(p => p.EventId == evt.EventId && p.ProjectionName == "OperationalStats");
+                    // 2. Idempotency Check (Event ID)
+                    var isProcessed = await _context.ProcessedProjectionEvents
+                        .AnyAsync(p => p.EventId == evt.EventId && p.ProjectionName == "OperationalStats");
 
                 if (isProcessed) return;
 
@@ -447,6 +450,7 @@ namespace SynOS.Services.Operational
                         _context.VisitOperationalStates.Remove(visitState);
                     }
                 }
+                });
             }
             catch (Exception ex)
             {

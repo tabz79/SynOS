@@ -50,18 +50,26 @@ namespace SynOS.Api.Controllers
                 return BadRequest("Invalid assignment ID");
             }
 
-            var result = await _phlebotomyService.ClaimAssignmentAsync(request.AssignmentId);
-
-            return result switch
+            try
             {
-                ClaimResult.Success => Ok(new { success = true }),
-                ClaimResult.NotFound => NotFound("Assignment not found"),
-                ClaimResult.AlreadyClaimed => Conflict("Assignment already claimed or unavailable"),
-                ClaimResult.InvalidBranch => Forbid(), // Branch mismatch
-                ClaimResult.NotOperationalMode => Forbid(), // Must be in operational mode
-                ClaimResult.NoOperationalResource => Unauthorized("No operational resource found for user"),
-                _ => StatusCode(500, "An unexpected error occurred")
-            };
+                var result = await _phlebotomyService.ClaimAssignmentAsync(request.AssignmentId);
+
+                return result switch
+                {
+                    ClaimResult.Success => Ok(new { success = true }),
+                    ClaimResult.NotFound => NotFound("Assignment not found"),
+                    ClaimResult.AlreadyClaimed => Conflict("Assignment already claimed or unavailable"),
+                    ClaimResult.InvalidBranch => Forbid(), // Branch mismatch
+                    ClaimResult.NotOperationalMode => Forbid(), // Must be in operational mode
+                    ClaimResult.NoOperationalResource => Unauthorized("No operational resource found for user"),
+                    _ => StatusCode(500, "An unexpected error occurred")
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception in ClaimAssignment for AssignmentId {AssignmentId}: {Message}", request.AssignmentId, ex.Message);
+                return StatusCode(500, $"Internal error: {ex.Message}");
+            }
         }
         [HttpGet("plan/{visitId}")]
         public async Task<IActionResult> GetCollectionPlan(Guid visitId)

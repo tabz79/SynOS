@@ -202,7 +202,7 @@ namespace SynOS.Services.Phlebotomy
             var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
 
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranchId);
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
 
             if (resource == null)
             {
@@ -226,6 +226,13 @@ namespace SynOS.Services.Phlebotomy
                 {
                     return ClaimResult.NoOperationalResource;
                 }
+            }
+            else if (resource.BranchId != targetBranchId)
+            {
+                resource.BranchId = targetBranchId;
+                resource.IsOnline = true;
+                resource.IsActive = true;
+                await _db.SaveChangesAsync();
             }
 
             // 4. Validate Branch
@@ -323,7 +330,7 @@ namespace SynOS.Services.Phlebotomy
             if (targetBranch == Guid.Empty) targetBranch = SynOS.Data.DbInitializer.DefaultBranchId;
 
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == currentUserId && r.BranchId == targetBranch);
+                .FirstOrDefaultAsync(r => r.UserId == currentUserId);
 
             if (resource == null)
             {
@@ -338,6 +345,13 @@ namespace SynOS.Services.Phlebotomy
                     IsActive = true
                 };
                 _db.OperationalResources.Add(resource);
+                await _db.SaveChangesAsync();
+            }
+            else if (resource.BranchId != targetBranch)
+            {
+                resource.BranchId = targetBranch;
+                resource.IsOnline = true;
+                resource.IsActive = true;
                 await _db.SaveChangesAsync();
             }
             

@@ -7,6 +7,10 @@
 # 4. Publish backend (dotnet publish)
 # 5. Verify published index.html JS bundle hash exists exactly once in publish/wwwroot/assets
 
+param(
+    [switch]$SkipFrontend
+)
+
 $ErrorActionPreference = "Stop"
 
 $rootDir = "d:\Projects\SynOS-Synthesized-Lab-Intelligence"
@@ -17,17 +21,20 @@ $publishDir = "$rootDir\src\SynOS.Api\bin\Release\net8.0\win-x64\publish"
 
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host " [SynOS Deterministic Build Pipeline] Starting..." -ForegroundColor Cyan
+if ($SkipFrontend) {
+    Write-Host " [Fast Mode] -SkipFrontend specified: Preserving existing frontend assets" -ForegroundColor Magenta
+}
 Write-Host "==================================================" -ForegroundColor Cyan
 
 # STEP 1: CLEANING STALE BUILD ARTIFACTS
 Write-Host "`n[1/5] Cleaning stale directories..." -ForegroundColor Yellow
 
-if (Test-Path $distBuildDir) {
+if (-not $SkipFrontend -and (Test-Path $distBuildDir)) {
     Write-Host "  - Removing $distBuildDir"
     Remove-Item -Path $distBuildDir -Recurse -Force
 }
 
-if (Test-Path $apiWwwrootDir) {
+if (-not $SkipFrontend -and (Test-Path $apiWwwrootDir)) {
     Write-Host "  - Removing $apiWwwrootDir"
     Remove-Item -Path $apiWwwrootDir -Recurse -Force
 }
@@ -40,23 +47,27 @@ if (Test-Path $publishDir) {
 Write-Host "  -> Clean complete." -ForegroundColor Green
 
 # STEP 2: REBUILD FRONTEND
-Write-Host "`n[2/5] Rebuilding frontend (npm run build)..." -ForegroundColor Yellow
-Set-Location -Path $frontendDir
-& npx vite build
-if ($LASTEXITCODE -ne 0) {
-    Throw "Vite build failed with exit code $LASTEXITCODE"
-}
+if (-not $SkipFrontend) {
+    Write-Host "`n[2/5] Rebuilding frontend (npm run build)..." -ForegroundColor Yellow
+    Set-Location -Path $frontendDir
+    & npx vite build
+    if ($LASTEXITCODE -ne 0) {
+        Throw "Vite build failed with exit code $LASTEXITCODE"
+    }
 
-if (-not (Test-Path $distBuildDir)) {
-    Throw "Frontend build directory $distBuildDir was not created!"
-}
-Write-Host "  -> Frontend build successful." -ForegroundColor Green
+    if (-not (Test-Path $distBuildDir)) {
+        Throw "Frontend build directory $distBuildDir was not created!"
+    }
+    Write-Host "  -> Frontend build successful." -ForegroundColor Green
 
-# STEP 3: COPY TO WWWROOT
-Write-Host "`n[3/5] Copying dist-build to src/SynOS.Api/wwwroot..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path $apiWwwrootDir | Out-Null
-Copy-Item -Path "$distBuildDir\*" -Destination $apiWwwrootDir -Recurse -Force
-Write-Host "  -> Copy to wwwroot complete." -ForegroundColor Green
+    # STEP 3: COPY TO WWWROOT
+    Write-Host "`n[3/5] Copying dist-build to src/SynOS.Api/wwwroot..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Force -Path $apiWwwrootDir | Out-Null
+    Copy-Item -Path "$distBuildDir\*" -Destination $apiWwwrootDir -Recurse -Force
+    Write-Host "  -> Copy to wwwroot complete." -ForegroundColor Green
+} else {
+    Write-Host "`n[2/5 & 3/5] Skipping frontend build (reusing current wwwroot assets)..." -ForegroundColor Yellow
+}
 
 # STEP 4: PUBLISH BACKEND
 Write-Host "`n[4/5] Publishing backend (dotnet publish)..." -ForegroundColor Yellow
