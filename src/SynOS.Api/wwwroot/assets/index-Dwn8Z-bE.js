@@ -1306,7 +1306,7 @@ Error generating stack: ` + z.message + `
       var E = pe.p;
       return E !== 0 ? E : (E = window.event, E === void 0 ? 32 : ir(E.type));
     }
-    function VA(E, b) {
+    function KA(E, b) {
       var F = pe.p;
       try {
         return pe.p = E, b();
@@ -2420,10 +2420,10 @@ Error generating stack: ` + z.message + `
       for (F in b) if (b.hasOwnProperty(F) && F in bn) return it[E] = b[F];
       return E;
     }
-    var nn = Cn("animationend"), Ln = Cn("animationiteration"), fn = Cn("animationstart"), yA = Cn("transitionrun"), bA = Cn("transitionstart"), Rr = Cn("transitioncancel"), Rn = Cn("transitionend"), KA = /* @__PURE__ */ new Map(), si = "abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");
+    var nn = Cn("animationend"), Ln = Cn("animationiteration"), fn = Cn("animationstart"), yA = Cn("transitionrun"), bA = Cn("transitionstart"), Rr = Cn("transitioncancel"), Rn = Cn("transitionend"), VA = /* @__PURE__ */ new Map(), si = "abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");
     si.push("scrollEnd");
     function fr(E, b) {
-      KA.set(E, b), Yt(b, [
+      VA.set(E, b), Yt(b, [
         E
       ]);
     }
@@ -6979,7 +6979,7 @@ Error generating stack: ` + z.message + `
       gt(function() {
         var Pt = oe, sn = ke(F), un = [];
         e: {
-          var Vt = KA.get(E);
+          var Vt = VA.get(E);
           if (Vt !== void 0) {
             var Xt = uA, iA = E;
             switch (E) {
@@ -8651,14 +8651,14 @@ Error generating stack: ` + z.message + `
         if (F !== null) {
           if (b = F.tag, b === 13) {
             if (b = s(F), b !== null) {
-              E.blockedOn = b, VA(E.priority, function() {
+              E.blockedOn = b, KA(E.priority, function() {
                 lI(F);
               });
               return;
             }
           } else if (b === 31) {
             if (b = o(F), b !== null) {
-              E.blockedOn = b, VA(E.priority, function() {
+              E.blockedOn = b, KA(E.priority, function() {
                 lI(F);
               });
               return;
@@ -56568,9 +56568,9 @@ ${n}
       return ((_a2 = x == null ? void 0 : x.signatures) == null ? void 0 : _a2.some((pt) => pt.role === "Chief Pathologist / Director" || pt.hash === "BASELINE_IDENTITY" || pt.signatureImageBase64)) || false;
     }, [
       x
-    ]), tA = (pt) => pt && pt.trim().length > 0, VA = [];
-    Dn && MA || (tA(W == null ? void 0 : W.name) || VA.push("Full Name"), tA(W == null ? void 0 : W.designation) || VA.push("Professional Designation"), (W == null ? void 0 : W.signatureImageUrl) || VA.push("Digital Signature Image"));
-    const WA = VA.length === 0, [tr, ki] = j.useState("available"), dA = A.filter((pt) => !pt.verifiedByUserId).length, zA = A.filter((pt) => pt.patientName.toLowerCase().includes(H.toLowerCase()) || pt.testName.toLowerCase().includes(H.toLowerCase()) ? a ? tr === "available" ? pt.verifiedByUserId !== (t == null ? void 0 : t.id) : pt.verifiedByUserId === (t == null ? void 0 : t.id) : tr === "available" ? !pt.verifiedByUserId : Dn ? !!pt.verifiedByUserId : pt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Qi = async (pt) => {
+    ]), tA = (pt) => pt && pt.trim().length > 0, KA = [];
+    Dn && MA || (tA(W == null ? void 0 : W.name) || KA.push("Full Name"), tA(W == null ? void 0 : W.designation) || KA.push("Professional Designation"), (W == null ? void 0 : W.signatureImageUrl) || KA.push("Digital Signature Image"));
+    const WA = KA.length === 0, [tr, ki] = j.useState("available"), dA = A.filter((pt) => !pt.verifiedByUserId).length, zA = A.filter((pt) => pt.patientName.toLowerCase().includes(H.toLowerCase()) || pt.testName.toLowerCase().includes(H.toLowerCase()) ? a ? tr === "available" ? pt.verifiedByUserId !== (t == null ? void 0 : t.id) : pt.verifiedByUserId === (t == null ? void 0 : t.id) : tr === "available" ? !pt.verifiedByUserId : Dn ? !!pt.verifiedByUserId : pt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Qi = async (pt) => {
       try {
         await _A.claimReport(pt), await ne(), ki("assigned"), l(pt);
       } catch (Gt) {
@@ -56848,7 +56848,7 @@ ${n}
                                     className: "text-[10px] text-red-500 font-bold uppercase tracking-wider",
                                     children: [
                                       "Missing: ",
-                                      VA.join(" \u2022 ")
+                                      KA.join(" \u2022 ")
                                     ]
                                   })
                                 ]
@@ -58508,7 +58508,7 @@ ${n}
         ce(true);
       }, tA = (dA) => {
         ce(false);
-      }, VA = () => {
+      }, KA = () => {
         const dA = Pe.current;
         dA && tt(dA);
       }, Tr = () => {
@@ -58533,7 +58533,7 @@ ${n}
           Bn || (rt("Connected"), console.info("SignalR reconnected.", dA), wn.invoke("RegisterPresence", "Typist").catch((zA) => console.error(zA)));
         }), wn.onclose((dA) => {
           Bn || (rt("Disconnected"), console.error("SignalR connection closed.", dA));
-        }), wn.on("ReceiveReportDraftUpdate", Dn), wn.on("UserJoined", MA), wn.on("UserLeft", tA), wn.on("ReceiveReportDraftSaved", VA), wn.on("ReceiveReportDraftResumed", Tr), wn.on("ReceiveReportSignRequest", WA);
+        }), wn.on("ReceiveReportDraftUpdate", Dn), wn.on("UserJoined", MA), wn.on("UserLeft", tA), wn.on("ReceiveReportDraftSaved", KA), wn.on("ReceiveReportDraftResumed", Tr), wn.on("ReceiveReportSignRequest", WA);
         try {
           if (await wn.start(), Bn) {
             wn.stop().catch(() => {
@@ -58547,7 +58547,7 @@ ${n}
         }
       })();
       return () => {
-        Bn = true, wn && (wn.off("ReceiveReportDraftUpdate", Dn), wn.off("UserJoined", MA), wn.off("UserLeft", tA), wn.off("ReceiveReportDraftSaved", VA), wn.off("ReceiveReportDraftResumed", Tr), wn.off("ReceiveReportSignRequest", WA)), ki.finally(() => {
+        Bn = true, wn && (wn.off("ReceiveReportDraftUpdate", Dn), wn.off("UserJoined", MA), wn.off("UserLeft", tA), wn.off("ReceiveReportDraftSaved", KA), wn.off("ReceiveReportDraftResumed", Tr), wn.off("ReceiveReportSignRequest", WA)), ki.finally(() => {
           wn && wn.state === zr.Connected && wn.stop().catch(() => {
           });
         });
@@ -58595,10 +58595,10 @@ ${n}
           [Bn]: wn
         }, tA = ye == null ? void 0 : ye.current;
         if (tA && tA.state === "Connected" && l) {
-          const VA = {
+          const KA = {
             resultsState: MA
           };
-          tA.invoke("SendReportDraftUpdate", l.toString(), JSON.stringify(VA)).catch((Tr) => console.error("SignalR report broadcast failed:", Tr));
+          tA.invoke("SendReportDraftUpdate", l.toString(), JSON.stringify(KA)).catch((Tr) => console.error("SignalR report broadcast failed:", Tr));
         }
         return MA;
       });
@@ -58624,7 +58624,7 @@ ${n}
         if (Dn.ctrlKey) {
           Dn.preventDefault();
           const tA = -Dn.deltaY > 0 ? 1.05 : 0.95;
-          ue((VA) => Math.min(Math.max(VA * tA, 0.2), 3));
+          ue((KA) => Math.min(Math.max(KA * tA, 0.2), 3));
         }
       };
       return Bn.addEventListener("wheel", wn, {
@@ -58743,13 +58743,13 @@ ${n}
           return {
             ...wn,
             parameters: (_a3 = wn.parameters) == null ? void 0 : _a3.map((Dn) => {
-              const MA = f[Dn.code], tA = MA !== void 0 ? MA : Dn.value, VA = eP(tA, Dn.referenceRangeText || Dn.referenceRange);
+              const MA = f[Dn.code], tA = MA !== void 0 ? MA : Dn.value, KA = eP(tA, Dn.referenceRangeText || Dn.referenceRange);
               return {
                 ...Dn,
                 value: tA,
                 displayValue: tA,
-                flag: VA,
-                isAbnormal: VA !== "Normal" && VA !== ""
+                flag: KA,
+                isAbnormal: KA !== "Normal" && KA !== ""
               };
             })
           };
@@ -59169,7 +59169,7 @@ ${n}
                                         })
                                       }),
                                       Bn.parameters.map((Dn, MA) => {
-                                        const tA = f[Dn.parameterCode] !== void 0 ? f[Dn.parameterCode] : Dn.value || "", VA = eP(tA, Dn.referenceRange), Tr = VA !== "Normal" && VA !== "";
+                                        const tA = f[Dn.parameterCode] !== void 0 ? f[Dn.parameterCode] : Dn.value || "", KA = eP(tA, Dn.referenceRange), Tr = KA !== "Normal" && KA !== "";
                                         return i.jsxs("tr", {
                                           className: Je("group transition-all duration-300", Tr ? "dark:bg-amber-50/5 bg-amber-50" : "hover:dark:bg-white/[0.02] hover:bg-zinc-50"),
                                           children: [
@@ -59200,8 +59200,8 @@ ${n}
                                             i.jsx("td", {
                                               className: "px-3 py-1.5 last:rounded-r-xl border-y border-transparent",
                                               children: Tr && i.jsx("span", {
-                                                className: Je("text-[10px] font-bold uppercase px-2 py-0.5 rounded-full", (VA == null ? void 0 : VA.includes("Critical")) ? "bg-red-100 text-red-700" : VA === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"),
-                                                children: VA
+                                                className: Je("text-[10px] font-bold uppercase px-2 py-0.5 rounded-full", (KA == null ? void 0 : KA.includes("Critical")) ? "bg-red-100 text-red-700" : KA === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"),
+                                                children: KA
                                               })
                                             })
                                           ]
@@ -64671,7 +64671,7 @@ ${n}
       }
     };
     function ne({ selectedTest: He }) {
-      const [xt, it] = j.useState(null), [bn, Cn] = j.useState(true), [nn, Ln] = j.useState([]), [fn, yA] = j.useState([]), [bA, Rr] = j.useState([]), [Rn, KA] = j.useState([]), [si, fr] = j.useState([]), [mr, Mi] = j.useState(""), [la, sl] = j.useState(""), [AA, Ii] = j.useState(1), [ca, Tt] = j.useState("units"), [fc, Cc] = j.useState(0), Ls = bA.find((vn) => vn.consumableId === mr);
+      const [xt, it] = j.useState(null), [bn, Cn] = j.useState(true), [nn, Ln] = j.useState([]), [fn, yA] = j.useState([]), [bA, Rr] = j.useState([]), [Rn, VA] = j.useState([]), [si, fr] = j.useState([]), [mr, Mi] = j.useState(""), [la, sl] = j.useState(""), [AA, Ii] = j.useState(1), [ca, Tt] = j.useState("units"), [fc, Cc] = j.useState(0), Ls = bA.find((vn) => vn.consumableId === mr);
       j.useEffect(() => {
         Ls && Tt(aJ(Ls.unitOfMeasure));
       }, [
@@ -64693,7 +64693,7 @@ ${n}
             ar.getTubes().catch(() => []),
             Fn.getRoles().catch(() => [])
           ]);
-          Ln(Array.isArray(rr) ? rr : []), yA(Array.isArray(Da) ? Da : []), Rr(Array.isArray(Gr) ? Gr : []), KA(Array.isArray(lr) ? lr : []), fr(Array.isArray(ga) ? ga : []);
+          Ln(Array.isArray(rr) ? rr : []), yA(Array.isArray(Da) ? Da : []), Rr(Array.isArray(Gr) ? Gr : []), VA(Array.isArray(lr) ? lr : []), fr(Array.isArray(ga) ? ga : []);
         } catch (vn) {
           console.error("Failed loading inventory mappings for test", vn);
         } finally {
@@ -65375,7 +65375,7 @@ ${n}
         ]
       });
     }
-    const [Fr, re] = j.useState(1), bt = j.useRef(null), [Lt, gn] = j.useState("parameters"), [me, JA] = j.useState(false), [gr, Bn] = j.useState("digital"), [wn, Dn] = j.useState(false), [MA, tA] = j.useState(_D), VA = async () => {
+    const [Fr, re] = j.useState(1), bt = j.useRef(null), [Lt, gn] = j.useState("parameters"), [me, JA] = j.useState(false), [gr, Bn] = j.useState("digital"), [wn, Dn] = j.useState(false), [MA, tA] = j.useState(_D), KA = async () => {
       try {
         const xt = (await _A.getTemplates()).map((it) => {
           let bn = it.templateDsl;
@@ -65392,9 +65392,9 @@ ${n}
       }
     };
     j.useEffect(() => {
-      VA();
+      KA();
     }, []), j.useEffect(() => {
-      Lt === "report-setup" && VA();
+      Lt === "report-setup" && KA();
     }, [
       Lt
     ]);
@@ -65452,7 +65452,7 @@ ${n}
         } finally {
           f(false);
         }
-      })(), VA();
+      })(), KA();
     }, []);
     const tr = (He, xt, it, bn, Cn, nn, Ln = false) => {
       He.preventDefault(), He.stopPropagation();
@@ -65464,8 +65464,8 @@ ${n}
           [it]: Math.round(sl * 10) / 10,
           [bn]: Math.round(AA * 10) / 10
         } : ca));
-      }, KA = () => {
-        document.removeEventListener("pointermove", Rn), document.removeEventListener("pointerup", KA), tA((si) => {
+      }, VA = () => {
+        document.removeEventListener("pointermove", Rn), document.removeEventListener("pointerup", VA), tA((si) => {
           const fr = si.find((mr) => mr.id === xt);
           if (fr) {
             const mr = oF(fr), Mi = {
@@ -65483,7 +65483,7 @@ ${n}
           return si;
         });
       };
-      document.addEventListener("pointermove", Rn), document.addEventListener("pointerup", KA);
+      document.addEventListener("pointermove", Rn), document.addEventListener("pointerup", VA);
     }, [ki, dA] = j.useState((A == null ? void 0 : A.name) || ""), [zA, Qi] = j.useState((A == null ? void 0 : A.code) || ""), [Lr, DA] = j.useState((A == null ? void 0 : A.department) || ""), [Xr, Kr] = j.useState((A == null ? void 0 : A.isProfile) || false), [ri, dr] = j.useState((A == null ? void 0 : A.specimenTypeCode) || "SERUM"), [$r, nr] = j.useState((A == null ? void 0 : A.category) || "General"), [pt, Gt] = j.useState((A == null ? void 0 : A.modalityId) || ""), [Yt, hn] = j.useState(false), [Nn, Tn] = j.useState("formula"), [qA, Oi] = j.useState(""), [Jn, aA] = j.useState(""), [or, vi] = j.useState(false), [ba, ii] = j.useState(""), [Ms, Cs] = j.useState(false), [Ht, Ha] = j.useState(""), [wt, tn] = j.useState(""), [Gn, Wn] = j.useState(false), [nA, NA] = j.useState(""), [hi, Ar] = j.useState(""), [Ri, ei] = j.useState(false), [pi, Fs] = j.useState(""), [SA, fA] = j.useState(""), [xA, Br] = j.useState(false), [Di, ke] = j.useState(""), [Oe, Ze] = j.useState(""), [We, dt] = j.useState(false), [gt, Ut] = j.useState(""), [Bt, jt] = j.useState(""), [vt, cn] = j.useState(""), [An, an] = j.useState(""), [En, $e] = j.useState(""), [Ct, Kt] = j.useState(false), [In, CA] = j.useState(""), [uA, ti] = j.useState(""), [ni, Er] = j.useState(""), [ZA, OA] = j.useState(false), [Ir, xr] = j.useState(""), [LA, Si] = j.useState(""), [sA, Kn] = j.useState(""), [Vr, Zi] = j.useState(false), [Hi, Go] = j.useState(""), [Ws, Rg] = j.useState(""), [Ll, W0] = j.useState(""), [rl, Pc] = j.useState(false), [Gl, Mg] = j.useState(""), [_c, q0] = j.useState(""), [zd, Z0] = j.useState(""), [Uo, il] = j.useState(false), [uc, Yc] = j.useState(""), [Fg, xh] = j.useState(""), [Jc, X0] = j.useState(""), [qs, Zs] = j.useState(false), [Kc, Qe] = j.useState(""), [rn, kr] = j.useState(""), [ai, sa] = j.useState(""), [va, vf] = j.useState(false), [Od, lB] = j.useState(""), [EA, oa] = j.useState(""), [Tg, Vc] = j.useState(""), [al, Hd] = j.useState(false), [Lg, Pd] = j.useState(""), [hc, _d] = j.useState(""), [Ul, yh] = j.useState(""), Gg = (He) => {
       r(He), localStorage.setItem("synos_selected_test_id", He.id), dA(He.name), Qi(He.code), DA(He.department), Kr(He.isProfile), dr(He.specimenTypeCode || "SERUM"), nr(He.category || "General"), Gt(He.modalityId || ""), WA(false), hn(false), !He.isProfile && Lt === "profile-builder" && gn("parameters");
     }, Df = () => {
@@ -65711,10 +65711,10 @@ IMPRESSION:`,
       it.useInfant;
       const bA = it.infantMin !== void 0 && it.infantMin !== null ? it.infantMin : "", Rr = it.infantMax !== void 0 && it.infantMax !== null ? it.infantMax : "";
       it.useChild;
-      const Rn = it.childMin !== void 0 && it.childMin !== null ? it.childMin : "", KA = it.childMax !== void 0 && it.childMax !== null ? it.childMax : "";
+      const Rn = it.childMin !== void 0 && it.childMin !== null ? it.childMin : "", VA = it.childMax !== void 0 && it.childMax !== null ? it.childMax : "";
       it.useAdult;
       const si = it.adultMin !== void 0 && it.adultMin !== null ? it.adultMin : "", fr = it.adultMax !== void 0 && it.adultMax !== null ? it.adultMax : "";
-      Kt(it.useNewbornMale ?? false), CA(it.newbornMaleMin !== void 0 && it.newbornMaleMin !== null ? it.newbornMaleMin : ""), ti(it.newbornMaleMax !== void 0 && it.newbornMaleMax !== null ? it.newbornMaleMax : ""), Er(it.newbornMaleText || ""), OA(it.useNewbornFemale ?? false), xr(it.newbornFemaleMin !== void 0 && it.newbornFemaleMin !== null ? it.newbornFemaleMin : ""), Si(it.newbornFemaleMax !== void 0 && it.newbornFemaleMax !== null ? it.newbornFemaleMax : ""), Kn(it.newbornFemaleText || ""), Zi(it.useInfantMale ?? (it.useInfant ? true : bn)), Go(it.infantMaleMin !== void 0 && it.infantMaleMin !== null ? it.infantMaleMin : bA || Cn), Rg(it.infantMaleMax !== void 0 && it.infantMaleMax !== null ? it.infantMaleMax : Rr || nn), W0(it.infantMaleText || ""), Pc(it.useInfantFemale ?? (it.useInfant ? true : Ln)), Mg(it.infantFemaleMin !== void 0 && it.infantFemaleMin !== null ? it.infantFemaleMin : bA || fn), q0(it.infantFemaleMax !== void 0 && it.infantFemaleMax !== null ? it.infantFemaleMax : Rr || yA), Z0(it.infantFemaleText || ""), il(it.useChildMale ?? (it.useChild ? true : bn)), Yc(it.childMaleMin !== void 0 && it.childMaleMin !== null ? it.childMaleMin : Rn || Cn), xh(it.childMaleMax !== void 0 && it.childMaleMax !== null ? it.childMaleMax : KA || nn), X0(it.childMaleText || ""), Zs(it.useChildFemale ?? (it.useChild ? true : Ln)), Qe(it.childFemaleMin !== void 0 && it.childFemaleMin !== null ? it.childFemaleMin : Rn || fn), kr(it.childFemaleMax !== void 0 && it.childFemaleMax !== null ? it.childFemaleMax : KA || yA), sa(it.childFemaleText || ""), vf(it.useAdultMale ?? (it.useAdult ? true : bn)), lB(it.adultMaleMin !== void 0 && it.adultMaleMin !== null ? it.adultMaleMin : si || Cn), oa(it.adultMaleMax !== void 0 && it.adultMaleMax !== null ? it.adultMaleMax : fr || nn), Vc(it.adultMaleText || ""), Hd(it.useAdultFemale ?? (it.useAdult ? true : Ln)), Pd(it.adultFemaleMin !== void 0 && it.adultFemaleMin !== null ? it.adultFemaleMin : si || fn), _d(it.adultFemaleMax !== void 0 && it.adultFemaleMax !== null ? it.adultFemaleMax : fr || yA), yh(it.adultFemaleText || ""), hn(true);
+      Kt(it.useNewbornMale ?? false), CA(it.newbornMaleMin !== void 0 && it.newbornMaleMin !== null ? it.newbornMaleMin : ""), ti(it.newbornMaleMax !== void 0 && it.newbornMaleMax !== null ? it.newbornMaleMax : ""), Er(it.newbornMaleText || ""), OA(it.useNewbornFemale ?? false), xr(it.newbornFemaleMin !== void 0 && it.newbornFemaleMin !== null ? it.newbornFemaleMin : ""), Si(it.newbornFemaleMax !== void 0 && it.newbornFemaleMax !== null ? it.newbornFemaleMax : ""), Kn(it.newbornFemaleText || ""), Zi(it.useInfantMale ?? (it.useInfant ? true : bn)), Go(it.infantMaleMin !== void 0 && it.infantMaleMin !== null ? it.infantMaleMin : bA || Cn), Rg(it.infantMaleMax !== void 0 && it.infantMaleMax !== null ? it.infantMaleMax : Rr || nn), W0(it.infantMaleText || ""), Pc(it.useInfantFemale ?? (it.useInfant ? true : Ln)), Mg(it.infantFemaleMin !== void 0 && it.infantFemaleMin !== null ? it.infantFemaleMin : bA || fn), q0(it.infantFemaleMax !== void 0 && it.infantFemaleMax !== null ? it.infantFemaleMax : Rr || yA), Z0(it.infantFemaleText || ""), il(it.useChildMale ?? (it.useChild ? true : bn)), Yc(it.childMaleMin !== void 0 && it.childMaleMin !== null ? it.childMaleMin : Rn || Cn), xh(it.childMaleMax !== void 0 && it.childMaleMax !== null ? it.childMaleMax : VA || nn), X0(it.childMaleText || ""), Zs(it.useChildFemale ?? (it.useChild ? true : Ln)), Qe(it.childFemaleMin !== void 0 && it.childFemaleMin !== null ? it.childFemaleMin : Rn || fn), kr(it.childFemaleMax !== void 0 && it.childFemaleMax !== null ? it.childFemaleMax : VA || yA), sa(it.childFemaleText || ""), vf(it.useAdultMale ?? (it.useAdult ? true : bn)), lB(it.adultMaleMin !== void 0 && it.adultMaleMin !== null ? it.adultMaleMin : si || Cn), oa(it.adultMaleMax !== void 0 && it.adultMaleMax !== null ? it.adultMaleMax : fr || nn), Vc(it.adultMaleText || ""), Hd(it.useAdultFemale ?? (it.useAdult ? true : Ln)), Pd(it.adultFemaleMin !== void 0 && it.adultFemaleMin !== null ? it.adultFemaleMin : si || fn), _d(it.adultFemaleMax !== void 0 && it.adultFemaleMax !== null ? it.adultFemaleMax : fr || yA), yh(it.adultFemaleText || ""), hn(true);
     }, bh = () => {
       const He = A.parameters.map((bn) => bn.code === qA ? {
         ...bn,
@@ -65940,9 +65940,9 @@ Please use a unique code.`);
               return fc ? fc.code : null;
             }).filter(Boolean)
           };
-        }, bA = g.find((AA) => (AA.testCode || AA.TestCode || AA.code || "").toLowerCase() === fn.code.toLowerCase()), Rr = bA ? bA.testId || bA.TestId || bA.id : null, Rn = Rr && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(Rr), KA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) || Rn, si = KA ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) ? fn.id : Rr : fn.id;
+        }, bA = g.find((AA) => (AA.testCode || AA.TestCode || AA.code || "").toLowerCase() === fn.code.toLowerCase()), Rr = bA ? bA.testId || bA.TestId || bA.id : null, Rn = Rr && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(Rr), VA = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) || Rn, si = VA ? /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(fn.id) ? fn.id : Rr : fn.id;
         let fr = null, mr = [];
-        if (KA) {
+        if (VA) {
           const AA = {
             ...yA(fn),
             IsActive: fn.isActive !== false
@@ -65995,7 +65995,7 @@ ${AA}`);
     }, $0 = () => {
       var _a2, _b2, _c3;
       if (!me) return null;
-      const He = HSe(A, MA), xt = PSe(He), it = He.columns && He.columns.length > 0, bn = it ? He.columns.reduce((Rn, KA) => Rn + KA.weight, 0) : 1, Cn = n(A, t), nn = new Set(Cn.map((Rn) => Rn.code)), Ln = (A.parameters || []).filter((Rn) => !nn.has(Rn.code)), fn = [
+      const He = HSe(A, MA), xt = PSe(He), it = He.columns && He.columns.length > 0, bn = it ? He.columns.reduce((Rn, VA) => Rn + VA.weight, 0) : 1, Cn = n(A, t), nn = new Set(Cn.map((Rn) => Rn.code)), Ln = (A.parameters || []).filter((Rn) => !nn.has(Rn.code)), fn = [
         ...Cn,
         ...Ln
       ], yA = Lt === "interpretation" ? A.defaultInterpretation || "" : A.defaultInterpretation || ((A.reportStyle === "Descriptive Narrative" || ((_a2 = A.department) == null ? void 0 : _a2.toUpperCase()) === "RADIOLOGY") && fn && ((_b2 = fn[0]) == null ? void 0 : _b2.narrativeTemplate) ? (_c3 = fn[0]) == null ? void 0 : _c3.narrativeTemplate : ""), bA = (Lt === "interpretation" || A.showInterpretation) && !!yA, Rr = iP(yA);
@@ -66101,8 +66101,8 @@ ${AA}`);
                       i.jsxs("div", {
                         children: [
                           (gr === "digital" || gr === "physical" && !He.usePreprinted) && He.includeBranding && (() => {
-                            const Rn = (He.includeLogo ?? true) && !!He.logoUrl, KA = He.includeHeaderName ?? true, si = He.includeHeaderSubtitle ?? true;
-                            if (!Rn && !KA && !si) return null;
+                            const Rn = (He.includeLogo ?? true) && !!He.logoUrl, VA = He.includeHeaderName ?? true, si = He.includeHeaderSubtitle ?? true;
+                            if (!Rn && !VA && !si) return null;
                             const fr = Rn ? i.jsx("img", {
                               src: He.logoUrl,
                               alt: "Logo",
@@ -66121,10 +66121,10 @@ ${AA}`);
                                 fontSize: `${Math.max(10, (He.logoSize || 32) * 0.35)}px`
                               },
                               children: (He.brandNameText || He.clinicName || "SY").substring(0, 2).toUpperCase()
-                            }) : null, mr = KA || si ? i.jsxs("div", {
+                            }) : null, mr = VA || si ? i.jsxs("div", {
                               className: "relative z-10 text-left",
                               children: [
-                                KA && i.jsx("h4", {
+                                VA && i.jsx("h4", {
                                   style: {
                                     fontSize: `${He.brandNameSize || 14}px`,
                                     fontWeight: He.brandNameWeight || "900",
@@ -66403,7 +66403,7 @@ ${AA}`);
                               }),
                               A.reportStyle === "Two Column Grid" ? i.jsx("div", {
                                 className: "grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2",
-                                children: fn && fn.map((Rn, KA) => i.jsxs("div", {
+                                children: fn && fn.map((Rn, VA) => i.jsxs("div", {
                                   className: "border-b border-zinc-200 pb-1 flex justify-between items-center",
                                   children: [
                                     i.jsxs("div", {
@@ -66439,10 +66439,10 @@ ${AA}`);
                                       ]
                                     })
                                   ]
-                                }, KA))
+                                }, VA))
                               }) : A.reportStyle === "Descriptive Narrative" ? i.jsx("div", {
                                 className: "space-y-2 text-[8px] text-zinc-700 mt-2",
-                                children: fn && fn.map((Rn, KA) => i.jsxs("div", {
+                                children: fn && fn.map((Rn, VA) => i.jsxs("div", {
                                   className: Je(He.enableAbsolutePositioning ? "bg-transparent p-0 pb-2 border-b border-zinc-200 shadow-none rounded-none" : "bg-zinc-50 p-2 rounded-lg border border-zinc-200"),
                                   children: [
                                     i.jsxs("span", {
@@ -66472,28 +66472,28 @@ ${AA}`);
                                       ]
                                     })
                                   ]
-                                }, KA))
+                                }, VA))
                               }) : it ? i.jsxs("table", {
                                 className: Je("w-full text-left text-[8px] border-collapse mt-2", A.reportStyle === "Standard A4" && !He.enableAbsolutePositioning && "border border-zinc-200"),
                                 children: [
                                   i.jsx("thead", {
                                     children: i.jsx("tr", {
                                       className: Je(A.reportStyle === "Modern Tabular" ? He.enableAbsolutePositioning ? "bg-transparent text-zinc-600 font-bold border-t border-b border-zinc-200" : "bg-zinc-100 text-zinc-600 font-bold border-t border-b border-zinc-200" : He.enableAbsolutePositioning ? "bg-transparent border-t border-b border-zinc-200 text-zinc-400 font-bold" : "bg-zinc-50 border-b border-zinc-200 text-zinc-400 font-bold"),
-                                      children: He.columns.map((Rn, KA) => i.jsx("th", {
+                                      children: He.columns.map((Rn, VA) => i.jsx("th", {
                                         className: Je("py-1 px-2", A.reportStyle === "Standard A4" && "border-r border-zinc-200 last:border-r-0", Rn.alignment === "Left" ? "text-left" : Rn.alignment === "Center" ? "text-center" : "text-right"),
                                         style: {
                                           width: `${Rn.weight / bn * 100}%`
                                         },
                                         children: Rn.title
-                                      }, KA))
+                                      }, VA))
                                     })
                                   }),
                                   i.jsx("tbody", {
                                     className: "divide-y divide-zinc-200 text-zinc-800",
-                                    children: fn && fn.map((Rn, KA) => i.jsxs(Is.Fragment, {
+                                    children: fn && fn.map((Rn, VA) => i.jsxs(Is.Fragment, {
                                       children: [
                                         i.jsx("tr", {
-                                          className: Je(A.reportStyle === "Modern Tabular" && KA % 2 === 1 && !He.enableAbsolutePositioning && "bg-zinc-50/30"),
+                                          className: Je(A.reportStyle === "Modern Tabular" && VA % 2 === 1 && !He.enableAbsolutePositioning && "bg-zinc-50/30"),
                                           children: He.columns.map((si, fr) => {
                                             let mr = "";
                                             return si.code === "Parameter" ? mr = Rn.name : si.code === "Value" ? mr = N2(Rn) : si.code === "Unit" ? mr = Rn.unit : si.code === "ReferenceRange" ? mr = A.showRange ? Uy(Rn) : "" : si.code === "Methodology" && (mr = A.showMethod ? Rn.method : ""), i.jsx("td", {
@@ -66513,7 +66513,7 @@ ${AA}`);
                                           })
                                         })
                                       ]
-                                    }, KA))
+                                    }, VA))
                                   })
                                 ]
                               }) : i.jsxs("table", {
@@ -66548,8 +66548,8 @@ ${AA}`);
                                   }),
                                   i.jsx("tbody", {
                                     className: "divide-y divide-zinc-200 text-zinc-800",
-                                    children: fn && fn.map((Rn, KA) => i.jsxs("tr", {
-                                      className: Je(A.reportStyle === "Modern Tabular" && KA % 2 === 1 && !He.enableAbsolutePositioning && "bg-zinc-50/30"),
+                                    children: fn && fn.map((Rn, VA) => i.jsxs("tr", {
+                                      className: Je(A.reportStyle === "Modern Tabular" && VA % 2 === 1 && !He.enableAbsolutePositioning && "bg-zinc-50/30"),
                                       children: [
                                         i.jsx("td", {
                                           className: Je("py-1 px-2 font-semibold", A.reportStyle === "Standard A4" && !He.enableAbsolutePositioning && "border-r border-zinc-200"),
@@ -66572,7 +66572,7 @@ ${AA}`);
                                           children: Rn.method
                                         })
                                       ]
-                                    }, KA))
+                                    }, VA))
                                   })
                                 ]
                               }),
@@ -66633,7 +66633,7 @@ ${AA}`);
                             },
                             onPointerDown: He.enableAbsolutePositioning ? (Rn) => tr(Rn, He.id, "signatureX", "signatureY", xt.signatureX, xt.signatureY, true) : void 0,
                             className: Je("grid grid-cols-3 gap-6 pt-4 border-t border-dashed border-zinc-200 transition-all text-center", He.enableAbsolutePositioning && "hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 p-1 rounded"),
-                            children: A.signatureSlots.map((Rn, KA) => i.jsxs("div", {
+                            children: A.signatureSlots.map((Rn, VA) => i.jsxs("div", {
                               className: "text-center min-h-[45px] flex flex-col justify-end",
                               children: [
                                 (gr === "digital" || gr === "physical" && !He.usePreprinted) && He.includeBranding && i.jsx("span", {
@@ -66645,7 +66645,7 @@ ${AA}`);
                                   children: Rn
                                 })
                               ]
-                            }, KA))
+                            }, VA))
                           }),
                           !He.enableAbsolutePositioning && gr === "physical" && He.usePreprinted && i.jsxs("div", {
                             className: "h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10",
@@ -67365,11 +67365,11 @@ ${AA}`);
                               ...Rr[0],
                               [yA]: Rn
                             };
-                            const KA = {
+                            const VA = {
                               ...A,
                               parameters: Rr
-                            }, si = t.map((fr) => fr.id === A.id ? KA : fr);
-                            e(si), r(KA);
+                            }, si = t.map((fr) => fr.id === A.id ? VA : fr);
+                            e(si), r(VA);
                           };
                           return i.jsxs("div", {
                             className: "bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar",
@@ -67634,8 +67634,8 @@ Normal chest study.`);
                                                   onChange: (bA) => {
                                                     const Rr = parseInt(bA.target.value, 10);
                                                     if (!isNaN(Rr)) {
-                                                      const Rn = Math.max(1, Math.min(Cn.length, Rr)), KA = Math.max(0, Math.min(bn.length - 1, Rn - 1 - xt.length));
-                                                      Sf(yA, KA);
+                                                      const Rn = Math.max(1, Math.min(Cn.length, Rr)), VA = Math.max(0, Math.min(bn.length - 1, Rn - 1 - xt.length));
+                                                      Sf(yA, VA);
                                                     }
                                                   },
                                                   className: "w-7 bg-transparent text-center focus:bg-white dark:focus:bg-zinc-950 focus:ring-1 focus:ring-synos-primary outline-none py-0.25 rounded text-zinc-800 dark:text-zinc-200 font-semibold text-xs border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shrink-0"
@@ -75283,13 +75283,13 @@ Would you like to switch to "${nn.childTestName}" now?`) && Gg(bA) : alert(`Chil
       TargetArchitecture: "x64",
       RequiredDiskSpaceGB: 10,
       DatabaseVersion: "LocalDB v15.0"
-    }, null, 2)), [ce, ye] = j.useState([]), [Pe, xe] = j.useState(null), [Ve, ut] = j.useState(false), [Fe, Nt] = j.useState([]), [Mt, Rt] = j.useState(null), [ot, ht] = j.useState(false), [Ge, ze] = j.useState(null), [tt, Et] = j.useState(null), [Jt, en] = j.useState(false), [Mn, gA] = j.useState(null), [wA, eA] = j.useState(false), [ne, Fr] = j.useState(""), [re, bt] = j.useState(false), [Lt, gn] = j.useState(null), [me, JA] = j.useState([]), [gr, Bn] = j.useState([]), [wn, Dn] = j.useState([]), MA = j.useRef(null), tA = j.useRef(null), VA = j.useRef(null), [Tr, WA] = j.useState(0);
+    }, null, 2)), [ce, ye] = j.useState([]), [Pe, xe] = j.useState(null), [Ve, ut] = j.useState(false), [Fe, Nt] = j.useState([]), [Mt, Rt] = j.useState(null), [ot, ht] = j.useState(false), [Ge, ze] = j.useState(null), [tt, Et] = j.useState(null), [Jt, en] = j.useState(false), [Mn, gA] = j.useState(null), [wA, eA] = j.useState(false), [ne, Fr] = j.useState(""), [re, bt] = j.useState(false), [Lt, gn] = j.useState(null), [me, JA] = j.useState([]), [gr, Bn] = j.useState([]), [wn, Dn] = j.useState([]), MA = j.useRef(null), tA = j.useRef(null), KA = j.useRef(null), [Tr, WA] = j.useState(0);
     j.useEffect(() => {
-      if (e === "permissions" && VA.current) {
+      if (e === "permissions" && KA.current) {
         const Qe = () => {
-          WA(VA.current.scrollWidth);
+          KA.current && WA(KA.current.scrollWidth);
         }, rn = new ResizeObserver(Qe);
-        return rn.observe(VA.current), Qe(), () => rn.disconnect();
+        return rn.observe(KA.current), Qe(), () => rn.disconnect();
       }
     }, [
       e,
@@ -76850,7 +76850,7 @@ Backup ID: ${rn == null ? void 0 : rn.backupId}`);
                       onScroll: ki,
                       className: "max-h-[calc(100vh-220px)] overflow-auto border-x border-b dark:border-zinc-850 border-zinc-200/10 rounded-b-xl custom-scrollbar",
                       children: i.jsxs("table", {
-                        ref: VA,
+                        ref: KA,
                         className: "min-w-full text-left border-collapse text-xs",
                         children: [
                           i.jsx("thead", {
@@ -142178,7 +142178,7 @@ fn main(
           this.set(In[0], In[1]);
         }
       }
-      function VA() {
+      function KA() {
         this.__data__ = [];
       }
       function Tr($e) {
@@ -142201,7 +142201,7 @@ fn main(
           Ct
         ]) : Kt[In][1] = Ct, this;
       }
-      tA.prototype.clear = VA, tA.prototype.delete = Tr, tA.prototype.get = WA, tA.prototype.has = tr, tA.prototype.set = ki;
+      tA.prototype.clear = KA, tA.prototype.delete = Tr, tA.prototype.get = WA, tA.prototype.has = tr, tA.prototype.set = ki;
       function dA($e) {
         var Ct = -1, Kt = $e ? $e.length : 0;
         for (this.clear(); ++Ct < Kt; ) {
@@ -191369,7 +191369,7 @@ Input: ` + this.err.str);
                 Gn[++tn] = Wn;
               })), Gn;
             }
-            var tt, Et = Array.prototype, Jt = Function.prototype, en = Object.prototype, Mn = xe["__core-js_shared__"], gA = (tt = /[^.]+$/.exec(Mn && Mn.keys && Mn.keys.IE_PROTO || "")) ? "Symbol(src)_1." + tt : "", wA = Jt.toString, eA = en.hasOwnProperty, ne = en.toString, Fr = RegExp("^" + wA.call(eA).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), re = Fe ? xe.Buffer : void 0, bt = xe.Symbol, Lt = xe.Uint8Array, gn = Ge(Object.getPrototypeOf, Object), me = Object.create, JA = en.propertyIsEnumerable, gr = Et.splice, Bn = Object.getOwnPropertySymbols, wn = re ? re.isBuffer : void 0, Dn = Ge(Object.keys, Object), MA = Tn(xe, "DataView"), tA = Tn(xe, "Map"), VA = Tn(xe, "Promise"), Tr = Tn(xe, "Set"), WA = Tn(xe, "WeakMap"), tr = Tn(Object, "create"), ki = or(MA), dA = or(tA), zA = or(VA), Qi = or(Tr), Lr = or(WA), DA = bt ? bt.prototype : void 0, Xr = DA ? DA.valueOf : void 0;
+            var tt, Et = Array.prototype, Jt = Function.prototype, en = Object.prototype, Mn = xe["__core-js_shared__"], gA = (tt = /[^.]+$/.exec(Mn && Mn.keys && Mn.keys.IE_PROTO || "")) ? "Symbol(src)_1." + tt : "", wA = Jt.toString, eA = en.hasOwnProperty, ne = en.toString, Fr = RegExp("^" + wA.call(eA).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), re = Fe ? xe.Buffer : void 0, bt = xe.Symbol, Lt = xe.Uint8Array, gn = Ge(Object.getPrototypeOf, Object), me = Object.create, JA = en.propertyIsEnumerable, gr = Et.splice, Bn = Object.getOwnPropertySymbols, wn = re ? re.isBuffer : void 0, Dn = Ge(Object.keys, Object), MA = Tn(xe, "DataView"), tA = Tn(xe, "Map"), KA = Tn(xe, "Promise"), Tr = Tn(xe, "Set"), WA = Tn(xe, "WeakMap"), tr = Tn(Object, "create"), ki = or(MA), dA = or(tA), zA = or(KA), Qi = or(Tr), Lr = or(WA), DA = bt ? bt.prototype : void 0, Xr = DA ? DA.valueOf : void 0;
             function Kr(wt) {
               var tn = -1, Gn = wt ? wt.length : 0;
               for (this.clear(); ++tn < Gn; ) {
@@ -191620,7 +191620,7 @@ Input: ` + this.err.str);
             function vi(wt, tn) {
               return wt === tn || wt != wt && tn != tn;
             }
-            (MA && Oi(new MA(new ArrayBuffer(1))) != Xe || tA && Oi(new tA()) != ie || VA && Oi(VA.resolve()) != ue || Tr && Oi(new Tr()) != be || WA && Oi(new WA()) != et) && (Oi = function(wt) {
+            (MA && Oi(new MA(new ArrayBuffer(1))) != Xe || tA && Oi(new tA()) != ie || KA && Oi(KA.resolve()) != ue || Tr && Oi(new Tr()) != be || WA && Oi(new WA()) != et) && (Oi = function(wt) {
               var tn = ne.call(wt), Gn = tn == de ? wt.constructor : void 0, Wn = Gn ? or(Gn) : void 0;
               if (Wn) switch (Wn) {
                 case ki:
@@ -192110,7 +192110,7 @@ Input: ` + this.err.str);
             getDeltaPoints: () => nn,
             getDeltaRotation: () => fn,
             getMeanPoints: () => Rn,
-            getMeanTouchPoints: () => KA
+            getMeanTouchPoints: () => VA
           });
           var ae = {};
           k.r(ae), k.d(ae, {
@@ -192585,13 +192585,13 @@ Input: ` + this.err.str);
           const me = gn, JA = /* @__PURE__ */ new Set();
           function gr(N) {
             let I = !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-            const B = VA();
+            const B = KA();
             N && (I ? (function(y, w, v) {
               w.has(y) || (w.add(y), v.added.push(y));
             })(N, JA, B) : Tr(N, JA, B)), WA(B, JA);
           }
           function Bn() {
-            const N = VA();
+            const N = KA();
             (function(I, B) {
               I.forEach(((y) => {
                 Tr(y, I, B);
@@ -192621,7 +192621,7 @@ Input: ` + this.err.str);
               }), gr(N, I);
             }
           }
-          function VA() {
+          function KA() {
             return Object.freeze({
               added: [],
               removed: [],
@@ -193918,7 +193918,7 @@ Input: ` + this.err.str);
               ]
             });
           }
-          function KA(N) {
+          function VA(N) {
             return N.reduce(((I, B) => ({
               page: [
                 I.page[0] + B.page[0] / N.length,
@@ -194086,9 +194086,9 @@ Input: ` + this.err.str);
               viewportId: Pn.viewportId,
               camera: {},
               element: Pn.element,
-              startPoints: KA(Pn.startPointsList),
-              lastPoints: KA(B),
-              currentPoints: KA(I),
+              startPoints: VA(Pn.startPointsList),
+              lastPoints: VA(B),
+              currentPoints: VA(I),
               startPointsList: bA(Pn.startPointsList),
               lastPointsList: bA(B),
               currentPointsList: I,
@@ -194122,9 +194122,9 @@ Input: ` + this.err.str);
               startPointsList: bA(Pn.startPointsList),
               lastPointsList: bA(B),
               currentPointsList: I,
-              startPoints: KA(Pn.startPointsList),
-              lastPoints: KA(B),
-              currentPoints: KA(I),
+              startPoints: VA(Pn.startPointsList),
+              lastPoints: VA(B),
+              currentPoints: VA(I),
               deltaPoints: y,
               deltaDistance: w
             };
@@ -194140,7 +194140,7 @@ Input: ` + this.err.str);
                   viewportId: xi.viewportId,
                   camera: {},
                   currentPointsList: M,
-                  currentPoints: KA(M),
+                  currentPoints: VA(M),
                   taps: xi.taps
                 };
                 pc(L.element, Tt, L), xi = JSON.parse(JSON.stringify(Xs));
@@ -194174,13 +194174,13 @@ Input: ` + this.err.str);
                 element: Pn.element,
                 startPointsList: bA(Pn.startPointsList),
                 lastPointsList: bA(Pn.lastPointsList),
-                startPoints: Rr(KA(Pn.startPointsList)),
-                lastPoints: Rr(KA(Pn.lastPointsList))
+                startPoints: Rr(VA(Pn.startPointsList)),
+                lastPoints: Rr(VA(Pn.lastPointsList))
               };
               pc(v.element, AA, v);
             })(N)), Pn.pressDelay), (function(w) {
               Pn.isTouchStart = true, Pn.startTime = /* @__PURE__ */ new Date();
-              const v = Cn(w, Pn.element), R = KA(v), M = Cc, L = Ls, U = {
+              const v = Cn(w, Pn.element), R = VA(v), M = Cc, L = Ls, U = {
                 event: w,
                 eventName: la,
                 element: Pn.element,
@@ -221081,7 +221081,7 @@ Input: ` + this.err.str);
               ke.registerImageLoader("wadors", MA), ke.metaData.addProvider(fe);
             }
           };
-          function VA(ke, Oe) {
+          function KA(ke, Oe) {
             if (ke.elements[Oe] && ke.elements[Oe].length === 6) return [
               ke.uint16(Oe, 0),
               ke.uint16(Oe, 1),
@@ -221109,7 +221109,7 @@ Input: ` + this.err.str);
             return (function(Ze, We) {
               Ze.uint16("x00280103") === 0 ? (We.smallestPixelValue = Ze.uint16("x00280106"), We.largestPixelValue = Ze.uint16("x00280107")) : (We.smallestPixelValue = Ze.int16("x00280106"), We.largestPixelValue = Ze.int16("x00280107"));
             })(ke, Oe), Oe.photometricInterpretation === "PALETTE COLOR" && ke.elements.x00281101 && (function(Ze, We) {
-              We.redPaletteColorLookupTableDescriptor = VA(Ze, "x00281101"), We.greenPaletteColorLookupTableDescriptor = VA(Ze, "x00281102"), We.bluePaletteColorLookupTableDescriptor = VA(Ze, "x00281103"), We.redPaletteColorLookupTableDescriptor[0] === 0 && (We.redPaletteColorLookupTableDescriptor[0] = 65536, We.greenPaletteColorLookupTableDescriptor[0] = 65536, We.bluePaletteColorLookupTableDescriptor[0] = 65536);
+              We.redPaletteColorLookupTableDescriptor = KA(Ze, "x00281101"), We.greenPaletteColorLookupTableDescriptor = KA(Ze, "x00281102"), We.bluePaletteColorLookupTableDescriptor = KA(Ze, "x00281103"), We.redPaletteColorLookupTableDescriptor[0] === 0 && (We.redPaletteColorLookupTableDescriptor[0] = 65536, We.greenPaletteColorLookupTableDescriptor[0] = 65536, We.bluePaletteColorLookupTableDescriptor[0] = 65536);
               const dt = We.redPaletteColorLookupTableDescriptor[0], gt = Ze.elements.x00281201.length === dt ? 8 : 16;
               We.redPaletteColorLookupTableDescriptor[2] !== gt && (We.redPaletteColorLookupTableDescriptor[2] = gt, We.greenPaletteColorLookupTableDescriptor[2] = gt, We.bluePaletteColorLookupTableDescriptor[2] = gt), We.redPaletteColorLookupTableData = Tr(Ze, "x00281201", We.redPaletteColorLookupTableDescriptor), We.greenPaletteColorLookupTableData = Tr(Ze, "x00281202", We.greenPaletteColorLookupTableDescriptor), We.bluePaletteColorLookupTableData = Tr(Ze, "x00281203", We.bluePaletteColorLookupTableDescriptor);
             })(ke, Oe), Oe;
@@ -225543,7 +225543,7 @@ Input: ` + this.err.str);
       } finally {
         d(false);
       }
-    }, VA = async () => {
+    }, KA = async () => {
       if (!a) return;
       d(true);
       const pt = a.radiologyStudyId || a.studyId;
@@ -226029,7 +226029,7 @@ Input: ` + this.err.str);
                         children: "Save Draft"
                       }),
                       i.jsxs("button", {
-                        onClick: VA,
+                        onClick: KA,
                         disabled: c || dA || !Se && a.studyStatus !== "Signed",
                         className: `flex-1 py-1.5 font-bold text-xs uppercase tracking-wider rounded-lg transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${dA ? "bg-emerald-600 text-white cursor-default opacity-90" : "bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white"}`,
                         children: [

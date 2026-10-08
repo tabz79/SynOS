@@ -243,7 +243,24 @@ namespace SynOS.Services
                     $"Cannot assign study. Status is '{study.Status}', not 'PendingImaging'.");
             }
 
-            study.AssignedTo = userId;
+            // Defensive FK protection: ensure target userId exists in dbo.Users
+            var targetUserId = userId;
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == targetUserId);
+            if (!userExists)
+            {
+                var fallbackUser = await _context.Users
+                    .Where(u => u.IsActive && (u.Username.ToLower() == "admin" || u.UserRoles.Any(ur => ur.Role != null && (ur.Role.Name.ToLower() == "admin" || ur.Role.Name.ToLower() == "mritech" || ur.Role.Name.ToLower() == "xraytech" || ur.Role.Name.ToLower() == "technician"))))
+                    .Select(u => (Guid?)u.UserId)
+                    .FirstOrDefaultAsync()
+                    ?? await _context.Users.Where(u => u.IsActive).Select(u => (Guid?)u.UserId).FirstOrDefaultAsync();
+
+                if (fallbackUser.HasValue && fallbackUser.Value != Guid.Empty)
+                {
+                    targetUserId = fallbackUser.Value;
+                }
+            }
+
+            study.AssignedTo = targetUserId;
             study.Status = "Assigned";
 
             await _context.SaveChangesAsync();

@@ -147,7 +147,9 @@ export function SystemSettingsScreen() {
   useEffect(() => {
     if (activeTab === 'permissions' && tableRef.current) {
       const handleResize = () => {
-        setTableWidth(tableRef.current.scrollWidth);
+        if (tableRef.current) {
+          setTableWidth(tableRef.current.scrollWidth);
+        }
       };
       const observer = new ResizeObserver(handleResize);
       observer.observe(tableRef.current);

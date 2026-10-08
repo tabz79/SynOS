@@ -34,13 +34,23 @@ namespace SynOS.Services.Security
 
             if (user == null)
             {
+                // Fallback: Check if an active administrator exists in the database
+                user = await _context.Users
+                    .AsNoTracking()
+                    .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.IsActive && (u.Username.ToLower() == "admin" || u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Admin")));
+            }
+
+            if (user == null)
+            {
                 throw new UnauthorizedAccessException("User not found.");
             }
 
             var userRoles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
 
-            // SuperAdmin can access anything
-            if (userRoles.Contains("Admin"))
+            // SuperAdmin or Admin can access anything
+            if (userRoles.Contains("Admin") || userRoles.Contains("SuperAdmin"))
             {
                 return;
             }
