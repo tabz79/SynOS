@@ -235,7 +235,6 @@ export function IntentPanel({ onVisitUpdated }) {
 
     const handleCloseAndReset = () => {
         setError(null);
-        setPaymentReceipt(null);
         setSnapshot(null);
         handleClearPatient();
         closePanel();
@@ -244,28 +243,28 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // UNIFIED FOOTER ACTION HANDLER
     const [isActionSubmitting, setIsActionSubmitting] = useState(false);
-    const [paymentReceipt, setPaymentReceipt] = useState(null);
 
-    const handlePrintReceipt = async () => {
+    const handlePrintReceipt = async (overrideToken) => {
         const visitObj = snapshot?.visit;
-        if (!visitObj && !paymentReceipt) return;
+        if (!visitObj) return;
         try {
+            const tokenToPrint = overrideToken || visitObj?.visitToken || visitObj?.token || "WAIT";
             const printPayload = {
-                visitId: visitObj?.visitId || paymentReceipt?.visitId || currentVisitId,
-                token: visitObj?.visitToken || visitObj?.token || paymentReceipt?.token || "WAIT",
+                visitId: visitObj?.visitId || currentVisitId,
+                token: tokenToPrint,
                 patient: {
-                    name: snapshot?.patient?.fullName || snapshot?.patient?.name || paymentReceipt?.patientName || "Patient",
+                    name: snapshot?.patient?.fullName || snapshot?.patient?.name || "Patient",
                     sex: snapshot?.patient?.gender || "M",
                     age: snapshot?.patient?.age || "",
-                    mrn: snapshot?.patient?.mrn || paymentReceipt?.mrn || ""
+                    mrn: snapshot?.patient?.mrn || ""
                 },
                 billing: {
                     ...snapshot?.billing,
-                    netAmount: snapshot?.billing?.netAmount || paymentReceipt?.amount || 0,
-                    totalPaid: snapshot?.billing?.totalPaid || paymentReceipt?.amount || snapshot?.billing?.netAmount || 0,
-                    paymentMethod: snapshot?.billing?.paymentMethod || paymentReceipt?.method || paymentMethod || "Cash"
+                    netAmount: snapshot?.billing?.netAmount || 0,
+                    totalPaid: (snapshot?.billing?.totalPaid || 0) + remainingDue,
+                    paymentMethod: snapshot?.billing?.paymentMethod || paymentMethod || "Cash"
                 },
-                orders: (visitObj?.tests || paymentReceipt?.tests || []).map(t => ({
+                orders: (visitObj?.tests || []).map(t => ({
                     testCode: t.testCode,
                     testName: t.testName || t.name || t.testCode,
                     grossAmount: t.price || 0,
@@ -317,35 +316,16 @@ export function IntentPanel({ onVisitUpdated }) {
             try {
                 const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, remainingDue, paymentMethod);
 
-                const receiptNo = res?.lastPayment?.receiptNo || res?.receiptNo || `RCP-${Date.now().toString().slice(-8)}`;
-                setPaymentReceipt({
-                    receiptNo,
-                    amount: remainingDue,
-                    method: paymentMethod,
-                    token: snapshot.visit.visitToken || snapshot.visit.token || "WAIT",
-                    patientName: snapshot.patient?.fullName || snapshot.patient?.name || "Patient",
-                    mrn: snapshot.patient?.mrn,
-                    tests: snapshot.visit.tests || [],
-                    visitId: snapshot.visit.visitId
-                });
+                // Auto-print thermal receipt slip
+                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
 
-                // Optimistically update snapshot state to Paid
-                setSnapshot(prev => prev ? ({
-                    ...prev,
-                    billing: {
-                        ...prev.billing,
-                        paymentStatus: 'Paid',
-                        totalPaid: (prev.billing?.totalPaid || 0) + remainingDue,
-                        isLocked: true
-                    }
-                }) : null);
-
-                if (onVisitUpdated) onVisitUpdated();
+                // Instantly reset and close panel - zero extra clicks or modals
+                handleCloseAndReset();
             } catch (err) {
                 // If invoice was ALREADY in Paid status (e.g. from prior submit), sync smoothly
                 if (err.message && err.message.toLowerCase().includes("paid")) {
-                    await loadSnapshot();
-                    if (onVisitUpdated) onVisitUpdated();
+                    handlePrintReceipt().catch(err => console.error("Thermal print error:", err));
+                    handleCloseAndReset();
                 } else {
                     setError(err.message);
                 }
@@ -492,58 +472,6 @@ export function IntentPanel({ onVisitUpdated }) {
                     </>
                 )}
             </div>
-
-            {/* Receipt Confirmation Modal Overlay */}
-            {paymentReceipt && (
-                <div className="absolute inset-0 z-40 bg-black/85 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
-                    <div className="w-full max-w-md bg-zinc-900 border border-emerald-500/30 rounded-2xl p-6 shadow-2xl text-center space-y-5">
-                        <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/40 shadow-lg shadow-emerald-500/10">
-                            <CheckCircle2 className="w-9 h-9" />
-                        </div>
-
-                        <div>
-                            <h3 className="text-xl font-bold text-white tracking-tight">Payment Collected Successfully!</h3>
-                            <p className="text-zinc-400 text-xs mt-1">Visit finalized and ready for clinical operations</p>
-                        </div>
-
-                        <div className="bg-black/50 border border-white/10 rounded-xl p-4 text-left space-y-2.5 text-xs">
-                            <div className="flex justify-between py-1 border-b border-white/5">
-                                <span className="text-zinc-400">Receipt No</span>
-                                <span className="text-emerald-400 font-mono font-bold text-sm">{paymentReceipt.receiptNo}</span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-white/5">
-                                <span className="text-zinc-400">Amount Paid</span>
-                                <span className="text-white font-bold text-sm">₹{paymentReceipt.amount?.toLocaleString()} <span className="text-zinc-400 text-xs font-normal">({paymentReceipt.method})</span></span>
-                            </div>
-                            <div className="flex justify-between py-1 border-b border-white/5">
-                                <span className="text-zinc-400">Patient</span>
-                                <span className="text-zinc-200 font-medium">{paymentReceipt.patientName} {paymentReceipt.mrn ? `(${paymentReceipt.mrn})` : ''}</span>
-                            </div>
-                            <div className="flex justify-between py-1">
-                                <span className="text-zinc-400">Token ID</span>
-                                <span className="text-cyan-400 font-mono font-bold text-sm">{paymentReceipt.token}</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 pt-2">
-                            <button
-                                type="button"
-                                onClick={handlePrintReceipt}
-                                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-zinc-800 text-white hover:bg-zinc-700 border border-white/10 transition-all active:scale-95 shadow-sm"
-                            >
-                                <Printer className="w-4 h-4" /> Print Receipt
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCloseAndReset}
-                                className="flex-1 py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
-                            >
-                                Complete <ArrowRight className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Footer / Status Bar - UNIFIED BUTTON */}
             <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>

@@ -175,7 +175,7 @@ namespace SynOS.Services
                 if (targetVisit != null) 
                 {
                     targetVisit.Status = VisitStatus.Paid;
-                    if (targetVisit.Token.StartsWith("DRAFT"))
+                    if (targetVisit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || targetVisit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
                     {
                         await _visitService.AssignOfficialTokenAsync(targetVisit.VisitId, paymentDto.ReceivedByUserId);
                     }

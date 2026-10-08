@@ -11,6 +11,7 @@ namespace SynOS.Models.DTOs
         public decimal PendingAmount { get; set; }
         public LastPaymentDto LastPayment { get; set; } = new();
         public string VisitStatus { get; set; } = string.Empty;
+        public string? Token { get; set; }
     }
 
     public class LastPaymentDto

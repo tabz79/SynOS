@@ -863,11 +863,17 @@ namespace SynOS.Services
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
 
             // Only assign if it's still a DRAFT or doesn't have a proper token yet
-            if (!visit.Token.StartsWith("DRAFT")) return visit.Token;
+            if (!visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) && !visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)) 
+                return visit.Token;
 
-            var newToken = await GenerateDailyTokenAsync(visit.Department, _labTimeProvider.GetLabToday(), actorUserId);
+            var branchId = (visit.BranchId.HasValue && visit.BranchId.Value != Guid.Empty) 
+                ? visit.BranchId.Value 
+                : _userContext.CurrentBranchId;
+
+            var newToken = await GenerateDailyTokenAsync(visit.Department, _labTimeProvider.GetLabToday(), actorUserId, branchId);
             
             visit.Token = newToken;
+            visit.TokenDate = _labTimeProvider.GetLabToday();
             visit.UpdatedAt = DateTimeOffset.UtcNow;
             
             await _context.SaveChangesAsync();
@@ -985,10 +991,20 @@ namespace SynOS.Services
             return cancellation;
         }
 
-        private async Task<string> GenerateDailyTokenAsync(string department, DateTime labLocalDay, Guid actorUserId)
+        private async Task<string> GenerateDailyTokenAsync(string department, DateTime labLocalDay, Guid actorUserId, Guid? targetBranchId = null)
         {
-            var branchId = _userContext.CurrentBranchId;
-            var branch = await _context.Branches.FindAsync(branchId);
+            var branchId = (targetBranchId.HasValue && targetBranchId.Value != Guid.Empty) 
+                ? targetBranchId.Value 
+                : _userContext.CurrentBranchId;
+
+            var branch = await _context.Branches.FindAsync(branchId)
+                ?? await _context.Branches.FirstOrDefaultAsync(b => b.Code == "MAIN")
+                ?? await _context.Branches.FirstOrDefaultAsync();
+
+            if (branch != null)
+            {
+                branchId = branch.BranchId;
+            }
             
             // Use first 3 letters of branch code as prefix, fallback to LAB
             string prefix = "LAB";

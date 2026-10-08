@@ -660,6 +660,14 @@ namespace SynOS.Services
             // If payment is complete, trigger creation of lab work items
             if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
             {
+                // Assign official daily token (e.g. MAI-001) from branch counter
+                var dbVisitForToken = await _context.Visits.FindAsync(visit.VisitId);
+                if (dbVisitForToken != null && (dbVisitForToken.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || dbVisitForToken.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)))
+                {
+                    var officialToken = await _visitService.AssignOfficialTokenAsync(dbVisitForToken.VisitId, userId);
+                    visit.Token = officialToken;
+                }
+
                 var orders = await _context.Orders
                     .Where(o => o.VisitId == visit.VisitId)
                     .ToListAsync();
@@ -953,7 +961,8 @@ namespace SynOS.Services
                     ReceiptNo = payment.ReceiptNo,
                     ReceivedAt = payment.ReceivedAt
                 },
-                VisitStatus = updatedVisit?.Status.ToString()
+                VisitStatus = updatedVisit?.Status.ToString(),
+                Token = updatedVisit?.Token ?? visit.Token
             };
         }
 
