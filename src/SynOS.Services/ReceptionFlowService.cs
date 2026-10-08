@@ -583,53 +583,78 @@ namespace SynOS.Services
             }
             var invoiceId = visit.Invoices.First().InvoiceId;
 
-            var paymentDto = new PaymentRequestDto
+            // Defensive FK protection: ensure userId resolves to an existing active user in dbo.Users
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == userId);
+            if (!userExists)
             {
-                Amount = request.Amount,
-                Method = request.Method,
-                ReceiptNo = request.ReceiptNo,
-                ReceivedByUserId = userId
-            };
+                var adminUser = await _context.Users
+                    .Where(u => u.IsActive && (u.Username.ToLower() == "admin" || u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name.ToLower() == "admin")))
+                    .Select(u => (Guid?)u.UserId)
+                    .FirstOrDefaultAsync()
+                    ?? await _context.Users.Where(u => u.IsActive).Select(u => (Guid?)u.UserId).FirstOrDefaultAsync()
+                    ?? (visit.CreatedByUserId != Guid.Empty ? visit.CreatedByUserId : (Guid?)null);
 
-            var payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
+                if (adminUser.HasValue && adminUser.Value != Guid.Empty)
+                {
+                    userId = adminUser.Value;
+                }
+            }
+
+            var existingInvoice = await _context.Invoices
+                .Include(i => i.Payments)
+                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
+            Payment payment;
+            if (existingInvoice != null && string.Equals(existingInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+            {
+                // Idempotent retry: Invoice was already recorded as Paid (e.g. from prior network attempt or study insertion retry)
+                payment = existingInvoice.Payments.OrderByDescending(p => p.ReceivedAt).FirstOrDefault()
+                    ?? new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = invoiceId,
+                        Amount = request.Amount,
+                        Method = request.Method,
+                        ReceiptNo = request.ReceiptNo ?? $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = userId
+                    };
+            }
+            else
+            {
+                var paymentDto = new PaymentRequestDto
+                {
+                    Amount = request.Amount,
+                    Method = request.Method,
+                    ReceiptNo = request.ReceiptNo,
+                    ReceivedByUserId = userId
+                };
+
+                payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
+            }
 
             var updatedInvoice = await _context.Invoices
                 .Include(i => i.Payments)
                 .FirstAsync(i => i.InvoiceId == invoiceId);
 
             // --- STAGE 1: IMMUTABLE FACT CREATION (Before Event Emission) ---
-            var factId = Guid.NewGuid();
-            var fact = new PaymentConfirmedFact(
-                factId,
-                PaymentDirection.In, // Was Inbound
-                payment.Amount,
-                userId, // Counterparty (User collecting it) - strictly acceptable for now? Or Patient?
-                // Definition says "CounterpartyId". In reception context, Payer is Patient.
-                // But typically counterparty is the entity dealing with us.
-                // Let's use PatientId if available, or just fallback to User (as Receiver).
-                // Actually, let's look at the constructor again. CounterpartyId.
-                // For Inbound, Counterparty is Payer. So visit.PatientId.
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow,
-                payment.PaymentId,
-                payment.Method
-            );
-            // We need to set Counterparty to PatientId.
-            // But we can't change the constructor here easily.
-            // Re-instantiate with PatientId.
-             var factFinal = new PaymentConfirmedFact(
-                factId,
-                PaymentDirection.In, // Was Inbound
-                payment.Amount,
-                visit.PatientId, // Payer
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow,
-                payment.PaymentId,
-                payment.Method
-            );
-            
-            _context.PaymentConfirmedFacts.Add(factFinal);
-            await _context.SaveChangesAsync();
+            var factExists = await _context.PaymentConfirmedFacts.AnyAsync(f => f.ReferenceId == payment.PaymentId);
+            if (!factExists)
+            {
+                var factFinal = new PaymentConfirmedFact(
+                    Guid.NewGuid(),
+                    PaymentDirection.In, // Was Inbound
+                    payment.Amount,
+                    visit.PatientId, // Payer
+                    DateTimeOffset.UtcNow,
+                    DateTimeOffset.UtcNow,
+                    payment.PaymentId,
+                    payment.Method
+                );
+                
+                _context.PaymentConfirmedFacts.Add(factFinal);
+                await _context.SaveChangesAsync();
+            }
             // ------------------------------------------------------------
 
             // If payment is complete, trigger creation of lab work items
@@ -718,7 +743,17 @@ namespace SynOS.Services
 
                     if (isRadiology)
                     {
-                        if (!test.ModalityId.HasValue)
+                        var modalityId = test.ModalityId;
+                        if (!modalityId.HasValue || modalityId.Value == Guid.Empty)
+                        {
+                            modalityId = await _context.ModalityMasters
+                                .Where(m => m.Name == test.Category || m.Code == test.Category)
+                                .Select(m => (Guid?)m.ModalityId)
+                                .FirstOrDefaultAsync()
+                                ?? await _context.ModalityMasters.Select(m => (Guid?)m.ModalityId).FirstOrDefaultAsync();
+                        }
+
+                        if (!modalityId.HasValue)
                         {
                             throw new InvalidOperationException($"Test '{test.TestCode}' belongs to Radiology department but has no Imaging Modality assigned.");
                         }
@@ -732,8 +767,8 @@ namespace SynOS.Services
                                 VisitId = visit.VisitId,
                                 PatientId = visit.PatientId,
                                 VisitTestId = order.OrderId,
-                                ModalityId = test.ModalityId.Value,
-                                Modality = test.ModalityMaster?.Name ?? "Unknown", // Backward compatibility string
+                                ModalityId = modalityId.Value,
+                                Modality = test.ModalityMaster?.Name ?? test.Category ?? "Unknown", // Backward compatibility string
                                 AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(visit.BranchId ?? throw new InvalidOperationException("Visit BranchId is required for Accession")),
                                 Status = "PendingImaging",
                                 CreatedBy = userId,
@@ -745,7 +780,7 @@ namespace SynOS.Services
                             {
                                 ReportId = Guid.NewGuid(),
                                 VisitId = visit.VisitId,
-                                PatientId = visit.Patient.PatientId,
+                                PatientId = visit.PatientId,
                                 Department = "Radiology",
                                 SourceType = "RadiologyStudy",
                                 SourceId = newStudy.RadiologyStudyId,
@@ -773,7 +808,7 @@ namespace SynOS.Services
 
                 // --- SPECIMEN ARCHITECTURE TRANSITION ---
                 // If Pathology involved, trigger Specimen Planning
-                if (visit.Department == "Pathology")
+                if (hasPathology)
                 {
                     await TransitionToSpecimenPlannedAsync(visit.VisitId);
                 }
@@ -813,18 +848,23 @@ namespace SynOS.Services
                     try
                     {
                         var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
-                        if (dbVisit != null && !dbVisit.CurrentAssignmentId.HasValue && dbVisit.BranchId.HasValue)
+                        if (dbVisit != null)
                         {
-                            WorkType workType = visit.Department switch
+                            if (hasRadiology && !hasPathology && dbVisit.Department != "Radiology")
                             {
-                                "Pathology" => WorkType.SampleCollection,
-                                "Radiology" => WorkType.Imaging,
-                                _ => WorkType.AdminTask
-                            };
+                                dbVisit.Department = "Radiology";
+                            }
 
-                            // REFACTOR: Use CreateUnclaimedWorkAssignmentAsync instead of auto-assigning
-                            var assignment = await _routingEngine.CreateUnclaimedWorkAssignmentAsync(workType, visit.VisitId, dbVisit.BranchId.Value, visit.Department);
-                            dbVisit.CurrentAssignmentId = assignment.AssignmentId;
+                            if (!dbVisit.CurrentAssignmentId.HasValue && dbVisit.BranchId.HasValue)
+                            {
+                                WorkType workType = (hasRadiology && !hasPathology)
+                                    ? WorkType.Imaging
+                                    : (hasPathology ? WorkType.SampleCollection : WorkType.AdminTask);
+
+                                string dept = (hasRadiology && !hasPathology) ? "Radiology" : dbVisit.Department;
+                                var assignment = await _routingEngine.CreateUnclaimedWorkAssignmentAsync(workType, visit.VisitId, dbVisit.BranchId.Value, dept);
+                                dbVisit.CurrentAssignmentId = assignment.AssignmentId;
+                            }
                             await _context.SaveChangesAsync();
                         }
                     }

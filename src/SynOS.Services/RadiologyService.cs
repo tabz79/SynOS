@@ -268,8 +268,29 @@ namespace SynOS.Services
                 throw new KeyNotFoundException($"Visit with ID '{visitId}' not found.");
             }
 
+            // Defensive FK protection: ensure userId resolves to an existing active user in dbo.Users
+            var userExists = await _context.Users.AnyAsync(u => u.UserId == userId);
+            if (!userExists)
+            {
+                var adminUser = await _context.Users
+                    .Where(u => u.IsActive && (u.Username.ToLower() == "admin" || u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name.ToLower() == "admin")))
+                    .Select(u => (Guid?)u.UserId)
+                    .FirstOrDefaultAsync()
+                    ?? await _context.Users.Where(u => u.IsActive).Select(u => (Guid?)u.UserId).FirstOrDefaultAsync()
+                    ?? (visit.CreatedByUserId != Guid.Empty ? visit.CreatedByUserId : (Guid?)null);
+
+                if (adminUser.HasValue && adminUser.Value != Guid.Empty)
+                {
+                    userId = adminUser.Value;
+                }
+            }
+
             var radiologyOrders = visit.Orders
-                .Where(o => o.Test != null && o.Department == "Radiology")
+                .Where(o => o.Test != null && (
+                    string.Equals(o.Department, "Radiology", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(o.Test.DepartmentMaster?.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase) ||
+                    o.Test.Category == "MRI" || o.Test.Category == "CT" || o.Test.Category == "X-Ray"
+                ))
                 .ToList();
 
             if (!radiologyOrders.Any())
@@ -294,13 +315,23 @@ namespace SynOS.Services
 
                 if (order.Test == null) continue;
 
+                var modalityId = order.Test.ModalityId;
+                if (!modalityId.HasValue || modalityId.Value == Guid.Empty)
+                {
+                    modalityId = await _context.ModalityMasters
+                        .Where(m => m.Name == order.Test.Category || m.Code == order.Test.Category)
+                        .Select(m => (Guid?)m.ModalityId)
+                        .FirstOrDefaultAsync()
+                        ?? await _context.ModalityMasters.Select(m => (Guid?)m.ModalityId).FirstOrDefaultAsync();
+                }
+
                 var newStudy = new RadiologyStudy
                 {
                     RadiologyStudyId = Guid.NewGuid(),
                     VisitId = visit.VisitId,
                     PatientId = visit.PatientId,
                     VisitTestId = order.OrderId,
-                    ModalityId = order.Test.ModalityId ?? throw new InvalidOperationException($"Test '{order.Test.TestCode}' belongs to a Radiology department but has no ModalityId assigned."),
+                    ModalityId = modalityId ?? Guid.Empty,
                     Modality = order.Test.ModalityMaster?.Name ?? order.Test.Category ?? "Unknown",
                     Status = "PendingImaging",
                     CreatedBy = userId,
