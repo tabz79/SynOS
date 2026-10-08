@@ -36,13 +36,19 @@ namespace SynOS.Services
         {
             var rawUsername = request.Username?.Trim() ?? string.Empty;
 
-            // Enterprise User Lookup: Exact match or canonical clinical alias
+            var cleanInput = rawUsername.Trim();
+            var cleanPrefix = cleanInput.Contains("@") ? cleanInput.Split('@')[0].Trim() : cleanInput;
+
+            // Enterprise User Lookup: Case-insensitive username, prefix, or email match
             var user = await _context.Users
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
-                .FirstOrDefaultAsync(u => u.Username == rawUsername || u.Email == rawUsername
-                    || (rawUsername.Equals("drvasu", StringComparison.OrdinalIgnoreCase) && (u.Username == "pathologist" || u.Username == "drvasu" || u.Email == "pathologist@lab.com"))
-                    || (rawUsername.Equals("pathologist", StringComparison.OrdinalIgnoreCase) && (u.Username == "drvasu" || u.Username == "pathologist" || u.Email == "pathologist@lab.com")));
+                .FirstOrDefaultAsync(u => 
+                    u.Username.ToLower() == cleanInput.ToLower() || 
+                    u.Username.ToLower() == cleanPrefix.ToLower() ||
+                    (!string.IsNullOrEmpty(u.Email) && u.Email.ToLower() == cleanInput.ToLower())
+                    || (cleanInput.Equals("drvasu", StringComparison.OrdinalIgnoreCase) && (u.Username == "pathologist" || u.Username == "drvasu" || u.Email == "pathologist@lab.com"))
+                    || (cleanInput.Equals("pathologist", StringComparison.OrdinalIgnoreCase) && (u.Username == "drvasu" || u.Username == "pathologist" || u.Email == "pathologist@lab.com")));
 
             bool passwordValid = false;
             if (user != null)

@@ -31,6 +31,7 @@ export function FirstRunWizard() {
     const [middlewareKey, setMiddlewareKey] = useState('');
     
     // Admin fields
+    const [adminUsername, setAdminUsername] = useState('admin');
     const [adminName, setAdminName] = useState('Administrator');
     const [adminEmail, setAdminEmail] = useState('');
     const [adminPassword, setAdminPassword] = useState('');
@@ -130,7 +131,10 @@ export function FirstRunWizard() {
                         setDbName(data.databaseName);
                         setSelectedExistingDb(data.databaseName);
                     }
-                    if (data.adminUsername) setAdminEmail(data.adminUsername);
+                    if (data.adminUsername) {
+                        setAdminUsername(data.adminUsername);
+                        setAdminEmail(data.adminUsername.includes('@') ? data.adminUsername : `${data.adminUsername}@synos.local`);
+                    }
                     if (data.licenseActivated) {
                         setLicenseInfo({ success: true });
                     }
@@ -154,7 +158,7 @@ export function FirstRunWizard() {
                     licenseActivated: licenseActivatedVal !== undefined ? licenseActivatedVal : (licenseInfo !== null),
                     databaseServer: dbServer,
                     databaseName: dbName,
-                    adminUsername: adminEmail || 'Administrator'
+                    adminUsername: adminUsername.trim() || 'admin'
                 })
             });
         } catch (err) {
@@ -214,6 +218,11 @@ export function FirstRunWizard() {
     const handleAdminSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+
+        if (!adminUsername || !adminUsername.trim()) {
+            setError("Administrator Username / ID is required.");
+            return;
+        }
 
         if (adminPassword !== adminConfirmPassword) {
             setError("Passwords do not match.");
@@ -329,8 +338,10 @@ export function FirstRunWizard() {
                     documentStorageFolder: documentFolder,
                     pacsStorageFolder: pacsFolder,
                     workingDirectory: workingDir,
-                    adminUsername: adminEmail,
-                    adminPassword: adminPassword
+                    adminUsername: adminUsername.trim() || 'admin',
+                    adminPassword: adminPassword,
+                    adminName: adminName.trim() || 'Administrator',
+                    adminEmail: adminEmail.trim() || `${adminUsername.trim() || 'admin'}@synos.local`
                 })
             });
             const initRes = await initCheck.json();
@@ -604,6 +615,19 @@ export function FirstRunWizard() {
                     {step === 2 && (
                         <form onSubmit={handleAdminSubmit} className="space-y-4 animate-in fade-in duration-300">
                             <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Administrator Username / ID</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={adminUsername}
+                                    onChange={(e) => setAdminUsername(e.target.value)}
+                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/25 transition-all text-sm font-mono font-semibold"
+                                    placeholder="e.g. testadmin or admin"
+                                />
+                                <span className="text-[10px] text-zinc-500 block">Use this exact username at the login screen to sign in as Administrator.</span>
+                            </div>
+
+                            <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Full Name</label>
                                 <input
                                     type="text"
@@ -611,19 +635,18 @@ export function FirstRunWizard() {
                                     value={adminName}
                                     onChange={(e) => setAdminName(e.target.value)}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/25 transition-all text-sm"
-                                    placeholder="e.g. Dr. John Doe"
+                                    placeholder="e.g. System Administrator"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address (Login Identity)</label>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Email Address</label>
                                 <input
                                     type="email"
-                                    required
                                     value={adminEmail}
                                     onChange={(e) => setAdminEmail(e.target.value)}
                                     className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/25 transition-all text-sm"
-                                    placeholder="admin@laboratory.com"
+                                    placeholder="admin@laboratory.com (optional)"
                                 />
                             </div>
 

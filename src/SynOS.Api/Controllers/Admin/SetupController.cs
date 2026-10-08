@@ -513,8 +513,25 @@ namespace SynOS.Api.Controllers.Admin
                     }
 
                     User targetAdmin = null;
-                    var adminUsernameClean = dto.AdminUsername.Contains("@") ? dto.AdminUsername.Split('@')[0] : dto.AdminUsername;
-                    var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == adminUsernameClean.ToLower() || u.Email.ToLower() == dto.AdminUsername.ToLower());
+                    var adminUsernameClean = !string.IsNullOrWhiteSpace(dto.AdminUsername) ? dto.AdminUsername.Trim() : (dto.AdminEmail?.Contains("@") == true ? dto.AdminEmail.Split('@')[0].Trim() : "admin");
+                    if (adminUsernameClean.Contains("@"))
+                    {
+                        adminUsernameClean = adminUsernameClean.Split('@')[0].Trim();
+                    }
+
+                    var emailVal = !string.IsNullOrWhiteSpace(dto.AdminEmail) 
+                        ? dto.AdminEmail.Trim() 
+                        : (dto.AdminUsername?.Contains("@") == true ? dto.AdminUsername.Trim() : $"{adminUsernameClean}@synos.local");
+                    var nameVal = !string.IsNullOrWhiteSpace(dto.AdminName) 
+                        ? dto.AdminName.Trim() 
+                        : "Administrator";
+
+                    // Match existing user by username OR email
+                    var existingUser = await context.Users.FirstOrDefaultAsync(u => 
+                        u.Username.ToLower() == adminUsernameClean.ToLower() || 
+                        (!string.IsNullOrEmpty(dto.AdminUsername) && u.Username.ToLower() == dto.AdminUsername.ToLower()) ||
+                        (!string.IsNullOrEmpty(u.Email) && (u.Email.ToLower() == emailVal.ToLower() || u.Email.ToLower() == adminUsernameClean.ToLower())));
+
                     if (existingUser == null)
                     {
                         var userId = Guid.NewGuid();
@@ -522,8 +539,8 @@ namespace SynOS.Api.Controllers.Admin
                         {
                             UserId = userId,
                             Username = adminUsernameClean,
-                            Email = dto.AdminUsername,
-                            Name = "Administrator",
+                            Email = emailVal,
+                            Name = nameVal,
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
                             IsActive = true,
                             Designation = "Administrator",
@@ -554,8 +571,8 @@ namespace SynOS.Api.Controllers.Admin
                         {
                             EmployeeId = Guid.NewGuid(),
                             UserId = userId,
-                            FirstName = "Admin",
-                            LastName = "User",
+                            FirstName = nameVal,
+                            LastName = "Admin",
                             Email = targetAdmin.Email,
                             IsActive = true,
                             JobTitle = "Administrator",
@@ -569,6 +586,9 @@ namespace SynOS.Api.Controllers.Admin
                     else
                     {
                         targetAdmin = existingUser;
+                        existingUser.Username = adminUsernameClean;
+                        if (!string.IsNullOrWhiteSpace(nameVal) && (existingUser.Name == "Administrator" || string.IsNullOrWhiteSpace(existingUser.Name))) existingUser.Name = nameVal;
+                        if (!string.IsNullOrWhiteSpace(emailVal) && string.IsNullOrEmpty(existingUser.Email)) existingUser.Email = emailVal;
                         existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword);
                         existingUser.IsActive = true;
                         existingUser.CanUseOperationalMode = true;
@@ -1382,6 +1402,8 @@ namespace SynOS.Api.Controllers.Admin
 
         public string? AdminUsername { get; set; }
         public string? AdminPassword { get; set; }
+        public string? AdminName { get; set; }
+        public string? AdminEmail { get; set; }
     }
 
     public class SetupStateDto

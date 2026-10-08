@@ -526,6 +526,8 @@ var
   Lines: TArrayOfString;
   I, ExitCode: Integer;
   FoundDefault: Boolean;
+  DoneFile: String;
+  WaitCount, SpinIdx: Integer;
 begin
   cbDbName.Items.Clear;
   if not FileExists(ExpandConstant('{tmp}\discover-databases.ps1')) then
@@ -534,13 +536,16 @@ begin
   end;
   ScriptPath := ExpandConstant('{tmp}\discover-databases.ps1');
   OutPath := ExpandConstant('{tmp}\synos_dbs.txt');
+  DoneFile := ExpandConstant('{tmp}\synos_dbs_done.flag');
   
   if FileExists(OutPath) then
     DeleteFile(OutPath);
+  if FileExists(DoneFile) then
+    DeleteFile(DoneFile);
 
   if lblLoadingDb <> nil then
   begin
-    lblLoadingDb.Caption := 'Discovering databases... Please wait';
+    lblLoadingDb.Caption := '(*) Connecting to SQL Server...';
     lblLoadingDb.Visible := True;
     WizardForm.NextButton.Enabled := False;
     WizardForm.BackButton.Enabled := False;
@@ -549,7 +554,26 @@ begin
   end;
     
   try
-    Exec('powershell.exe', '-ExecutionPolicy Bypass -File "' + ScriptPath + '" -InstanceName "' + InstanceName + '" -OutputFile "' + OutPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+    Exec('powershell.exe', '-ExecutionPolicy Bypass -Command "& { & ''' + ScriptPath + ''' -InstanceName ''' + InstanceName + ''' -OutputFile ''' + OutPath + '''; New-Item -Path ''' + DoneFile + ''' -ItemType File -Force | Out-Null }"', '', SW_HIDE, ewNoWait, ExitCode);
+
+    WaitCount := 0;
+    SpinIdx := 0;
+    while (not FileExists(DoneFile)) and (WaitCount < 150) do
+    begin
+      Sleep(100);
+      WaitCount := WaitCount + 1;
+      SpinIdx := (SpinIdx + 1) mod 4;
+      if lblLoadingDb <> nil then
+      begin
+        case SpinIdx of
+          0: lblLoadingDb.Caption := '◐ Discovering databases...';
+          1: lblLoadingDb.Caption := '◓ Discovering databases...';
+          2: lblLoadingDb.Caption := '◑ Discovering databases...';
+          3: lblLoadingDb.Caption := '◒ Discovering databases...';
+        end;
+      end;
+      WizardForm.Refresh;
+    end;
   finally
     if lblLoadingDb <> nil then
     begin
@@ -559,6 +583,8 @@ begin
       WizardForm.Cursor := crDefault;
       WizardForm.Refresh;
     end;
+    if FileExists(DoneFile) then
+      DeleteFile(DoneFile);
   end;
   
   FoundDefault := False;
