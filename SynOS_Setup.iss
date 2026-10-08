@@ -115,6 +115,7 @@ var
   UseExistingRadio, InstallExpressRadio: TRadioButton;
   cbInstances: TNewComboBox;
   SelectedInstanceName: String;
+  lblLoadingDb: TLabel;
 
   SqlPrereqPage: TWizardPage;
   lblSqlPrereqTitle, lblSqlPrereqDesc, lblSqlStatus: TLabel;
@@ -536,8 +537,29 @@ begin
   
   if FileExists(OutPath) then
     DeleteFile(OutPath);
+
+  if lblLoadingDb <> nil then
+  begin
+    lblLoadingDb.Caption := 'Discovering databases... Please wait';
+    lblLoadingDb.Visible := True;
+    WizardForm.NextButton.Enabled := False;
+    WizardForm.BackButton.Enabled := False;
+    WizardForm.Cursor := crHourGlass;
+    WizardForm.Refresh;
+  end;
     
-  Exec('powershell.exe', '-ExecutionPolicy Bypass -File "' + ScriptPath + '" -InstanceName "' + InstanceName + '" -OutputFile "' + OutPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+  try
+    Exec('powershell.exe', '-ExecutionPolicy Bypass -File "' + ScriptPath + '" -InstanceName "' + InstanceName + '" -OutputFile "' + OutPath + '"', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+  finally
+    if lblLoadingDb <> nil then
+    begin
+      lblLoadingDb.Visible := False;
+      WizardForm.NextButton.Enabled := True;
+      WizardForm.BackButton.Enabled := True;
+      WizardForm.Cursor := crDefault;
+      WizardForm.Refresh;
+    end;
+  end;
   
   FoundDefault := False;
   if FileExists(OutPath) then
@@ -758,6 +780,17 @@ begin
   CreateSqlPrereqPage;
   CreateDbConfigPage;
   CreatePacsFolderPage;
+  
+  // Dynamic loading indicator beside the Back button for operations taking a few seconds (e.g. database discovery)
+  lblLoadingDb := TLabel.Create(WizardForm);
+  lblLoadingDb.Parent := WizardForm;
+  lblLoadingDb.Caption := 'Discovering databases... Please wait';
+  lblLoadingDb.Font.Style := [fsBold];
+  lblLoadingDb.Font.Color := clNavy;
+  lblLoadingDb.Top := WizardForm.BackButton.Top + ScaleY(4);
+  lblLoadingDb.Left := WizardForm.BackButton.Left - ScaleX(240);
+  lblLoadingDb.Width := ScaleX(230);
+  lblLoadingDb.Visible := False;
 end;
 
 // RC3 & RC4: Conditional Wizard Flow mapping

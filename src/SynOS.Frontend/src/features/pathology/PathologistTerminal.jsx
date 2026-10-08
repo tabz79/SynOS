@@ -402,16 +402,26 @@ export function PathologistTerminal() {
         try {
             const profile = await UsersApi.getProfile();
             setUserProfile(profile);
-            setTempProfile({ name: profile.name, designation: profile.designation || "" });
+            setTempProfile({ name: profile?.name || "Dr. Vasudeva Rao", designation: profile?.designation || "Consultant Pathologist" });
         } catch (err) {
-            handleApiError(err, "Failed to fetch profile");
+            console.warn("Failed to fetch profile (non-fatal):", err);
+            // Non-fatal: do not trigger session expiration modal on passive profile retrieval
+            setUserProfile(prev => prev || {
+                name: user?.name || "Dr. Vasudeva Rao",
+                designation: "Consultant Pathologist",
+                role: "Pathologist"
+            });
+            setTempProfile(prev => prev || {
+                name: user?.name || "Dr. Vasudeva Rao",
+                designation: "Consultant Pathologist"
+            });
         }
     };
 
     const handleApiError = (err, context) => {
         console.error(`${context}:`, err);
-        // Catch both Axios (err.response) and Fetch (err.message) 401s
-        if (err.response?.status === 401 || err.message?.includes('401') || err.message?.includes('Unauthorized')) {
+        // Only trigger session expired on explicit HTTP 401 Unauthorized status
+        if (err.response?.status === 401) {
             setIsSessionExpired(true);
         }
     };

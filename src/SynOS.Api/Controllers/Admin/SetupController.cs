@@ -487,43 +487,16 @@ namespace SynOS.Api.Controllers.Admin
                 // Ensure storage directories exist
                 EnsureDirectoriesExist(dto.DocumentStorageFolder ?? "C:\\SynOS_Files", dto.WorkingDirectory ?? "C:\\SynOS_Working");
 
-                // Create or Preserve Admin User
+                // Create or Elevate Admin User
                 var hasExistingUsers = await context.Users.AnyAsync();
-                if (!dto.IsReconnect || !hasExistingUsers)
+                if (!string.IsNullOrWhiteSpace(dto.AdminUsername) && !string.IsNullOrWhiteSpace(dto.AdminPassword))
                 {
-                    if (string.IsNullOrWhiteSpace(dto.AdminUsername) || string.IsNullOrWhiteSpace(dto.AdminPassword))
-                    {
-                        return BadRequest(new { message = "Administrator credentials are required for a fresh installation." });
-                    }
-
                     var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name.ToLower() == "admin");
                     if (adminRole == null)
                     {
                         return StatusCode(500, new { message = "Seeded Admin role not found. Please contact support." });
                     }
 
-                User newUser = null;
-                var adminUsernameClean = dto.AdminUsername.Contains("@") ? dto.AdminUsername.Split('@')[0] : dto.AdminUsername;
-                var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == adminUsernameClean.ToLower() || u.Email.ToLower() == dto.AdminUsername.ToLower());
-                if (existingUser == null)
-                {
-                    var userId = Guid.NewGuid();
-                    newUser = new User
-                    {
-                        UserId = userId,
-                        Username = adminUsernameClean,
-                        Email = dto.AdminUsername,
-                        Name = "Administrator",
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
-                        IsActive = true,
-                        Designation = "Administrator",
-                        IsDefaultSignatory = true,
-                        CanUseOperationalMode = true,
-                        CanUseOversightMode = true
-                    };
-                    context.Users.Add(newUser);
-
-                    // Add role assignment in UserBranchRoles
                     var defaultBranch = await context.Branches.FirstOrDefaultAsync(b => b.Code == "MAIN" || b.BranchId == SynOS.Data.DbInitializer.DefaultBranchId)
                                         ?? await context.Branches.FirstOrDefaultAsync();
                     if (defaultBranch == null)
@@ -538,67 +511,52 @@ namespace SynOS.Api.Controllers.Admin
                         context.Branches.Add(defaultBranch);
                         await context.SaveChangesAsync();
                     }
-                    var branchId = defaultBranch.BranchId;
-                    context.UserBranchRoles.Add(new UserBranchRole
-                    {
-                        UserBranchRoleId = Guid.NewGuid(),
-                        UserId = userId,
-                        BranchId = branchId,
-                        RoleId = adminRole.RoleId
-                    });
 
-                    // Add role assignment in UserRoles
-                    context.UserRoles.Add(new UserRole
+                    User targetAdmin = null;
+                    var adminUsernameClean = dto.AdminUsername.Contains("@") ? dto.AdminUsername.Split('@')[0] : dto.AdminUsername;
+                    var existingUser = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == adminUsernameClean.ToLower() || u.Email.ToLower() == dto.AdminUsername.ToLower());
+                    if (existingUser == null)
                     {
-                        UserId = userId,
-                        RoleId = adminRole.RoleId
-                    });
-
-                    // Grant access to all workspaces
-                    var workspaces = await context.Workspaces.ToListAsync();
-                    foreach (var ws in workspaces)
-                    {
-                        context.UserWorkspaceAccesses.Add(new UserWorkspaceAccess
+                        var userId = Guid.NewGuid();
+                        targetAdmin = new User
                         {
-                            UserWorkspaceAccessId = Guid.NewGuid(),
                             UserId = userId,
-                            WorkspaceId = ws.WorkspaceId
+                            Username = adminUsernameClean,
+                            Email = dto.AdminUsername,
+                            Name = "Administrator",
+                            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword),
+                            IsActive = true,
+                            Designation = "Administrator",
+                            IsDefaultSignatory = true,
+                            CanUseOperationalMode = true,
+                            CanUseOversightMode = true
+                        };
+                        context.Users.Add(targetAdmin);
+
+                        // Add role assignment in UserBranchRoles
+                        context.UserBranchRoles.Add(new UserBranchRole
+                        {
+                            UserBranchRoleId = Guid.NewGuid(),
+                            UserId = userId,
+                            BranchId = defaultBranch.BranchId,
+                            RoleId = adminRole.RoleId
                         });
-                    }
 
-                    // Add Employee record with all required fields to align dual provisioning
-                    context.Employees.Add(new Employee
-                    {
-                        EmployeeId = Guid.NewGuid(),
-                        UserId = userId,
-                        FirstName = "Admin",
-                        LastName = "User",
-                        Email = newUser.Email,
-                        IsActive = true,
-                        JobTitle = "Administrator",
-                        Department = "GENERAL",
-                        JoinDate = DateTimeOffset.UtcNow,
-                        BaseSalary = 50000,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    });
-                }
-                else
-                {
-                    existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword);
-                    existingUser.IsActive = true;
+                        // Add role assignment in UserRoles
+                        context.UserRoles.Add(new UserRole
+                        {
+                            UserId = userId,
+                            RoleId = adminRole.RoleId
+                        });
 
-                    // Ensure Employee profile exists for the existing administrator
-                    var existingEmp = await context.Employees.FirstOrDefaultAsync(e => e.UserId == existingUser.UserId);
-                    if (existingEmp == null)
-                    {
+                        // Add Employee record with all required fields to align dual provisioning
                         context.Employees.Add(new Employee
                         {
                             EmployeeId = Guid.NewGuid(),
-                            UserId = existingUser.UserId,
+                            UserId = userId,
                             FirstName = "Admin",
                             LastName = "User",
-                            Email = existingUser.Email,
+                            Email = targetAdmin.Email,
                             IsActive = true,
                             JobTitle = "Administrator",
                             Department = "GENERAL",
@@ -610,58 +568,88 @@ namespace SynOS.Api.Controllers.Admin
                     }
                     else
                     {
-                        existingEmp.IsActive = true;
-                    }
-                }
+                        targetAdmin = existingUser;
+                        existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.AdminPassword);
+                        existingUser.IsActive = true;
+                        existingUser.CanUseOperationalMode = true;
+                        existingUser.CanUseOversightMode = true;
 
-                // Deactivate default seeded "admin" if a custom admin is configured, to prevent default credential vulnerability
-                if (!string.Equals(dto.AdminUsername, "admin", StringComparison.OrdinalIgnoreCase))
-                {
-                    var defaultSeedAdmin = await context.Users.FirstOrDefaultAsync(u => u.Username.ToLower() == "admin");
-                    if (defaultSeedAdmin != null)
+                        // Ensure UserRoles has Admin role
+                        var hasAdminRole = await context.UserRoles.AnyAsync(ur => ur.UserId == existingUser.UserId && ur.RoleId == adminRole.RoleId);
+                        if (!hasAdminRole)
+                        {
+                            context.UserRoles.Add(new UserRole
+                            {
+                                UserId = existingUser.UserId,
+                                RoleId = adminRole.RoleId
+                            });
+                        }
+
+                        // Ensure UserBranchRoles has Admin role for default branch
+                        var branchRole = await context.UserBranchRoles.FirstOrDefaultAsync(ubr => ubr.UserId == existingUser.UserId && ubr.BranchId == defaultBranch.BranchId);
+                        if (branchRole != null)
+                        {
+                            branchRole.RoleId = adminRole.RoleId;
+                        }
+                        else
+                        {
+                            context.UserBranchRoles.Add(new UserBranchRole
+                            {
+                                UserBranchRoleId = Guid.NewGuid(),
+                                UserId = existingUser.UserId,
+                                BranchId = defaultBranch.BranchId,
+                                RoleId = adminRole.RoleId
+                            });
+                        }
+
+                        // Ensure Employee profile exists for the existing administrator
+                        var existingEmp = await context.Employees.FirstOrDefaultAsync(e => e.UserId == existingUser.UserId);
+                        if (existingEmp == null)
+                        {
+                            context.Employees.Add(new Employee
+                            {
+                                EmployeeId = Guid.NewGuid(),
+                                UserId = existingUser.UserId,
+                                FirstName = existingUser.Name ?? "Admin",
+                                LastName = "User",
+                                Email = existingUser.Email,
+                                IsActive = true,
+                                JobTitle = "Administrator",
+                                Department = "GENERAL",
+                                JoinDate = DateTimeOffset.UtcNow,
+                                BaseSalary = 50000,
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow
+                            });
+                        }
+                        else
+                        {
+                            existingEmp.IsActive = true;
+                        }
+                    }
+
+                    // Grant access to all workspaces for targetAdmin
+                    var existingWorkspaces = await context.UserWorkspaceAccesses
+                        .Where(uwa => uwa.UserId == targetAdmin.UserId)
+                        .Select(uwa => uwa.WorkspaceId)
+                        .ToListAsync();
+                    var allWorkspaces = await context.Workspaces.ToListAsync();
+                    foreach (var ws in allWorkspaces)
                     {
-                        var targetUserId = newUser?.UserId ?? existingUser?.UserId ?? Guid.Empty;
-                        
-                        // Re-assign report templates CreatedBy
-                        var templates = await context.ReportTemplates
-                            .Where(t => t.CreatedBy == defaultSeedAdmin.UserId)
-                            .ToListAsync();
-                        foreach (var template in templates)
+                        if (!existingWorkspaces.Contains(ws.WorkspaceId))
                         {
-                            template.CreatedBy = targetUserId;
-                        }
-
-                        // Deactivate default seed admin and scramble password so it can never be used to log in
-                        defaultSeedAdmin.IsActive = false;
-                        defaultSeedAdmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"));
-
-                        // Revoke workspace access
-                        var uwa = await context.UserWorkspaceAccesses
-                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
-                            .ToListAsync();
-                        context.UserWorkspaceAccesses.RemoveRange(uwa);
-
-                        // Revoke roles
-                        var ur = await context.UserRoles
-                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
-                            .ToListAsync();
-                        context.UserRoles.RemoveRange(ur);
-
-                        var ubr = await context.UserBranchRoles
-                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
-                            .ToListAsync();
-                        context.UserBranchRoles.RemoveRange(ubr);
-
-                        // Deactivate employee profile
-                        var emp = await context.Employees
-                            .Where(x => x.UserId == defaultSeedAdmin.UserId)
-                            .ToListAsync();
-                        foreach (var e in emp)
-                        {
-                            e.IsActive = false;
+                            context.UserWorkspaceAccesses.Add(new UserWorkspaceAccess
+                            {
+                                UserWorkspaceAccessId = Guid.NewGuid(),
+                                UserId = targetAdmin.UserId,
+                                WorkspaceId = ws.WorkspaceId
+                            });
                         }
                     }
                 }
+                else if (!hasExistingUsers)
+                {
+                    return BadRequest(new { message = "Administrator credentials are required for a fresh installation." });
                 }
 
                 try
@@ -694,7 +682,7 @@ namespace SynOS.Api.Controllers.Admin
                         SetNodeValue(root, "SecureLink:PublicBaseUrl", JsonValue.Create("http://localhost:59999/secure"));
                         SetNodeValue(root, "Middleware:LabId", JsonValue.Create(dto.LabId ?? "LAB001"));
                         SetNodeValue(root, "Middleware:ApiUrl", JsonValue.Create(dto.MiddlewareApiUrl ?? "https://cloud.tbzlabs.in/api/events"));
-                        SetNodeValue(root, "Middleware:ApiKey", JsonValue.Create(string.Empty));
+                        SetNodeValue(root, "Middleware:ApiKey", JsonValue.Create(dto.MiddlewareApiKey ?? string.Empty));
 
                         var writeOptions = new JsonSerializerOptions { WriteIndented = true };
                         await System.IO.File.WriteAllTextAsync(clientPath, JsonSerializer.Serialize(root, writeOptions));

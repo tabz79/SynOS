@@ -154,7 +154,7 @@ export function FirstRunWizard() {
                     licenseActivated: licenseActivatedVal !== undefined ? licenseActivatedVal : (licenseInfo !== null),
                     databaseServer: dbServer,
                     databaseName: dbName,
-                    adminUsername: isReconnect ? 'ExistingAdministrator' : adminEmail
+                    adminUsername: adminEmail || 'Administrator'
                 })
             });
         } catch (err) {
@@ -184,26 +184,22 @@ export function FirstRunWizard() {
                 // Enterprise Single Source of Truth:
                 // The database was already chosen in the Desktop Windows Installer!
                 if (configuredDbHasUsers) {
-                    // Database has existing users: preserve all accounts and skip to progress / login
                     setIsReconnect(true);
                     setSubSteps(prev => prev.map(s => {
                         if (s.id === 'database') return { ...s, label: `Connecting to ${dbName}` };
-                        if (s.id === 'admin') return { ...s, label: `Preserving ${configuredDbUserCount} staff accounts (${configuredClinicName || dbName})` };
+                        if (s.id === 'admin') return { ...s, label: `Configuring administrator account (${configuredClinicName || dbName})` };
                         return s;
                     }));
-                    await saveProgress(3, true);
-                    setStep(3);
                 } else {
-                    // Clean / fresh database: prompt to create the first administrator account
                     setIsReconnect(false);
                     setSubSteps(prev => prev.map(s => {
                         if (s.id === 'database') return { ...s, label: `Initializing local database (${dbName})` };
                         if (s.id === 'admin') return { ...s, label: 'Creating administrator account' };
                         return s;
                     }));
-                    await saveProgress(2, true);
-                    setStep(2);
                 }
+                await saveProgress(2, true);
+                setStep(2);
             } else {
                 setError(data.message || "License activation failed. Please check your key and try again.");
             }
@@ -333,8 +329,8 @@ export function FirstRunWizard() {
                     documentStorageFolder: documentFolder,
                     pacsStorageFolder: pacsFolder,
                     workingDirectory: workingDir,
-                    adminUsername: isReconnect ? null : adminEmail,
-                    adminPassword: isReconnect ? null : adminPassword
+                    adminUsername: adminEmail,
+                    adminPassword: adminPassword
                 })
             });
             const initRes = await initCheck.json();
@@ -524,7 +520,7 @@ export function FirstRunWizard() {
                     />
                     <h1 className="text-2xl font-bold tracking-tight text-white">
                         {step === 1 && (configuredDbHasUsers ? "Activate & Reconnect" : "Activate SynOS")}
-                        {step === 2 && "Create Administrator Account"}
+                        {step === 2 && (configuredDbHasUsers ? "Administrator Account Setup" : "Create Administrator Account")}
                         {step === 3 && (isReconnect ? "Reconnecting SynOS..." : "Setting up SynOS...")}
                         {step === 4 && "System Configured!"}
                     </h1>
@@ -532,7 +528,7 @@ export function FirstRunWizard() {
                         {step === 1 && (configuredDbHasUsers 
                             ? `Verify your license key to reconnect to ${dbName}.` 
                             : "Enter the activation key provided to you by TBZ Labs to start setup.")}
-                        {step === 2 && "This email credentials will serve as your master sign-in profile."}
+                        {step === 2 && (configuredDbHasUsers ? "Set credentials for the primary administrator. If this username already exists, it will be elevated to Administrator." : "These credentials will serve as your master administrator sign-in profile.")}
                         {step === 3 && "Please wait while we initialize local resources and database structures."}
                         {step === 4 && "Onboarding completed successfully. Your diagnostic suite is ready."}
                     </p>
@@ -661,7 +657,7 @@ export function FirstRunWizard() {
                                 type="submit"
                                 className="w-full mt-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-lg shadow-blue-900/10 flex items-center justify-center gap-2 text-sm"
                             >
-                                Set Up SynOS
+                                {configuredDbHasUsers ? "Complete Setup & Elevate Administrator" : "Set Up SynOS"}
                             </button>
                         </form>
                     )}
