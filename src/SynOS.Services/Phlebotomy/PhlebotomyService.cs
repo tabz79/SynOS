@@ -184,15 +184,6 @@ namespace SynOS.Services.Phlebotomy
                 return ClaimResult.NotOperationalMode;
             }
 
-            // 2. Retrieve Operational Resource
-            var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId);
-
-            if (resource == null)
-            {
-                return ClaimResult.NoOperationalResource;
-            }
-
             // 3. Lightweight Pre-validation Snapshot
             var snapshot = await _db.WorkAssignments
                 .Where(x => x.AssignmentId == assignmentId)
@@ -204,8 +195,41 @@ namespace SynOS.Services.Phlebotomy
                 return ClaimResult.NotFound;
             }
 
+            // 2. Retrieve Operational Resource (Branch-aware)
+            var targetBranchId = snapshot.BranchId != Guid.Empty ? snapshot.BranchId : _userContext.CurrentBranchId;
+            if (targetBranchId == Guid.Empty) targetBranchId = SynOS.Data.DbInitializer.DefaultBranchId;
+
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+
+            var resource = await _db.OperationalResources
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranchId);
+
+            if (resource == null)
+            {
+                var userExists = await _db.Users.AnyAsync(u => u.UserId == _userContext.CurrentUserId);
+                if (userExists)
+                {
+                    resource = new OperationalResource
+                    {
+                        OperationalResourceId = Guid.NewGuid(),
+                        UserId = _userContext.CurrentUserId,
+                        BranchId = targetBranchId,
+                        Role = "Phlebotomist",
+                        DepartmentCode = "PATH",
+                        IsOnline = true,
+                        IsActive = true
+                    };
+                    _db.OperationalResources.Add(resource);
+                    await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    return ClaimResult.NoOperationalResource;
+                }
+            }
+
             // 4. Validate Branch
-            if (snapshot.BranchId != resource.BranchId)
+            if (!isAdmin && snapshot.BranchId != resource.BranchId)
             {
                 return ClaimResult.InvalidBranch;
             }
@@ -289,18 +313,25 @@ namespace SynOS.Services.Phlebotomy
                 currentUserId = await _db.Users.Where(u => u.Username == "phlebo" || u.Designation == "Phlebotomist").Select(u => u.UserId).FirstOrDefaultAsync();
             }
 
+            // 3. Load WorkAssignment (Locked) with Strict Ownership
+            var assignment = await _db.WorkAssignments
+                .FirstOrDefaultAsync(a => a.AssignmentId == assignmentId);
+
+            if (assignment == null) return CollectResult.NotFound;
+
+            var targetBranch = assignment.BranchId != Guid.Empty ? assignment.BranchId : _userContext.CurrentBranchId;
+            if (targetBranch == Guid.Empty) targetBranch = SynOS.Data.DbInitializer.DefaultBranchId;
+
             var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == currentUserId);
+                .FirstOrDefaultAsync(r => r.UserId == currentUserId && r.BranchId == targetBranch);
 
             if (resource == null)
             {
-                var defaultBranch = await _db.Branches.FirstOrDefaultAsync(b => b.Code == "MAIN" || b.BranchId == SynOS.Data.DbInitializer.DefaultBranchId)
-                                    ?? await _db.Branches.FirstOrDefaultAsync();
                 resource = new OperationalResource
                 {
                     OperationalResourceId = Guid.NewGuid(),
                     UserId = currentUserId,
-                    BranchId = defaultBranch?.BranchId ?? SynOS.Data.DbInitializer.DefaultBranchId,
+                    BranchId = targetBranch,
                     Role = "Phlebotomist",
                     DepartmentCode = "PATH",
                     IsOnline = true,
@@ -309,12 +340,6 @@ namespace SynOS.Services.Phlebotomy
                 _db.OperationalResources.Add(resource);
                 await _db.SaveChangesAsync();
             }
-
-            // 3. Load WorkAssignment (Locked) with Strict Ownership
-            var assignment = await _db.WorkAssignments
-                .FirstOrDefaultAsync(a => a.AssignmentId == assignmentId);
-
-            if (assignment == null) return CollectResult.NotFound;
             
             // Auto-align assignment state and ownership if needed
             if (assignment.Status == WorkAssignmentStatus.PendingClaim || assignment.AssignedResourceId == null)

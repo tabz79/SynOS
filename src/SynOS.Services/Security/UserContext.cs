@@ -17,7 +17,10 @@ namespace SynOS.Services.Security
         {
             get
             {
-                return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
+                return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value
+                    ?? _httpContextAccessor.HttpContext?.User?.FindFirst("unique_name")?.Value
+                    ?? _httpContextAccessor.HttpContext?.User?.FindFirst("username")?.Value
+                    ?? string.Empty;
             }
         }
 
@@ -68,7 +71,10 @@ namespace SynOS.Services.Security
         {
             get
             {
-                return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+                return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value
+                    ?? _httpContextAccessor.HttpContext?.User?.FindFirst("role")?.Value
+                    ?? _httpContextAccessor.HttpContext?.User?.FindFirst("Role")?.Value
+                    ?? string.Empty;
             }
         }
 

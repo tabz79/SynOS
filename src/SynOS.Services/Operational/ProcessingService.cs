@@ -51,9 +51,32 @@ namespace SynOS.Services.Operational
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return Enumerable.Empty<ProcessingQueueItemDto>();
 
             // 2. Get Resource (Branch-aware)
-            var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
+            var targetBranch = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : SynOS.Data.DbInitializer.DefaultBranchId;
+            var resource = await _db.OperationalResources.FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranch);
             var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
-            if (resource == null && !isAdmin) return Enumerable.Empty<ProcessingQueueItemDto>();
+            if (resource == null)
+            {
+                var userExists = await _db.Users.AnyAsync(u => u.UserId == _userContext.CurrentUserId);
+                if (userExists)
+                {
+                    resource = new OperationalResource
+                    {
+                        OperationalResourceId = Guid.NewGuid(),
+                        UserId = _userContext.CurrentUserId,
+                        BranchId = targetBranch,
+                        Role = "Technician",
+                        DepartmentCode = "PATH",
+                        IsOnline = true,
+                        IsActive = true
+                    };
+                    _db.OperationalResources.Add(resource);
+                    await _db.SaveChangesAsync();
+                }
+                else if (!isAdmin)
+                {
+                    return Enumerable.Empty<ProcessingQueueItemDto>();
+                }
+            }
 
             // 3. Query Queue (Live / History Window)
             var today = DateTimeOffset.UtcNow.Date;
@@ -119,10 +142,35 @@ namespace SynOS.Services.Operational
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
             // 2. Retrieve Operational Resource (Branch-aware)
-            var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            var targetBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : SynOS.Data.DbInitializer.DefaultBranchId;
 
-            if (resource == null) return ProcessingResult.NoOperationalResource;
+            var resource = await _db.OperationalResources
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranchId);
+
+            if (resource == null)
+            {
+                var userExists = await _db.Users.AnyAsync(u => u.UserId == _userContext.CurrentUserId);
+                if (userExists)
+                {
+                    resource = new OperationalResource
+                    {
+                        OperationalResourceId = Guid.NewGuid(),
+                        UserId = _userContext.CurrentUserId,
+                        BranchId = targetBranchId,
+                        Role = "Technician",
+                        DepartmentCode = "PATH",
+                        IsOnline = true,
+                        IsActive = true
+                    };
+                    _db.OperationalResources.Add(resource);
+                    await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    return ProcessingResult.NoOperationalResource;
+                }
+            }
 
             // 3. Snapshot for Validation & Context
             var snapshot = await _db.ProcessingAssignments
@@ -133,8 +181,7 @@ namespace SynOS.Services.Operational
             if (snapshot == null) return ProcessingResult.NotFound;
 
             // 4. Strict Isolation Validation
-            if (snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
-            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (!isAdmin && snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
             if (snapshot.DepartmentCode != resource.DepartmentCode && !isAdmin) return ProcessingResult.InvalidDepartment;
             if (snapshot.Status != ProcessingAssignmentStatus.Pending) return ProcessingResult.Conflict;
 
@@ -252,10 +299,35 @@ namespace SynOS.Services.Operational
             if (!string.Equals(_userContext.CurrentMode, "operational", StringComparison.OrdinalIgnoreCase)) return ProcessingResult.NotOperationalMode;
 
             // 2. Retrieve Operational Resource (Branch-aware)
-            var resource = await _db.OperationalResources
-                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == _userContext.CurrentBranchId);
+            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            var targetBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : SynOS.Data.DbInitializer.DefaultBranchId;
 
-            if (resource == null) return ProcessingResult.NoOperationalResource;
+            var resource = await _db.OperationalResources
+                .FirstOrDefaultAsync(r => r.UserId == _userContext.CurrentUserId && r.BranchId == targetBranchId);
+
+            if (resource == null)
+            {
+                var userExists = await _db.Users.AnyAsync(u => u.UserId == _userContext.CurrentUserId);
+                if (userExists)
+                {
+                    resource = new OperationalResource
+                    {
+                        OperationalResourceId = Guid.NewGuid(),
+                        UserId = _userContext.CurrentUserId,
+                        BranchId = targetBranchId,
+                        Role = "Technician",
+                        DepartmentCode = "PATH",
+                        IsOnline = true,
+                        IsActive = true
+                    };
+                    _db.OperationalResources.Add(resource);
+                    await _db.SaveChangesAsync();
+                }
+                else
+                {
+                    return ProcessingResult.NoOperationalResource;
+                }
+            }
 
             // 3. Snapshot for Validation & Context
             var snapshot = await _db.ProcessingAssignments
@@ -266,11 +338,10 @@ namespace SynOS.Services.Operational
             if (snapshot == null) return ProcessingResult.NotFound;
 
             // 4. Validation
-            if (snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
-            var isAdmin = _userContext.CurrentRole == "Admin" || _userContext.CurrentRole == "SystemAdmin";
+            if (!isAdmin && snapshot.BranchId != resource.BranchId) return ProcessingResult.InvalidBranch;
             if (snapshot.DepartmentCode != resource.DepartmentCode && !isAdmin) return ProcessingResult.InvalidDepartment;
             if (snapshot.Status != ProcessingAssignmentStatus.Claimed) return ProcessingResult.Conflict;
-            if (snapshot.AssignedResourceId != resource.OperationalResourceId) return ProcessingResult.Unauthorized;
+            if (!isAdmin && snapshot.AssignedResourceId != resource.OperationalResourceId) return ProcessingResult.Unauthorized;
 
             // 5. ATOMIC CONDITIONAL UPDATE
             var utcNow = DateTimeOffset.UtcNow;
