@@ -134,21 +134,34 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
             });
-            
-            if (res.ok) {
-                const data = await res.json();
-                setPacsStep(2);
-                setTimeout(() => setPacsStep(3), 800);
-                setTimeout(() => {
-                    setPacsStep(4);
-                    setPacsViewerUrl(`/viewer/${data.studyInstanceUid || study.radiologyStudyId}`);
-                    setActionLoading(false);
-                }, 1600);
-            } else {
+
+            if (!res.ok) {
+                let errorMsg = "No DICOM series detected on scanner C-STORE node. Please upload DICOM files manually.";
+                try {
+                    const errData = await res.json();
+                    errorMsg = errData.message || errData.title || errorMsg;
+                } catch { }
                 setPacsStep(0);
-                alert(data.message || data.title || "No DICOM series detected on scanner C-STORE node. Please upload DICOM files manually.");
+                alert(errorMsg);
                 return;
             }
+
+            const data = await res.json().catch(() => ({}));
+            if (!data.instancesCreated || data.instancesCreated === 0) {
+                setPacsStep(0);
+                alert("No new DICOM scans were found in scanner staging (C:\\SynOS_Files\\PACS\\IncomingScans). If the scanner sends via DICOM C-STORE, ensure the transfer is finished, or upload DICOM files manually.");
+                await checkDicomSliceCount(study.radiologyStudyId);
+                fetchQueue();
+                return;
+            }
+
+            setPacsStep(2);
+            setTimeout(() => setPacsStep(3), 800);
+            setTimeout(() => {
+                setPacsStep(4);
+                setPacsViewerUrl(`/viewer/${data.studyInstanceUid || study.radiologyStudyId}`);
+                setActionLoading(false);
+            }, 1600);
 
             setPacsAccession(data.accessionNumber || study.accessionNumber || `ACC-${study.modality}`);
             setPacsStep(4); // Successfully linked
@@ -162,6 +175,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
             setActionLoading(false);
         }
     };
+
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];

@@ -244,138 +244,142 @@ namespace SynOS.Services
                 int imagesImported = 0;
                 int imagesSkipped = 0;
 
-                // 5. Atomic Database Transaction with Pre-Commit File Promotion
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
+                // 5. Atomic Database Transaction with Pre-Commit File Promotion using Execution Strategy
+                var strategy = _context.Database.CreateExecutionStrategy();
+                return await strategy.ExecuteAsync(async () =>
                 {
-                    foreach (var seriesGroup in inMemorySeriesGroups)
-                    {
-                        var seriesUid = seriesGroup.Key;
-                        var firstItem = seriesGroup.Value.First();
-
-                        if (!existingSeriesMap.TryGetValue(seriesUid, out var seriesEntity))
-                        {
-                            seriesEntity = new PacsSeries
-                            {
-                                SeriesId = Guid.NewGuid(),
-                                RadiologyStudyId = radiologyStudyId,
-                                StudyInstanceUid = firstItem.Metadata.StudyInstanceUid,
-                                SeriesInstanceUid = seriesUid,
-                                Modality = string.IsNullOrWhiteSpace(firstItem.Metadata.Modality) ? (study.Modality ?? "XR") : firstItem.Metadata.Modality,
-                                Description = string.IsNullOrWhiteSpace(firstItem.Metadata.SeriesDescription) ? $"{study.Modality} Series" : firstItem.Metadata.SeriesDescription,
-                                SeriesNumber = firstItem.Metadata.SeriesNumber ?? 1,
-                                CreatedBy = currentUserId
-                            };
-                            _context.PacsSeries.Add(seriesEntity);
-                            existingSeriesMap[seriesUid] = seriesEntity;
-                        }
-
-                        var prodSeriesDir = Path.Combine(_pacsSettings.RootPath, radiologyStudyId.ToString(), seriesEntity.SeriesId.ToString());
-                        Directory.CreateDirectory(prodSeriesDir);
-
-                        foreach (var item in seriesGroup.Value)
-                        {
-                            // Auto-Skip Duplicate SOPInstanceUIDs
-                            if (existingSopUidSet.Contains(item.Metadata.SopInstanceUid))
-                            {
-                                imagesSkipped++;
-                                continue;
-                            }
-
-                            var instanceId = Guid.NewGuid();
-                            var prodFilePath = Path.Combine(prodSeriesDir, $"{instanceId}.dcm");
-
-                            // Promote file from Staging to Production PACS archive before DB commit
-                            File.Move(item.StagedFilePath, prodFilePath, overwrite: true);
-                            promotedFiles.Add(prodFilePath);
-
-                            var instanceEntity = new PacsInstance
-                            {
-                                InstanceId = instanceId,
-                                SeriesId = seriesEntity.SeriesId,
-                                RadiologyStudyId = radiologyStudyId,
-                                StudyInstanceUid = item.Metadata.StudyInstanceUid,
-                                SeriesInstanceUid = seriesUid,
-                                SopInstanceUid = item.Metadata.SopInstanceUid,
-                                InstanceNumber = item.Metadata.InstanceNumber ?? 1,
-                                FrameCount = item.Metadata.FrameCount ?? 1,
-                                FilePath = prodFilePath,
-                                FileSizeBytes = new FileInfo(prodFilePath).Length,
-                                ContentType = "application/dicom",
-                                CreatedBy = currentUserId
-                            };
-
-                            _context.PacsInstances.Add(instanceEntity);
-                            existingSopUidSet.Add(item.Metadata.SopInstanceUid);
-                            imagesImported++;
-                        }
-                    }
-
-                    if (study.Status == "PendingImaging" || study.Status == "Assigned")
-                    {
-                        study.Status = "ImagingCompleted";
-                    }
-
-                    stopwatch.Stop();
-
-                    var auditLog = new PacsImportAuditLog
-                    {
-                        AuditLogId = Guid.NewGuid(),
-                        RadiologyStudyId = radiologyStudyId,
-                        CreatedBy = currentUserId,
-                        StudyInstanceUid = inMemorySeriesGroups.FirstOrDefault().Key != null ? inMemorySeriesGroups.First().Value.First().Metadata.StudyInstanceUid : string.Empty,
-                        ImportedAt = DateTime.UtcNow,
-                        SeriesCount = inMemorySeriesGroups.Count,
-                        ImagesImported = imagesImported,
-                        ImagesSkipped = imagesSkipped,
-                        WarningCount = warningsList.Count,
-                        WarningsJson = System.Text.Json.JsonSerializer.Serialize(warningsList),
-                        Status = "Success",
-                        DurationMs = stopwatch.ElapsedMilliseconds
-                    };
-
+                    using var transaction = await _context.Database.BeginTransactionAsync();
                     try
                     {
-                        _context.PacsImportAuditLogs.Add(auditLog);
-                        await _context.SaveChangesAsync();
-                    }
-                    catch (Exception auditEx)
-                    {
-                        // Fallback: If PacsImportAuditLogs table is pending migration, complete DICOM import gracefully
-                        Console.WriteLine($"[PACS Import Audit Log Warning] Failed to write audit log: {auditEx.Message}");
-                        _context.Entry(auditLog).State = EntityState.Detached;
-                        await _context.SaveChangesAsync();
-                    }
-
-                    await transaction.CommitAsync();
-
-                    return new PacsImportSummaryDto
-                    {
-                        RadiologyStudyId = radiologyStudyId,
-                        StudyInstanceUid = auditLog.StudyInstanceUid,
-                        StudyTitle = $"{study.Modality} Study",
-                        SeriesCount = inMemorySeriesGroups.Count,
-                        ImagesImported = imagesImported,
-                        ImagesSkipped = imagesSkipped,
-                        Warnings = warningsList,
-                        DurationMs = stopwatch.ElapsedMilliseconds,
-                        ImportedAt = auditLog.ImportedAt
-                    };
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-
-                    // Cleanup promoted files if transaction failed
-                    foreach (var file in promotedFiles)
-                    {
-                        if (File.Exists(file))
+                        foreach (var seriesGroup in inMemorySeriesGroups)
                         {
-                            try { File.Delete(file); } catch { }
+                            var seriesUid = seriesGroup.Key;
+                            var firstItem = seriesGroup.Value.First();
+
+                            if (!existingSeriesMap.TryGetValue(seriesUid, out var seriesEntity))
+                            {
+                                seriesEntity = new PacsSeries
+                                {
+                                    SeriesId = Guid.NewGuid(),
+                                    RadiologyStudyId = radiologyStudyId,
+                                    StudyInstanceUid = firstItem.Metadata.StudyInstanceUid,
+                                    SeriesInstanceUid = seriesUid,
+                                    Modality = string.IsNullOrWhiteSpace(firstItem.Metadata.Modality) ? (study.Modality ?? "XR") : firstItem.Metadata.Modality,
+                                    Description = string.IsNullOrWhiteSpace(firstItem.Metadata.SeriesDescription) ? $"{study.Modality} Series" : firstItem.Metadata.SeriesDescription,
+                                    SeriesNumber = firstItem.Metadata.SeriesNumber ?? 1,
+                                    CreatedBy = currentUserId
+                                };
+                                _context.PacsSeries.Add(seriesEntity);
+                                existingSeriesMap[seriesUid] = seriesEntity;
+                            }
+
+                            var prodSeriesDir = Path.Combine(_pacsSettings.RootPath, radiologyStudyId.ToString(), seriesEntity.SeriesId.ToString());
+                            Directory.CreateDirectory(prodSeriesDir);
+
+                            foreach (var item in seriesGroup.Value)
+                            {
+                                // Auto-Skip Duplicate SOPInstanceUIDs
+                                if (existingSopUidSet.Contains(item.Metadata.SopInstanceUid))
+                                {
+                                    imagesSkipped++;
+                                    continue;
+                                }
+
+                                var instanceId = Guid.NewGuid();
+                                var prodFilePath = Path.Combine(prodSeriesDir, $"{instanceId}.dcm");
+
+                                // Promote file from Staging to Production PACS archive before DB commit (copy so retry is safe)
+                                File.Copy(item.StagedFilePath, prodFilePath, overwrite: true);
+                                promotedFiles.Add(prodFilePath);
+
+                                var instanceEntity = new PacsInstance
+                                {
+                                    InstanceId = instanceId,
+                                    SeriesId = seriesEntity.SeriesId,
+                                    RadiologyStudyId = radiologyStudyId,
+                                    StudyInstanceUid = item.Metadata.StudyInstanceUid,
+                                    SeriesInstanceUid = seriesUid,
+                                    SopInstanceUid = item.Metadata.SopInstanceUid,
+                                    InstanceNumber = item.Metadata.InstanceNumber ?? 1,
+                                    FrameCount = item.Metadata.FrameCount ?? 1,
+                                    FilePath = prodFilePath,
+                                    FileSizeBytes = new FileInfo(prodFilePath).Length,
+                                    ContentType = "application/dicom",
+                                    CreatedBy = currentUserId
+                                };
+
+                                _context.PacsInstances.Add(instanceEntity);
+                                existingSopUidSet.Add(item.Metadata.SopInstanceUid);
+                                imagesImported++;
+                            }
                         }
+
+                        if (study.Status == "PendingImaging" || study.Status == "Assigned")
+                        {
+                            study.Status = "ImagingCompleted";
+                        }
+
+                        stopwatch.Stop();
+
+                        var auditLog = new PacsImportAuditLog
+                        {
+                            AuditLogId = Guid.NewGuid(),
+                            RadiologyStudyId = radiologyStudyId,
+                            CreatedBy = currentUserId,
+                            StudyInstanceUid = inMemorySeriesGroups.FirstOrDefault().Key != null ? inMemorySeriesGroups.First().Value.First().Metadata.StudyInstanceUid : string.Empty,
+                            ImportedAt = DateTime.UtcNow,
+                            SeriesCount = inMemorySeriesGroups.Count,
+                            ImagesImported = imagesImported,
+                            ImagesSkipped = imagesSkipped,
+                            WarningCount = warningsList.Count,
+                            WarningsJson = System.Text.Json.JsonSerializer.Serialize(warningsList),
+                            Status = "Success",
+                            DurationMs = stopwatch.ElapsedMilliseconds
+                        };
+
+                        try
+                        {
+                            _context.PacsImportAuditLogs.Add(auditLog);
+                            await _context.SaveChangesAsync();
+                        }
+                        catch (Exception auditEx)
+                        {
+                            // Fallback: If PacsImportAuditLogs table is pending migration, complete DICOM import gracefully
+                            Console.WriteLine($"[PACS Import Audit Log Warning] Failed to write audit log: {auditEx.Message}");
+                            _context.Entry(auditLog).State = EntityState.Detached;
+                            await _context.SaveChangesAsync();
+                        }
+
+                        await transaction.CommitAsync();
+
+                        return new PacsImportSummaryDto
+                        {
+                            RadiologyStudyId = radiologyStudyId,
+                            StudyInstanceUid = auditLog.StudyInstanceUid,
+                            StudyTitle = $"{study.Modality} Study",
+                            SeriesCount = inMemorySeriesGroups.Count,
+                            ImagesImported = imagesImported,
+                            ImagesSkipped = imagesSkipped,
+                            Warnings = warningsList,
+                            DurationMs = stopwatch.ElapsedMilliseconds,
+                            ImportedAt = auditLog.ImportedAt
+                        };
                     }
-                    throw;
-                }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+
+                        // Cleanup promoted files if transaction failed
+                        foreach (var file in promotedFiles)
+                        {
+                            if (File.Exists(file))
+                            {
+                                try { File.Delete(file); } catch { }
+                            }
+                        }
+                        throw;
+                    }
+                });
             }
             finally
             {
