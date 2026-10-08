@@ -350,29 +350,32 @@ namespace SynOS.Services.Phlebotomy
 
             if (!orders.Any()) return CollectResult.NoOrdersFound;
 
-            // NOW Start Transaction
-            using var transaction = await _db.Database.BeginTransactionAsync();
-            try
+            // 5. Use Deterministic Grouping Service
+            var plan = await _groupingService.CreateSpecimenPlanAsync(orders);
+
+            if (!plan.Any())
             {
-                // 5. Use Deterministic Grouping Service
-                var plan = await _groupingService.CreateSpecimenPlanAsync(orders);
-
-                if (!plan.Any())
-                {
-                     _logger.LogWarning("CollectAssignmentAsync: No specimen plan generated for Assignment {AssignmentId}. Auto-synthesizing default EDTA specimen plan.", assignmentId);
-                     plan = new List<SpecimenWrapper>
+                 _logger.LogWarning("CollectAssignmentAsync: No specimen plan generated for Assignment {AssignmentId}. Auto-synthesizing default EDTA specimen plan.", assignmentId);
+                 plan = new List<SpecimenWrapper>
+                 {
+                     new SpecimenWrapper
                      {
-                         new SpecimenWrapper
-                         {
-                             SpecimenTypeCode = "EDTA",
-                             TubeCode = "EDTA_K2",
-                             RequiredTubes = 1,
-                             Orders = orders.ToList()
-                         }
-                     };
-                }
+                         SpecimenTypeCode = "EDTA",
+                         TubeCode = "EDTA_K2",
+                         RequiredTubes = 1,
+                         Orders = orders.ToList()
+                     }
+                 };
+            }
 
-                var utcNow = DateTime.UtcNow;
+            // NOW Start Transaction with Execution Strategy
+            var strategy = _db.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                using var transaction = await _db.Database.BeginTransactionAsync();
+                try
+                {
+                    var utcNow = DateTime.UtcNow;
                 var addedSpecimens = new List<Specimen>();
 
                 // Load Reserved Accessions
@@ -626,7 +629,8 @@ namespace SynOS.Services.Phlebotomy
                 }
                 throw;
             }
-        }
+        });
+    }
         public async Task<CollectionSummaryDto?> GetCollectionSummaryAsync(Guid visitId)
         {
             var visit = await _db.Visits

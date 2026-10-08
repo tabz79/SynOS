@@ -311,6 +311,7 @@ export function PhlebotomyScreen() {
                                 columns={queueColumns}
                                 data={filteredQueue}
                                 isLoading={isLoadingQueue}
+                                onAction={handleOpenIntentPanel}
                             />
                         </div>
                     </div>

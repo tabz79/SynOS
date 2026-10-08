@@ -87,10 +87,17 @@ namespace SynOS.Api.Controllers
                 return BadRequest("Invalid collect request");
             }
 
+            Guid assignmentId = request.AssignmentId ?? Guid.Empty;
+            Guid visitId = request.VisitId ?? Guid.Empty;
+
             try
             {
-                Guid assignmentId = request.AssignmentId ?? Guid.Empty;
-                Guid visitId = request.VisitId ?? Guid.Empty;
+
+                if (assignmentId != Guid.Empty && visitId == Guid.Empty)
+                {
+                    var a = await _db.WorkAssignments.AsNoTracking().FirstOrDefaultAsync(w => w.AssignmentId == assignmentId);
+                    if (a != null) visitId = a.SourceReferenceId;
+                }
 
                 if (assignmentId == Guid.Empty && visitId != Guid.Empty)
                 {
@@ -170,6 +177,29 @@ namespace SynOS.Api.Controllers
                             ord.SpecimenId = fallbackSpecimen.SpecimenId;
                             ord.Status = OrderStatus.Collected;
                         }
+
+                        // Also spawn ProcessingAssignments in fallback
+                        var distinctDepartments = pendingOrders
+                            .Select(o => string.IsNullOrWhiteSpace(o.Department) ? "PATH" : o.Department)
+                            .Distinct();
+
+                        var visit = await _db.Visits.FindAsync(visitId);
+                        var branchId = visit?.BranchId ?? SynOS.Data.DbInitializer.DefaultBranchId;
+
+                        foreach (var deptCode in distinctDepartments)
+                        {
+                            var processingAssignment = new ProcessingAssignment
+                            {
+                                ProcessingAssignmentId = Guid.NewGuid(),
+                                SpecimenId = fallbackSpecimen.SpecimenId,
+                                DepartmentCode = deptCode,
+                                BranchId = branchId,
+                                Status = ProcessingAssignmentStatus.Pending,
+                                CreatedAt = DateTimeOffset.UtcNow
+                            };
+                            _db.ProcessingAssignments.Add(processingAssignment);
+                        }
+
                         await _db.SaveChangesAsync();
                     }
 
@@ -180,8 +210,12 @@ namespace SynOS.Api.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception during sample collection. Executing graceful self-healing.");
-                return Ok(new { message = "Specimens collected successfully.", selfHealed = true });
+                _logger.LogError(ex, "Exception during sample collection.");
+                if (visitId != Guid.Empty && await _db.Specimens.AnyAsync(s => s.VisitId == visitId))
+                {
+                    return Ok(new { message = "Specimens collected successfully.", selfHealed = true });
+                }
+                return BadRequest(new { message = ex.InnerException?.Message ?? ex.Message });
             }
         }
 
