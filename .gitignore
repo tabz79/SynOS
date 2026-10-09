@@ -38,6 +38,7 @@ errors.txt
 coverage/
 test-results/
 .playwright/
+playwright-report/
 
 # ========================================
 # VISUAL STUDIO

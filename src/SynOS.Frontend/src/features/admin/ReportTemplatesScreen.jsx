@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ReportsApi } from '../../api/reports';
 import { mapTemplateToBackendDsl, mapBackendDslToTemplate } from '../documents/templates/ReportTemplateService';
-import { useTemplatesList } from '../documents/templates/hooks/useReportTemplates';
+import { useTemplatesList, clearTemplateCaches } from '../documents/templates/hooks/useReportTemplates';
 import { DEFAULT_TEMPLATES, sanitizeTemplates } from '../documents/templates/defaultTemplates';
 import { 
   Columns, 
@@ -419,6 +419,7 @@ export function ReportTemplatesScreen() {
       };
 
       await ReportsApi.updateTemplate(selectedTemplate.id, updateDto);
+      clearTemplateCaches();
       
       setIsSavedSuccessfully(true);
       setTimeout(() => setIsSavedSuccessfully(false), 3000);

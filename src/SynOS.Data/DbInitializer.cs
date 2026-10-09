@@ -518,14 +518,22 @@ END
 
             if (context.ReportTemplates.Any())
             {
-                var twoCol = context.ReportTemplates.FirstOrDefault(t => t.Name == "Pathology_Detailed_2Column");
-                var oneCol = context.ReportTemplates.FirstOrDefault(t => t.Name == "Pathology_Standard_1Column");
-                if (twoCol != null && twoCol.IsDefault)
+                // Ensure at least one default template exists if none is set
+                var hasDefaultPathology = context.ReportTemplates.Any(t => t.Modality == "Pathology" && t.IsDefault && !t.IsDeleted);
+                if (!hasDefaultPathology)
                 {
-                    twoCol.IsDefault = false;
-                    if (oneCol != null) oneCol.IsDefault = true;
+                    var twoCol = context.ReportTemplates.FirstOrDefault(t => t.Name == "Pathology_Detailed_2Column" && !t.IsDeleted);
+                    var oneCol = context.ReportTemplates.FirstOrDefault(t => t.Name == "Pathology_Standard_1Column" && !t.IsDeleted);
+                    if (twoCol != null)
+                    {
+                        twoCol.IsDefault = true;
+                    }
+                    else if (oneCol != null)
+                    {
+                        oneCol.IsDefault = true;
+                    }
                     context.SaveChanges();
-                    Console.WriteLine("[DbInitializer] Self-healed ReportTemplates: Set Pathology_Standard_1Column as IsDefault=true.");
+                    Console.WriteLine("[DbInitializer] Ensured default Pathology report template exists.");
                 }
 
                 // Unconditionally backfill SnapshotMetadataJson for all existing templates

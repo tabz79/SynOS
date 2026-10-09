@@ -40,6 +40,7 @@ import { ReportsApi } from '../../api/reports';
 import { getCompatibleUnits, calculateBaseQuantity, getDefaultConsumptionUnit, formatConsumptionDisplay } from '../../utils/unitConversion';
 
 import { mapBackendDslToTemplate, mapTemplateToBackendDsl } from '../documents/templates/ReportTemplateService';
+import { clearTemplateCaches } from '../documents/templates/hooks/useReportTemplates';
 import { RichMedicalEditor } from '@/components/editor/RichMedicalEditor';
 
 
@@ -1712,6 +1713,7 @@ function TestInventoryTab({ selectedTest }) {
   const [showLivePreview, setShowLivePreview] = useState(false);
   const [previewMode, setPreviewMode] = useState("digital"); // digital | physical
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
   // Dynamic Template List Hook (initialized directly using default templates fallback before API load)
   const [reportTemplatesList, setReportTemplatesList] = useState(DEFAULT_TEMPLATES);
@@ -2535,16 +2537,53 @@ function TestInventoryTab({ selectedTest }) {
   };
 
 
-  const handleSetDefaultTemplate = () => {
-    const currentTemplateId = selectedTest.templateId || "";
+  const handleSetDefaultTemplate = async () => {
+    if (!selectedTest) return;
+    const currentTemplateId = selectedTest.templateId || null;
     const updatedTest = {
       ...selectedTest,
       templateId: currentTemplateId
     };
+
     const updatedCatalog = catalog.map(t => t.id === selectedTest.id ? updatedTest : t);
     setCatalog(updatedCatalog);
     setSelectedTest(updatedTest);
     localStorage.setItem("synos_selected_test_id", selectedTest.id);
+
+    // Immediately persist template assignment to database
+    setIsSavingTemplate(true);
+    try {
+      const targetId = selectedTest.id;
+      const deptObj = dbDeptsList.find(d => d.name === selectedTest.department);
+      const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (selectedTest.department === "Radiology" || selectedTest.department === "RAD");
+      
+      const dto = {
+        TestCode: selectedTest.code,
+        TestName: selectedTest.name,
+        Department: selectedTest.department || "Biochemistry",
+        ModalityId: isRadiology ? selectedTest.modalityId : null,
+        Category: isRadiology ? (modalitiesList.find(m => m.modalityId === selectedTest.modalityId)?.name || selectedTest.category || "X-Ray") : (selectedTest.category || "General"),
+        BasePrice: Number(selectedTest.basePrice) || 0,
+        TAT_Hours: Number(selectedTest.tatHours || selectedTest.TAT_Hours) || 24,
+        IsOutsourced: !!(selectedTest.isOutsourced || (selectedTest.outsource && selectedTest.outsource.enabled)),
+        SpecimenTypeCode: isRadiology ? "NO_SPECIMEN" : (selectedTest.specimenTypeCode || "SERUM"),
+        IsProfile: !!selectedTest.isProfile,
+        ReportTemplateId: currentTemplateId,
+        DefaultInterpretation: selectedTest.defaultInterpretation || null,
+        ReportTitle: selectedTest.reportTitle || null,
+        IsActive: selectedTest.isActive !== false
+      };
+
+      await AdminApi.updateTest(targetId, dto);
+      clearTemplateCaches();
+      setIsSavedSuccessfully(true);
+      setTimeout(() => setIsSavedSuccessfully(false), 2000);
+    } catch (err) {
+      console.error("Failed to persist report template assignment:", err);
+      alert("Failed to save default template assignment: " + (err.message || err.toString()));
+    } finally {
+      setIsSavingTemplate(false);
+    }
   };
 
   const handleSaveAll = async () => {
@@ -4347,10 +4386,19 @@ function TestInventoryTab({ selectedTest }) {
                         </select>
                         <button
                           onClick={handleSetDefaultTemplate}
-                          className="px-4 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white text-xs rounded-xl font-bold shadow-md shadow-synos-primary/10 transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98]"
+                          disabled={isSavingTemplate}
+                          className="px-4 py-2.5 bg-synos-primary hover:bg-synos-primary/95 text-white text-xs rounded-xl font-bold shadow-md shadow-synos-primary/10 transition-all flex items-center gap-1.5 whitespace-nowrap active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Set current template selection as default for this test"
                         >
-                          <Check className="w-3.5 h-3.5" /> Set As Default Template
+                          {isSavingTemplate ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3.5 h-3.5" /> Set As Default Template
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>

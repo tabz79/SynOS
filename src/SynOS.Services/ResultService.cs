@@ -312,6 +312,12 @@ namespace SynOS.Services
             }
             else
             {
+                // Synchronize ReportTemplateId from Test Master if not explicitly set
+                if (!report.ReportTemplateId.HasValue && finalRootOrder.Test?.ReportTemplateId.HasValue == true)
+                {
+                    report.ReportTemplateId = finalRootOrder.Test.ReportTemplateId;
+                }
+
                 // MAINTAIN STATUS: If already Draft or NULL, keep Draft. If already ReadyForVerification, keep it.
                 if (string.IsNullOrEmpty(report.Status) || report.Status == "Draft")
                 {
