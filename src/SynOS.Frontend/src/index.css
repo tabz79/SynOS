@@ -328,22 +328,21 @@
 
   /* Let document flow naturally without body margins */
   html, body, #root {
+    display: block !important;
     height: auto !important;
     max-height: 100% !important;
     overflow: hidden !important;
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 210mm !important;
-    min-width: 210mm !important;
+    width: 100% !important;
+    min-width: 0 !important;
   }
 
   /* Remove viewport constraints */
-  .h-screen {
-    height: auto !important;
-  }
-
+  .h-screen,
   .min-h-screen {
+    height: auto !important;
     min-height: 0 !important;
   }
 
@@ -354,16 +353,20 @@
 
   /* Ensure print page wrapper does not split */
   .print-page-container {
-    height: 296mm !important;
-    max-height: 296mm !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    height: 268mm !important;
+    max-height: 268mm !important;
     overflow: hidden !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-after: auto !important;
-    break-after: auto !important;
-    margin: 0 !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     box-shadow: none !important;
+    box-sizing: border-box !important;
   }
 
   /* Fix scroll containers */
@@ -372,23 +375,26 @@
     overflow: hidden !important;
   }
 
-  /* Printable report content strictly contained within A4 boundaries (296mm max to account for browser printer rounding) */
+  /* Printable report content strictly contained within A4 boundaries (268mm max to prevent 2nd page break on Safari/Chrome) */
   #printable-report {
     position: relative !important;
-    width: 210mm !important; /* Force A4 Width */
-    height: 296mm !important;
-    max-height: 296mm !important;
+    width: 100% !important;
     max-width: 210mm !important;
+    height: 268mm !important;
+    max-height: 268mm !important;
+    min-height: 0 !important;
     display: block !important;
     visibility: visible !important;
     box-shadow: none !important;
     border: none !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   /* Prevent row splitting and group orphans */
