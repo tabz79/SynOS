@@ -277,24 +277,24 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Cannot update results for a finalized report ({report.Status}). Please contact a supervisor to reopen the case.");
             }
 
+            var finalRootOrder = rootOrder.OrderId == currentOrder.OrderId 
+                ? currentOrder 
+                : await _context.Orders
+                    .Include(o => o.Visit)
+                        .ThenInclude(v => v.Patient)
+                    .Include(o => o.Test)
+                    .FirstOrDefaultAsync(o => o.OrderId == rootOrder.OrderId);
+
+            if (finalRootOrder == null) throw new KeyNotFoundException("Root order context lost.");
+
+            // If finalRootOrder was currentOrder, make sure Test is loaded
+            if (finalRootOrder.Test == null)
+            {
+                await _context.Entry(finalRootOrder).Reference(o => o.Test).LoadAsync();
+            }
+
             if (report == null)
             {
-                var finalRootOrder = rootOrder.OrderId == currentOrder.OrderId 
-                    ? currentOrder 
-                    : await _context.Orders
-                        .Include(o => o.Visit)
-                            .ThenInclude(v => v.Patient)
-                        .Include(o => o.Test)
-                        .FirstOrDefaultAsync(o => o.OrderId == rootOrder.OrderId);
-
-                if (finalRootOrder == null) throw new KeyNotFoundException("Root order context lost.");
-
-                // If finalRootOrder was currentOrder, make sure Test is loaded
-                if (finalRootOrder.Test == null)
-                {
-                    await _context.Entry(finalRootOrder).Reference(o => o.Test).LoadAsync();
-                }
-
                 report = new Report
                 {
                     ReportId = Guid.NewGuid(),
