@@ -799,7 +799,7 @@ public class DeliveryService : IDeliveryService
 
     private async Task<string> EnsureReportPdfAsync(Report report)
     {
-        return await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
+        return await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: false);
     }
 
     public async Task<DeliveryResultDto> MarkHandedOverAsync(Guid reportId, Guid userId)

@@ -317,8 +317,8 @@
 
 @media print {
   @page {
-    size: A4;
-    margin: 0; /* Let React component handle margins for precise control */
+    size: A4 portrait;
+    margin: 0 !important; /* Eliminate browser default margins that trigger 2-page breaks */
   }
 
   /* Hide UI junk */
@@ -326,10 +326,11 @@
     display: none !important;
   }
 
-  /* Let document flow naturally */
+  /* Let document flow naturally without body margins */
   html, body, #root {
     height: auto !important;
-    overflow: visible !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
     background: white !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -351,18 +352,32 @@
     padding-bottom: 0 !important;
   }
 
-  /* Fix scroll containers (VERY IMPORTANT for multi-page reports) */
-  .overflow-y-auto,
-  .overflow-hidden {
-    overflow: visible !important;
+  /* Ensure print page wrapper does not split */
+  .print-page-container {
+    height: 296mm !important;
+    max-height: 296mm !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
+    break-after: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
   }
 
-  /* Printable report content */
+  /* Fix scroll containers */
+  .overflow-y-auto,
+  .overflow-hidden {
+    overflow: hidden !important;
+  }
+
+  /* Printable report content strictly contained within A4 boundaries (296mm max to account for browser printer rounding) */
   #printable-report {
     position: relative !important;
     width: 210mm !important; /* Force A4 Width */
-    height: 296.5mm !important;
-    min-height: 296.5mm !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
     max-width: 210mm !important;
     display: block !important;
     visibility: visible !important;
@@ -372,6 +387,8 @@
     padding: 0 !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   /* Prevent row splitting and group orphans */

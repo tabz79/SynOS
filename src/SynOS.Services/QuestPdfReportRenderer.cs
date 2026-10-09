@@ -237,14 +237,6 @@ namespace SynOS.Services
                         }
                     });
 
-                    page.Header().Column(headerCol =>
-                    {
-                        if (headerConfig != null)
-                        {
-                            RenderHeader(headerCol, data, headerConfig);
-                        }
-                    });
-
                     var patientInfoSectionForPadding = templateModel.Sections.FirstOrDefault(s => s.Type == "PatientInfo");
                     var paramTableSectionForPadding = templateModel.Sections.FirstOrDefault(s => s.Type == "ParameterTable");
                     var patientConfigForPadding = patientInfoSectionForPadding != null ? DeserializeConfig<PatientInfoConfig>(patientInfoSectionForPadding) : null;
@@ -252,9 +244,18 @@ namespace SynOS.Services
                     var signatureSectionForPadding = templateModel.Sections.FirstOrDefault(s => s.Type == "SignatureBlock");
                     var isAbsoluteForPadding = patientConfigForPadding?.EnableAbsolutePositioning == true;
 
+                    page.Header().Column(headerCol =>
+                    {
+                        // In absolute letterhead mode, header branding is already baked into the background image or absolute layers
+                        if (headerConfig != null && !isAbsoluteForPadding)
+                        {
+                            RenderHeader(headerCol, data, headerConfig);
+                        }
+                    });
+
                     float contentPaddingLeft = isAbsoluteForPadding ? (paramConfigForPadding?.ResultsTableX ?? 15f) : 0f;
                     float contentPaddingRight = isAbsoluteForPadding ? (paramConfigForPadding?.ResultsTableX ?? 15f) : 0f;
-                    float contentPaddingTop = isAbsoluteForPadding ? (headerConfig?.TopMargin ?? 12f) : 0f;
+                    float contentPaddingTop = isAbsoluteForPadding ? 0f : (headerConfig?.TopMargin ?? 12f);
                     float contentPaddingBottom = isAbsoluteForPadding ? 0f : (headerConfig?.BottomMargin ?? 15f);
 
                     page.Content()
@@ -267,7 +268,8 @@ namespace SynOS.Services
                             if (isAbsoluteForPadding && paramConfigForPadding != null)
                             {
                                 float tableY = paramConfigForPadding.TableBlockY ?? paramConfigForPadding.ResultsTableY ?? 95f;
-                                float spacerHeight = Math.Max(0f, tableY - contentPaddingTop);
+                                float titleY = paramConfigForPadding.TestTitleY ?? (tableY - 14f);
+                                float spacerHeight = Math.Max(0f, titleY - contentPaddingTop);
                                 if (spacerHeight > 0f)
                                 {
                                     contentCol.Item().Height(spacerHeight, QuestPDF.Infrastructure.Unit.Millimetre);

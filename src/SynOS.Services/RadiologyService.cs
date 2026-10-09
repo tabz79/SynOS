@@ -1057,20 +1057,7 @@ namespace SynOS.Services
 
             await _context.SaveChangesAsync();
 
-            // Fire-and-forget background PDF render scope for instant response time (< 100 ms)
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    using var scope = _scopeFactory.CreateScope();
-                    var bgReportService = scope.ServiceProvider.GetRequiredService<IReportService>();
-                    await bgReportService.EnsureAndRenderReportPdfAsync(reportIdForBg, forceReRender: true);
-                }
-                catch (Exception)
-                {
-                    // Non-blocking background log
-                }
-            });
+            // PDF rendering is managed authoritatively by ReportPdfBackgroundWorker via the REPORT_SIGNED operational event below
 
             // Emit Operational Event
             if (studyEntity.Visit.BranchId.HasValue)
