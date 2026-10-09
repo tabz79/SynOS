@@ -23,6 +23,7 @@ import {
     FileSpreadsheet
 } from 'lucide-react';
 import { RadiologyApi } from '@/api/radiology';
+import { uploadDicomTus } from '@/api/tusUpload';
 import { DicomViewerContainer } from './DicomViewerContainer';
 
 export function PacsArchiveScreen() {
@@ -48,6 +49,8 @@ export function PacsArchiveScreen() {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadFiles, setUploadFiles] = useState([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStatusText, setUploadStatusText] = useState('');
     
     // Report preview modal state
     const [reportModalStudy, setReportModalStudy] = useState(null);
@@ -193,24 +196,41 @@ export function PacsArchiveScreen() {
         }
     };
 
-    const handleFileUploadSubmit = async () => {
+    const handleFileUploadSubmit = () => {
         if (!selectedStudy || uploadFiles.length === 0) return;
+        const file = uploadFiles[0];
         setUploading(true);
-        try {
-            const formData = new FormData();
-            Array.from(uploadFiles).forEach(file => {
-                formData.append('files', file);
-            });
-            await RadiologyApi.uploadDicom(selectedStudy.radiologyStudyId, formData);
-            setShowUploadModal(false);
-            setUploadFiles([]);
-            await handleSelectStudy(selectedStudy);
-            await fetchStudies();
-        } catch (err) {
-            alert(err.message || 'Failed to upload DICOM files.');
-        } finally {
-            setUploading(false);
-        }
+        setUploadProgress(1);
+        setUploadStatusText(`Initiating resumable chunked transfer (${(file.size / (1024 * 1024)).toFixed(1)} MB)...`);
+
+        uploadDicomTus(file, selectedStudy.radiologyStudyId, {
+            onProgress: (bytesSent, bytesTotal, percentage) => {
+                const sentMb = (bytesSent / (1024 * 1024)).toFixed(1);
+                const totalMb = (bytesTotal / (1024 * 1024)).toFixed(1);
+                setUploadProgress(percentage);
+                setUploadStatusText(`Uploading: ${sentMb} MB / ${totalMb} MB (${percentage}%)`);
+            },
+            onSuccess: () => {
+                setUploadProgress(100);
+                setUploadStatusText('Ingesting & indexing DICOM series...');
+                setTimeout(async () => {
+                    setShowUploadModal(false);
+                    setUploadFiles([]);
+                    setUploading(false);
+                    setUploadProgress(0);
+                    setUploadStatusText('');
+                    await handleSelectStudy(selectedStudy);
+                    await fetchStudies();
+                }, 1000);
+            },
+            onError: (err) => {
+                console.error("Resumable upload error:", err);
+                alert("DICOM Upload failed: " + (err.message || 'Failed to upload DICOM file.'));
+                setUploading(false);
+                setUploadProgress(0);
+                setUploadStatusText('');
+            }
+        });
     };
 
     const clearFilters = () => {
@@ -859,13 +879,30 @@ export function PacsArchiveScreen() {
                                 accept=".dcm,.zip"
                                 onChange={(e) => setUploadFiles(e.target.files)}
                                 className="mt-3 text-xxs text-slate-500 dark:text-zinc-400"
+                                disabled={uploading}
                             />
                         </div>
+
+                        {uploading && (
+                            <div className="space-y-1.5 bg-slate-50 dark:bg-zinc-950 p-3 rounded-xl border border-slate-200 dark:border-zinc-800">
+                                <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                    <span className="truncate max-w-[280px]">{uploadStatusText || 'Transferring DICOM dataset...'}</span>
+                                    <span className="text-indigo-600 dark:text-indigo-400 font-mono shrink-0 ml-1">{uploadProgress}%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                                    <div 
+                                        className="bg-indigo-600 h-full transition-all duration-300 rounded-full" 
+                                        style={{ width: `${uploadProgress}%` }} 
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex justify-end space-x-2 pt-2">
                             <button 
                                 onClick={() => setShowUploadModal(false)}
-                                className="px-4 py-2 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 text-slate-700 dark:text-zinc-300 rounded-xl font-bold transition"
+                                disabled={uploading}
+                                className="px-4 py-2 bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 disabled:opacity-50 text-slate-700 dark:text-zinc-300 rounded-xl font-bold transition"
                             >
                                 Cancel
                             </button>

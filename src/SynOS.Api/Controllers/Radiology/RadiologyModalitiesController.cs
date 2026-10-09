@@ -352,7 +352,7 @@ namespace SynOS.Api.Controllers.Radiology
                 var patientName = "Vasudeva Rao";
                 var patientId = "PAT-VR-10042";
 
-                var pacsBaseDir = @"C:\SynOS_Files\PACS";
+                var pacsBaseDir = SynOS.Services.PACS.PacsStorageLocation.GetRootPath();
                 var targetDir = Path.Combine(pacsBaseDir, studyUid, seriesUid);
                 if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SystemBar } from '@/components/layout/SystemBar';
 import { RadiologyApi } from '@/api/radiology';
+import { uploadDicomTus } from '@/api/tusUpload';
 import { useAuth } from '@/context/AuthContext';
 import { WorklistMatrixTabs } from '@/components/common/WorklistMatrixTabs';
 import { 
@@ -73,6 +74,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
     const [pacsViewerUrl, setPacsViewerUrl] = useState('');
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStatusText, setUploadStatusText] = useState('');
     const [hasManualUpload, setHasManualUpload] = useState(false);
 
     const [dicomSliceCount, setDicomSliceCount] = useState(0);
@@ -177,33 +179,45 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
     };
 
 
-    const handleFileUpload = async (e) => {
+    const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file || !activeStudy) return;
         setUploadedFile(file);
         setActionLoading(true);
-        setUploadProgress(20);
+        setUploadProgress(1);
+        setUploadStatusText(`Initiating resumable chunked transfer (${(file.size / (1024 * 1024)).toFixed(1)} MB)...`);
 
-        try {
-            setUploadProgress(50);
-            const formData = new FormData();
-            formData.append('files', file);
-            await RadiologyApi.uploadDicom(activeStudy.radiologyStudyId, formData);
-            setUploadProgress(100);
-            setHasManualUpload(true);
-            await checkDicomSliceCount(activeStudy.radiologyStudyId);
-            setTimeout(() => {
-                fetchQueue();
+        uploadDicomTus(file, activeStudy.radiologyStudyId, {
+            onProgress: (bytesSent, bytesTotal, percentage) => {
+                const sentMb = (bytesSent / (1024 * 1024)).toFixed(1);
+                const totalMb = (bytesTotal / (1024 * 1024)).toFixed(1);
+                setUploadProgress(percentage);
+                setUploadStatusText(`Uploading: ${sentMb} MB / ${totalMb} MB (${percentage}%)`);
+            },
+            onSuccess: async () => {
+                setUploadProgress(100);
+                setUploadStatusText('Transfer complete! Ingesting & indexing DICOM series...');
+                setHasManualUpload(true);
+                try {
+                    await checkDicomSliceCount(activeStudy.radiologyStudyId);
+                } catch (err) {}
+                setTimeout(() => {
+                    fetchQueue();
+                    setUploadedFile(null);
+                    setUploadProgress(0);
+                    setUploadStatusText('');
+                    setActionLoading(false);
+                }, 1000);
+            },
+            onError: (err) => {
+                console.error("Resumable upload error:", err);
+                alert("DICOM Upload failed: " + (err.message || "Network error. Please try again."));
                 setUploadedFile(null);
                 setUploadProgress(0);
-            }, 600);
-        } catch (error) {
-            alert("DICOM Upload failed: " + error.message);
-            setUploadedFile(null);
-            setUploadProgress(0);
-        } finally {
-            setActionLoading(false);
-        }
+                setUploadStatusText('');
+                setActionLoading(false);
+            }
+        });
     };
 
     const handleComplete = async (studyId) => {
@@ -509,13 +523,13 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                         </label>
 
                                                         {uploadProgress > 0 && (
-                                                            <div className="mt-2 space-y-1 bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                                                            <div className="mt-2 space-y-1.5 bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 animate-fadeIn">
                                                                 <div className="flex justify-between text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
-                                                                    <span>Uploading DICOM dataset...</span>
-                                                                    <span>{uploadProgress}%</span>
+                                                                    <span className="truncate max-w-[220px]">{uploadStatusText || 'Transferring DICOM dataset...'}</span>
+                                                                    <span className="text-amber-500 font-mono shrink-0 ml-1">{uploadProgress}%</span>
                                                                 </div>
-                                                                <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
-                                                                    <div className="bg-amber-500 h-full transition-all" style={{ width: `${uploadProgress}%` }} />
+                                                                <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                                                                    <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
                                                                 </div>
                                                             </div>
                                                         )}

@@ -21,6 +21,14 @@ namespace SynOS.Services
             Guid currentUserId
         );
 
+        Task<PacsImportSummaryDto> ImportDicomStreamEnterpriseAsync(
+            Guid radiologyStudyId,
+            Stream stream,
+            string fileName,
+            Guid currentUserId,
+            System.Threading.CancellationToken cancellationToken = default
+        );
+
         Task<PacsUploadResultDto> AcquirePacsStudyAsync(
             Guid radiologyStudyId,
             Guid currentUserId

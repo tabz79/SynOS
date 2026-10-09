@@ -349,7 +349,7 @@ namespace SynOS.Api.BackgroundServices
             try
             {
                 // 1. Save physical file in structured PACS storage
-                var pacsBaseDir = @"C:\SynOS_Files\PACS";
+                var pacsBaseDir = SynOS.Services.PACS.PacsStorageLocation.GetRootPath();
                 var targetDir = Path.Combine(pacsBaseDir, studyUid, seriesUid);
                 if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
 

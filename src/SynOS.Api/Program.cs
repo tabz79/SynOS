@@ -18,6 +18,7 @@ using SynOS.Api.BackgroundServices;
 using SynOS.Api.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
+using SynOS.Api.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.OpenApi.Models; // Added for Swagger JWT configuration
 using SynOS.Services.Storage;
@@ -819,6 +820,9 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 app.UseMiddleware<SessionValidationMiddleware>();
 app.UseAuthorization();
+
+// Tus Resumable Chunked Upload Pipeline (Bypasses Cloudflare limits via 10MB chunks)
+app.UseDicomTusUpload();
 
 app.MapControllers();
 // app.MapHub<SynOS.Api.Hubs.SampleHub>("/sampleHub"); // DISABLED TEMPORARILY
