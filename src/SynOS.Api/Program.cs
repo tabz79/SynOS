@@ -49,6 +49,7 @@ using SynOS.Services.Phlebotomy; // ADDED
 using SynOS.Services.Reporting; // ADDED
 using SynOS.Services.Inventory; // ADDED
 using SynOS.Services.Time; // ADDED
+using Microsoft.AspNetCore.HttpOverrides;
 
 System.IO.Directory.SetCurrentDirectory(System.AppContext.BaseDirectory);
 
@@ -766,6 +767,13 @@ if (app.Environment.IsDevelopment())
     .WithTags("Development")
     .AllowAnonymous();
 }
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost,
+    KnownNetworks = { },
+    KnownProxies = { }
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles(new StaticFileOptions

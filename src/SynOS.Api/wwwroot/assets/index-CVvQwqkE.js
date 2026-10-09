@@ -224890,7 +224890,14 @@ Input: ` + this.err.str);
       if (await this.initPromise, !e || e.length === 0) return;
       const n = localStorage.getItem("synos_jwt"), A = e.map((r) => {
         if (!r) return "";
-        const a = r.replace(/^wadouri:/, ""), s = a.startsWith("http://") || a.startsWith("https://") ? a : `${window.location.origin}${a.startsWith("/") ? "" : "/"}${a}`;
+        let a = r.replace(/^wadouri:/, ""), s;
+        if (a.startsWith("http://") || a.startsWith("https://")) try {
+          const l = new URL(a);
+          l.host === window.location.host ? s = `${window.location.origin}${l.pathname}${l.search}` : window.location.protocol === "https:" && l.protocol === "http:" ? (l.protocol = "https:", s = l.toString()) : s = a;
+        } catch {
+          s = a;
+        }
+        else s = `${window.location.origin}${a.startsWith("/") ? "" : "/"}${a}`;
         return `wadouri:${n && !s.includes("token=") ? `${s}${s.includes("?") ? "&" : "?"}token=${encodeURIComponent(n)}` : s}`;
       }).filter(Boolean);
       await Promise.all(A.map((r) => Ob(r).catch((a) => (console.warn(`Failed to load image/metadata for ID: ${r}`, a), null)))), this.imageIds = A.filter(Boolean), this.imageIds.sort((r, a) => {

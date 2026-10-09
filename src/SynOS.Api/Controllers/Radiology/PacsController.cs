@@ -164,7 +164,19 @@ namespace SynOS.Api.Controllers.Radiology
             if (!TryGetUserId(out var userId)) return Unauthorized();
             
             var request = HttpContext.Request;
-            var apiBaseUrl = $"{request.Scheme}://{request.Host.ToUriComponent()}";
+            var host = request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? request.Host.ToUriComponent();
+            var scheme = request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? request.Scheme;
+            
+            if (request.IsHttps 
+                || string.Equals(request.Headers["X-Forwarded-Proto"], "https", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(request.Headers["X-Forwarded-Ssl"], "on", StringComparison.OrdinalIgnoreCase)
+                || host.Contains("tbzlabs.in", StringComparison.OrdinalIgnoreCase)
+                || (!host.StartsWith("localhost", StringComparison.OrdinalIgnoreCase) && !host.StartsWith("127.0.0.1")))
+            {
+                scheme = "https";
+            }
+
+            var apiBaseUrl = $"{scheme}://{host}";
 
             try
             {

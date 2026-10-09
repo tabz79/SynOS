@@ -102,12 +102,28 @@ export class DicomViewportManager {
         const rawImageIds = urls.map(url => {
             if (!url) return '';
             // Strip any pre-existing 'wadouri:' prefix to prevent duplicate prepending
-            const cleanUrl = url.replace(/^wadouri:/, '');
-            
-            // Ensure absolute URL
-            const fullUrl = (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://'))
-                ? cleanUrl
-                : `${window.location.origin}${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
+            let cleanUrl = url.replace(/^wadouri:/, '');
+
+            // Ensure absolute URL matching current window origin and protocol to prevent Mixed Content blocking
+            let fullUrl;
+            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+                try {
+                    const parsed = new URL(cleanUrl);
+                    // If target host matches current host, normalize origin to current window.location.origin
+                    if (parsed.host === window.location.host) {
+                        fullUrl = `${window.location.origin}${parsed.pathname}${parsed.search}`;
+                    } else if (window.location.protocol === 'https:' && parsed.protocol === 'http:') {
+                        parsed.protocol = 'https:';
+                        fullUrl = parsed.toString();
+                    } else {
+                        fullUrl = cleanUrl;
+                    }
+                } catch {
+                    fullUrl = cleanUrl;
+                }
+            } else {
+                fullUrl = `${window.location.origin}${cleanUrl.startsWith('/') ? '' : '/'}${cleanUrl}`;
+            }
 
             // Append auth token if present and not already attached
             const authUrl = (token && !fullUrl.includes('token='))
