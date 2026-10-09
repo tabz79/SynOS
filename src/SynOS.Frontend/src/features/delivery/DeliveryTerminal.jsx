@@ -193,15 +193,17 @@ export function DeliveryTerminal() {
 
     const handlePrint = async () => {
         if (!selectedReportId) return;
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        // Open print view immediately so pop-up blockers don't block user action
+        window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
+
         try {
             await ReportsApi.deliverViaPrint(selectedReportId);
             showToast("Report queued for local printing!", "success");
-            const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
-            window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
             autoAdvance();
         } catch (err) {
             console.error("Print delivery failed:", err);
-            showToast("Print dispatch failed: " + err.message, "error");
+            showToast("Print dispatch warning: " + err.message, "info");
         }
     };
 

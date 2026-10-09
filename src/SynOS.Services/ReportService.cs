@@ -442,7 +442,16 @@ namespace SynOS.Services
             }
             // --- END FLOW B ---
 
-            // 7. Post-commit background PDF generation is handled asynchronously by ReportPdfBackgroundWorker reacting to REPORT_SIGNED event.
+            // 7. Eager PDF generation to ensure PDF is rendered immediately upon sign-off
+            try
+            {
+                await EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Background PDF rendering on sign-off deferred or encountered non-fatal error for Report {ReportId}", report.ReportId);
+            }
+
             return new ReportSignatureResponseDto
             {
                 ReportId = report.ReportId,

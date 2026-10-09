@@ -264,13 +264,23 @@ public class DeliveryService : IDeliveryService
 
         string pdfUrl = "";
         var latestReportVersion = report.ReportVersions.OrderByDescending(rv => rv.VersionNumber).FirstOrDefault();
-        if (latestReportVersion != null && !string.IsNullOrEmpty(latestReportVersion.PdfPath))
+        string? relativePdfPath = latestReportVersion?.PdfPath ?? report.PdfUrl;
+
+        if (string.IsNullOrEmpty(relativePdfPath))
         {
-            pdfUrl = _fileStorageService.GetFileUrl(latestReportVersion.PdfPath);
+            try
+            {
+                relativePdfPath = await EnsureReportPdfAsync(report);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "On-demand PDF generation encountered an issue for report {ReportId}", reportId);
+            }
         }
-        else if (!string.IsNullOrEmpty(report.PdfUrl))
+
+        if (!string.IsNullOrEmpty(relativePdfPath))
         {
-            pdfUrl = _fileStorageService.GetFileUrl(report.PdfUrl);
+            pdfUrl = _fileStorageService.GetFileUrl(relativePdfPath);
         }
         else
         {

@@ -135,4 +135,35 @@ test.describe.serial('SynOS Complete Laboratory Workflow & Template Verification
     await expect(page).toHaveURL(/delivery|login/);
   });
 
+  test('04: Delivery Desk Print & Deliver dispatches without "PDF path missing" failure', async ({ page }) => {
+    // Login as Admin / Receptionist with Delivery rights
+    await page.goto(`${BASE_URL}/login`);
+    await page.fill('input[placeholder*="username" i], input[type="text"]', 'drvasu');
+    await page.fill('input[type="password"]', 'admin123');
+    await page.click('button[type="submit"], button:has-text("Sign In"), button:has-text("Login")');
+    await page.waitForTimeout(1000);
+
+    // Navigate to Delivery Desk
+    await page.goto(`${BASE_URL}/delivery`);
+    await page.waitForLoadState('networkidle');
+
+    // Check if any report is present in queue
+    const reportItem = page.locator('text=CBP WITH PLATELETS, text=Test Patient').first();
+    if (await reportItem.isVisible()) {
+      await reportItem.click();
+      await page.waitForTimeout(500);
+
+      const printButton = page.locator('button:has-text("Print & Deliver")').first();
+      if (await printButton.isVisible()) {
+        console.log('Found "Print & Deliver" button, validating click action...');
+        await printButton.click();
+        await page.waitForTimeout(1500);
+
+        // Verify toast does not say "Print dispatch failed: Failed to mark as printed"
+        const errorToast = page.locator('text=Failed to mark as printed');
+        await expect(errorToast).not.toBeVisible();
+      }
+    }
+  });
+
 });

@@ -190,7 +190,14 @@ export const ReportsApi = {
             },
             body: JSON.stringify({ ReportId: reportId })
         });
-        if (!response.ok) throw new Error('Failed to mark as printed');
+        if (!response.ok) {
+            let errMsg = 'Failed to mark as printed';
+            try {
+                const errData = await response.json();
+                errMsg = errData.message || errData.Message || errData.title || errMsg;
+            } catch {}
+            throw new Error(errMsg);
+        }
         return await response.json();
     },
 

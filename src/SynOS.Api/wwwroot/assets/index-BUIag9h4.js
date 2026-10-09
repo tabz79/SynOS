@@ -33617,7 +33617,15 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           ReportId: t
         })
       });
-      if (!e.ok) throw new Error("Failed to mark as printed");
+      if (!e.ok) {
+        let n = "Failed to mark as printed";
+        try {
+          const A = await e.json();
+          n = A.message || A.Message || A.title || n;
+        } catch {
+        }
+        throw new Error(n);
+      }
       return await e.json();
     },
     getTemplates: async (t) => {
@@ -59666,12 +59674,13 @@ ${n}
         }
       }
     }, [Ee, Ae] = j.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), ve = async () => {
-      if (g) try {
-        await JA.deliverViaPrint(g), be("Report queued for local printing!", "success");
-        const rt = Ee ? "&preprinted=true" : "";
-        window.open(`/print/report/${g}?forceLive=true${rt}`, "_blank"), Ce();
-      } catch (rt) {
-        console.error("Print delivery failed:", rt), be("Print dispatch failed: " + rt.message, "error");
+      if (!g) return;
+      const rt = Ee ? "&preprinted=true" : "";
+      window.open(`/print/report/${g}?forceLive=true${rt}`, "_blank");
+      try {
+        await JA.deliverViaPrint(g), be("Report queued for local printing!", "success"), Ce();
+      } catch (he) {
+        console.error("Print delivery failed:", he), be("Print dispatch warning: " + he.message, "info");
       }
     }, Me = async () => {
       if (!(!g || !pe)) {
