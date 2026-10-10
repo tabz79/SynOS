@@ -26,7 +26,13 @@ namespace SynOS.RemoteBridge
   SynOS-RemoteBridge | Autonomous DICOM C-STORE / C-ECHO Medical Edge Gateway
 ================================================================================");
 
-            var builder = WebApplication.CreateBuilder(args);
+            var baseDir = AppContext.BaseDirectory;
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                Args = args,
+                ContentRootPath = baseDir,
+                WebRootPath = Path.Combine(baseDir, "wwwroot")
+            });
 
             // Load Configuration
             var config = BridgeConfig.Load();
