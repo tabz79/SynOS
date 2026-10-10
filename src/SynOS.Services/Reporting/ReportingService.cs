@@ -54,8 +54,11 @@ namespace SynOS.Services.Reporting
 
             // 1. DETERMINE TRUTH SOURCE (State-Aware Logic)
             // GPT-5 Rule: Drafts/ReadyForVerification MUST use LIVE data to reflect edits.
-            // Signed reports MUST use SNAPSHOT for forensic integrity.
-            bool isFinalized = report.Status == "Signed" || report.Status == "ManualVerified";
+            // Signed/ManualVerified/Finalized/Delivered reports MUST use SNAPSHOT for forensic integrity and instant latency.
+            bool isFinalized = report.Status == "Signed" || 
+                               report.Status == "ManualVerified" || 
+                               report.Status == "Finalized" || 
+                               report.Status == "Delivered";
             
             // 2. Honors snapshot ONLY if report is finalized AND we aren't forcing fresh.
             if (isFinalized && !forceFresh && latestVersion?.Snapshot != null && !string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
@@ -97,7 +100,9 @@ namespace SynOS.Services.Reporting
                             snapshotData.Token = snapshotData.Patient.MRN;
                         }
 
-                        var pacsCount = await _context.PacsInstances.CountAsync(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted);
+                        var pacsCount = report.SourceType == "RadiologyStudy"
+                            ? await _context.PacsInstances.CountAsync(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted)
+                            : 0;
                         snapshotData.HasPacsStudy = pacsCount > 0;
                         snapshotData.DicomInstanceCount = pacsCount;
 

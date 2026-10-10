@@ -120,8 +120,6 @@ export function DeliveryTerminal() {
 
     const fetchReportDetail = async (reportId) => {
         setIsLoadingDetail(true);
-        setReportStructure(null);
-        setReportData(null);
         try {
             const context = await ReportsApi.getFullReportContext(reportId, false);
             setReportStructure(context.report);

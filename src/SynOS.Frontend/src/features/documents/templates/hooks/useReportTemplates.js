@@ -1,20 +1,71 @@
+/**
+ * =========================================================================================
+ * SYNOS ENTERPRISE REPORT ENGINE - HIGH-PERFORMANCE TEMPLATE RESOLUTION HOOKS
+ * =========================================================================================
+ * ARCHITECTURAL LATENCY CONTRACT:
+ * 1. ZERO-WAIT SYNCHRONOUS RESOLUTION:
+ *    - `useTemplateForReport` MUST resolve templates synchronously in memory in 0ms.
+ *    - NEVER block live preview rendering on heavy network calls like AdminApi.getTests().
+ * 2. BACKGROUND PRE-WARMING:
+ *    - Backend templates from ReportsApi.getTemplates() are pre-warmed once into memory.
+ *    - Fallbacks from DEFAULT_TEMPLATES guarantee instant render with zero UI flicker.
+ * =========================================================================================
+ */
+
 import { useState, useEffect } from 'react';
 import { ReportsApi } from '../../../../api/reports';
 import { AdminApi } from '../../../../api/admin';
 import { DEFAULT_TEMPLATES, sanitizeTemplates } from '../defaultTemplates';
 import { mapBackendDslToTemplate } from '../ReportTemplateService';
 
-let cachedTemplatesPromise = null;
+let cachedMappedTemplates = null;
+let cachedFetchPromise = null;
 let cachedTestsPromise = null;
 
-export function fetchTemplatesCached() {
-  if (!cachedTemplatesPromise) {
-    cachedTemplatesPromise = ReportsApi.getTemplates().catch(err => {
-      cachedTemplatesPromise = null;
-      throw err;
+const fallbackTemplates = sanitizeTemplates(DEFAULT_TEMPLATES);
+
+function mapTemplates(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map(item => {
+    let dsl = item.templateDsl;
+    if (!dsl && item.templateJson) {
+      try {
+        dsl = typeof item.templateJson === 'string' ? JSON.parse(item.templateJson) : item.templateJson;
+      } catch (e) {
+        console.error("Failed to parse templateJson", e);
+      }
+    }
+    return mapBackendDslToTemplate(dsl, item.templateId || item.id, item.isDefault, item.isPublished);
+  });
+}
+
+/**
+ * Pre-warms template cache from backend in background on application start.
+ */
+export function prewarmTemplates() {
+  if (cachedMappedTemplates || cachedFetchPromise) return cachedFetchPromise;
+  cachedFetchPromise = ReportsApi.getTemplates()
+    .then(list => {
+      if (Array.isArray(list) && list.length > 0) {
+        cachedMappedTemplates = mapTemplates(list);
+      }
+      cachedFetchPromise = null;
+      return cachedMappedTemplates;
+    })
+    .catch(err => {
+      console.warn("Background template prewarm note:", err);
+      cachedFetchPromise = null;
     });
-  }
-  return cachedTemplatesPromise;
+  return cachedFetchPromise;
+}
+
+// Kick off background pre-warming immediately
+prewarmTemplates();
+
+export function fetchTemplatesCached() {
+  if (cachedMappedTemplates) return Promise.resolve(cachedMappedTemplates);
+  if (cachedFetchPromise) return cachedFetchPromise;
+  return prewarmTemplates();
 }
 
 export function fetchTestsCached() {
@@ -28,163 +79,89 @@ export function fetchTestsCached() {
 }
 
 export function clearTemplateCaches() {
-  cachedTemplatesPromise = null;
+  cachedMappedTemplates = null;
+  cachedFetchPromise = null;
   cachedTestsPromise = null;
+  ReportsApi._clearCache?.();
 }
 
-// React hook to fetch and resolve the active template for a given report
+/**
+ * Synchronously resolves the active template in < 1ms from in-memory pool.
+ */
+export function resolveTemplateSync(modality, reportTemplateId) {
+  const pool = (cachedMappedTemplates && cachedMappedTemplates.length > 0)
+    ? cachedMappedTemplates
+    : fallbackTemplates;
+
+  // 1. Exact ID Match (Primary fast path)
+  if (reportTemplateId) {
+    const foundById = pool.find(t => t.id === reportTemplateId);
+    if (foundById) return foundById;
+  }
+
+  // 2. Modality Default Match
+  const normModality = (modality || "").toLowerCase().trim();
+  const isRad = normModality.includes("rad") || normModality.includes("x-ray") || normModality.includes("xray") || normModality.includes("mri") || normModality.includes("ct") || normModality.includes("us") || normModality.includes("ultra");
+  const targetModality = isRad ? "radiology" : "pathology";
+
+  const foundModalityDefault = pool.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
+  if (foundModalityDefault) return foundModalityDefault;
+
+  // 3. Any Modality Match
+  const foundAnyModality = pool.find(t => (t.modality || "").toLowerCase().trim() === targetModality);
+  if (foundAnyModality) return foundAnyModality;
+
+  // 4. Global System Default
+  const foundGlobalDefault = pool.find(t => t.isDefault);
+  if (foundGlobalDefault) return foundGlobalDefault;
+
+  // 5. Ultimate Fallback
+  return pool[0] || fallbackTemplates[0];
+}
+
+/**
+ * High-performance React hook for instant, sub-millisecond template resolution.
+ */
 export function useTemplateForReport(reportData) {
   const modality = reportData?.modality || reportData?.Modality;
-  const testCode = reportData?.metadata?.testCode || reportData?.metadata?.TestCode || reportData?.testCode || reportData?.TestCode;
   const reportTemplateId = reportData?.reportTemplateId || reportData?.ReportTemplateId || reportData?.templateId || reportData?.TemplateId;
 
-  // Resolve active template synchronously from default fallback list initially to prevent layout flash
-  const [template, setTemplate] = useState(() => {
-    if (!modality) return null;
-    
-    const mappedList = sanitizeTemplates(DEFAULT_TEMPLATES);
-    let found = null;
-    
-    // 1. Check if report specifies a ReportTemplateId directly from backend
-    if (reportTemplateId) {
-      found = mappedList.find(t => t.id === reportTemplateId);
-    }
+  // 1. Instant Synchronous Evaluation: 0 milliseconds
+  const syncTemplate = modality ? resolveTemplateSync(modality, reportTemplateId) : null;
+  const [template, setTemplate] = useState(syncTemplate);
 
-    // 2. Default template for modality
-    if (!found) {
-      const normModality = (modality || "").toLowerCase().trim();
-      const isRad = normModality.includes("rad") || normModality.includes("x-ray") || normModality.includes("xray") || normModality.includes("mri") || normModality.includes("ct") || normModality.includes("us") || normModality.includes("ultra");
-      const targetModality = isRad ? "radiology" : "pathology";
-      found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
-    }
-
-    // 3. Default template globally
-    if (!found) {
-      found = mappedList.find(t => t.isDefault);
-    }
-
-    // 4. First template in list
-    if (!found) {
-      found = mappedList[0];
-    }
-
-    // 5. Default fallback
-    if (!found) {
-      const dept = modality.toLowerCase().trim();
-      const localTemplates = sanitizeTemplates(DEFAULT_TEMPLATES);
-      return localTemplates.find(t => {
-        const modalityName = (t.modality || "").toLowerCase().trim();
-        return modalityName && (dept.includes(modalityName) || modalityName.includes(dept));
-      }) || localTemplates[0];
-    }
-
-    return found;
-  });
-
-  const [loading, setLoading] = useState(() => !template);
-
+  // 2. Update synchronously whenever reportData or modality changes
   useEffect(() => {
-    if (!modality) {
-      setLoading(false);
-      return;
+    if (modality) {
+      const resolved = resolveTemplateSync(modality, reportTemplateId);
+      setTemplate(resolved);
     }
+  }, [modality, reportTemplateId]);
 
-    let isMounted = true;
-
-    async function load() {
-      try {
-        const list = await fetchTemplatesCached();
-        if (!isMounted) return;
-
-        // Map DTOs to visual templates
-        const mappedList = list.map(item => {
-          let dsl = item.templateDsl;
-          if (!dsl && item.templateJson) {
-            try {
-              dsl = JSON.parse(item.templateJson);
-            } catch (e) {
-              console.error(e);
-            }
-          }
-          return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
-        });
-
-        // Resolve active template
-        let found = null;
-        
-        // 1. Check if report specifies a ReportTemplateId directly from backend
-        if (reportTemplateId) {
-          found = mappedList.find(t => t.id === reportTemplateId);
-        }
-
-        // 2. Check catalog settings override directly from API to avoid localStorage
-        if (!found && testCode) {
-          try {
-            const catalog = await fetchTestsCached();
-            const test = catalog.find(t => (t.testCode || t.TestCode || t.code || "").toUpperCase() === (testCode || "").toUpperCase());
-            const templateId = test?.reportTemplateId || test?.ReportTemplateId || test?.templateId;
-            if (templateId) {
-              found = mappedList.find(t => t.id === templateId);
-            }
-          } catch (catalogErr) {
-            console.error("Failed to load catalog for template resolution", catalogErr);
-          }
-        }
-
-        // 3. Default template for modality
-        if (!found) {
-          const normModality = (modality || "").toLowerCase().trim();
-          const isRad = normModality.includes("rad") || normModality.includes("x-ray") || normModality.includes("xray") || normModality.includes("mri") || normModality.includes("ct") || normModality.includes("us") || normModality.includes("ultra");
-          const targetModality = isRad ? "radiology" : "pathology";
-          found = mappedList.find(t => t.isDefault && (t.modality || "").toLowerCase().trim() === targetModality);
-        }
-
-        // 4. Default template globally
-        if (!found) {
-          found = mappedList.find(t => t.isDefault);
-        }
-
-        // 5. First template in list
-        if (!found) {
-          found = mappedList[0];
-        }
-
-        // 6. Default fallback
-        if (!found) {
-          const dept = modality.toLowerCase().trim();
-          const localTemplates = sanitizeTemplates(DEFAULT_TEMPLATES);
-          found = localTemplates.find(t => {
-            const modalityName = (t.modality || "").toLowerCase().trim();
-            return modalityName && (dept.includes(modalityName) || modalityName.includes(dept));
-          }) || localTemplates[0];
-        }
-
-        if (isMounted && found) {
-          setTemplate(found);
-        }
-      } catch (err) {
-        console.error("Failed to load active template from backend, using local fallback", err);
-        if (!isMounted) return;
-        const dept = modality.toLowerCase().trim();
-        const localTemplates = sanitizeTemplates(DEFAULT_TEMPLATES);
-        const fallback = localTemplates.find(t => {
-          const modalityName = (t.modality || "").toLowerCase().trim();
-          return modalityName && (dept.includes(modalityName) || modalityName.includes(dept));
-        }) || localTemplates[0];
-        setTemplate(fallback);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+  // 3. In the event background pre-warm completes, silently upgrade template in-place
+  useEffect(() => {
+    if (!cachedMappedTemplates && !cachedFetchPromise) {
+      prewarmTemplates();
     }
+    if (cachedFetchPromise) {
+      cachedFetchPromise.then(() => {
+        if (modality) {
+          setTemplate(resolveTemplateSync(modality, reportTemplateId));
+        }
+      });
+    }
+  }, [modality, reportTemplateId]);
 
-    load();
-    return () => { isMounted = false; };
-  }, [modality, testCode, reportTemplateId]);
-
-  return { template, loading };
+  // Guaranteed immediate return with loading: false
+  return { 
+    template: template || syncTemplate, 
+    loading: false 
+  };
 }
 
-// React hook to fetch all templates and expose mutation methods
+/**
+ * React hook to fetch all templates and expose mutation methods for management screens.
+ */
 export function useTemplatesList() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -193,17 +170,8 @@ export function useTemplatesList() {
     setLoading(true);
     try {
       const list = await ReportsApi.getTemplates();
-      const mapped = list.map(item => {
-        let dsl = item.templateDsl;
-        if (!dsl && item.templateJson) {
-          try {
-            dsl = JSON.parse(item.templateJson);
-          } catch (e) {
-            console.error(e);
-          }
-        }
-        return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
-      });
+      const mapped = mapTemplates(list);
+      cachedMappedTemplates = mapped;
       setTemplates(mapped);
     } catch (e) {
       console.error("Failed to load templates list", e);

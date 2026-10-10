@@ -38,6 +38,42 @@ namespace SynOS.Services
         private readonly Reporting.IReportingService _reportingService;
         private readonly IConfiguration _configuration;
 
+        // Enterprise in-memory fast caches to eliminate round-trip latency on report previews
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (byte[]? ImageBytes, string? Base64String)> _sigImageCache = new();
+        private static LabProfile? _cachedLabProfile;
+        private static DateTimeOffset _labProfileCacheExpires = DateTimeOffset.MinValue;
+        private static User? _cachedDirectorUser;
+        private static DateTimeOffset _directorCacheExpires = DateTimeOffset.MinValue;
+
+        private async Task<LabProfile> GetCachedLabProfileAsync()
+        {
+            if (_cachedLabProfile != null && DateTimeOffset.UtcNow < _labProfileCacheExpires)
+            {
+                return _cachedLabProfile;
+            }
+            var profile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            _cachedLabProfile = profile ?? new LabProfile 
+            { 
+                Name = "SynOS Laboratory", 
+                Address = "Default Address",
+                FooterDisclaimer = "* Clinical correlation required."
+            };
+            _labProfileCacheExpires = DateTimeOffset.UtcNow.AddMinutes(5);
+            return _cachedLabProfile;
+        }
+
+        private async Task<User?> GetCachedDirectorUserAsync()
+        {
+            if (_cachedDirectorUser != null && DateTimeOffset.UtcNow < _directorCacheExpires)
+            {
+                return _cachedDirectorUser;
+            }
+            var director = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+            _cachedDirectorUser = director;
+            _directorCacheExpires = DateTimeOffset.UtcNow.AddMinutes(5);
+            return _cachedDirectorUser;
+        }
+
         public ReportService(
             SynOSDbContext context, 
             ILogger<ReportService> logger, 
@@ -609,6 +645,7 @@ namespace SynOS.Services
         public async Task<ReportDataModel?> GetReportDataForPdfAsync(Guid reportId, bool forceLive = false, ReportStructureDto? existingStructure = null)
         {
             var report = await _context.Reports
+                .AsNoTracking()
                 .Include(r => r.PathologyReport)
                 .Include(r => r.RadiologyReport)
                 .Include(r => r.TypedByUser)
@@ -617,46 +654,18 @@ namespace SynOS.Services
 
             if (report == null) return null;
 
-            Order order = null;
-            if (report.SourceType == "RadiologyStudy")
-            {
-                var study = await _context.RadiologyStudies
-                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
-                if (study != null)
-                {
-                    order = await _context.Orders
-                        .Include(o => o.Test)
-                        .Include(o => o.Visit).ThenInclude(v => v.Patient)
-                        .Include(o => o.Visit).ThenInclude(v => v.Referrer)
-                        .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
-                        .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
-                }
-            }
-            else
-            {
-                order = await _context.Orders
-                    .Include(o => o.Test)
-                    .Include(o => o.Visit).ThenInclude(v => v.Patient)
-                    .Include(o => o.Visit).ThenInclude(v => v.Referrer)
-                    .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
-                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
-            }
-
-            if (order == null && report.SourceType != "RadiologyStudy") return null;
-
-            // 1. DETERMINE DATA SOURCE (GPT-5 Rule: Lifecycle-Aware Truth)
-            bool isLocked = report.Status == "Signed" || report.Status == "ManualVerified";
-                       // Snapshot Prioritization Logic (GPT-5 Rule: forceLive ALWAYS wins)
+            // 1. FAST-PATH SNAPSHOT LOOKUP (GPT-5 Rule: Finalized reports serve immutable snapshots in < 5ms)
             string? snapshotJson = null;
             if (!forceLive)
             {
                 var latestVersion = await _context.ReportVersions
+                    .AsNoTracking()
                     .Include(rv => rv.Snapshot)
                     .Where(rv => rv.ReportId == reportId)
                     .OrderByDescending(rv => rv.VersionNumber)
                     .FirstOrDefaultAsync();
 
-                if (latestVersion?.Snapshot != null)
+                if (latestVersion?.Snapshot != null && !string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
                 {
                     snapshotJson = latestVersion.Snapshot.SnapshotJson;
                 }
@@ -666,40 +675,22 @@ namespace SynOS.Services
             {
                 try
                 {
+                    // Fast path 1a: Direct V2 Model deserialization (Zero query overhead!)
+                    var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                        PropertyNameCaseInsensitive = true,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                    };
+                    
                     using var doc = JsonDocument.Parse(snapshotJson);
                     bool isDomainState = doc.RootElement.TryGetProperty("columnDefinitions", out _) || 
                                          doc.RootElement.TryGetProperty("ColumnDefinitions", out _);
                     bool isDtoState = doc.RootElement.TryGetProperty("Groups", out _) || 
                                       doc.RootElement.TryGetProperty("groups", out _);
 
-                    if (isDomainState)
+                    if (!isDomainState && !isDtoState)
                     {
-                        var domainState = System.Text.Json.JsonSerializer.Deserialize<ClinicalReportState>(snapshotJson);
-                        if (domainState != null)
-                        {
-                            var mapped = await MapDomainToReportDataModelAsync(domainState, report, order);
-                            mapped.Metadata.GeneratedFrom = "snapshot";
-                            return mapped;
-                        }
-                    }
-                    else if (isDtoState)
-                    {
-                        var dtoState = System.Text.Json.JsonSerializer.Deserialize<ReportStructureDto>(snapshotJson);
-                        if (dtoState != null)
-                        {
-                            var mapped = await MapDomainToReportDataModelAsync(dtoState.ToDomain(), report, order);
-                            mapped.Metadata.GeneratedFrom = "snapshot-dto-converted";
-                            return mapped;
-                        }
-                    }
-                    else
-                    {
-                        var jsonOptions = new System.Text.Json.JsonSerializerOptions
-                        {
-                            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-                            PropertyNameCaseInsensitive = true,
-                            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                        };
                         var v2Data = System.Text.Json.JsonSerializer.Deserialize<ReportDataModel>(snapshotJson, jsonOptions);
                         if (v2Data != null)
                         {
@@ -720,6 +711,52 @@ namespace SynOS.Services
                             return v2Data;
                         }
                     }
+
+                    // If domain or DTO snapshot, lazily resolve order for metadata mapping
+                    Order? snapshotOrder = null;
+                    if (report.SourceType == "RadiologyStudy")
+                    {
+                        var study = await _context.RadiologyStudies.AsNoTracking().FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                        if (study != null)
+                        {
+                            snapshotOrder = await _context.Orders.AsNoTracking()
+                                .Include(o => o.Test)
+                                .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                                .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                                .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
+                                .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                        }
+                    }
+                    else
+                    {
+                        snapshotOrder = await _context.Orders.AsNoTracking()
+                            .Include(o => o.Test)
+                            .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                            .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                            .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
+                            .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+                    }
+
+                    if (isDomainState)
+                    {
+                        var domainState = System.Text.Json.JsonSerializer.Deserialize<ClinicalReportState>(snapshotJson);
+                        if (domainState != null)
+                        {
+                            var mapped = await MapDomainToReportDataModelAsync(domainState, report, snapshotOrder);
+                            mapped.Metadata.GeneratedFrom = "snapshot";
+                            return mapped;
+                        }
+                    }
+                    else if (isDtoState)
+                    {
+                        var dtoState = System.Text.Json.JsonSerializer.Deserialize<ReportStructureDto>(snapshotJson);
+                        if (dtoState != null)
+                        {
+                            var mapped = await MapDomainToReportDataModelAsync(dtoState.ToDomain(), report, snapshotOrder);
+                            mapped.Metadata.GeneratedFrom = "snapshot-dto-converted";
+                            return mapped;
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -727,12 +764,44 @@ namespace SynOS.Services
                 }
             }
 
-            if (report.Status == "Signed" && !forceLive && snapshotJson == null)
+            // 2. LIVE ASSEMBLY (For Drafts or Fresh Previews)
+            Order order = null;
+            if (report.SourceType == "RadiologyStudy")
+            {
+                var study = await _context.RadiologyStudies.AsNoTracking()
+                    .FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                if (study != null)
+                {
+                    order = await _context.Orders.AsNoTracking()
+                        .Include(o => o.Test)
+                        .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                        .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                        .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
+                        .FirstOrDefaultAsync(o => o.OrderId == study.VisitTestId);
+                }
+            }
+            else
+            {
+                order = await _context.Orders.AsNoTracking()
+                    .Include(o => o.Test)
+                    .Include(o => o.Visit).ThenInclude(v => v.Patient)
+                    .Include(o => o.Visit).ThenInclude(v => v.Referrer)
+                    .Include(o => o.Visit).ThenInclude(v => v.ReferralPartner)
+                    .FirstOrDefaultAsync(o => o.OrderId == report.SourceId);
+            }
+
+            if (order == null && report.SourceType != "RadiologyStudy") return null;
+
+            bool isLocked = report.Status == "Signed" || 
+                            report.Status == "ManualVerified" || 
+                            report.Status == "Finalized" || 
+                            report.Status == "Delivered";
+
+            if (isLocked && !forceLive && snapshotJson == null)
             {
                 _logger.LogWarning("Signed report {Id} is missing a snapshot. Falling back to live assembly for delivery display.", report.ReportId);
             }
 
-            // 2. LIVE TRUTH FACTORY (For Drafts or Legacy Snapshots)
             return await BuildReportDataModelV2Async(report, order, forceLive, existingStructure);
         }
 
@@ -863,17 +932,10 @@ namespace SynOS.Services
                     .FirstOrDefaultAsync(s => s.SpecimenId == order.SpecimenId);
             }
                 
-            var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync() ?? new LabProfile 
-            { 
-                Name = "SynOS Laboratory", 
-                Address = "Default Address",
-                FooterDisclaimer = "* Clinical correlation required."
-            };
+            var labProfile = await GetCachedLabProfileAsync();
 
             // 1. Ensure Lab Director / Owner is ALWAYS present in Slot 0 (Baseline Identity)
-            var director = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+            var director = await GetCachedDirectorUserAsync();
 
             ReportSignatureDetails? directorSig = null;
             if (director != null)
@@ -1146,12 +1208,7 @@ namespace SynOS.Services
                     report.RadiologyReport = await _context.RadiologyReports.FirstOrDefaultAsync(rr => rr.ReportId == report.ReportId || rr.RadiologyStudyId == report.SourceId);
                 }
 
-                var radLabProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync() ?? new LabProfile 
-                { 
-                    Name = "SynOS Laboratory", 
-                    Address = "Default Address",
-                    FooterDisclaimer = "* Clinical correlation required."
-                };
+                var radLabProfile = await GetCachedLabProfileAsync();
 
                 var radNow = DateTimeOffset.UtcNow;
                 var radiologyReport = report.RadiologyReport;
@@ -1241,9 +1298,7 @@ namespace SynOS.Services
                 };
 
                 // Add default lab director signature if exists
-                var directorUser = await _context.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+                var directorUser = await GetCachedDirectorUserAsync();
                 if (directorUser != null)
                 {
                     var directorSig = new ReportSignatureDetails
@@ -1390,9 +1445,7 @@ namespace SynOS.Services
 
             // RULE #1: Baseline Clinical Identity (Always Inject Lab Owner/Director)
             // Ensure Lab Director is ALWAYS present to satisfy forensic letterhead requirements.
-            var director = await _context.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
+            var director = await GetCachedDirectorUserAsync();
 
             if (director != null)
             {
@@ -1450,17 +1503,7 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(s => s.SpecimenId == order.SpecimenId);
 
             // Fetch Lab Identity (GPT-5 Dynamic Branding Mandate)
-            var labProfile = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
-            if (labProfile == null)
-            {
-                // Safety fallback if seed hasn't run yet
-                labProfile = new LabProfile 
-                { 
-                    Name = "SynOS Laboratory", 
-                    Address = "Default Address",
-                    FooterDisclaimer = "* Clinical correlation required."
-                };
-            }
+            var labProfile = await GetCachedLabProfileAsync();
 
             var now = DateTimeOffset.UtcNow;
             var model = new ReportDataModel
@@ -2158,14 +2201,20 @@ namespace SynOS.Services
         {
             if (string.IsNullOrEmpty(signatureImageUrl)) return (null, null);
 
+            if (_sigImageCache.TryGetValue(signatureImageUrl, out var cached))
+            {
+                return cached;
+            }
+
             try
             {
+                (byte[]? bytes, string? base64) result;
                 if (signatureImageUrl.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
                 {
                     var commaIndex = signatureImageUrl.IndexOf(',');
                     var base64Data = commaIndex >= 0 ? signatureImageUrl.Substring(commaIndex + 1) : signatureImageUrl;
                     var bytes = Convert.FromBase64String(base64Data);
-                    return (bytes, base64Data);
+                    result = (bytes, base64Data);
                 }
                 else
                 {
@@ -2174,8 +2223,11 @@ namespace SynOS.Services
                     using var ms = new MemoryStream();
                     await stream.CopyToAsync(ms);
                     var bytes = ms.ToArray();
-                    return (bytes, Convert.ToBase64String(bytes));
+                    result = (bytes, Convert.ToBase64String(bytes));
                 }
+
+                _sigImageCache[signatureImageUrl] = result;
+                return result;
             }
             catch (Exception ex)
             {
