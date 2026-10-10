@@ -330,13 +330,16 @@
   html, body, #root {
     display: block !important;
     height: auto !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
+    max-height: none !important;
+    overflow: visible !important;
     background: white !important;
+    color: black !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     min-width: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Remove viewport constraints */
@@ -357,8 +360,8 @@
     width: 100% !important;
     max-width: 210mm !important;
     height: auto !important;
-    max-height: 288mm !important;
-    overflow: hidden !important;
+    max-height: none !important;
+    overflow: visible !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
@@ -372,16 +375,16 @@
   /* Fix scroll containers */
   .overflow-y-auto,
   .overflow-hidden {
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
-  /* Printable report content strictly contained within page boundaries (288mm eliminates Safari margin spillover) */
+  /* Printable report content strictly contained within page boundaries */
   #printable-report {
     position: relative !important;
     width: 100% !important;
     max-width: 210mm !important;
     height: auto !important;
-    max-height: 288mm !important;
+    max-height: none !important;
     min-height: 0 !important;
     display: block !important;
     visibility: visible !important;
@@ -389,12 +392,14 @@
     border: none !important;
     margin: 0 auto !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* Prevent row splitting and group orphans */
