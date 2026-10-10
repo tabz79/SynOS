@@ -1,3 +1,51 @@
+/**
+ * =========================================================================================
+ * SYNOS ENTERPRISE REPORT ENGINE - CORE A4 DOCUMENT ARCHITECTURE & AI GUARDRAILS
+ * =========================================================================================
+ * CRITICAL ARCHITECTURAL CONTRACT FOR FUTURE DEVELOPERS & AI CODING AGENTS:
+ * DO NOT MODIFY OR TINKER WITH THE INVARIANTS BELOW UNDER ANY CIRCUMSTANCES UNLESS DIRECTLY
+ * INSTRUCTED BY ARCHITECTURE LEADS AND STRICTLY ADHERING TO CLINICAL & LEGAL SPECIFICATIONS:
+ *
+ * 1. PREPRINTED MODE IS EXPLICIT & RUNTIME-ONLY:
+ *    - `isPreprinted` MUST strictly evaluate `Boolean(forcePreprinted)`.
+ *    - NEVER fall back to `activeTemplate?.usePreprinted`.
+ *    - NEVER read or write `localStorage.getItem('synos_preprinted_mode')`.
+ *    - Preprinted mode suppresses the digital background letterhead ONLY when the user
+ *      explicitly checks the "PREPRINTED SHEET" toggle in the print UI.
+ *
+ * 2. BACKGROUND LETTERHEAD RENDERING (CROSS-BROWSER / SAFARI WEBKIT COMPATIBILITY):
+ *    - The letterhead background MUST be rendered using a standard HTML `<img />` tag with
+ *      explicit physical sheet dimensions: `position: absolute; top: 0; left: 0; width: 210mm;
+ *      height: 297mm; object-fit: fill; -webkit-print-color-adjust: exact; print-color-adjust: exact;`.
+ *    - NEVER convert this to a CSS `background-image` on a `<div>`. WebKit/Safari silently drops
+ *      CSS background images when "Print backgrounds" is unchecked in its native print dialog,
+ *      whereas HTML `<img>` elements are always preserved.
+ *
+ * 3. STRICT ZERO WATERMARK POLICY:
+ *    - There MUST NEVER be any watermark text, image, overlay, or stamp across ANY report,
+ *      whether in Draft, Verification, Pathologist Review, Delivery, WhatsApp, or Vector PDF.
+ *
+ * 4. SIGNATURE ARCHITECTURE (DIRECTOR vs CONSULTANT DUAL-SLOT CONTRACT):
+ *    - Slot 0 is the Laboratory Owner / Chief Pathologist: ALWAYS present by default.
+ *    - Slot 1 is the Reviewing Consultant / Pathologist:
+ *      a) If the Lab Owner signs: Slot 0 is marked digitally signed. Slot 1 is NOT added.
+ *      b) If a Consultant Pathologist signs digitally: Slot 1 contains their digital signature.
+ *      c) If a Typist prints for manual review: Slot 1 contains a physical blank ink line
+ *         ("Verified By / Pathologist") with no digital stamp.
+ *
+ * 5. TOP-ANCHORED HEADING POSITIONING:
+ *    - The Investigation / Modality heading (e.g., "MRI NECK") MUST be anchored directly below
+ *      the Patient Demographics block at the top of the test content area.
+ *    - NEVER vertically center test headings or test content in the middle of the sheet.
+ *
+ * 6. STRICT SINGLE-PAGE A4 BOUNDARIES:
+ *    - `#printable-report` must be constrained to `210mm` width and `297mm` height with
+ *      `overflow: hidden` in `@media print`.
+ *    - Avoid bottom-margin leakage or body margin injections that force WebKit to split
+ *      onto a 2nd page.
+ * =========================================================================================
+ */
+
 import React, { Fragment } from 'react';
 
 // Dynamic Variables Resolution Helper (Supports Patient and Parameter Variables)

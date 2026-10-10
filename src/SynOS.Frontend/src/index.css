@@ -316,6 +316,16 @@
 }
 
 @media print {
+  /* =========================================================================================
+   * SYNOS ENTERPRISE REPORT ENGINE - PRINT STYLESHEET & AI GUARDRAILS
+   * DO NOT TINKER:
+   * 1. @page MUST specify `margin: 0 !important;` to prevent default browser margins from splitting
+   *    the full 297mm A4 layout into a 2nd blank page.
+   * 2. html, body, #root MUST have `overflow: visible !important;` - WebKit/Safari print engine will
+   *    render an empty white page if overflow is hidden on root ancestors.
+   * 3. .print-page-container and #printable-report MUST remain locked to `width: 210mm !important;
+   *    height: 297mm !important; overflow: hidden !important; break-inside: avoid !important;`.
+   * ========================================================================================= */
   @page {
     size: A4 portrait;
     margin: 0 !important; /* Eliminate browser default margins that trigger 2-page breaks */

@@ -48,6 +48,25 @@ namespace SynOS.Services
             return JsonSerializer.Deserialize<T>("{}", options);
         }
 
+        /*
+         * =========================================================================================
+         * SYNOS ENTERPRISE REPORT ENGINE - BACKEND QUESTPDF GENERATOR & AI GUARDRAILS
+         * =========================================================================================
+         * ARCHITECTURAL CONTRACT FOR FUTURE AI CODING AGENTS & BACKEND ENGINEERS:
+         * 1. PARITY WITH FRONTEND REPORTA4:
+         *    - Backend PDF output (WhatsApp downloads, vector PDFs) MUST visually mirror the
+         *      browser print view in ReportA4.jsx down to exact typography, margins, and layout.
+         * 2. STRICT ZERO WATERMARK POLICY:
+         *    - Under NO circumstances should any watermark (e.g. "DRAFT", "PROVISIONAL", lab logos)
+         *      be drawn or injected on the PDF pages.
+         * 3. TOP-ANCHORED TEST TITLE & CONTENT:
+         *    - Investigation headers (e.g. "MRI NECK") and test parameters must be placed directly
+         *      below the Patient Demographics section, never vertically centered on the page.
+         * 4. SIGNATURE CONTRACT:
+         *    - Slot 0 is Chief Pathologist / Director (always present).
+         *    - Slot 1 is Reviewing Consultant (only added if digitally signed by consultant).
+         * =========================================================================================
+         */
         public Task<byte[]> GeneratePdfAsync(ReportDataModel data, TemplateModel templateModel)
         {
             var swTotal = Stopwatch.StartNew();
