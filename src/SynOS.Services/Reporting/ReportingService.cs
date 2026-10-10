@@ -12,6 +12,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Entities.Catalog;
 using SynOS.Models.Domain;
 using SynOS.Models.Helpers;
+using SynOS.Services;
 
 namespace SynOS.Services.Reporting
 {
@@ -21,10 +22,12 @@ namespace SynOS.Services.Reporting
         private readonly ILogger<ReportingService> _logger;
 
         private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ReportTemplate?> TemplateCache = new();
+        private static Guid? _cachedDefaultRadiologyTemplateId = null;
 
         public static void ClearTemplateCache()
         {
             TemplateCache.Clear();
+            _cachedDefaultRadiologyTemplateId = null;
         }
 
         public ReportingService(SynOSDbContext context, ILogger<ReportingService> logger)
@@ -61,17 +64,23 @@ namespace SynOS.Services.Reporting
                                report.Status == "Delivered";
             
             // 2. Honors snapshot ONLY if report is finalized AND we aren't forcing fresh.
-            if (isFinalized && !forceFresh && latestVersion?.Snapshot != null && !string.IsNullOrWhiteSpace(latestVersion.Snapshot.SnapshotJson))
+            string? snapshotJson = latestVersion?.Snapshot?.SnapshotJson;
+            if (string.IsNullOrWhiteSpace(snapshotJson))
+            {
+                snapshotJson = report.FinalSnapshotJson ?? report.DraftSnapshotJson;
+            }
+
+            if (isFinalized && !forceFresh && !string.IsNullOrWhiteSpace(snapshotJson))
             {
                 try 
                 {
                     ClinicalReportState? domainState = null;
                     try
                     {
-                        using var doc = JsonDocument.Parse(latestVersion.Snapshot.SnapshotJson);
+                        using var doc = JsonDocument.Parse(snapshotJson);
                         if (doc.RootElement.TryGetProperty("columnDefinitions", out _) || doc.RootElement.TryGetProperty("ColumnDefinitions", out _))
                         {
-                            domainState = JsonSerializer.Deserialize<ClinicalReportState>(latestVersion.Snapshot.SnapshotJson);
+                            domainState = JsonSerializer.Deserialize<ClinicalReportState>(snapshotJson);
                         }
                     }
                     catch { }
@@ -83,10 +92,110 @@ namespace SynOS.Services.Reporting
                     }
                     else
                     {
-                        snapshotData = JsonSerializer.Deserialize<ReportStructureDto>(latestVersion.Snapshot.SnapshotJson);
+                        try
+                        {
+                            snapshotData = JsonSerializer.Deserialize<ReportStructureDto>(snapshotJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        }
+                        catch { }
                     }
 
-                    if (snapshotData != null && snapshotData.Groups != null && snapshotData.Groups.Any())
+                    // Handle V2 ReportDataModel (Radiology narrative reports)
+                    if (snapshotData == null || snapshotData.Groups == null || !snapshotData.Groups.Any())
+                    {
+                        try
+                        {
+                            var v2Data = JsonSerializer.Deserialize<ReportDataModel>(snapshotJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                            if (v2Data != null)
+                            {
+                                snapshotData = new ReportStructureDto
+                                {
+                                    ReportId = report.ReportId,
+                                    SourceId = report.SourceId,
+                                    ReportTemplateId = report.ReportTemplateId ?? v2Data.ReportTemplateId,
+                                    Status = report.Status,
+                                    PatientName = v2Data.Patient?.Name ?? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim(),
+                                    PatientAgeGender = $"{Utils.ReferenceRangeResolver.CalculateAge(visit.Patient.DateOfBirth, visit.TokenDate)} / {v2Data.Patient?.Gender ?? visit.Patient.Gender}",
+                                    Token = v2Data.Metadata?.Token ?? visit.Token,
+                                    Department = v2Data.Modality ?? report.Department ?? "Radiology",
+                                    SignedAt = report.SignedAt,
+                                    SignedBy = report.SignedByUserId?.ToString(),
+                                    CanEditValues = false,
+                                    IsPhysicallyVerified = report.IsPhysicallyVerified,
+                                    IsManualFlow = report.IsManualFlow,
+                                    Patient = new PatientHeaderDto
+                                    {
+                                        Name = v2Data.Patient?.Name ?? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim(),
+                                        MRN = v2Data.Patient?.PatientId ?? visit.Patient.MRN,
+                                        Age = Utils.ReferenceRangeResolver.CalculateAge(visit.Patient.DateOfBirth, visit.TokenDate),
+                                        Gender = v2Data.Patient?.Gender ?? visit.Patient.Gender,
+                                        Phone = v2Data.Patient?.ContactInfo ?? visit.Patient.CurrentPhoneNumber,
+                                        DateOfBirth = v2Data.Patient?.DateOfBirth ?? visit.Patient.DateOfBirth.ToString("yyyy-MM-dd")
+                                    },
+                                    Groups = new List<ReportGroupDto>()
+                                };
+
+                                if (v2Data.Results != null && v2Data.Results.Any())
+                                {
+                                    foreach (var rg in v2Data.Results)
+                                    {
+                                        snapshotData.Groups.Add(new ReportGroupDto
+                                        {
+                                            GroupName = rg.GroupName,
+                                            Parameters = rg.Parameters?.Select(p => new ReportParameterDto
+                                            {
+                                                ParameterName = p.Name,
+                                                ParameterCode = p.Name,
+                                                Value = p.Value,
+                                                Unit = p.Unit,
+                                                ReferenceRange = p.ReferenceRangeText,
+                                                IsAbnormal = p.IsAbnormal,
+                                                Flag = p.Flag
+                                            }).ToList() ?? new List<ReportParameterDto>()
+                                        });
+                                    }
+                                }
+
+                                if (!snapshotData.Groups.Any())
+                                {
+                                    var paramsList = new List<ReportParameterDto>();
+                                    if (!string.IsNullOrWhiteSpace(v2Data.Interpretation))
+                                    {
+                                        paramsList.Add(new ReportParameterDto
+                                        {
+                                            ParameterName = string.Empty,
+                                            ParameterCode = "RAD_FINDINGS",
+                                            Value = v2Data.Interpretation,
+                                            ShowNarrative = true,
+                                            NarrativeTemplate = v2Data.Interpretation
+                                        });
+                                    }
+                                    if (!string.IsNullOrWhiteSpace(v2Data.Recommendations))
+                                    {
+                                        paramsList.Add(new ReportParameterDto
+                                        {
+                                            ParameterName = string.Empty,
+                                            ParameterCode = "RAD_NOTES",
+                                            Value = v2Data.Recommendations,
+                                            ShowNarrative = true,
+                                            NarrativeTemplate = v2Data.Recommendations
+                                        });
+                                    }
+                                    if (paramsList.Any())
+                                    {
+                                        snapshotData.Groups.Add(new ReportGroupDto
+                                        {
+                                            GroupName = v2Data.ReportTitle ?? "RADIOLOGY REPORT",
+                                            Order = 1,
+                                            Parameters = paramsList
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+
+                    if (snapshotData != null)
                     {
                         // GPT-5: Overlay live delivery status onto immutable clinical snapshot
                         snapshotData.IsPhysicallyVerified = report.IsPhysicallyVerified;
@@ -101,7 +210,7 @@ namespace SynOS.Services.Reporting
                         }
 
                         var pacsCount = report.SourceType == "RadiologyStudy"
-                            ? await _context.PacsInstances.CountAsync(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted)
+                            ? await _context.PacsInstances.AsNoTracking().CountAsync(i => i.RadiologyStudyId == report.SourceId && !i.IsDeleted)
                             : 0;
                         snapshotData.HasPacsStudy = pacsCount > 0;
                         snapshotData.DicomInstanceCount = pacsCount;
@@ -111,7 +220,7 @@ namespace SynOS.Services.Reporting
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to parse snapshot JSON for ReportVersion {ReportVersionId}. Falling back to live structure.", latestVersion.ReportVersionId);
+                    _logger.LogWarning(ex, "Failed to parse snapshot JSON for report {ReportId}. Falling back to live structure.", report.ReportId);
                 }
             }
 
@@ -999,11 +1108,23 @@ namespace SynOS.Services.Reporting
             var resolvedTemplateId = report.ReportTemplateId;
             if (!resolvedTemplateId.HasValue || resolvedTemplateId.Value == Guid.Empty)
             {
-                var radTemplate = await _context.ReportTemplates
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(t => t.Modality == "Radiology" && t.IsDefault && !t.IsDeleted)
-                    ?? await _context.ReportTemplates.AsNoTracking().FirstOrDefaultAsync(t => t.Modality == "Radiology" && !t.IsDeleted);
-                resolvedTemplateId = radTemplate?.TemplateId;
+                if (_cachedDefaultRadiologyTemplateId.HasValue)
+                {
+                    resolvedTemplateId = _cachedDefaultRadiologyTemplateId;
+                }
+                else
+                {
+                    resolvedTemplateId = await _context.ReportTemplates
+                        .AsNoTracking()
+                        .Where(t => t.Modality == "Radiology" && !t.IsDeleted)
+                        .OrderByDescending(t => t.IsDefault)
+                        .Select(t => (Guid?)t.TemplateId)
+                        .FirstOrDefaultAsync();
+                    if (resolvedTemplateId.HasValue)
+                    {
+                        _cachedDefaultRadiologyTemplateId = resolvedTemplateId;
+                    }
+                }
             }
 
             return new ReportStructureDto

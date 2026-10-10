@@ -669,6 +669,10 @@ namespace SynOS.Services
                 {
                     snapshotJson = latestVersion.Snapshot.SnapshotJson;
                 }
+                if (string.IsNullOrWhiteSpace(snapshotJson))
+                {
+                    snapshotJson = report.FinalSnapshotJson ?? report.DraftSnapshotJson;
+                }
             }
 
             if (snapshotJson != null)
@@ -1186,7 +1190,8 @@ namespace SynOS.Services
 
         private async Task<ReportDataModel> BuildReportDataModelV2Async(Report report, Order? order, bool forceLive = false, ReportStructureDto? existingStructure = null)
         {
-            var visit = await _context.Visits
+            var visit = order?.Visit ?? await _context.Visits
+                .AsNoTracking()
                 .Include(v => v.Patient)
                 .Include(v => v.Referrer)
                 .Include(v => v.ReferralPartner)
@@ -1200,12 +1205,12 @@ namespace SynOS.Services
 
             if (report.SourceType == "RadiologyStudy")
             {
-                var radStudy = await _context.RadiologyStudies.FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
+                var radStudy = await _context.RadiologyStudies.AsNoTracking().FirstOrDefaultAsync(rs => rs.RadiologyStudyId == report.SourceId);
 
                 // Ensure RadiologyReport navigation property is loaded if missing
                 if (report.RadiologyReport == null)
                 {
-                    report.RadiologyReport = await _context.RadiologyReports.FirstOrDefaultAsync(rr => rr.ReportId == report.ReportId || rr.RadiologyStudyId == report.SourceId);
+                    report.RadiologyReport = await _context.RadiologyReports.AsNoTracking().FirstOrDefaultAsync(rr => rr.ReportId == report.ReportId || rr.RadiologyStudyId == report.SourceId);
                 }
 
                 var radLabProfile = await GetCachedLabProfileAsync();
@@ -1317,10 +1322,7 @@ namespace SynOS.Services
                 }
 
                 // Add active or claiming radiologist signature
-                var study = await _context.RadiologyStudies
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(s => s.RadiologyStudyId == report.SourceId);
-                var radiologistUserId = report.SignedByUserId ?? study?.ClaimedByUserId;
+                var radiologistUserId = report.SignedByUserId ?? radStudy?.ClaimedByUserId;
                 if (radiologistUserId.HasValue)
                 {
                     var radiologistUser = await _context.Users
