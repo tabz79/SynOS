@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <RootNamespace>SynOS.RemoteBridge</RootNamespace>
+    <AssemblyName>SynOS-RemoteBridge</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="fo-dicom" Version="5.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\**" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+  </ItemGroup>
+
+  <Target Name="CopyWwwrootToPublish" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <_WwwrootFiles Include="$(MSBuildProjectDirectory)\wwwroot\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_WwwrootFiles)" DestinationFolder="$(PublishDir)\wwwroot\%(RecursiveDir)" SkipUnchangedFiles="false" />
+  </Target>
+
+</Project>

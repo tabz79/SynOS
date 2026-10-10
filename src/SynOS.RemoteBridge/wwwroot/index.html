@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SynOS Remote Bridge | Medical Scanner Edge Gateway</title>
+  <link rel="icon" type="image/png" href="/assets/logo-icon.png" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            synos: {
+              bg: '#09090b',
+              surface: '#121215',
+              card: '#18181b',
+              border: '#27272a',
+              muted: '#71717a',
+              primary: '#2563eb',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              red: '#ef4444',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #09090b;
+      color: #f4f4f5;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #09090b;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.95); }
+    }
+    .status-pulse {
+      animation: pulse-slow 2.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-synos-bg text-zinc-100 antialiased selection:bg-blue-600 selection:text-white">
+
+  <!-- TOP APP BAR / SYSTEM BAR -->
+  <header class="h-16 border-b border-synos-border bg-synos-surface/90 backdrop-blur sticky top-0 z-40 px-4 lg:px-6 flex items-center justify-between">
+    <!-- Brand Identity -->
+    <div class="flex items-center gap-3">
+      <img src="/assets/synos-lockup.svg" alt="SynOS" class="h-7 object-contain invert dark:invert-0" />
+      <div class="h-4 w-px bg-zinc-800"></div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-mono font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-blue-950/60 text-blue-400 border border-blue-800/60">
+          Remote Bridge
+        </span>
+        <span class="hidden sm:inline-block text-[11px] font-mono text-zinc-400">
+          DICOM Edge Gateway v1.0
+        </span>
+      </div>
+    </div>
+
+    <!-- Live Health Badges & Actions -->
+    <div class="flex items-center gap-2 sm:gap-4">
+      <!-- DICOM SCP Status Pill -->
+      <div id="dicom-status-pill" class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-800/50 text-xs font-mono">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 status-pulse"></span>
+        <span class="text-emerald-400 font-semibold hidden md:inline">DICOM SCP:</span>
+        <span id="dicom-ports-label" class="text-zinc-200">PORT 104</span>
+      </div>
+
+      <!-- Cloud Sync Status Pill -->
+      <div id="cloud-status-pill" class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-blue-950/40 border border-blue-800/50 text-xs font-mono">
+        <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-blue-500 status-pulse"></span>
+        <span class="text-blue-400 font-semibold hidden md:inline">SYN-CLOUD:</span>
+        <span id="cloud-status-label" class="text-zinc-200">CONNECTED</span>
+      </div>
+
+      <!-- Settings Button -->
+      <button onclick="openSettings()" class="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
+
+    <!-- METRICS CARDS ROW -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
+      <!-- Slices Ingested -->
+      <div class="p-4 rounded-xl bg-synos-card border border-synos-border flex flex-col gap-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-400">
+          <span>Slices Ingested</span>
+          <span class="text-blue-400">C-STORE</span>
+        </div>
+        <div id="stat-slices" class="text-2xl lg:text-3xl font-extrabold font-mono text-zinc-100 tracking-tight">0</div>
+        <div class="text-[11px] text-zinc-500 font-mono">Total DICOM frames</div>
+        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500/30"></div>
+      </div>
+
+      <!-- Studies Ingested -->
+      <div class="p-4 rounded-xl bg-synos-card border border-synos-border flex flex-col gap-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-400">
+          <span>Active Studies</span>
+          <span class="text-emerald-400">CT/MRI</span>
+        </div>
+        <div id="stat-studies" class="text-2xl lg:text-3xl font-extrabold font-mono text-emerald-400 tracking-tight">0</div>
+        <div class="text-[11px] text-zinc-500 font-mono">Patient series scanned</div>
+        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500/30"></div>
+      </div>
+
+      <!-- Cloud Synced -->
+      <div class="p-4 rounded-xl bg-synos-card border border-synos-border flex flex-col gap-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-400">
+          <span>Cloud Uploaded</span>
+          <span class="text-indigo-400">HTTPS</span>
+        </div>
+        <div id="stat-uploaded" class="text-2xl lg:text-3xl font-extrabold font-mono text-indigo-400 tracking-tight">0</div>
+        <div class="text-[11px] text-zinc-500 font-mono">Transferred to SynOS</div>
+        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500/30"></div>
+      </div>
+
+      <!-- Spool Buffered -->
+      <div class="p-4 rounded-xl bg-synos-card border border-synos-border flex flex-col gap-1 relative overflow-hidden">
+        <div class="flex items-center justify-between text-xs font-mono uppercase text-zinc-400">
+          <span>Pending In Spool</span>
+          <span class="text-amber-400">QUEUE</span>
+        </div>
+        <div id="stat-pending" class="text-2xl lg:text-3xl font-extrabold font-mono text-amber-400 tracking-tight">0</div>
+        <div class="text-[11px] text-zinc-500 font-mono">Offline local safety buffer</div>
+        <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500/30"></div>
+      </div>
+    </div>
+
+    <!-- MIDDLE ROW: SCANNER PING TOOL & SETUP GUIDE -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+      <!-- Scanner C-ECHO Ping Tool (7 cols) -->
+      <div class="lg:col-span-7 p-5 rounded-xl bg-synos-card border border-synos-border flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            <h2 class="text-sm font-bold tracking-wide uppercase font-mono text-zinc-200">Scanner Connection Verification (C-ECHO Ping)</h2>
+          </div>
+          <span class="text-xs text-zinc-500 font-mono">LAN Diagnostic</span>
+        </div>
+
+        <p class="text-xs text-zinc-400 leading-relaxed">
+          Test connectivity from this Bridge computer to the client's CT / MRI scanner console on the local network. Verifies DICOM association handshake and measures latency.
+        </p>
+
+        <form id="ping-form" onsubmit="executeScannerPing(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="block text-zinc-400 font-mono mb-1">Scanner IP Address</label>
+            <input id="input-scanner-ip" type="text" value="192.168.1.100" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono focus:border-blue-500 focus:outline-none" required />
+          </div>
+          <div>
+            <label class="block text-zinc-400 font-mono mb-1">Scanner DICOM Port</label>
+            <input id="input-scanner-port" type="number" value="104" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono focus:border-blue-500 focus:outline-none" required />
+          </div>
+          <div>
+            <label class="block text-zinc-400 font-mono mb-1">Scanner AE Title</label>
+            <input id="input-scanner-ae" type="text" value="CT_SCANNER" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono uppercase focus:border-blue-500 focus:outline-none" required />
+          </div>
+          <div>
+            <label class="block text-zinc-400 font-mono mb-1">Bridge Local AE Title</label>
+            <input id="input-local-ae" type="text" value="SYNOS_BRIDGE" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 font-mono uppercase focus:border-blue-500 focus:outline-none" required />
+          </div>
+
+          <div class="sm:col-span-2 flex items-center justify-between pt-1">
+            <button type="submit" id="btn-ping" class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-mono font-semibold tracking-wider transition flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              <span>PING SCANNER (C-ECHO)</span>
+            </button>
+            <button type="button" onclick="testCloudConnection()" class="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-mono text-xs transition">
+              Test SynOS Cloud
+            </button>
+          </div>
+        </form>
+
+        <!-- Ping Result Banner -->
+        <div id="ping-result-box" class="hidden p-3 rounded-lg border text-xs font-mono flex items-center justify-between">
+          <span id="ping-result-text">Waiting for test...</span>
+          <span id="ping-latency-badge" class="px-2 py-0.5 rounded text-[10px] font-bold"></span>
+        </div>
+      </div>
+
+      <!-- Scanner Console Setup Guide (5 cols) -->
+      <div class="lg:col-span-5 p-5 rounded-xl bg-synos-card border border-synos-border flex flex-col gap-3">
+        <div class="flex items-center gap-2 border-b border-zinc-800 pb-3">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          <h2 class="text-sm font-bold tracking-wide uppercase font-mono text-zinc-200">Scanner Setup Parameters</h2>
+        </div>
+
+        <p class="text-xs text-zinc-400">
+          Enter these values into the GE / Siemens / Philips scanner console under <em>DICOM Destination / PACS Storage</em>:
+        </p>
+
+        <div class="space-y-2 text-xs font-mono">
+          <div class="flex items-center justify-between p-2 rounded bg-zinc-900 border border-zinc-800">
+            <span class="text-zinc-400">Destination AE:</span>
+            <span class="text-emerald-400 font-bold">SYNOS_BRIDGE</span>
+          </div>
+          <div class="flex items-center justify-between p-2 rounded bg-zinc-900 border border-zinc-800">
+            <span class="text-zinc-400">Destination Host IP:</span>
+            <span id="guide-ip" class="text-blue-400 font-bold">[This Computer's LAN IP]</span>
+          </div>
+          <div class="flex items-center justify-between p-2 rounded bg-zinc-900 border border-zinc-800">
+            <span class="text-zinc-400">DICOM Port:</span>
+            <span class="text-amber-400 font-bold">104 <span class="text-zinc-500 text-[10px]">(or 8899)</span></span>
+          </div>
+          <div class="flex items-center justify-between p-2 rounded bg-zinc-900 border border-zinc-800">
+            <span class="text-zinc-400">Service Type:</span>
+            <span class="text-zinc-200">Storage SCP (C-STORE)</span>
+          </div>
+        </div>
+
+        <div class="mt-auto pt-2 border-t border-zinc-800 flex items-center justify-between text-[11px] text-zinc-500">
+          <span>Non-invasive: zero software installed on scanner.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TERMINAL LOG VIEWER (FULL WIDTH) -->
+    <div class="flex-1 min-h-[350px] rounded-xl bg-zinc-950 border border-synos-border flex flex-col overflow-hidden shadow-2xl">
+      <!-- Terminal Header -->
+      <div class="h-10 px-4 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between text-xs font-mono">
+        <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+          </div>
+          <span class="text-zinc-400 ml-2 font-semibold">TERMINAL LOGS // MEDICAL DICOM STREAM</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1 text-zinc-400 cursor-pointer select-none">
+            <input type="checkbox" id="chk-autoscroll" checked class="rounded border-zinc-700 text-blue-600 focus:ring-0">
+            <span class="text-[11px]">Auto-scroll</span>
+          </label>
+          <button onclick="clearLogs()" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition text-[11px]">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Terminal Output Body -->
+      <div id="terminal-body" class="flex-1 p-4 font-mono text-[12px] leading-relaxed overflow-y-auto custom-scroll space-y-1 text-zinc-300">
+        <div class="text-zinc-500">[System] Initializing SynOS Remote Bridge Medical Telemetry...</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-synos-card border border-synos-border rounded-2xl max-w-lg w-full p-6 flex flex-col gap-5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+        <h3 class="font-mono font-bold text-base text-zinc-100 flex items-center gap-2">
+          <span>⚙️ Bridge Configuration</span>
+        </h3>
+        <button onclick="closeSettings()" class="text-zinc-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-xs font-mono">
+        <div>
+          <label class="block text-zinc-400 mb-1">SynOS Cloud Server URL</label>
+          <input id="cfg-server-url" type="text" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 focus:border-blue-500 focus:outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-zinc-400 mb-1">Lab ID</label>
+            <input id="cfg-lab-id" type="text" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 focus:border-blue-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-zinc-400 mb-1">DICOM Listen Port</label>
+            <input id="cfg-dicom-port" type="number" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 focus:border-blue-500 focus:outline-none" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-zinc-400 mb-1">Bridge AE Title</label>
+            <input id="cfg-ae-title" type="text" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 uppercase focus:border-blue-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-zinc-400 mb-1">Local Spool Directory</label>
+            <input id="cfg-spool-dir" type="text" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 focus:border-blue-500 focus:outline-none" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-zinc-400 mb-1">Bridge Secret API Key</label>
+          <input id="cfg-api-key" type="password" class="w-full px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-zinc-100 focus:border-blue-500 focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-zinc-800">
+        <button onclick="closeSettings()" class="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-mono text-xs">
+          Cancel
+        </button>
+        <button onclick="saveSettings()" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono font-semibold text-xs">
+          Save & Apply
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let eventSource = null;
+
+    async function initDashboard() {
+      await fetchStatus();
+      connectSseLogs();
+      setInterval(fetchStatus, 3000);
+    }
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Update stats
+        document.getElementById('stat-slices').textContent = Number(data.telemetry.slicesReceived || 0).toLocaleString();
+        document.getElementById('stat-studies').textContent = Number(data.telemetry.studiesReceived || 0).toLocaleString();
+        document.getElementById('stat-uploaded').textContent = Number(data.telemetry.cloudUploaded || 0).toLocaleString();
+        document.getElementById('stat-pending').textContent = Number(data.telemetry.spoolPending || 0).toLocaleString();
+
+        // DICOM Status Pill
+        const ports = data.telemetry.boundPorts || [];
+        if (data.telemetry.dicomListenerActive && ports.length > 0) {
+          document.getElementById('dicom-ports-label').textContent = 'PORT ' + ports.join(' / ');
+        } else {
+          document.getElementById('dicom-ports-label').textContent = 'OFFLINE';
+        }
+
+        // Cloud Pill
+        const cloudOnline = data.telemetry.cloudOnline;
+        const cloudLabel = document.getElementById('cloud-status-label');
+        const cloudDot = document.getElementById('cloud-status-dot');
+        if (cloudOnline) {
+          cloudLabel.textContent = 'ONLINE';
+          cloudDot.className = 'w-2 h-2 rounded-full bg-emerald-500 status-pulse';
+        } else {
+          cloudLabel.textContent = 'OFFLINE';
+          cloudDot.className = 'w-2 h-2 rounded-full bg-amber-500 status-pulse';
+        }
+
+        // Sync inputs from config if not touched
+        if (!window.hasLoadedConfig) {
+          document.getElementById('input-scanner-ip').value = data.config.scannerIp || '192.168.1.100';
+          document.getElementById('input-scanner-port').value = data.config.scannerPort || 104;
+          document.getElementById('input-scanner-ae').value = data.config.scannerAeTitle || 'CT_SCANNER';
+          document.getElementById('input-local-ae').value = data.config.aeTitle || 'SYNOS_BRIDGE';
+          window.hasLoadedConfig = true;
+        }
+      } catch (err) {
+        console.warn('Status poll failed:', err);
+      }
+    }
+
+    function connectSseLogs() {
+      if (eventSource) eventSource.close();
+      eventSource = new EventSource('/api/logs/stream');
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const entry = JSON.parse(event.data);
+          appendLogEntry(entry);
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      eventSource.onerror = () => {
+        setTimeout(connectSseLogs, 5000);
+      };
+    }
+
+    function appendLogEntry(entry) {
+      const container = document.getElementById('terminal-body');
+      const div = document.createElement('div');
+      div.className = 'flex items-start gap-2 py-0.5 hover:bg-zinc-900/60 rounded px-1';
+
+      const time = new Date(entry.timestamp).toLocaleTimeString();
+      let catColor = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+      if (entry.category === 'DICOM-SCP') catColor = 'bg-blue-950/70 text-blue-400 border-blue-800/60';
+      if (entry.category === 'C-ECHO') catColor = 'bg-emerald-950/70 text-emerald-400 border-emerald-800/60';
+      if (entry.category === 'CLOUD-SYNC') catColor = 'bg-indigo-950/70 text-indigo-400 border-indigo-800/60';
+      if (entry.category === 'SPOOL') catColor = 'bg-amber-950/70 text-amber-400 border-amber-800/60';
+
+      let msgColor = 'text-zinc-300';
+      if (entry.level === 'SUCCESS') msgColor = 'text-emerald-300 font-semibold';
+      if (entry.level === 'WARN') msgColor = 'text-amber-300';
+      if (entry.level === 'ERROR') msgColor = 'text-red-400 font-semibold';
+
+      div.innerHTML = `
+        <span class="text-zinc-600 select-none">${time}</span>
+        <span class="px-1.5 py-0.2 rounded border text-[10px] font-bold tracking-wider ${catColor}">${entry.category}</span>
+        <span class="${msgColor} break-all">${entry.message}</span>
+      `;
+
+      container.appendChild(div);
+
+      const autoscroll = document.getElementById('chk-autoscroll').checked;
+      if (autoscroll) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    function clearLogs() {
+      document.getElementById('terminal-body').innerHTML = '<div class="text-zinc-500">[System] Terminal logs cleared.</div>';
+    }
+
+    async function executeScannerPing(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-ping');
+      const resultBox = document.getElementById('ping-result-box');
+      const resultText = document.getElementById('ping-result-text');
+      const latencyBadge = document.getElementById('ping-latency-badge');
+
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>PINGING SCANNER...</span>
+      `;
+
+      resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-zinc-900 border-zinc-700 text-zinc-300';
+      resultBox.classList.remove('hidden');
+      resultText.textContent = 'Transmitting DICOM C-ECHO packet over LAN...';
+      latencyBadge.textContent = '...';
+
+      try {
+        const payload = {
+          ip: document.getElementById('input-scanner-ip').value.trim(),
+          port: parseInt(document.getElementById('input-scanner-port').value, 10),
+          scannerAe: document.getElementById('input-scanner-ae').value.trim(),
+          localAe: document.getElementById('input-local-ae').value.trim(),
+        };
+
+        const res = await fetch('/api/ping-scanner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-emerald-950/40 border-emerald-800 text-emerald-300';
+          resultText.textContent = data.message;
+          latencyBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-900 text-emerald-200';
+          latencyBadge.textContent = `${data.latencyMs} ms`;
+        } else {
+          resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-red-950/40 border-red-800 text-red-300';
+          resultText.textContent = data.message;
+          latencyBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-red-900 text-red-200';
+          latencyBadge.textContent = 'FAILED';
+        }
+      } catch (err) {
+        resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-red-950/40 border-red-800 text-red-300';
+        resultText.textContent = 'Error sending ping request: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <span>PING SCANNER (C-ECHO)</span>
+        `;
+      }
+    }
+
+    async function testCloudConnection() {
+      const resultBox = document.getElementById('ping-result-box');
+      const resultText = document.getElementById('ping-result-text');
+      const latencyBadge = document.getElementById('ping-latency-badge');
+
+      resultBox.classList.remove('hidden');
+      resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-zinc-900 border-zinc-700 text-zinc-300';
+      resultText.textContent = 'Testing SynOS Cloud Ingestion API endpoint...';
+      latencyBadge.textContent = '...';
+
+      try {
+        const res = await fetch('/api/test-cloud', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-blue-950/40 border-blue-800 text-blue-300';
+          resultText.textContent = data.message;
+          latencyBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-blue-900 text-blue-200';
+          latencyBadge.textContent = `${data.latencyMs} ms`;
+        } else {
+          resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-amber-950/40 border-amber-800 text-amber-300';
+          resultText.textContent = data.message;
+          latencyBadge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-900 text-amber-200';
+          latencyBadge.textContent = 'UNREACHABLE';
+        }
+      } catch (err) {
+        resultBox.className = 'p-3 rounded-lg border text-xs font-mono flex items-center justify-between bg-red-950/40 border-red-800 text-red-300';
+        resultText.textContent = 'Error checking cloud: ' + err.message;
+      }
+    }
+
+    async function openSettings() {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const cfg = await res.json();
+          document.getElementById('cfg-server-url').value = cfg.serverUrl || '';
+          document.getElementById('cfg-lab-id').value = cfg.labId || '';
+          document.getElementById('cfg-dicom-port').value = cfg.dicomPort || 104;
+          document.getElementById('cfg-ae-title').value = cfg.aeTitle || 'SYNOS_BRIDGE';
+          document.getElementById('cfg-spool-dir').value = cfg.spoolDir || './spool';
+          document.getElementById('cfg-api-key').value = cfg.apiKey || '';
+        }
+      } catch (e) { }
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    async function saveSettings() {
+      const payload = {
+        serverUrl: document.getElementById('cfg-server-url').value.trim(),
+        labId: document.getElementById('cfg-lab-id').value.trim(),
+        dicomPort: parseInt(document.getElementById('cfg-dicom-port').value, 10),
+        aeTitle: document.getElementById('cfg-ae-title').value.trim(),
+        spoolDir: document.getElementById('cfg-spool-dir').value.trim(),
+        apiKey: document.getElementById('cfg-api-key').value.trim(),
+        scannerIp: document.getElementById('input-scanner-ip').value.trim(),
+        scannerPort: parseInt(document.getElementById('input-scanner-port').value, 10),
+        scannerAeTitle: document.getElementById('input-scanner-ae').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          closeSettings();
+          fetchStatus();
+        }
+      } catch (e) {
+        alert('Failed saving config: ' + e.message);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>

@@ -129,3 +129,9 @@ TBZLABS-Middleware-understanding.md
 *.db-wal
 *.db-shm
 *.db-journal
+
+# ========================================
+# Remote Bridge Local Runtime Data
+# ========================================
+**/spool/
+src/SynOS.RemoteBridge/bridge-config.json
