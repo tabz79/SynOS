@@ -220,7 +220,8 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
   };
 
   const activeTemplate = template;
-  const isPreprinted = forcePreprinted || activeTemplate?.usePreprinted;
+  // Preprinted mode ONLY when explicitly chosen by the user (never automatically or from template defaults)
+  const isPreprinted = Boolean(forcePreprinted);
 
   const getCoordinates = (template) => {
     if (!template) return {};
@@ -317,7 +318,7 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
   return (
     <div 
       id="printable-report" 
-      className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-full print:max-w-[210mm] print:min-h-0 print:h-auto print:max-h-none relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-visible"
+      className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] h-[297mm] print:w-[210mm] print:h-[297mm] print:min-h-[297mm] print:max-h-[297mm] relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden"
       style={pageStyle}
     >
       {/* 🖼️ BACKGROUND IMAGE BACKDROP (HTML img tag guarantees rendering in browser print engine) */}
@@ -325,10 +326,18 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
         <img 
           src={activeTemplate.backgroundPath} 
           alt="Report Background Letterhead"
-          className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none" 
+          className="absolute inset-0 pointer-events-none select-none print:block" 
           style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '210mm',
+            height: '297mm',
+            objectFit: 'fill',
             opacity: activeTemplate.backgroundPath.startsWith('data:') ? 1.0 : (activeTemplate.bgImageOpacity ?? 1.0),
-            zIndex: 0
+            zIndex: 0,
+            WebkitPrintColorAdjust: 'exact',
+            printColorAdjust: 'exact'
           }}
         />
       )}

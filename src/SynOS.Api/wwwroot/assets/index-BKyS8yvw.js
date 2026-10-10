@@ -35786,7 +35786,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           return null;
         })
       });
-    }, p = e, x = n || (p == null ? void 0 : p.usePreprinted), Q = ((P) => {
+    }, p = e, x = !!n, Q = ((P) => {
       if (!P) return {};
       const V = P.leftRightMargin ?? 15, q = P.patientBlockY ?? 55, le = P.tableBlockY ?? 95, te = P.signatureBlockY ?? 25;
       return {
@@ -35866,16 +35866,24 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     };
     return i.jsxs("div", {
       id: "printable-report",
-      className: "mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-full print:max-w-[210mm] print:min-h-0 print:h-auto print:max-h-none relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-visible",
+      className: "mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] h-[297mm] print:w-[210mm] print:h-[297mm] print:min-h-[297mm] print:max-h-[297mm] relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden",
       style: Y,
       children: [
         !x && p && p.bgType === "image" && p.backgroundPath && i.jsx("img", {
           src: p.backgroundPath,
           alt: "Report Background Letterhead",
-          className: "absolute inset-0 w-full h-full object-fill pointer-events-none select-none",
+          className: "absolute inset-0 pointer-events-none select-none print:block",
           style: {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "210mm",
+            height: "297mm",
+            objectFit: "fill",
             opacity: p.backgroundPath.startsWith("data:") ? 1 : p.bgImageOpacity ?? 1,
-            zIndex: 0
+            zIndex: 0,
+            WebkitPrintColorAdjust: "exact",
+            printColorAdjust: "exact"
           }
         }),
         x ? i.jsx("div", {
@@ -56549,9 +56557,9 @@ ${n}
       } finally {
         $(false);
       }
-    }, [VA, dr] = j.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), pn = () => {
+    }, [VA, dr] = j.useState(false), pn = () => {
       if (!o) return;
-      const pt = VA ? "&preprinted=true" : "";
+      const pt = VA ? "&preprinted=true" : "&preprinted=false";
       window.open(`/print/report/${o}?forceLive=true${pt}`, "_blank");
     }, bn = (c == null ? void 0 : c.status) === "Signed" || (c == null ? void 0 : c.status) === "ManualVerified" || (c == null ? void 0 : c.status) === "Finalized", vn = (t == null ? void 0 : t.role) === "Admin" || (t == null ? void 0 : t.role) === "SystemAdmin", RA = j.useMemo(() => {
       var _a2;
@@ -57995,7 +58003,7 @@ ${n}
       } finally {
         f(false);
       }
-    }, [ue, Ge] = j.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), Ve = t ? {
+    }, [ue, Ge] = j.useState(false), Ve = t ? {
       patientName: t.patientName || ((_a = t.patient) == null ? void 0 : _a.name) || "",
       age: t.patientAge || t.age || ((_b2 = t.patient) == null ? void 0 : _b2.age) || "",
       gender: t.patientGender || t.gender || t.sex || ((_c = t.patient) == null ? void 0 : _c.gender) || "",
@@ -58717,7 +58725,7 @@ ${n}
           Y(false);
         }
       }
-    }, [en, kn] = j.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), dA = (d == null ? void 0 : d.status) === "ReadyForVerification" || (d == null ? void 0 : d.status) === "Signed" || (d == null ? void 0 : d.status) === "ManualVerified", wA = (t == null ? void 0 : t.role) === "Admin" || (t == null ? void 0 : t.role) === "SystemAdmin", [nA, re] = j.useState("available"), Gr = r.filter((pn) => !pn.typedByUserId).length, ae = r.filter((pn) => pn.patientName.toLowerCase().includes(q.toLowerCase()) || pn.testName.toLowerCase().includes(q.toLowerCase()) ? s ? nA === "available" ? pn.typedByUserId !== (t == null ? void 0 : t.id) : pn.typedByUserId === (t == null ? void 0 : t.id) : nA === "available" ? !pn.typedByUserId : wA ? !!pn.typedByUserId : pn.typedByUserId === (t == null ? void 0 : t.id) : false), vt = async (pn) => {
+    }, [en, kn] = j.useState(false), dA = (d == null ? void 0 : d.status) === "ReadyForVerification" || (d == null ? void 0 : d.status) === "Signed" || (d == null ? void 0 : d.status) === "ManualVerified", wA = (t == null ? void 0 : t.role) === "Admin" || (t == null ? void 0 : t.role) === "SystemAdmin", [nA, re] = j.useState("available"), Gr = r.filter((pn) => !pn.typedByUserId).length, ae = r.filter((pn) => pn.patientName.toLowerCase().includes(q.toLowerCase()) || pn.testName.toLowerCase().includes(q.toLowerCase()) ? s ? nA === "available" ? pn.typedByUserId !== (t == null ? void 0 : t.id) : pn.typedByUserId === (t == null ? void 0 : t.id) : nA === "available" ? !pn.typedByUserId : wA ? !!pn.typedByUserId : pn.typedByUserId === (t == null ? void 0 : t.id) : false), vt = async (pn) => {
       try {
         await JA.claimReport(pn), await je(), c(pn);
       } catch (bn) {
@@ -59651,9 +59659,9 @@ ${n}
           await it(g), await qe(), k(false);
         }
       }
-    }, [Ee, ie] = j.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), be = async () => {
+    }, [Ee, ie] = j.useState(false), be = async () => {
       if (!g) return;
-      const at = Ee ? "&preprinted=true" : "";
+      const at = Ee ? "&preprinted=true" : "&preprinted=false";
       window.open(`/print/report/${g}?forceLive=true${at}`, "_blank");
       try {
         await JA.deliverViaPrint(g), xe("Report queued for local printing!", "success"), pe();
@@ -60272,11 +60280,8 @@ ${n}
       t,
       n
     ]);
-    const [u, h] = j.useState(() => {
-      const C = new URLSearchParams(window.location.search).get("preprinted");
-      return C !== null ? C === "true" : localStorage.getItem("synos_preprinted_mode") === "true";
-    }), f = (C) => {
-      h(C), localStorage.setItem("synos_preprinted_mode", C ? "true" : "false");
+    const [u, h] = j.useState(() => new URLSearchParams(window.location.search).get("preprinted") === "true"), f = (C) => {
+      h(C);
     };
     return j.useEffect(() => {
       var _a, _b2, _c, _d, _e, _f, _g, _h;

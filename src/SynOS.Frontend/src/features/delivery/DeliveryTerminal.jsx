@@ -189,11 +189,11 @@ export function DeliveryTerminal() {
         }
     };
 
-    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+    const [isPreprinted, setIsPreprinted] = useState(false);
 
     const handlePrint = async () => {
         if (!selectedReportId) return;
-        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '&preprinted=false';
         // Open print view immediately so pop-up blockers don't block user action
         window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
 

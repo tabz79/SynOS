@@ -354,14 +354,15 @@
     padding-bottom: 0 !important;
   }
 
-  /* Ensure print page wrapper does not split */
+  /* Ensure print page wrapper matches A4 sheet */
   .print-page-container {
     display: block !important;
-    width: 100% !important;
+    width: 210mm !important;
     max-width: 210mm !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    overflow: hidden !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     page-break-after: avoid !important;
@@ -378,21 +379,21 @@
     overflow: visible !important;
   }
 
-  /* Printable report content strictly contained within page boundaries */
+  /* Printable report content strictly 210mm x 297mm */
   #printable-report {
     position: relative !important;
-    width: 100% !important;
+    width: 210mm !important;
     max-width: 210mm !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
     display: block !important;
     visibility: visible !important;
     box-shadow: none !important;
     border: none !important;
     margin: 0 auto !important;
     padding: 0 !important;
-    overflow: visible !important;
+    overflow: hidden !important;
     box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;

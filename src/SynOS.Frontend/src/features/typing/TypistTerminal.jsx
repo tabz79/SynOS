@@ -616,12 +616,12 @@ export function TypistTerminal() {
         }
     };
 
-    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+    const [isPreprinted, setIsPreprinted] = useState(false);
 
     const handlePrint = () => {
         if (!selectedReportId) return;
         // GPT-5 Rule: Draft phase MUST use forceLive to prevent stale snapshot 'Legacy' leak
-        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '&preprinted=false';
         window.open(`/print/report/${selectedReportId}?forceLive=true${preprintedQuery}`, '_blank');
     };
 

@@ -487,11 +487,11 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
         }
     };
 
-    const [isPreprinted, setIsPreprinted] = useState(() => localStorage.getItem('synos_preprinted_mode') === 'true');
+    const [isPreprinted, setIsPreprinted] = useState(false);
 
     const handlePrintOut = () => {
         if (!reportId) return;
-        const preprintedQuery = isPreprinted ? '&preprinted=true' : '';
+        const preprintedQuery = isPreprinted ? '&preprinted=true' : '&preprinted=false';
         window.open(`/print/report/${reportId}?forceLive=true${preprintedQuery}`, '_blank');
     };
 

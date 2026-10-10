@@ -162,13 +162,11 @@ export const DocumentPrinter = () => {
 
   const [isPreprinted, setIsPreprinted] = useState(() => {
     const urlParam = new URLSearchParams(window.location.search).get('preprinted');
-    if (urlParam !== null) return urlParam === 'true';
-    return localStorage.getItem('synos_preprinted_mode') === 'true';
+    return urlParam === 'true'; // Strictly explicit from URL parameter! Defaults to false!
   });
 
   const handleTogglePreprinted = (checked) => {
     setIsPreprinted(checked);
-    localStorage.setItem('synos_preprinted_mode', checked ? 'true' : 'false');
   };
 
   useEffect(() => {
