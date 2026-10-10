@@ -356,8 +356,8 @@
     display: block !important;
     width: 100% !important;
     max-width: 210mm !important;
-    height: 268mm !important;
-    max-height: 268mm !important;
+    height: 100% !important;
+    max-height: 100% !important;
     overflow: hidden !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -375,13 +375,13 @@
     overflow: hidden !important;
   }
 
-  /* Printable report content strictly contained within A4 boundaries (268mm max to prevent 2nd page break on Safari/Chrome) */
+  /* Printable report content strictly contained within page boundaries (100% adapts to any print margins) */
   #printable-report {
     position: relative !important;
     width: 100% !important;
     max-width: 210mm !important;
-    height: 268mm !important;
-    max-height: 268mm !important;
+    height: 100% !important;
+    max-height: 100% !important;
     min-height: 0 !important;
     display: block !important;
     visibility: visible !important;

@@ -35866,7 +35866,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     };
     return i.jsxs("div", {
       id: "printable-report",
-      className: "mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-[210mm] print:min-h-0 print:h-[268mm] print:max-h-[268mm] relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden",
+      className: "mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-full print:max-w-[210mm] print:min-h-0 print:h-full print:max-h-full relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden",
       style: Y,
       children: [
         !x && p && p.bgType === "image" && p.backgroundPath && i.jsx("img", {
@@ -60348,7 +60348,7 @@ ${n}
         })
       ]
     }) : i.jsxs("div", {
-      className: "min-h-screen bg-zinc-100 flex flex-col items-center py-12 print:block print:py-0 print:m-0 print:p-0 print:bg-white selection:bg-none",
+      className: "min-h-screen bg-zinc-100 flex flex-col items-center py-12 print:block print:h-full print:py-0 print:m-0 print:p-0 print:bg-white selection:bg-none",
       children: [
         i.jsx("div", {
           className: "no-print mb-8 flex items-center justify-center w-[210mm]",
@@ -60402,9 +60402,9 @@ ${n}
           })
         }),
         i.jsx("div", {
-          className: "flex flex-col gap-8 print:block print:gap-0 print:m-0 print:p-0",
+          className: "flex flex-col gap-8 print:block print:h-full print:gap-0 print:m-0 print:p-0",
           children: A.map((C, p) => i.jsx("div", {
-            className: "relative shadow-[0_0_100px_rgba(0,0,0,0.1)] print:shadow-none print-page-container print:block",
+            className: "relative shadow-[0_0_100px_rgba(0,0,0,0.1)] print:shadow-none print-page-container print:block print:h-full",
             style: {
               pageBreakBefore: p > 0 ? "always" : "auto",
               breakBefore: p > 0 ? "page" : "auto",

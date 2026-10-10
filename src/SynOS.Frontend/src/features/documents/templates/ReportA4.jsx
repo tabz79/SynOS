@@ -317,7 +317,7 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
   return (
     <div 
       id="printable-report" 
-      className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-[210mm] print:min-h-0 print:h-[268mm] print:max-h-[268mm] relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden"
+      className="mx-auto bg-white text-black font-sans w-[210mm] min-h-[297mm] print:w-full print:max-w-[210mm] print:min-h-0 print:h-full print:max-h-full relative selection:bg-none print:m-0 print:border-none print:rounded-none print:shadow-none print:overflow-hidden"
       style={pageStyle}
     >
       {/* 🖼️ BACKGROUND IMAGE BACKDROP (HTML img tag guarantees rendering in browser print engine) */}

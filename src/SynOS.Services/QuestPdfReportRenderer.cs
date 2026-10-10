@@ -265,10 +265,10 @@ namespace SynOS.Services
                         .PaddingBottom(contentPaddingBottom, QuestPDF.Infrastructure.Unit.Millimetre)
                         .Column(contentCol =>
                         {
-                            if (isAbsoluteForPadding && paramConfigForPadding != null)
+                            if (isAbsoluteForPadding)
                             {
-                                float tableY = paramConfigForPadding.TableBlockY ?? paramConfigForPadding.ResultsTableY ?? 95f;
-                                float titleY = paramConfigForPadding.TestTitleY ?? (tableY - 14f);
+                                float tableY = paramConfigForPadding?.TableBlockY ?? paramConfigForPadding?.ResultsTableY ?? 95f;
+                                float titleY = paramConfigForPadding?.TestTitleY ?? 76f;
                                 float spacerHeight = Math.Max(0f, titleY - contentPaddingTop);
                                 if (spacerHeight > 0f)
                                 {
