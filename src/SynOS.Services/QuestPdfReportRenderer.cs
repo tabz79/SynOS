@@ -267,8 +267,8 @@ namespace SynOS.Services
                         {
                             if (isAbsoluteForPadding)
                             {
-                                float tableY = paramConfigForPadding?.TableBlockY ?? paramConfigForPadding?.ResultsTableY ?? 95f;
                                 float titleY = paramConfigForPadding?.TestTitleY ?? 76f;
+                                if (titleY > 82f) titleY = 76f; // Clamp to prevent heading from ever falling into middle of page!
                                 float spacerHeight = Math.Max(0f, titleY - contentPaddingTop);
                                 if (spacerHeight > 0f)
                                 {
@@ -707,42 +707,52 @@ namespace SynOS.Services
         {
             if (config == null || data.Signatures == null || !data.Signatures.Any()) return;
 
-            column.Item().PaddingTop(30).Row(row =>
+            int sigCount = data.Signatures.Count;
+            column.Item().PaddingTop(25).Row(row =>
             {
-                for (int slotIdx = 0; slotIdx < 4; slotIdx++)
+                if (sigCount == 1)
                 {
-                    var sig = slotIdx < data.Signatures.Count ? data.Signatures[slotIdx] : null;
-
-                    row.RelativeItem().Column(sigCol =>
+                    // 1 signature (Lab Owner) on the left
+                    row.ConstantItem(75, QuestPDF.Infrastructure.Unit.Millimetre).Column(sigCol => RenderSingleSignature(sigCol, data.Signatures[0], config));
+                    row.RelativeItem(); // Spacer
+                }
+                else if (sigCount == 2)
+                {
+                    // 2 signatures: Slot 0 (Lab Owner) on left, Slot 1 (Consultant) on right
+                    row.ConstantItem(75, QuestPDF.Infrastructure.Unit.Millimetre).Column(sigCol => RenderSingleSignature(sigCol, data.Signatures[0], config));
+                    row.RelativeItem(); // Spacer
+                    row.ConstantItem(75, QuestPDF.Infrastructure.Unit.Millimetre).Column(sigCol => RenderSingleSignature(sigCol, data.Signatures[1], config));
+                }
+                else
+                {
+                    for (int slotIdx = 0; slotIdx < sigCount && slotIdx < 4; slotIdx++)
                     {
-                        if (sig != null)
-                        {
-                            if (sig.SignatureImage != null && config.ShowDigitalSignatureImage)
-                            {
-                                sigCol.Item().AlignCenter().Height(35).Width(90).Image(sig.SignatureImage);
-                            }
-                            else
-                            {
-                                sigCol.Item().Height(35);
-                            }
-
-                            if (config.ShowDoctorName)
-                            {
-                                sigCol.Item().AlignCenter().Text(sig.DoctorName).Bold().FontSize(8.5f);
-                            }
-                            if (config.ShowCredentials)
-                            {
-                                sigCol.Item().AlignCenter().Text(sig.Credentials).FontSize(7.5f).FontColor("#4b5563");
-                            }
-
-                        }
-                        else
-                        {
-                            sigCol.Item().Height(60); // Empty slot placeholder
-                        }
-                    });
+                        var sig = data.Signatures[slotIdx];
+                        row.RelativeItem().Column(sigCol => RenderSingleSignature(sigCol, sig, config));
+                    }
                 }
             });
+        }
+
+        private void RenderSingleSignature(ColumnDescriptor sigCol, ReportSignatureDetails sig, SignatureBlockConfig config)
+        {
+            if (sig.SignatureImage != null && config.ShowDigitalSignatureImage)
+            {
+                sigCol.Item().AlignCenter().Height(35).Width(90).Image(sig.SignatureImage);
+            }
+            else
+            {
+                sigCol.Item().Height(35); // Blank area for physical pen sign
+            }
+
+            if (config.ShowDoctorName)
+            {
+                sigCol.Item().AlignCenter().Text(sig.DoctorName).Bold().FontSize(8.5f);
+            }
+            if (config.ShowCredentials)
+            {
+                sigCol.Item().AlignCenter().Text(sig.Credentials).FontSize(7.5f).FontColor("#4b5563");
+            }
         }
 
         private void RenderQRCode(ColumnDescriptor column, ReportDataModel data, QRCodeConfig? config)

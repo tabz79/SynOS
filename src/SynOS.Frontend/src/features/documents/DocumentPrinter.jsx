@@ -250,6 +250,13 @@ export const DocumentPrinter = () => {
             Re-trigger Print
           </button>
           <button 
+            onClick={() => window.open(`/api/v1/reports/${id}/pdf?forceLive=true`, '_blank')}
+            className="text-xs font-bold text-cyan-400 uppercase tracking-widest hover:text-cyan-300 transition-colors"
+            title="Open pure server-compiled vector PDF"
+          >
+            Vector PDF
+          </button>
+          <button 
             onClick={() => navigate(-1)}
             className="text-xs font-bold text-zinc-500 uppercase tracking-widest hover:text-white transition-colors"
           >

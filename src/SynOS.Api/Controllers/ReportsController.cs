@@ -192,7 +192,8 @@ namespace SynOS.Api.Controllers
                     return NotFound(new { message = "Report not found" });
                 }
 
-                var relativePath = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: false);
+                bool forceReRender = Request.Query.ContainsKey("forceLive") || report.Status != "Signed";
+                var relativePath = await _reportService.EnsureAndRenderReportPdfAsync(report.ReportId, forceReRender: forceReRender);
                 var stream = await fileStorage.GetFileStreamAsync(relativePath);
                 return File(stream, "application/pdf", $"{report.ReportId}.pdf");
             }

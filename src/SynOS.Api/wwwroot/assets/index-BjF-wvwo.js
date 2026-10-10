@@ -35803,7 +35803,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         reportDateX: P.reportDateX !== void 0 ? P.reportDateX : V + 120,
         reportDateY: P.reportDateY !== void 0 ? P.reportDateY : q + 12,
         testTitleX: P.testTitleX !== void 0 ? P.testTitleX : V,
-        testTitleY: P.testTitleY !== void 0 ? P.testTitleY : le - 12,
+        testTitleY: P.testTitleY !== void 0 && P.testTitleY <= 85 ? P.testTitleY : q + 20,
         resultsTableX: P.resultsTableX !== void 0 ? P.resultsTableX : V,
         resultsTableY: P.resultsTableY !== void 0 ? P.resultsTableY : le,
         signatureX: P.signatureX !== void 0 ? P.signatureX : V,
@@ -35877,25 +35877,6 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
             opacity: p.backgroundPath.startsWith("data:") ? 1 : p.bgImageOpacity ?? 1,
             zIndex: 0
           }
-        }),
-        !x && p && p.includeWatermark && p.watermarkText && i.jsx("div", {
-          className: "absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden",
-          style: {
-            zIndex: 0
-          },
-          children: i.jsx("div", {
-            style: {
-              color: "black",
-              opacity: p.watermarkOpacity || 0.05,
-              fontSize: `${p.watermarkSize || 32}px`,
-              fontWeight: "900",
-              textTransform: "uppercase",
-              letterSpacing: "0.2em",
-              transform: `rotate(-${p.watermarkRotation || 12}deg)`,
-              whiteSpace: "nowrap"
-            },
-            children: p.watermarkText
-          })
         }),
         x ? i.jsx("div", {
           style: {
@@ -36315,17 +36296,12 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
             paddingTop: "32px"
           },
           children: i.jsx("div", {
-            className: "grid grid-cols-4 gap-2",
-            children: [
-              0,
-              1,
-              2,
-              3
-            ].map((P) => {
-              const V = u[P], q = V == null ? void 0 : V.isTampered;
+            className: u.length <= 2 ? "flex justify-between items-end px-2" : "grid grid-cols-4 gap-2",
+            children: u.map((P, V) => {
+              const q = P == null ? void 0 : P.isTampered;
               return i.jsx("div", {
-                className: "text-center min-h-[40mm] flex flex-col justify-end relative",
-                children: V ? i.jsxs(i.Fragment, {
+                className: `text-center min-h-[35mm] flex flex-col justify-end relative ${u.length <= 2 ? "w-[65mm]" : ""}`,
+                children: P ? i.jsxs(i.Fragment, {
                   children: [
                     q && i.jsx("div", {
                       className: "absolute inset-0 flex items-center justify-center -rotate-12 pointer-events-none z-20",
@@ -36336,26 +36312,28 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
                     }),
                     i.jsx("div", {
                       className: `h-10 flex items-center justify-center mb-1 ${q ? "opacity-30 grayscale blur-[1px]" : ""}`,
-                      children: V.signatureImage && i.jsx("img", {
-                        src: `data:image/png;base64,${V.signatureImage}`,
+                      children: P.signatureImage ? i.jsx("img", {
+                        src: `data:image/png;base64,${P.signatureImage}`,
                         alt: "Sig",
                         className: "max-h-full opacity-90 mix-blend-multiply"
+                      }) : i.jsx("div", {
+                        className: "h-full w-full"
                       })
                     }),
                     i.jsx("div", {
                       className: `font-bold text-[10px] leading-tight mb-0.5 ${q ? "line-through text-red-900" : ""}`,
-                      children: V.doctorName
+                      children: P.doctorName
                     }),
                     i.jsx("div", {
-                      className: "text-[9px] font-medium leading-tight",
-                      children: V.credentials
+                      className: "text-[9px] font-medium leading-tight text-zinc-600",
+                      children: P.credentials
                     })
                   ]
                 }) : i.jsx("div", {
-                  className: "h-[40mm] opacity-0 text-[1px]",
+                  className: "h-[35mm] opacity-0 text-[1px]",
                   children: "Empty Slot"
                 })
-              }, P);
+              }, V);
             })
           })
         })
@@ -60392,6 +60370,12 @@ ${n}
                 onClick: () => window.print(),
                 className: "text-xs font-bold text-white uppercase tracking-widest hover:text-synos-primary transition-colors",
                 children: "Re-trigger Print"
+              }),
+              i.jsx("button", {
+                onClick: () => window.open(`/api/v1/reports/${t}/pdf?forceLive=true`, "_blank"),
+                className: "text-xs font-bold text-cyan-400 uppercase tracking-widest hover:text-cyan-300 transition-colors",
+                title: "Open pure server-compiled vector PDF",
+                children: "Vector PDF"
               }),
               i.jsx("button", {
                 onClick: () => e(-1),

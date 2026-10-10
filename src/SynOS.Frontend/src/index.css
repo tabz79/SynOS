@@ -356,8 +356,8 @@
     display: block !important;
     width: 100% !important;
     max-width: 210mm !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important;
+    max-height: 288mm !important;
     overflow: hidden !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -375,13 +375,13 @@
     overflow: hidden !important;
   }
 
-  /* Printable report content strictly contained within page boundaries (100% adapts to any print margins) */
+  /* Printable report content strictly contained within page boundaries (288mm eliminates Safari margin spillover) */
   #printable-report {
     position: relative !important;
     width: 100% !important;
     max-width: 210mm !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important;
+    max-height: 288mm !important;
     min-height: 0 !important;
     display: block !important;
     visibility: visible !important;

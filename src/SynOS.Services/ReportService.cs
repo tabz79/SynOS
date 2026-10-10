@@ -763,7 +763,7 @@ namespace SynOS.Services
 
             _logger.LogInformation("Rendering PDF for ReportId: {ReportId} (ForceReRender: {ForceReRender})...", reportId, forceReRender);
 
-            var reportData = await GetReportDataForPdfAsync(reportId, forceLive: false);
+            var reportData = await GetReportDataForPdfAsync(reportId, forceLive: forceReRender || report.Status != "Signed");
             if (reportData == null)
             {
                 _logger.LogError("Unable to build ReportDataModel for ReportId: {ReportId}", reportId);
@@ -870,74 +870,104 @@ namespace SynOS.Services
                 FooterDisclaimer = "* Clinical correlation required."
             };
 
-            var signaturesList = new List<ReportSignatureDetails>();
-            foreach (var s in domain.Signatures)
-            {
-                var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == s.Name);
-                var sigImageUrl = !string.IsNullOrEmpty(s.SignatureImageUrl) ? s.SignatureImageUrl : user?.SignatureImageUrl;
-                var sigResult = await LoadSignatureImageAsync(sigImageUrl);
-                signaturesList.Add(new ReportSignatureDetails
-                {
-                    DoctorName = s.Name,
-                    Credentials = s.Designation ?? user?.Designation ?? string.Empty,
-                    Role = (s.Designation ?? user?.Designation ?? "").Contains("Director") ? "Chief Pathologist / Director" : "Pathologist",
-                    SignedAt = s.SignedAt,
-                    Hash = s.Hash,
-                    Version = domain.Verification.ReportVersion,
-                    SignatureImage = sigResult.ImageBytes,
-                    SignatureImageBase64 = sigResult.Base64String
-                });
-            }
-
-            // Ensure Lab Director is ALWAYS present to satisfy forensic letterhead requirements.
+            // 1. Ensure Lab Director / Owner is ALWAYS present in Slot 0 (Baseline Identity)
             var director = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.IsDefaultSignatory && u.IsActive);
 
+            ReportSignatureDetails? directorSig = null;
             if (director != null)
             {
-                var alreadyPresent = signaturesList.Any(s => 
-                    s.DoctorName == director.Name || 
-                    (director.UserId != Guid.Empty && domain.Signatures.Any(ds => ds.Name == director.Name)));
-
-                if (!alreadyPresent)
+                var sigResult = await LoadSignatureImageAsync(director.SignatureImageUrl);
+                var directorStateSig = domain.Signatures.FirstOrDefault(s => s.Name == director.Name);
+                directorSig = new ReportSignatureDetails
                 {
-                    var directorSig = new ReportSignatureDetails
+                    DoctorName = director.Name,
+                    Credentials = director.Designation ?? "Chief Pathologist",
+                    Role = "Chief Pathologist / Director",
+                    SignedAt = directorStateSig?.SignedAt,
+                    Hash = directorStateSig?.Hash ?? "BASELINE_IDENTITY",
+                    Version = domain.Verification.ReportVersion,
+                    SignatureImage = sigResult.ImageBytes,
+                    SignatureImageBase64 = sigResult.Base64String
+                };
+            }
+
+            // 2. Identify if another Pathologist signed digitally or is assigned for physical verification
+            var nonDirectorSig = domain.Signatures.FirstOrDefault(s => director == null || s.Name != director.Name);
+            ReportSignatureDetails? consultantSig = null;
+
+            if (nonDirectorSig != null)
+            {
+                // Another pathologist signed digitally!
+                var consultantUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Name == nonDirectorSig.Name);
+                var sigImageUrl = !string.IsNullOrEmpty(nonDirectorSig.SignatureImageUrl) ? nonDirectorSig.SignatureImageUrl : consultantUser?.SignatureImageUrl;
+                var sigResult = await LoadSignatureImageAsync(sigImageUrl);
+                consultantSig = new ReportSignatureDetails
+                {
+                    DoctorName = nonDirectorSig.Name,
+                    Credentials = nonDirectorSig.Designation ?? consultantUser?.Designation ?? string.Empty,
+                    Role = "Pathologist",
+                    SignedAt = nonDirectorSig.SignedAt,
+                    Hash = nonDirectorSig.Hash,
+                    Version = domain.Verification.ReportVersion,
+                    SignatureImage = sigResult.ImageBytes,
+                    SignatureImageBase64 = sigResult.Base64String
+                };
+            }
+            else
+            {
+                // Not digitally signed by another pathologist.
+                // Check if the lab owner himself digitally signed:
+                bool isOwnerDigitallySigned = director != null && domain.Signatures.Any(s => s.Name == director.Name);
+
+                if (!isOwnerDigitallySigned)
+                {
+                    // The report is either in Draft/ReadyForVerification (printed by typist) or ManualVerified.
+                    // Provide a single consultant slot (Doctor Name & credentials, but NO digital signature image)
+                    // so the doctor can physically sign with pen on paper.
+                    User? assignedConsultant = null;
+                    if (report.VerifiedByUserId.HasValue)
                     {
-                        DoctorName = director.Name,
-                        Credentials = director.Designation ?? "Chief Pathologist",
-                        Role = "Chief Pathologist / Director",
-                        SignedAt = null,
-                        Hash = "BASELINE_IDENTITY",
-                        Version = 0
-                    };
-                    var sigResult = await LoadSignatureImageAsync(director.SignatureImageUrl);
-                    directorSig.SignatureImage = sigResult.ImageBytes;
-                    directorSig.SignatureImageBase64 = sigResult.Base64String;
-                    signaturesList.Insert(0, directorSig); // Lab Director always comes first as the Baseline Identity
+                        assignedConsultant = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == report.VerifiedByUserId.Value);
+                    }
+                    else if (report.SignedByUserId.HasValue && (director == null || report.SignedByUserId.Value != director.UserId))
+                    {
+                        assignedConsultant = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == report.SignedByUserId.Value);
+                    }
+
+                    if (assignedConsultant == null)
+                    {
+                        assignedConsultant = await _context.Users.AsNoTracking()
+                            .FirstOrDefaultAsync(u => u.UserRoles.Any(ur => ur.Role.Name == "Pathologist") && u.IsActive && !u.IsDefaultSignatory);
+                    }
+
+                    if (assignedConsultant != null && (director == null || assignedConsultant.UserId != director.UserId))
+                    {
+                        consultantSig = new ReportSignatureDetails
+                        {
+                            DoctorName = assignedConsultant.Name,
+                            Credentials = assignedConsultant.Designation ?? string.Empty,
+                            Role = "Pathologist",
+                            SignedAt = null,
+                            Hash = "REGISTRY",
+                            Version = 0,
+                            SignatureImage = null,
+                            SignatureImageBase64 = null
+                        };
+                    }
                 }
             }
 
-            // Fetch ALL authorized pathologists to populate the clinical registry slots
-            var allPathologists = await _context.Users
-                .AsNoTracking()
-                .Where(u => u.UserRoles.Any(ur => ur.Role.Name == "Pathologist") && u.IsActive && !u.IsDefaultSignatory)
-                .ToListAsync();
-
-            foreach (var path in allPathologists)
+            // 3. Construct clean signature list
+            var signaturesList = new List<ReportSignatureDetails>();
+            if (directorSig != null)
             {
-                if (!signaturesList.Any(s => s.DoctorName == path.Name))
-                {
-                    signaturesList.Add(new ReportSignatureDetails
-                    {
-                        DoctorName = path.Name,
-                        Credentials = path.Designation ?? string.Empty,
-                        Role = "Pathologist",
-                        SignedAt = null,
-                        Hash = "REGISTRY",
-                        Version = 0
-                    });
-                }
+                signaturesList.Add(directorSig); // Slot 0: Lab Owner (Always-on signature)
+            }
+            if (consultantSig != null)
+            {
+                signaturesList.Add(consultantSig); // Slot 1: Consultant / Second Pathologist
             }
 
             var model = new ReportDataModel

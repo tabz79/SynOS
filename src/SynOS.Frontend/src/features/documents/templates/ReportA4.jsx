@@ -249,7 +249,7 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
       reportDateY: template.reportDateY !== undefined ? template.reportDateY : (pY + 12),
       
       testTitleX: template.testTitleX !== undefined ? template.testTitleX : margin,
-      testTitleY: template.testTitleY !== undefined ? template.testTitleY : (tY - 12),
+      testTitleY: (template.testTitleY !== undefined && template.testTitleY <= 85) ? template.testTitleY : (pY + 20),
       
       resultsTableX: template.resultsTableX !== undefined ? template.resultsTableX : margin,
       resultsTableY: template.resultsTableY !== undefined ? template.resultsTableY : tY,
@@ -333,28 +333,7 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
         />
       )}
 
-      {/* 🌊 WATERMARK */}
-      {!isPreprinted && activeTemplate && activeTemplate.includeWatermark && activeTemplate.watermarkText && (
-        <div 
-          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
-          style={{ zIndex: 0 }}
-        >
-          <div 
-            style={{
-              color: 'black',
-              opacity: activeTemplate.watermarkOpacity || 0.05,
-              fontSize: `${activeTemplate.watermarkSize || 32}px`,
-              fontWeight: '900',
-              textTransform: 'uppercase',
-              letterSpacing: '0.2em',
-              transform: `rotate(-${activeTemplate.watermarkRotation || 12}deg)`,
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {activeTemplate.watermarkText}
-          </div>
-        </div>
-      )}
+      {/* 🌊 WATERMARK REMOVED (Strict No-Watermark Policy across all desks & outputs) */}
       {/* 🏥 HEADER RESERVATION (Pre-printed spacer or Digital Branding) */}
       {isPreprinted ? (
         <div style={{ height: `${activeTemplate?.topMargin || 48}mm` }} className="w-full shrink-0 relative z-10" />
@@ -687,13 +666,12 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
               paddingTop: '32px'
             }}
           >
-            <div className="grid grid-cols-4 gap-2">
-              {[0, 1, 2, 3].map((slotIdx) => {
-                const sig = signatures[slotIdx];
+            <div className={signatures.length <= 2 ? "flex justify-between items-end px-2" : "grid grid-cols-4 gap-2"}>
+              {signatures.map((sig, slotIdx) => {
                 const isTampered = sig?.isTampered;
 
                 return (
-                  <div key={slotIdx} className="text-center min-h-[40mm] flex flex-col justify-end relative">
+                  <div key={slotIdx} className={`text-center min-h-[35mm] flex flex-col justify-end relative ${signatures.length <= 2 ? "w-[65mm]" : ""}`}>
                      {sig ? (
                        <>
                           {isTampered && (
@@ -705,21 +683,23 @@ export const ReportA4 = ({ reportData, template, forcePreprinted = false }) => {
                           )}
 
                           <div className={`h-10 flex items-center justify-center mb-1 ${isTampered ? 'opacity-30 grayscale blur-[1px]' : ''}`}>
-                            {sig.signatureImage && (
+                            {sig.signatureImage ? (
                               <img 
                                 src={`data:image/png;base64,${sig.signatureImage}`} 
                                 alt="Sig" 
                                 className="max-h-full opacity-90 mix-blend-multiply" 
                               />
+                            ) : (
+                              <div className="h-full w-full"></div>
                             )}
                           </div>
                           <div className={`font-bold text-[10px] leading-tight mb-0.5 ${isTampered ? 'line-through text-red-900' : ''}`}>
                             {sig.doctorName}
                           </div>
-                          <div className="text-[9px] font-medium leading-tight">{sig.credentials}</div>
+                          <div className="text-[9px] font-medium leading-tight text-zinc-600">{sig.credentials}</div>
                        </>
                      ) : (
-                       <div className="h-[40mm] opacity-0 text-[1px]">Empty Slot</div>
+                       <div className="h-[35mm] opacity-0 text-[1px]">Empty Slot</div>
                      )}
                   </div>
                 );
