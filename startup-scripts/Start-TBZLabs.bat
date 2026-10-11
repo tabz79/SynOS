@@ -32,7 +32,7 @@ echo [*] Checking TBZ Middleware API on port 5069...
 netstat -ano | findstr /R ":5069.*LISTENING" >nul
 if %errorlevel% equ 0 goto API_OK
 echo [*] Launching TBZ Middleware API on port 5069...
-start "TBZ_Middleware_API" /min cmd /c "cd /d D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api && dotnet run --launch-profile http"
+powershell -NoProfile -Command "Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = 'cmd.exe /c cd /d D:\Projects\SynOS-Synthesized-Lab-Intelligence\TBZ.Middleware\src\TBZ.Middleware.Api && dotnet run --launch-profile http' }" >nul 2>&1
 ping 127.0.0.1 -n 5 >nul
 :API_OK
 echo [OK] TBZ Middleware API is RUNNING on port 5069.
@@ -42,7 +42,7 @@ echo [*] Checking Cloudflare Tunnel tbz-cloud...
 tasklist | findstr /I "cloudflared.exe" >nul
 if %errorlevel% equ 0 goto TUNNEL_OK
 echo [*] Launching Cloudflare Tunnel...
-start "Cloudflare_Tunnel" /min "C:\Users\Asus\cloudflared.exe" tunnel --protocol http2 --config "C:\Users\Asus\.cloudflared\config.yml" run
+powershell -NoProfile -Command "Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '\"C:\Users\Asus\cloudflared.exe\" tunnel --protocol http2 --config \"C:\Users\Asus\.cloudflared\config.yml\" run' }" >nul 2>&1
 ping 127.0.0.1 -n 4 >nul
 :TUNNEL_OK
 echo [OK] Cloudflare Tunnel is RUNNING.
@@ -59,6 +59,6 @@ echo  Public Cloud API:    https://cloud.tbzlabs.in
 echo  Local SynOS App:     http://localhost:59999
 echo =======================================================================
 echo.
-echo Keep the launched terminal windows open in the background.
-echo Press any key to close this launcher window...
+echo All background services are permanently running.
+echo Press any key to close this window...
 pause >nul
