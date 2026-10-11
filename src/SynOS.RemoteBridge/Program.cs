@@ -34,6 +34,8 @@ namespace SynOS.RemoteBridge
                 WebRootPath = Path.Combine(baseDir, "wwwroot")
             });
 
+            builder.Host.UseWindowsService();
+
             // Load Configuration
             var config = BridgeConfig.Load();
             builder.Services.AddSingleton(config);

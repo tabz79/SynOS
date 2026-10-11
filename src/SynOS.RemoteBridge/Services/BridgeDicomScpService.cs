@@ -48,7 +48,7 @@ namespace SynOS.RemoteBridge.Services
             _logService.Log("SYSTEM", "Starting SynOS Remote Bridge DICOM Engine...", "INFO");
 
             // Ensure spool directory exists
-            var spoolPath = Path.GetFullPath(_config.SpoolDir);
+            var spoolPath = _config.GetResolvedSpoolPath();
             if (!Directory.Exists(spoolPath))
             {
                 Directory.CreateDirectory(spoolPath);

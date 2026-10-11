@@ -212,7 +212,7 @@ namespace SynOS.RemoteBridge.Services
         {
             try
             {
-                var spoolDir = Path.GetFullPath(_config.SpoolDir);
+                var spoolDir = _config.GetResolvedSpoolPath();
                 if (!Directory.Exists(spoolDir)) return;
 
                 var dcmFiles = Directory.GetFiles(spoolDir, "*.dcm", SearchOption.AllDirectories);

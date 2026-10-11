@@ -45,6 +45,13 @@ namespace SynOS.RemoteBridge.Services
             return defaultConfig;
         }
 
+        public string GetResolvedSpoolPath()
+        {
+            return Path.IsPathRooted(SpoolDir)
+                ? SpoolDir
+                : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, SpoolDir));
+        }
+
         public void Save()
         {
             try
