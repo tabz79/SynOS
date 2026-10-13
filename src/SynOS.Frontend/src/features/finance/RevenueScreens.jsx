@@ -1117,6 +1117,7 @@ export const PendingReceivablesScreen = () => {
     const [claimDocData, setClaimDocData] = useState(null);
     const [isClaimDocOpen, setIsClaimDocOpen] = useState(false);
     const [generatingClaim, setGeneratingClaim] = useState(false);
+    const [selectedFactIds, setSelectedFactIds] = useState(new Set());
 
     useEffect(() => {
         loadData();
@@ -1138,11 +1139,17 @@ export const PendingReceivablesScreen = () => {
         }
     };
 
-    const handleOpenPartnerClaim = async (partner) => {
+    const handleOpenPartnerClaim = async (partner, specificFactIds = null) => {
         try {
             setGeneratingClaim(true);
+            const partnerBills = allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+            const targetFactIds = specificFactIds && specificFactIds.length > 0 
+                ? specificFactIds 
+                : partnerBills.map(b => b.receivableFactId);
+
             const res = await FinanceApi.getPartnerClaimStatement({
-                partnerId: partner.partnerId
+                partnerId: partner.partnerId,
+                receivableFactIds: targetFactIds
             });
             setClaimDocData(res);
             setIsClaimDocOpen(true);
@@ -1159,7 +1166,8 @@ export const PendingReceivablesScreen = () => {
         const phone = claimDocData?.partner?.phone || '';
         const cleanPhone = phone.replace(/[^0-9]/g, '');
         const netDue = claimDocData?.summary?.netClaimDue || 0;
-        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Gross Prepaid Visits: ₹${(claimDocData?.summary?.grossTariff || 0).toLocaleString()}\n• Less Referral Commission: ₹${(claimDocData?.summary?.totalCommissionOffset || 0).toLocaleString()}\n• Net Claim Due to Lab: ₹${netDue.toLocaleString()}\n\nRemittance details and UPI QR are attached in the claim bill. Please verify and settle dues at your earliest convenience. Thank you!`;
+        const count = claimDocData?.items?.length || 0;
+        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Selected Patient Visits: ${count}\n• Total Diagnostic Charges: ₹${netDue.toLocaleString()}\n• Net Amount Payable: ₹${netDue.toLocaleString()}\n\nRemittance details and UPI QR are attached in the claim bill. Please verify and settle dues at your earliest convenience. Thank you!`;
         window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
@@ -1280,38 +1288,123 @@ export const PendingReceivablesScreen = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                    {expandedPartnerId === partner.partnerId && (
-                                        <tr>
-                                            <td colSpan="6" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
-                                                <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100">
-                                                    <table className="w-full text-left">
-                                                        <thead>
-                                                            <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
-                                                                <th className="pb-2">Token / Ref</th>
-                                                                <th className="pb-2">Patient</th>
-                                                                <th className="pb-2">Date</th>
-                                                                <th className="pb-2 text-right">Original</th>
-                                                                <th className="pb-2 text-right">Recovered</th>
-                                                                <th className="pb-2 text-right">Outstanding</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
-                                                            {allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt).map(bill => (
-                                                                <tr key={bill.receivableFactId}>
-                                                                    <td className="py-3 text-[10px] font-mono text-zinc-500 font-bold">{bill.token || bill.receivableFactId.toString().substring(0, 13)}</td>
-                                                                    <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{bill.patientName || 'Unknown Patient'}</td>
-                                                                    <td className="py-3 text-[10px] text-zinc-400">{new Date(bill.occurredAt).toLocaleDateString()}</td>
-                                                                    <td className="py-3 text-[10px] font-bold text-right dark:text-zinc-300">₹{bill.amount.toLocaleString()}</td>
-                                                                    <td className="py-3 text-[10px] font-bold text-right text-emerald-500">₹{bill.amountReceived.toLocaleString()}</td>
-                                                                    <td className="py-3 text-[10px] font-bold text-right text-rose-500">₹{(bill.amount - bill.amountReceived).toLocaleString()}</td>
+                                    {expandedPartnerId === partner.partnerId && (() => {
+                                        const partnerBills = allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+                                        const partnerItemIds = partnerBills.map(b => b.receivableFactId);
+                                        const selectedInPartner = partnerBills.filter(b => selectedFactIds.has(b.receivableFactId));
+                                        const selectedCount = selectedInPartner.length;
+                                        const selectedSum = selectedInPartner.reduce((sum, b) => sum + (b.amount - b.amountReceived), 0);
+                                        const allPartnerSelected = partnerBills.length > 0 && selectedCount === partnerBills.length;
+
+                                        return (
+                                            <tr>
+                                                <td colSpan="6" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                    <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100">
+                                                        
+                                                        {/* BATCH ACTION BAR */}
+                                                        {selectedCount > 0 && (
+                                                            <div className="flex items-center justify-between p-3.5 mb-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 animate-in fade-in duration-200">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                                                                        {selectedCount}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                                                                            {selectedCount} of {partnerBills.length} Bills Selected
+                                                                        </p>
+                                                                        <p className="text-[10px] text-zinc-500 font-medium">
+                                                                            Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const next = new Set(selectedFactIds);
+                                                                            partnerItemIds.forEach(id => next.delete(id));
+                                                                            setSelectedFactIds(next);
+                                                                        }}
+                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
+                                                                    >
+                                                                        Clear Selection
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleOpenPartnerClaim(partner, selectedInPartner.map(b => b.receivableFactId))}
+                                                                        disabled={generatingClaim}
+                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                    >
+                                                                        <Receipt size={13} />
+                                                                        <span>Generate Claim Bill ({selectedCount})</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <table className="w-full text-left">
+                                                            <thead>
+                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                    <th className="pb-2 w-8 text-center">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={allPartnerSelected}
+                                                                            onChange={(e) => {
+                                                                                const next = new Set(selectedFactIds);
+                                                                                if (e.target.checked) {
+                                                                                    partnerItemIds.forEach(id => next.add(id));
+                                                                                } else {
+                                                                                    partnerItemIds.forEach(id => next.delete(id));
+                                                                                }
+                                                                                setSelectedFactIds(next);
+                                                                            }}
+                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                            title={allPartnerSelected ? "Deselect all" : "Select all open bills"}
+                                                                        />
+                                                                    </th>
+                                                                    <th className="pb-2">Token / Ref</th>
+                                                                    <th className="pb-2">Patient</th>
+                                                                    <th className="pb-2">Date</th>
+                                                                    <th className="pb-2 text-right">Original</th>
+                                                                    <th className="pb-2 text-right">Recovered</th>
+                                                                    <th className="pb-2 text-right">Outstanding</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
+                                                            </thead>
+                                                            <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
+                                                                {partnerBills.map(bill => {
+                                                                    const isChecked = selectedFactIds.has(bill.receivableFactId);
+                                                                    return (
+                                                                        <tr key={bill.receivableFactId} className={isChecked ? 'bg-indigo-50/40 dark:bg-indigo-950/30' : ''}>
+                                                                            <td className="py-3 w-8 text-center">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={isChecked}
+                                                                                    onChange={(e) => {
+                                                                                        const next = new Set(selectedFactIds);
+                                                                                        if (e.target.checked) {
+                                                                                            next.add(bill.receivableFactId);
+                                                                                        } else {
+                                                                                            next.delete(bill.receivableFactId);
+                                                                                        }
+                                                                                        setSelectedFactIds(next);
+                                                                                    }}
+                                                                                    className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                                />
+                                                                            </td>
+                                                                            <td className="py-3 text-[10px] font-mono text-zinc-500 font-bold">{bill.token || bill.receivableFactId.toString().substring(0, 13)}</td>
+                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{bill.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(bill.occurredAt).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-bold text-right dark:text-zinc-300">₹{bill.amount.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-bold text-right text-emerald-500">₹{bill.amountReceived.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-bold text-right text-rose-500">₹{(bill.amount - bill.amountReceived).toLocaleString()}</td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })()}
                                 </React.Fragment>
                             ))}
                         </tbody>

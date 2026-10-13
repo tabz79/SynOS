@@ -487,8 +487,10 @@ namespace SynOS.Api.Controllers
         {
             public Guid PartnerId { get; set; }
             public List<Guid>? VisitIds { get; set; }
+            public List<Guid>? ReceivableFactIds { get; set; }
             public DateTime? StartDate { get; set; }
             public DateTime? EndDate { get; set; }
+            public bool OnlyUnsettled { get; set; } = true;
         }
 
         [HttpPost("partner-claim-statement")]
@@ -511,97 +513,103 @@ namespace SynOS.Api.Controllers
             var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
             var settings = await GetStationerySettingsInternalAsync(lab);
 
-            // Query matching invoices/visits
-            var query = _context.Invoices
-                .Include(i => i.Visit)
-                    .ThenInclude(v => v!.Patient)
-                .Include(i => i.Visit)
-                    .ThenInclude(v => v!.Orders)
-                        .ThenInclude(o => o.Test)
-                .Include(i => i.Payments)
+            // Query ReceivableFacts directly for this partner
+            var factQuery = _context.ReceivableFacts
                 .AsNoTracking()
-                .Where(i => i.Visit != null && i.Visit.ReferralPartnerId == request.PartnerId);
+                .Where(r => r.ReferralPartnerId == request.PartnerId);
 
-            if (request.VisitIds != null && request.VisitIds.Count > 0)
+            if (request.ReceivableFactIds != null && request.ReceivableFactIds.Count > 0)
             {
-                query = query.Where(i => request.VisitIds.Contains(i.VisitId));
+                factQuery = factQuery.Where(r => request.ReceivableFactIds.Contains(r.ReceivableFactId));
+            }
+            else if (request.VisitIds != null && request.VisitIds.Count > 0)
+            {
+                factQuery = factQuery.Where(r => request.VisitIds.Contains(r.SourceVisitId));
             }
             else
             {
-                if (request.StartDate.HasValue) query = query.Where(i => i.CreatedAt >= request.StartDate.Value);
-                if (request.EndDate.HasValue) query = query.Where(i => i.CreatedAt <= request.EndDate.Value);
+                // Default: strictly open / unsettled dues (never settled historical visits!)
+                if (request.OnlyUnsettled)
+                {
+                    factQuery = factQuery.Where(r => r.SettledAt == null && (r.Amount - r.AmountReceived) > 0);
+                }
+                if (request.StartDate.HasValue) factQuery = factQuery.Where(r => r.OccurredAt >= request.StartDate.Value);
+                if (request.EndDate.HasValue) factQuery = factQuery.Where(r => r.OccurredAt <= request.EndDate.Value);
             }
 
-            var invoices = await query.OrderByDescending(i => i.CreatedAt).ToListAsync();
+            var facts = await factQuery.OrderByDescending(r => r.OccurredAt).ToListAsync();
 
-            // Fetch referral commission facts
-            var visitIds = invoices.Select(i => i.VisitId).Distinct().ToList();
-            var referralFacts = await _context.ReferralPayableFacts
+            // Load matching visits for clinical & patient context
+            var visitIds = facts.Select(f => f.SourceVisitId).Distinct().ToList();
+            var visits = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                .Where(v => visitIds.Contains(v.VisitId))
                 .AsNoTracking()
-                .Where(f => visitIds.Contains(f.SourceVisitId))
-                .GroupBy(f => f.SourceVisitId)
-                .Select(g => new { VisitId = g.Key, Commission = g.Sum(x => x.Amount) })
-                .ToDictionaryAsync(x => x.VisitId, x => x.Commission);
+                .ToDictionaryAsync(v => v.VisitId);
 
             var items = new List<object>();
-            decimal totalGross = 0;
-            decimal totalCommission = 0;
-            decimal totalPaid = 0;
+            decimal totalBilled = 0;
+            decimal totalReceived = 0;
+            decimal totalNetDue = 0;
 
             int lineIndex = 1;
-            foreach (var inv in invoices)
+            foreach (var fact in facts)
             {
-                var payments = inv.Payments ?? new List<SynOS.Models.Entities.Payment>();
-                var paid = payments.Sum(p => p.Amount);
-                var gross = inv.Total;
-                
-                referralFacts.TryGetValue(inv.VisitId, out var commCut);
-
-                // If commission fact is 0, estimate from partner default commission if available
-                if (commCut == 0 && partner.DefaultCommissionPercentage > 0)
-                {
-                    commCut = gross * (partner.DefaultCommissionPercentage / 100m);
-                }
-
-                var netPayableToLab = Math.Max(0, gross - commCut);
-
-                totalGross += gross;
-                totalCommission += commCut;
-                totalPaid += paid;
-
-                var orders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
+                visits.TryGetValue(fact.SourceVisitId, out var visit);
+                var orders = visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
                 var tests = orders.Select(o => o.Test?.TestName ?? o.TestCode ?? "Investigation").ToList();
                 string testSummary = tests.Count > 0 ? string.Join(", ", tests) : "Routine Lab Investigation";
 
-                var pt = inv.Visit?.Patient;
+                var pt = visit?.Patient;
                 string ptName = pt != null ? $"{pt.FirstName} {pt.LastName}".Trim() : "Patient";
-                string ageGen = pt != null ? $"{DateTime.UtcNow.Year - pt.DateOfBirth.Year}Y/{pt.Gender}" : "";
+                string ageGen = "";
+                if (pt != null)
+                {
+                    if (pt.DateOfBirth != default)
+                    {
+                        int age = DateTime.UtcNow.Year - pt.DateOfBirth.Year;
+                        ageGen = $"{age}Y/{pt.Gender}";
+                    }
+                    else
+                    {
+                        ageGen = pt.Gender ?? "";
+                    }
+                }
+
+                var billAmount = fact.Amount;
+                var rec = fact.AmountReceived;
+                var due = Math.Max(0, fact.Amount - fact.AmountReceived);
+
+                totalBilled += billAmount;
+                totalReceived += rec;
+                totalNetDue += due;
 
                 items.Add(new
                 {
                     Index = lineIndex++,
-                    InvoiceId = inv.InvoiceId,
-                    VisitId = inv.VisitId,
-                    BillNumber = $"BILL-{inv.CreatedAt:yyyyMMdd}-{inv.InvoiceId.ToString().Substring(0, 4).ToUpper()}",
-                    Token = inv.Visit?.Token ?? "",
-                    Date = inv.CreatedAt,
+                    ReceivableFactId = fact.ReceivableFactId,
+                    VisitId = fact.SourceVisitId,
+                    BillNumber = visit != null ? $"BILL-{visit.CreatedAt:yyyyMMdd}-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper(),
+                    Token = visit?.Token ?? fact.ReceivableFactId.ToString().Substring(0, 8),
+                    Date = fact.OccurredAt.DateTime,
                     PatientName = ptName,
                     AgeGender = ageGen,
                     Investigations = testSummary,
-                    GrossAmount = gross,
-                    CommissionCut = commCut,
-                    NetPayableToLab = netPayableToLab,
-                    IsPrepaidByPartner = inv.Visit?.PaymentCollectionModel == "PartnerCollects"
+                    GrossAmount = billAmount,
+                    Rate = billAmount,
+                    AmountReceived = rec,
+                    NetPayableToLab = due
                 });
             }
 
-            var netClaimDue = Math.Max(0, totalGross - totalCommission - totalPaid);
             var now = DateTime.UtcNow;
             var safePartner = (partner.Name ?? "PRT").Replace(" ", "");
             var pCode = safePartner.Substring(0, Math.Min(3, safePartner.Length)).ToUpper();
             var statementNo = $"CLM-{now:yyyyMM}-{pCode}{now:ddHHmm}";
 
-            var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={netClaimDue:F2}&cu=INR&tn={statementNo}";
+            var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={totalNetDue:F2}&cu=INR&tn={statementNo}";
 
             return Ok(new
             {
@@ -630,11 +638,13 @@ namespace SynOS.Api.Controllers
                 Summary = new
                 {
                     TotalVisitsCount = items.Count,
-                    TotalGrossBilled = totalGross,
-                    TotalCommissionCut = totalCommission,
-                    TotalPaid = totalPaid,
-                    NetClaimDue = netClaimDue,
-                    AmountInWords = NumberToIndianWords(netClaimDue)
+                    TotalGrossBilled = totalBilled,
+                    TotalDiagnosticCharges = totalBilled,
+                    TotalCommissionCut = 0m,
+                    TotalPaid = totalReceived,
+                    TotalReceived = totalReceived,
+                    NetClaimDue = totalNetDue,
+                    AmountInWords = NumberToIndianWords(totalNetDue)
                 },
 
                 UpiQrString = upiPayload

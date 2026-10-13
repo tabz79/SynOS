@@ -55,7 +55,7 @@ export const PartnerClaimStatementA4 = ({
                                 Statement of Account
                             </p>
                             <p className="text-[9px] text-zinc-400 font-semibold">
-                                For Referral Clinic Settlement
+                                Diagnostic Services Settlement
                             </p>
                         </div>
                     </div>
@@ -86,9 +86,9 @@ export const PartnerClaimStatementA4 = ({
                         <span className="font-mono">{partner?.phone || "N/A"}</span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                        <span className="text-zinc-500">Settlement Model:</span>
+                        <span className="text-zinc-500">Billing Model:</span>
                         <span className="font-semibold text-indigo-800">
-                            Prepaid (Partner Collects Outside)
+                            Partner B2B (Standard Lab Tariff)
                         </span>
                     </div>
                 </div>
@@ -124,9 +124,9 @@ export const PartnerClaimStatementA4 = ({
             {/* NOTICE BANNER */}
             <div className="mb-3 p-2 bg-indigo-50/70 border border-indigo-200 rounded text-[10px] text-indigo-900 flex items-center justify-between">
                 <span>
-                    <strong>Settlement Notice:</strong> The patient investigations listed below were registered under your prepaid referral account.
+                    <strong>Settlement Notice:</strong> The investigations listed below were registered through your partner account and billed at standard lab tariff.
                 </span>
-                <span className="font-semibold">Tariff Net of Partner Commission</span>
+                <span className="font-semibold">B2B Standard Rates</span>
             </div>
 
             {/* ITEMIZED VISITS LEDGER TABLE */}
@@ -139,19 +139,17 @@ export const PartnerClaimStatementA4 = ({
                             <th className="p-2 w-24">Token / Ref</th>
                             <th className="p-2">Patient Name & Age</th>
                             <th className="p-2">Investigations Performed</th>
-                            <th className="p-2 w-20 text-right">Tariff (₹)</th>
-                            <th className="p-2 w-20 text-right text-amber-700">Your Cut (₹)</th>
-                            <th className="p-2 w-24 text-right text-indigo-900 font-bold">Net to Lab</th>
+                            <th className="p-2 w-28 text-right text-indigo-950 font-black">Lab Rate (₹)</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200">
                         {items.length === 0 ? (
                             <tr>
-                                <td colSpan="8" className="p-4 text-center text-zinc-400">No visits included in this statement.</td>
+                                <td colSpan="6" className="p-4 text-center text-zinc-400">No visits included in this statement.</td>
                             </tr>
                         ) : (
                             items.map((item, idx) => (
-                                <tr key={idx} className="hover:bg-zinc-50 text-[11px]">
+                                <tr key={idx} className="hover:bg-zinc-50 text-[11px] print:break-inside-avoid">
                                     <td className="p-2 text-center text-zinc-400 font-mono">{item.index || idx + 1}</td>
                                     <td className="p-2 text-zinc-500 font-mono text-[10px]">{new Date(item.date).toLocaleDateString()}</td>
                                     <td className="p-2 font-mono font-bold text-zinc-800 text-[10px]">{item.token || item.billNumber}</td>
@@ -162,9 +160,9 @@ export const PartnerClaimStatementA4 = ({
                                     <td className="p-2 text-zinc-700 text-[10px] max-w-xs truncate" title={item.investigations}>
                                         {item.investigations}
                                     </td>
-                                    <td className="p-2 text-right font-mono">₹{Number(item.grossAmount).toLocaleString()}</td>
-                                    <td className="p-2 text-right font-mono text-amber-600 font-semibold">-₹{Number(item.commissionCut).toLocaleString()}</td>
-                                    <td className="p-2 text-right font-mono font-bold text-zinc-900">₹{Number(item.netPayableToLab).toLocaleString()}</td>
+                                    <td className="p-2 text-right font-mono font-bold text-zinc-900">
+                                        ₹{Number(item.grossAmount ?? item.rate ?? 0).toLocaleString()}
+                                    </td>
                                 </tr>
                             ))
                         )}
@@ -177,7 +175,7 @@ export const PartnerClaimStatementA4 = ({
                 {/* Left 7 Columns: Words & Bank Transfer QR */}
                 <div className="col-span-7 space-y-3">
                     <div className="p-3 bg-zinc-50 rounded-lg border border-zinc-200 space-y-1">
-                        <span className="text-[10px] font-bold uppercase text-zinc-400 block tracking-wider">Net Claim Amount in Words</span>
+                        <span className="text-[10px] font-bold uppercase text-zinc-400 block tracking-wider">Net Amount in Words</span>
                         <p className="text-xs font-black text-indigo-950 italic">
                             {summary.amountInWords || "Zero Rupees Only"}
                         </p>
@@ -211,24 +209,21 @@ export const PartnerClaimStatementA4 = ({
                 {/* Right 5 Columns: Financial Breakdown */}
                 <div className="col-span-5 bg-zinc-50 rounded-lg border border-zinc-300 p-3 space-y-2 text-[11px]">
                     <div className="flex justify-between text-zinc-600">
-                        <span>Gross Tariff Billed:</span>
-                        <span className="font-mono font-bold">₹{Number(summary.totalGrossBilled || 0).toLocaleString()}</span>
-                    </div>
-
-                    <div className="flex justify-between text-amber-700 font-semibold">
-                        <span>Less: Doctor Referral Cut Offset:</span>
-                        <span className="font-mono">-₹{Number(summary.totalCommissionCut || 0).toLocaleString()}</span>
+                        <span>Total Diagnostic Charges:</span>
+                        <span className="font-mono font-bold">
+                            ₹{Number(summary.totalDiagnosticCharges ?? summary.totalGrossBilled ?? 0).toLocaleString()}
+                        </span>
                     </div>
 
                     {summary.totalPaid > 0 && (
                         <div className="flex justify-between text-emerald-700 font-semibold">
-                            <span>Less: Prior Payments Realized:</span>
+                            <span>Less: Prior Receipts Realized:</span>
                             <span className="font-mono">-₹{Number(summary.totalPaid).toLocaleString()}</span>
                         </div>
                     )}
 
                     <div className="flex justify-between text-xs font-black text-indigo-900 border-t-2 border-indigo-900 pt-2">
-                        <span>Net Claim Due to Lab:</span>
+                        <span>Net Amount Due to Lab:</span>
                         <span className="font-mono text-sm">₹{Number(summary.netClaimDue || 0).toLocaleString()}</span>
                     </div>
 

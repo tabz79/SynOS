@@ -30,6 +30,7 @@ export const PartnerReceivablesTab = () => {
     const [claimDocData, setClaimDocData] = useState(null);
     const [isClaimDocOpen, setIsClaimDocOpen] = useState(false);
     const [generatingClaim, setGeneratingClaim] = useState(false);
+    const [selectedFactIds, setSelectedFactIds] = useState(new Set());
 
     useEffect(() => {
         loadData();
@@ -94,11 +95,15 @@ export const PartnerReceivablesTab = () => {
         }
     };
 
-    const handleGenerateClaimStatement = async (partner) => {
+    const handleGenerateClaimStatement = async (partner, specificFactIds = null) => {
         try {
             setGeneratingClaim(true);
+            const targetFactIds = specificFactIds && specificFactIds.length > 0
+                ? specificFactIds
+                : partner.items.map(i => i.receivableFactId);
             const res = await FinanceApi.getPartnerClaimStatement({
-                partnerId: partner.partnerId
+                partnerId: partner.partnerId,
+                receivableFactIds: targetFactIds
             });
             setClaimDocData(res);
             setIsClaimDocOpen(true);
@@ -115,7 +120,8 @@ export const PartnerReceivablesTab = () => {
         const phone = claimDocData?.partner?.phone || '';
         const cleanPhone = phone.replace(/[^0-9]/g, '');
         const netDue = claimDocData?.summary?.netClaimDue || 0;
-        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Gross Prepaid Visits: ₹${(claimDocData?.summary?.grossTariff || 0).toLocaleString()}\n• Less Referral Commission: ₹${(claimDocData?.summary?.totalCommissionOffset || 0).toLocaleString()}\n• Net Claim Due to Lab: ₹${netDue.toLocaleString()}\n\nPayment details and UPI QR are attached in the claim bill. Please verify and clear dues at your earliest convenience. Thank you!`;
+        const count = claimDocData?.items?.length || 0;
+        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Selected Patient Visits: ${count}\n• Total Diagnostic Charges: ₹${netDue.toLocaleString()}\n• Net Amount Payable: ₹${netDue.toLocaleString()}\n\nPayment details and remittance UPI QR are attached in the statement. Please verify and clear dues at your convenience. Thank you!`;
         window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
@@ -205,36 +211,120 @@ export const PartnerReceivablesTab = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                    {expandedPartnerId === partner.partnerId && (
-                                        <tr>
-                                            <td colSpan="5" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
-                                                <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
-                                                    <table className="w-full text-left">
-                                                        <thead>
-                                                            <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
-                                                                <th className="pb-2">Token / Reference</th>
-                                                                <th className="pb-2">Patient</th>
-                                                                <th className="pb-2">Date</th>
-                                                                <th className="pb-2 text-right">Original</th>
-                                                                <th className="pb-2 text-right">Outstanding</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
-                                                            {partner.items.map(fact => (
-                                                                <tr key={fact.receivableFactId}>
-                                                                    <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || fact.receivableFactId.toString().substring(0, 13)}</td>
-                                                                    <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
-                                                                    <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt).toLocaleDateString()}</td>
-                                                                    <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.amount.toLocaleString()}</td>
-                                                                    <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.amount - fact.amountReceived).toLocaleString()}</td>
+                                    {expandedPartnerId === partner.partnerId && (() => {
+                                        const partnerItemIds = partner.items.map(i => i.receivableFactId);
+                                        const selectedInPartner = partner.items.filter(i => selectedFactIds.has(i.receivableFactId));
+                                        const selectedCount = selectedInPartner.length;
+                                        const selectedSum = selectedInPartner.reduce((sum, i) => sum + (i.amount - i.amountReceived), 0);
+                                        const allPartnerSelected = partner.items.length > 0 && selectedCount === partner.items.length;
+
+                                        return (
+                                            <tr>
+                                                <td colSpan="5" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                    <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
+                                                        
+                                                        {/* BATCH SELECTION ACTION BAR */}
+                                                        {selectedCount > 0 && (
+                                                            <div className="flex items-center justify-between p-3.5 mb-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 animate-in fade-in duration-200">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                                                                        {selectedCount}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                                                                            {selectedCount} of {partner.items.length} Bills Selected
+                                                                        </p>
+                                                                        <p className="text-[10px] text-zinc-500 font-medium">
+                                                                            Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const next = new Set(selectedFactIds);
+                                                                            partnerItemIds.forEach(id => next.delete(id));
+                                                                            setSelectedFactIds(next);
+                                                                        }}
+                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
+                                                                    >
+                                                                        Clear Selection
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleGenerateClaimStatement(partner, selectedInPartner.map(i => i.receivableFactId))}
+                                                                        disabled={generatingClaim}
+                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                    >
+                                                                        <Receipt size={13} />
+                                                                        <span>Generate Claim Bill ({selectedCount})</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <table className="w-full text-left">
+                                                            <thead>
+                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                    <th className="pb-2 w-8 text-center">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={allPartnerSelected}
+                                                                            onChange={(e) => {
+                                                                                const next = new Set(selectedFactIds);
+                                                                                if (e.target.checked) {
+                                                                                    partnerItemIds.forEach(id => next.add(id));
+                                                                                } else {
+                                                                                    partnerItemIds.forEach(id => next.delete(id));
+                                                                                }
+                                                                                setSelectedFactIds(next);
+                                                                            }}
+                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                            title={allPartnerSelected ? "Deselect all" : "Select all open bills"}
+                                                                        />
+                                                                    </th>
+                                                                    <th className="pb-2">Token / Reference</th>
+                                                                    <th className="pb-2">Patient</th>
+                                                                    <th className="pb-2">Date</th>
+                                                                    <th className="pb-2 text-right">Original</th>
+                                                                    <th className="pb-2 text-right">Outstanding</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
+                                                            </thead>
+                                                            <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
+                                                                {partner.items.map(fact => {
+                                                                    const isChecked = selectedFactIds.has(fact.receivableFactId);
+                                                                    return (
+                                                                        <tr key={fact.receivableFactId} className={isChecked ? 'bg-indigo-50/40 dark:bg-indigo-950/30' : ''}>
+                                                                            <td className="py-3 w-8 text-center">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={isChecked}
+                                                                                    onChange={(e) => {
+                                                                                        const next = new Set(selectedFactIds);
+                                                                                        if (e.target.checked) {
+                                                                                            next.add(fact.receivableFactId);
+                                                                                        } else {
+                                                                                            next.delete(fact.receivableFactId);
+                                                                                        }
+                                                                                        setSelectedFactIds(next);
+                                                                                    }}
+                                                                                    className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                                />
+                                                                            </td>
+                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || fact.receivableFactId.toString().substring(0, 13)}</td>
+                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.amount.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.amount - fact.amountReceived).toLocaleString()}</td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })()}
                                 </React.Fragment>
                             ))}
                         </tbody>
