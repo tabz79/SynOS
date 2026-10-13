@@ -20,7 +20,10 @@ import {
     Building2,
     Beaker,
     Activity,
-    FileSpreadsheet
+    FileSpreadsheet,
+    Receipt,
+    FileText,
+    Share2
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -29,6 +32,9 @@ import { FinanceApi } from '@/api/finance';
 import { FinanceUtils } from './components/FinanceUtils';
 import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { PatientTaxInvoiceA4 } from './components/documents/PatientTaxInvoiceA4';
+import { PartnerClaimStatementA4 } from './components/documents/PartnerClaimStatementA4';
 
 import { cn } from '@/lib/utils';
 
@@ -469,6 +475,11 @@ export const BillsCollectionsScreen = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBill, setSelectedBill] = useState(null);
     
+    // Enterprise Document Modal States
+    const [docModalType, setDocModalType] = useState(null); // 'invoice' | 'claim' | null
+    const [docData, setDocData] = useState(null);
+    const [loadingDoc, setLoadingDoc] = useState(false);
+    
     // Filter states
     const [statusFilter, setStatusFilter] = useState('All');
     const [categoryFilter, setCategoryFilter] = useState('All');
@@ -520,6 +531,45 @@ export const BillsCollectionsScreen = () => {
     const handleRecordCollection = (bill) => {
         setSelectedBill(bill);
         setIsModalOpen(true);
+    };
+
+    const handleOpenInvoiceDoc = async (billId) => {
+        try {
+            setLoadingDoc(true);
+            const data = await FinanceApi.getInvoiceDocument(billId);
+            setDocData(data);
+            setDocModalType('invoice');
+        } catch (err) {
+            alert("Failed to load patient invoice: " + err.message);
+        } finally {
+            setLoadingDoc(false);
+        }
+    };
+
+    const handleOpenPartnerClaim = async (partnerId, visitIds = null) => {
+        try {
+            setLoadingDoc(true);
+            const payload = { partnerId };
+            if (visitIds && visitIds.length > 0) payload.visitIds = visitIds;
+            const data = await FinanceApi.getPartnerClaimStatement(payload);
+            setDocData(data);
+            setDocModalType('claim');
+        } catch (err) {
+            alert("Failed to generate doctor claim statement: " + err.message);
+        } finally {
+            setLoadingDoc(false);
+        }
+    };
+
+    const handleWhatsAppClaimShare = () => {
+        if (!docData) return;
+        const partner = docData.partner?.name || "Doctor";
+        const net = (docData.summary?.netClaimDue || 0).toLocaleString();
+        const count = docData.summary?.totalVisitsCount || 0;
+        const upi = docData.lab?.upiId || "";
+        const ref = docData.statementNumber || "";
+        const msg = `Dear ${partner},\nGreetings from ${docData.lab?.labLegalName || 'SynOS Lab'}.\n\nPlease find your referral settlement claim statement (${ref}) for ${count} patient visits.\n*Net Payable to Lab: ₹${net}*\n\nYou can remit directly via UPI: ${upi}\nThank you!`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     const confirmCollection = async (amount) => {
@@ -634,31 +684,42 @@ export const BillsCollectionsScreen = () => {
             "Department",
             "Modality",
             "Account / Partner",
+            "Billing Model",
             "Total Billed (INR)",
             "Cash Collected (INR)",
             "Online / Digital (INR)",
-            "Prepaid Used (INR)",
+            "Patient Wallet / Advance (INR)",
             "Pending Due (INR)",
+            "Pending Due Source",
             "Doctor / Partner Cut (INR)",
             "Status"
         ];
 
-        const rows = filteredBills.map(b => [
-            `"${b.billNumber || ''}"`,
-            `"${new Date(b.date).toLocaleDateString()}"`,
-            `"${(b.patientName || '').replace(/"/g, '""')}"`,
-            `"${(b.branchName || 'Main Facility').replace(/"/g, '""')}"`,
-            `"${b.department || ''}"`,
-            `"${b.modality || ''}"`,
-            `"${(b.partnerName || '').replace(/"/g, '""')}"`,
-            b.totalAmount || 0,
-            b.cashAmount || 0,
-            b.onlineAmount || 0,
-            b.prepaidAmount || 0,
-            b.pendingAmount || 0,
-            b.referralCommissionCut || 0,
-            `"${b.status || ''}"`
-        ]);
+        const rows = filteredBills.map(b => {
+            const billingModel = b.partnerCategory === 'Partner' ? 'Partner Prepaid' : (b.partnerCategory === 'Corporate' ? 'Corporate Credit' : 'Direct Counter');
+            const dueSource = b.pendingAmount > 0 
+                ? (b.partnerCategory === 'Partner' ? `Partner: ${b.partnerName}` : (b.partnerCategory === 'Direct' ? 'Direct Patient Counter' : b.partnerCategory))
+                : 'Settled';
+
+            return [
+                `"${b.billNumber || ''}"`,
+                `"${new Date(b.date).toLocaleDateString()}"`,
+                `"${(b.patientName || '').replace(/"/g, '""')}"`,
+                `"${(b.branchName || 'Main Facility').replace(/"/g, '""')}"`,
+                `"${b.department || ''}"`,
+                `"${b.modality || ''}"`,
+                `"${(b.partnerName || '').replace(/"/g, '""')}"`,
+                `"${billingModel}"`,
+                b.totalAmount || 0,
+                b.cashAmount || 0,
+                b.onlineAmount || 0,
+                b.prepaidAmount || 0,
+                b.pendingAmount || 0,
+                `"${dueSource}"`,
+                b.referralCommissionCut || 0,
+                `"${b.status || ''}"`
+            ];
+        });
 
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
         const encodedUri = encodeURI(csvContent);
@@ -671,6 +732,9 @@ export const BillsCollectionsScreen = () => {
         document.body.removeChild(link);
     };
 
+    // Find any pending partner for header claim generation
+    const partnerBillsWithPending = filteredBills.filter(b => b.partnerCategory === 'Partner' && b.pendingAmount > 0);
+
     return (
         <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
             {/* Header & Download Bar */}
@@ -681,11 +745,26 @@ export const BillsCollectionsScreen = () => {
                         Real-time operational ledger with branch, department, and modality transaction breakdowns.
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center flex-wrap gap-2.5">
+                    {/* B2B DOCTOR CLAIM STATEMENT BUTTON */}
+                    {partnerBillsWithPending.length > 0 && (
+                        <button
+                            onClick={() => {
+                                const target = partnerBillsWithPending[0];
+                                const samePartnerBills = partnerBillsWithPending.filter(b => b.partnerName === target.partnerName);
+                                handleOpenPartnerClaim(target.partnerId || target.referralPartnerId, samePartnerBills.map(b => b.visitId));
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                        >
+                            <Receipt size={15} />
+                            <span>Doctor Claim Bill ({partnerBillsWithPending.length})</span>
+                        </button>
+                    )}
+
                     <button
                         onClick={handleDownloadSummary}
                         disabled={filteredBills.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                         <Download size={15} />
                         <span>Download Summary ({filteredBills.length})</span>
@@ -927,7 +1006,14 @@ export const BillsCollectionsScreen = () => {
                                             </div>
                                         </td>
                                         <td className="p-4 text-xs font-black text-right text-rose-500">
-                                            ₹{bill.pendingAmount.toLocaleString()}
+                                            <p className="font-mono">₹{bill.pendingAmount.toLocaleString()}</p>
+                                            {bill.pendingAmount > 0 && (
+                                                <span className="text-[9px] font-bold block mt-0.5 tracking-tight text-zinc-400">
+                                                    {bill.partnerCategory === 'Partner' 
+                                                        ? `Due: ${bill.partnerName}` 
+                                                        : (bill.partnerCategory === 'Direct' ? 'Due at Counter' : bill.partnerCategory)}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="p-4 text-center">
                                             <StatusBadge status={bill.status} />
@@ -935,20 +1021,42 @@ export const BillsCollectionsScreen = () => {
                                         <td className="p-4 text-xs text-zinc-400">
                                             {new Date(bill.date).toLocaleDateString()}
                                         </td>
-                                        {/* ALWAYS VISIBLE ACTIONS (Cleanly fixed visibility bug) */}
+                                        {/* ALWAYS VISIBLE ACTIONS WITH ENTERPRISE DOCUMENT GENERATION */}
                                         <td className="p-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                {/* A4 Patient Tax Invoice */}
+                                                <button
+                                                    onClick={() => handleOpenInvoiceDoc(bill.billId)}
+                                                    title="View & Print A4 Patient Tax Invoice"
+                                                    className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+                                                >
+                                                    <FileText size={12} className="text-synos-primary" />
+                                                    <span className="hidden sm:inline">A4 Bill</span>
+                                                </button>
+
+                                                {/* B2B Doctor Claim Bill (For Partner bills) */}
+                                                {bill.partnerCategory === 'Partner' && (
+                                                    <button
+                                                        onClick={() => handleOpenPartnerClaim(bill.partnerId || bill.referralPartnerId, [bill.visitId])}
+                                                        title="Generate B2B Doctor Claim Bill for this visit"
+                                                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                                                    >
+                                                        <Receipt size={12} />
+                                                        <span>Claim</span>
+                                                    </button>
+                                                )}
+
                                                 {bill.pendingAmount > 0 ? (
                                                     <button 
                                                         onClick={() => handleRecordCollection(bill)}
-                                                        className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-synos-primary/90 transition-all shadow-sm"
+                                                        className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
                                                     >
-                                                        Collect
+                                                        {bill.partnerCategory === 'Partner' ? 'Settle' : 'Collect'}
                                                     </button>
                                                 ) : (
                                                     <button
                                                         onClick={() => handleRecordCollection(bill)}
-                                                        className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/20 transition-all"
+                                                        className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer"
                                                     >
                                                         Details
                                                     </button>
@@ -973,6 +1081,24 @@ export const BillsCollectionsScreen = () => {
                     pendingAmount={selectedBill.pendingAmount}
                 />
             )}
+
+            {/* ENTERPRISE COMMERCIAL DOCUMENT VIEWER & PRINT ENGINE */}
+            {docModalType && docData && (
+                <CommercialDocumentViewer
+                    isOpen={Boolean(docModalType)}
+                    onClose={() => { setDocModalType(null); setDocData(null); }}
+                    title={docModalType === 'claim' ? "B2B Partner Claim Bill & Statement" : "Patient Tax Invoice (A4)"}
+                    onWhatsAppShare={docModalType === 'claim' ? handleWhatsAppClaimShare : null}
+                    defaultLetterheadMode={docData?.lab?.defaultLetterheadMode || "digital"}
+                    topMarginMm={docData?.lab?.topMarginMm || 40}
+                >
+                    {docModalType === 'claim' ? (
+                        <PartnerClaimStatementA4 data={docData} />
+                    ) : (
+                        <PatientTaxInvoiceA4 data={docData} />
+                    )}
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 };
@@ -986,6 +1112,11 @@ export const PendingReceivablesScreen = () => {
     const [selectedBillIds, setSelectedBillIds] = useState([]);
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
     const [expandedPartnerId, setExpandedPartnerId] = useState(null);
+
+    // Enterprise Claim Bill State
+    const [claimDocData, setClaimDocData] = useState(null);
+    const [isClaimDocOpen, setIsClaimDocOpen] = useState(false);
+    const [generatingClaim, setGeneratingClaim] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -1005,6 +1136,31 @@ export const PendingReceivablesScreen = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleOpenPartnerClaim = async (partner) => {
+        try {
+            setGeneratingClaim(true);
+            const res = await FinanceApi.getPartnerClaimStatement({
+                partnerId: partner.partnerId
+            });
+            setClaimDocData(res);
+            setIsClaimDocOpen(true);
+        } catch (err) {
+            console.error("Failed to load partner claim:", err);
+            alert("Could not load claim bill: " + (err.response?.data?.message || err.message));
+        } finally {
+            setGeneratingClaim(false);
+        }
+    };
+
+    const handleWhatsAppClaimShare = () => {
+        if (!claimDocData) return;
+        const phone = claimDocData?.partner?.phone || '';
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        const netDue = claimDocData?.summary?.netClaimDue || 0;
+        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Gross Prepaid Visits: ₹${(claimDocData?.summary?.grossTariff || 0).toLocaleString()}\n• Less Referral Commission: ₹${(claimDocData?.summary?.totalCommissionOffset || 0).toLocaleString()}\n• Net Claim Due to Lab: ₹${netDue.toLocaleString()}\n\nRemittance details and UPI QR are attached in the claim bill. Please verify and settle dues at your earliest convenience. Thank you!`;
+        window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     const handleBulkSettle = (partner) => {
@@ -1105,12 +1261,23 @@ export const PendingReceivablesScreen = () => {
                                             </div>
                                         </td>
                                         <td className="p-6 text-right">
-                                            <button 
-                                                onClick={() => handleBulkSettle(partner)}
-                                                className="px-4 py-2 rounded-xl bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 transition-all"
-                                            >
-                                                Bulk Settle
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleOpenPartnerClaim(partner)}
+                                                    disabled={generatingClaim}
+                                                    title="Generate A4 B2B Claim Bill for Referral Partner"
+                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                >
+                                                    <Receipt size={12} />
+                                                    <span>Claim Bill</span>
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleBulkSettle(partner)}
+                                                    className="px-4 py-2 rounded-xl bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 transition-all cursor-pointer"
+                                                >
+                                                    Bulk Settle
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {expandedPartnerId === partner.partnerId && (
@@ -1160,6 +1327,23 @@ export const PendingReceivablesScreen = () => {
                     partnerName={selectedPartner.partnerName}
                     selectedBills={allBills.filter(b => b.partnerName === selectedPartner.partnerName && !b.settledAt)}
                 />
+            )}
+
+            {/* ENTERPRISE B2B PARTNER CLAIM BILL VIEWER */}
+            {isClaimDocOpen && claimDocData && (
+                <CommercialDocumentViewer
+                    isOpen={isClaimDocOpen}
+                    onClose={() => {
+                        setIsClaimDocOpen(false);
+                        setClaimDocData(null);
+                    }}
+                    title={`B2B Partner Claim Bill - ${claimDocData?.partner?.name || 'Partner'}`}
+                    onWhatsAppShare={handleWhatsAppClaimShare}
+                    defaultLetterheadMode={claimDocData?.lab?.defaultLetterheadMode || "digital"}
+                    topMarginMm={claimDocData?.lab?.topMarginMm || 40}
+                >
+                    <PartnerClaimStatementA4 data={claimDocData} />
+                </CommercialDocumentViewer>
             )}
         </div>
     );

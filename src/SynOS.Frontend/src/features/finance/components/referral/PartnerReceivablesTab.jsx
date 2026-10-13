@@ -10,9 +10,13 @@ import {
     Banknote,
     Building2,
     Calendar,
-    Clock
+    Clock,
+    Receipt,
+    Printer
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
+import { PartnerClaimStatementA4 } from '../documents/PartnerClaimStatementA4';
 
 export const PartnerReceivablesTab = () => {
     const [receivables, setReceivables] = useState([]);
@@ -21,6 +25,11 @@ export const PartnerReceivablesTab = () => {
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [settling, setSettling] = useState(false);
     const [expandedPartnerId, setExpandedPartnerId] = useState(null);
+
+    // Enterprise Claim Statement State
+    const [claimDocData, setClaimDocData] = useState(null);
+    const [isClaimDocOpen, setIsClaimDocOpen] = useState(false);
+    const [generatingClaim, setGeneratingClaim] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -83,6 +92,31 @@ export const PartnerReceivablesTab = () => {
         } finally {
             setSettling(false);
         }
+    };
+
+    const handleGenerateClaimStatement = async (partner) => {
+        try {
+            setGeneratingClaim(true);
+            const res = await FinanceApi.getPartnerClaimStatement({
+                partnerId: partner.partnerId
+            });
+            setClaimDocData(res);
+            setIsClaimDocOpen(true);
+        } catch (err) {
+            console.error("Failed to generate claim statement:", err);
+            alert("Could not load claim statement: " + (err.response?.data?.message || err.message));
+        } finally {
+            setGeneratingClaim(false);
+        }
+    };
+
+    const handleWhatsAppClaimShare = () => {
+        if (!claimDocData) return;
+        const phone = claimDocData?.partner?.phone || '';
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        const netDue = claimDocData?.summary?.netClaimDue || 0;
+        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Gross Prepaid Visits: ₹${(claimDocData?.summary?.grossTariff || 0).toLocaleString()}\n• Less Referral Commission: ₹${(claimDocData?.summary?.totalCommissionOffset || 0).toLocaleString()}\n• Net Claim Due to Lab: ₹${netDue.toLocaleString()}\n\nPayment details and UPI QR are attached in the claim bill. Please verify and clear dues at your earliest convenience. Thank you!`;
+        window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     const filtered = receivables.filter(p => p.partnerName.toLowerCase().includes(search.toLowerCase()));
@@ -152,12 +186,23 @@ export const PartnerReceivablesTab = () => {
                                         </td>
                                         <td className="p-6 text-xs text-zinc-400 font-medium">{new Date(partner.oldestDate).toLocaleDateString()}</td>
                                         <td className="p-6 text-right">
-                                            <button 
-                                                onClick={() => setSelectedPartner(partner)}
-                                                className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all"
-                                            >
-                                                Record Receipt
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleGenerateClaimStatement(partner)}
+                                                    disabled={generatingClaim}
+                                                    title="Generate A4 B2B Claim Bill to recover partner collections"
+                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                >
+                                                    <Receipt size={12} />
+                                                    <span>Claim Bill</span>
+                                                </button>
+                                                <button 
+                                                    onClick={() => setSelectedPartner(partner)}
+                                                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+                                                >
+                                                    Record Receipt
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     {expandedPartnerId === partner.partnerId && (
@@ -204,6 +249,23 @@ export const PartnerReceivablesTab = () => {
                     onConfirm={(amount, method) => handleSettleRecovery(selectedPartner, amount, method)}
                     settling={settling}
                 />
+            )}
+
+            {/* ENTERPRISE B2B PARTNER CLAIM BILL VIEWER */}
+            {isClaimDocOpen && claimDocData && (
+                <CommercialDocumentViewer
+                    isOpen={isClaimDocOpen}
+                    onClose={() => {
+                        setIsClaimDocOpen(false);
+                        setClaimDocData(null);
+                    }}
+                    title={`B2B Partner Claim Bill - ${claimDocData?.partner?.name || 'Partner'}`}
+                    onWhatsAppShare={handleWhatsAppClaimShare}
+                    defaultLetterheadMode={claimDocData?.lab?.defaultLetterheadMode || "digital"}
+                    topMarginMm={claimDocData?.lab?.topMarginMm || 40}
+                >
+                    <PartnerClaimStatementA4 data={claimDocData} />
+                </CommercialDocumentViewer>
             )}
         </div>
     );

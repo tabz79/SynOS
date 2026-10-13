@@ -92,6 +92,54 @@ export const FinanceApi = {
     },
 
     /**
+     * Fetches detailed data for an A4 Patient Tax Invoice / Bill.
+     */
+    getInvoiceDocument: async (invoiceId) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/finance/bills/${invoiceId}/document`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load invoice document");
+        return response.json();
+    },
+
+    /**
+     * Generates a B2B Partner Claim Statement / Bill for a referral partner.
+     */
+    getPartnerClaimStatement: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/partner-claim-statement'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("Failed to generate partner claim statement");
+        return response.json();
+    },
+
+    /**
+     * Gets billing stationery and letterhead settings.
+     */
+    getStationerySettings: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load stationery settings");
+        return response.json();
+    },
+
+    /**
+     * Saves billing stationery and letterhead settings.
+     */
+    saveStationerySettings: async (settings) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(settings)
+        });
+        if (!response.ok) throw new Error("Failed to save stationery settings");
+        return response.json();
+    },
+
+    /**
      * Fetches vendor payables.
      */
     getVendorPayables: async () => {

@@ -275,5 +275,479 @@ namespace SynOS.Api.Controllers
 
             return Ok(result);
         }
+
+        #region Stationery & Billing Settings
+
+        [HttpGet("stationery-settings")]
+        public async Task<IActionResult> GetStationerySettings()
+        {
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            if (!System.IO.File.Exists(path))
+            {
+                var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+                var defaultSettings = new
+                {
+                    labLegalName = lab?.Name ?? "SynOS Diagnostic Centre & Laboratory",
+                    labTradeName = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
+                    address = lab?.Address ?? "Central Diagnostic Facility, Hyderabad, Telangana",
+                    phone = lab?.Phone ?? "+91 98765 43210",
+                    email = lab?.Email ?? "billing@synoslab.in",
+                    website = lab?.Website ?? "www.synoslab.in",
+                    gstin = "36AAAAA0000A1Z5",
+                    pan = "AAAAA0000A",
+                    bankName = "HDFC Bank",
+                    accountNumber = "50200012345678",
+                    ifscCode = "HDFC0001234",
+                    branch = "Main Branch, Khammam",
+                    accountHolderName = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
+                    upiId = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
+                    enableUpiQr = true,
+                    defaultLetterheadMode = "digital", // "digital" | "preprinted"
+                    topMarginMm = 40,
+                    bottomMarginMm = 15,
+                    termsAndConditions = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.\n3. In case of online payment, please mention invoice or statement reference number.\n4. Cheques are subject to realization.",
+                    signatoryTitle = "Authorised Signatory / Accounts Desk"
+                };
+                var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                await System.IO.File.WriteAllTextAsync(path, json);
+                return Content(json, "application/json");
+            }
+
+            var existing = await System.IO.File.ReadAllTextAsync(path);
+            return Content(existing, "application/json");
+        }
+
+        [HttpPost("stationery-settings")]
+        public async Task<IActionResult> SaveStationerySettings([FromBody] System.Text.Json.JsonElement settings)
+        {
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            var json = settings.ToString();
+            await System.IO.File.WriteAllTextAsync(path, json);
+            return Ok(new { message = "Billing stationery settings successfully saved." });
+        }
+
+        #endregion
+
+        #region Patient Tax Invoice Document
+
+        [HttpGet("{invoiceId}/document")]
+        public async Task<IActionResult> GetInvoiceDocument(Guid invoiceId)
+        {
+            var inv = await _context.Invoices
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.Patient)
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.Branch)
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.ReferralPartner)
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.Orders)
+                        .ThenInclude(o => o.Test)
+                            .ThenInclude(t => t.ModalityMaster)
+                .Include(i => i.Payments)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
+            if (inv == null)
+            {
+                // Fallback attempt: find invoice by VisitId
+                inv = await _context.Invoices
+                    .Include(i => i.Visit)
+                        .ThenInclude(v => v!.Patient)
+                    .Include(i => i.Visit)
+                        .ThenInclude(v => v!.Branch)
+                    .Include(i => i.Visit)
+                        .ThenInclude(v => v!.ReferralPartner)
+                    .Include(i => i.Visit)
+                        .ThenInclude(v => v!.Orders)
+                            .ThenInclude(o => o.Test)
+                                .ThenInclude(t => t.ModalityMaster)
+                    .Include(i => i.Payments)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(i => i.VisitId == invoiceId);
+            }
+
+            if (inv == null) return NotFound(new { message = $"Invoice {invoiceId} not found." });
+
+            var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var settings = await GetStationerySettingsInternalAsync(lab);
+
+            var payments = inv.Payments ?? new List<SynOS.Models.Entities.Payment>();
+            var totalCollected = payments.Sum(p => p.Amount);
+            var balanceDue = Math.Max(0, inv.Total - totalCollected);
+
+            var orders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
+            var lineItems = new List<object>();
+            int itemIndex = 1;
+
+            foreach (var ord in orders)
+            {
+                var testTitle = ord.Test?.TestName ?? ord.TestCode ?? "Diagnostic Investigation";
+                var dept = ord.Department ?? ord.Test?.Category ?? "Pathology";
+                var price = ord.Price;
+
+                lineItems.Add(new
+                {
+                    Index = itemIndex++,
+                    Code = ord.TestCode ?? ord.Test?.TestCode ?? "SRV",
+                    Name = testTitle,
+                    Department = dept,
+                    SacCode = "999312", // Standard GST SAC code for Medical & Healthcare Diagnostics
+                    Price = price,
+                    Discount = 0m,
+                    TaxPercent = 0m,
+                    Amount = price
+                });
+            }
+
+            var patient = inv.Visit?.Patient;
+            string patientName = patient != null ? $"{patient.FirstName} {patient.LastName}".Trim() : "Walk-in Patient";
+            string ageGender = "";
+            if (patient != null)
+            {
+                if (patient.DateOfBirth != default)
+                {
+                    int age = DateTime.UtcNow.Year - patient.DateOfBirth.Year;
+                    ageGender = $"{age} Yrs / {patient.Gender}";
+                }
+                else
+                {
+                    ageGender = patient.Gender ?? "";
+                }
+            }
+
+            var billNo = $"BILL-{inv.CreatedAt:yyyyMMdd}-{inv.InvoiceId.ToString().Substring(0, 4).ToUpper()}";
+            var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={balanceDue:F2}&cu=INR&tn={billNo}";
+
+            return Ok(new
+            {
+                InvoiceId = inv.InvoiceId,
+                BillNumber = billNo,
+                Date = inv.CreatedAt,
+                DueDate = inv.DueDate != default ? inv.DueDate : inv.CreatedAt.AddDays(15),
+                Status = balanceDue <= 0 ? "Paid" : (totalCollected > 0 ? "Partial" : "Pending"),
+                Currency = "INR",
+                
+                // Stationery & Lab Profile
+                Lab = settings,
+
+                // Patient Profile
+                Patient = new
+                {
+                    Name = patientName,
+                    Uhid = patient?.MRN ?? patient?.PatientId.ToString().Substring(0, 8).ToUpper() ?? "WALK-IN",
+                    AgeGender = ageGender,
+                    Phone = patient?.CurrentPhoneNumber ?? "N/A",
+                    Email = "",
+                    Token = inv.Visit?.Token ?? "",
+                    ReferringDoctor = inv.Visit?.ReferralPartner?.Name ?? "Direct Patient",
+                    PaymentCollectionModel = inv.Visit?.PaymentCollectionModel ?? "LabCollects",
+                    BranchName = inv.Visit?.Branch?.Name ?? "Main Facility"
+                },
+
+                // Line Items
+                Items = lineItems,
+
+                // Financial Totals
+                Financial = new
+                {
+                    GrossSubtotal = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total,
+                    DiscountAmount = inv.DiscountAmount,
+                    TaxableAmount = inv.NetAmount > 0 ? inv.NetAmount : inv.Total,
+                    CgstPercent = 0m,
+                    SgstPercent = 0m,
+                    CgstAmount = 0m,
+                    SgstAmount = 0m,
+                    TotalAmount = inv.Total,
+                    TotalCollected = totalCollected,
+                    BalanceDue = balanceDue,
+                    AmountInWords = NumberToIndianWords(inv.Total),
+                    BalanceInWords = NumberToIndianWords(balanceDue)
+                },
+
+                // Recorded Payments Breakdown
+                Payments = payments.Select(p => new
+                {
+                    PaymentId = p.PaymentId,
+                    Amount = p.Amount,
+                    Method = p.Method ?? "Cash",
+                    Date = p.ReceivedAt,
+                    Reference = !string.IsNullOrEmpty(p.ReceiptNo) ? p.ReceiptNo : "Drawer Cash"
+                }).ToList(),
+
+                UpiQrString = upiPayload
+            });
+        }
+
+        #endregion
+
+        #region B2B Partner Claim Statement Document
+
+        public class PartnerClaimStatementRequest
+        {
+            public Guid PartnerId { get; set; }
+            public List<Guid>? VisitIds { get; set; }
+            public DateTime? StartDate { get; set; }
+            public DateTime? EndDate { get; set; }
+        }
+
+        [HttpPost("partner-claim-statement")]
+        public async Task<IActionResult> GetPartnerClaimStatement([FromBody] PartnerClaimStatementRequest request)
+        {
+            if (request == null || request.PartnerId == Guid.Empty)
+            {
+                return BadRequest(new { message = "Valid PartnerId is required." });
+            }
+
+            var partner = await _context.ReferralPartners
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ReferralPartnerId == request.PartnerId);
+
+            if (partner == null)
+            {
+                return NotFound(new { message = "Referral Partner not found." });
+            }
+
+            var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var settings = await GetStationerySettingsInternalAsync(lab);
+
+            // Query matching invoices/visits
+            var query = _context.Invoices
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.Patient)
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.Orders)
+                        .ThenInclude(o => o.Test)
+                .Include(i => i.Payments)
+                .AsNoTracking()
+                .Where(i => i.Visit != null && i.Visit.ReferralPartnerId == request.PartnerId);
+
+            if (request.VisitIds != null && request.VisitIds.Count > 0)
+            {
+                query = query.Where(i => request.VisitIds.Contains(i.VisitId));
+            }
+            else
+            {
+                if (request.StartDate.HasValue) query = query.Where(i => i.CreatedAt >= request.StartDate.Value);
+                if (request.EndDate.HasValue) query = query.Where(i => i.CreatedAt <= request.EndDate.Value);
+            }
+
+            var invoices = await query.OrderByDescending(i => i.CreatedAt).ToListAsync();
+
+            // Fetch referral commission facts
+            var visitIds = invoices.Select(i => i.VisitId).Distinct().ToList();
+            var referralFacts = await _context.ReferralPayableFacts
+                .AsNoTracking()
+                .Where(f => visitIds.Contains(f.SourceVisitId))
+                .GroupBy(f => f.SourceVisitId)
+                .Select(g => new { VisitId = g.Key, Commission = g.Sum(x => x.Amount) })
+                .ToDictionaryAsync(x => x.VisitId, x => x.Commission);
+
+            var items = new List<object>();
+            decimal totalGross = 0;
+            decimal totalCommission = 0;
+            decimal totalPaid = 0;
+
+            int lineIndex = 1;
+            foreach (var inv in invoices)
+            {
+                var payments = inv.Payments ?? new List<SynOS.Models.Entities.Payment>();
+                var paid = payments.Sum(p => p.Amount);
+                var gross = inv.Total;
+                
+                referralFacts.TryGetValue(inv.VisitId, out var commCut);
+
+                // If commission fact is 0, estimate from partner default commission if available
+                if (commCut == 0 && partner.DefaultCommissionPercentage > 0)
+                {
+                    commCut = gross * (partner.DefaultCommissionPercentage / 100m);
+                }
+
+                var netPayableToLab = Math.Max(0, gross - commCut);
+
+                totalGross += gross;
+                totalCommission += commCut;
+                totalPaid += paid;
+
+                var orders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
+                var tests = orders.Select(o => o.Test?.TestName ?? o.TestCode ?? "Investigation").ToList();
+                string testSummary = tests.Count > 0 ? string.Join(", ", tests) : "Routine Lab Investigation";
+
+                var pt = inv.Visit?.Patient;
+                string ptName = pt != null ? $"{pt.FirstName} {pt.LastName}".Trim() : "Patient";
+                string ageGen = pt != null ? $"{DateTime.UtcNow.Year - pt.DateOfBirth.Year}Y/{pt.Gender}" : "";
+
+                items.Add(new
+                {
+                    Index = lineIndex++,
+                    InvoiceId = inv.InvoiceId,
+                    VisitId = inv.VisitId,
+                    BillNumber = $"BILL-{inv.CreatedAt:yyyyMMdd}-{inv.InvoiceId.ToString().Substring(0, 4).ToUpper()}",
+                    Token = inv.Visit?.Token ?? "",
+                    Date = inv.CreatedAt,
+                    PatientName = ptName,
+                    AgeGender = ageGen,
+                    Investigations = testSummary,
+                    GrossAmount = gross,
+                    CommissionCut = commCut,
+                    NetPayableToLab = netPayableToLab,
+                    IsPrepaidByPartner = inv.Visit?.PaymentCollectionModel == "PartnerCollects"
+                });
+            }
+
+            var netClaimDue = Math.Max(0, totalGross - totalCommission - totalPaid);
+            var now = DateTime.UtcNow;
+            var safePartner = (partner.Name ?? "PRT").Replace(" ", "");
+            var pCode = safePartner.Substring(0, Math.Min(3, safePartner.Length)).ToUpper();
+            var statementNo = $"CLM-{now:yyyyMM}-{pCode}{now:ddHHmm}";
+
+            var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={netClaimDue:F2}&cu=INR&tn={statementNo}";
+
+            return Ok(new
+            {
+                StatementNumber = statementNo,
+                Date = now,
+                DueDate = now.AddDays(15),
+                BillingPeriod = request.StartDate.HasValue && request.EndDate.HasValue 
+                    ? $"{request.StartDate.Value:dd MMM yyyy} to {request.EndDate.Value:dd MMM yyyy}" 
+                    : $"Transactions as of {now:dd MMM yyyy}",
+                
+                Lab = settings,
+
+                Partner = new
+                {
+                    PartnerId = partner.ReferralPartnerId,
+                    Name = partner.Name,
+                    ClinicName = !string.IsNullOrEmpty(partner.ClinicName) ? partner.ClinicName : $"{partner.Name}'s Clinic / Practice",
+                    Address = !string.IsNullOrEmpty(partner.Location) ? partner.Location : "Registered Medical Practice",
+                    Phone = partner.ContactInfo ?? "N/A",
+                    Email = "N/A",
+                    CommissionModel = partner.PaymentCollectionModel ?? "PartnerCollects"
+                },
+
+                Items = items,
+
+                Summary = new
+                {
+                    TotalVisitsCount = items.Count,
+                    TotalGrossBilled = totalGross,
+                    TotalCommissionCut = totalCommission,
+                    TotalPaid = totalPaid,
+                    NetClaimDue = netClaimDue,
+                    AmountInWords = NumberToIndianWords(netClaimDue)
+                },
+
+                UpiQrString = upiPayload
+            });
+        }
+
+        #endregion
+
+        #region Internal Stationery Helper & Number to Indian Words
+
+        private class InternalStationerySettings
+        {
+            public string LabLegalName { get; set; } = "SynOS Diagnostic Centre & Laboratory";
+            public string LabTradeName { get; set; } = "Advanced Pathology & Imaging Services";
+            public string Address { get; set; } = "Central Diagnostic Facility, Hyderabad, Telangana";
+            public string Phone { get; set; } = "+91 98765 43210";
+            public string Email { get; set; } = "billing@synoslab.in";
+            public string Website { get; set; } = "www.synoslab.in";
+            public string Gstin { get; set; } = "36AAAAA0000A1Z5";
+            public string Pan { get; set; } = "AAAAA0000A";
+            public string BankName { get; set; } = "HDFC Bank";
+            public string AccountNumber { get; set; } = "50200012345678";
+            public string IfscCode { get; set; } = "HDFC0001234";
+            public string Branch { get; set; } = "Main Branch, Khammam";
+            public string AccountHolderName { get; set; } = "SynOS Healthcare Diagnostic Services";
+            public string UpiId { get; set; } = "synoslab@hdfcbank";
+            public bool EnableUpiQr { get; set; } = true;
+            public string DefaultLetterheadMode { get; set; } = "digital";
+            public int TopMarginMm { get; set; } = 40;
+            public int BottomMarginMm { get; set; } = 15;
+            public string TermsAndConditions { get; set; } = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.";
+            public string SignatoryTitle { get; set; } = "Authorised Signatory / Accounts Desk";
+        }
+
+        private async Task<InternalStationerySettings> GetStationerySettingsInternalAsync(SynOS.Models.Entities.LabProfile? lab)
+        {
+            var res = new InternalStationerySettings();
+            if (lab != null)
+            {
+                if (!string.IsNullOrEmpty(lab.Name)) res.LabLegalName = lab.Name;
+                if (!string.IsNullOrEmpty(lab.Tagline)) res.LabTradeName = lab.Tagline;
+                if (!string.IsNullOrEmpty(lab.Address)) res.Address = lab.Address;
+                if (!string.IsNullOrEmpty(lab.Phone)) res.Phone = lab.Phone;
+                if (!string.IsNullOrEmpty(lab.Email)) res.Email = lab.Email;
+                if (!string.IsNullOrEmpty(lab.Website)) res.Website = lab.Website;
+                if (!string.IsNullOrEmpty(lab.UpiId)) res.UpiId = lab.UpiId;
+                if (lab.HeaderHeightMm > 0) res.TopMarginMm = lab.HeaderHeightMm;
+            }
+
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            if (System.IO.File.Exists(path))
+            {
+                try
+                {
+                    var content = await System.IO.File.ReadAllTextAsync(path);
+                    using var doc = System.Text.Json.JsonDocument.Parse(content);
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("labLegalName", out var v) && v.GetString() is string s1 && !string.IsNullOrEmpty(s1)) res.LabLegalName = s1;
+                    if (root.TryGetProperty("labTradeName", out v) && v.GetString() is string s2 && !string.IsNullOrEmpty(s2)) res.LabTradeName = s2;
+                    if (root.TryGetProperty("address", out v) && v.GetString() is string s3 && !string.IsNullOrEmpty(s3)) res.Address = s3;
+                    if (root.TryGetProperty("phone", out v) && v.GetString() is string s4 && !string.IsNullOrEmpty(s4)) res.Phone = s4;
+                    if (root.TryGetProperty("email", out v) && v.GetString() is string s5 && !string.IsNullOrEmpty(s5)) res.Email = s5;
+                    if (root.TryGetProperty("gstin", out v) && v.GetString() is string s6 && !string.IsNullOrEmpty(s6)) res.Gstin = s6;
+                    if (root.TryGetProperty("pan", out v) && v.GetString() is string s7 && !string.IsNullOrEmpty(s7)) res.Pan = s7;
+                    if (root.TryGetProperty("bankName", out v) && v.GetString() is string s8 && !string.IsNullOrEmpty(s8)) res.BankName = s8;
+                    if (root.TryGetProperty("accountNumber", out v) && v.GetString() is string s9 && !string.IsNullOrEmpty(s9)) res.AccountNumber = s9;
+                    if (root.TryGetProperty("ifscCode", out v) && v.GetString() is string s10 && !string.IsNullOrEmpty(s10)) res.IfscCode = s10;
+                    if (root.TryGetProperty("branch", out v) && v.GetString() is string s11 && !string.IsNullOrEmpty(s11)) res.Branch = s11;
+                    if (root.TryGetProperty("accountHolderName", out v) && v.GetString() is string s12 && !string.IsNullOrEmpty(s12)) res.AccountHolderName = s12;
+                    if (root.TryGetProperty("upiId", out v) && v.GetString() is string s13 && !string.IsNullOrEmpty(s13)) res.UpiId = s13;
+                    if (root.TryGetProperty("enableUpiQr", out v) && v.ValueKind == System.Text.Json.JsonValueKind.True) res.EnableUpiQr = true;
+                    if (root.TryGetProperty("defaultLetterheadMode", out v) && v.GetString() is string s14 && !string.IsNullOrEmpty(s14)) res.DefaultLetterheadMode = s14;
+                    if (root.TryGetProperty("topMarginMm", out v) && v.TryGetInt32(out var num)) res.TopMarginMm = num;
+                    if (root.TryGetProperty("termsAndConditions", out v) && v.GetString() is string s15 && !string.IsNullOrEmpty(s15)) res.TermsAndConditions = s15;
+                    if (root.TryGetProperty("signatoryTitle", out v) && v.GetString() is string s16 && !string.IsNullOrEmpty(s16)) res.SignatoryTitle = s16;
+                }
+                catch { }
+            }
+
+            return res;
+        }
+
+        private static string NumberToIndianWords(decimal number)
+        {
+            if (number == 0) return "Zero Rupees Only";
+            long whole = (long)Math.Floor(number);
+            int fraction = (int)Math.Round((number - whole) * 100);
+
+            string words = ConvertWholeNumberToIndianWords(whole) + " Rupees";
+            if (fraction > 0)
+            {
+                words += " and " + ConvertWholeNumberToIndianWords(fraction) + " Paise";
+            }
+            return words + " Only";
+        }
+
+        private static string ConvertWholeNumberToIndianWords(long n)
+        {
+            if (n == 0) return "";
+            if (n < 0) return "Minus " + ConvertWholeNumberToIndianWords(Math.Abs(n));
+
+            string[] units = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", 
+                               "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen" };
+            string[] tens = { "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety" };
+
+            if (n < 20) return units[n];
+            if (n < 100) return (tens[n / 10] + " " + units[n % 10]).Trim();
+            if (n < 1000) return (units[n / 100] + " Hundred " + ConvertWholeNumberToIndianWords(n % 100)).Trim();
+            if (n < 100000) return (ConvertWholeNumberToIndianWords(n / 1000) + " Thousand " + ConvertWholeNumberToIndianWords(n % 1000)).Trim();
+            if (n < 10000000) return (ConvertWholeNumberToIndianWords(n / 100000) + " Lakh " + ConvertWholeNumberToIndianWords(n % 100000)).Trim();
+            return (ConvertWholeNumberToIndianWords(n / 10000000) + " Crore " + ConvertWholeNumberToIndianWords(n % 10000000)).Trim();
+        }
+
+        #endregion
     }
 }
