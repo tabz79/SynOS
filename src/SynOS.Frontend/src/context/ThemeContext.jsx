@@ -3,9 +3,13 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-    // Default to 'dark' if no preference found (Canon Requirement)
+    // Default to 'light' mode unless explicitly chosen by user
     const [theme, setTheme] = useState(() => {
-        return localStorage.getItem('synos_theme') || 'dark';
+        const isExplicit = localStorage.getItem('synos_theme_explicit') === 'true';
+        if (isExplicit) {
+            return localStorage.getItem('synos_theme') || 'light';
+        }
+        return 'light';
     });
 
     useEffect(() => {
@@ -21,9 +25,14 @@ export function ThemeProvider({ children }) {
         localStorage.setItem('synos_theme', theme);
     }, [theme]);
 
+    const handleSetTheme = (newTheme) => {
+        localStorage.setItem('synos_theme_explicit', 'true');
+        setTheme(newTheme);
+    };
+
     const value = {
         theme,
-        setTheme: (newTheme) => setTheme(newTheme),
+        setTheme: handleSetTheme,
     };
 
     return (

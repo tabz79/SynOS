@@ -58,6 +58,8 @@ namespace SynOS.Models.DTOs.Economics
     public class DepartmentProfitabilityDto
     {
         public string DepartmentName { get; set; } = string.Empty;
+        public string Category { get; set; } = "Pathology"; // "Pathology" or "Radiology"
+        public string Modality { get; set; } = string.Empty;
         public decimal BilledRevenue { get; set; }
         public decimal CashCollected { get; set; }
         public decimal DirectCost { get; set; }

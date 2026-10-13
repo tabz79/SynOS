@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { 
     Search, 
     Filter, 
@@ -16,7 +16,11 @@ import {
     TrendingUp,
     Wallet,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    Building2,
+    Beaker,
+    Activity,
+    FileSpreadsheet
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -24,6 +28,7 @@ import { DepartmentOverview } from './components/FinanceShared';
 import { FinanceApi } from '@/api/finance';
 import { FinanceUtils } from './components/FinanceUtils';
 import { useAuth } from '@/context/AuthContext';
+import { AdminApi } from '@/api/admin';
 
 // --- SCREENS ---
 
@@ -258,24 +263,60 @@ const FilterTab = ({ label, count, isActive, onClick }) => (
 
 export const BillsCollectionsScreen = () => {
     const { user } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
+    
+    // Read pre-filtered parameters from URL query params (e.g. from FinanceOverview clicks)
+    const initialDept = searchParams.get('department') || 'All';
+    const initialMod = searchParams.get('modality') || 'All';
+    const initialBranch = searchParams.get('branchId') || 'All';
+
     const [bills, setBills] = useState([]);
+    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBill, setSelectedBill] = useState(null);
+    
+    // Filter states
     const [statusFilter, setStatusFilter] = useState('All');
     const [categoryFilter, setCategoryFilter] = useState('All');
-    const [dateRange, setDateRange] = useState('All Time');
+    const [departmentFilter, setDepartmentFilter] = useState(initialDept);
+    const [modalityFilter, setModalityFilter] = useState(initialMod);
+    const [branchFilter, setBranchFilter] = useState(initialBranch);
+    const [dateRange, setDateRange] = useState('Today');
     const [customDates, setCustomDates] = useState({ start: '', end: '' });
+    const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        loadBranches();
+    }, []);
 
     useEffect(() => {
         loadBills();
-    }, []);
+    }, [branchFilter, departmentFilter, modalityFilter, dateRange, customDates]);
+
+    const loadBranches = async () => {
+        try {
+            const data = await AdminApi.getBranches();
+            setBranches(data || []);
+        } catch (e) {
+            console.error("Failed to load branches for Bills & Collections", e);
+        }
+    };
 
     const loadBills = async () => {
         try {
             setLoading(true);
-            const data = await FinanceApi.getFinanceBills();
-            setBills(data);
+            const params = {};
+            if (branchFilter !== 'All') params.branchId = branchFilter;
+            if (departmentFilter !== 'All') params.department = departmentFilter;
+            if (modalityFilter !== 'All') params.modality = modalityFilter;
+            if (dateRange !== 'All Time' && dateRange !== 'Custom Range') params.preset = dateRange;
+            if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
+                params.startDate = customDates.start;
+                params.endDate = customDates.end;
+            }
+            const data = await FinanceApi.getFinanceBills(params);
+            setBills(Array.isArray(data) ? data : (data?.bills || []));
         } catch (err) {
             console.error("Failed to load bills:", err);
         } finally {
@@ -290,18 +331,12 @@ export const BillsCollectionsScreen = () => {
 
     const confirmCollection = async (amount) => {
         if (!selectedBill) return;
-        // Check if it's a visit-based bill or a partner receivable
-        // For now, these are all Visit Invoices. 
-        // We need a SettleInvoice endpoint in SettlementsController or similar.
-        // Actually, VisitsController has RecordPayment.
-        // Let's use the visit payment API.
-        
         const response = await fetch(`/api/v1/visits/${selectedBill.visitId}/payment`, {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify({ 
                 amount, 
-                paymentMethod: 'BankTransfer', // Default for Finance Hub
+                paymentMethod: 'BankTransfer',
                 notes: `Institutional settlement from Finance Hub`
             })
         });
@@ -310,26 +345,56 @@ export const BillsCollectionsScreen = () => {
         await loadBills();
     };
 
+    // Client-side filtration for fast reactive updates
     const filteredBills = bills.filter(b => {
         // 1. Status Filter
         if (statusFilter !== 'All') {
             const statusMap = {
-                'Pending': 'PENDINGPAYMENT',
-                'Partial': 'PARTIALLYPAID',
-                'Settled': 'PAID'
+                'Pending': 'PENDING',
+                'Partial': 'PARTIAL',
+                'Settled': 'SETTLED'
             };
-            if (b.status.toUpperCase() !== statusMap[statusFilter]) return false;
+            const currentStatus = (b.status || '').toUpperCase();
+            if (statusMap[statusFilter] && !currentStatus.includes(statusMap[statusFilter])) return false;
         }
 
         // 2. Category Filter (Direct, Partner, Corporate, Insurance)
         if (categoryFilter !== 'All') {
-            if (categoryFilter === 'Direct' && b.partnerName !== 'Direct Institutional') return false;
-            if (categoryFilter === 'Partner' && b.partnerName === 'Direct Institutional') return false;
-            if (categoryFilter === 'Corporate' && !b.partnerName.toUpperCase().includes('CORP')) return false;
-            if (categoryFilter === 'Insurance' && !b.partnerName.toUpperCase().includes('INSUR')) return false;
+            const pCat = b.partnerCategory || (b.partnerName === 'Direct Patient' || b.partnerName === 'Direct Institutional' ? 'Direct' : 'Partner');
+            if (categoryFilter === 'Direct' && pCat !== 'Direct') return false;
+            if (categoryFilter === 'Partner' && pCat !== 'Partner') return false;
+            if (categoryFilter === 'Corporate' && pCat !== 'Corporate') return false;
+            if (categoryFilter === 'Insurance' && pCat !== 'Insurance') return false;
         }
 
-        // 3. Date Filter
+        // 3. Department Filter
+        if (departmentFilter !== 'All') {
+            const bDept = (b.department || '').toLowerCase();
+            if (!bDept.includes(departmentFilter.toLowerCase())) return false;
+        }
+
+        // 4. Modality Filter
+        if (modalityFilter !== 'All') {
+            const bMod = (b.modality || '').toLowerCase();
+            const targetMod = modalityFilter.toLowerCase();
+            if (!bMod.includes(targetMod)) return false;
+        }
+
+        // 5. Branch Filter
+        if (branchFilter !== 'All') {
+            if (b.branchId && b.branchId !== branchFilter) return false;
+        }
+
+        // 6. Search Query
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            const matchName = (b.patientName || '').toLowerCase().includes(query);
+            const matchBill = (b.billNumber || '').toLowerCase().includes(query);
+            const matchPartner = (b.partnerName || '').toLowerCase().includes(query);
+            if (!matchName && !matchBill && !matchPartner) return false;
+        }
+
+        // 7. Date Filter (client-side safety check)
         const billDate = new Date(b.date);
         const today = new Date();
         today.setHours(0,0,0,0);
@@ -347,8 +412,6 @@ export const BillsCollectionsScreen = () => {
         } else if (dateRange === 'This Month') {
             const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
             if (billDate < monthStart) return false;
-        } else if (dateRange === 'All Time') {
-            return true;
         } else if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
             const start = new Date(customDates.start);
             const end = new Date(customDates.end);
@@ -359,110 +422,351 @@ export const BillsCollectionsScreen = () => {
         return true;
     });
 
+    // Summary calculation for the filtered dataset
+    const totalBilled = filteredBills.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
+    const totalCollected = filteredBills.reduce((sum, b) => sum + (Number(b.collectedAmount) || 0), 0);
+    const totalCash = filteredBills.reduce((sum, b) => sum + (Number(b.cashAmount) || 0), 0);
+    const totalOnline = filteredBills.reduce((sum, b) => sum + (Number(b.onlineAmount) || 0), 0);
+    const totalPrepaid = filteredBills.reduce((sum, b) => sum + (Number(b.prepaidAmount) || 0), 0);
+    const totalPending = filteredBills.reduce((sum, b) => sum + (Number(b.pendingAmount) || 0), 0);
+    const totalReferralCut = filteredBills.reduce((sum, b) => sum + (Number(b.referralCommissionCut) || 0), 0);
+
+    // Download Summary CSV Export
+    const handleDownloadSummary = () => {
+        const headers = [
+            "Bill Number",
+            "Date",
+            "Patient Name",
+            "Facility / Branch",
+            "Department",
+            "Modality",
+            "Account / Partner",
+            "Total Billed (INR)",
+            "Cash Collected (INR)",
+            "Online / Digital (INR)",
+            "Prepaid Used (INR)",
+            "Pending Due (INR)",
+            "Doctor / Partner Cut (INR)",
+            "Status"
+        ];
+
+        const rows = filteredBills.map(b => [
+            `"${b.billNumber || ''}"`,
+            `"${new Date(b.date).toLocaleDateString()}"`,
+            `"${(b.patientName || '').replace(/"/g, '""')}"`,
+            `"${(b.branchName || 'Main Facility').replace(/"/g, '""')}"`,
+            `"${b.department || ''}"`,
+            `"${b.modality || ''}"`,
+            `"${(b.partnerName || '').replace(/"/g, '""')}"`,
+            b.totalAmount || 0,
+            b.cashAmount || 0,
+            b.onlineAmount || 0,
+            b.prepaidAmount || 0,
+            b.pendingAmount || 0,
+            b.referralCommissionCut || 0,
+            `"${b.status || ''}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        const dateTag = dateRange.toLowerCase().replace(/\s+/g, '_');
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `synos_bills_summary_${dateTag}_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
-        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Bills & Collections</h1>
-                <p className="text-sm text-zinc-500 font-medium">Track institutional billing, pending dues, and collections.</p>
+        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
+            {/* Header & Download Bar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Bills & Collections</h1>
+                    <p className="text-xs text-zinc-500 font-medium">
+                        Real-time operational ledger with branch, department, and modality transaction breakdowns.
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleDownloadSummary}
+                        disabled={filteredBills.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Download size={15} />
+                        <span>Download Summary ({filteredBills.length})</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Action/Filter Bar */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
-                <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
-                    {['All', 'Pending', 'Partial', 'Settled'].map(f => (
-                        <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
-                    ))}
-                    <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-2 hidden lg:block" />
-                    {['All', 'Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
-                        <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} variant="outline" />
-                    ))}
+            {/* KPI METRIC STRIP (Cash vs Online vs Prepaid vs Referral Cut) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Billed</p>
+                    <p className="text-lg font-black text-zinc-900 dark:text-white mt-1">₹{totalBilled.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">{filteredBills.length} Invoices</span>
                 </div>
-                <div className="flex items-center gap-2 px-2">
-                    {dateRange === 'Custom Range' && (
-                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
-                            <input 
-                                type="date" 
-                                value={customDates.start}
-                                onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
-                                className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
-                            />
-                            <span className="text-zinc-400 text-[10px]">to</span>
-                            <input 
-                                type="date" 
-                                value={customDates.end}
-                                onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
-                                className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
-                            />
-                        </div>
-                    )}
-                    <select 
-                        value={dateRange}
-                        onChange={(e) => setDateRange(e.target.value)}
-                        className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-3 py-1.5 text-xs font-medium dark:text-zinc-300 outline-none focus:border-synos-primary transition-all"
-                    >
-                        <option>Today</option>
-                        <option>Yesterday</option>
-                        <option>This Week</option>
-                        <option>This Month</option>
-                        <option>All Time</option>
-                        <option>Custom Range</option>
-                    </select>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collected</p>
+                    <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{totalCash.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Physical Drawer</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">Digital / Online</p>
+                    <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1">₹{totalOnline.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">UPI / POS / Cards</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Prepaid Wallet</p>
+                    <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">₹{totalPrepaid.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Token Redemptions</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Referral Cut</p>
+                    <p className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">₹{totalReferralCut.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Partner Commissions</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Pending Dues</p>
+                    <p className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalPending.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Receivables Balance</span>
+                </div>
+            </div>
+
+            {/* Comprehensive Multi-Dimensional Filters Bar */}
+            <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
+                {/* Top Row: Primary Category & Status Tabs */}
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+                        {['All', 'Pending', 'Partial', 'Settled'].map(f => (
+                            <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
+                        ))}
+                        <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-2 hidden lg:block" />
+                        {['All', 'Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
+                            <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} variant="outline" />
+                        ))}
+                    </div>
+
+                    {/* Search Input */}
+                    <div className="relative min-w-[220px]">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="Search patient or bill no..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 outline-none focus:border-synos-primary transition-all"
+                        />
+                    </div>
+                </div>
+
+                {/* Bottom Row: Branch, Department, Modality & Date Selectors */}
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                    {/* Branch Selector */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <Building2 size={13} className="text-zinc-400" />
+                        <select
+                            value={branchFilter}
+                            onChange={(e) => setBranchFilter(e.target.value)}
+                            className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                        >
+                            <option value="All">All Branches</option>
+                            {branches.map(b => (
+                                <option key={b.branchId} value={b.branchId}>{b.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Department Selector */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <Beaker size={13} className="text-zinc-400" />
+                        <select
+                            value={departmentFilter}
+                            onChange={(e) => {
+                                setDepartmentFilter(e.target.value);
+                                setModalityFilter('All');
+                            }}
+                            className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                        >
+                            <option value="All">All Departments</option>
+                            <option value="Pathology">Pathology</option>
+                            <option value="Radiology">Radiology</option>
+                        </select>
+                    </div>
+
+                    {/* Modality Selector */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <Activity size={13} className="text-zinc-400" />
+                        <select
+                            value={modalityFilter}
+                            onChange={(e) => setModalityFilter(e.target.value)}
+                            className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                        >
+                            <option value="All">All Modalities / Disciplines</option>
+                            {departmentFilter !== 'Radiology' && (
+                                <optgroup label="Pathology Disciplines">
+                                    <option value="Biochemistry">Biochemistry</option>
+                                    <option value="Hematology">Hematology</option>
+                                    <option value="Microbiology">Microbiology</option>
+                                    <option value="Histopathology">Histopathology</option>
+                                </optgroup>
+                            )}
+                            {departmentFilter !== 'Pathology' && (
+                                <optgroup label="Radiology Modalities">
+                                    <option value="X-Ray">X-Ray</option>
+                                    <option value="CT Scan">CT Scan</option>
+                                    <option value="Ultrasound">Ultrasound</option>
+                                    <option value="MRI">MRI</option>
+                                </optgroup>
+                            )}
+                        </select>
+                    </div>
+
+                    {/* Date Range Selector */}
+                    <div className="flex items-center gap-2 ml-auto">
+                        {dateRange === 'Custom Range' && (
+                            <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                                <input 
+                                    type="date" 
+                                    value={customDates.start}
+                                    onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
+                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
+                                />
+                                <span className="text-zinc-400 text-[10px]">to</span>
+                                <input 
+                                    type="date" 
+                                    value={customDates.end}
+                                    onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
+                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
+                                />
+                            </div>
+                        )}
+                        <select 
+                            value={dateRange}
+                            onChange={(e) => setDateRange(e.target.value)}
+                            className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold dark:text-zinc-300 outline-none focus:border-synos-primary transition-all cursor-pointer"
+                        >
+                            <option>Today</option>
+                            <option>Yesterday</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                            <option>All Time</option>
+                            <option>Custom Range</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             {/* Main Table Surface */}
             <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
                 {loading ? (
-                    <div className="p-20 text-center text-zinc-500 animate-pulse">Synchronizing bill ledger...</div>
+                    <div className="p-20 text-center text-zinc-500 animate-pulse text-xs font-bold uppercase tracking-wider">
+                        Synchronizing bill ledger...
+                    </div>
+                ) : filteredBills.length === 0 ? (
+                    <div className="p-16 text-center space-y-2">
+                        <AlertCircle className="w-8 h-8 text-zinc-400 mx-auto opacity-40" />
+                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">No matching bills found</p>
+                        <p className="text-[11px] text-zinc-400">Try adjusting the department, modality, branch, or date range filter.</p>
+                    </div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Bill No</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Patient</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner/Account</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Total</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Collected</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Pending</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Status</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Date</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
-                            {filteredBills.map((bill) => (
-                                <tr key={bill.billId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
-                                    <td className="p-4 text-xs font-bold dark:text-zinc-200">{bill.billNumber}</td>
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
-                                                {bill.patientName.substring(0, 2).toUpperCase()}
-                                            </div>
-                                            <span className="text-xs font-semibold dark:text-zinc-200">{bill.patientName}</span>
-                                        </div>
-                                    </td>
-                                    <td className="p-4 text-xs text-zinc-500">{bill.partnerName}</td>
-                                    <td className="p-4 text-xs font-bold text-right dark:text-zinc-300">₹{bill.totalAmount.toLocaleString()}</td>
-                                    <td className="p-4 text-xs font-semibold text-right text-emerald-500">₹{bill.collectedAmount.toLocaleString()}</td>
-                                    <td className="p-4 text-xs font-bold text-right text-rose-500">₹{bill.pendingAmount.toLocaleString()}</td>
-                                    <td className="p-4 text-center">
-                                        <StatusBadge status={bill.status} />
-                                    </td>
-                                    <td className="p-4 text-xs text-zinc-400">{new Date(bill.date).toLocaleDateString()}</td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button 
-                                                onClick={() => handleRecordCollection(bill)}
-                                                className="px-3 py-1.5 rounded-lg bg-synos-primary/10 text-synos-primary text-[10px] font-bold uppercase tracking-wider hover:bg-synos-primary hover:text-white transition-all"
-                                            >
-                                                Collect
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Bill No</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Patient</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Dept / Modality</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Total</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Payment Breakup</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Pending</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Status</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Date</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                                {filteredBills.map((bill) => (
+                                    <tr key={bill.billId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
+                                        <td className="p-4 text-xs font-bold dark:text-zinc-200">
+                                            {bill.billNumber}
+                                            {bill.branchName && (
+                                                <p className="text-[10px] font-normal text-zinc-400 mt-0.5">{bill.branchName}</p>
+                                            )}
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
+                                                    {(bill.patientName || 'PA').substring(0, 2).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <span className="text-xs font-semibold dark:text-zinc-200 block">{bill.patientName}</span>
+                                                    {bill.token && <span className="text-[9px] text-zinc-400 font-mono">Token: {bill.token}</span>}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                {bill.modality || bill.department || 'General'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-xs text-zinc-500">
+                                            <span>{bill.partnerName}</span>
+                                            {bill.referralCommissionCut > 0 && (
+                                                <p className="text-[10px] text-amber-500 font-medium mt-0.5">
+                                                    Cut: ₹{bill.referralCommissionCut.toLocaleString()}
+                                                </p>
+                                            )}
+                                        </td>
+                                        <td className="p-4 text-xs font-black text-right dark:text-zinc-200">
+                                            ₹{bill.totalAmount.toLocaleString()}
+                                        </td>
+                                        <td className="p-4 text-right">
+                                            <p className="text-xs font-bold text-emerald-500">
+                                                ₹{bill.collectedAmount.toLocaleString()}
+                                            </p>
+                                            <div className="flex items-center justify-end gap-1.5 text-[9px] font-medium text-zinc-400 mt-0.5">
+                                                {bill.cashAmount > 0 && <span>Cash: ₹{bill.cashAmount.toLocaleString()}</span>}
+                                                {bill.onlineAmount > 0 && <span>Online: ₹{bill.onlineAmount.toLocaleString()}</span>}
+                                                {bill.prepaidAmount > 0 && <span>Prepaid: ₹{bill.prepaidAmount.toLocaleString()}</span>}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-xs font-black text-right text-rose-500">
+                                            ₹{bill.pendingAmount.toLocaleString()}
+                                        </td>
+                                        <td className="p-4 text-center">
+                                            <StatusBadge status={bill.status} />
+                                        </td>
+                                        <td className="p-4 text-xs text-zinc-400">
+                                            {new Date(bill.date).toLocaleDateString()}
+                                        </td>
+                                        {/* ALWAYS VISIBLE ACTIONS (Cleanly fixed visibility bug) */}
+                                        <td className="p-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                {bill.pendingAmount > 0 ? (
+                                                    <button 
+                                                        onClick={() => handleRecordCollection(bill)}
+                                                        className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-synos-primary/90 transition-all shadow-sm"
+                                                    >
+                                                        Collect
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleRecordCollection(bill)}
+                                                        className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/20 transition-all"
+                                                    >
+                                                        Details
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 

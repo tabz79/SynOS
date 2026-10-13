@@ -146,7 +146,34 @@ export const FinanceOverview = () => {
     const activePayrollLiability = Number(activePayrollRun?.totalGrossSalary) || 0;
     
     const totalAggregatedLiability = activeVendorsLiability + activeOverheadsLiability + activeDoctorPayouts + activePayrollLiability;
-    const deptList = profitability?.departmentProfitability || [];
+    const rawDeptList = profitability?.departmentProfitability || [];
+
+    // Fallback baseline departments if none loaded from API
+    const defaultPathology = [
+        { departmentName: 'Biochemistry', category: 'Pathology', modality: 'Biochemistry', billedRevenue: 260000, cashCollected: 215000, directCost: 57200, marginPercentage: 78.0, profitMultiplier: 2.8, totalTestsCompleted: 142 },
+        { departmentName: 'Hematology', category: 'Pathology', modality: 'Hematology', billedRevenue: 162500, cashCollected: 145000, directCost: 32500, marginPercentage: 80.0, profitMultiplier: 2.1, totalTestsCompleted: 98 },
+        { departmentName: 'Microbiology', category: 'Pathology', modality: 'Microbiology', billedRevenue: 97500, cashCollected: 82000, directCost: 17550, marginPercentage: 82.0, profitMultiplier: 1.4, totalTestsCompleted: 45 },
+        { departmentName: 'Histopathology', category: 'Pathology', modality: 'Histopathology', billedRevenue: 52000, cashCollected: 48000, directCost: 13000, marginPercentage: 75.0, profitMultiplier: 1.1, totalTestsCompleted: 16 }
+    ];
+
+    const defaultRadiology = [
+        { departmentName: 'X-Ray', category: 'Radiology', modality: 'X-Ray', billedRevenue: 78000, cashCollected: 72000, directCost: 11700, marginPercentage: 85.0, profitMultiplier: 1.2, totalTestsCompleted: 38 },
+        { departmentName: 'CT Scan', category: 'Radiology', modality: 'CT Scan', billedRevenue: 145000, cashCollected: 138000, directCost: 26100, marginPercentage: 82.0, profitMultiplier: 2.2, totalTestsCompleted: 24 },
+        { departmentName: 'Ultrasound', category: 'Radiology', modality: 'Ultrasound', billedRevenue: 68000, cashCollected: 64000, directCost: 8160, marginPercentage: 88.0, profitMultiplier: 1.3, totalTestsCompleted: 29 },
+        { departmentName: 'MRI', category: 'Radiology', modality: 'MRI', billedRevenue: 185000, cashCollected: 175000, directCost: 37000, marginPercentage: 80.0, profitMultiplier: 3.1, totalTestsCompleted: 12 }
+    ];
+
+    const pathologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'pathology' || ['biochemistry', 'hematology', 'microbiology', 'histopathology'].includes((d.departmentName || '').toLowerCase()));
+    const finalPathology = pathologyList.length ? pathologyList : defaultPathology;
+
+    const radiologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'radiology' || ['x-ray', 'ct scan', 'ultrasound', 'mri', 'radiology'].includes((d.departmentName || '').toLowerCase()));
+    const finalRadiology = radiologyList.length ? radiologyList : defaultRadiology;
+
+    const handleDeptClick = (dept) => {
+        const cat = dept.category || (['x-ray', 'ct scan', 'ultrasound', 'mri'].includes((dept.departmentName || '').toLowerCase()) ? 'Radiology' : 'Pathology');
+        const mod = dept.modality || dept.departmentName;
+        navigate(`/finance/revenue/bills?department=${encodeURIComponent(cat)}&modality=${encodeURIComponent(mod)}`);
+    };
 
     const handleExportPnl = () => {
         FinanceApi.exportProfitabilityPnl(null, null, isConsolidated ? null : activeOversightBranchId);
@@ -277,35 +304,120 @@ export const FinanceOverview = () => {
                 </div>
             </div>
 
-            {/* TEST DEPARTMENT PROFITABILITY MATRIX */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Test Department Profitability</h3>
-                    <span className="text-[10px] font-bold text-synos-primary">Profit Multiplier vs Lab Average</span>
+            {/* TEST DEPARTMENT & MODALITY PROFITABILITY MATRIX */}
+            <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+                    <div>
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                            Department & Modality Economics
+                        </h3>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">
+                            Hybrid matrix tracking sales volume, cash collections, and calculated operational margins. Click any card to drill down into bills.
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-synos-primary bg-synos-primary/10 px-2.5 py-1 rounded-full flex items-center gap-1">
+                            <Activity size={12} /> Live Modality Drilldown
+                        </span>
+                    </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {(deptList.length ? deptList : [
-                        { departmentName: 'Biochemistry', billedRevenue: 260000, directCost: 52000, marginPercentage: 80.0, profitMultiplier: 3.2, totalTestsCompleted: 142 },
-                        { departmentName: 'Hematology', billedRevenue: 162500, directCost: 32500, marginPercentage: 80.0, profitMultiplier: 2.1, totalTestsCompleted: 98 },
-                        { departmentName: 'Microbiology', billedRevenue: 97500, directCost: 29250, marginPercentage: 70.0, profitMultiplier: 1.4, totalTestsCompleted: 45 },
-                        { departmentName: 'Radiology', billedRevenue: 78000, directCost: 31200, marginPercentage: 60.0, profitMultiplier: 1.0, totalTestsCompleted: 28 },
-                        { departmentName: 'Histopathology', billedRevenue: 52000, directCost: 18200, marginPercentage: 65.0, profitMultiplier: 1.1, totalTestsCompleted: 16 }
-                    ]).map((dept, idx) => (
-                        <div key={idx} className="p-4 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-zinc-900 dark:text-white">{dept.departmentName}</span>
-                                <span className="text-[10px] font-extrabold bg-synos-primary/10 text-synos-primary px-2 py-0.5 rounded-full">{dept.profitMultiplier}x</span>
+
+                {/* ROW 1: PATHOLOGY DISCIPLINES */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <Beaker size={14} className="text-emerald-500" />
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                            Pathology Disciplines
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-medium">({finalPathology.length} Disciplines)</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {finalPathology.map((dept, idx) => (
+                            <div 
+                                key={idx} 
+                                onClick={() => handleDeptClick(dept)}
+                                className="p-4 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3 cursor-pointer hover:border-synos-primary/60 hover:shadow-md transition-all group relative overflow-hidden"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-bold text-zinc-900 dark:text-white group-hover:text-synos-primary transition-colors">
+                                            {dept.departmentName}
+                                        </span>
+                                        <ChevronRight size={12} className="text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                    <span className="text-[10px] font-extrabold bg-synos-primary/10 text-synos-primary px-2 py-0.5 rounded-full">
+                                        {dept.profitMultiplier}x
+                                    </span>
+                                </div>
+                                <div>
+                                    <div className="flex items-baseline justify-between">
+                                        <p className="text-lg font-black text-zinc-900 dark:text-white">
+                                            ₹{dept.billedRevenue?.toLocaleString() || 0}
+                                        </p>
+                                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                            ₹{dept.cashCollected?.toLocaleString() || 0} collected
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                                        Direct Material: ₹{dept.directCost?.toLocaleString() || 0}
+                                    </p>
+                                </div>
+                                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between text-[10px] font-bold">
+                                    <span className="text-zinc-400">{dept.totalTestsCompleted} Tests</span>
+                                    <span className="text-emerald-500 font-black">{dept.marginPercentage?.toFixed(1) || 0}% Margin</span>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-lg font-black text-zinc-900 dark:text-white">₹{dept.billedRevenue?.toLocaleString() || 0}</p>
-                                <p className="text-[10px] text-zinc-500 mt-0.5">Direct Material: ₹{dept.directCost?.toLocaleString() || 0}</p>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ROW 2: RADIOLOGY MODALITIES */}
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 px-1">
+                        <Activity size={14} className="text-indigo-500" />
+                        <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                            Radiology Modalities
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-medium">({finalRadiology.length} Modalities)</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {finalRadiology.map((dept, idx) => (
+                            <div 
+                                key={idx} 
+                                onClick={() => handleDeptClick(dept)}
+                                className="p-4 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3 cursor-pointer hover:border-synos-primary/60 hover:shadow-md transition-all group relative overflow-hidden"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-bold text-zinc-900 dark:text-white group-hover:text-synos-primary transition-colors">
+                                            {dept.departmentName}
+                                        </span>
+                                        <ChevronRight size={12} className="text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                    <span className="text-[10px] font-extrabold bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 px-2 py-0.5 rounded-full">
+                                        {dept.profitMultiplier}x
+                                    </span>
+                                </div>
+                                <div>
+                                    <div className="flex items-baseline justify-between">
+                                        <p className="text-lg font-black text-zinc-900 dark:text-white">
+                                            ₹{dept.billedRevenue?.toLocaleString() || 0}
+                                        </p>
+                                        <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                            ₹{dept.cashCollected?.toLocaleString() || 0} collected
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                                        Material/Consumable: ₹{dept.directCost?.toLocaleString() || 0}
+                                    </p>
+                                </div>
+                                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between text-[10px] font-bold">
+                                    <span className="text-zinc-400">{dept.totalTestsCompleted} Scans</span>
+                                    <span className="text-emerald-500 font-black">{dept.marginPercentage?.toFixed(1) || 0}% Margin</span>
+                                </div>
                             </div>
-                            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between text-[10px] font-bold">
-                                <span className="text-zinc-400">{dept.totalTestsCompleted} Tests</span>
-                                <span className="text-emerald-500">{dept.marginPercentage?.toFixed(1) || 0}% Margin</span>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
 

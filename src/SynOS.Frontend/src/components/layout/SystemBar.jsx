@@ -229,6 +229,29 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           )}
         </div>
 
+        {/* Quick Theme Switcher Button */}
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all hover:scale-105 cursor-pointer",
+            ui.pill
+          )}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+          aria-label="Toggle Theme"
+        >
+          {isDark ? (
+            <>
+              <Sun className="w-3.5 h-3.5 text-amber-500 hover:rotate-45 transition-transform" />
+              <span className="hidden sm:inline text-[11px] font-bold text-amber-500">Light</span>
+            </>
+          ) : (
+            <>
+              <Moon className="w-3.5 h-3.5 text-zinc-600 hover:-rotate-12 transition-transform" />
+              <span className="hidden sm:inline text-[11px] font-bold text-zinc-600">Dark</span>
+            </>
+          )}
+        </button>
+
         {/* User (Fake Frost Pill) */}
         <div className="relative">
           <button

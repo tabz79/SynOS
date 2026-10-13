@@ -70,10 +70,21 @@ export const FinanceApi = {
     },
 
     /**
-     * Fetches institutional/partner bills.
+     * Fetches institutional/partner and direct bills with optional filters.
      */
-    getFinanceBills: async () => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills'), {
+    getFinanceBills: async (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.branchId) query.append('branchId', params.branchId);
+        if (params.department) query.append('department', params.department);
+        if (params.modality) query.append('modality', params.modality);
+        if (params.startDate) query.append('startDate', params.startDate);
+        if (params.endDate) query.append('endDate', params.endDate);
+        if (params.preset) query.append('preset', params.preset);
+        if (params.status) query.append('status', params.status);
+        if (params.category) query.append('category', params.category);
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        const url = FinanceApi.withBranchId(`/api/v1/finance/bills${qs}`);
+        const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load finance bills");
