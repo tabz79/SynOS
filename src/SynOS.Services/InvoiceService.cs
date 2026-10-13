@@ -16,6 +16,7 @@ using SynOS.Services.Security;
 using SynOS.Models.ReadModels; // ADDED
 using System.Text.Json; // ADDED
 using SynOS.Models.Events;
+using SynOS.Services.Time;
 
 namespace SynOS.Services
 {
@@ -28,6 +29,7 @@ namespace SynOS.Services
         private readonly IRevenueFactWriter _revenueFactWriter;
         private readonly IVisitService _visitService;
         private readonly IMiddlewareOutboxService _outboxService;
+        private readonly ILabTimeProvider _labTimeProvider;
 
         public InvoiceService(
             SynOSDbContext context, 
@@ -36,7 +38,8 @@ namespace SynOS.Services
             IUserContext userContext,
             IRevenueFactWriter revenueFactWriter,
             IVisitService visitService,
-            IMiddlewareOutboxService outboxService)
+            IMiddlewareOutboxService outboxService,
+            ILabTimeProvider labTimeProvider)
         {
             _context = context;
             _logger = logger;
@@ -45,13 +48,14 @@ namespace SynOS.Services
             _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter));
             _visitService = visitService ?? throw new ArgumentNullException(nameof(visitService));
             _outboxService = outboxService ?? throw new ArgumentNullException(nameof(outboxService));
+            _labTimeProvider = labTimeProvider ?? throw new ArgumentNullException(nameof(labTimeProvider));
         }
 
         public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId, Guid? userId = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
-            var today = DateTime.UtcNow.Date;
+            var today = _labTimeProvider.GetLabToday();
             
             var query = _context.UserOperationalStats
                 .Where(s => s.BranchId == branchId && s.Date == today);
@@ -80,29 +84,80 @@ namespace SynOS.Services
                 })
                 .FirstOrDefaultAsync();
 
-            if (stats == null)
+            if (stats != null && (stats.WalkIns > 0 || stats.Payments > 0 || stats.PrepaidCount > 0))
             {
                 return new RevenueStatsDto
                 {
-                    WalkInsToday = 0,
-                    PaymentsCollected = 0,
-                    PaymentsCashTotal = 0,
-                    PaymentsOnlineTotal = 0,
-                    PaymentsOnlineCount = 0,
-                    PrepaidBillsCount = 0,
-                    PrepaidBillsTotal = 0
+                    WalkInsToday = stats.WalkIns,
+                    PaymentsCollected = stats.Payments,
+                    PaymentsCashTotal = stats.Cash,
+                    PaymentsOnlineTotal = stats.Online,
+                    PaymentsOnlineCount = stats.OnlineCount,
+                    PrepaidBillsCount = stats.PrepaidCount,
+                    PrepaidBillsTotal = stats.PrepaidTotal,
+                    PendingReports = 0,
+                    AvgReportTimeMinutes = 0
                 };
             }
 
+            // Direct-query fallback if UserOperationalStats is not yet populated for today
+            var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
+            var endOfToday = startOfToday.AddDays(1);
+
+            var visitsQuery = _context.Visits
+                .Where(v => v.BranchId == branchId && v.CreatedAt >= startOfToday && v.CreatedAt < endOfToday);
+
+            if (userId.HasValue)
+            {
+                visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == userId.Value || v.CreatedByUserId == userId.Value);
+            }
+            else if (_userContext.CurrentRole == "Receptionist")
+            {
+                var currentUserId = _userContext.CurrentUserId;
+                visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
+            }
+
+            var walkIns = await visitsQuery.CountAsync();
+
+            var prepaidVisits = await visitsQuery
+                .Where(v => v.PaymentCollectionModel == "PartnerCollects" && v.Status == VisitStatus.Paid)
+                .Include(v => v.Invoices)
+                .ToListAsync();
+
+            int prepaidCount = prepaidVisits.Count;
+            decimal prepaidTotal = prepaidVisits.Sum(v => v.Invoices.FirstOrDefault()?.Total ?? 0);
+
+            var paymentsQuery = _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                .Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= startOfToday.UtcDateTime && p.ReceivedAt < endOfToday.UtcDateTime);
+
+            if (userId.HasValue)
+            {
+                paymentsQuery = paymentsQuery.Where(p => p.ReceivedByUserId == userId.Value);
+            }
+            else if (_userContext.CurrentRole == "Receptionist")
+            {
+                var currentUserId = _userContext.CurrentUserId;
+                paymentsQuery = paymentsQuery.Where(p => p.ReceivedByUserId == currentUserId);
+            }
+
+            var payments = await paymentsQuery.ToListAsync();
+            decimal cashTotal = payments.Where(p => string.Equals(p.Method, "Cash", StringComparison.OrdinalIgnoreCase)).Sum(p => p.Amount);
+            var onlinePayments = payments.Where(p => !string.Equals(p.Method, "Cash", StringComparison.OrdinalIgnoreCase)).ToList();
+            decimal onlineTotal = onlinePayments.Sum(p => p.Amount);
+            int onlineCount = onlinePayments.Count();
+            decimal totalPayments = cashTotal + onlineTotal;
+
             return new RevenueStatsDto
             {
-                WalkInsToday = stats.WalkIns,
-                PaymentsCollected = stats.Payments,
-                PaymentsCashTotal = stats.Cash,
-                PaymentsOnlineTotal = stats.Online,
-                PaymentsOnlineCount = stats.OnlineCount,
-                PrepaidBillsCount = stats.PrepaidCount,
-                PrepaidBillsTotal = stats.PrepaidTotal,
+                WalkInsToday = walkIns,
+                PaymentsCollected = totalPayments,
+                PaymentsCashTotal = cashTotal,
+                PaymentsOnlineTotal = onlineTotal,
+                PaymentsOnlineCount = onlineCount,
+                PrepaidBillsCount = prepaidCount,
+                PrepaidBillsTotal = prepaidTotal,
                 PendingReports = 0,
                 AvgReportTimeMinutes = 0
             };

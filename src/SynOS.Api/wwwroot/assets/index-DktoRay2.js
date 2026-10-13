@@ -21635,8 +21635,8 @@ Details: ${s.inner}`);
             Q.metadataObj = {};
           }
           if (Q.visibility === "Hide") return false;
-          const v = (Q.eventType || "").toUpperCase(), N = (Q.title || Q.summaryText || Q.SummaryText || "").toLowerCase(), k = (Q.tokenId || Q.TokenId || Q.token || "").trim();
-          return !(k.toUpperCase().startsWith("DRAFT-") || k.toUpperCase().startsWith("D-") || N.includes("draft-") || N.includes("referral partner updated") || N.includes("sample collection requested") || N.includes("collection requested") || v.includes("INVENTORY") || N.includes("inventory") || N.includes("stock") || N.includes("insufficient stock") || v === "VISIT_CREATED" || Q.eventType === "BILL_GENERATED" && (N.includes("0.00") || parseFloat(Q.metadataObj.Total || Q.metadataObj.Amount || 0) === 0));
+          const v = (Q.eventType || "").toUpperCase(), N = (Q.title || Q.summaryText || Q.SummaryText || "").toLowerCase(), k = (Q.tokenId || Q.TokenId || Q.token || "").trim(), T = v === "VISIT_FINALIZED" || v === "BILL_GENERATED" || v === "PAYMENT_RECEIVED" || v === "RECEIVABLE_CREATED" || N.includes("prepaid") || N.includes("partner collects");
+          return !(!T && (k.toUpperCase().startsWith("DRAFT-") || N.includes("draft-")) || N.includes("referral partner updated") || N.includes("sample collection requested") || N.includes("collection requested") || v.includes("INVENTORY") || N.includes("inventory") || N.includes("stock") || N.includes("insufficient stock") || v === "VISIT_CREATED" || Q.eventType === "BILL_GENERATED" && !T && (N.includes("0.00") || parseFloat(Q.metadataObj.Total || Q.metadataObj.Amount || 0) === 0));
         }).sort((Q, v) => {
           const N = new Date(Q.occurredAt).getTime();
           return new Date(v.occurredAt).getTime() - N;
@@ -21677,9 +21677,9 @@ Details: ${s.inner}`);
         const K = N && (N.toUpperCase().startsWith("DRAFT-") || N.toUpperCase().startsWith("D-"));
         return N && !K && N !== "System" ? `Token ID ${N} assigned to ${v}` : `Visit started for ${v}`;
       }
-      if (x === "BILL_GENERATED" || x === "PAYMENT_RECEIVED" || L.includes("payment received") || L.includes("billed") || L.includes("prepaid")) {
+      if (x === "BILL_GENERATED" || x === "PAYMENT_RECEIVED" || x === "RECEIVABLE_CREATED" || L.includes("payment received") || L.includes("billed") || L.includes("prepaid") || L.includes("partner collects")) {
         const K = Q.TestCodes && Array.isArray(Q.TestCodes) && Q.TestCodes.length > 0 ? Q.TestCodes.join("_") : Q.TestNames || Q.Services || "tests", Y = Q.DoctorName || Q.PartnerName || Q.ReferralPartner || (L.includes("dr.") ? (_a = m.match(/dr\.\s*[\w\s]+/i)) == null ? void 0 : _a[0] : ""), P = T ? `by ${T}` : "", V = Y ? `, referred by ${Y}` : "";
-        return `Billed ${P} for ${K} test${V}`.replace(/\s+/g, " ").trim();
+        return `${L.includes("prepaid") || L.includes("partner collects") || Q.Method === "PartnerCollects" ? "Prepaid visit billed" : "Billed"} ${P} for ${K} test${V}`.replace(/\s+/g, " ").trim();
       }
       if (x === "SPECIMEN_COLLECTED" || x === "SAMPLE_COLLECTED" || L.includes("sample collected") || L.includes("specimen collected")) return T ? `Sample collected by ${T}` : "Sample collected";
       if (x === "SPECIMEN_PROCESSED" || x === "SAMPLE_PROCESSED" || L.includes("results finalized") || L.includes("sample processed") || L.includes("testing completed")) return T ? `Sample processed by ${T}` : "Sample processed";
@@ -21714,7 +21714,7 @@ Details: ${s.inner}`);
           });
         case "VISIT_FINALIZED":
           return i.jsx(Vr, {
-            className: "h-4 w-4 text-muted-foreground"
+            className: "h-4 w-4 text-emerald-600 dark:text-emerald-500"
           });
         default:
           return i.jsx(Va, {
@@ -21758,10 +21758,11 @@ Details: ${s.inner}`);
         }), m.patientName === "Processing..." && ((_e = Q.metadataObj) == null ? void 0 : _e.PatientName) && (m.patientName = Q.metadataObj.PatientName);
       }), m && x.push(m), x.map((Q) => {
         const v = /* @__PURE__ */ new Set(), N = Q.items.filter((k) => {
-          const T = (k.eventType || "").toUpperCase(), L = (k.title || k.summaryText || k.SummaryText || "").toLowerCase();
-          if (T === "VISIT_FINALIZED") return false;
-          let _ = T;
-          return T === "BILL_GENERATED" || T === "PAYMENT_RECEIVED" || T === "RECEIVABLE_CREATED" || L.includes("payment received") || L.includes("billed") || L.includes("prepaid") ? _ = "BILLING" : T === "SPECIMEN_COLLECTED" || T === "SAMPLE_COLLECTED" || L.includes("sample collected") || L.includes("specimen collected") ? _ = "COLLECTION" : T === "RESULT_VERIFIED" || T === "SPECIMEN_PROCESSED" || T === "SAMPLE_PROCESSED" || L.includes("results finalized") || L.includes("sample processed") || L.includes("testing completed") || L.includes("result saved") ? _ = "PROCESSING" : T === "REPORT_DRAFTED" || L.includes("drafted") || L.includes("typing completed") ? _ = "DRAFT" : (T === "REPORT_VERIFIED" || T === "REPORT_SIGNED" || L.includes("verified & signed") || L.includes("report signed")) && (_ = "VERIFY"), v.has(_) ? false : (v.add(_), true);
+          var _a;
+          const T = (k.eventType || "").toUpperCase(), L = (k.title || k.summaryText || k.SummaryText || "").toLowerCase(), _ = L.includes("prepaid") || L.includes("partner collects") || ((_a = k.metadataObj) == null ? void 0 : _a.Method) === "PartnerCollects";
+          if (T === "VISIT_FINALIZED" && !_) return false;
+          let K = T;
+          return T === "BILL_GENERATED" || T === "PAYMENT_RECEIVED" || T === "RECEIVABLE_CREATED" || _ || L.includes("payment received") || L.includes("billed") || L.includes("prepaid") ? K = "BILLING" : T === "SPECIMEN_COLLECTED" || T === "SAMPLE_COLLECTED" || L.includes("sample collected") || L.includes("specimen collected") ? K = "COLLECTION" : T === "RESULT_VERIFIED" || T === "SPECIMEN_PROCESSED" || T === "SAMPLE_PROCESSED" || L.includes("results finalized") || L.includes("sample processed") || L.includes("testing completed") || L.includes("result saved") ? K = "PROCESSING" : T === "REPORT_DRAFTED" || L.includes("drafted") || L.includes("typing completed") ? K = "DRAFT" : (T === "REPORT_VERIFIED" || T === "REPORT_SIGNED" || L.includes("verified & signed") || L.includes("report signed")) && (K = "VERIFY"), v.has(K) ? false : (v.add(K), true);
         });
         return {
           ...Q,
@@ -24494,7 +24495,7 @@ Details: ${s.inner}`);
     });
   }
   function ACe({ onVisitUpdated: t }) {
-    var _a, _b2, _c, _d, _e2, _f, _g, _h, _i, _j, _k2, _l, _m2;
+    var _a, _b2, _c, _d, _e2, _f, _g, _h, _i, _j, _k2, _l, _m2, _n, _o, _p2, _q2, _r;
     const { isOpen: e, closePanel: n, drawerState: A } = S8(), r = j.useRef(null);
     JJ(r, e), PN(r, e, n);
     const a = A == null ? void 0 : A.intent, s = a === "correction", o = a === "resume", [l, c] = j.useState(false), [d, g] = j.useState("Cash"), [u, h] = j.useState(null), [f, C] = j.useState(false), [p, x] = j.useState(null), [m, Q] = j.useState(null), [v, N] = j.useState(null), { theme: k } = ia(), T = k === "dark", L = T ? {
@@ -24661,7 +24662,7 @@ Details: ${s.inner}`);
       if (!(!(u == null ? void 0 : u.billing) || V)) {
         if (l && !u.billing.isLocked) {
           if (!(((_a2 = u.billing.referral) == null ? void 0 : _a2.partner) || ((_c2 = (_b3 = u.billing) == null ? void 0 : _b3.referral) == null ? void 0 : _c2.draft))) {
-            x("For Prepaid visits, you MUST select a Referral Partner or add a Draft.");
+            x("For Prepaid visits, you MUST select a Referral Partner or add a Draft (Who collected payment outside?).");
             return;
           }
           C(true), q(true);
@@ -24692,7 +24693,7 @@ Details: ${s.inner}`);
     if (!e) return null;
     const oe = !!(u == null ? void 0 : u.patient), $ = !!(u == null ? void 0 : u.visit), se = ((_a = u == null ? void 0 : u.billing) == null ? void 0 : _a.netAmount) || 0, de = ((_b2 = u == null ? void 0 : u.billing) == null ? void 0 : _b2.totalPaid) || 0, ge = Math.max(0, se - de), Ie = (((_c = u == null ? void 0 : u.billing) == null ? void 0 : _c.paymentStatus) === "PendingPayment" || ((_d = u == null ? void 0 : u.billing) == null ? void 0 : _d.paymentStatus) === "PartialPayment") && ge > 0, xe = l && !((_e2 = u == null ? void 0 : u.billing) == null ? void 0 : _e2.isLocked), _e = ((_f = u == null ? void 0 : u.billing) == null ? void 0 : _f.paymentStatus) === "Paid" || ge <= 0 && se > 0;
     let Me = "Identify Patient & Start Visit", nt = false;
-    !$ && oe ? (Me = "Add Tests to Proceed", nt = false) : $ && (_e && !s ? (Me = "Visit Complete (Close)", nt = true) : xe ? (Me = "Prepaid Checkout", nt = !!(((_h = (_g = u == null ? void 0 : u.billing) == null ? void 0 : _g.referral) == null ? void 0 : _h.partner) || ((_j = (_i = u == null ? void 0 : u.billing) == null ? void 0 : _i.referral) == null ? void 0 : _j.draft))) : Ie ? (Me = `Accept Payment (\u20B9${ge})`, nt = true) : (Me = "Add Tests to Proceed", nt = false));
+    !$ && oe ? (Me = "Add Tests to Proceed", nt = false) : $ && (_e && !s ? (Me = "Visit Complete (Close)", nt = true) : xe ? (Me = "Prepaid Checkout", nt = !!(((_g = u == null ? void 0 : u.visit) == null ? void 0 : _g.tests) && ((_h = u == null ? void 0 : u.visit) == null ? void 0 : _h.tests.length) > 0 || ((_i = u == null ? void 0 : u.billing) == null ? void 0 : _i.items) && ((_j = u == null ? void 0 : u.billing) == null ? void 0 : _j.items.length) > 0 || ((_k2 = u == null ? void 0 : u.billing) == null ? void 0 : _k2.grossAmount) > 0)) : Ie ? (Me = `Accept Payment (\u20B9${ge})`, nt = true) : (Me = "Add Tests to Proceed", nt = false));
     let He = "Registration";
     return o && (He = "Resume Visit"), s && (He = "Visit Correction"), i.jsxs("div", {
       ref: r,
@@ -24763,7 +24764,7 @@ Details: ${s.inner}`);
                       className: oe ? "flex flex-col gap-6" : "",
                       children: i.jsx(eCe, {
                         snapshot: u,
-                        visitId: v || ((_k2 = u == null ? void 0 : u.visit) == null ? void 0 : _k2.visitId) || ((_l = u == null ? void 0 : u.visit) == null ? void 0 : _l.id) || ((_m2 = u == null ? void 0 : u.visit) == null ? void 0 : _m2.VisitId),
+                        visitId: v || ((_l = u == null ? void 0 : u.visit) == null ? void 0 : _l.visitId) || ((_m2 = u == null ? void 0 : u.visit) == null ? void 0 : _m2.id) || ((_n = u == null ? void 0 : u.visit) == null ? void 0 : _n.VisitId),
                         onVisitUpdated: _,
                         isPrepaidIntent: l,
                         setIsPrepaidIntent: c,
@@ -24816,34 +24817,43 @@ Details: ${s.inner}`);
               })
             ]
           }) : $ && i.jsxs("div", {
-            className: "flex items-center gap-3 w-full max-w-md mx-auto",
+            className: "flex flex-col gap-1.5 w-full max-w-md mx-auto",
             children: [
-              _e && i.jsxs("button", {
-                type: "button",
-                onClick: le,
-                className: "py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0",
+              i.jsxs("div", {
+                className: "flex items-center gap-3 w-full",
                 children: [
-                  i.jsx(Lc, {
-                    className: "w-4 h-4"
+                  _e && i.jsxs("button", {
+                    type: "button",
+                    onClick: le,
+                    className: "py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0",
+                    children: [
+                      i.jsx(Lc, {
+                        className: "w-4 h-4"
+                      }),
+                      " Receipt"
+                    ]
                   }),
-                  " Receipt"
+                  i.jsx("button", {
+                    onClick: te,
+                    disabled: !nt || f || V,
+                    className: Je("flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]", nt && !V ? L.actionBtn.enabled : L.actionBtn.disabled),
+                    children: f || V ? i.jsx(BA, {
+                      className: "w-4 h-4 animate-spin"
+                    }) : i.jsxs(i.Fragment, {
+                      children: [
+                        Me,
+                        " ",
+                        i.jsx(ju, {
+                          className: "w-4 h-4"
+                        })
+                      ]
+                    })
+                  })
                 ]
               }),
-              i.jsx("button", {
-                onClick: te,
-                disabled: !nt || f || V,
-                className: Je("flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]", nt && !V ? L.actionBtn.enabled : L.actionBtn.disabled),
-                children: f || V ? i.jsx(BA, {
-                  className: "w-4 h-4 animate-spin"
-                }) : i.jsxs(i.Fragment, {
-                  children: [
-                    Me,
-                    " ",
-                    i.jsx(ju, {
-                      className: "w-4 h-4"
-                    })
-                  ]
-                })
+              xe && !(((_p2 = (_o = u == null ? void 0 : u.billing) == null ? void 0 : _o.referral) == null ? void 0 : _p2.partner) || ((_r = (_q2 = u == null ? void 0 : u.billing) == null ? void 0 : _q2.referral) == null ? void 0 : _r.draft)) && i.jsx("p", {
+                className: "text-xs text-amber-500 dark:text-amber-400 font-medium text-center",
+                children: "* Please select a Referral Partner above (Who collected payment outside?)"
               })
             ]
           })

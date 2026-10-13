@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SynOS.Services.Operational;
 using SynOS.Services;
+using SynOS.Data;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,25 @@ namespace SynOS.Api.BackgroundServices
             {
                 while (!SynOS.Api.Services.SystemSetupState.IsConfigured)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                    try
+                    {
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var db = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                            if (await db.Database.CanConnectAsync(stoppingToken))
+                            {
+                                _logger.LogInformation("OperationalStatsProjectionWorker: Database connection verified. Setting SystemSetupState.IsConfigured = true.");
+                                SynOS.Api.Services.SystemSetupState.IsConfigured = true;
+                                break;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogDebug(ex, "OperationalStatsProjectionWorker: Waiting for database to be accessible...");
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
             catch (OperationCanceledException)

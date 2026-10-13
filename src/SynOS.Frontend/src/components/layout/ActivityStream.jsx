@@ -34,9 +34,18 @@ export function ActivityStream({ serverTime }) {
                 const titleStr = (e.title || e.summaryText || e.SummaryText || '').toLowerCase();
                 const tokenStr = (e.tokenId || e.TokenId || e.token || '').trim();
 
-                // Suppress draft tokens (DRAFT-... or D-...)
-                if (tokenStr.toUpperCase().startsWith('DRAFT-') || tokenStr.toUpperCase().startsWith('D-') || titleStr.includes('draft-')) {
-                    return false;
+                // Suppress unfinalized draft tokens (DRAFT-...)
+                const isFinalizedOrBilled = typeStr === 'VISIT_FINALIZED' || 
+                                           typeStr === 'BILL_GENERATED' || 
+                                           typeStr === 'PAYMENT_RECEIVED' || 
+                                           typeStr === 'RECEIVABLE_CREATED' ||
+                                           titleStr.includes('prepaid') ||
+                                           titleStr.includes('partner collects');
+
+                if (!isFinalizedOrBilled) {
+                    if (tokenStr.toUpperCase().startsWith('DRAFT-') || titleStr.includes('draft-')) {
+                        return false;
+                    }
                 }
 
                 // Suppress extra internal events
@@ -51,8 +60,8 @@ export function ActivityStream({ serverTime }) {
                     return false;
                 }
 
-                // 2. Billing filter: Remove zero bills
-                if (e.eventType === 'BILL_GENERATED') {
+                // 2. Billing filter: Remove zero bills (unless prepaid/finalized)
+                if (e.eventType === 'BILL_GENERATED' && !isFinalizedOrBilled) {
                     if (titleStr.includes('0.00')) return false;
                     const total = parseFloat(e.metadataObj.Total || e.metadataObj.Amount || 0);
                     if (total === 0) return false;
@@ -135,14 +144,16 @@ export function ActivityStream({ serverTime }) {
         }
 
         // 3. Billing & Payment
-        if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || lowerMsg.includes('payment received') || lowerMsg.includes('billed') || lowerMsg.includes('prepaid')) {
+        if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || lowerMsg.includes('payment received') || lowerMsg.includes('billed') || lowerMsg.includes('prepaid') || lowerMsg.includes('partner collects')) {
             const tests = meta.TestCodes && Array.isArray(meta.TestCodes) && meta.TestCodes.length > 0
                 ? meta.TestCodes.join('_') 
                 : (meta.TestNames || meta.Services || 'tests');
             const refDoc = meta.DoctorName || meta.PartnerName || meta.ReferralPartner || (lowerMsg.includes('dr.') ? msg.match(/dr\.\s*[\w\s]+/i)?.[0] : '');
             const actorStr = actor ? `by ${actor}` : '';
             const refStr = refDoc ? `, referred by ${refDoc}` : '';
-            return `Billed ${actorStr} for ${tests} test${refStr}`.replace(/\s+/g, ' ').trim();
+            const isPrepaid = lowerMsg.includes('prepaid') || lowerMsg.includes('partner collects') || meta.Method === 'PartnerCollects';
+            const actionPrefix = isPrepaid ? 'Prepaid visit billed' : 'Billed';
+            return `${actionPrefix} ${actorStr} for ${tests} test${refStr}`.replace(/\s+/g, ' ').trim();
         }
 
         // 4. Sample Collection (Phlebotomy)
@@ -192,8 +203,8 @@ export function ActivityStream({ serverTime }) {
             case 'PAYMENT_RECEIVED': return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />;
             case 'RECEIVABLE_CREATED': return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />;
 
-            // Fallback for visits without payment (e.g. Free/Zero Due) -> Check Circle
-            case 'VISIT_FINALIZED': return <CheckCircle2 className="h-4 w-4 text-muted-foreground" />;
+            // Fallback for visits without payment (e.g. Free/Zero Due / Prepaid) -> Check Circle
+            case 'VISIT_FINALIZED': return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />;
             default: return <Activity className="h-4 w-4 text-muted-foreground" />;
         }
     };
@@ -262,11 +273,12 @@ export function ActivityStream({ serverTime }) {
                 const type = (item.eventType || '').toUpperCase();
                 const msg = (item.title || item.summaryText || item.SummaryText || '').toLowerCase();
 
-                // Hide noise: Visit Finalized
-                if (type === 'VISIT_FINALIZED') return false;
+                // Hide noise: standard Visit Finalized (unless it represents a Prepaid/Partner Collects checkout)
+                const isPrepaidFinalize = msg.includes('prepaid') || msg.includes('partner collects') || item.metadataObj?.Method === 'PartnerCollects';
+                if (type === 'VISIT_FINALIZED' && !isPrepaidFinalize) return false;
 
                 let category = type;
-                if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || msg.includes('payment received') || msg.includes('billed') || msg.includes('prepaid')) {
+                if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || isPrepaidFinalize || msg.includes('payment received') || msg.includes('billed') || msg.includes('prepaid')) {
                     category = 'BILLING';
                 }
                 else if (type === 'SPECIMEN_COLLECTED' || type === 'SAMPLE_COLLECTED' || msg.includes('sample collected') || msg.includes('specimen collected')) {

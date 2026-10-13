@@ -289,7 +289,7 @@ export function IntentPanel({ onVisitUpdated }) {
             const hasReferralIdentity = snapshot.billing.referral?.partner || snapshot.billing?.referral?.draft;
 
             if (!hasReferralIdentity) {
-                setError("For Prepaid visits, you MUST select a Referral Partner or add a Draft.");
+                setError("For Prepaid visits, you MUST select a Referral Partner or add a Draft (Who collected payment outside?).");
                 return;
             }
 
@@ -368,7 +368,8 @@ export function IntentPanel({ onVisitUpdated }) {
             isActionEnabled = true;
         } else if (canLockPrepaid) {
             mainActionLabel = "Prepaid Checkout";
-            isActionEnabled = Boolean(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft);
+            const hasTests = Boolean((snapshot?.visit?.tests && snapshot?.visit?.tests.length > 0) || (snapshot?.billing?.items && snapshot?.billing?.items.length > 0) || (snapshot?.billing?.grossAmount > 0));
+            isActionEnabled = hasTests;
         } else if (canCheckout) {
             mainActionLabel = `Accept Payment (₹${remainingDue})`;
             isActionEnabled = true;
@@ -496,32 +497,39 @@ export function IntentPanel({ onVisitUpdated }) {
                     </div>
                 ) : (
                     hasVisit && (
-                        <div className="flex items-center gap-3 w-full max-w-md mx-auto">
-                            {isVisitFinalized && (
+                        <div className="flex flex-col gap-1.5 w-full max-w-md mx-auto">
+                            <div className="flex items-center gap-3 w-full">
+                                {isVisitFinalized && (
+                                    <button
+                                        type="button"
+                                        onClick={handlePrintReceipt}
+                                        className="py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0"
+                                    >
+                                        <Printer className="w-4 h-4" /> Receipt
+                                    </button>
+                                )}
                                 <button
-                                    type="button"
-                                    onClick={handlePrintReceipt}
-                                    className="py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0"
+                                    onClick={handleUnifiedAction}
+                                    disabled={!isActionEnabled || isLoading || isActionSubmitting}
+                                    className={cn(
+                                        "flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                                        (isActionEnabled && !isActionSubmitting)
+                                            ? ui.actionBtn.enabled
+                                            : ui.actionBtn.disabled
+                                    )}
                                 >
-                                    <Printer className="w-4 h-4" /> Receipt
+                                    {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                        <>
+                                            {mainActionLabel} <ArrowRight className="w-4 h-4" />
+                                        </>
+                                    )}
                                 </button>
+                            </div>
+                            {canLockPrepaid && !Boolean(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
+                                <p className="text-xs text-amber-500 dark:text-amber-400 font-medium text-center">
+                                    * Please select a Referral Partner above (Who collected payment outside?)
+                                </p>
                             )}
-                            <button
-                                onClick={handleUnifiedAction}
-                                disabled={!isActionEnabled || isLoading || isActionSubmitting}
-                                className={cn(
-                                    "flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-                                    (isActionEnabled && !isActionSubmitting)
-                                        ? ui.actionBtn.enabled
-                                        : ui.actionBtn.disabled
-                                )}
-                            >
-                                {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                    <>
-                                        {mainActionLabel} <ArrowRight className="w-4 h-4" />
-                                    </>
-                                )}
-                            </button>
                         </div>
                     )
                 )}

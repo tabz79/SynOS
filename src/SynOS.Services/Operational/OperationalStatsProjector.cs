@@ -13,6 +13,7 @@ using SynOS.Models.Entities.AR; // ADDED: Stage 1 Financials
 using SynOS.Models.Entities.Payments; // ADDED: Stage 1 Financials
 using SynOS.Models.Entities.Revenue; // ADDED: Revenue Engine Link
 using SynOS.Services.Operational; // ADDED
+using SynOS.Services.Time;
 
 namespace SynOS.Services.Operational
 {
@@ -28,15 +29,18 @@ namespace SynOS.Services.Operational
         private readonly SynOSDbContext _context;
         private readonly INotifier _notifier; // CHANGED
         private readonly ILogger<OperationalStatsProjector> _logger;
+        private readonly ILabTimeProvider _labTimeProvider;
 
         public OperationalStatsProjector(
             SynOSDbContext context,
             INotifier notifier,
-            ILogger<OperationalStatsProjector> logger)
+            ILogger<OperationalStatsProjector> logger,
+            ILabTimeProvider labTimeProvider)
         {
             _context = context;
             _notifier = notifier;
             _logger = logger;
+            _labTimeProvider = labTimeProvider;
         }
 
         public async Task EnsureStateConsistencyAsync(CancellationToken cancellationToken)
@@ -44,19 +48,20 @@ namespace SynOS.Services.Operational
             // AUDIT-ONLY MODE: Financial projections are event-driven. No polling-based mutation allowed.
             
             // 1. Get Actual Stats
+            var today = _labTimeProvider.GetLabToday();
             var statsToday = await _context.UserOperationalStats
-                .FirstOrDefaultAsync(s => s.Date == DateTime.Today, cancellationToken);
+                .FirstOrDefaultAsync(s => s.Date == today, cancellationToken);
 
             // 2. Get Processed Events that actually OCCURRED today
             // Joining with BranchOperationalEvents to ensure we don't flag backlog processing as a today-mismatch.
-            var today = DateTime.Today;
+            var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
             var processedTodayEventsCount = await _context.ProcessedProjectionEvents
                 .Where(p => p.ProjectionName == "OperationalStats")
                 .Join(_context.BranchOperationalEvents,
                       ppe => ppe.EventId,
                       boe => boe.EventId,
                       (ppe, boe) => boe)
-                .Where(boe => boe.OccurredAt >= today)
+                .Where(boe => boe.OccurredAt >= startOfToday)
                 .CountAsync(cancellationToken);
             
             // 3. Audit Check (No Mutation)
@@ -115,7 +120,9 @@ namespace SynOS.Services.Operational
         {
             // Parse standard fields
             if (!Guid.TryParse(evt.BranchId, out var branchId)) return;
-            var date = evt.OccurredAt.Date;
+            var utcTime = DateTime.SpecifyKind(evt.OccurredAt, DateTimeKind.Utc);
+            var labTime = TimeZoneInfo.ConvertTimeFromUtc(utcTime, _labTimeProvider.GetLabTimeZone());
+            var date = labTime.Date;
             try
             {
                 var strategy = _context.Database.CreateExecutionStrategy();
@@ -547,7 +554,7 @@ namespace SynOS.Services.Operational
                     VisitId = visitId,
                     AssignedReceptionistId = receptionistId,
                     BranchId = branchId,
-                    Date = DateTime.UtcNow.Date // Local anchor
+                    Date = _labTimeProvider.GetLabToday() // Local anchor
                 };
                 _context.VisitOperationalStates.Add(state);
             }

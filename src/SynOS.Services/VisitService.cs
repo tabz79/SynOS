@@ -813,6 +813,9 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Patient) 
                 .Include(v => v.Invoices) // ADDED: Need invoice for Total Amount
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                .Include(v => v.ReferralPartner)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
@@ -821,15 +824,21 @@ namespace SynOS.Services
 
             visit.PaymentCollectionModel = "PartnerCollects";
             visit.Status = VisitStatus.Paid;
-            if (visit.Token.StartsWith("DRAFT")) await AssignOfficialTokenAsync(visitId, actorUserId);
+            if (visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+            {
+                await AssignOfficialTokenAsync(visitId, actorUserId);
+            }
             await _context.SaveChangesAsync();
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
             // ENRICHED METADATA
             string actorName = await GetActorNameAsync(actorUserId);
-            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+            string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Get Invoice
+
+            var testCodes = visit.Orders?.Select(o => o.Test?.TestCode).Where(c => !string.IsNullOrEmpty(c)).ToList() ?? new List<string?>();
+            string doctorName = visit.ReferralPartner?.Name ?? "";
 
             var prepaidMetadata = JsonSerializer.Serialize(new 
             { 
@@ -838,8 +847,10 @@ namespace SynOS.Services
                 ActorName = actorName,
                 Method = "PartnerCollects", 
                 Status = "Paid",
-                Amount = invoice.Total, // Added Amount for Frontend Display
-                Total = invoice.Total   // Alias for robustness
+                Amount = invoice?.Total ?? 0, // Added Amount for Frontend Display
+                Total = invoice?.Total ?? 0,   // Alias for robustness
+                TestCodes = testCodes,
+                DoctorName = doctorName
             });
 
             await _operationalEventWriter.WriteEventAsync(
