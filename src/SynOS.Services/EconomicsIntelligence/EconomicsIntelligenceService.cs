@@ -279,6 +279,28 @@ namespace SynOS.Services.EconomicsIntelligence
             summary.CashCollected = revenueFacts.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount);
             summary.OnlineCollected = revenueFacts.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount);
 
+            // Reconcile with direct Payments table for physical drawer and digital truth
+            var paymentsQuery = _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                .AsNoTracking()
+                .Where(p => p.ReceivedAt >= start && p.ReceivedAt <= end);
+
+            if (branchId.HasValue)
+            {
+                paymentsQuery = paymentsQuery.Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId.Value);
+            }
+
+            var actualPayments = await paymentsQuery.ToListAsync();
+            var totalActualPayments = actualPayments.Sum(p => p.Amount);
+
+            if (totalActualPayments > summary.TotalRevenueCash)
+            {
+                summary.TotalRevenueCash = totalActualPayments;
+                summary.CashCollected = actualPayments.Where(p => (p.Method ?? "").ToLower().Contains("cash")).Sum(p => p.Amount);
+                summary.OnlineCollected = actualPayments.Where(p => !(p.Method ?? "").ToLower().Contains("cash")).Sum(p => p.Amount);
+            }
+
             var consumableFactsQuery = _context.CostAttribution_UsageFacts.AsNoTracking();
             if (branchId.HasValue)
             {
