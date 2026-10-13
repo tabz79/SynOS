@@ -127,14 +127,14 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "  -> ServerManager publish successful." -ForegroundColor Green
 
 # STEP 7: BUILD INNO SETUP INSTALLER
-Write-Host "`n[7/7] Compiling Inno Setup Installer (SynOS_Setup_v250_cloud_testing.exe)..." -ForegroundColor Yellow
+Write-Host "`n[7/7] Compiling Inno Setup Installer (SynOS_Setup_v251_cloud_testing.exe)..." -ForegroundColor Yellow
 $isccPath = "C:\Users\Asus\AppData\Local\Programs\Inno Setup 6\iscc.exe"
 & $isccPath "$rootDir\SynOS_Setup.iss"
 if ($LASTEXITCODE -ne 0) {
     Throw "Inno Setup compilation failed with exit code $LASTEXITCODE"
 }
 
-$outputInstaller = "$rootDir\SynOS_Setup_v250_cloud_testing.exe"
+$outputInstaller = "$rootDir\SynOS_Setup_v251_cloud_testing.exe"
 if (-not (Test-Path $outputInstaller)) {
     Throw "Installer file $outputInstaller was not created!"
 }
