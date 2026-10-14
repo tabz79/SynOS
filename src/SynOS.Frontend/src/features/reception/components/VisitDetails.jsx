@@ -569,7 +569,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                                 } else if (e.key === 'ArrowUp') {
                                     e.preventDefault();
                                     setTestSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
-                                } else if (e.key === 'Enter' || e.key === 'Tab') {
+                                } else if (e.key === 'Enter') {
                                     if (testSelectedIndex >= 0 && testSelectedIndex < suggestions.length) {
                                         e.preventDefault();
                                         handleAddTest(suggestions[testSelectedIndex]);
@@ -854,7 +854,7 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
             setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
-        } else if (e.key === 'Enter' || e.key === 'Tab') {
+        } else if (e.key === 'Enter') {
             if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
                 e.preventDefault();
                 handleApply(suggestions[selectedIndex].referralPartnerId);

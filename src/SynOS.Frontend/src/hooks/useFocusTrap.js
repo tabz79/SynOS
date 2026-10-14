@@ -29,7 +29,13 @@ export function useFocusTrap(ref, isActive, onClose) {
                 if (autoFocusEl) {
                     autoFocusEl.focus();
                 } else {
-                    focusables[0].focus();
+                    // Prefer first interactive form input (phone/test search) over close button
+                    const firstInput = ref.current.querySelector('input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])');
+                    if (firstInput) {
+                        firstInput.focus();
+                    } else {
+                        focusables[0].focus();
+                    }
                 }
             }
 
@@ -55,12 +61,12 @@ export function useFocusTrap(ref, isActive, onClose) {
                     const last = currentFocusables[currentFocusables.length - 1];
 
                     if (e.shiftKey) { // SHIFT + TAB (Backwards)
-                        if (document.activeElement === first) {
+                        if (document.activeElement === first || !ref.current.contains(document.activeElement)) {
                             e.preventDefault();
                             last.focus();
                         }
                     } else { // TAB (Forwards)
-                        if (document.activeElement === last) {
+                        if (document.activeElement === last || !ref.current.contains(document.activeElement)) {
                             e.preventDefault();
                             first.focus();
                         }
@@ -68,17 +74,11 @@ export function useFocusTrap(ref, isActive, onClose) {
                 }
             };
 
-            // Capture phase to prevent bubbling escapes? No, bubble is fine usually.
-            // Using document listener to catch events anywhere if focus somehow slipped, 
-            // but ideally we bind to the container if possible? 
-            // Standard trap uses local, but document keydown is safer for catching 'Tab' regardless of where focus is.
-            // Actually, if focus slipped to body, local listener won't fire. Document is safer.
             document.addEventListener('keydown', handleKeyDown);
 
             return () => {
                 document.removeEventListener('keydown', handleKeyDown);
                 // 4. RESTORE FOCUS
-                // Verify we are still in the document before focusing (avoid errors if unmounted)
                 if (previousFocus.current && document.body.contains(previousFocus.current)) {
                     previousFocus.current.focus();
                 }
@@ -94,20 +94,20 @@ export function useFocusTrap(ref, isActive, onClose) {
 function getFocusables(element) {
     if (!element) return [];
 
-    // SynOS Canon: Only Standard Interactives + SynOS Focusable Classes
     const selector = [
-        'a[href]',
-        'button:not([disabled])',
-        'input:not([disabled])',
-        'textarea:not([disabled])',
+        'input:not([disabled]):not([type="hidden"])',
         'select:not([disabled])',
+        'textarea:not([disabled])',
+        'button:not([disabled])',
+        'a[href]',
         '[tabindex]:not([tabindex="-1"])',
-        '.focus-synos:not([disabled])' // Custom Canon Class Support
+        '.focus-synos:not([disabled])'
     ].join(', ');
 
     return Array.from(element.querySelectorAll(selector))
         .filter(el => {
-            // Check visibility (simplified)
-            return el.offsetParent !== null && !el.hasAttribute('hidden') && getComputedStyle(el).display !== 'none';
+            return !el.hasAttribute('hidden') && 
+                   getComputedStyle(el).display !== 'none' &&
+                   getComputedStyle(el).visibility !== 'hidden';
         });
 }

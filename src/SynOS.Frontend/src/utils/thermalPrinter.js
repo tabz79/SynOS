@@ -332,8 +332,9 @@ export async function legacyTriggerPrint(htmlContent) {
         iframe.style.position = 'fixed';
         iframe.style.right = '0';
         iframe.style.bottom = '0';
-        iframe.style.width = '0';
-        iframe.style.height = '0';
+        iframe.style.width = '1px';
+        iframe.style.height = '1px';
+        iframe.style.opacity = '0.01';
         iframe.style.border = '0';
         document.body.appendChild(iframe);
 
@@ -342,13 +343,31 @@ export async function legacyTriggerPrint(htmlContent) {
         doc.write(htmlContent);
         doc.close();
 
-        iframe.onload = function () {
-            iframe.contentWindow.focus();
-            iframe.contentWindow.print();
+        let printed = false;
+        const triggerPrint = () => {
+            if (printed) return;
+            printed = true;
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (err) {
+                console.warn("Direct iframe print call error:", err);
+            }
             setTimeout(() => {
-                document.body.removeChild(iframe);
+                try {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                } catch {}
                 resolve();
-            }, 500);
+            }, 800);
         };
+
+        if (doc.readyState === 'complete') {
+            setTimeout(triggerPrint, 100);
+        } else {
+            iframe.onload = triggerPrint;
+            setTimeout(triggerPrint, 300);
+        }
     });
 }

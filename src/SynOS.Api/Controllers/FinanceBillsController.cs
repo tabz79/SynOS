@@ -256,6 +256,7 @@ namespace SynOS.Api.Controllers
                     PatientName = patientName,
                     BranchId = inv.Visit?.BranchId,
                     BranchName = inv.Visit?.Branch?.Name ?? "Main Facility",
+                    PartnerId = inv.Visit?.ReferralPartnerId ?? inv.Visit?.ReferralPartner?.ReferralPartnerId,
                     PartnerName = partnerName,
                     PartnerCategory = partnerCategory,
                     Department = deptClass,
@@ -644,7 +645,26 @@ namespace SynOS.Api.Controllers
         [HttpPost("partner-claim-statement")]
         public async Task<IActionResult> GetPartnerClaimStatement([FromBody] PartnerClaimStatementRequest request)
         {
-            if (request == null || request.PartnerId == Guid.Empty)
+            if (request == null)
+            {
+                return BadRequest(new { message = "Valid PartnerClaimStatementRequest is required." });
+            }
+
+            // Infer PartnerId from VisitIds if not provided
+            if (request.PartnerId == Guid.Empty && request.VisitIds != null && request.VisitIds.Count > 0)
+            {
+                var inferredPartnerId = await _context.Visits
+                    .Where(v => request.VisitIds.Contains(v.VisitId))
+                    .Select(v => v.ReferralPartnerId)
+                    .FirstOrDefaultAsync();
+
+                if (inferredPartnerId.HasValue && inferredPartnerId.Value != Guid.Empty)
+                {
+                    request.PartnerId = inferredPartnerId.Value;
+                }
+            }
+
+            if (request.PartnerId == Guid.Empty)
             {
                 return BadRequest(new { message = "Valid PartnerId is required." });
             }
@@ -750,6 +770,67 @@ namespace SynOS.Api.Controllers
                     AmountReceived = rec,
                     NetPayableToLab = due
                 });
+            }
+
+            // Fallback: If no ledger facts found but specific visitIds were requested
+            if (facts.Count == 0 && request.VisitIds != null && request.VisitIds.Count > 0)
+            {
+                var directVisits = await _context.Visits
+                    .Include(v => v.Patient)
+                    .Include(v => v.Orders).ThenInclude(o => o.Test)
+                    .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                    .Where(v => request.VisitIds.Contains(v.VisitId))
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                foreach (var v in directVisits)
+                {
+                    var orders = v.Orders ?? new List<SynOS.Models.Entities.Order>();
+                    var tests = orders.Select(o => o.Test?.TestName ?? o.TestCode ?? "Investigation").ToList();
+                    string testSummary = tests.Count > 0 ? string.Join(", ", tests) : "Routine Lab Investigation";
+
+                    var pt = v.Patient;
+                    string ptName = pt != null ? $"{pt.FirstName} {pt.LastName}".Trim() : "Patient";
+                    string ageGen = "";
+                    if (pt != null)
+                    {
+                        if (pt.DateOfBirth != default)
+                        {
+                            int age = DateTime.UtcNow.Year - pt.DateOfBirth.Year;
+                            ageGen = $"{age}Y/{pt.Gender}";
+                        }
+                        else
+                        {
+                            ageGen = pt.Gender ?? "";
+                        }
+                    }
+
+                    var inv = v.Invoices?.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                    decimal billAmount = inv?.Total ?? orders.Sum(o => o.Price);
+                    decimal rec = inv?.Payments?.Sum(p => p.Amount) ?? 0m;
+                    decimal due = Math.Max(0, billAmount - rec);
+
+                    totalBilled += billAmount;
+                    totalReceived += rec;
+                    totalNetDue += due;
+
+                    items.Add(new
+                    {
+                        Index = lineIndex++,
+                        ReceivableFactId = Guid.NewGuid(),
+                        VisitId = v.VisitId,
+                        BillNumber = $"BILL-{v.CreatedAt:yyyyMMdd}-{v.VisitId.ToString().Substring(0, 4).ToUpper()}",
+                        Token = v.Token ?? "COUNTER",
+                        Date = v.CreatedAt,
+                        PatientName = ptName,
+                        AgeGender = ageGen,
+                        Investigations = testSummary,
+                        GrossAmount = billAmount,
+                        Rate = billAmount,
+                        AmountReceived = rec,
+                        NetPayableToLab = due
+                    });
+                }
             }
 
             var now = DateTime.UtcNow;

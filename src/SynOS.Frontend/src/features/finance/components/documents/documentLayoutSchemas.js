@@ -278,9 +278,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     date: { id: 'date', enabled: true, label: 'Date' },
                     patientName: { id: 'patientName', enabled: true, label: 'Patient Name' },
                     investigations: { id: 'investigations', enabled: true, label: 'Prescribed Investigations' },
-                    labBilled: { id: 'labBilled', enabled: true, label: 'Lab Standard Charge (₹)' },
-                    received: { id: 'received', enabled: true, label: 'Directly Collected (₹)' },
-                    netDue: { id: 'netDue', enabled: true, label: 'Net Claim Due (₹)' }
+                    labBilled: { id: 'labBilled', enabled: true, label: 'Lab Tariff (₹)' },
+                    received: { id: 'received', enabled: false, label: 'Direct Paid (₹)' },
+                    netDue: { id: 'netDue', enabled: true, label: 'Claim Due (₹)' }
                 },
                 rows: [
                     { id: 'b2b-1', index: 1, token: 'T-0104', date: '14/10/2026', patientName: 'Mohammed Afzal', investigations: 'CBC, Serum Creatinine', labBilled: 550, received: 0, netDue: 550 },

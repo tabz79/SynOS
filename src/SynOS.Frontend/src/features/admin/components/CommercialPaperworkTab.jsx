@@ -618,23 +618,41 @@ export const CommercialPaperworkTab = () => {
                                                         )}
 
                                                         {/* Table Columns */}
-                                                        {box.columns && (
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                                                {Object.entries(box.columns).map(([colKey, col]) => (
-                                                                    <label key={colKey} className="flex items-center gap-2 text-[11px] cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
-                                                                        <input 
-                                                                            type="checkbox"
-                                                                            checked={col.enabled}
-                                                                            onChange={(e) => handleToggleField(boxKey, colKey, e.target.checked)}
-                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                                                        />
-                                                                        <span className={`font-semibold ${col.enabled ? 'text-zinc-800 dark:text-zinc-200' : 'text-zinc-400 line-through'}`}>
-                                                                            Column: {col.label || colKey}
-                                                                        </span>
-                                                                    </label>
-                                                                ))}
-                                                            </div>
-                                                        )}
+                                                        {box.columns && (() => {
+                                                            const enabledCount = Object.values(box.columns).filter(c => c.enabled).length;
+                                                            const isOverBudget = enabledCount > 6;
+                                                            const isTight = enabledCount === 6;
+
+                                                            return (
+                                                                <div className="space-y-2 mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                                                                    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10px] font-bold ${
+                                                                        isOverBudget 
+                                                                            ? 'bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400' 
+                                                                            : isTight 
+                                                                                ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400'
+                                                                                : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                                    }`}>
+                                                                        <span>A4 Column Budget: {enabledCount} / 6 recommended</span>
+                                                                        <span>{isOverBudget ? '⚠️ Dense / Overflow Risk' : isTight ? 'Optimal Width' : 'Comfortable Fit'}</span>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                        {Object.entries(box.columns).map(([colKey, col]) => (
+                                                                            <label key={colKey} className="flex items-center gap-2 text-[11px] cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
+                                                                                <input 
+                                                                                    type="checkbox" 
+                                                                                    checked={col.enabled}
+                                                                                    onChange={(e) => handleToggleField(boxKey, colKey, e.target.checked)}
+                                                                                    className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                                />
+                                                                                <span className={`font-semibold ${col.enabled ? 'text-zinc-800 dark:text-zinc-200' : 'text-zinc-400 line-through'}`}>
+                                                                                    Column: {col.label || colKey}
+                                                                                </span>
+                                                                            </label>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 )}
                                             </div>

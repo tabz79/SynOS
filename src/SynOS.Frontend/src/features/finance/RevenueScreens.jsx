@@ -548,7 +548,8 @@ export const BillsCollectionsScreen = () => {
     const handleOpenPartnerClaim = async (partnerId, visitIds = null) => {
         try {
             setLoadingDoc(true);
-            const payload = { partnerId };
+            const payload = {};
+            if (partnerId) payload.partnerId = partnerId;
             if (visitIds && visitIds.length > 0) payload.visitIds = visitIds;
             const data = await FinanceApi.getPartnerClaimStatement(payload);
             setDocData(data);

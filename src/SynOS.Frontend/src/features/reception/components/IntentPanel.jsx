@@ -334,7 +334,9 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsLoading(true);
             setIsActionSubmitting(true);
             try {
-                await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
+                const res = await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
+                // Auto-print thermal receipt slip for prepaid visit
+                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
                 handleCloseAndReset();
             } catch (err) {
                 setError(err.message);
@@ -514,19 +516,28 @@ export function IntentPanel({ onVisitUpdated }) {
             {/* Footer / Status Bar - UNIFIED BUTTON */}
             <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
                 {isCorrectionIntent ? (
-                    <div className="flex items-center gap-3 w-full max-w-md mx-auto">
+                    <div className="flex items-center gap-2.5 w-full max-w-lg mx-auto">
                         <button
                             type="button"
-                            onClick={handlePrintReceipt}
-                            className="flex-1 py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm"
+                            onClick={() => handlePrintReceipt()}
+                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
+                            title="Print Thermal 80mm POS Slip"
                         >
-                            <Printer className="w-4 h-4" /> Print Receipt
+                            <Printer className="w-4 h-4" /> Slip
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setTaxInvoiceModal({ isOpen: true, data: buildTaxInvoiceData() })}
+                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
+                            title="Preview & Print Full A4 Invoice"
+                        >
+                            <FileText className="w-4 h-4" /> A4 Bill
                         </button>
                         <button
                             type="button"
                             onClick={handleCloseAndReset}
                             className={cn(
-                                "flex-1 py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95",
+                                "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer",
                                 ui.actionBtn.enabled
                             )}
                         >

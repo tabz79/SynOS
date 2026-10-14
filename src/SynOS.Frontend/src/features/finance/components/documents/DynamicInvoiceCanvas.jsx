@@ -711,86 +711,100 @@ export const DynamicInvoiceCanvas = ({
             )}
 
             {/* 4. LINE ITEMS / CHARGES TABLE BOX */}
-            {boxes.itemsTable?.enabled && (
-                <ModularBoxWrapper 
-                    boxId="itemsTable" 
-                    boxName={boxes.itemsTable.name || "Items & Charges Table"}
-                    onDeleteBox={() => deleteBox('itemsTable')}
-                    onAddCustomLine={(line) => {
-                        const newRow = {
-                            id: `row-${Date.now()}`,
-                            index: (boxes.itemsTable.rows?.length || 0) + 1,
-                            description: line.label || line.value || 'Custom Diagnostic Service',
-                            price: 500,
-                            amount: 500
-                        };
-                        const next = {
-                            ...schema,
-                            boxes: {
-                                ...boxes,
-                                itemsTable: {
-                                    ...boxes.itemsTable,
-                                    rows: [...(boxes.itemsTable.rows || []), newRow]
+            {boxes.itemsTable?.enabled && (() => {
+                const activeColumns = Object.entries(boxes.itemsTable.columns || {}).filter(([_, col]) => col.enabled);
+                const colCount = activeColumns.length;
+                const isDense = colCount >= 7;
+
+                return (
+                    <ModularBoxWrapper 
+                        boxId="itemsTable" 
+                        boxName={boxes.itemsTable.name || "Items & Charges Table"}
+                        onDeleteBox={() => deleteBox('itemsTable')}
+                        onAddCustomLine={(line) => {
+                            const newRow = {
+                                id: `row-${Date.now()}`,
+                                index: (boxes.itemsTable.rows?.length || 0) + 1,
+                                description: line.label || line.value || 'Custom Diagnostic Service',
+                                price: 500,
+                                amount: 500
+                            };
+                            const next = {
+                                ...schema,
+                                boxes: {
+                                    ...boxes,
+                                    itemsTable: {
+                                        ...boxes.itemsTable,
+                                        rows: [...(boxes.itemsTable.rows || []), newRow]
+                                    }
                                 }
-                            }
-                        };
-                        updateSchema(next);
-                    }}
-                >
-                    <div className="mb-3 overflow-hidden rounded-lg border border-zinc-300">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-zinc-100 border-b border-zinc-300 text-[10px] font-black uppercase text-zinc-700 tracking-wider">
-                                    {Object.entries(boxes.itemsTable.columns || {}).map(([colKey, col]) => {
-                                        if (!col.enabled) return null;
-                                        return (
-                                            <th key={colKey} className="p-2 border-r last:border-r-0 border-zinc-200">
-                                                <EditableField 
-                                                    value={col.label}
-                                                    onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
-                                                    onDelete={() => deleteColumn('itemsTable', colKey)}
-                                                    valueClassName="font-black text-zinc-800 text-[10px] uppercase"
-                                                />
-                                            </th>
-                                        );
-                                    })}
-                                    <th className="p-2 w-8 text-center text-zinc-400">✕</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-zinc-200 text-[11px]">
-                                {(boxes.itemsTable.rows || []).map((row, idx) => (
-                                    <tr key={row.id || idx} className="hover:bg-zinc-50 group/row">
-                                        {Object.entries(boxes.itemsTable.columns || {}).map(([colKey, col]) => {
-                                            if (!col.enabled) return null;
-                                            const cellVal = row[colKey] !== undefined ? row[colKey] : (row[col.id] ?? '');
+                            };
+                            updateSchema(next);
+                        }}
+                    >
+                        <div className="mb-3 overflow-x-auto print:overflow-visible rounded-lg border border-zinc-300">
+                            <table className="w-full text-left border-collapse table-auto">
+                                <thead>
+                                    <tr className={`bg-zinc-100 border-b border-zinc-300 font-black uppercase text-zinc-700 tracking-wider ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}>
+                                        {activeColumns.map(([colKey, col]) => {
+                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total'].includes(colKey);
                                             return (
-                                                <td key={colKey} className="p-2 border-r last:border-r-0 border-zinc-200">
+                                                <th 
+                                                    key={colKey} 
+                                                    className={`${isDense ? 'px-1.5 py-1' : 'p-2'} border-r last:border-r-0 border-zinc-200 ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                >
                                                     <EditableField 
-                                                        value={String(cellVal)}
-                                                        onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
-                                                        canDelete={false}
-                                                        valueClassName="font-medium text-zinc-800"
+                                                        value={col.label}
+                                                        onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
+                                                        onDelete={() => deleteColumn('itemsTable', colKey)}
+                                                        valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}
                                                     />
-                                                </td>
+                                                </th>
                                             );
                                         })}
-                                        <td className="p-2 text-center">
-                                            <button 
-                                                type="button"
-                                                onClick={() => deleteRow('itemsTable', row.id)}
-                                                className="opacity-0 group-hover/row:opacity-100 p-0.5 text-rose-500 hover:text-rose-700 rounded cursor-pointer"
-                                                title="Delete line item row"
-                                            >
-                                                <Trash2 size={11} />
-                                            </button>
-                                        </td>
+                                        {!readOnly && <th className="p-1 w-6 text-center text-zinc-400">✕</th>}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </ModularBoxWrapper>
-            )}
+                                </thead>
+                                <tbody className={`divide-y divide-zinc-200 ${isDense ? 'text-[9.5px]' : 'text-[11px]'}`}>
+                                    {(boxes.itemsTable.rows || []).map((row, idx) => (
+                                        <tr key={row.id || idx} className="hover:bg-zinc-50 group/row">
+                                            {activeColumns.map(([colKey, col]) => {
+                                                const cellVal = row[colKey] !== undefined ? row[colKey] : (row[col.id] ?? '');
+                                                const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total'].includes(colKey);
+                                                return (
+                                                    <td 
+                                                        key={colKey} 
+                                                        className={`${isDense ? 'px-1.5 py-1' : 'p-2'} border-r last:border-r-0 border-zinc-200 break-words whitespace-normal ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
+                                                    >
+                                                        <EditableField 
+                                                            value={String(cellVal)}
+                                                            onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
+                                                            canDelete={false}
+                                                            valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : ''}`}
+                                                        />
+                                                    </td>
+                                                );
+                                            })}
+                                            {!readOnly && (
+                                                <td className="p-1 text-center">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => deleteRow('itemsTable', row.id)}
+                                                        className="opacity-0 group-hover/row:opacity-100 p-0.5 text-rose-500 hover:text-rose-700 rounded cursor-pointer"
+                                                        title="Delete line item row"
+                                                    >
+                                                        <Trash2 size={11} />
+                                                    </button>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </ModularBoxWrapper>
+                );
+            })()}
 
             {/* 5. FINANCIAL TOTALS & TAX BREAKUP BOX */}
             {boxes.financialSummary?.enabled && (
