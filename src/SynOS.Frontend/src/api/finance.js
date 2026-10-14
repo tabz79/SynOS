@@ -103,7 +103,7 @@ export const FinanceApi = {
     },
 
     /**
-     * Generates a B2B Partner Claim Statement / Bill for a referral partner.
+     * Generates a B2B Partner Diagnostic Invoice for a referral partner.
      */
     getPartnerClaimStatement: async (payload) => {
         const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/partner-claim-statement'), {
@@ -111,7 +111,20 @@ export const FinanceApi = {
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify(payload)
         });
-        if (!response.ok) throw new Error("Failed to generate partner claim statement");
+        if (!response.ok) throw new Error("Failed to generate partner invoice");
+        return response.json();
+    },
+
+    /**
+     * Generates a Referral Commission Payout Voucher for a doctor / partner.
+     */
+    getReferralPayoutVoucher: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/referral-payout-voucher'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error("Failed to generate referral payout voucher");
         return response.json();
     },
 

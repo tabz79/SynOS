@@ -653,6 +653,162 @@ namespace SynOS.Api.Controllers
 
         #endregion
 
+        #region Referral Commission Payout Voucher
+
+        public class ReferralPayoutVoucherRequest
+        {
+            public Guid PartnerId { get; set; }
+            public List<Guid>? FactIds { get; set; }
+            public List<Guid>? VisitIds { get; set; }
+            public DateTime? StartDate { get; set; }
+            public DateTime? EndDate { get; set; }
+            public bool OnlyUnsettled { get; set; } = true;
+            public decimal TdsPercentage { get; set; } = 0; // TDS under Section 194H
+        }
+
+        [HttpPost("referral-payout-voucher")]
+        public async Task<IActionResult> GetReferralPayoutVoucher([FromBody] ReferralPayoutVoucherRequest request)
+        {
+            if (request == null || request.PartnerId == Guid.Empty)
+            {
+                return BadRequest(new { message = "Valid PartnerId is required." });
+            }
+
+            var partner = await _context.ReferralPartners
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.ReferralPartnerId == request.PartnerId);
+
+            if (partner == null)
+            {
+                return NotFound(new { message = "Referral Partner not found." });
+            }
+
+            var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var settings = await GetStationerySettingsInternalAsync(lab);
+
+            var query = _context.ReferralPayableFacts
+                .AsNoTracking()
+                .Where(f => f.ReferralPartnerId == request.PartnerId);
+
+            if (request.FactIds != null && request.FactIds.Count > 0)
+            {
+                query = query.Where(f => request.FactIds.Contains(f.ReferralPayableFactId));
+            }
+            else if (request.VisitIds != null && request.VisitIds.Count > 0)
+            {
+                query = query.Where(f => request.VisitIds.Contains(f.SourceVisitId));
+            }
+            else
+            {
+                if (request.OnlyUnsettled)
+                {
+                    query = query.Where(f => f.SettledAt == null && (f.Amount - f.AmountPaid) > 0);
+                }
+                if (request.StartDate.HasValue) query = query.Where(f => f.OccurredAt >= request.StartDate.Value);
+                if (request.EndDate.HasValue) query = query.Where(f => f.OccurredAt <= request.EndDate.Value);
+            }
+
+            var facts = await query.OrderByDescending(f => f.OccurredAt).ToListAsync();
+
+            var visitIds = facts.Select(f => f.SourceVisitId).Distinct().ToList();
+            var visits = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                .Where(v => visitIds.Contains(v.VisitId))
+                .AsNoTracking()
+                .ToDictionaryAsync(v => v.VisitId);
+
+            var items = new List<object>();
+            decimal grossPayout = 0;
+
+            int lineIndex = 1;
+            foreach (var fact in facts)
+            {
+                visits.TryGetValue(fact.SourceVisitId, out var visit);
+                var orders = visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
+                var tests = orders.Select(o => o.Test?.TestName ?? o.TestCode ?? "Investigation").ToList();
+                string testSummary = tests.Count > 0 ? string.Join(", ", tests) : "Routine Lab Investigation";
+
+                var pt = visit?.Patient;
+                string ptName = pt != null ? $"{pt.FirstName} {pt.LastName}".Trim() : "Patient";
+                string ageGen = "";
+                if (pt != null)
+                {
+                    if (pt.DateOfBirth != default)
+                    {
+                        int age = DateTime.UtcNow.Year - pt.DateOfBirth.Year;
+                        ageGen = $"{age}Y/{pt.Gender}";
+                    }
+                    else
+                    {
+                        ageGen = pt.Gender ?? "";
+                    }
+                }
+
+                decimal visitBilled = orders.Sum(o => o.Price);
+                decimal commissionAmount = fact.Amount - fact.AmountPaid;
+                grossPayout += commissionAmount;
+
+                items.Add(new
+                {
+                    Index = lineIndex++,
+                    FactId = fact.ReferralPayableFactId,
+                    VisitId = fact.SourceVisitId,
+                    Token = visit?.Token ?? fact.ReferralPayableFactId.ToString().Substring(0, 8),
+                    Date = fact.OccurredAt,
+                    PatientName = ptName,
+                    AgeGender = ageGen,
+                    Investigations = testSummary,
+                    PatientBilledAmount = visitBilled,
+                    CommissionAmount = commissionAmount
+                });
+            }
+
+            decimal tdsAmount = Math.Round(grossPayout * (request.TdsPercentage / 100m), 2);
+            decimal netDisbursed = Math.Max(0, grossPayout - tdsAmount);
+
+            var now = DateTime.UtcNow;
+            var safePartner = (partner.Name ?? "DR").Replace(" ", "").Replace(".", "");
+            var pCode = safePartner.Substring(0, Math.Min(3, safePartner.Length)).ToUpper();
+            var voucherNo = $"VCH-{now:yyyyMM}-{pCode}{now:ddHHmm}";
+
+            return Ok(new
+            {
+                VoucherNumber = voucherNo,
+                Date = now,
+                BillingPeriod = request.StartDate.HasValue && request.EndDate.HasValue 
+                    ? $"{request.StartDate.Value:dd MMM yyyy} to {request.EndDate.Value:dd MMM yyyy}" 
+                    : $"Settlement as of {now:dd MMM yyyy}",
+                
+                Lab = settings,
+
+                Doctor = new
+                {
+                    PartnerId = partner.ReferralPartnerId,
+                    Name = partner.Name,
+                    ClinicName = !string.IsNullOrEmpty(partner.ClinicName) ? partner.ClinicName : $"{partner.Name}'s Clinic / Practice",
+                    Address = !string.IsNullOrEmpty(partner.Location) ? partner.Location : "Registered Medical Practice",
+                    Phone = partner.ContactInfo ?? "N/A",
+                    PartnerType = partner.PartnerType.ToString()
+                },
+
+                Items = items,
+
+                Summary = new
+                {
+                    TotalVisitsCount = items.Count,
+                    GrossCommission = grossPayout,
+                    TdsPercentage = request.TdsPercentage,
+                    TdsAmount = tdsAmount,
+                    NetDisbursed = netDisbursed,
+                    AmountInWords = NumberToIndianWords(netDisbursed)
+                }
+            });
+        }
+
+        #endregion
+
         #region Internal Stationery Helper & Number to Indian Words
 
         private class InternalStationerySettings

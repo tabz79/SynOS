@@ -757,7 +757,7 @@ export const BillsCollectionsScreen = () => {
                             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                         >
                             <Receipt size={15} />
-                            <span>Doctor Claim Bill ({partnerBillsWithPending.length})</span>
+                            <span>Doctor Invoice ({partnerBillsWithPending.length})</span>
                         </button>
                     )}
 
@@ -1034,15 +1034,15 @@ export const BillsCollectionsScreen = () => {
                                                     <span className="hidden sm:inline">A4 Bill</span>
                                                 </button>
 
-                                                {/* B2B Doctor Claim Bill (For Partner bills) */}
+                                                {/* B2B Doctor Invoice (For Partner bills) */}
                                                 {bill.partnerCategory === 'Partner' && (
                                                     <button
                                                         onClick={() => handleOpenPartnerClaim(bill.partnerId || bill.referralPartnerId, [bill.visitId])}
-                                                        title="Generate B2B Doctor Claim Bill for this visit"
+                                                        title="Generate B2B Diagnostic Invoice for this visit"
                                                         className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                                                     >
                                                         <Receipt size={12} />
-                                                        <span>Claim</span>
+                                                        <span>Invoice</span>
                                                     </button>
                                                 )}
 
@@ -1087,7 +1087,7 @@ export const BillsCollectionsScreen = () => {
                 <CommercialDocumentViewer
                     isOpen={Boolean(docModalType)}
                     onClose={() => { setDocModalType(null); setDocData(null); }}
-                    title={docModalType === 'claim' ? "B2B Partner Claim Bill & Statement" : "Patient Tax Invoice (A4)"}
+                    title={docModalType === 'claim' ? "B2B Diagnostic Tax Invoice" : "Patient Tax Invoice (A4)"}
                     onWhatsAppShare={docModalType === 'claim' ? handleWhatsAppClaimShare : null}
                     defaultLetterheadMode={docData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={docData?.lab?.topMarginMm || 40}
@@ -1155,7 +1155,7 @@ export const PendingReceivablesScreen = () => {
             setIsClaimDocOpen(true);
         } catch (err) {
             console.error("Failed to load partner claim:", err);
-            alert("Could not load claim bill: " + (err.response?.data?.message || err.message));
+            alert("Could not load invoice: " + (err.response?.data?.message || err.message));
         } finally {
             setGeneratingClaim(false);
         }
@@ -1167,7 +1167,7 @@ export const PendingReceivablesScreen = () => {
         const cleanPhone = phone.replace(/[^0-9]/g, '');
         const netDue = claimDocData?.summary?.netClaimDue || 0;
         const count = claimDocData?.items?.length || 0;
-        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Selected Patient Visits: ${count}\n• Total Diagnostic Charges: ₹${netDue.toLocaleString()}\n• Net Amount Payable: ₹${netDue.toLocaleString()}\n\nRemittance details and UPI QR are attached in the claim bill. Please verify and settle dues at your earliest convenience. Thank you!`;
+        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic B2B Invoice from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Selected Patient Visits: ${count}\n• Total Diagnostic Charges: ₹${netDue.toLocaleString()}\n• Net Amount Payable: ₹${netDue.toLocaleString()}\n\nRemittance details and UPI QR are attached in the invoice. Please verify and settle dues at your earliest convenience. Thank you!`;
         window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
@@ -1273,11 +1273,11 @@ export const PendingReceivablesScreen = () => {
                                                 <button
                                                     onClick={() => handleOpenPartnerClaim(partner)}
                                                     disabled={generatingClaim}
-                                                    title="Generate A4 B2B Claim Bill for Referral Partner"
+                                                    title="Generate B2B Diagnostic Tax Invoice for Referral Partner"
                                                     className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
                                                 >
                                                     <Receipt size={12} />
-                                                    <span>Claim Bill</span>
+                                                    <span>B2B Invoice</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => handleBulkSettle(partner)}
@@ -1334,7 +1334,7 @@ export const PendingReceivablesScreen = () => {
                                                                         className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
                                                                     >
                                                                         <Receipt size={13} />
-                                                                        <span>Generate Claim Bill ({selectedCount})</span>
+                                                                        <span>Generate B2B Invoice ({selectedCount})</span>
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -1430,7 +1430,7 @@ export const PendingReceivablesScreen = () => {
                         setIsClaimDocOpen(false);
                         setClaimDocData(null);
                     }}
-                    title={`B2B Partner Claim Bill - ${claimDocData?.partner?.name || 'Partner'}`}
+                    title={`B2B Diagnostic Invoice - ${claimDocData?.partner?.name || 'Partner'}`}
                     onWhatsAppShare={handleWhatsAppClaimShare}
                     defaultLetterheadMode={claimDocData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={claimDocData?.lab?.topMarginMm || 40}

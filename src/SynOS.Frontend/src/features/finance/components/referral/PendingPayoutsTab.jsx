@@ -9,9 +9,12 @@ import {
     Search,
     Filter,
     CheckCircle2,
-    X
+    X,
+    Receipt
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
+import { ReferralPayoutVoucherA4 } from '../documents/ReferralPayoutVoucherA4';
 
 export const PendingPayoutsTab = () => {
     const [payables, setPayables] = useState([]);
@@ -20,6 +23,12 @@ export const PendingPayoutsTab = () => {
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [settling, setSettling] = useState(false);
     const [expandedPartnerId, setExpandedPartnerId] = useState(null);
+
+    // Enterprise Referral Payout Voucher State
+    const [voucherDocData, setVoucherDocData] = useState(null);
+    const [isVoucherOpen, setIsVoucherOpen] = useState(false);
+    const [generatingVoucher, setGeneratingVoucher] = useState(false);
+    const [selectedFactIds, setSelectedFactIds] = useState(new Set());
 
     useEffect(() => {
         loadData();
@@ -80,6 +89,38 @@ export const PendingPayoutsTab = () => {
         } finally {
             setSettling(false);
         }
+    };
+
+    const handleGeneratePayoutVoucher = async (partner, specificFactIds = null) => {
+        try {
+            setGeneratingVoucher(true);
+            const targetFactIds = specificFactIds && specificFactIds.length > 0
+                ? specificFactIds
+                : partner.items.map(i => i.factId);
+            
+            const res = await FinanceApi.getReferralPayoutVoucher({
+                partnerId: partner.partnerId,
+                factIds: targetFactIds
+            });
+            setVoucherDocData(res);
+            setIsVoucherOpen(true);
+        } catch (err) {
+            console.error("Failed to generate referral payout voucher:", err);
+            alert("Could not load payout voucher: " + (err.response?.data?.message || err.message));
+        } finally {
+            setGeneratingVoucher(false);
+        }
+    };
+
+    const handleWhatsAppVoucherShare = () => {
+        if (!voucherDocData) return;
+        const phone = voucherDocData?.doctor?.phone || '';
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        const netPayout = voucherDocData?.summary?.netPayoutAmount || 0;
+        const count = voucherDocData?.items?.length || 0;
+        const voucherNo = voucherDocData?.voucherNo || 'VCH';
+        const msg = `Dear ${voucherDocData?.doctor?.name || 'Doctor'},\n\nReferral Commission Payout Voucher (${voucherNo}) from ${voucherDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Referred Patient Visits: ${count}\n• Gross Commission: ₹${(voucherDocData?.summary?.grossReferralAmount || 0).toLocaleString()}\n• TDS Deducted: ₹${(voucherDocData?.summary?.tdsDeduction || 0).toLocaleString()}\n• Net Disbursed Payout: ₹${netPayout.toLocaleString()}\n\nPayment advice and bank remittance particulars are attached. Please acknowledge receipt. Thank you!`;
+        window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     const filtered = payables.filter(p => p.partnerName.toLowerCase().includes(search.toLowerCase()));
@@ -147,46 +188,141 @@ export const PendingPayoutsTab = () => {
                                         </td>
                                         <td className="p-6 text-xs text-zinc-400 font-medium">{new Date(partner.oldestDate).toLocaleDateString()}</td>
                                         <td className="p-6 text-right">
-                                            <button 
-                                                onClick={() => setSelectedPartner(partner)}
-                                                className="px-4 py-2 rounded-xl bg-synos-primary text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 active:scale-95 transition-all"
-                                            >
-                                                Settle Dues
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button 
+                                                    onClick={() => handleGeneratePayoutVoucher(partner)}
+                                                    disabled={generatingVoucher}
+                                                    title="Generate Official Referral Commission Payout Voucher (A4)"
+                                                    className="px-3 py-2 rounded-xl border border-synos-primary/30 dark:border-synos-primary/40 bg-synos-primary/5 dark:bg-synos-primary/10 text-synos-primary text-[10px] font-black uppercase tracking-wider hover:bg-synos-primary/15 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                >
+                                                    <Receipt size={12} />
+                                                    <span>Payout Voucher</span>
+                                                </button>
+                                                <button 
+                                                    onClick={() => setSelectedPartner(partner)}
+                                                    className="px-4 py-2 rounded-xl bg-synos-primary text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 active:scale-95 transition-all cursor-pointer"
+                                                >
+                                                    Settle Dues
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
-                                    {expandedPartnerId === partner.partnerId && (
-                                        <tr>
-                                            <td colSpan="5" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
-                                                <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
-                                                    <table className="w-full text-left">
-                                                        <thead>
-                                                            <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
-                                                                <th className="pb-2">Token / Reference</th>
-                                                                <th className="pb-2">Patient</th>
-                                                                <th className="pb-2">Date</th>
-                                                                <th className="pb-2 text-right">Original</th>
-                                                                <th className="pb-2 text-right">Paid</th>
-                                                                <th className="pb-2 text-right">Balance</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
-                                                            {partner.items.map(fact => (
-                                                                <tr key={fact.factId}>
-                                                                    <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || 'N/A'}</td>
-                                                                    <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
-                                                                    <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.createdAt).toLocaleDateString()}</td>
-                                                                    <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.originalAmount?.toLocaleString()}</td>
-                                                                    <td className="py-3 text-[10px] font-black text-right text-emerald-500">₹{fact.amountPaid?.toLocaleString()}</td>
-                                                                    <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{fact.amount?.toLocaleString()}</td>
+                                    {expandedPartnerId === partner.partnerId && (() => {
+                                        const partnerFactIds = partner.items.map(i => i.factId);
+                                        const selectedInPartner = partner.items.filter(i => selectedFactIds.has(i.factId));
+                                        const selectedCount = selectedInPartner.length;
+                                        const selectedSum = selectedInPartner.reduce((sum, i) => sum + (i.amount || 0), 0);
+                                        const allPartnerSelected = partner.items.length > 0 && selectedCount === partner.items.length;
+
+                                        return (
+                                            <tr>
+                                                <td colSpan="5" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                    <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
+                                                        
+                                                        {/* BATCH SELECTION ACTION BAR */}
+                                                        {selectedCount > 0 && (
+                                                            <div className="flex items-center justify-between p-3.5 mb-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 animate-in fade-in duration-200">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-7 h-7 rounded-lg bg-synos-primary text-white flex items-center justify-center font-black text-xs shadow-xs">
+                                                                        {selectedCount}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                                                                            {selectedCount} of {partner.items.length} Commissions Selected
+                                                                        </p>
+                                                                        <p className="text-[10px] text-zinc-500 font-medium">
+                                                                            Total Selected Payout: <strong className="text-synos-primary font-mono">₹{selectedSum.toLocaleString()}</strong>
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const next = new Set(selectedFactIds);
+                                                                            partnerFactIds.forEach(id => next.delete(id));
+                                                                            setSelectedFactIds(next);
+                                                                        }}
+                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
+                                                                    >
+                                                                        Clear Selection
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleGeneratePayoutVoucher(partner, selectedInPartner.map(i => i.factId))}
+                                                                        disabled={generatingVoucher}
+                                                                        className="px-4 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-synos-primary/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                    >
+                                                                        <Receipt size={13} />
+                                                                        <span>Generate Payout Voucher ({selectedCount})</span>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <table className="w-full text-left">
+                                                            <thead>
+                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                    <th className="pb-2 w-8 text-center">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={allPartnerSelected}
+                                                                            onChange={(e) => {
+                                                                                const next = new Set(selectedFactIds);
+                                                                                if (e.target.checked) {
+                                                                                    partnerFactIds.forEach(id => next.add(id));
+                                                                                } else {
+                                                                                    partnerFactIds.forEach(id => next.delete(id));
+                                                                                }
+                                                                                setSelectedFactIds(next);
+                                                                            }}
+                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary cursor-pointer"
+                                                                            title={allPartnerSelected ? "Deselect all" : "Select all commissions"}
+                                                                        />
+                                                                    </th>
+                                                                    <th className="pb-2">Token / Reference</th>
+                                                                    <th className="pb-2">Patient</th>
+                                                                    <th className="pb-2">Date</th>
+                                                                    <th className="pb-2 text-right">Original Bill</th>
+                                                                    <th className="pb-2 text-right">Patient Paid</th>
+                                                                    <th className="pb-2 text-right">Doctor Commission</th>
                                                                 </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )}
+                                                            </thead>
+                                                            <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
+                                                                {partner.items.map(fact => {
+                                                                    const isChecked = selectedFactIds.has(fact.factId);
+                                                                    return (
+                                                                        <tr key={fact.factId} className={isChecked ? 'bg-synos-primary/5 dark:bg-synos-primary/10' : ''}>
+                                                                            <td className="py-3 w-8 text-center">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={isChecked}
+                                                                                    onChange={(e) => {
+                                                                                        const next = new Set(selectedFactIds);
+                                                                                        if (e.target.checked) {
+                                                                                            next.add(fact.factId);
+                                                                                        } else {
+                                                                                            next.delete(fact.factId);
+                                                                                        }
+                                                                                        setSelectedFactIds(next);
+                                                                                    }}
+                                                                                    className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary cursor-pointer"
+                                                                                />
+                                                                            </td>
+                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || 'N/A'}</td>
+                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.createdAt).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.originalAmount?.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-emerald-500">₹{fact.amountPaid?.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-synos-primary">₹{fact.amount?.toLocaleString()}</td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })()}
                                 </React.Fragment>
                             ))}
                         </tbody>
@@ -201,6 +337,23 @@ export const PendingPayoutsTab = () => {
                     onConfirm={(amount, method) => handleSettleBulk(selectedPartner, amount, method)}
                     settling={settling}
                 />
+            )}
+
+            {/* ENTERPRISE DOCTOR COMMISSION PAYOUT VOUCHER VIEWER */}
+            {isVoucherOpen && voucherDocData && (
+                <CommercialDocumentViewer
+                    isOpen={isVoucherOpen}
+                    onClose={() => {
+                        setIsVoucherOpen(false);
+                        setVoucherDocData(null);
+                    }}
+                    title={`Doctor Commission Payout Voucher - ${voucherDocData?.doctor?.name || 'Doctor'}`}
+                    onWhatsAppShare={handleWhatsAppVoucherShare}
+                    defaultLetterheadMode={voucherDocData?.lab?.defaultLetterheadMode || "digital"}
+                    topMarginMm={voucherDocData?.lab?.topMarginMm || 40}
+                >
+                    <ReferralPayoutVoucherA4 data={voucherDocData} />
+                </CommercialDocumentViewer>
             )}
         </div>
     );

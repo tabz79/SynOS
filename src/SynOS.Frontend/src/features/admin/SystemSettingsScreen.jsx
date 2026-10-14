@@ -63,10 +63,12 @@ import {
   Database,
   LifeBuoy,
   Info,
-  Cpu
+  Cpu,
+  FileSpreadsheet
 } from 'lucide-react';
 import { apiClient } from '@/api/client';
 import { MachineIntegrationTab } from './components/MachineIntegrationTab';
+import { CommercialPaperworkTab } from './components/CommercialPaperworkTab';
 
 export function SystemSettingsScreen() {
   const { theme } = useTheme();
@@ -1210,6 +1212,7 @@ export function SystemSettingsScreen() {
             { id: 'branches', label: 'Branches', icon: Globe },
             { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
             { id: 'printing', label: 'Printing Setup', icon: Printer },
+            { id: 'paperwork', label: 'Invoices & Paperwork', icon: FileSpreadsheet },
             { id: 'machines', label: 'Machine Interfacing', icon: Cpu },
             { id: 'audit', label: 'Audit Logs', icon: History },
             { id: 'backup', label: 'Backup & Restore', icon: Database },
@@ -3574,6 +3577,11 @@ export function SystemSettingsScreen() {
               </div>
             )}
           </div>
+        )}
+
+        {/* COMMERCIAL PAPERWORK & INVOICES BUILDER TAB */}
+        {activeTab === 'paperwork' && (
+          <CommercialPaperworkTab />
         )}
 
         {/* MACHINE INTEGRATION TAB */}

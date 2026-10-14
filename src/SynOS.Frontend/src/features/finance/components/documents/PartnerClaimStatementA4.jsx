@@ -49,13 +49,13 @@ export const PartnerClaimStatementA4 = ({
                         {/* DOCUMENT BADGE */}
                         <div className="text-right space-y-1">
                             <div className="inline-block px-3 py-1 bg-indigo-900 text-white rounded font-black text-[11px] tracking-wider uppercase">
-                                B2B Partner Claim Bill
+                                B2B Diagnostic Tax Invoice
                             </div>
                             <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider block">
-                                Statement of Account
+                                Partner Diagnostic Invoice
                             </p>
                             <p className="text-[9px] text-zinc-400 font-semibold">
-                                Diagnostic Services Settlement
+                                Diagnostic Services Bill
                             </p>
                         </div>
                     </div>

@@ -196,11 +196,11 @@ export const PartnerReceivablesTab = () => {
                                                 <button
                                                     onClick={() => handleGenerateClaimStatement(partner)}
                                                     disabled={generatingClaim}
-                                                    title="Generate A4 B2B Claim Bill to recover partner collections"
+                                                    title="Generate B2B Diagnostic Tax Invoice for partner collections"
                                                     className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
                                                 >
                                                     <Receipt size={12} />
-                                                    <span>Claim Bill</span>
+                                                    <span>B2B Invoice</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => setSelectedPartner(partner)}
@@ -256,7 +256,7 @@ export const PartnerReceivablesTab = () => {
                                                                         className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
                                                                     >
                                                                         <Receipt size={13} />
-                                                                        <span>Generate Claim Bill ({selectedCount})</span>
+                                                                        <span>Generate B2B Invoice ({selectedCount})</span>
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -349,7 +349,7 @@ export const PartnerReceivablesTab = () => {
                         setIsClaimDocOpen(false);
                         setClaimDocData(null);
                     }}
-                    title={`B2B Partner Claim Bill - ${claimDocData?.partner?.name || 'Partner'}`}
+                    title={`B2B Diagnostic Invoice - ${claimDocData?.partner?.name || 'Partner'}`}
                     onWhatsAppShare={handleWhatsAppClaimShare}
                     defaultLetterheadMode={claimDocData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={claimDocData?.lab?.topMarginMm || 40}
