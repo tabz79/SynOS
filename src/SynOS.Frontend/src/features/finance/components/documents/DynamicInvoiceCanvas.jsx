@@ -11,7 +11,8 @@ import {
     Layers, 
     Info,
     Sparkles,
-    FileText
+    FileText,
+    Building2
 } from 'lucide-react';
 
 const CanvasContext = createContext({ readOnly: false });
@@ -273,7 +274,8 @@ export const DynamicInvoiceCanvas = ({
     }
 
     const { boxes } = schema;
-    const isThermal = schema.isThermal || letterheadMode === 'raw_thermal';
+    const isThermal = schema.isThermal || letterheadMode === 'raw_thermal' || schema.paperSize === 'thermal80';
+    const effectiveLogo = labSettings?.logoUrl || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : null);
 
     // Helper to update schema immutably
     const updateSchema = (newSchema) => {
@@ -486,93 +488,179 @@ export const DynamicInvoiceCanvas = ({
                         <div style={{ height: `${topMarginMm}mm` }} className="w-full flex items-center justify-center border border-dashed border-zinc-300 rounded text-zinc-400 text-[10px] uppercase font-bold tracking-wider">
                             Pre-Printed Stationery Clearance ({topMarginMm} mm)
                         </div>
+                    ) : isThermal ? (
+                        <div className="border-b-2 border-zinc-900 pb-2 mb-2 text-center">
+                            {effectiveLogo && (
+                                <div className="flex justify-center mb-1.5">
+                                    <img 
+                                        src={effectiveLogo} 
+                                        alt="Diagnostic Brand Logo" 
+                                        className="max-h-12 max-w-[130px] object-contain filter grayscale contrast-125" 
+                                    />
+                                </div>
+                            )}
+                            {boxes.header.fields?.legalName?.enabled && (
+                                <div className="block">
+                                    <EditableField 
+                                        value={labSettings.labLegalName || boxes.header.fields.legalName.value}
+                                        onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
+                                        onDelete={() => deleteField('header', 'legalName')}
+                                        valueClassName="text-sm font-black text-zinc-900 tracking-tight uppercase"
+                                    />
+                                </div>
+                            )}
+                            {boxes.header.fields?.tagline?.enabled && (
+                                <div className="block">
+                                    <EditableField 
+                                        value={labSettings.labTradeName || boxes.header.fields.tagline.value}
+                                        onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
+                                        onDelete={() => deleteField('header', 'tagline')}
+                                        valueClassName="text-[9px] font-bold text-zinc-600 uppercase block"
+                                    />
+                                </div>
+                            )}
+                            {boxes.header.fields?.address?.enabled && (
+                                <div className="block">
+                                    <EditableField 
+                                        value={labSettings.address || boxes.header.fields.address.value}
+                                        onSave={(_, val) => updateField('header', 'address', undefined, val)}
+                                        onDelete={() => deleteField('header', 'address')}
+                                        valueClassName="text-[8.5px] text-zinc-500 block leading-tight mt-0.5"
+                                    />
+                                </div>
+                            )}
+                            <div className="flex justify-center flex-wrap items-center gap-x-2 text-[8.5px] text-zinc-700 font-semibold mt-0.5">
+                                {boxes.header.fields?.gstin?.enabled && (
+                                    <EditableField 
+                                        label="GSTIN:"
+                                        value={labSettings.gstin || boxes.header.fields.gstin.value}
+                                        onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
+                                        onDelete={() => deleteField('header', 'gstin')}
+                                        valueClassName="font-mono font-bold text-zinc-900"
+                                    />
+                                )}
+                                {boxes.header.fields?.phone?.enabled && (
+                                    <EditableField 
+                                        label="Ph:"
+                                        value={labSettings.phone || boxes.header.fields.phone.value}
+                                        onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
+                                        onDelete={() => deleteField('header', 'phone')}
+                                        valueClassName="font-mono text-zinc-800"
+                                    />
+                                )}
+                            </div>
+                        </div>
                     ) : (
                         <div className="border-b-2 border-zinc-900 pb-3 mb-3">
-                            <div className="space-y-1">
-                                {boxes.header.fields?.legalName?.enabled && (
-                                    <div className="block">
-                                        <EditableField 
-                                            value={labSettings.labLegalName || boxes.header.fields.legalName.value}
-                                            onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
-                                            onDelete={() => deleteField('header', 'legalName')}
-                                            valueClassName="text-lg font-black text-zinc-900 tracking-tight uppercase"
-                                        />
-                                    </div>
-                                )}
-                                {boxes.header.fields?.tagline?.enabled && (
-                                    <div className="block">
-                                        <EditableField 
-                                            value={labSettings.labTradeName || boxes.header.fields.tagline.value}
-                                            onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
-                                            onDelete={() => deleteField('header', 'tagline')}
-                                            valueClassName="text-[11px] font-bold text-zinc-600 block"
-                                        />
-                                    </div>
-                                )}
-                                {boxes.header.fields?.address?.enabled && (
-                                    <div className="block">
-                                        <EditableField 
-                                            value={labSettings.address || boxes.header.fields.address.value}
-                                            onSave={(_, val) => updateField('header', 'address', undefined, val)}
-                                            onDelete={() => deleteField('header', 'address')}
-                                            valueClassName="text-[10px] text-zinc-500 leading-relaxed block"
-                                        />
-                                    </div>
-                                )}
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-zinc-600 font-semibold pt-0.5">
-                                    {boxes.header.fields?.phone?.enabled && (
-                                        <EditableField 
-                                            label="Phone:"
-                                            value={labSettings.phone || boxes.header.fields.phone.value}
-                                            onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
-                                            onDelete={() => deleteField('header', 'phone')}
-                                            valueClassName="font-mono text-zinc-800"
-                                        />
-                                    )}
-                                    {boxes.header.fields?.email?.enabled && (
-                                        <EditableField 
-                                            label="Email:"
-                                            value={labSettings.email || boxes.header.fields.email.value}
-                                            onSave={(lbl, val) => updateField('header', 'email', lbl, val)}
-                                            onDelete={() => deleteField('header', 'email')}
-                                            valueClassName="text-zinc-800"
-                                        />
-                                    )}
-                                    {boxes.header.fields?.gstin?.enabled && (
-                                        <EditableField 
-                                            label="GSTIN:"
-                                            value={labSettings.gstin || boxes.header.fields.gstin.value}
-                                            onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
-                                            onDelete={() => deleteField('header', 'gstin')}
-                                            valueClassName="font-mono font-bold text-zinc-900"
-                                        />
-                                    )}
-                                    {boxes.header.fields?.pan?.enabled && (
-                                        <EditableField 
-                                            label="PAN:"
-                                            value={labSettings.pan || boxes.header.fields.pan.value}
-                                            onSave={(lbl, val) => updateField('header', 'pan', lbl, val)}
-                                            onDelete={() => deleteField('header', 'pan')}
-                                            valueClassName="font-mono font-bold text-zinc-900"
-                                        />
+                            <div className="flex items-start gap-4">
+                                {/* Top-Left Diagnostics Brand Logo */}
+                                <div className="shrink-0 pt-0.5">
+                                    {effectiveLogo ? (
+                                        <div className="w-20 h-20 sm:w-24 sm:h-24 p-1.5 rounded-xl border border-zinc-200 bg-white flex items-center justify-center overflow-hidden shadow-xs">
+                                            <img 
+                                                src={effectiveLogo} 
+                                                alt="Diagnostic Centre Brand Logo" 
+                                                className="w-full h-full object-contain" 
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div 
+                                            title="Brand Logo: Upload your clinic or diagnostic logo in Commercial Paperwork Studio"
+                                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/40 flex flex-col items-center justify-center text-zinc-400 p-2 text-center select-none"
+                                        >
+                                            <Building2 size={24} className="mb-1 text-zinc-400" />
+                                            <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Brand Logo</span>
+                                        </div>
                                     )}
                                 </div>
 
-                                {/* Custom Lines in Header */}
-                                {boxes.header.customLines?.map(line => (
-                                    <div key={line.id} className="pt-0.5">
-                                        <EditableField 
-                                            label={line.label ? `${line.label}:` : ""}
-                                            value={line.value}
-                                            onSave={(lbl, val) => {
-                                                const nextLines = boxes.header.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
-                                                updateSchema({ ...schema, boxes: { ...boxes, header: { ...boxes.header, customLines: nextLines } } });
-                                            }}
-                                            onDelete={() => deleteCustomLine('header', line.id)}
-                                            valueClassName="text-[10px] text-zinc-700 font-medium"
-                                        />
+                                {/* Header Particulars (Legal Name, Trade Name, Address, Contact) */}
+                                <div className="flex-1 min-w-0 space-y-1">
+                                    {boxes.header.fields?.legalName?.enabled && (
+                                        <div className="block">
+                                            <EditableField 
+                                                value={labSettings.labLegalName || boxes.header.fields.legalName.value}
+                                                onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
+                                                onDelete={() => deleteField('header', 'legalName')}
+                                                valueClassName="text-lg font-black text-zinc-900 tracking-tight uppercase"
+                                            />
+                                        </div>
+                                    )}
+                                    {boxes.header.fields?.tagline?.enabled && (
+                                        <div className="block">
+                                            <EditableField 
+                                                value={labSettings.labTradeName || boxes.header.fields.tagline.value}
+                                                onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
+                                                onDelete={() => deleteField('header', 'tagline')}
+                                                valueClassName="text-[11px] font-bold text-zinc-600 block"
+                                            />
+                                        </div>
+                                    )}
+                                    {boxes.header.fields?.address?.enabled && (
+                                        <div className="block">
+                                            <EditableField 
+                                                value={labSettings.address || boxes.header.fields.address.value}
+                                                onSave={(_, val) => updateField('header', 'address', undefined, val)}
+                                                onDelete={() => deleteField('header', 'address')}
+                                                valueClassName="text-[10px] text-zinc-500 leading-relaxed block"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-zinc-600 font-semibold pt-0.5">
+                                        {boxes.header.fields?.phone?.enabled && (
+                                            <EditableField 
+                                                label="Phone:"
+                                                value={labSettings.phone || boxes.header.fields.phone.value}
+                                                onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
+                                                onDelete={() => deleteField('header', 'phone')}
+                                                valueClassName="font-mono text-zinc-800"
+                                            />
+                                        )}
+                                        {boxes.header.fields?.email?.enabled && (
+                                            <EditableField 
+                                                label="Email:"
+                                                value={labSettings.email || boxes.header.fields.email.value}
+                                                onSave={(lbl, val) => updateField('header', 'email', lbl, val)}
+                                                onDelete={() => deleteField('header', 'email')}
+                                                valueClassName="text-zinc-800"
+                                            />
+                                        )}
+                                        {boxes.header.fields?.gstin?.enabled && (
+                                            <EditableField 
+                                                label="GSTIN:"
+                                                value={labSettings.gstin || boxes.header.fields.gstin.value}
+                                                onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
+                                                onDelete={() => deleteField('header', 'gstin')}
+                                                valueClassName="font-mono font-bold text-zinc-900"
+                                            />
+                                        )}
+                                        {boxes.header.fields?.pan?.enabled && (
+                                            <EditableField 
+                                                label="PAN:"
+                                                value={labSettings.pan || boxes.header.fields.pan.value}
+                                                onSave={(lbl, val) => updateField('header', 'pan', lbl, val)}
+                                                onDelete={() => deleteField('header', 'pan')}
+                                                valueClassName="font-mono font-bold text-zinc-900"
+                                            />
+                                        )}
                                     </div>
-                                ))}
+
+                                    {/* Custom Lines in Header */}
+                                    {boxes.header.customLines?.map(line => (
+                                        <div key={line.id} className="pt-0.5">
+                                            <EditableField 
+                                                label={line.label ? `${line.label}:` : ""}
+                                                value={line.value}
+                                                onSave={(lbl, val) => {
+                                                    const nextLines = boxes.header.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
+                                                    updateSchema({ ...schema, boxes: { ...boxes, header: { ...boxes.header, customLines: nextLines } } });
+                                                }}
+                                                onDelete={() => deleteCustomLine('header', line.id)}
+                                                valueClassName="text-[10px] text-zinc-700 font-medium"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     )}

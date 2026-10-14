@@ -28,9 +28,10 @@ import {
     Square,
     ChevronDown,
     ChevronRight,
-    Plus,
-    Trash2,
-    Settings2
+    Plus, 
+    Trash2, 
+    Settings2,
+    Upload
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { DEFAULT_DOCUMENT_SCHEMAS } from '@/features/finance/components/documents/documentLayoutSchemas';
@@ -48,7 +49,7 @@ export const CommercialPaperworkTab = () => {
 
     // Expanded accordions in modular box manager on left
     const [expandedBoxIds, setExpandedBoxIds] = useState({
-        header: false,
+        header: true,
         docBadge: false,
         partyDetails: true,
         itemsTable: false,
@@ -69,6 +70,8 @@ export const CommercialPaperworkTab = () => {
     const [settings, setSettings] = useState({
         labLegalName: "SynOS Diagnostic Centre & Laboratory",
         labTradeName: "Advanced Pathology & Imaging Services",
+        logoUrl: "",
+        receiptPrinterName: "",
         address: "Central Diagnostic Facility, Hyderabad, Telangana",
         phone: "+91 98765 43210",
         email: "billing@synoslab.in",
@@ -105,9 +108,24 @@ export const CommercialPaperworkTab = () => {
                 FinanceApi.getDocumentMappings()
             ]);
 
+            const cachedLogo = typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : null;
+            const cachedPrinter = typeof window !== 'undefined' ? window.localStorage?.getItem('synos_receipt_printer_name') : null;
+
             if (stationeryRes && typeof stationeryRes === 'object') {
-                setSettings(prev => ({ ...prev, ...stationeryRes }));
+                setSettings(prev => ({ 
+                    ...prev, 
+                    ...stationeryRes,
+                    logoUrl: stationeryRes.logoUrl || cachedLogo || prev.logoUrl || "",
+                    receiptPrinterName: stationeryRes.receiptPrinterName || cachedPrinter || prev.receiptPrinterName || ""
+                }));
+            } else if (cachedLogo || cachedPrinter) {
+                setSettings(prev => ({
+                    ...prev,
+                    logoUrl: cachedLogo || prev.logoUrl || "",
+                    receiptPrinterName: cachedPrinter || prev.receiptPrinterName || ""
+                }));
             }
+
             if (Array.isArray(mappingsRes)) {
                 setMappings(mappingsRes);
                 // If customLayout exists in any mapping, merge it into schemas
@@ -141,6 +159,22 @@ export const CommercialPaperworkTab = () => {
                 FinanceApi.saveStationerySettings(settings),
                 FinanceApi.saveDocumentMappings(mappingsToSave)
             ]);
+
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    if (settings.logoUrl) {
+                        window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
+                    } else {
+                        window.localStorage.removeItem('synos_lab_logo');
+                    }
+                    if (settings.receiptPrinterName) {
+                        window.localStorage.setItem('synos_receipt_printer_name', settings.receiptPrinterName);
+                    }
+                }
+            } catch (storageErr) {
+                console.warn("Storage sync warning:", storageErr);
+            }
+
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 4000);
         } catch (err) {
@@ -149,6 +183,39 @@ export const CommercialPaperworkTab = () => {
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleLogoUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert("Logo file is too large. Please select an image under 2MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target.result;
+            handleSettingChange('logoUrl', dataUrl);
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.setItem('synos_lab_logo', dataUrl);
+                }
+            } catch (err) {
+                console.warn("Could not cache logo in localStorage:", err);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveLogo = () => {
+        handleSettingChange('logoUrl', '');
+        try {
+            if (typeof window !== 'undefined' && window.localStorage) {
+                window.localStorage.removeItem('synos_lab_logo');
+            }
+        } catch {}
     };
 
     const handleSettingChange = (field, value) => {
@@ -598,6 +665,42 @@ export const CommercialPaperworkTab = () => {
                                                             Visible Information Inside this Box
                                                         </p>
                                                         
+                                                        {/* Brand Logo Shortcut in Header Box */}
+                                                        {boxKey === 'header' && (
+                                                            <div className="p-2 mb-2 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900/60 flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-8 h-8 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                                                                        {settings.logoUrl ? (
+                                                                            <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain p-0.5" />
+                                                                        ) : (
+                                                                            <Building2 size={15} className="text-zinc-400" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[11px] font-black text-zinc-900 dark:text-zinc-100 block leading-tight">Brand Logo</span>
+                                                                        <span className="text-[9px] text-zinc-500">{settings.logoUrl ? "Logo configured" : "No logo uploaded"}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <label className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs active:scale-95">
+                                                                        <Upload size={11} />
+                                                                        <span>{settings.logoUrl ? "Change" : "Upload"}</span>
+                                                                        <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} className="hidden" />
+                                                                    </label>
+                                                                    {settings.logoUrl && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={handleRemoveLogo}
+                                                                            className="p-1 rounded-md text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                                                            title="Remove Logo"
+                                                                        >
+                                                                            <Trash2 size={12} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         {/* Fields */}
                                                         {box.fields && (
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -797,6 +900,52 @@ export const CommercialPaperworkTab = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* DIAGNOSTIC CENTRE BRAND LOGO */}
+                                    <div className="sm:col-span-2 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center gap-4">
+                                        <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                                            {settings.logoUrl ? (
+                                                <img src={settings.logoUrl} alt="Diagnostics Logo" className="w-full h-full object-contain p-1.5" />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center text-zinc-400 text-center p-2">
+                                                    <Building2 size={28} className="mb-1 text-zinc-400" />
+                                                    <span className="text-[9px] font-bold uppercase tracking-wider">No Logo</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 space-y-2 text-center sm:text-left">
+                                            <div>
+                                                <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+                                                    Diagnostic Centre Official Brand Logo
+                                                </h4>
+                                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
+                                                    Upload your diagnostic brand emblem (PNG, JPG, WebP, SVG up to 2MB). This logo automatically renders at the top-left corner of all invoices, delivery challans, POs, salary vouchers, and thermal receipt slips across SynOS.
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 justify-center sm:justify-start">
+                                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer shadow-xs active:scale-95 transition-all">
+                                                    <Upload size={14} />
+                                                    <span>{settings.logoUrl ? "Change Logo" : "Upload Logo"}</span>
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/png,image/jpeg,image/webp,image/svg+xml" 
+                                                        onChange={handleLogoUpload} 
+                                                        className="hidden" 
+                                                    />
+                                                </label>
+                                                {settings.logoUrl && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveLogo}
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer active:scale-95 transition-all"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                        <span>Remove</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div className="sm:col-span-2">
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Legal Entity Registered Name (GSTIN Registered) *
@@ -1023,6 +1172,37 @@ export const CommercialPaperworkTab = () => {
                                             placeholder="e.g. Authorised Signatory / Accounts Desk"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* SECTION 4: HARDWARE & THERMAL PRINTER ROUTING */}
+                            <div className="synos-dept-card rounded-2xl p-6 space-y-5">
+                                <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <Printer size={16} className="text-emerald-600 dark:text-emerald-400" />
+                                        <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                                            4. Hardware & Thermal Slip Printer Routing
+                                        </h3>
+                                    </div>
+                                    <span className="text-[10px] text-zinc-400 font-semibold">POS Slip Routing</span>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Assigned Reception Desk Thermal Receipt Printer Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.receiptPrinterName || ""}
+                                            onChange={(e) => handleSettingChange('receiptPrinterName', e.target.value)}
+                                            placeholder="e.g. EPSON TM-T82, POS-80, Citizen CT-S310II, Star TSP100"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
+                                            When configured, SynOS directly routes 80mm patient payment slips to this hardware device without prompting standard A4 laser printer dialogs.
+                                        </p>
                                     </div>
                                 </div>
                             </div>

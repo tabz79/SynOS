@@ -32,6 +32,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
             if (settingsSaved) {
                 labSettings = JSON.parse(settingsSaved);
             }
+            const cachedLogo = window.localStorage.getItem('synos_lab_logo');
+            if (cachedLogo && !labSettings.logoUrl) {
+                labSettings.logoUrl = cachedLogo;
+            }
         } catch (e) {
             console.warn("Could not load stored thermal schema/settings", e);
         }
@@ -90,9 +94,15 @@ export function generateThermalInvoiceHtml(payload = {}) {
         const address = labSettings.address || hf.address?.value || "";
         const gstin = labSettings.gstin || hf.gstin?.value || "";
         const phone = labSettings.phone || hf.phone?.value || "";
+        const effectiveLogo = labSettings.logoUrl || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : "");
 
         headerHtml = `
             <div style="text-align: center; border-bottom: 2px solid #18181b; padding-bottom: 6px; margin-bottom: 8px;">
+                ${effectiveLogo ? `
+                    <div style="margin-bottom: 5px; display: flex; justify-content: center;">
+                        <img src="${effectiveLogo}" style="max-height: 44px; max-width: 140px; object-fit: contain; filter: grayscale(100%) contrast(150%);" alt="Diagnostic Brand Logo" />
+                    </div>
+                ` : ''}
                 ${hf.legalName?.enabled !== false ? `<div style="font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em; color: #09090b;">${legalName}</div>` : ''}
                 ${hf.tagline?.enabled !== false && tagline ? `<div style="font-size: 8.5px; font-weight: 700; color: #52525b; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.02em;">${tagline}</div>` : ''}
                 ${hf.address?.enabled !== false && address ? `<div style="font-size: 8px; color: #71717a; margin-top: 2px; line-height: 1.25;">${address}</div>` : ''}
@@ -261,23 +271,26 @@ export function generateThermalInvoiceHtml(payload = {}) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Thermal Receipt</title>
+    <title>Thermal-Slip-80mm</title>
     <style>
         @page {
+            size: 80mm 220mm;
             margin: 0;
-            size: 80mm auto;
         }
         @media print {
-            body {
-                width: 72mm !important;
-                padding: 2mm !important;
+            html, body {
+                width: 80mm !important;
+                max-width: 80mm !important;
+                margin: 0 !important;
+                padding: 2mm 3mm !important;
             }
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
             margin: 0;
             padding: 2.5mm;
-            width: 72mm;
+            width: 76mm;
+            max-width: 80mm;
             color: #18181b;
             font-size: 10px;
             line-height: 1.3;
@@ -309,16 +322,23 @@ export function generateThermalSlipHtml(payload) {
  * Attempts to print using the Electron wrapper. Fallbacks to browser native printing.
  */
 export async function legacyTriggerPrint(htmlContent) {
+    const configuredPrinter = typeof window !== 'undefined'
+        ? (window.localStorage?.getItem('synos_receipt_printer_name') || '')
+        : '';
+
     if (window.api && typeof window.api.printLabel === 'function') {
         const pageWidthMicrons = 80000;
-        const pageHeightMicrons = 150000;
+        const pageHeightMicrons = 200000;
         try {
             await window.api.printLabel({
                 html: htmlContent,
                 width: pageWidthMicrons,
-                height: pageHeightMicrons
+                height: pageHeightMicrons,
+                deviceName: configuredPrinter || undefined,
+                printerName: configuredPrinter || undefined,
+                silent: !!configuredPrinter
             });
-            console.log("Successfully sent to Electron printer.");
+            console.log("Successfully sent to Electron thermal printer:", configuredPrinter || "default");
             return;
         } catch (err) {
             console.warn("Electron printing failed, falling back to window.print", err);

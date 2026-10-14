@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     X, 
     Printer, 
@@ -12,7 +13,8 @@ import {
     Sparkles, 
     MessageSquare,
     Layers,
-    FileSpreadsheet
+    FileSpreadsheet,
+    Receipt
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +25,8 @@ export const CommercialDocumentViewer = ({
     children, 
     onWhatsAppShare,
     defaultLetterheadMode = "digital",
-    topMarginMm = 40
+    topMarginMm = 40,
+    paperSize = "a4" // "a4" | "thermal80"
 }) => {
     const [letterheadMode, setLetterheadMode] = useState(defaultLetterheadMode); // "digital" | "preprinted"
     const [customMargin, setCustomMargin] = useState(topMarginMm);
@@ -32,12 +35,14 @@ export const CommercialDocumentViewer = ({
 
     if (!isOpen) return null;
 
+    const isThermal = paperSize === 'thermal80';
+
     const handlePrint = () => {
         window.print();
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:overflow-visible animate-in fade-in duration-300">
+    const modalContent = (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:overflow-visible animate-in fade-in duration-300">
             {/* INLINE PRINT STYLESHEET */}
             <style>{`
                 @media print {
@@ -51,9 +56,10 @@ export const CommercialDocumentViewer = ({
                         position: absolute !important;
                         left: 0 !important;
                         top: 0 !important;
-                        width: 100% !important;
+                        width: ${isThermal ? '80mm' : '100%'} !important;
+                        max-width: ${isThermal ? '80mm' : 'none'} !important;
                         margin: 0 !important;
-                        padding: 0 !important;
+                        padding: ${isThermal ? '2mm 3mm' : '0'} !important;
                         box-shadow: none !important;
                         border: none !important;
                     }
@@ -61,58 +67,65 @@ export const CommercialDocumentViewer = ({
                         display: none !important;
                     }
                     @page {
-                        size: A4 portrait;
-                        margin: 8mm;
+                        size: ${isThermal ? '80mm 220mm' : 'A4 portrait'};
+                        margin: ${isThermal ? '0' : '8mm'};
                     }
                 }
             `}</style>
 
-            <div className="relative w-full max-w-5xl bg-zinc-100 dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[96vh] overflow-hidden print:max-h-none print:border-none print:shadow-none print:bg-white print:rounded-none">
+            <div className={cn(
+                "relative w-full bg-zinc-100 dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[96vh] overflow-hidden print:max-h-none print:border-none print:shadow-none print:bg-white print:rounded-none",
+                isThermal ? "max-w-xl" : "max-w-5xl"
+            )}>
                 
                 {/* TOOLBAR (NO-PRINT) */}
                 <div className="no-print p-4 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-synos-primary/10 border border-synos-primary/20 flex items-center justify-center text-synos-primary">
-                            <FileText size={18} />
+                            {isThermal ? <Receipt size={18} /> : <FileText size={18} />}
                         </div>
                         <div>
                             <h2 className="text-sm font-black text-zinc-900 dark:text-white leading-tight">{title}</h2>
-                            <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">Enterprise Document System • A4 Standard</p>
+                            <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
+                                {isThermal ? "Point of Sale • 80mm Thermal Receipt" : "Enterprise Document System • A4 Standard"}
+                            </p>
                         </div>
                     </div>
 
                     {/* ACTIONS & CONTROLS */}
                     <div className="flex items-center flex-wrap gap-2 ml-auto">
-                        {/* Letterhead Switch */}
-                        <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                            <button
-                                onClick={() => setLetterheadMode('digital')}
-                                className={cn(
-                                    "px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer",
-                                    letterheadMode === 'digital'
-                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                                )}
-                            >
-                                Digital Header
-                            </button>
-                            <button
-                                onClick={() => setLetterheadMode('preprinted')}
-                                title="Leaves blank top space for feeding printed clinic stationery into printer"
-                                className={cn(
-                                    "px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1",
-                                    letterheadMode === 'preprinted'
-                                        ? "bg-white dark:bg-zinc-800 text-amber-600 dark:text-amber-400 shadow-xs"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                                )}
-                            >
-                                <Layers size={12} />
-                                <span>Printed Letterhead</span>
-                            </button>
-                        </div>
+                        {/* Letterhead Switch - Only for A4 documents */}
+                        {!isThermal && (
+                            <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                                <button
+                                    onClick={() => setLetterheadMode('digital')}
+                                    className={cn(
+                                        "px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer",
+                                        letterheadMode === 'digital'
+                                            ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    Digital Header
+                                </button>
+                                <button
+                                    onClick={() => setLetterheadMode('preprinted')}
+                                    title="Leaves blank top space for feeding printed clinic stationery into printer"
+                                    className={cn(
+                                        "px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1",
+                                        letterheadMode === 'preprinted'
+                                            ? "bg-white dark:bg-zinc-800 text-amber-600 dark:text-amber-400 shadow-xs"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    )}
+                                >
+                                    <Layers size={12} />
+                                    <span>Printed Letterhead</span>
+                                </button>
+                            </div>
+                        )}
 
                         {/* Top Margin Slider (Only shown if preprinted) */}
-                        {letterheadMode === 'preprinted' && (
+                        {!isThermal && letterheadMode === 'preprinted' && (
                             <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-xl text-amber-600 dark:text-amber-400 text-xs font-bold animate-in fade-in">
                                 <span className="text-[10px] uppercase">Top Blank:</span>
                                 <input 
@@ -124,6 +137,14 @@ export const CommercialDocumentViewer = ({
                                     className="w-12 bg-white dark:bg-zinc-900 px-1 py-0.5 rounded text-center font-mono text-xs border border-amber-500/30"
                                 />
                                 <span className="text-[10px]">mm</span>
+                            </div>
+                        )}
+
+                        {/* Thermal Printer Indicator if thermal mode */}
+                        {isThermal && (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+                                <Printer size={12} />
+                                <span>POS 80mm Roll</span>
                             </div>
                         )}
 
@@ -144,7 +165,7 @@ export const CommercialDocumentViewer = ({
                             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                         >
                             <Printer size={14} />
-                            <span>Print / PDF</span>
+                            <span>{isThermal ? "Print Slip (80mm)" : "Print / PDF"}</span>
                         </button>
 
                         {/* Close Button */}
@@ -163,11 +184,14 @@ export const CommercialDocumentViewer = ({
                         id="synos-commercial-sheet"
                         ref={printAreaRef}
                         style={{
-                            width: '210mm',
-                            minHeight: '297mm',
+                            width: isThermal ? '80mm' : '210mm',
+                            minHeight: isThermal ? 'auto' : '297mm',
                             boxSizing: 'border-box'
                         }}
-                        className="bg-white text-zinc-900 shadow-xl border border-zinc-300 rounded-sm p-8 sm:p-12 relative flex flex-col justify-between print:shadow-none print:border-none print:p-0 print:w-full"
+                        className={cn(
+                            "bg-white text-zinc-900 shadow-xl border border-zinc-300 rounded-sm p-8 sm:p-12 relative flex flex-col justify-between print:shadow-none print:border-none print:p-0 print:w-full",
+                            isThermal && "max-w-[340px] p-4 sm:p-5 font-mono text-xs shadow-md border-dashed border-zinc-300 rounded-lg justify-start"
+                        )}
                     >
                         {/* CLONE CHILDREN WITH LETTERHEAD PROPS */}
                         {React.cloneElement(children, { 
@@ -180,4 +204,6 @@ export const CommercialDocumentViewer = ({
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 };

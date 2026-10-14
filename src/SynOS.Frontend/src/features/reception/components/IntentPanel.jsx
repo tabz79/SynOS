@@ -602,6 +602,7 @@ export function IntentPanel({ onVisitUpdated }) {
                     onClose={() => setTaxInvoiceModal({ isOpen: false, data: null })}
                     title={taxInvoiceModal.title || `Patient Tax Invoice - ${taxInvoiceModal.data?.patient?.name || ''}`}
                     defaultLetterheadMode="digital"
+                    paperSize={taxInvoiceModal.paperSize || "a4"}
                 >
                     <DynamicDocumentRenderer slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} data={taxInvoiceModal.data} />
                 </CommercialDocumentViewer>
