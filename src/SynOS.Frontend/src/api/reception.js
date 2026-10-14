@@ -519,7 +519,96 @@ export const ReceptionApi = {
             headers: ReceptionApi.getHeaders(),
             body: JSON.stringify({ visitId })
         });
-        if (!response.ok) throw new Error('Failed to mark as prepaid');
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to mark as prepaid');
+        }
+    },
+
+    updateBillingContext: async (payload) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/billing-context'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to update billing context');
+        }
+    },
+
+    markVisitAsInsurance: async (visitId) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/mark-insurance'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to authorize insurance cashless claim');
+        }
+    },
+
+    markVisitAsCorporate: async (visitId) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/mark-corporate'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({ visitId })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to authorize corporate billing');
+        }
+    },
+
+    getInsuranceCompanies: async () => {
+        const response = await fetch('/api/v1/insurance-companies', {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch insurance companies');
+        return await response.json();
+    },
+
+    createInsuranceCompany: async (payload) => {
+        const response = await fetch('/api/v1/insurance-companies', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to create insurance company');
+        }
+        return await response.json();
+    },
+
+    getCorporateAccounts: async () => {
+        const response = await fetch('/api/v1/corporate-accounts', {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch corporate accounts');
+        return await response.json();
+    },
+
+    createCorporateAccount: async (payload) => {
+        const response = await fetch('/api/v1/corporate-accounts', {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to create corporate account');
+        }
+        return await response.json();
+    },
+
+    getCorporateRateRules: async (corporateAccountId) => {
+        const response = await fetch(`/api/v1/corporate-accounts/${corporateAccountId}/rate-rules`, {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error('Failed to fetch corporate rate rules');
+        return await response.json();
     },
 
     /**

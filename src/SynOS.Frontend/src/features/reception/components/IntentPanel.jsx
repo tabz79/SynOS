@@ -33,6 +33,8 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // Lifted State for Prepaid Intent (Shared between VisitDetails and Footer)
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
+    // Lifted State for Multi-Payer Billing Mode: 'Standard' | 'PrepaidPartner' | 'Insurance' | 'Corporate'
+    const [billingMode, setBillingMode] = useState('Standard');
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
 
@@ -92,6 +94,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setCurrentPatientId(null);
             setCurrentVisitId(null);
             setIsPrepaidIntent(false);
+            setBillingMode('Standard');
             setPaymentMethod('Cash'); // Reset to default
             return;
         }
@@ -131,9 +134,20 @@ export function IntentPanel({ onVisitUpdated }) {
             if (data?.visit?.visitId && data.visit.visitId !== currentVisitId) setCurrentVisitId(data.visit.visitId);
             if (data?.patient?.patientId && data.patient.patientId !== currentPatientId) setCurrentPatientId(data.patient.patientId);
 
-            // Sync intent from backend if locked
-            if (data?.billing?.isLocked && data?.visit?.paymentCollectionModel === 'PartnerCollects') {
+            // Sync multi-payer billing mode from snapshot
+            const bt = data?.visit?.billingType;
+            if (bt === 1 || bt === 'PrepaidPartner' || data?.visit?.paymentCollectionModel === 'PartnerCollects') {
+                setBillingMode('PrepaidPartner');
                 setIsPrepaidIntent(true);
+            } else if (bt === 2 || bt === 'Insurance') {
+                setBillingMode('Insurance');
+                setIsPrepaidIntent(false);
+            } else if (bt === 3 || bt === 'Corporate') {
+                setBillingMode('Corporate');
+                setIsPrepaidIntent(false);
+            } else if (bt === 0 || bt === 'Standard') {
+                setBillingMode('Standard');
+                setIsPrepaidIntent(false);
             }
         } catch (err) {
             console.error("Failed to load intake snapshot:", err);
@@ -231,6 +245,7 @@ export function IntentPanel({ onVisitUpdated }) {
         setCurrentPatientId(null);
         setCurrentVisitId(null);
         setIsPrepaidIntent(false); // Reset intent
+        setBillingMode('Standard');
         setPaymentMethod('Cash');
     };
 
@@ -323,7 +338,7 @@ export function IntentPanel({ onVisitUpdated }) {
         if (!snapshot?.billing || isActionSubmitting) return;
 
         // 1. CONFIRM & LOCK PREPAID
-        if (isPrepaidIntent && !snapshot.billing.isLocked) {
+        if ((billingMode === 'PrepaidPartner' || isPrepaidIntent) && !snapshot.billing.isLocked) {
             const hasReferralIdentity = snapshot.billing.referral?.partner || snapshot.billing?.referral?.draft;
 
             if (!hasReferralIdentity) {
@@ -347,7 +362,71 @@ export function IntentPanel({ onVisitUpdated }) {
             return;
         }
 
-        // 2. CHECKOUT (ACCEPT PAYMENT)
+        // 2. AUTHORIZE INSURANCE CASHLESS CLAIM
+        if (billingMode === 'Insurance' && !snapshot.billing.isLocked) {
+            const v = snapshot.visit;
+            if (!v?.insuranceCompanyId) {
+                setError("Please select an Insurance Company / TPA Provider.");
+                return;
+            }
+            if (!v?.policyNumber) {
+                setError("Please specify the Policy / Member ID for this cashless insurance claim.");
+                return;
+            }
+
+            setIsLoading(true);
+            setIsActionSubmitting(true);
+            try {
+                const res = await ReceptionApi.markVisitAsInsurance(snapshot.visit.visitId);
+
+                // Collect Patient Co-Pay if defined
+                const coPay = v?.insuranceCoPayAmount || 0;
+                if (coPay > 0) {
+                    await ReceptionApi.collectPayment(snapshot.visit.visitId, coPay, paymentMethod).catch(err => console.warn("Co-Pay collection:", err));
+                }
+
+                // Auto-print thermal receipt slip
+                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
+                handleCloseAndReset();
+            } catch (err) {
+                setError(err.message);
+                setIsLoading(false);
+            } finally {
+                setIsActionSubmitting(false);
+            }
+            return;
+        }
+
+        // 3. AUTHORIZE CORPORATE B2B BILLING
+        if (billingMode === 'Corporate' && !snapshot.billing.isLocked) {
+            const v = snapshot.visit;
+            if (!v?.corporateAccountId) {
+                setError("Please select a Corporate Client / Organization.");
+                return;
+            }
+            if (!v?.employeeId) {
+                setError("Please specify the Employee ID / Staff Number for this corporate visit.");
+                return;
+            }
+
+            setIsLoading(true);
+            setIsActionSubmitting(true);
+            try {
+                const res = await ReceptionApi.markVisitAsCorporate(snapshot.visit.visitId);
+
+                // Auto-print thermal receipt slip
+                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
+                handleCloseAndReset();
+            } catch (err) {
+                setError(err.message);
+                setIsLoading(false);
+            } finally {
+                setIsActionSubmitting(false);
+            }
+            return;
+        }
+
+        // 4. CHECKOUT (ACCEPT PAYMENT - STANDARD DIRECT)
         if (canCheckout && !snapshot.billing.isLocked) {
             setIsLoading(true);
             setIsActionSubmitting(true);
@@ -375,7 +454,7 @@ export function IntentPanel({ onVisitUpdated }) {
             return;
         }
 
-        // 3. GENERATE BILL / FINISH VISIT
+        // 5. GENERATE BILL / FINISH VISIT
         if (snapshot.billing.paymentStatus === 'Paid' && !isCorrectionIntent) {
             handleCloseAndReset();
         }
@@ -392,8 +471,14 @@ export function IntentPanel({ onVisitUpdated }) {
     const remainingDue = Math.max(0, totalDue - totalPaid);
     
     const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && remainingDue > 0;
-    const canLockPrepaid = isPrepaidIntent && !snapshot?.billing?.isLocked;
+    const canLockPrepaid = (isPrepaidIntent || billingMode === 'PrepaidPartner') && !snapshot?.billing?.isLocked;
     const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0);
+
+    const hasTests = Boolean(
+        (snapshot?.visit?.tests && snapshot?.visit?.tests.length > 0) || 
+        (snapshot?.billing?.items && snapshot?.billing?.items.length > 0) || 
+        (snapshot?.billing?.grossAmount > 0)
+    );
 
     // Determine Button Label & State
     let mainActionLabel = "Identify Patient & Start Visit";
@@ -406,9 +491,17 @@ export function IntentPanel({ onVisitUpdated }) {
         if (isVisitFinalized && !isCorrectionIntent) {
             mainActionLabel = "Visit Complete (Close)";
             isActionEnabled = true;
+        } else if (billingMode === 'Insurance') {
+            const coPay = snapshot?.visit?.insuranceCoPayAmount || 0;
+            mainActionLabel = coPay > 0
+                ? `Collect Co-Pay (₹${coPay}) & Authorize Claim`
+                : "Authorize Cashless Claim (₹0)";
+            isActionEnabled = hasTests;
+        } else if (billingMode === 'Corporate') {
+            mainActionLabel = "Authorize Corporate B2B Bill (₹0)";
+            isActionEnabled = hasTests;
         } else if (canLockPrepaid) {
-            mainActionLabel = "Prepaid Checkout";
-            const hasTests = Boolean((snapshot?.visit?.tests && snapshot?.visit?.tests.length > 0) || (snapshot?.billing?.items && snapshot?.billing?.items.length > 0) || (snapshot?.billing?.grossAmount > 0));
+            mainActionLabel = "Prepaid Checkout (₹0)";
             isActionEnabled = hasTests;
         } else if (canCheckout) {
             mainActionLabel = `Accept Payment (₹${remainingDue})`;
@@ -494,6 +587,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                         isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
                                         setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
                                         isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
+                                        billingMode={billingMode}
+                                        setBillingMode={setBillingMode}
                                     />
                                 </div>
 
@@ -503,6 +598,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         onVisitUpdated={loadSnapshot}
                                         isCorrectionIntent={isCorrectionIntent} // Pass down Intent
                                         isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
+                                        billingMode={billingMode}
                                         paymentMethod={paymentMethod}
                                         setPaymentMethod={setPaymentMethod}
                                     />

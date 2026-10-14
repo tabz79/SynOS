@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
+using SynOS.Models.Enums;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,9 +22,28 @@ namespace SynOS.Api.Controllers.AR
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetReceivables()
+        public async Task<IActionResult> GetReceivables([FromQuery] string? type = null)
         {
-            var query = from r in _context.ReceivableFacts
+            var baseQuery = _context.ReceivableFacts.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                var lowerType = type.Trim().ToLowerInvariant();
+                if (lowerType == "partner")
+                {
+                    baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Partner || r.ReferralPartnerId != null);
+                }
+                else if (lowerType == "insurance")
+                {
+                    baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Insurance);
+                }
+                else if (lowerType == "corporate")
+                {
+                    baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Corporate);
+                }
+            }
+
+            var query = from r in baseQuery
                         join v in _context.Visits on r.SourceVisitId equals v.VisitId
                         join p in _context.Patients on v.PatientId equals p.PatientId
                         orderby r.OccurredAt descending
@@ -30,8 +51,16 @@ namespace SynOS.Api.Controllers.AR
                         {
                             receivableFactId = r.ReceivableFactId,
                             sourceVisitId = r.SourceVisitId,
-                            referralPartnerId = r.ReferralPartnerId,
-                            partnerName = r.ReferralPartner != null ? r.ReferralPartner.Name : "Unknown Partner",
+                            debtorType = r.DebtorType.ToString(),
+                            debtorId = r.DebtorId != Guid.Empty ? r.DebtorId : (r.ReferralPartnerId ?? Guid.Empty),
+                            debtorName = !string.IsNullOrEmpty(r.DebtorName) 
+                                ? r.DebtorName 
+                                : (r.ReferralPartner != null ? r.ReferralPartner.Name : "Unknown Account"),
+                            claimReference = r.ClaimReference,
+                            referralPartnerId = r.ReferralPartnerId ?? (r.DebtorType == DebtorType.Partner ? r.DebtorId : (Guid?)null),
+                            partnerName = !string.IsNullOrEmpty(r.DebtorName)
+                                ? r.DebtorName
+                                : (r.ReferralPartner != null ? r.ReferralPartner.Name : "Unknown Partner"),
                             amount = r.Amount,
                             amountReceived = r.AmountReceived,
                             pendingAmount = r.Amount - r.AmountReceived,

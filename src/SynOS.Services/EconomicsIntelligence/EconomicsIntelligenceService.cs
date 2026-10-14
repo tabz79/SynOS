@@ -646,7 +646,7 @@ namespace SynOS.Services.EconomicsIntelligence
             
             var query = await _context.ReceivableFacts
                 .AsNoTracking()
-                .Where(f => f.SettledAt == null)
+                .Where(f => f.SettledAt == null && f.ReferralPartnerId != null)
                 .Select(f => new 
                 {
                     f.ReferralPartnerId,
@@ -658,7 +658,7 @@ namespace SynOS.Services.EconomicsIntelligence
                 .GroupBy(x => new { x.ReferralPartnerId, x.PartnerName })
                 .Select(g => new PartnerReceivableSummaryDto
                 {
-                    PartnerId = g.Key.ReferralPartnerId,
+                    PartnerId = g.Key.ReferralPartnerId ?? Guid.Empty,
                     PartnerName = g.Key.PartnerName,
                     TotalOutstanding = g.Sum(x => x.Amount - x.AmountReceived),
                     BillCount = g.Count(),

@@ -4,7 +4,7 @@ import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 
-export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, paymentMethod, setPaymentMethod }) {
+export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, billingMode = 'Standard', paymentMethod, setPaymentMethod }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
@@ -176,9 +176,24 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const settlementDiff = totalPaid - netAmount; // Positive = Refund, Negative = Due
     const isSettlementNeeded = isCorrectionIntent && totalPaid > 0 && Math.abs(settlementDiff) > 0.01;
 
-    // PREPAID DISPLAY LOGIC
-    // If Prepaid Intent is active, Reception collects ZERO.
-    const displayAmountToCollect = isPrepaidIntent ? 0 : billing.netAmount;
+    // MULTI-PAYER DISPLAY LOGIC
+    const isPrepaid = isPrepaidIntent || billingMode === 'PrepaidPartner';
+    const isInsurance = billingMode === 'Insurance';
+    const isCorporate = billingMode === 'Corporate';
+
+    let displayAmountToCollect = billing.netAmount;
+    let amountLabel = billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect";
+
+    if (isPrepaid) {
+        displayAmountToCollect = 0;
+        amountLabel = "Amount to Collect (Prepaid Partner)";
+    } else if (isCorporate) {
+        displayAmountToCollect = 0;
+        amountLabel = "Billed to Corporate (₹0 at desk)";
+    } else if (isInsurance) {
+        displayAmountToCollect = snapshot?.visit?.insuranceCoPayAmount || 0;
+        amountLabel = displayAmountToCollect > 0 ? "Patient Co-Pay to Collect" : "Cashless Claim (₹0 at desk)";
+    }
 
     return (
         <div className="space-y-4">
@@ -291,7 +306,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
                         <span className={ui.netLabel}>
-                            {isPrepaidIntent ? "Amount to Collect (Prepaid)" : (billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect")}
+                            {amountLabel}
                         </span>
                         <span className={cn("flex items-center", ui.netValue)}>
                             <IndianRupee className="w-4 h-4 mr-0.5" />
@@ -323,8 +338,8 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     </div>
                 )}
 
-                {/* E. Payment Method (STAGE 2) */}
-                {!isPrepaidIntent && billing.paymentStatus === 'PendingPayment' && (
+                {/* E. Payment Method (STAGE 2) - Only show when desk collection is required */}
+                {displayAmountToCollect > 0 && billing.paymentStatus === 'PendingPayment' && (
                     <div className="pt-2 animate-in fade-in space-y-2">
                         <label className="type-section-header">Payment Method</label>
                         <div className="grid grid-cols-3 gap-2">

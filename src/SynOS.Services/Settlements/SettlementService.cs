@@ -148,19 +148,29 @@ namespace SynOS.Services.Settlements
             if (factIds == null || !factIds.Any()) throw new ArgumentException("No fact IDs provided.");
 
             var partner = await _context.ReferralPartners.FindAsync(partnerId);
-            if (partner == null) throw new InvalidOperationException("Partner not found");
+            string debtorName = partner?.Name ?? "";
+            if (string.IsNullOrEmpty(debtorName))
+            {
+                var ins = await _context.InsuranceCompanies.FindAsync(partnerId);
+                debtorName = ins?.Name ?? "";
+            }
+            if (string.IsNullOrEmpty(debtorName))
+            {
+                var corp = await _context.CorporateAccounts.FindAsync(partnerId);
+                debtorName = corp?.CompanyName ?? "";
+            }
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var receivables = await _context.ReceivableFacts
-                    .Where(f => factIds.Contains(f.ReceivableFactId) && f.ReferralPartnerId == partnerId && f.SettledAt == null)
+                    .Where(f => factIds.Contains(f.ReceivableFactId) && (f.ReferralPartnerId == partnerId || f.DebtorId == partnerId) && f.SettledAt == null)
                     .OrderBy(f => f.OccurredAt)
                     .ToListAsync();
 
                 if (!receivables.Any())
                 {
-                    throw new InvalidOperationException($"No pending receivables found for Partner {partnerId} with the provided IDs.");
+                    throw new InvalidOperationException($"No pending receivables found for Debtor {partnerId} with the provided IDs.");
                 }
 
                 // 2. Distribute payment (FIFO)

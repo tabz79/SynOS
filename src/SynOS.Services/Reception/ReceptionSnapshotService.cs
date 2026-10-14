@@ -220,6 +220,21 @@ namespace SynOS.Services.Reception
                 };
             }
 
+            // Check insurance and corporate names if assigned
+            string? insuranceName = null;
+            if (visit.InsuranceCompanyId.HasValue)
+            {
+                var ins = await _context.InsuranceCompanies.FindAsync(visit.InsuranceCompanyId.Value);
+                insuranceName = ins?.Name;
+            }
+
+            string? corporateName = null;
+            if (visit.CorporateAccountId.HasValue)
+            {
+                var corp = await _context.CorporateAccounts.FindAsync(visit.CorporateAccountId.Value);
+                corporateName = corp?.CompanyName;
+            }
+
             // Populate Visit
             snapshot.Visit = new IntakeVisit
             {
@@ -233,6 +248,16 @@ namespace SynOS.Services.Reception
                     Name = partnerInfo.DisplayName
                 } : null,
                 PaymentCollectionModel = visit.PaymentCollectionModel ?? "LabCollects",
+                BillingType = visit.BillingType,
+                InsuranceCompanyId = visit.InsuranceCompanyId,
+                InsuranceCompanyName = insuranceName,
+                PolicyNumber = visit.PolicyNumber,
+                PreAuthApprovalNumber = visit.PreAuthApprovalNumber,
+                InsuranceCoPayAmount = visit.InsuranceCoPayAmount,
+                CorporateAccountId = visit.CorporateAccountId,
+                CorporateCompanyName = corporateName,
+                EmployeeId = visit.EmployeeId,
+                CorporatePackageId = visit.CorporatePackageId,
                 Tests = visit.Orders?
                     .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled) // 🔹 FIX: Exclude Cancelled Orders
                     .Where(o => o.ParentOrderId == null && !(o.Price == 0 && o.Test != null && !o.Test.IsProfile && visit.Orders.Any(po => po.Test != null && po.Test.IsProfile && po.Status != SynOS.Models.Enums.OrderStatus.Cancelled)))

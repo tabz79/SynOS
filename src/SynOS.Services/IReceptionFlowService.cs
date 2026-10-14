@@ -17,6 +17,9 @@ namespace SynOS.Services
         Task UpdateReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
         Task SetVisitCollectionModelAsync(Guid visitId, string model, Guid actorUserId);
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId);
+        Task SetBillingContextAsync(Guid visitId, SynOS.Models.Enums.BillingType billingType, Guid? insuranceCompanyId, string? policyNumber, string? preAuthApprovalNumber, decimal? coPayAmount, Guid? corporateAccountId, string? employeeId, Guid? corporatePackageId, Guid actorUserId);
+        Task MarkVisitAsInsuranceAsync(Guid visitId, Guid actorUserId);
+        Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId);
         Task<ReceptionCompletePaymentResponse> CompletePaymentAsync(ReceptionCompletePaymentRequest request, Guid userId);
         Task<ReceptionVisitSummaryResponse> GetVisitSummaryAsync(Guid visitId);
         

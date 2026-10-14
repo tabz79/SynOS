@@ -12,13 +12,18 @@ import {
     Calendar,
     Clock,
     Receipt,
-    Printer
+    Printer,
+    ShieldCheck,
+    Briefcase
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { cn } from '@/lib/utils';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
 
 export const PartnerReceivablesTab = () => {
+    const [activePayerTab, setActivePayerTab] = useState('partner'); // 'partner' | 'insurance' | 'corporate'
+    const [rawReceivables, setRawReceivables] = useState([]);
     const [receivables, setReceivables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -40,7 +45,8 @@ export const PartnerReceivablesTab = () => {
         try {
             setLoading(true);
             const data = await FinanceApi.getReceivables();
-            const grouped = groupReceivables(data);
+            setRawReceivables(data || []);
+            const grouped = groupReceivables(data || [], activePayerTab);
             setReceivables(grouped);
         } catch (err) {
             console.error(err);
@@ -49,30 +55,58 @@ export const PartnerReceivablesTab = () => {
         }
     };
 
-    const groupReceivables = (data) => {
+    const groupReceivables = (data, tab = activePayerTab) => {
         const groups = {};
         if (!Array.isArray(data)) return [];
         data.forEach(r => {
-            if (!r || !r.referralPartnerId) return; // Skip if not a referral partner receivable
-            if (!groups[r.referralPartnerId]) {
-                groups[r.referralPartnerId] = {
-                    partnerId: r.referralPartnerId,
-                    partnerName: r.partnerName || 'Unknown Partner',
+            if (!r) return;
+            // DebtorType: 1 = Partner, 2 = Insurance, 3 = Corporate
+            const debtorType = r.debtorType || (r.referralPartnerId ? 1 : null);
+            if (tab === 'partner' && debtorType !== 1 && r.referralPartnerId == null) return;
+            if (tab === 'insurance' && debtorType !== 2) return;
+            if (tab === 'corporate' && debtorType !== 3) return;
+
+            const key = r.debtorId || r.referralPartnerId || r.debtorName || 'Unknown';
+            if (!groups[key]) {
+                groups[key] = {
+                    partnerId: key,
+                    debtorType: debtorType,
+                    partnerName: r.debtorName || r.partnerName || (tab === 'insurance' ? 'Empanelled Insurer' : tab === 'corporate' ? 'Corporate Account' : 'Unknown Partner'),
                     totalAmount: 0,
                     billCount: 0,
                     oldestDate: r.occurredAt || new Date().toISOString(),
                     items: []
                 };
             }
-            groups[r.referralPartnerId].totalAmount += (r.amount - r.amountReceived);
-            groups[r.referralPartnerId].billCount += 1;
-            if (new Date(r.occurredAt) < new Date(groups[r.referralPartnerId].oldestDate)) {
-                groups[r.referralPartnerId].oldestDate = r.occurredAt;
+            groups[key].totalAmount += (r.amount - r.amountReceived);
+            groups[key].billCount += 1;
+            if (new Date(r.occurredAt) < new Date(groups[key].oldestDate)) {
+                groups[key].oldestDate = r.occurredAt;
             }
-            groups[r.referralPartnerId].items.push(r);
+            groups[key].items.push(r);
         });
         return Object.values(groups).filter(g => g.totalAmount > 0);
     };
+
+    const handleSwitchTab = (tab) => {
+        setActivePayerTab(tab);
+        setReceivables(groupReceivables(rawReceivables, tab));
+        setSelectedPartner(null);
+        setExpandedPartnerId(null);
+        setSelectedFactIds(new Set());
+    };
+
+    const partnerTotal = rawReceivables
+        .filter(r => (r.debtorType === 1 || (!r.debtorType && r.referralPartnerId)))
+        .reduce((sum, r) => sum + (r.amount - r.amountReceived), 0);
+
+    const insuranceTotal = rawReceivables
+        .filter(r => r.debtorType === 2)
+        .reduce((sum, r) => sum + (r.amount - r.amountReceived), 0);
+
+    const corporateTotal = rawReceivables
+        .filter(r => r.debtorType === 3)
+        .reduce((sum, r) => sum + (r.amount - r.amountReceived), 0);
 
     const handleSettleRecovery = async (partner, amount, method) => {
         try {
@@ -80,11 +114,13 @@ export const PartnerReceivablesTab = () => {
             const factIds = partner.items.map(i => i.receivableFactId);
             const payload = {
                 partnerId: partner.partnerId,
+                debtorId: partner.partnerId,
+                debtorType: activePayerTab === 'insurance' ? 2 : activePayerTab === 'corporate' ? 3 : 1,
                 factIds,
                 totalAmount: amount,
                 paymentMethod: method
             };
-            console.log("Settling Partner Recovery:", payload);
+            console.log("Settling Multi-Payer Recovery:", payload);
             await FinanceApi.settleReferralRecovery(payload);
             setSelectedPartner(null);
             loadData();
@@ -121,28 +157,80 @@ export const PartnerReceivablesTab = () => {
         const cleanPhone = phone.replace(/[^0-9]/g, '');
         const netDue = claimDocData?.summary?.netClaimDue || 0;
         const count = claimDocData?.items?.length || 0;
-        const msg = `Dear ${claimDocData?.partner?.name || 'Doctor'},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Selected Patient Visits: ${count}\n• Total Diagnostic Charges: ₹${netDue.toLocaleString()}\n• Net Amount Payable: ₹${netDue.toLocaleString()}\n\nPayment details and remittance UPI QR are attached in the statement. Please verify and clear dues at your convenience. Thank you!`;
+        const recipientTitle = activePayerTab === 'insurance' ? 'TPA Desk' : activePayerTab === 'corporate' ? 'HR / Corporate Desk' : 'Doctor';
+        const msg = `Dear ${claimDocData?.partner?.name || recipientTitle},\n\nDiagnostic claim statement from ${claimDocData?.lab?.labLegalName || 'SynOS Healthcare'}:\n• Selected Patient Visits: ${count}\n• Total Diagnostic Charges: ₹${netDue.toLocaleString()}\n• Net Amount Payable: ₹${netDue.toLocaleString()}\n\nPayment details and remittance UPI QR are attached in the statement. Please verify and clear dues at your convenience. Thank you!`;
         window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
     const filtered = receivables.filter(p => p.partnerName.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+            {/* MULTI-PAYER TOP SUB-NAV TABS */}
+            <div className="flex flex-wrap items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-4">
+                <button
+                    onClick={() => handleSwitchTab('partner')}
+                    className={cn(
+                        "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer",
+                        activePayerTab === 'partner'
+                            ? "bg-synos-primary text-white shadow-lg shadow-synos-primary/20 scale-[1.02]"
+                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    )}
+                >
+                    <Building2 size={15} />
+                    <span>Referral Partners</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{partnerTotal.toLocaleString()}</span>
+                </button>
+
+                <button
+                    onClick={() => handleSwitchTab('insurance')}
+                    className={cn(
+                        "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer",
+                        activePayerTab === 'insurance'
+                            ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20 scale-[1.02]"
+                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    )}
+                >
+                    <ShieldCheck size={15} />
+                    <span>Insurance Claims & TPAs</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{insuranceTotal.toLocaleString()}</span>
+                </button>
+
+                <button
+                    onClick={() => handleSwitchTab('corporate')}
+                    className={cn(
+                        "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer",
+                        activePayerTab === 'corporate'
+                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 scale-[1.02]"
+                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    )}
+                >
+                    <Briefcase size={15} />
+                    <span>Corporate B2B Receivables</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{corporateTotal.toLocaleString()}</span>
+                </button>
+            </div>
+
             {/* ACTION BAR */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative group flex-1 max-w-md">
                     <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
                     <input 
                         type="text" 
-                        placeholder="Search partner receivables..." 
+                        placeholder={
+                            activePayerTab === 'insurance' 
+                                ? "Search insurance company / TPA claims..." 
+                                : activePayerTab === 'corporate'
+                                    ? "Search corporate accounts..."
+                                    : "Search partner receivables..."
+                        }
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-synos-primary/20 transition-all outline-none"
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <button className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all">
+                    <button className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer">
                         RECORD RECOVERY
                     </button>
                 </div>
@@ -151,11 +239,23 @@ export const PartnerReceivablesTab = () => {
             {/* RECEIVABLES LIST */}
             <div className="rounded-3xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
                 {loading ? (
-                    <div className="p-20 text-center text-zinc-500 animate-pulse">Reconciling partner ledgers...</div>
+                    <div className="p-20 text-center text-zinc-500 animate-pulse">Reconciling ledger facts...</div>
                 ) : filtered.length === 0 ? (
                     <div className="p-20 text-center">
-                        <Building2 size={48} className="text-zinc-200 mx-auto mb-4" />
-                        <p className="text-sm font-bold dark:text-zinc-500 text-zinc-400 tracking-tight">No outstanding receivables from partners.</p>
+                        {activePayerTab === 'insurance' ? (
+                            <ShieldCheck size={48} className="text-zinc-200 mx-auto mb-4" />
+                        ) : activePayerTab === 'corporate' ? (
+                            <Briefcase size={48} className="text-zinc-200 mx-auto mb-4" />
+                        ) : (
+                            <Building2 size={48} className="text-zinc-200 mx-auto mb-4" />
+                        )}
+                        <p className="text-sm font-bold dark:text-zinc-500 text-zinc-400 tracking-tight">
+                            {activePayerTab === 'insurance' 
+                                ? "No outstanding claims from insurance companies." 
+                                : activePayerTab === 'corporate'
+                                    ? "No outstanding receivables from corporate accounts."
+                                    : "No outstanding receivables from referral partners."}
+                        </p>
                     </div>
                 ) : (
                     <table className="w-full text-left border-collapse">
@@ -310,7 +410,14 @@ export const PartnerReceivablesTab = () => {
                                                                                     className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                                                 />
                                                                             </td>
-                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || fact.receivableFactId.toString().substring(0, 13)}</td>
+                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">
+                                                                                <div>{fact.token || fact.receivableFactId.toString().substring(0, 13)}</div>
+                                                                                {fact.claimReference && (
+                                                                                    <div className="text-[9px] text-indigo-500 font-sans font-semibold">
+                                                                                        {activePayerTab === 'insurance' ? `Policy/Claim: ${fact.claimReference}` : `Emp ID: ${fact.claimReference}`}
+                                                                                    </div>
+                                                                                )}
+                                                                            </td>
                                                                             <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
                                                                             <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt).toLocaleDateString()}</td>
                                                                             <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.amount.toLocaleString()}</td>

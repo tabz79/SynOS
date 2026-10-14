@@ -72,5 +72,32 @@ namespace SynOS.Models.Entities
         public virtual ReferralDraft? ReferralDraft { get; set; }
         
         public virtual ICollection<Specimen> Specimens { get; set; } = new List<Specimen>();
+
+        // Multi-Payer Billing Engine (Prepaid, Insurance, Corporate)
+        public BillingType BillingType { get; set; } = BillingType.Standard;
+
+        // Insurance / TPA Context
+        public Guid? InsuranceCompanyId { get; set; }
+        [ForeignKey("InsuranceCompanyId")]
+        public virtual InsuranceCompany? InsuranceCompany { get; set; }
+
+        [StringLength(100)]
+        public string? PolicyNumber { get; set; }
+
+        [StringLength(100)]
+        public string? PreAuthApprovalNumber { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal InsuranceCoPayAmount { get; set; } = 0;
+
+        // Corporate B2B Context
+        public Guid? CorporateAccountId { get; set; }
+        [ForeignKey("CorporateAccountId")]
+        public virtual CorporateAccount? CorporateAccount { get; set; }
+
+        [StringLength(100)]
+        public string? EmployeeId { get; set; }
+
+        public Guid? CorporatePackageId { get; set; }
     }
 }

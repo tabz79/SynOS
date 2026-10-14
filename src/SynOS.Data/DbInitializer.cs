@@ -412,6 +412,138 @@ BEGIN
         CONSTRAINT [PK_SupportTickets] PRIMARY KEY ([Id])
     );
 END
+
+-- 19. Multi-Payer Billing Engine (Visits table extension)
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'BillingType')
+BEGIN
+    ALTER TABLE [Visits] ADD [BillingType] int NOT NULL DEFAULT 0;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'InsuranceCompanyId')
+BEGIN
+    ALTER TABLE [Visits] ADD [InsuranceCompanyId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'PolicyNumber')
+BEGIN
+    ALTER TABLE [Visits] ADD [PolicyNumber] nvarchar(100) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'PreAuthApprovalNumber')
+BEGIN
+    ALTER TABLE [Visits] ADD [PreAuthApprovalNumber] nvarchar(100) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'InsuranceCoPayAmount')
+BEGIN
+    ALTER TABLE [Visits] ADD [InsuranceCoPayAmount] decimal(18,2) NOT NULL DEFAULT 0;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'CorporateAccountId')
+BEGIN
+    ALTER TABLE [Visits] ADD [CorporateAccountId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'EmployeeId')
+BEGIN
+    ALTER TABLE [Visits] ADD [EmployeeId] nvarchar(100) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'CorporatePackageId')
+BEGIN
+    ALTER TABLE [Visits] ADD [CorporatePackageId] uniqueidentifier NULL;
+END
+
+-- 20. Multi-Payer Billing Engine (ReceivableFacts extension)
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AR.ReceivableFacts') AND name = 'DebtorType')
+BEGIN
+    ALTER TABLE [AR].[ReceivableFacts] ADD [DebtorType] int NOT NULL DEFAULT 1;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AR.ReceivableFacts') AND name = 'DebtorId')
+BEGIN
+    ALTER TABLE [AR].[ReceivableFacts] ADD [DebtorId] uniqueidentifier NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AR.ReceivableFacts') AND name = 'DebtorName')
+BEGIN
+    ALTER TABLE [AR].[ReceivableFacts] ADD [DebtorName] nvarchar(200) NOT NULL DEFAULT '';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AR.ReceivableFacts') AND name = 'ClaimReference')
+BEGIN
+    ALTER TABLE [AR].[ReceivableFacts] ADD [ClaimReference] nvarchar(150) NULL;
+END
+
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('AR.ReceivableFacts') AND name = 'ReferralPartnerId' AND is_nullable = 0)
+BEGIN
+    ALTER TABLE [AR].[ReceivableFacts] ALTER COLUMN [ReferralPartnerId] uniqueidentifier NULL;
+END
+
+-- 21. Create InsuranceCompanies table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'InsuranceCompanies' AND type = 'U')
+BEGIN
+    CREATE TABLE [InsuranceCompanies] (
+        [InsuranceCompanyId] uniqueidentifier NOT NULL,
+        [Name] nvarchar(200) NOT NULL,
+        [Code] nvarchar(50) NOT NULL,
+        [TpaName] nvarchar(150) NULL,
+        [PayerId] nvarchar(100) NULL,
+        [ContactEmail] nvarchar(100) NULL,
+        [ContactPhone] nvarchar(50) NULL,
+        [Address] nvarchar(500) NULL,
+        [PreAuthRequired] bit NOT NULL DEFAULT 1,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [CreatedAt] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        [UpdatedAt] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT [PK_InsuranceCompanies] PRIMARY KEY ([InsuranceCompanyId])
+    );
+END
+
+-- 22. Create CorporateAccounts table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CorporateAccounts' AND type = 'U')
+BEGIN
+    CREATE TABLE [CorporateAccounts] (
+        [CorporateAccountId] uniqueidentifier NOT NULL,
+        [CompanyName] nvarchar(200) NOT NULL,
+        [CorporateCode] nvarchar(50) NOT NULL,
+        [GstNumber] nvarchar(50) NULL,
+        [ContactPerson] nvarchar(100) NULL,
+        [ContactEmail] nvarchar(100) NULL,
+        [ContactPhone] nvarchar(50) NULL,
+        [BillingAddress] nvarchar(500) NULL,
+        [CreditLimit] decimal(18,2) NULL,
+        [PaymentTermsDays] int NOT NULL DEFAULT 30,
+        [ContractStartDate] datetimeoffset NULL,
+        [ContractEndDate] datetimeoffset NULL,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [CreatedAt] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        [UpdatedAt] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT [PK_CorporateAccounts] PRIMARY KEY ([CorporateAccountId])
+    );
+END
+
+-- 23. Create CorporateRateRules table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CorporateRateRules' AND type = 'U')
+BEGIN
+    CREATE TABLE [CorporateRateRules] (
+        [CorporateRateRuleId] uniqueidentifier NOT NULL,
+        [CorporateAccountId] uniqueidentifier NOT NULL,
+        [TestId] uniqueidentifier NOT NULL,
+        [ContractedPrice] decimal(10,2) NOT NULL,
+        [IsPackage] bit NOT NULL DEFAULT 0,
+        [PackageCode] nvarchar(50) NULL,
+        [PackageName] nvarchar(200) NULL,
+        [EffectiveFrom] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        [EffectiveTo] datetimeoffset NULL,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [CreatedAt] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        [UpdatedAt] datetimeoffset NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT [PK_CorporateRateRules] PRIMARY KEY ([CorporateRateRuleId]),
+        CONSTRAINT [FK_CorporateRateRules_CorporateAccounts] FOREIGN KEY ([CorporateAccountId]) REFERENCES [CorporateAccounts] ([CorporateAccountId]) ON DELETE CASCADE
+    );
+    CREATE INDEX [IX_CorporateRateRules_Account_Test] ON [CorporateRateRules] ([CorporateAccountId], [TestId]);
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
@@ -453,6 +585,162 @@ END
             SeedWorkforcePolicies(context);
             SeedTestDefinitions(context);
             SeedLabAnalyzers(context);
+            SeedInsuranceAndCorporate(context);
+        }
+
+        private static void SeedInsuranceAndCorporate(SynOSDbContext context)
+        {
+            if (!context.InsuranceCompanies.Any())
+            {
+                var insuranceCompanies = new List<InsuranceCompany>
+                {
+                    new InsuranceCompany
+                    {
+                        InsuranceCompanyId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                        Name = "Star Health & Allied Insurance",
+                        Code = "STAR-01",
+                        TpaName = "Star Health In-house TPA",
+                        PayerId = "IRDAI-STAR-2026",
+                        ContactEmail = "cashless@starhealth.in",
+                        ContactPhone = "+91 44 2828 8800",
+                        Address = "Star Health House, No. 1, New Tank Street, Chennai",
+                        PreAuthRequired = true,
+                        IsActive = true
+                    },
+                    new InsuranceCompany
+                    {
+                        InsuranceCompanyId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                        Name = "ICICI Lombard General Insurance",
+                        Code = "ICICI-01",
+                        TpaName = "Medi Assist Insurance TPA",
+                        PayerId = "IRDAI-ICICI-2026",
+                        ContactEmail = "claims@icicilombard.com",
+                        ContactPhone = "1800 2666",
+                        Address = "ICICI Lombard House, Veer Savarkar Marg, Prabhadevi, Mumbai",
+                        PreAuthRequired = true,
+                        IsActive = true
+                    },
+                    new InsuranceCompany
+                    {
+                        InsuranceCompanyId = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                        Name = "HDFC ERGO Health Insurance",
+                        Code = "HDFC-01",
+                        TpaName = "Vidal Health TPA Services",
+                        PayerId = "IRDAI-HDFC-2026",
+                        ContactEmail = "preauth@hdfcergo.com",
+                        ContactPhone = "022 6234 6234",
+                        Address = "HDFC House, 165-166 Backbay Reclamation, Mumbai",
+                        PreAuthRequired = true,
+                        IsActive = true
+                    },
+                    new InsuranceCompany
+                    {
+                        InsuranceCompanyId = Guid.Parse("44444444-4444-4444-4444-444444444444"),
+                        Name = "Bajaj Allianz General Insurance",
+                        Code = "BAJAJ-01",
+                        TpaName = "Paramount Health Services TPA",
+                        PayerId = "IRDAI-BAJAJ-2026",
+                        ContactEmail = "healthclaims@bajajallianz.co.in",
+                        ContactPhone = "1800 209 5858",
+                        Address = "GE Plaza, Airport Road, Yerawada, Pune",
+                        PreAuthRequired = true,
+                        IsActive = true
+                    }
+                };
+
+                context.InsuranceCompanies.AddRange(insuranceCompanies);
+                context.SaveChanges();
+            }
+
+            if (!context.CorporateAccounts.Any())
+            {
+                var sbiId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+                var licId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+                var tcsId = Guid.Parse("77777777-7777-7777-7777-777777777777");
+
+                var corporateAccounts = new List<CorporateAccount>
+                {
+                    new CorporateAccount
+                    {
+                        CorporateAccountId = sbiId,
+                        CompanyName = "State Bank of India (Staff Medical Scheme)",
+                        CorporateCode = "SBI-CORP",
+                        GstNumber = "36AAACS0000A1Z1",
+                        ContactPerson = "Chief Medical Officer",
+                        ContactEmail = "cmo.medical@sbi.co.in",
+                        ContactPhone = "022 2274 0000",
+                        BillingAddress = "State Bank Bhavan, Madame Cama Road, Nariman Point, Mumbai",
+                        CreditLimit = 500000,
+                        PaymentTermsDays = 30,
+                        IsActive = true
+                    },
+                    new CorporateAccount
+                    {
+                        CorporateAccountId = licId,
+                        CompanyName = "Life Insurance Corporation of India",
+                        CorporateCode = "LIC-CORP",
+                        GstNumber = "36AAACL0000B1Z2",
+                        ContactPerson = "Divisional HR Welfare Officer",
+                        ContactEmail = "welfare.division@licindia.com",
+                        ContactPhone = "022 2202 8282",
+                        BillingAddress = "Yogakshema Building, Jeevan Bima Marg, Mumbai",
+                        CreditLimit = 750000,
+                        PaymentTermsDays = 45,
+                        IsActive = true
+                    },
+                    new CorporateAccount
+                    {
+                        CorporateAccountId = tcsId,
+                        CompanyName = "Tata Consultancy Services (Employee Wellness)",
+                        CorporateCode = "TCS-CORP",
+                        GstNumber = "36AAACT0000C1Z3",
+                        ContactPerson = "Corporate Occupational Health Lead",
+                        ContactEmail = "wellness.corp@tcs.com",
+                        ContactPhone = "022 6778 9999",
+                        BillingAddress = "TCS House, Raveline Street, Fort, Mumbai",
+                        CreditLimit = 1000000,
+                        PaymentTermsDays = 30,
+                        IsActive = true
+                    }
+                };
+
+                context.CorporateAccounts.AddRange(corporateAccounts);
+                context.SaveChanges();
+
+                var tests = context.Tests.ToList();
+                if (tests.Any())
+                {
+                    var rateRules = new List<CorporateRateRule>();
+                    foreach (var t in tests)
+                    {
+                        rateRules.Add(new CorporateRateRule
+                        {
+                            CorporateRateRuleId = Guid.NewGuid(),
+                            CorporateAccountId = sbiId,
+                            TestId = t.TestId,
+                            ContractedPrice = 350.00m,
+                            IsPackage = t.IsProfile,
+                            PackageCode = t.IsProfile ? $"PKG-SBI-{t.TestCode}" : null,
+                            PackageName = t.IsProfile ? $"SBI Corporate Health Bundle ({t.TestName})" : null,
+                            IsActive = true
+                        });
+
+                        rateRules.Add(new CorporateRateRule
+                        {
+                            CorporateRateRuleId = Guid.NewGuid(),
+                            CorporateAccountId = licId,
+                            TestId = t.TestId,
+                            ContractedPrice = 300.00m,
+                            IsPackage = t.IsProfile,
+                            PackageCode = t.IsProfile ? $"PKG-LIC-{t.TestCode}" : null,
+                            PackageName = t.IsProfile ? $"LIC Employee Wellness ({t.TestName})" : null,
+                            IsActive = true
+                        });
+                    }
+                    context.CorporateRateRules.AddRange(rateRules);
+                    context.SaveChanges();
+                }
+            }
         }
 
         private static void SeedLabAnalyzers(SynOSDbContext context)

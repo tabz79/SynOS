@@ -120,6 +120,63 @@ namespace SynOS.Api.Controllers.Reception
             }
         }
 
+        [HttpPost("billing-context")]
+        public async Task<IActionResult> SetBillingContext([FromBody] SetBillingContextRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _service.SetBillingContextAsync(
+                    request.VisitId,
+                    request.BillingType,
+                    request.InsuranceCompanyId,
+                    request.PolicyNumber,
+                    request.PreAuthApprovalNumber,
+                    request.InsuranceCoPayAmount,
+                    request.CorporateAccountId,
+                    request.EmployeeId,
+                    request.CorporatePackageId,
+                    userId);
+                return Ok(new { success = true });
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        [HttpPost("mark-insurance")]
+        public async Task<IActionResult> MarkInsurance([FromBody] MarkInsuranceRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _service.MarkVisitAsInsuranceAsync(request.VisitId, userId);
+                return Ok(new { success = true });
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
+        [HttpPost("mark-corporate")]
+        public async Task<IActionResult> MarkCorporate([FromBody] MarkCorporateRequestDto request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var userId = GetCurrentUserId();
+                await _service.MarkVisitAsCorporateAsync(request.VisitId, userId);
+                return Ok(new { success = true });
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+            catch (InvalidOperationException ex) { return BadRequest(new { message = ex.Message }); }
+            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+        }
+
         private Guid GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -129,5 +186,28 @@ namespace SynOS.Api.Controllers.Reception
             }
             return Guid.Empty;
         }
+    }
+
+    public class SetBillingContextRequestDto
+    {
+        public Guid VisitId { get; set; }
+        public SynOS.Models.Enums.BillingType BillingType { get; set; }
+        public Guid? InsuranceCompanyId { get; set; }
+        public string? PolicyNumber { get; set; }
+        public string? PreAuthApprovalNumber { get; set; }
+        public decimal? InsuranceCoPayAmount { get; set; }
+        public Guid? CorporateAccountId { get; set; }
+        public string? EmployeeId { get; set; }
+        public Guid? CorporatePackageId { get; set; }
+    }
+
+    public class MarkInsuranceRequestDto
+    {
+        public Guid VisitId { get; set; }
+    }
+
+    public class MarkCorporateRequestDto
+    {
+        public Guid VisitId { get; set; }
     }
 }

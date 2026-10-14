@@ -395,11 +395,17 @@ namespace SynOS.Services
                  return;
             }
 
+            var partner = await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId.Value);
+
             var factId = Guid.NewGuid();
             var fact = new ReceivableFact
             {
                 ReceivableFactId = factId,
                 SourceVisitId = visit.VisitId,
+                DebtorType = DebtorType.Partner,
+                DebtorId = visit.ReferralPartnerId.Value,
+                DebtorName = partner?.Name ?? "Referral Partner",
+                ClaimReference = "Prepaid Partner Bill",
                 ReferralPartnerId = visit.ReferralPartnerId.Value,
                 Amount = invoice.Total, // Total Amount Owed
                 Currency = "INR",
@@ -428,6 +434,175 @@ namespace SynOS.Services
             // --- OUTSOURCED PAYABLE GENERATION ---
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
             // -------------------------------------
+        }
+
+        public async Task SetBillingContextAsync(
+            Guid visitId, 
+            BillingType billingType, 
+            Guid? insuranceCompanyId, 
+            string? policyNumber, 
+            string? preAuthApprovalNumber, 
+            decimal? coPayAmount, 
+            Guid? corporateAccountId, 
+            string? employeeId, 
+            Guid? corporatePackageId, 
+            Guid actorUserId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            visit.BillingType = billingType;
+            if (billingType == BillingType.PrepaidPartner)
+            {
+                visit.PaymentCollectionModel = "PartnerCollects";
+            }
+            else if (billingType == BillingType.Insurance)
+            {
+                visit.PaymentCollectionModel = "InsuranceClaim";
+                visit.InsuranceCompanyId = insuranceCompanyId;
+                visit.PolicyNumber = policyNumber?.Trim();
+                visit.PreAuthApprovalNumber = preAuthApprovalNumber?.Trim();
+                visit.InsuranceCoPayAmount = coPayAmount ?? 0;
+            }
+            else if (billingType == BillingType.Corporate)
+            {
+                visit.PaymentCollectionModel = "CorporateB2B";
+                visit.CorporateAccountId = corporateAccountId;
+                visit.EmployeeId = employeeId?.Trim();
+                visit.CorporatePackageId = corporatePackageId;
+            }
+            else
+            {
+                visit.PaymentCollectionModel = "LabCollects";
+            }
+
+            visit.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Updated BillingContext for Visit {VisitId} to {BillingType}", visitId, billingType);
+        }
+
+        public async Task MarkVisitAsInsuranceAsync(Guid visitId, Guid actorUserId)
+        {
+            await _visitService.MarkVisitAsInsuranceAsync(visitId, actorUserId);
+
+            var visit = await _context.Visits
+                .Include(v => v.Invoices)
+                .Include(v => v.InsuranceCompany)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new InvalidOperationException("Visit not found for Insurance Receivable creation");
+
+            if (!visit.InsuranceCompanyId.HasValue)
+                throw new InvalidOperationException("Insurance visit must have an Insurance Company / TPA selected.");
+
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No invoice found for Insurance Receivable creation");
+
+            // Idempotency
+            if (await _context.ReceivableFacts.AnyAsync(r => r.SourceVisitId == visitId))
+            {
+                _logger.LogWarning("Idempotency: ReceivableFact already exists for Visit {VisitId}", visitId);
+                return;
+            }
+
+            var insurer = visit.InsuranceCompany ?? await _context.InsuranceCompanies.FindAsync(visit.InsuranceCompanyId.Value);
+            var claimRef = $"{visit.PolicyNumber} / {visit.PreAuthApprovalNumber}".Trim(' ', '/');
+            var claimAmount = Math.Max(0, invoice.Total - visit.InsuranceCoPayAmount);
+
+            var factId = Guid.NewGuid();
+            var fact = new ReceivableFact
+            {
+                ReceivableFactId = factId,
+                SourceVisitId = visit.VisitId,
+                DebtorType = DebtorType.Insurance,
+                DebtorId = visit.InsuranceCompanyId.Value,
+                DebtorName = insurer?.Name ?? "Insurance Payer",
+                ClaimReference = claimRef,
+                Amount = claimAmount,
+                Currency = "INR",
+                OccurredAt = DateTimeOffset.UtcNow,
+                RecordedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.ReceivableFacts.Add(fact);
+            await _context.SaveChangesAsync();
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.RECEIVABLE_CREATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Insurance Claim Issued: {fact.Amount:C} against {fact.DebtorName} (Policy: {claimRef})",
+                "User",
+                actorUserId.ToString(),
+                true,
+                fact.ReceivableFactId,
+                "ReceivableFact"
+            );
+
+            await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
+        }
+
+        public async Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId)
+        {
+            await _visitService.MarkVisitAsCorporateAsync(visitId, actorUserId);
+
+            var visit = await _context.Visits
+                .Include(v => v.Invoices)
+                .Include(v => v.CorporateAccount)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new InvalidOperationException("Visit not found for Corporate Receivable creation");
+
+            if (!visit.CorporateAccountId.HasValue)
+                throw new InvalidOperationException("Corporate visit must have a Corporate Account selected.");
+
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No invoice found for Corporate Receivable creation");
+
+            // Idempotency
+            if (await _context.ReceivableFacts.AnyAsync(r => r.SourceVisitId == visitId))
+            {
+                _logger.LogWarning("Idempotency: ReceivableFact already exists for Visit {VisitId}", visitId);
+                return;
+            }
+
+            var corp = visit.CorporateAccount ?? await _context.CorporateAccounts.FindAsync(visit.CorporateAccountId.Value);
+            var claimRef = !string.IsNullOrWhiteSpace(visit.EmployeeId) ? $"Staff ID: {visit.EmployeeId}" : "Corporate Bill";
+
+            var factId = Guid.NewGuid();
+            var fact = new ReceivableFact
+            {
+                ReceivableFactId = factId,
+                SourceVisitId = visit.VisitId,
+                DebtorType = DebtorType.Corporate,
+                DebtorId = visit.CorporateAccountId.Value,
+                DebtorName = corp?.CompanyName ?? "Corporate Account",
+                ClaimReference = claimRef,
+                Amount = invoice.Total,
+                Currency = "INR",
+                OccurredAt = DateTimeOffset.UtcNow,
+                RecordedAt = DateTimeOffset.UtcNow
+            };
+
+            _context.ReceivableFacts.Add(fact);
+            await _context.SaveChangesAsync();
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.RECEIVABLE_CREATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Corporate Bill Issued: {fact.Amount:C} against {fact.DebtorName} ({claimRef})",
+                "User",
+                actorUserId.ToString(),
+                true,
+                fact.ReceivableFactId,
+                "ReceivableFact"
+            );
+
+            await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
         }
 
         private async Task ProcessOutsourcedPayablesAsync(Guid visitId, Guid actorUserId)

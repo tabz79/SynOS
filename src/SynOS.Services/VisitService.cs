@@ -868,6 +868,54 @@ namespace SynOS.Services
             );
         }
 
+        public async Task MarkVisitAsInsuranceAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Invoices)
+                .Include(v => v.Orders)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            CheckVisitOwnership(visit);
+
+            visit.BillingType = BillingType.Insurance;
+            visit.PaymentCollectionModel = "InsuranceClaim";
+            visit.Status = VisitStatus.Paid;
+            if (visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+            {
+                await AssignOfficialTokenAsync(visitId, actorUserId);
+            }
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+        }
+
+        public async Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Invoices)
+                .Include(v => v.Orders)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
+
+            CheckVisitOwnership(visit);
+
+            visit.BillingType = BillingType.Corporate;
+            visit.PaymentCollectionModel = "CorporateB2B";
+            visit.Status = VisitStatus.Paid;
+            if (visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+            {
+                await AssignOfficialTokenAsync(visitId, actorUserId);
+            }
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+        }
+
         public async Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId)
         {
             var visit = await _context.Visits.FindAsync(visitId);
@@ -1073,7 +1121,7 @@ namespace SynOS.Services
             public Guid? PriceConfigId { get; set; }
         }
 
-        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode, bool isChild = false)
+        private async Task<ResolvedTestDto?> ResolveTestForReceptionAsync(string testCode, bool isChild = false, Guid? visitId = null)
         {
             var normalized = testCode?.Trim().ToUpperInvariant();
             if (string.IsNullOrEmpty(normalized)) return null;
@@ -1179,6 +1227,23 @@ namespace SynOS.Services
                 basePrice = 100.00m;
             }
 
+            // --- MULTI-PAYER CORPORATE PRICING OVERRIDE ---
+            if (visitId.HasValue)
+            {
+                var visitContext = await _context.Visits.AsNoTracking().FirstOrDefaultAsync(v => v.VisitId == visitId.Value);
+                if (visitContext != null && visitContext.BillingType == SynOS.Models.Enums.BillingType.Corporate && visitContext.CorporateAccountId.HasValue)
+                {
+                    var corporateRule = await _context.CorporateRateRules.AsNoTracking()
+                        .FirstOrDefaultAsync(r => r.CorporateAccountId == visitContext.CorporateAccountId.Value && r.TestId == test.TestId && r.IsActive);
+                    if (corporateRule != null && corporateRule.ContractedPrice > 0)
+                    {
+                        basePrice = corporateRule.ContractedPrice;
+                        _logger.LogInformation("Resolved CONTRACTED CORPORATE price {Price} for Test {TestCode} (CorporateAccountId: {CorpId})", basePrice, test.TestCode, visitContext.CorporateAccountId.Value);
+                    }
+                }
+            }
+            // ----------------------------------------------
+
             var now = DateTime.UtcNow;
             
             var priceConfig = test.PriceConfigs?
@@ -1214,7 +1279,7 @@ namespace SynOS.Services
         {
             _logger.LogInformation($"[ExpansionDebug] Starting expansion for {testCode}. isChild: {isChild}, parentOrderId: {parentOrderId}");
 
-            var resolved = await ResolveTestForReceptionAsync(testCode, isChild);
+            var resolved = await ResolveTestForReceptionAsync(testCode, isChild, visitId);
             if (resolved == null)
             {
                 _logger.LogWarning($"[ExpansionDebug] ResolveTestForReceptionAsync returned NULL for {testCode}");

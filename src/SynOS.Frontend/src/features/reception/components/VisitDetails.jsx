@@ -6,8 +6,24 @@ import { useTheme } from '@/context/ThemeContext'
 import ReferralDraftForm from './ReferralDraftForm'
 import OutsourceDraftForm from './OutsourceDraftForm'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
+import { 
+    MultiPayerSelector, 
+    InsuranceContextPanel, 
+    CorporateContextPanel, 
+    AddInsuranceCompanyModal, 
+    AddCorporateAccountModal 
+} from './MultiPayerPanels'
 
-export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidIntent, setIsPrepaidIntent, isCorrectionIntent }) {
+export function VisitDetails({ 
+    snapshot, 
+    visitId, 
+    onVisitUpdated, 
+    isPrepaidIntent, 
+    setIsPrepaidIntent, 
+    isCorrectionIntent,
+    billingMode = 'Standard',
+    setBillingMode
+}) {
     const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
@@ -17,6 +33,11 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
     const [outsourcedCatalog, setOutsourcedCatalog] = useState([]); // ADDED: Outsourced Catalog Master
+    const [insuranceCompanies, setInsuranceCompanies] = useState([]); // Insurance / TPA Master
+    const [corporateAccounts, setCorporateAccounts] = useState([]); // Corporate Client Master
+    const [corporateRateRules, setCorporateRateRules] = useState([]); // Rate rules for active corporate account
+    const [isAddInsuranceModalOpen, setIsAddInsuranceModalOpen] = useState(false);
+    const [isAddCorporateModalOpen, setIsAddCorporateModalOpen] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
 
@@ -129,16 +150,18 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
         (isFinalized ? visit.status.toUpperCase() : (isLocked ? "LOCKED" : null));
 
-    // Load Catalogs (Test + Referral) 
-    // Load independently so one failure (e.g. 403 on Referrals) doesn't block the other (Tests).
+    // Load Catalogs (Test + Referral + Insurance + Corporate) 
+    // Load independently so one failure doesn't block the other.
     useEffect(() => {
         let isMounted = true;
         const loadCatalogs = async () => {
-            const [testResult, referralResult, labsResult, outResult] = await Promise.allSettled([
+            const [testResult, referralResult, labsResult, outResult, insResult, corpResult] = await Promise.allSettled([
                 fetchTestCatalogCached(),
                 fetchReferralPartnersCached(),
                 fetchReferenceLabsCached(),
-                fetchOutsourcedCatalogCached()
+                fetchOutsourcedCatalogCached(),
+                ReceptionApi.getInsuranceCompanies(),
+                ReceptionApi.getCorporateAccounts()
             ]);
 
             if (!isMounted) return;
@@ -158,10 +181,110 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 const outCatalog = outResult.value;
                 setOutsourcedCatalog(outCatalog?.data || outCatalog || []);
             } else console.warn("Failed to load outsourced catalog", outResult.reason);
+
+            if (insResult.status === 'fulfilled') {
+                setInsuranceCompanies(insResult.value || []);
+            } else console.warn("Failed to load insurance companies", insResult.reason);
+
+            if (corpResult.status === 'fulfilled') {
+                setCorporateAccounts(corpResult.value || []);
+            } else console.warn("Failed to load corporate accounts", corpResult.reason);
         };
         loadCatalogs();
         return () => { isMounted = false; };
     }, []);
+
+    // Load corporate rate rules whenever corporate account changes
+    const activeCorporateAccountId = snapshot?.visit?.corporateAccountId;
+    useEffect(() => {
+        if (!activeCorporateAccountId) {
+            setCorporateRateRules([]);
+            return;
+        }
+        let isMounted = true;
+        ReceptionApi.getCorporateRateRules(activeCorporateAccountId)
+            .then(rules => {
+                if (isMounted) setCorporateRateRules(rules || []);
+            })
+            .catch(err => console.warn("Failed to load corporate rate rules", err));
+        return () => { isMounted = false; };
+    }, [activeCorporateAccountId]);
+
+    // Switch billing mode and sync with backend
+    const handleModeChange = async (newMode) => {
+        if (setBillingMode) setBillingMode(newMode);
+        if (setIsPrepaidIntent) setIsPrepaidIntent(newMode === 'PrepaidPartner');
+
+        if (visitId && !isReadOnly) {
+            setIsProcessing(true);
+            try {
+                await ReceptionApi.updateBillingContext({
+                    visitId,
+                    billingType: newMode
+                });
+                if (newMode === 'PrepaidPartner') {
+                    await ReceptionApi.updatePaymentCollectionModel(visitId, 'PartnerCollects');
+                } else {
+                    await ReceptionApi.updatePaymentCollectionModel(visitId, 'LabCollects');
+                }
+                if (onVisitUpdated) onVisitUpdated();
+            } catch (err) {
+                console.error("Failed to switch billing mode:", err);
+            } finally {
+                setIsProcessing(false);
+            }
+        }
+    };
+
+    // Update specific context fields (Insurer, Policy #, Pre-Auth #, Corporate Account, Emp ID, Co-Pay)
+    const handleUpdateBillingContext = async (patch) => {
+        if (!visitId || isReadOnly) return;
+        setIsProcessing(true);
+        try {
+            const v = snapshot?.visit;
+            const payload = {
+                visitId,
+                billingType: patch.billingType !== undefined ? patch.billingType : billingMode,
+                insuranceCompanyId: patch.insuranceCompanyId !== undefined ? patch.insuranceCompanyId : (v?.insuranceCompanyId || null),
+                policyNumber: patch.policyNumber !== undefined ? patch.policyNumber : (v?.policyNumber || null),
+                preAuthApprovalNumber: patch.preAuthApprovalNumber !== undefined ? patch.preAuthApprovalNumber : (v?.preAuthApprovalNumber || null),
+                insuranceCoPayAmount: patch.insuranceCoPayAmount !== undefined ? patch.insuranceCoPayAmount : (v?.insuranceCoPayAmount || 0),
+                corporateAccountId: patch.corporateAccountId !== undefined ? patch.corporateAccountId : (v?.corporateAccountId || null),
+                employeeId: patch.employeeId !== undefined ? patch.employeeId : (v?.employeeId || null),
+                corporatePackageId: patch.corporatePackageId !== undefined ? patch.corporatePackageId : (v?.corporatePackageId || null)
+            };
+            await ReceptionApi.updateBillingContext(payload);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to update billing context:", err);
+            alert("Failed to update billing details: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // Pricing calculation helper aware of corporate rate rules
+    const getTestPricing = (test) => {
+        const code = test.testCode || test.code;
+        const testId = test.id || test.testId;
+        if (billingMode === 'Corporate' && corporateRateRules.length > 0) {
+            const rule = corporateRateRules.find(r => 
+                (r.testCode && code && r.testCode.toLowerCase() === code.toLowerCase()) ||
+                (r.testId && testId && r.testId === testId)
+            );
+            if (rule && rule.corporatePrice !== undefined && rule.corporatePrice !== null) {
+                return {
+                    price: rule.corporatePrice,
+                    isCorporateRate: true,
+                    standardPrice: test.basePrice || test.price || test.Price
+                };
+            }
+        }
+        return {
+            price: test.basePrice || test.price || test.Price,
+            isCorporateRate: false
+        };
+    };
 
     // COMMAND: Apply Referral (Step 5.4)
     const handleApplyReferral = async (partnerId) => {
@@ -376,176 +499,189 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 )}
             </div>
 
-            {/* SECTION 2: VISIT CONTEXT (Phase 8 - Reordered Top) */}
-            <div className={cn("space-y-1.5 xl:space-y-2 p-2.5 xl:p-4 rounded-lg border", ui.section)}>
-                <h4 className="type-section-header">Visit Context</h4>
-
-                {/* A. Prepaid Checkbox */}
-                <div className="flex items-start gap-3">
-                    <input
-                        type="checkbox"
-                        id="chkPrepaid"
-                        checked={isPrepaidIntent}
-                        onChange={async (e) => {
-                            const checked = e.target.checked;
-                            setIsPrepaidIntent(checked);
-                            
-                            // OPX-GPT-5: Sync Visit-Level Authority with Backend
-                            if (visitId && !isReadOnly) {
-                                setIsProcessing(true);
-                                try {
-                                    const model = checked ? "PartnerCollects" : "LabCollects";
-                                    await ReceptionApi.updatePaymentCollectionModel(visitId, model);
-                                    if (onVisitUpdated) onVisitUpdated();
-                                } catch (err) {
-                                    console.error("Failed to sync collection model", err);
-                                    // Revert UI state on failure
-                                    setIsPrepaidIntent(!checked);
-                                } finally {
-                                    setIsProcessing(false);
-                                }
-                            }
-                        }}
-                        disabled={isReadOnly && !isCorrectionIntent}
-                        className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4 focus:ring-2 focus:ring-synos-primary focus:outline-none rounded"
-                    />
-                    <div className="space-y-0.5">
-                        <label htmlFor="chkPrepaid" className={cn("cursor-pointer transition-colors type-body",
-                            isPrepaidIntent
-                                ? (isDark ? "text-amber-400" : "text-amber-700")
-                                : ""
-                        )}>
-                            Prepaid Bill (Patient already paid)
-                        </label>
-                        <p className="type-meta leading-tight">
-                            Select this ONLY if money was collected outside (e.g. by Referral Center).
-                        </p>
-                    </div>
+            {/* SECTION 2: VISIT CONTEXT (Multi-Payer Architecture) */}
+            <div className={cn("space-y-3 p-3 xl:p-4 rounded-xl border", ui.section)}>
+                <div className="flex items-center justify-between">
+                    <h4 className="type-section-header">Visit & Payer Context</h4>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border border-synos-border bg-synos-surface">
+                        Mode: {billingMode}
+                    </span>
                 </div>
 
-                {/* B. Referral Input */}
-                <div className="pt-2">
-                    <div className="type-label mb-1 flex justify-between">
-                        <span>Referral / Doctor {isPrepaidIntent && <span className="text-red-500">*</span>}</span>
-                        {isPrepaidIntent && <span className="text-amber-500/50 type-section-header">Who collected payment?</span>}
-                    </div>
+                {/* 4-Card Multi-Payer Segmented Selector */}
+                <MultiPayerSelector
+                    billingMode={billingMode}
+                    onChangeMode={handleModeChange}
+                    disabled={isReadOnly && !isCorrectionIntent}
+                    isDark={isDark}
+                />
 
-                    {/* 1. PARTNER BADGE (Highest Priority) */}
-                    {snapshot?.billing?.referral?.partner ? (
-                        <div className={cn("flex items-center gap-2 font-bold p-2 rounded border",
-                            isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
-                            <span className="truncate flex-1 tracking-tight type-value">
-                                {snapshot.billing.referral.partner.displayName || "Partner"}
-                            </span>
-
-                            {/* Silent Lock: If not editable, show nothing. If editable, show Remove. */}
-                            {canEditReferral && (
-                                <button
-                                    onClick={handleRemoveReferral}
-                                    disabled={isProcessing}
-                                    className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            )}
+                {/* CONTEXTUAL SUB-PANEL: Standard Direct */}
+                {billingMode === 'Standard' && (
+                    <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 space-y-2">
+                        <div className="type-label flex justify-between">
+                            <span>Referring Doctor / Clinic (Optional)</span>
+                            <span className="text-zinc-400 type-section-header">Commission cut applies</span>
                         </div>
-                    ) : (
-                        // 2. HYBRID INPUT (Text + Suggestions)
-                        <ReferralCombinedInput
-                            initialValue={snapshot?.billing?.referral?.referrerText || ""}
-                            isReadOnly={!canEditReferral}
-                            isProcessing={isProcessing}
-                            partners={referralPartners}
-                            allowFreeText={!isPrepaidIntent} // Constraint based on Checkbox
-                            onApplyPartner={handleApplyReferral}
-                            onUpdateText={async (text) => {
-                                if (!visitId || !canEditReferral) return;
+                        {snapshot?.billing?.referral?.partner ? (
+                            <div className={cn("flex items-center gap-2 font-bold p-2 rounded border",
+                                isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
+                                <span className="truncate flex-1 tracking-tight type-value">
+                                    {snapshot.billing.referral.partner.displayName || "Partner"}
+                                </span>
+                                {canEditReferral && (
+                                    <button
+                                        onClick={handleRemoveReferral}
+                                        disabled={isProcessing}
+                                        className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <ReferralCombinedInput
+                                initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                                isReadOnly={!canEditReferral}
+                                isProcessing={isProcessing}
+                                partners={referralPartners}
+                                allowFreeText={true}
+                                onApplyPartner={handleApplyReferral}
+                                onUpdateText={async (text) => {
+                                    if (!visitId || !canEditReferral) return;
+                                    if (isCorrectionIntent) {
+                                        setCorrectionState({
+                                            isOpen: true,
+                                            type: 'ChangeReferral',
+                                            payload: { referrerText: text, partnerId: null },
+                                            reason: ""
+                                        });
+                                        return;
+                                    }
+                                    setIsProcessing(true);
+                                    try {
+                                        await ReceptionApi.updateReferrerText(visitId, text);
+                                        if (onVisitUpdated) onVisitUpdated();
+                                    } catch (err) {
+                                        console.error("Failed to update referrer text", err);
+                                        alert(err.message);
+                                    } finally {
+                                        setIsProcessing(false);
+                                    }
+                                }}
+                            />
+                        )}
+                    </div>
+                )}
 
-                                if (isCorrectionIntent) {
-                                    setCorrectionState({
-                                        isOpen: true,
-                                        type: 'ChangeReferral',
-                                        payload: { referrerText: text, partnerId: null },
-                                        reason: ""
-                                    });
-                                    return;
-                                }
-                                if (isPrepaidIntent) {
-                                    // Should be blocked by UI component, but defensive check
-                                    console.warn("Free text not allowed in prepaid mode");
-                                    return;
-                                }
-                                setIsProcessing(true);
-                                try {
-                                    await ReceptionApi.updateReferrerText(visitId, text);
-                                    if (onVisitUpdated) onVisitUpdated();
-                                } catch (err) {
-                                    console.error("Failed to update referrer text", err);
-                                    alert(err.message);
-                                } finally {
-                                    setIsProcessing(false);
-                                }
-                            }}
-                        />
-                    )}
-                </div>
-            </div>
+                {/* CONTEXTUAL SUB-PANEL: Prepaid Partner */}
+                {billingMode === 'PrepaidPartner' && (
+                    <div className="pt-2 border-t border-amber-500/20 space-y-2">
+                        <div className="type-label flex justify-between">
+                            <span>Referral Partner <span className="text-red-500">*</span></span>
+                            <span className="text-amber-500 font-bold type-section-header">Who collected outside?</span>
+                        </div>
+                        {snapshot?.billing?.referral?.partner ? (
+                            <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
+                                isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                <span className="truncate flex-1 tracking-tight text-xs font-bold">
+                                    {snapshot.billing.referral.partner.displayName || "Partner"}
+                                </span>
+                                {canEditReferral && (
+                                    <button
+                                        onClick={handleRemoveReferral}
+                                        disabled={isProcessing}
+                                        className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <ReferralCombinedInput
+                                initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                                isReadOnly={!canEditReferral}
+                                isProcessing={isProcessing}
+                                partners={referralPartners}
+                                allowFreeText={false}
+                                onApplyPartner={handleApplyReferral}
+                                onUpdateText={() => {}}
+                            />
+                        )}
 
-            {/* SECTION 2b: REFERRAL DRAFT (Provisional) */}
-            <div className="py-2">
-                {/* 1. Read Only Summary */}
-                {referralDraft && (
-                    <div className={cn("border rounded p-3 mb-2 flex items-center justify-between", isDark ? "bg-zinc-900/50 border-zinc-700/50" : "bg-white border-zinc-200 shadow-sm")}>
-                        <div>
-                            <div className="type-section-header mb-0.5">Provisional Referral Draft</div>
-                            <div className="type-value">{referralDraft.providerName}</div>
-                            {(referralDraft.clinicName || referralDraft.location) && (
-                                <div className="type-label">
-                                    {[referralDraft.clinicName, referralDraft.location].filter(Boolean).join(" • ")}
+                        {/* Provisional Referral Draft */}
+                        {referralDraft && (
+                            <div className={cn("border rounded p-3 flex items-center justify-between", isDark ? "bg-zinc-900/50 border-zinc-700/50" : "bg-white border-zinc-200 shadow-sm")}>
+                                <div>
+                                    <div className="type-section-header mb-0.5">Provisional Referral Draft</div>
+                                    <div className="type-value">{referralDraft.providerName}</div>
+                                    {(referralDraft.clinicName || referralDraft.location) && (
+                                        <div className="type-label">
+                                            {[referralDraft.clinicName, referralDraft.location].filter(Boolean).join(" • ")}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+
+                        {isDraftFormVisible && !referralDraft && (
+                            <ReferralDraftForm
+                                visitId={visitId}
+                                isDark={isDark}
+                                uiStyles={ui}
+                                onSuccess={() => {
+                                    setIsDraftFormVisible(false);
+                                    if (onVisitUpdated) onVisitUpdated();
+                                }}
+                                onCancel={() => setIsDraftFormVisible(false)}
+                            />
+                        )}
+
+                        {!isDraftFormVisible && !referralDraft && !snapshot?.billing?.referral?.partner && (
+                            <button
+                                type="button"
+                                onClick={() => setIsDraftFormVisible(true)}
+                                disabled={!canAddDraft}
+                                className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group cursor-pointer",
+                                    isDark ? "border-zinc-800 hover:text-white hover:bg-zinc-800/50" : "bg-white border-zinc-300 shadow-sm hover:border-zinc-400")}
+                            >
+                                <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
+                                Add Provisional Referral Partner
+                            </button>
+                        )}
                     </div>
                 )}
 
-                {/* 2. Inline Form */}
-                {isDraftFormVisible && !referralDraft && (
-                    <ReferralDraftForm
-                        visitId={visitId}
+                {/* CONTEXTUAL SUB-PANEL: Insurance / TPA */}
+                {billingMode === 'Insurance' && (
+                    <InsuranceContextPanel
+                        insuranceCompanies={insuranceCompanies}
+                        selectedCompanyId={snapshot?.visit?.insuranceCompanyId}
+                        policyNumber={snapshot?.visit?.policyNumber}
+                        preAuthNumber={snapshot?.visit?.preAuthApprovalNumber}
+                        coPayAmount={snapshot?.visit?.insuranceCoPayAmount}
+                        onChange={handleUpdateBillingContext}
+                        onOpenAddModal={() => setIsAddInsuranceModalOpen(true)}
                         isDark={isDark}
-                        uiStyles={ui}
-                        onSuccess={() => {
-                            setIsDraftFormVisible(false);
-                            if (onVisitUpdated) onVisitUpdated();
-                        }}
-                        onCancel={() => setIsDraftFormVisible(false)}
+                        disabled={isReadOnly && !isCorrectionIntent}
                     />
                 )}
 
-                {/* 3. Trigger Button */}
-                {!isDraftFormVisible && !referralDraft && (
-                    <button
-                        type="button"
-                        onClick={() => setIsDraftFormVisible(true)}
-                        disabled={!canAddDraft}
-                        className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group focus:outline-none focus:ring-2 focus:ring-synos-primary cursor-pointer",
-                            isDark
-                                ? "border-zinc-800 hover:text-white hover:bg-zinc-800/50"
-                                : "bg-white border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md")}
-                    >
-                        <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
-                        Add Referral Partner
-                    </button>
-                )}
-
-                {/* 4. Disabled State Reminder */}
-                {referralDraft && (
-                    <button disabled className={cn("flex items-center gap-2 text-xs font-bold uppercase tracking-wider cursor-not-allowed px-1 mt-1 opacity-20",
-                        isDark ? "text-zinc-700" : "text-zinc-400")}>
-                        <Plus className="w-3 h-3" />
-                        Add Referral Partner
-                    </button>
+                {/* CONTEXTUAL SUB-PANEL: Corporate B2B */}
+                {billingMode === 'Corporate' && (
+                    <CorporateContextPanel
+                        corporateAccounts={corporateAccounts}
+                        selectedAccountId={snapshot?.visit?.corporateAccountId}
+                        employeeId={snapshot?.visit?.employeeId}
+                        corporateRateRules={corporateRateRules}
+                        onAddPackageTest={(pkg) => handleAddTest({ testCode: pkg.testCode, name: pkg.testName, price: pkg.corporatePrice })}
+                        onChange={handleUpdateBillingContext}
+                        onOpenAddModal={() => setIsAddCorporateModalOpen(true)}
+                        isDark={isDark}
+                        disabled={isReadOnly && !isCorrectionIntent}
+                    />
                 )}
             </div>
 
@@ -587,36 +723,55 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                         {/* Search Suggestions Dropdown */}
                         {suggestions.length > 0 && (
                             <div ref={testListRef} className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
-                                {/* INTERNAL TESTS */}
-                                {suggestions.map((test, idx) => (
-                                    <button
-                                        key={test.testCode || test.code}
-                                        onMouseEnter={() => setTestSelectedIndex(idx)}
-                                        onClick={() => {
-                                            handleAddTest(test);
-                                            setFilter("");
-                                            setTestSelectedIndex(0);
-                                        }}
-                                        className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
-                                            idx === testSelectedIndex
-                                                ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
-                                                : (isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100"))}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <div>
-                                                <div className="type-value">{test.testName || test.name}</div>
-                                                <div className="type-code">{test.testCode || test.code}</div>
+                                {/* INTERNAL & OUTSOURCED TESTS */}
+                                {suggestions.map((test, idx) => {
+                                    const pricing = getTestPricing(test);
+                                    return (
+                                        <button
+                                            key={test.testCode || test.code}
+                                            onMouseEnter={() => setTestSelectedIndex(idx)}
+                                            onClick={() => {
+                                                handleAddTest({ ...test, price: pricing.price });
+                                                setFilter("");
+                                                setTestSelectedIndex(0);
+                                            }}
+                                            className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
+                                                idx === testSelectedIndex
+                                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                                    : (isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100"))}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div>
+                                                    <div className="type-value">{test.testName || test.name}</div>
+                                                    <div className="type-code flex items-center gap-1.5">
+                                                        <span>{test.testCode || test.code}</span>
+                                                        {pricing.isCorporateRate && (
+                                                            <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-500/15 text-indigo-400 font-bold border border-indigo-500/30">
+                                                                Corporate Rate
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {(test.isOutsourced || test.IsOutsourced) && (
+                                                    <Beaker className="w-3 h-3 text-amber-500 opacity-60" />
+                                                )}
                                             </div>
-                                            {(test.isOutsourced || test.IsOutsourced) && (
-                                                <Beaker className="w-3 h-3 text-amber-500 opacity-60" />
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="type-code">₹{test.basePrice || test.price || test.Price}</span>
-                                            <Plus className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary" />
-                                        </div>
-                                    </button>
-                                ))}
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex flex-col items-end">
+                                                    <span className={cn("type-code", pricing.isCorporateRate ? "text-indigo-400 font-bold" : "")}>
+                                                        ₹{pricing.price}
+                                                    </span>
+                                                    {pricing.isCorporateRate && pricing.standardPrice !== pricing.price && (
+                                                        <span className="text-[9px] line-through text-zinc-500 font-mono">
+                                                            ₹{pricing.standardPrice}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <Plus className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary" />
+                                            </div>
+                                        </button>
+                                    );
+                                })}
 
                                 {/* AD-HOC MANUAL TRIGGER REMOVED TO AVOID HYBRID MODEL */}
                             </div>
@@ -798,7 +953,27 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 </div>
             )}
 
-            {/* SECTION 4: FINAL LOCK (Only for Prepaid) - REMOVED (Moved to Footer) */}
+            {/* Quick Add Insurance / TPA Modal */}
+            <AddInsuranceCompanyModal
+                isOpen={isAddInsuranceModalOpen}
+                onClose={() => setIsAddInsuranceModalOpen(false)}
+                isDark={isDark}
+                onSuccess={(newInsurer) => {
+                    setInsuranceCompanies(prev => [...prev, newInsurer]);
+                    handleUpdateBillingContext({ insuranceCompanyId: newInsurer.id });
+                }}
+            />
+
+            {/* Quick Add Corporate Account Modal */}
+            <AddCorporateAccountModal
+                isOpen={isAddCorporateModalOpen}
+                onClose={() => setIsAddCorporateModalOpen(false)}
+                isDark={isDark}
+                onSuccess={(newCorp) => {
+                    setCorporateAccounts(prev => [...prev, newCorp]);
+                    handleUpdateBillingContext({ corporateAccountId: newCorp.id });
+                }}
+            />
 
         </div >
     )

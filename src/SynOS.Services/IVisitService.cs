@@ -22,6 +22,8 @@ namespace SynOS.Services
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
         Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId, Guid? intentId = null);
+        Task MarkVisitAsInsuranceAsync(Guid visitId, Guid actorUserId);
+        Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId);
         Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId);
         Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId);
         // bool IsPhysicallyLocked(Visit visit);

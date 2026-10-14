@@ -293,6 +293,11 @@ namespace SynOS.Data
         public DbSet<ReferralApprovalLog> ReferralApprovalLogs { get; set; } = null!;
         public DbSet<ReferralDraft> ReferralDrafts { get; set; } = null!; // ADDED: Provisional Referral
 
+        // Multi-Payer Billing Engine (Insurance & Corporate)
+        public DbSet<InsuranceCompany> InsuranceCompanies { get; set; } = null!;
+        public DbSet<CorporateAccount> CorporateAccounts { get; set; } = null!;
+        public DbSet<CorporateRateRule> CorporateRateRules { get; set; } = null!;
+
         public DbSet<ImsTubeMaster> ImsTubeMasters { get; set; } = null!;
         public DbSet<ImsTubeLot> ImsTubeLots { get; set; } = null!;
         public DbSet<ImsStockMovement> ImsStockMovements { get; set; } = null!;
@@ -1539,6 +1544,11 @@ modelBuilder.Entity<ReceivableFact>(entity =>
           .IsUnique();
 
     entity.HasIndex(e => e.ReferralPartnerId);
+    entity.HasIndex(e => new { e.DebtorType, e.DebtorId });
+
+    entity.Property(e => e.DebtorType)
+          .HasConversion<int>()
+          .IsRequired();
 
     entity.Property(e => e.Amount)
           .HasColumnType("decimal(18,4)")
@@ -1553,6 +1563,11 @@ modelBuilder.Entity<ReceivableFact>(entity =>
 
     entity.Property(e => e.RecordedAt)
           .IsRequired();
+});
+
+modelBuilder.Entity<CorporateRateRule>(entity =>
+{
+    entity.HasIndex(e => new { e.CorporateAccountId, e.TestId });
 });
 
             // Payment Confirmed Fact (Stage 1 Financials) // ADDED PHASE 5

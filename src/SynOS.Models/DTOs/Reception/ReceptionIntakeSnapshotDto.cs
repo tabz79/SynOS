@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SynOS.Models.Enums;
 
 namespace SynOS.Models.DTOs.Reception
 {
@@ -43,6 +44,18 @@ namespace SynOS.Models.DTOs.Reception
         public IntakeReferralPartner? ReferralPartner { get; set; }
         public string PaymentCollectionModel { get; set; } = "LabCollects";
         public List<IntakeTestItem> Tests { get; set; } = new();
+
+        // Multi-Payer Billing Engine (Insurance & Corporate)
+        public BillingType BillingType { get; set; } = BillingType.Standard;
+        public Guid? InsuranceCompanyId { get; set; }
+        public string? InsuranceCompanyName { get; set; }
+        public string? PolicyNumber { get; set; }
+        public string? PreAuthApprovalNumber { get; set; }
+        public decimal InsuranceCoPayAmount { get; set; } = 0;
+        public Guid? CorporateAccountId { get; set; }
+        public string? CorporateCompanyName { get; set; }
+        public string? EmployeeId { get; set; }
+        public Guid? CorporatePackageId { get; set; }
     }
 
     public class IntakeReferralPartner
