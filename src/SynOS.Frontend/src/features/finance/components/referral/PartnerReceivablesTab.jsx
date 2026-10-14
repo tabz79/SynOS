@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
-import { PartnerClaimStatementA4 } from '../documents/PartnerClaimStatementA4';
+import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
 
 export const PartnerReceivablesTab = () => {
     const [receivables, setReceivables] = useState([]);
@@ -354,7 +354,7 @@ export const PartnerReceivablesTab = () => {
                     defaultLetterheadMode={claimDocData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={claimDocData?.lab?.topMarginMm || 40}
                 >
-                    <PartnerClaimStatementA4 data={claimDocData} />
+                    <DynamicDocumentRenderer slotId="partner_b2b_invoice" data={claimDocData} />
                 </CommercialDocumentViewer>
             )}
         </div>

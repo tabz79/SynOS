@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import { 
     Trash2, 
     Edit2, 
@@ -14,6 +14,8 @@ import {
     FileText
 } from 'lucide-react';
 
+const CanvasContext = createContext({ readOnly: false });
+
 /**
  * Inline editable & deletable text element
  */
@@ -24,11 +26,14 @@ const EditableField = ({
     onDelete, 
     canDelete = true, 
     canEdit = true,
+    readOnly,
     className = "",
     labelClassName = "text-zinc-500",
     valueClassName = "font-bold text-zinc-900",
     isBlock = false
 }) => {
+    const ctx = useContext(CanvasContext);
+    const isReadOnly = readOnly !== undefined ? readOnly : ctx.readOnly;
     const [isEditing, setIsEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value || "");
     const [tempLabel, setTempLabel] = useState(label || "");
@@ -50,6 +55,17 @@ const EditableField = ({
             setIsEditing(false);
         }
     };
+
+    if (isReadOnly) {
+        return (
+            <div className={`inline-flex items-center gap-1.5 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
+                <div className="flex items-center gap-1 truncate">
+                    {label && <span className={labelClassName}>{label}</span>}
+                    <span className={valueClassName}>{value}</span>
+                </div>
+            </div>
+        );
+    }
 
     if (isEditing) {
         return (
@@ -148,8 +164,11 @@ const ModularBoxWrapper = ({
     onAddCustomLine, 
     children, 
     className = "",
-    allowDelete = true
+    allowDelete = true,
+    readOnly
 }) => {
+    const ctx = useContext(CanvasContext);
+    const isReadOnly = readOnly !== undefined ? readOnly : ctx.readOnly;
     const [showAddForm, setShowAddForm] = useState(false);
     const [newLabel, setNewLabel] = useState("");
     const [newValue, setNewValue] = useState("");
@@ -164,6 +183,14 @@ const ModularBoxWrapper = ({
         setNewValue("");
         setShowAddForm(false);
     };
+
+    if (isReadOnly) {
+        return (
+            <div className={`relative mb-3 ${className}`}>
+                {children}
+            </div>
+        );
+    }
 
     return (
         <div className={`group/box relative border border-dashed border-transparent hover:border-indigo-400 rounded-xl transition-all p-2 -m-2 mb-3 ${className}`}>
@@ -238,7 +265,8 @@ export const DynamicInvoiceCanvas = ({
     letterheadMode = "digital",
     topMarginMm = 40,
     labSettings = {},
-    onToggleBox
+    onToggleBox,
+    readOnly = false
 }) => {
     if (!schema || !schema.boxes) {
         return <div className="p-8 text-center text-zinc-400">Loading document canvas...</div>;
@@ -443,7 +471,8 @@ export const DynamicInvoiceCanvas = ({
     };
 
     return (
-        <div className={`w-full flex flex-col justify-between text-zinc-900 text-xs font-sans leading-normal ${isThermal ? 'max-w-[340px] mx-auto font-mono text-[11px]' : ''}`}>
+        <CanvasContext.Provider value={{ readOnly }}>
+            <div className={`w-full flex flex-col justify-between text-zinc-900 text-xs font-sans leading-normal ${isThermal ? 'max-w-[340px] mx-auto font-mono text-[11px]' : ''}`}>
             
             {/* 1. LETTERHEAD & BRAND HEADER BOX */}
             {boxes.header?.enabled && (
@@ -1072,6 +1101,7 @@ export const DynamicInvoiceCanvas = ({
                 );
             })}
 
-        </div>
+            </div>
+        </CanvasContext.Provider>
     );
 };

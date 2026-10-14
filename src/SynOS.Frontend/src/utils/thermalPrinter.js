@@ -5,19 +5,8 @@
  * 58mm Thermal Printer Width: ~48mm printable area = ~180 pixels at 96 DPI
  */
 
-export function getActiveThermalSettings() {
-    if (typeof window !== 'undefined' && window.localStorage) {
-        const local = window.localStorage.getItem('synos_thermal_layout_settings');
-        if (local) {
-            try {
-                return JSON.parse(local);
-            } catch {
-                // Ignore parsing errors
-            }
-        }
-    }
-    // Standard system defaults
-    return {
+export function getActiveThermalSettings(customSchema) {
+    let settings = {
         paperWidth: '80mm',
         textSize: 'standard',
         fontFamily: 'sans-serif',
@@ -32,13 +21,48 @@ export function getActiveThermalSettings() {
         headerSubtext: '',
         footerDisclaimer: '* Clinical correlation required'
     };
+
+    // If customized schema from Commercial Paperwork Studio is present
+    let schemaToUse = customSchema;
+    if (!schemaToUse?.boxes && typeof window !== 'undefined' && window.localStorage) {
+        const studioSaved = window.localStorage.getItem('synos_document_layout_patient_thermal_receipt');
+        if (studioSaved) {
+            try {
+                schemaToUse = JSON.parse(studioSaved);
+            } catch {
+                // Ignore parse error
+            }
+        }
+    }
+
+    if (schemaToUse?.boxes) {
+        const b = schemaToUse.boxes;
+        if (b.header) settings.showHeader = !!b.header.enabled;
+        if (b.partyDetails?.fields?.ageGender) settings.showAgeGender = !!b.partyDetails.fields.ageGender.enabled;
+        if (b.bankAndUpi) settings.showUpiQr = !!b.bankAndUpi.enabled;
+        if (b.bankAndUpi?.fields?.upiId?.value) settings.upiId = b.bankAndUpi.fields.upiId.value;
+        if (b.termsAndConditions?.text) settings.footerDisclaimer = b.termsAndConditions.text;
+        return settings;
+    }
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+        const local = window.localStorage.getItem('synos_thermal_layout_settings');
+        if (local) {
+            try {
+                return { ...settings, ...JSON.parse(local) };
+            } catch {
+                // Ignore parsing errors
+            }
+        }
+    }
+    return settings;
 }
 
 export function generateThermalInvoiceHtml(payload) {
-    const { visitId, token, patient, billing, orders, referringDoctorName, labName, branch, labAddress, labPhone, labEmail, labWebsite } = payload;
+    const { visitId, token, patient, billing, orders, referringDoctorName, labName, branch, labAddress, labPhone, labEmail, labWebsite, customLayout } = payload;
     const items = orders || [];
     const now = new Date();
-    const settings = getActiveThermalSettings();
+    const settings = getActiveThermalSettings(customLayout);
 
     // Determine font family styling
     let fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";

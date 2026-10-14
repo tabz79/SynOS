@@ -17,9 +17,12 @@ import {
     Sparkles,
     Settings,
     Trash2,
-    Pencil
+    Pencil,
+    Printer
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
 const CATEGORY_MAP = {
     1: { label: 'Rent', color: 'bg-rose-500/10 text-rose-500 border-rose-500/20' },
@@ -88,6 +91,7 @@ export const OverheadExpensesScreen = () => {
     const [isInitializing, setIsInitializing] = useState(false);
     const [paymentModal, setPaymentModal] = useState({ isOpen: false, bill: null });
     const [billModal, setBillModal] = useState(false);
+    const [selectedVoucher, setSelectedVoucher] = useState(null);
 
     const activeUserId = localStorage.getItem('synos_user_id') || '00000000-0000-0000-0000-000000000000';
 
@@ -344,7 +348,24 @@ export const OverheadExpensesScreen = () => {
                                                             Record Payment
                                                         </button>
                                                     ) : (
-                                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Completed</span>
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Completed</span>
+                                                            <button
+                                                                onClick={() => setSelectedVoucher({
+                                                                    voucherNumber: bill.overheadPayableId ? `VCH-${bill.overheadPayableId.slice(0, 8).toUpperCase()}` : 'VCH-EXP-001',
+                                                                    date: new Date(bill.dueDate).toLocaleDateString('en-IN'),
+                                                                    paymentMode: bill.paymentMethod || 'Petty Cash Desk',
+                                                                    payee: cleanDescription(bill.description) || 'Service Provider',
+                                                                    category: cat.label,
+                                                                    amount: bill.amountPaid || bill.amountDue,
+                                                                    description: cleanDescription(bill.description)
+                                                                })}
+                                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg transition-colors"
+                                                                title="Print Expense Debit Voucher"
+                                                            >
+                                                                <Printer className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
@@ -378,6 +399,18 @@ export const OverheadExpensesScreen = () => {
                 activeUserId={activeUserId}
                 activeMonthQuery={apiMonthQuery}
             />
+
+            {/* Overhead Debit / Expense Voucher Viewer */}
+            {selectedVoucher && (
+                <CommercialDocumentViewer
+                    isOpen={!!selectedVoucher}
+                    onClose={() => setSelectedVoucher(null)}
+                    title={`Expense Voucher - ${selectedVoucher.voucherNumber}`}
+                    defaultLetterheadMode="digital"
+                >
+                    <DynamicDocumentRenderer slotId="overhead_expense_voucher" data={selectedVoucher} />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 };

@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
@@ -12,6 +12,8 @@ import { usePanelEntry, useFlipGroup } from '@/hooks/useSynOSMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
+import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
+import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer'
 
 export function IntentPanel({ onVisitUpdated }) {
     const { isOpen, closePanel, drawerState } = useReceptionDrawer();
@@ -242,6 +244,42 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // UNIFIED FOOTER ACTION HANDLER
     const [isActionSubmitting, setIsActionSubmitting] = useState(false);
+    const [taxInvoiceModal, setTaxInvoiceModal] = useState({ isOpen: false, data: null });
+
+    const buildTaxInvoiceData = () => {
+        const visitObj = snapshot?.visit;
+        const p = snapshot?.patient;
+        const b = snapshot?.billing;
+        const dueVal = remainingDue !== undefined ? remainingDue : Math.max(0, (b?.netAmount || 0) - (b?.totalPaid || 0));
+        return {
+            billNumber: visitObj?.visitToken || visitObj?.token || "INV-REC-001",
+            date: new Date().toISOString(),
+            status: b?.paymentStatus || (dueVal <= 0 ? 'Paid' : 'PendingPayment'),
+            patient: {
+                name: p?.fullName || p?.name || "Direct Patient",
+                uhid: p?.mrn || p?.uhid || "WALK-IN",
+                ageGender: p?.age ? `${p.age} / ${p?.gender || 'M'}` : "Adult",
+                phone: p?.phone || p?.mobile || "N/A",
+                referringDoctor: visitObj?.referralPartner?.name || b?.referral?.partner?.displayName || "Self / Direct"
+            },
+            items: (visitObj?.tests || []).map((t, idx) => ({
+                index: idx + 1,
+                name: t.testName || t.name || t.testCode,
+                code: t.testCode,
+                department: t.department || 'Pathology',
+                price: Number(t.price || 0),
+                discount: 0,
+                amount: Number(t.price || 0)
+            })),
+            financial: {
+                grossSubtotal: b?.grossAmount || b?.netAmount || 0,
+                discountAmount: b?.discountAmount || 0,
+                totalAmount: b?.netAmount || 0,
+                totalPaid: (b?.totalPaid || 0) + (dueVal <= 0 ? 0 : 0),
+                balanceDue: dueVal
+            }
+        };
+    };
 
     const handlePrintReceipt = async (overrideToken) => {
         const visitObj = snapshot?.visit;
@@ -500,13 +538,24 @@ export function IntentPanel({ onVisitUpdated }) {
                         <div className="flex flex-col gap-1.5 w-full max-w-md mx-auto">
                             <div className="flex items-center gap-3 w-full">
                                 {isVisitFinalized && (
-                                    <button
-                                        type="button"
-                                        onClick={handlePrintReceipt}
-                                        className="py-3 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0"
-                                    >
-                                        <Printer className="w-4 h-4" /> Receipt
-                                    </button>
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={handlePrintReceipt}
+                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0"
+                                            title="Print Thermal 80mm POS Slip"
+                                        >
+                                            <Printer className="w-4 h-4" /> Slip
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTaxInvoiceModal({ isOpen: true, data: buildTaxInvoiceData() })}
+                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0"
+                                            title="Print A4 Tax Invoice"
+                                        >
+                                            <FileText className="w-4 h-4" /> A4 Bill
+                                        </button>
+                                    </>
                                 )}
                                 <button
                                     onClick={handleUnifiedAction}
@@ -534,6 +583,18 @@ export function IntentPanel({ onVisitUpdated }) {
                     )
                 )}
             </div>
+
+            {/* Commercial Patient Tax Invoice Viewer */}
+            {taxInvoiceModal.isOpen && taxInvoiceModal.data && (
+                <CommercialDocumentViewer
+                    isOpen={taxInvoiceModal.isOpen}
+                    onClose={() => setTaxInvoiceModal({ isOpen: false, data: null })}
+                    title={`Patient Tax Invoice - ${taxInvoiceModal.data?.patient?.name || ''}`}
+                    defaultLetterheadMode="digital"
+                >
+                    <DynamicDocumentRenderer slotId="patient_tax_invoice" data={taxInvoiceModal.data} />
+                </CommercialDocumentViewer>
+            )}
         </div >
     )
 }

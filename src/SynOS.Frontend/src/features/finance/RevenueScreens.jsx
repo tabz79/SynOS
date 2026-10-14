@@ -33,8 +33,7 @@ import { FinanceUtils } from './components/FinanceUtils';
 import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
-import { PatientTaxInvoiceA4 } from './components/documents/PatientTaxInvoiceA4';
-import { PartnerClaimStatementA4 } from './components/documents/PartnerClaimStatementA4';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
 import { cn } from '@/lib/utils';
 
@@ -1092,11 +1091,10 @@ export const BillsCollectionsScreen = () => {
                     defaultLetterheadMode={docData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={docData?.lab?.topMarginMm || 40}
                 >
-                    {docModalType === 'claim' ? (
-                        <PartnerClaimStatementA4 data={docData} />
-                    ) : (
-                        <PatientTaxInvoiceA4 data={docData} />
-                    )}
+                    <DynamicDocumentRenderer 
+                        slotId={docModalType === 'claim' ? "partner_b2b_invoice" : "patient_tax_invoice"} 
+                        data={docData} 
+                    />
                 </CommercialDocumentViewer>
             )}
         </div>
@@ -1435,7 +1433,7 @@ export const PendingReceivablesScreen = () => {
                     defaultLetterheadMode={claimDocData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={claimDocData?.lab?.topMarginMm || 40}
                 >
-                    <PartnerClaimStatementA4 data={claimDocData} />
+                    <DynamicDocumentRenderer slotId="partner_b2b_invoice" data={claimDocData} />
                 </CommercialDocumentViewer>
             )}
         </div>

@@ -43,6 +43,8 @@ import { WorkforcePolicyModal } from './components/workforce/WorkforcePolicyModa
 const { WorkforceApi } = FinanceApi;
 
 import { AttendanceCalendar } from './components/workforce/AttendanceCalendar';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
 export function AttendanceLeavesScreen() {
     const [staff, setStaff] = useState([]);
@@ -886,28 +888,6 @@ export function SalaryProcessingScreen() {
 
             {step === 3 && (
                 <div className="space-y-8 animate-in slide-in-from-right-4 duration-500">
-                    <style>{`
-                        @media print {
-                            body {
-                                visibility: hidden !important;
-                            }
-                            #printable-payslip, #printable-payslip * {
-                                visibility: visible !important;
-                            }
-                            #printable-payslip {
-                                position: absolute;
-                                left: 0;
-                                top: 0;
-                                width: 100%;
-                                background: white !important;
-                                color: black !important;
-                            }
-                            #printable-payslip * {
-                                color: black !important;
-                            }
-                        }
-                    `}</style>
-
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/30">
@@ -1158,96 +1138,23 @@ export function SalaryProcessingScreen() {
                 </div>
             )}
 
-            {/* High fidelity Payslip Modal */}
+            {/* Commercial Payslip Document Viewer */}
             {selectedPayslip && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-3xl max-w-2xl w-full p-8 space-y-6 shadow-2xl relative">
-                        <button 
-                            onClick={() => setSelectedPayslip(null)}
-                            className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-bold"
-                        >
-                            ✕
-                        </button>
-                        
-                        <div id="printable-payslip" className="space-y-6 p-6 border dark:border-zinc-800 border-zinc-200 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                            {/* Header */}
-                            <div className="flex justify-between items-start border-b dark:border-zinc-800 border-zinc-200 pb-4">
-                                <div>
-                                    <h3 className="text-base font-bold tracking-tight text-synos-primary">SynOS Healthcare Intelligence</h3>
-                                    <p className="text-[10px] text-zinc-500 font-mono">Workforce & Payroll System</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
-                                        PAY ADVICE (PAYSLIP)
-                                    </span>
-                                    <p className="text-[10px] text-zinc-500 font-mono mt-1">Period: {selectedPeriod?.monthName || 'May 2026'}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Employee Info Block */}
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[10px] border-b dark:border-zinc-800 border-zinc-200 pb-4 text-zinc-600 dark:text-zinc-400">
-                                <div className="flex justify-between"><span className="text-zinc-400">Name:</span> <span className="font-bold text-zinc-900 dark:text-white">{selectedPayslip.employeeName}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">ID:</span> <span className="font-mono">{selectedPayslip.employeeId}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">LOP Days:</span> <span className="font-bold text-rose-500">{selectedPayslip.lopDaysCount || 0} Days</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">Payment Status:</span> <span className={`font-bold uppercase text-[9px] ${selectedPayslip.status === 'Settled' ? 'text-emerald-500' : 'text-amber-500'}`}>{selectedPayslip.status}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">Paid On:</span> <span className="font-bold">{selectedPayslip.paidAt ? new Date(selectedPayslip.paidAt).toLocaleString() : 'N/A'}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">Method:</span> <span className="font-bold">{selectedPayslip.paymentMethod || 'Bank Transfer'}</span></div>
-                            </div>
-                            
-                            {/* Salary Calculations breakdown */}
-                            <div className="grid grid-cols-2 gap-6 text-[10px]">
-                                {/* Earnings */}
-                                <div className="space-y-2">
-                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Earnings</h4>
-                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
-                                        <div className="flex justify-between"><span>Base Salary:</span> <span>₹{selectedPayslip.snapshotBaseSalary.toLocaleString()}</span></div>
-                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-synos-primary"><span>Gross Wages:</span> <span>₹{selectedPayslip.grossSalary.toLocaleString()}</span></div>
-                                    </div>
-                                </div>
-                                {/* Deductions */}
-                                <div className="space-y-2">
-                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Deductions</h4>
-                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
-                                        <div className="flex justify-between"><span>EPF ({selectedPayslip.snapshotPFRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.pfDeduction.toLocaleString()}</span></div>
-                                        <div className="flex justify-between"><span>ESI ({selectedPayslip.snapshotESIRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.esiDeduction.toLocaleString()}</span></div>
-                                        <div className="flex justify-between"><span>TDS:</span> <span className="text-rose-500">-₹{selectedPayslip.tdsDeduction.toLocaleString()}</span></div>
-                                        {selectedPayslip.otherDeductions > 0 && (
-                                            <div className="flex justify-between"><span>Salary Advances:</span> <span className="text-rose-500">-₹{selectedPayslip.otherDeductions.toLocaleString()}</span></div>
-                                        )}
-                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction + (selectedPayslip.otherDeductions || 0)).toLocaleString()}</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Net Summary */}
-                            <div className="flex justify-between items-center bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-xl">
-                                <div>
-                                    <span className="text-[8px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-widest block">NET DISBURSED OUTFLOW</span>
-                                    <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400">₹{selectedPayslip.netPayable.toLocaleString()}</h3>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-[8px] text-zinc-500 block">System Signature</span>
-                                    <span className="font-mono text-[9px] font-bold text-synos-primary">SYN-OS-HR-VERIFIED</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex justify-end gap-3">
-                            <button 
-                                onClick={() => setSelectedPayslip(null)} 
-                                className="px-6 py-2 border dark:border-zinc-800 border-zinc-200 text-xs font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                            >
-                                Close
-                            </button>
-                            <button 
-                                onClick={() => window.print()}
-                                className="px-6 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] transition-transform"
-                            >
-                                Print Payslip
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <CommercialDocumentViewer
+                    isOpen={!!selectedPayslip}
+                    onClose={() => setSelectedPayslip(null)}
+                    title={`Salary Pay Slip - ${selectedPayslip.employeeName}`}
+                    defaultLetterheadMode="digital"
+                >
+                    <DynamicDocumentRenderer 
+                        slotId="workforce_payslip" 
+                        data={{
+                            ...selectedPayslip,
+                            period: selectedPeriod?.monthName || 'May 2026',
+                            monthYear: selectedPeriod?.monthName || 'May 2026'
+                        }} 
+                    />
+                </CommercialDocumentViewer>
             )}
         </div>
     );
@@ -1295,28 +1202,6 @@ export function PayrollHistoryScreen() {
 
     return (
         <div className="p-8 space-y-8">
-            <style>{`
-                @media print {
-                    body {
-                        visibility: hidden !important;
-                    }
-                    #printable-payslip, #printable-payslip * {
-                        visibility: visible !important;
-                    }
-                    #printable-payslip {
-                        position: absolute;
-                        left: 0;
-                        top: 0;
-                        width: 100%;
-                        background: white !important;
-                        color: black !important;
-                    }
-                    #printable-payslip * {
-                        color: black !important;
-                    }
-                }
-            `}</style>
-
             <div>
                 <h1 className="text-3xl font-bold dark:text-white">Payroll History & Audit Ledger</h1>
                 <p className="text-zinc-500">Review finalized payroll registers, statutory filings, and bank advices.</p>
@@ -1564,96 +1449,23 @@ export function PayrollHistoryScreen() {
                 </div>
             )}
 
-            {/* High fidelity Historical Payslip Modal */}
+            {/* Commercial Historical Payslip Document Viewer */}
             {selectedPayslip && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto animate-in fade-in duration-300">
-                    <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-3xl max-w-2xl w-full p-8 space-y-6 shadow-2xl relative">
-                        <button 
-                            onClick={() => setSelectedPayslip(null)}
-                            className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-bold"
-                        >
-                            ✕
-                        </button>
-                        
-                        <div id="printable-payslip" className="space-y-6 p-6 border dark:border-zinc-800 border-zinc-200 rounded-2xl bg-zinc-50/50 dark:bg-zinc-900/10">
-                            {/* Header */}
-                            <div className="flex justify-between items-start border-b dark:border-zinc-800 border-zinc-200 pb-4">
-                                <div>
-                                    <h3 className="text-base font-bold tracking-tight text-synos-primary">SynOS Healthcare Intelligence</h3>
-                                    <p className="text-[10px] text-zinc-500 font-mono">Workforce & Payroll System</p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
-                                        PAY ADVICE (PAYSLIP)
-                                    </span>
-                                    <p className="text-[10px] text-zinc-500 font-mono mt-1">Period: Historical Archive</p>
-                                </div>
-                            </div>
-                            
-                            {/* Employee Info Block */}
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-[10px] border-b dark:border-zinc-800 border-zinc-200 pb-4 text-zinc-600 dark:text-zinc-400">
-                                <div className="flex justify-between"><span className="text-zinc-400">Name:</span> <span className="font-bold text-zinc-900 dark:text-white">{selectedPayslip.employeeName}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">ID:</span> <span className="font-mono">{selectedPayslip.employeeId}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">LOP Days:</span> <span className="font-bold text-rose-500">{selectedPayslip.lopDaysCount || 0} Days</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">Payment Status:</span> <span className={`font-bold uppercase text-[9px] ${selectedPayslip.status === 'Settled' ? 'text-emerald-500' : 'text-amber-500'}`}>{selectedPayslip.status}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">Paid On:</span> <span className="font-bold">{selectedPayslip.paidAt ? new Date(selectedPayslip.paidAt).toLocaleString() : 'N/A'}</span></div>
-                                <div className="flex justify-between"><span className="text-zinc-400">Method:</span> <span className="font-bold">{selectedPayslip.paymentMethod || 'Bank Transfer'}</span></div>
-                            </div>
-                            
-                            {/* Salary Calculations breakdown */}
-                            <div className="grid grid-cols-2 gap-6 text-[10px]">
-                                {/* Earnings */}
-                                <div className="space-y-2">
-                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Earnings</h4>
-                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
-                                        <div className="flex justify-between"><span>Base Salary:</span> <span>₹{selectedPayslip.snapshotBaseSalary.toLocaleString()}</span></div>
-                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-synos-primary"><span>Gross Wages:</span> <span>₹{selectedPayslip.grossSalary.toLocaleString()}</span></div>
-                                    </div>
-                                </div>
-                                {/* Deductions */}
-                                <div className="space-y-2">
-                                    <h4 className="font-bold text-zinc-500 uppercase tracking-wider text-[9px]">Deductions</h4>
-                                    <div className="border dark:border-zinc-800 border-zinc-200 rounded-xl p-3 space-y-2 bg-white dark:bg-zinc-900/50">
-                                        <div className="flex justify-between"><span>EPF ({selectedPayslip.snapshotPFRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.pfDeduction.toLocaleString()}</span></div>
-                                        <div className="flex justify-between"><span>ESI ({selectedPayslip.snapshotESIRate * 100}%):</span> <span className="text-rose-500">-₹{selectedPayslip.esiDeduction.toLocaleString()}</span></div>
-                                        <div className="flex justify-between"><span>TDS:</span> <span className="text-rose-500">-₹{selectedPayslip.tdsDeduction.toLocaleString()}</span></div>
-                                        {selectedPayslip.otherDeductions > 0 && (
-                                            <div className="flex justify-between"><span>Salary Advances:</span> <span className="text-rose-500">-₹{selectedPayslip.otherDeductions.toLocaleString()}</span></div>
-                                        )}
-                                        <div className="flex justify-between border-t dark:border-zinc-800 border-zinc-100 pt-2 font-bold text-rose-500"><span>Total Deductions:</span> <span>-₹{(selectedPayslip.pfDeduction + selectedPayslip.esiDeduction + selectedPayslip.tdsDeduction + (selectedPayslip.otherDeductions || 0)).toLocaleString()}</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            {/* Net Summary */}
-                            <div className="flex justify-between items-center bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30 p-4 rounded-xl">
-                                <div>
-                                    <span className="text-[8px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-widest block">NET DISBURSED OUTFLOW</span>
-                                    <h3 className="text-lg font-black text-emerald-600 dark:text-emerald-400">₹{selectedPayslip.netPayable.toLocaleString()}</h3>
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-[8px] text-zinc-500 block">System Signature</span>
-                                    <span className="font-mono text-[9px] font-bold text-synos-primary">SYN-OS-HR-VERIFIED</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div className="flex justify-end gap-3">
-                            <button 
-                                onClick={() => setSelectedPayslip(null)} 
-                                className="px-6 py-2 border dark:border-zinc-800 border-zinc-200 text-xs font-bold rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-                            >
-                                Close
-                            </button>
-                            <button 
-                                onClick={() => window.print()}
-                                className="px-6 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] transition-transform"
-                            >
-                                Print Payslip
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <CommercialDocumentViewer
+                    isOpen={!!selectedPayslip}
+                    onClose={() => setSelectedPayslip(null)}
+                    title={`Historical Pay Slip - ${selectedPayslip.employeeName}`}
+                    defaultLetterheadMode="digital"
+                >
+                    <DynamicDocumentRenderer 
+                        slotId="workforce_payslip" 
+                        data={{
+                            ...selectedPayslip,
+                            period: 'Historical Archive',
+                            monthYear: 'Historical Archive'
+                        }} 
+                    />
+                </CommercialDocumentViewer>
             )}
         </div>
     );

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
-import { ReferralPayoutVoucherA4 } from '../documents/ReferralPayoutVoucherA4';
+import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
 
 export const PendingPayoutsTab = () => {
     const [payables, setPayables] = useState([]);
@@ -352,7 +352,7 @@ export const PendingPayoutsTab = () => {
                     defaultLetterheadMode={voucherDocData?.lab?.defaultLetterheadMode || "digital"}
                     topMarginMm={voucherDocData?.lab?.topMarginMm || 40}
                 >
-                    <ReferralPayoutVoucherA4 data={voucherDocData} />
+                    <DynamicDocumentRenderer slotId="referral_payout_voucher" data={voucherDocData} />
                 </CommercialDocumentViewer>
             )}
         </div>

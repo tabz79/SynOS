@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { PurchasingApi } from '@/api/purchasing';
 import { InventoryApi } from '@/api/inventory';
+import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer';
 
 export const PODetailTerminal = ({ poId, onBack }) => {
     const [po, setPo] = useState(null);
@@ -21,6 +23,7 @@ export const PODetailTerminal = ({ poId, onBack }) => {
     const [loading, setLoading] = useState(true);
     const [catalog, setCatalog] = useState([]);
     const [showAddItem, setShowAddItem] = useState(false);
+    const [isPrintOpen, setIsPrintOpen] = useState(false);
     
     const [newItem, setNewItem] = useState({
         tubeId: '',
@@ -254,8 +257,8 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                                     Dispatch via WhatsApp
                                 </button>
                                 <button 
-                                    onClick={() => window.open(`/api/v1/purchasing/po/${po.poId}/print`, '_blank')}
-                                    className="w-full py-4 bg-transparent hover:bg-white/5 text-zinc-400 rounded-xl text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+                                    onClick={() => setIsPrintOpen(true)}
+                                    className="w-full py-4 bg-transparent hover:bg-white/5 text-zinc-400 rounded-xl text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
                                 >
                                     <Printer className="w-4 h-4" />
                                     Print / View PDF
@@ -265,6 +268,40 @@ export const PODetailTerminal = ({ poId, onBack }) => {
                     </div>
                 </div>
             </div>
+
+            {/* ENTERPRISE PURCHASE ORDER PRINT VIEWER */}
+            {isPrintOpen && (
+                <CommercialDocumentViewer
+                    isOpen={isPrintOpen}
+                    onClose={() => setIsPrintOpen(false)}
+                    title={`Purchase Order - PO-${po.poId.substring(0, 8).toUpperCase()}`}
+                    defaultLetterheadMode="digital"
+                    topMarginMm={40}
+                >
+                    <DynamicDocumentRenderer 
+                        slotId="procurement_po" 
+                        data={{
+                            poNumber: `PO-${po.poId.substring(0, 8).toUpperCase()}`,
+                            date: po.createdAt ? new Date(po.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+                            vendor: {
+                                name: po.supplier?.name || "Vendor Supplier",
+                                contactPerson: po.supplier?.contactPerson || "",
+                                phone: po.supplier?.phone || "",
+                                gstin: po.supplier?.gstin || "",
+                                address: po.supplier?.address || ""
+                            },
+                            items: items.map((it, idx) => ({
+                                description: it.tube?.name || it.itemName || 'Consumable / Reagent',
+                                packSize: it.tube?.packSize || '-',
+                                quantity: it.orderedQuantity,
+                                price: it.unitPrice,
+                                amount: it.orderedQuantity * it.unitPrice
+                            })),
+                            totalAmount: items.reduce((acc, item) => acc + (item.orderedQuantity * item.unitPrice), 0)
+                        }} 
+                    />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 };
