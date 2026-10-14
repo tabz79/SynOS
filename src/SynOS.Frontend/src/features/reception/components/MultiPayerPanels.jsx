@@ -19,7 +19,7 @@ export function MultiPayerSelector({
         },
         {
             id: 'PrepaidPartner',
-            title: 'Prepaid Partner',
+            title: 'Prepaid Bill',
             subtitle: 'Collected at referral center',
             icon: Building2,
             badge: 'B2B Partner'
@@ -401,34 +401,49 @@ export function AddInsuranceCompanyModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-xs rounded-2xl animate-in fade-in duration-150">
             <div className={cn(
-                "w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4 animate-in zoom-in-95 duration-150",
-                isDark ? "bg-zinc-900 border-zinc-800 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900"
+                "w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col",
+                isDark ? "bg-zinc-900 border-white/10 text-white shadow-2xl" : "bg-white border-black/10 text-zinc-900 shadow-2xl"
             )}>
-                <div className="flex items-center justify-between border-b pb-3 border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-blue-500" />
-                        <h3 className="text-sm font-bold">Add Empanelled Insurer / TPA</h3>
+                {/* Header */}
+                <div className={cn(
+                    "px-5 py-3.5 flex items-center justify-between border-b shrink-0",
+                    isDark ? "bg-zinc-900 border-white/10" : "bg-gradient-to-r from-zinc-50 to-white border-black/5"
+                )}>
+                    <div className="flex items-center gap-2.5">
+                        <div className={cn(
+                            "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                            isDark ? "bg-zinc-800 border-zinc-700 text-blue-400" : "bg-blue-50 border-blue-200 text-blue-600"
+                        )}>
+                            <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold tracking-tight">Add Empanelled Insurer / TPA</h3>
+                            <p className="text-[10px] text-zinc-500 font-medium">Persists to InsuranceCompanies master table</p>
+                        </div>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        className={cn(
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
+                            isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"
+                        )}
                     >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
                 {error && (
-                    <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
+                    <div className="m-4 mb-0 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
                     <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                             Insurance / TPA Name *
                         </label>
                         <input
@@ -438,15 +453,17 @@ export function AddInsuranceCompanyModal({
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className={cn(
-                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-blue-500" : "bg-zinc-50 border-zinc-300 focus:border-blue-500"
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             )}
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 TPA Code
                             </label>
                             <input
@@ -455,21 +472,25 @@ export function AddInsuranceCompanyModal({
                                 value={tpaCode}
                                 onChange={(e) => setTpaCode(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-mono uppercase border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-blue-500" : "bg-zinc-50 border-zinc-300 focus:border-blue-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-mono uppercase border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                                 )}
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Payer Type
                             </label>
                             <select
                                 value={payerType}
                                 onChange={(e) => setPayerType(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-blue-500" : "bg-zinc-50 border-zinc-300 focus:border-blue-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                                 )}
                             >
                                 <option value="TPA">Third-Party Administrator (TPA)</option>
@@ -481,7 +502,7 @@ export function AddInsuranceCompanyModal({
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Helpdesk Phone
                             </label>
                             <input
@@ -490,13 +511,15 @@ export function AddInsuranceCompanyModal({
                                 value={contactPhone}
                                 onChange={(e) => setContactPhone(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-blue-500" : "bg-zinc-50 border-zinc-300 focus:border-blue-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                                 )}
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Claims Email
                             </label>
                             <input
@@ -505,25 +528,30 @@ export function AddInsuranceCompanyModal({
                                 value={contactEmail}
                                 onChange={(e) => setContactEmail(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-blue-500" : "bg-zinc-50 border-zinc-300 focus:border-blue-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                                 )}
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+                                isDark ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-600 hover:text-zinc-900 hover:bg-black/5"
+                            )}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                             Create Insurer
@@ -580,34 +608,49 @@ export function AddCorporateAccountModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-xs rounded-2xl animate-in fade-in duration-150">
             <div className={cn(
-                "w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4 animate-in zoom-in-95 duration-150",
-                isDark ? "bg-zinc-900 border-zinc-800 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900"
+                "w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col",
+                isDark ? "bg-zinc-900 border-white/10 text-white shadow-2xl" : "bg-white border-black/10 text-zinc-900 shadow-2xl"
             )}>
-                <div className="flex items-center justify-between border-b pb-3 border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-2">
-                        <Briefcase className="w-5 h-5 text-indigo-500" />
-                        <h3 className="text-sm font-bold">Add Corporate Account Tie-up</h3>
+                {/* Header */}
+                <div className={cn(
+                    "px-5 py-3.5 flex items-center justify-between border-b shrink-0",
+                    isDark ? "bg-zinc-900 border-white/10" : "bg-gradient-to-r from-zinc-50 to-white border-black/5"
+                )}>
+                    <div className="flex items-center gap-2.5">
+                        <div className={cn(
+                            "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                            isDark ? "bg-zinc-800 border-zinc-700 text-indigo-400" : "bg-indigo-50 border-indigo-200 text-indigo-600"
+                        )}>
+                            <Briefcase className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold tracking-tight">Add Corporate Account Tie-up</h3>
+                            <p className="text-[10px] text-zinc-500 font-medium">Persists to CorporateAccounts master table</p>
+                        </div>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        className={cn(
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
+                            isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"
+                        )}
                     >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
                 {error && (
-                    <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
+                    <div className="m-4 mb-0 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
                     <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                             Company / Organization Name *
                         </label>
                         <input
@@ -617,15 +660,17 @@ export function AddCorporateAccountModal({
                             value={companyName}
                             onChange={(e) => setCompanyName(e.target.value)}
                             className={cn(
-                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                             )}
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Corporate Code
                             </label>
                             <input
@@ -634,13 +679,15 @@ export function AddCorporateAccountModal({
                                 value={corporateCode}
                                 onChange={(e) => setCorporateCode(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-mono uppercase border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-mono uppercase border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                                 )}
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Billing Cycle (Days)
                             </label>
                             <input
@@ -650,8 +697,10 @@ export function AddCorporateAccountModal({
                                 value={billingCycleDays}
                                 onChange={(e) => setBillingCycleDays(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                                 )}
                             />
                         </div>
@@ -659,7 +708,7 @@ export function AddCorporateAccountModal({
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 HR / Liaison Contact
                             </label>
                             <input
@@ -668,13 +717,15 @@ export function AddCorporateAccountModal({
                                 value={contactPerson}
                                 onChange={(e) => setContactPerson(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                                 )}
                             />
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Phone Number
                             </label>
                             <input
@@ -683,15 +734,17 @@ export function AddCorporateAccountModal({
                                 value={contactPhone}
                                 onChange={(e) => setContactPhone(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                                 )}
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                             Contact Email
                         </label>
                         <input
@@ -700,24 +753,29 @@ export function AddCorporateAccountModal({
                             value={contactEmail}
                             onChange={(e) => setContactEmail(e.target.value)}
                             className={cn(
-                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                             )}
                         />
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+                                isDark ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-600 hover:text-zinc-900 hover:bg-black/5"
+                            )}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                             Create Corporate Account
@@ -785,37 +843,49 @@ export function AddReferralPartnerModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-xs rounded-2xl animate-in fade-in duration-150">
             <div className={cn(
-                "w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4 animate-in zoom-in-95 duration-150",
-                isDark ? "bg-zinc-900 border-zinc-800 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900"
+                "w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col",
+                isDark ? "bg-zinc-900 border-white/10 text-white shadow-2xl" : "bg-white border-black/10 text-zinc-900 shadow-2xl"
             )}>
-                <div className="flex items-center justify-between border-b pb-3 border-zinc-200 dark:border-zinc-800">
-                    <div className="flex items-center gap-2">
-                        <Building2 className="w-5 h-5 text-emerald-500" />
+                {/* Header */}
+                <div className={cn(
+                    "px-5 py-3.5 flex items-center justify-between border-b shrink-0",
+                    isDark ? "bg-zinc-900 border-white/10" : "bg-gradient-to-r from-zinc-50 to-white border-black/5"
+                )}>
+                    <div className="flex items-center gap-2.5">
+                        <div className={cn(
+                            "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                            isDark ? "bg-zinc-800 border-zinc-700 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-600"
+                        )}>
+                            <Building2 className="w-4 h-4" />
+                        </div>
                         <div>
-                            <h3 className="text-sm font-bold">Add Referral Partner</h3>
-                            <p className="text-[10px] text-zinc-500">Persists directly to database (ReferralPartners table)</p>
+                            <h3 className="text-sm font-bold tracking-tight">Add Referral Partner</h3>
+                            <p className="text-[10px] text-zinc-500 font-medium">Persists directly to database (ReferralPartners table)</p>
                         </div>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                        className={cn(
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
+                            isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"
+                        )}
                     >
                         <X className="w-4 h-4" />
                     </button>
                 </div>
 
                 {error && (
-                    <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
+                    <div className="m-4 mb-0 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-3">
+                <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
                     <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                             Partner / Doctor / Clinic Name *
                         </label>
                         <input
@@ -825,23 +895,27 @@ export function AddReferralPartnerModal({
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className={cn(
-                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                             )}
                         />
                     </div>
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Partner Type
                             </label>
                             <select
                                 value={partnerType}
                                 onChange={(e) => setPartnerType(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none cursor-pointer",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                                 )}
                             >
                                 <option value="Doctor">Doctor / Physician</option>
@@ -850,7 +924,7 @@ export function AddReferralPartnerModal({
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Default Cut %
                             </label>
                             <input
@@ -861,15 +935,17 @@ export function AddReferralPartnerModal({
                                 value={commissionPercentage}
                                 onChange={(e) => setCommissionPercentage(e.target.value)}
                                 className={cn(
-                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                    "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                                 )}
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                             Contact Info / Phone / Address
                         </label>
                         <input
@@ -878,22 +954,26 @@ export function AddReferralPartnerModal({
                             value={contactInfo}
                             onChange={(e) => setContactInfo(e.target.value)}
                             className={cn(
-                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
-                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                             )}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                             Default Collection Model
                         </label>
                         <select
                             value={paymentCollectionModel}
                             onChange={(e) => setPaymentCollectionModel(e.target.value)}
                             className={cn(
-                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none cursor-pointer",
-                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                             )}
                         >
                             <option value="LabCollects">Lab Collects at Desk (Direct / Commission)</option>
@@ -901,18 +981,21 @@ export function AddReferralPartnerModal({
                         </select>
                     </div>
 
-                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+                                isDark ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-600 hover:text-zinc-900 hover:bg-black/5"
+                            )}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
+                            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                             Save Referral Partner

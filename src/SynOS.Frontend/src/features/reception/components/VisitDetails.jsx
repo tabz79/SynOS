@@ -8,10 +8,7 @@ import OutsourceDraftForm from './OutsourceDraftForm'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { 
     InsuranceContextPanel, 
-    CorporateContextPanel, 
-    AddInsuranceCompanyModal, 
-    AddCorporateAccountModal,
-    AddReferralPartnerModal 
+    CorporateContextPanel 
 } from './MultiPayerPanels'
 
 export function VisitDetails({ 
@@ -20,7 +17,8 @@ export function VisitDetails({
     onVisitUpdated, 
     setIsPrepaidIntent, 
     isCorrectionIntent,
-    billingMode = 'Standard'
+    billingMode = 'Standard',
+    onOpenModal
 }) {
     const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
@@ -34,9 +32,6 @@ export function VisitDetails({
     const [insuranceCompanies, setInsuranceCompanies] = useState([]); // Insurance / TPA Master
     const [corporateAccounts, setCorporateAccounts] = useState([]); // Corporate Client Master
     const [corporateRateRules, setCorporateRateRules] = useState([]); // Rate rules for active corporate account
-    const [isAddInsuranceModalOpen, setIsAddInsuranceModalOpen] = useState(false);
-    const [isAddCorporateModalOpen, setIsAddCorporateModalOpen] = useState(false);
-    const [isAddPartnerModalOpen, setIsAddPartnerModalOpen] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
 
     // Auto-scroll selected test option into view
@@ -100,7 +95,6 @@ export function VisitDetails({
     const hasReferralPartner = !!snapshot?.billing?.referral?.partner;
     const referralDraft = snapshot?.billing?.referral?.draft;
     const canEditReferral = !isReadOnly && (!isPhysicallyLocked || !hasReferralPartner);
-    const canAddDraft = !hasReferralPartner && !referralDraft && !isReadOnly;
 
     // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
     useEffect(() => {
@@ -498,7 +492,7 @@ export function VisitDetails({
                             <span>Referring Doctor / Clinic (Optional)</span>
                             <button
                                 type="button"
-                                onClick={() => setIsAddPartnerModalOpen(true)}
+                                onClick={() => onOpenModal && onOpenModal('referral')}
                                 disabled={!canEditReferral}
                                 className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
                             >
@@ -562,18 +556,6 @@ export function VisitDetails({
                                         }
                                     }}
                                 />
-                                <div className="flex justify-end">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAddPartnerModalOpen(true)}
-                                        disabled={!canEditReferral}
-                                        className={cn("flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg border transition-all cursor-pointer",
-                                            isDark ? "bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-700" : "bg-white border-zinc-300 text-zinc-700 shadow-sm hover:border-zinc-400")}
-                                    >
-                                        <Plus className="w-3.5 h-3.5 text-emerald-500" />
-                                        + Add Referral Partner
-                                    </button>
-                                </div>
                             </div>
                         )}
                     </div>
@@ -583,10 +565,10 @@ export function VisitDetails({
                 {billingMode === 'PrepaidPartner' && (
                     <div className="pt-2 border-t border-amber-500/20 space-y-2.5">
                         <div className="type-label flex justify-between items-center">
-                            <span>Referral Partner <span className="text-red-500">*</span></span>
+                            <span>Prepaid Bill Referral <span className="text-red-500">*</span></span>
                             <button
                                 type="button"
-                                onClick={() => setIsAddPartnerModalOpen(true)}
+                                onClick={() => onOpenModal && onOpenModal('referral')}
                                 disabled={!canEditReferral}
                                 className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
                             >
@@ -629,30 +611,6 @@ export function VisitDetails({
                                     onApplyPartner={handleApplyReferral}
                                     onUpdateText={() => {}}
                                 />
-
-                                {/* Action Buttons: Add Referral Partner & Provisional Draft */}
-                                {!isDraftFormVisible && !referralDraft && (
-                                    <div className="flex items-center gap-2 pt-1">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsAddPartnerModalOpen(true)}
-                                            disabled={!canEditReferral}
-                                            className={cn("flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg border transition-all cursor-pointer",
-                                                isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20" : "bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100")}
-                                        >
-                                            <Plus className="w-3.5 h-3.5" /> Add Referral Partner
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsDraftFormVisible(true)}
-                                            disabled={!canAddDraft}
-                                            className={cn("flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg border transition-all cursor-pointer",
-                                                isDark ? "bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-700" : "bg-white border-zinc-300 text-zinc-700 shadow-sm hover:border-zinc-400")}
-                                        >
-                                            <Plus className="w-3.5 h-3.5" /> Provisional Draft
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         )}
 
@@ -695,7 +653,7 @@ export function VisitDetails({
                         preAuthNumber={snapshot?.visit?.preAuthApprovalNumber}
                         coPayAmount={snapshot?.visit?.insuranceCoPayAmount}
                         onChange={handleUpdateBillingContext}
-                        onOpenAddModal={() => setIsAddInsuranceModalOpen(true)}
+                        onOpenAddModal={() => onOpenModal && onOpenModal('insurance')}
                         isDark={isDark}
                         disabled={isReadOnly && !isCorrectionIntent}
                     />
@@ -710,7 +668,7 @@ export function VisitDetails({
                         corporateRateRules={corporateRateRules}
                         onAddPackageTest={(pkg) => handleAddTest({ testCode: pkg.testCode, name: pkg.testName, price: pkg.corporatePrice })}
                         onChange={handleUpdateBillingContext}
-                        onOpenAddModal={() => setIsAddCorporateModalOpen(true)}
+                        onOpenAddModal={() => onOpenModal && onOpenModal('corporate')}
                         isDark={isDark}
                         disabled={isReadOnly && !isCorrectionIntent}
                     />
@@ -984,46 +942,6 @@ export function VisitDetails({
                     </div>
                 </div>
             )}
-
-            {/* Quick Add Insurance / TPA Modal */}
-            <AddInsuranceCompanyModal
-                isOpen={isAddInsuranceModalOpen}
-                onClose={() => setIsAddInsuranceModalOpen(false)}
-                isDark={isDark}
-                onSuccess={(newInsurer) => {
-                    setInsuranceCompanies(prev => [...prev, newInsurer]);
-                    handleUpdateBillingContext({ insuranceCompanyId: newInsurer.id });
-                }}
-            />
-
-            {/* Quick Add Corporate Account Modal */}
-            <AddCorporateAccountModal
-                isOpen={isAddCorporateModalOpen}
-                onClose={() => setIsAddCorporateModalOpen(false)}
-                isDark={isDark}
-                onSuccess={(newCorp) => {
-                    setCorporateAccounts(prev => [...prev, newCorp]);
-                    handleUpdateBillingContext({ corporateAccountId: newCorp.id });
-                }}
-            />
-
-            {/* Quick Add Referral Partner Modal */}
-            <AddReferralPartnerModal
-                isOpen={isAddPartnerModalOpen}
-                onClose={() => setIsAddPartnerModalOpen(false)}
-                initialPaymentModel={billingMode === 'PrepaidPartner' ? 'PartnerCollects' : 'LabCollects'}
-                isDark={isDark}
-                onSuccess={(newPartner) => {
-                    const partnerObj = {
-                        ...newPartner,
-                        referralPartnerId: newPartner.referralPartnerId || newPartner.id,
-                        displayName: newPartner.name
-                    };
-                    setReferralPartners(prev => [...prev, partnerObj]);
-                    handleApplyReferral(partnerObj.referralPartnerId);
-                }}
-            />
-
         </div >
     )
 }

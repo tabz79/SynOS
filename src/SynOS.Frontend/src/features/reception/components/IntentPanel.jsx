@@ -13,8 +13,12 @@ import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
 import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
-import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer'
-import { MultiPayerSelector } from './MultiPayerPanels'
+import { 
+    MultiPayerSelector, 
+    AddInsuranceCompanyModal, 
+    AddCorporateAccountModal, 
+    AddReferralPartnerModal 
+} from './MultiPayerPanels'
 
 export function IntentPanel({ onVisitUpdated }) {
     const { isOpen, closePanel, drawerState } = useReceptionDrawer();
@@ -37,6 +41,8 @@ export function IntentPanel({ onVisitUpdated }) {
     const [billingMode, setBillingMode] = useState('Standard');
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
+    // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate'
+    const [activeModal, setActiveModal] = useState(null);
 
     // RESTORED: Core Internal State
     const [snapshot, setSnapshot] = useState(null);
@@ -96,6 +102,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsPrepaidIntent(false);
             setBillingMode('Standard');
             setPaymentMethod('Cash'); // Reset to default
+            setActiveModal(null);
             return;
         }
 
@@ -620,11 +627,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                             snapshot={snapshot}
                                             visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
                                             onVisitUpdated={loadSnapshot}
-                                            isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
-                                            setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
-                                            isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
+                                            setIsPrepaidIntent={setIsPrepaidIntent}
+                                            isCorrectionIntent={isCorrectionIntent}
                                             billingMode={billingMode}
-                                            setBillingMode={setBillingMode}
+                                            onOpenModal={setActiveModal}
                                         />
                                     </div>
 
@@ -740,6 +746,65 @@ export function IntentPanel({ onVisitUpdated }) {
                     <DynamicDocumentRenderer slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} data={taxInvoiceModal.data} />
                 </CommercialDocumentViewer>
             )}
+
+            {/* Scoped In-Panel Quick-Add Modals (Strictly clipped within IntentPanel silhouette) */}
+            <AddReferralPartnerModal
+                isOpen={activeModal === 'referral'}
+                onClose={() => setActiveModal(null)}
+                initialPaymentModel={billingMode === 'PrepaidPartner' ? 'PartnerCollects' : 'LabCollects'}
+                isDark={isDark}
+                onSuccess={async (newPartner) => {
+                    const partnerId = newPartner.referralPartnerId || newPartner.id;
+                    const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+                    if (visitId && partnerId) {
+                        try {
+                            await ReceptionApi.applyReferralToVisit(visitId, partnerId);
+                        } catch (err) {
+                            console.error("Failed to auto-apply referral partner to visit:", err);
+                        }
+                    }
+                    await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
+
+            <AddInsuranceCompanyModal
+                isOpen={activeModal === 'insurance'}
+                onClose={() => setActiveModal(null)}
+                isDark={isDark}
+                onSuccess={async (newInsurer) => {
+                    const companyId = newInsurer.id || newInsurer.insuranceCompanyId;
+                    const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+                    if (visitId && companyId) {
+                        try {
+                            await ReceptionApi.updateBillingContext(visitId, { insuranceCompanyId: companyId });
+                        } catch (err) {
+                            console.error("Failed to auto-link insurance company to visit:", err);
+                        }
+                    }
+                    await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
+
+            <AddCorporateAccountModal
+                isOpen={activeModal === 'corporate'}
+                onClose={() => setActiveModal(null)}
+                isDark={isDark}
+                onSuccess={async (newCorp) => {
+                    const accountId = newCorp.id || newCorp.corporateAccountId;
+                    const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+                    if (visitId && accountId) {
+                        try {
+                            await ReceptionApi.updateBillingContext(visitId, { corporateAccountId: accountId });
+                        } catch (err) {
+                            console.error("Failed to auto-link corporate account to visit:", err);
+                        }
+                    }
+                    await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
         </div >
     )
 }
