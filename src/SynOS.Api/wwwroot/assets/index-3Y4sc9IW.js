@@ -60850,18 +60850,6 @@ ${n}
         i.jsxs("div", {
           className: "flex flex-1 overflow-hidden relative z-10",
           children: [
-            n && i.jsx("aside", {
-              className: "w-11 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-white flex flex-col items-center py-2.5 shrink-0 z-20 animate-in fade-in duration-200",
-              children: i.jsx("button", {
-                type: "button",
-                onClick: () => A(false),
-                className: "p-2 rounded-xl text-zinc-400 hover:text-synos-primary hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors cursor-pointer",
-                title: "Expand Navigation Panel (\u2318B / Ctrl+B)",
-                children: i.jsx(RIe, {
-                  className: "w-4 h-4 text-synos-primary"
-                })
-              })
-            }),
             !n && i.jsxs("aside", {
               style: {
                 backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")',
@@ -60955,12 +60943,23 @@ ${n}
                 })
               ]
             }),
-            i.jsx("main", {
+            i.jsxs("main", {
               className: "flex-1 flex flex-col h-full overflow-hidden relative",
-              children: i.jsx("div", {
-                className: "flex-1 overflow-y-auto",
-                children: i.jsx(Pk, {})
-              })
+              children: [
+                n && i.jsx("button", {
+                  type: "button",
+                  onClick: () => A(false),
+                  className: "absolute top-2.5 left-2.5 z-40 p-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 shadow-md text-zinc-500 hover:text-synos-primary hover:bg-white dark:hover:bg-zinc-900 transition-all cursor-pointer group",
+                  title: "Expand Navigation Panel (\u2318B / Ctrl+B)",
+                  children: i.jsx(RIe, {
+                    className: "w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-synos-primary transition-colors"
+                  })
+                }),
+                i.jsx("div", {
+                  className: "flex-1 overflow-y-auto",
+                  children: i.jsx(Pk, {})
+                })
+              ]
             })
           ]
         })

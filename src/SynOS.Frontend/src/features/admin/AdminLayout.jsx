@@ -124,20 +124,6 @@ export function AdminLayout() {
             <SystemBar syncStatus="Synced" />
 
             <div className="flex flex-1 overflow-hidden relative z-10">
-                {/* Collapsed Mini Rail (Flush, clean, zero overlap) */}
-                {isSidebarCollapsed && (
-                    <aside className="w-11 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-white flex flex-col items-center py-2.5 shrink-0 z-20 animate-in fade-in duration-200">
-                        <button
-                            type="button"
-                            onClick={() => setIsSidebarCollapsed(false)}
-                            className="p-2 rounded-xl text-zinc-400 hover:text-synos-primary hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors cursor-pointer"
-                            title="Expand Navigation Panel (⌘B / Ctrl+B)"
-                        >
-                            <PanelLeftOpen className="w-4 h-4 text-synos-primary" />
-                        </button>
-                    </aside>
-                )}
-
                 {/* Sidebar - STATIC FROST MODEL (No real blur) */}
                 {!isSidebarCollapsed && (
                     <aside 
@@ -207,6 +193,17 @@ export function AdminLayout() {
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+                    {/* Floating Expand Toggle when Navigation is Minimized (Rests cleanly at top-left without eating screen width) */}
+                    {isSidebarCollapsed && (
+                        <button
+                            type="button"
+                            onClick={() => setIsSidebarCollapsed(false)}
+                            className="absolute top-2.5 left-2.5 z-40 p-1.5 rounded-xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border border-zinc-200 dark:border-zinc-800 shadow-md text-zinc-500 hover:text-synos-primary hover:bg-white dark:hover:bg-zinc-900 transition-all cursor-pointer group"
+                            title="Expand Navigation Panel (⌘B / Ctrl+B)"
+                        >
+                            <PanelLeftOpen className="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-synos-primary transition-colors" />
+                        </button>
+                    )}
                     <div className="flex-1 overflow-y-auto">
                         <Outlet />
                     </div>
