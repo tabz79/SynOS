@@ -519,25 +519,25 @@ export function IntentPanel({ onVisitUpdated }) {
                     <div className="flex items-center gap-2.5 w-full max-w-lg mx-auto">
                         <button
                             type="button"
-                            onClick={() => handlePrintReceipt()}
-                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
-                            title="Print Thermal 80mm POS Slip"
+                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                            className="py-3 px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                            title="Preview & Print Full A4 Tax Invoice"
                         >
-                            <Printer className="w-4 h-4" /> Slip
+                            <FileText className="w-4 h-4" /> Print A4 Receipt
                         </button>
                         <button
                             type="button"
-                            onClick={() => setTaxInvoiceModal({ isOpen: true, data: buildTaxInvoiceData() })}
-                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
-                            title="Preview & Print Full A4 Invoice"
+                            onClick={() => handlePrintReceipt()}
+                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                            title="Print Thermal 80mm POS Slip"
                         >
-                            <FileText className="w-4 h-4" /> A4 Bill
+                            <Printer className="w-4 h-4" /> Thermal Slip
                         </button>
                         <button
                             type="button"
                             onClick={handleCloseAndReset}
                             className={cn(
-                                "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer",
+                                "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
                                 ui.actionBtn.enabled
                             )}
                         >
@@ -552,19 +552,19 @@ export function IntentPanel({ onVisitUpdated }) {
                                     <>
                                         <button
                                             type="button"
-                                            onClick={handlePrintReceipt}
-                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0"
-                                            title="Print Thermal 80mm POS Slip"
+                                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                                            className="py-3 px-3.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                                            title="Preview & Print Full A4 Tax Invoice"
                                         >
-                                            <Printer className="w-4 h-4" /> Slip
+                                            <FileText className="w-4 h-4" /> Print A4 Receipt
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setTaxInvoiceModal({ isOpen: true, data: buildTaxInvoiceData() })}
-                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0"
-                                            title="Print A4 Tax Invoice"
+                                            onClick={handlePrintReceipt}
+                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                                            title="Print Thermal 80mm POS Slip"
                                         >
-                                            <FileText className="w-4 h-4" /> A4 Bill
+                                            <Printer className="w-4 h-4" /> Thermal Slip
                                         </button>
                                     </>
                                 )}
@@ -572,7 +572,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     onClick={handleUnifiedAction}
                                     disabled={!isActionEnabled || isLoading || isActionSubmitting}
                                     className={cn(
-                                        "flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+                                        "flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
                                         (isActionEnabled && !isActionSubmitting)
                                             ? ui.actionBtn.enabled
                                             : ui.actionBtn.disabled
@@ -600,10 +600,10 @@ export function IntentPanel({ onVisitUpdated }) {
                 <CommercialDocumentViewer
                     isOpen={taxInvoiceModal.isOpen}
                     onClose={() => setTaxInvoiceModal({ isOpen: false, data: null })}
-                    title={`Patient Tax Invoice - ${taxInvoiceModal.data?.patient?.name || ''}`}
+                    title={taxInvoiceModal.title || `Patient Tax Invoice - ${taxInvoiceModal.data?.patient?.name || ''}`}
                     defaultLetterheadMode="digital"
                 >
-                    <DynamicDocumentRenderer slotId="patient_tax_invoice" data={taxInvoiceModal.data} />
+                    <DynamicDocumentRenderer slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} data={taxInvoiceModal.data} />
                 </CommercialDocumentViewer>
             )}
         </div >

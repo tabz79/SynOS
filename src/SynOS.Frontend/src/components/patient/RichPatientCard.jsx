@@ -157,7 +157,14 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
                 </div>
                 <div className="justify-self-end self-start">
                     {actionLabel && (
-                        <button className="text-[#0369A1] hover:text-[#0284C7] font-medium underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none">
+                        <button 
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (onAction) onAction();
+                            }}
+                            className="text-[#0369A1] hover:text-[#0284C7] font-medium underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer"
+                        >
                             {actionLabel}
                         </button>
                     )}

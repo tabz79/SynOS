@@ -49,7 +49,9 @@ export function useFocusTrap(ref, isActive, onClose) {
                     return;
                 }
 
-                // TAB TRAP
+                // DETERMINISTIC TAB CYCLING (Universal Cross-Browser & Cross-OS)
+                // macOS Safari skips buttons & checkboxes by default during native tab;
+                // Programmatic focus cycling ensures 100% reliable tab navigation across all form elements.
                 if (e.key === 'Tab') {
                     const currentFocusables = getFocusables(ref.current);
                     if (currentFocusables.length === 0) {
@@ -57,18 +59,34 @@ export function useFocusTrap(ref, isActive, onClose) {
                         return;
                     }
 
-                    const first = currentFocusables[0];
-                    const last = currentFocusables[currentFocusables.length - 1];
+                    e.preventDefault();
 
-                    if (e.shiftKey) { // SHIFT + TAB (Backwards)
-                        if (document.activeElement === first || !ref.current.contains(document.activeElement)) {
-                            e.preventDefault();
-                            last.focus();
+                    let currentIndex = currentFocusables.indexOf(document.activeElement);
+                    if (currentIndex === -1 && document.activeElement) {
+                        const closest = document.activeElement.closest('button, input, select, textarea, a, [tabindex]');
+                        if (closest) currentIndex = currentFocusables.indexOf(closest);
+                    }
+
+                    let targetIndex;
+                    if (e.shiftKey) { // Backwards (Shift + Tab)
+                        if (currentIndex <= 0) {
+                            targetIndex = currentFocusables.length - 1;
+                        } else {
+                            targetIndex = currentIndex - 1;
                         }
-                    } else { // TAB (Forwards)
-                        if (document.activeElement === last || !ref.current.contains(document.activeElement)) {
-                            e.preventDefault();
-                            first.focus();
+                    } else { // Forwards (Tab)
+                        if (currentIndex === -1 || currentIndex >= currentFocusables.length - 1) {
+                            targetIndex = 0;
+                        } else {
+                            targetIndex = currentIndex + 1;
+                        }
+                    }
+
+                    const targetEl = currentFocusables[targetIndex];
+                    if (targetEl) {
+                        targetEl.focus();
+                        if (typeof targetEl.scrollIntoView === 'function') {
+                            targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                         }
                     }
                 }
@@ -106,8 +124,9 @@ function getFocusables(element) {
 
     return Array.from(element.querySelectorAll(selector))
         .filter(el => {
-            return !el.hasAttribute('hidden') && 
-                   getComputedStyle(el).display !== 'none' &&
-                   getComputedStyle(el).visibility !== 'hidden';
+            if (el.hasAttribute('disabled') || el.getAttribute('aria-hidden') === 'true') return false;
+            const style = window.getComputedStyle(el);
+            if (style.display === 'none' || style.visibility === 'hidden') return false;
+            return el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
         });
 }

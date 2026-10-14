@@ -304,7 +304,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {canPerformActions && (
                     <div className="pt-2 animate-in fade-in">
                         <select
-                            className={cn("w-full h-10 rounded-md px-3 py-2 outline-none transition-colors disabled:opacity-50 type-body", ui.input)}
+                            className={cn("w-full h-10 rounded-md px-3 py-2 outline-none transition-colors disabled:opacity-50 type-body focus:ring-2 focus:ring-synos-primary focus:border-synos-primary cursor-pointer", ui.input)}
                             disabled={isProcessing}
                             value=""
                             onChange={(e) => {
@@ -331,9 +331,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                             {['Cash', 'UPI', 'Card'].map(method => (
                                 <button
                                     key={method}
+                                    type="button"
                                     onClick={() => setPaymentMethod && setPaymentMethod(method)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center py-2 rounded-md border type-section-header transition-all active:scale-95",
+                                        "flex flex-col items-center justify-center py-2 rounded-md border type-section-header transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 cursor-pointer",
                                         paymentMethod === method
                                             ? ui.method.active
                                             : ui.method.inactive

@@ -366,9 +366,10 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                     </div>
                 ) : (
                     <button
+                        type="button"
                         onClick={handleDeleteDraft}
                         disabled={isProcessing}
-                        className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-95 flex items-center gap-1 shadow-sm disabled:opacity-50"
+                        className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-600 hover:bg-rose-500 text-white transition-all active:scale-95 flex items-center gap-1 shadow-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1 cursor-pointer"
                     >
                         {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Delete Draft"}
                     </button>
@@ -406,7 +407,7 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                             }
                         }}
                         disabled={isReadOnly && !isCorrectionIntent}
-                        className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4"
+                        className="mt-0.5 accent-synos-primary cursor-pointer w-4 h-4 focus:ring-2 focus:ring-synos-primary focus:outline-none rounded"
                     />
                     <div className="space-y-0.5">
                         <label htmlFor="chkPrepaid" className={cn("cursor-pointer transition-colors type-body",
@@ -525,9 +526,10 @@ export function VisitDetails({ snapshot, visitId, onVisitUpdated, isPrepaidInten
                 {/* 3. Trigger Button */}
                 {!isDraftFormVisible && !referralDraft && (
                     <button
+                        type="button"
                         onClick={() => setIsDraftFormVisible(true)}
                         disabled={!canAddDraft}
-                        className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group",
+                        className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group focus:outline-none focus:ring-2 focus:ring-synos-primary cursor-pointer",
                             isDark
                                 ? "border-zinc-800 hover:text-white hover:bg-zinc-800/50"
                                 : "bg-white border-zinc-300 shadow-sm hover:border-zinc-400 hover:shadow-md")}
