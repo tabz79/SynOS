@@ -16,19 +16,35 @@ import {
     Sparkles, 
     Receipt, 
     Send,
-    ExternalLink
+    ExternalLink,
+    MapPin,
+    Layers,
+    ArrowRight,
+    Workflow,
+    Package,
+    Users,
+    DollarSign
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { PatientTaxInvoiceA4 } from '@/features/finance/components/documents/PatientTaxInvoiceA4';
+import { ThermalPosReceipt80mm } from '@/features/finance/components/documents/ThermalPosReceipt80mm';
 import { PartnerClaimStatementA4 } from '@/features/finance/components/documents/PartnerClaimStatementA4';
 import { ReferralPayoutVoucherA4 } from '@/features/finance/components/documents/ReferralPayoutVoucherA4';
+import { ProcurementPurchaseOrderA4 } from '@/features/finance/components/documents/ProcurementPurchaseOrderA4';
+import { WorkforcePaySlipA4 } from '@/features/finance/components/documents/WorkforcePaySlipA4';
+import { PettyExpenseVoucherA4 } from '@/features/finance/components/documents/PettyExpenseVoucherA4';
 
 export const CommercialPaperworkTab = () => {
+    const [studioTab, setStudioTab] = useState('matrix'); // 'matrix' | 'profile'
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [previewDocType, setPreviewDocType] = useState('patient'); // 'patient' | 'partner' | 'voucher'
+    const [moduleFilter, setModuleFilter] = useState('all');
     
+    // Active Preview Slot (corresponds to slotId)
+    const [previewSlotId, setPreviewSlotId] = useState('patient_tax_invoice');
+
+    // Commercial Stationery Settings
     const [settings, setSettings] = useState({
         labLegalName: "SynOS Diagnostic Centre & Laboratory",
         labTradeName: "Advanced Pathology & Imaging Services",
@@ -53,47 +69,69 @@ export const CommercialPaperworkTab = () => {
         signatoryTitle: "Authorised Signatory / Accounts Desk"
     });
 
+    // Document Mappings Registry
+    const [mappings, setMappings] = useState([]);
+
     useEffect(() => {
-        loadSettings();
+        loadAllData();
     }, []);
 
-    const loadSettings = async () => {
+    const loadAllData = async () => {
         try {
             setLoading(true);
-            const data = await FinanceApi.getStationerySettings();
-            if (data && typeof data === 'object') {
-                setSettings(prev => ({ ...prev, ...data }));
+            const [stationeryRes, mappingsRes] = await Promise.all([
+                FinanceApi.getStationerySettings(),
+                FinanceApi.getDocumentMappings()
+            ]);
+
+            if (stationeryRes && typeof stationeryRes === 'object') {
+                setSettings(prev => ({ ...prev, ...stationeryRes }));
+            }
+            if (Array.isArray(mappingsRes)) {
+                setMappings(mappingsRes);
             }
         } catch (err) {
-            console.error("Failed to load stationery settings:", err);
+            console.error("Failed to load paperwork data:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSave = async (e) => {
+    const handleSaveAll = async (e) => {
         if (e) e.preventDefault();
         try {
             setSaving(true);
-            await FinanceApi.saveStationerySettings(settings);
+            await Promise.all([
+                FinanceApi.saveStationerySettings(settings),
+                FinanceApi.saveDocumentMappings(mappings)
+            ]);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 4000);
         } catch (err) {
-            console.error("Failed to save stationery settings:", err);
-            alert("Error saving settings: " + (err.response?.data?.message || err.message));
+            console.error("Failed to save paperwork settings:", err);
+            alert("Error saving: " + (err.response?.data?.message || err.message));
         } finally {
             setSaving(false);
         }
     };
 
-    const handleChange = (field, value) => {
+    const handleSettingChange = (field, value) => {
         setSettings(prev => ({
             ...prev,
             [field]: value
         }));
     };
 
-    // Live Mock Data for Interactive Studio Preview
+    const handleMappingChange = (slotId, field, value) => {
+        setMappings(prev => prev.map(slot => {
+            if (slot.slotId === slotId) {
+                return { ...slot, [field]: value };
+            }
+            return slot;
+        }));
+    };
+
+    // Live Mock Lab Profile derived from settings
     const mockLabProfile = {
         labLegalName: settings.labLegalName,
         labTradeName: settings.labTradeName,
@@ -111,219 +149,76 @@ export const CommercialPaperworkTab = () => {
         termsAndConditions: settings.termsAndConditions,
         signatoryTitle: settings.signatoryTitle,
         defaultLetterheadMode: settings.defaultLetterheadMode,
-        topMarginMm: settings.topMarginMm
+        topMarginMm: settings.topMarginMm,
+        enableUpiQr: settings.enableUpiQr
     };
 
-    const mockPatientInvoice = {
-        invoiceId: "mock-inv-001",
-        billNumber: "INV-202610-0042",
-        date: new Date().toISOString(),
-        dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
-        status: "Partial",
-        lab: mockLabProfile,
-        patient: {
-            fullName: "K. Ramesh Kumar",
-            mrn: "SYN-2026-9042",
-            phone: "+91 98480 22334",
-            gender: "Male",
-            age: "46 Yrs",
-            address: "Plot 14, Doctors Colony, Khammam"
-        },
-        items: [
-            {
-                orderId: "ord-1",
-                testCode: "CBC",
-                testName: "Complete Blood Count (5-Part Automated)",
-                department: "Hematology",
-                unitPrice: 350,
-                discount: 0,
-                taxPercentage: 0,
-                netPrice: 350
-            },
-            {
-                orderId: "ord-2",
-                testCode: "LFT",
-                testName: "Liver Function Test Profile",
-                department: "Biochemistry",
-                unitPrice: 850,
-                discount: 50,
-                taxPercentage: 0,
-                netPrice: 800
-            },
-            {
-                orderId: "ord-3",
-                testCode: "USG-ABD",
-                testName: "Ultrasound Whole Abdomen & Pelvis",
-                department: "Radiology",
-                unitPrice: 1200,
-                discount: 0,
-                taxPercentage: 0,
-                netPrice: 1200
-            }
-        ],
-        financial: {
-            subtotal: 2400,
-            itemDiscounts: 50,
-            overallDiscount: 0,
-            taxableAmount: 2350,
-            cgst: 0,
-            sgst: 0,
-            totalTax: 0,
-            grandTotal: 2350,
-            amountPaid: 1500,
-            balanceDue: 850,
-            amountInWords: "Rupees Two Thousand Three Hundred Fifty Only",
-            balanceInWords: "Rupees Eight Hundred Fifty Only"
-        },
-        payments: [
-            {
-                paymentId: "pay-1",
-                receiptNumber: "RCPT-2026-0811",
-                amount: 1500,
-                paymentMethod: "UPI",
-                referenceNumber: "UPI/394829104",
-                receivedAt: new Date().toISOString()
-            }
-        ],
-        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=850.00&cu=INR&tn=Invoice-INV-202610-0042`
+    // Active Slot Config
+    const currentActiveSlot = mappings.find(s => s.slotId === previewSlotId) || {
+        letterheadMode: settings.defaultLetterheadMode,
+        topMarginMm: settings.topMarginMm,
+        enableUpiQr: settings.enableUpiQr
     };
 
-    const mockPartnerInvoice = {
-        statementId: "mock-stmt-001",
-        statementNo: "B2B-202610-0019",
-        generatedAt: new Date().toISOString(),
-        lab: mockLabProfile,
-        partner: {
-            partnerId: "part-dr-khalikh",
-            name: "Dr. Khaleeq Ur Rahman, MD",
-            clinicName: "Khaleeq Polyclinic & Maternity Center",
-            phone: "+91 98490 11223",
-            email: "dr.khaleeq@polyclinic.in",
-            address: "Main Road, Wyra Road, Khammam"
-        },
-        items: [
-            {
-                receivableFactId: "rf-1",
-                visitToken: "T-0104",
-                date: new Date(Date.now() - 2 * 86400000).toISOString(),
-                patientName: "Mohammed Afzal",
-                mrn: "SYN-2026-9011",
-                ageGender: "42Y / M",
-                investigations: "CBC, Serum Creatinine, HbA1c",
-                grossBilled: 950,
-                amountReceived: 0,
-                netClaimDue: 950
-            },
-            {
-                receivableFactId: "rf-2",
-                visitToken: "T-0118",
-                date: new Date(Date.now() - 1 * 86400000).toISOString(),
-                patientName: "Smt. Lakshmi Devi",
-                mrn: "SYN-2026-9025",
-                ageGender: "58Y / F",
-                investigations: "Lipid Profile, Thyroid Profile Total (T3, T4, TSH)",
-                grossBilled: 1250,
-                amountReceived: 0,
-                netClaimDue: 1250
-            },
-            {
-                receivableFactId: "rf-3",
-                visitToken: "T-0129",
-                date: new Date().toISOString(),
-                patientName: "Venkateswarlu Rao",
-                mrn: "SYN-2026-9039",
-                ageGender: "63Y / M",
-                investigations: "Digital Chest X-Ray PA View",
-                grossBilled: 450,
-                amountReceived: 0,
-                netClaimDue: 450
-            }
+    // Available Templates Catalog
+    const TEMPLATE_OPTIONS = {
+        patient_tax_invoice: [
+            { id: 'template_patient_a4_modern', label: 'Modern GST Tax Invoice (A4)' },
+            { id: 'template_patient_a4_compact', label: 'Compact Single-Page Bill (A4)' },
+            { id: 'template_patient_a4_detailed', label: 'Detailed Clinical Breakdown (A4)' }
         ],
-        summary: {
-            totalVisits: 3,
-            grossBilled: 2650,
-            amountReceived: 0,
-            netClaimDue: 2650,
-            amountInWords: "Rupees Two Thousand Six Hundred Fifty Only"
-        },
-        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=2650.00&cu=INR&tn=B2B-Invoice-B2B-202610-0019`
+        patient_thermal_receipt: [
+            { id: 'template_thermal_pos_80mm', label: 'Thermal 80mm Standard Cash Slip' },
+            { id: 'template_thermal_pos_58mm', label: 'Thermal 58mm Ultra-Compact Slip' }
+        ],
+        partner_b2b_invoice: [
+            { id: 'template_partner_b2b_a4', label: 'B2B Diagnostic Tax Invoice (A4)' },
+            { id: 'template_partner_b2b_consolidated', label: 'Monthly Consolidated Statement (A4)' }
+        ],
+        referral_payout_voucher: [
+            { id: 'template_referral_voucher_a4', label: 'Doctor Commission Payout Voucher (A4)' },
+            { id: 'template_referral_summary_slip', label: 'Direct Bank Remittance Advice (A4)' }
+        ],
+        procurement_po: [
+            { id: 'template_procurement_po_a4', label: 'Commercial Purchase Order (A4)' },
+            { id: 'template_procurement_po_reagent', label: 'Reagents & Cold-Chain PO (A4)' }
+        ],
+        procurement_grn: [
+            { id: 'template_grn_a4', label: 'Material Inward / Goods Receipt Note (A4)' }
+        ],
+        workforce_payslip: [
+            { id: 'template_payslip_a4', label: 'Confidential Salary Pay Slip (A4)' },
+            { id: 'template_payslip_executive', label: 'Executive Compensation Advice (A4)' }
+        ],
+        overhead_expense_voucher: [
+            { id: 'template_expense_voucher_a4', label: 'Payment & Debit Voucher (A5 / Half-Sheet)' },
+            { id: 'template_expense_cash_slip', label: 'Petty Cash Slip (A4 Dual-Voucher)' }
+        ]
     };
 
-    const mockPayoutVoucher = {
-        voucherNo: "VCH-202610-0053",
-        generatedAt: new Date().toISOString(),
-        financialYear: "2026 - 2027",
-        lab: mockLabProfile,
-        doctor: {
-            partnerId: "part-dr-khalikh",
-            name: "Dr. Khaleeq Ur Rahman, MD",
-            clinicName: "Khaleeq Polyclinic & Maternity Center",
-            phone: "+91 98490 11223",
-            pan: "BKPPR9988C",
-            bankName: "State Bank of India",
-            accountNumber: "30291049201",
-            ifsc: "SBIN0000854"
-        },
-        items: [
-            {
-                factId: "pf-1",
-                token: "T-0042",
-                date: new Date(Date.now() - 3 * 86400000).toISOString(),
-                patientName: "P. Anjaiah",
-                testNames: "Whole Abdomen USG, LFT",
-                patientPaid: 2050,
-                commissionRatePct: 20,
-                referralAmount: 410
-            },
-            {
-                factId: "pf-2",
-                token: "T-0055",
-                date: new Date(Date.now() - 2 * 86400000).toISOString(),
-                patientName: "G. Sunitha",
-                testNames: "Complete Blood Count, ESR",
-                patientPaid: 450,
-                commissionRatePct: 20,
-                referralAmount: 90
-            },
-            {
-                factId: "pf-3",
-                token: "T-0068",
-                date: new Date(Date.now() - 1 * 86400000).toISOString(),
-                patientName: "B. Suresh Babu",
-                testNames: "CT Brain Plain (128 Slice)",
-                patientPaid: 3200,
-                commissionRatePct: 25,
-                referralAmount: 800
-            }
-        ],
-        summary: {
-            totalReferredVisits: 3,
-            totalPatientCollection: 5700,
-            grossReferralAmount: 1300,
-            tdsPercentage: 5,
-            tdsDeduction: 65,
-            netPayoutAmount: 1235,
-            netPayoutInWords: "Rupees One Thousand Two Hundred Thirty Five Only"
-        }
-    };
+    // Filter Mappings
+    const filteredMappings = mappings.filter(m => {
+        if (moduleFilter === 'all') return true;
+        return m.moduleCode === moduleFilter;
+    });
 
     return (
-        <div className="space-y-8 animate-fadeIn text-xs">
-            {/* TOP HEADER & ACTION BANNER */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b dark:border-zinc-800 border-zinc-200 pb-6">
+        <div className="space-y-6 animate-fadeIn text-xs">
+            {/* TOP HEADER & STUDIO CONTROLS */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b dark:border-zinc-800 border-zinc-200 pb-5">
                 <div className="flex items-center gap-3.5">
                     <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-inner">
                         <FileSpreadsheet size={24} />
                     </div>
                     <div>
                         <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            Invoices & Commercial Paperwork Builder
-                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
-                                Live Studio
+                            Commercial Paperwork & Invoicing Studio
+                            <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider">
+                                ERP Matrix
                             </span>
                         </h2>
                         <p className="text-zinc-500 text-xs">
-                            Manage lab tax invoices, B2B partner bills, referral commission vouchers, UPI gateway, and letterhead margins.
+                            Map specific paperwork templates to software features, configure legal profiles, bank remittance, and letterheads.
                         </p>
                     </div>
                 </div>
@@ -331,7 +226,7 @@ export const CommercialPaperworkTab = () => {
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
-                        onClick={loadSettings}
+                        onClick={loadAllData}
                         disabled={loading || saving}
                         className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-bold flex items-center gap-2 transition-all cursor-pointer"
                     >
@@ -340,7 +235,7 @@ export const CommercialPaperworkTab = () => {
                     </button>
                     <button
                         type="button"
-                        onClick={handleSave}
+                        onClick={handleSaveAll}
                         disabled={saving}
                         className="px-6 py-2.5 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-synos-primary/25 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                     >
@@ -357,370 +252,459 @@ export const CommercialPaperworkTab = () => {
                         ) : (
                             <>
                                 <Save size={16} />
-                                <span>Save Settings</span>
+                                <span>Save All Changes</span>
                             </>
                         )}
                     </button>
                 </div>
             </div>
 
+            {/* STUDIO SUB-TABS: MATRIX VS PROFILE */}
+            <div className="flex items-center gap-3 border-b dark:border-zinc-800 border-zinc-200 pb-2">
+                <button
+                    type="button"
+                    onClick={() => setStudioTab('matrix')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        studioTab === 'matrix'
+                            ? 'bg-synos-primary text-white shadow-sm'
+                            : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                >
+                    <Workflow size={15} />
+                    <span>Document Routing & Feature Mapping ({mappings.length} Slots)</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setStudioTab('profile')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                        studioTab === 'profile'
+                            ? 'bg-synos-primary text-white shadow-sm'
+                            : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                    }`}
+                >
+                    <Building2 size={15} />
+                    <span>Commercial Legal Profile & Remittance Gateway</span>
+                </button>
+            </div>
+
             {saveSuccess && (
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 animate-in fade-in duration-300">
                     <Check size={18} className="shrink-0 text-emerald-500" />
                     <div>
-                        <strong className="font-bold">Stationery configuration saved successfully!</strong>
-                        <p className="text-[11px] opacity-90">All newly generated patient tax invoices, B2B claim bills, and referral payout vouchers will now use these live commercial parameters.</p>
+                        <strong className="font-bold">Paperwork registry and commercial settings saved!</strong>
+                        <p className="text-[11px] opacity-90">All features across SynOS (Reception, Referral Terminal, Stores, HR, Accounts) will now dynamically resolve these mapped templates.</p>
                     </div>
                 </div>
             )}
 
-            {/* MAIN DUAL-COLUMN STUDIO GRID */}
+            {/* DUAL-COLUMN STUDIO GRID */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
                 
-                {/* LEFT COLUMN: BUILDER FORMS (7 COLS) */}
+                {/* LEFT COLUMN: ACTIVE VIEW (7 COLS) */}
                 <div className="xl:col-span-7 space-y-6">
 
-                    {/* SECTION 1: LAB LEGAL PROFILE */}
-                    <div className="synos-dept-card rounded-2xl p-6 space-y-5">
-                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <Building2 size={16} className="text-indigo-600 dark:text-indigo-400" />
-                                <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                    1. Commercial Legal Entity & Contact Profile
-                                </h3>
-                            </div>
-                            <span className="text-[10px] text-zinc-400 font-semibold">Printed on all invoices & vouchers</span>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="sm:col-span-2">
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Legal Entity Registered Name (GSTIN Registered) *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.labLegalName}
-                                    onChange={(e) => handleChange('labLegalName', e.target.value)}
-                                    placeholder="e.g. SynOS Diagnostic Centre & Laboratory Pvt Ltd"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div className="sm:col-span-2">
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Trade Name / Sub-Header Tagline
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.labTradeName}
-                                    onChange={(e) => handleChange('labTradeName', e.target.value)}
-                                    placeholder="e.g. Comprehensive Pathology, Digital Radiology & Medical Imaging"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    GSTIN Number (15-Digit) *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.gstin}
-                                    onChange={(e) => handleChange('gstin', e.target.value.toUpperCase())}
-                                    maxLength={15}
-                                    placeholder="36AAAAA0000A1Z5"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    PAN Number (Permanent Account No.)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.pan}
-                                    onChange={(e) => handleChange('pan', e.target.value.toUpperCase())}
-                                    maxLength={10}
-                                    placeholder="AAAAA0000A"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div className="sm:col-span-2">
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Registered Facility Address (Printed on Bill Header)
-                                </label>
-                                <textarea
-                                    rows={2}
-                                    value={settings.address}
-                                    onChange={(e) => handleChange('address', e.target.value)}
-                                    placeholder="Full street address, district, state, PIN code"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Commercial Phone / Helpdesk
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.phone}
-                                    onChange={(e) => handleChange('phone', e.target.value)}
-                                    placeholder="+91 98765 43210"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Billing & Accounts Email
-                                </label>
-                                <input
-                                    type="email"
-                                    value={settings.email}
-                                    onChange={(e) => handleChange('email', e.target.value)}
-                                    placeholder="billing@synoslab.in"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SECTION 2: BANK REMITTANCE & UPI QR */}
-                    <div className="synos-dept-card rounded-2xl p-6 space-y-5">
-                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <CreditCard size={16} className="text-emerald-600 dark:text-emerald-400" />
-                                <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                    2. Bank Remittance & Dynamic UPI Payment Gateway
-                                </h3>
-                            </div>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                                <QrCode size={12} /> Instant Bharat QR
-                            </span>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Bank Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.bankName}
-                                    onChange={(e) => handleChange('bankName', e.target.value)}
-                                    placeholder="e.g. HDFC Bank, ICICI Bank"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Account Beneficiary Name
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.accountHolderName}
-                                    onChange={(e) => handleChange('accountHolderName', e.target.value)}
-                                    placeholder="Account holder as per bank passbook"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Current / Cash Credit Account Number *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.accountNumber}
-                                    onChange={(e) => handleChange('accountNumber', e.target.value)}
-                                    placeholder="50200012345678"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Bank IFSC Code (11-Alpha/Numeric) *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.ifscCode}
-                                    onChange={(e) => handleChange('ifscCode', e.target.value.toUpperCase())}
-                                    maxLength={11}
-                                    placeholder="HDFC0001234"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div className="sm:col-span-2">
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Primary UPI VPA ID (Virtual Payment Address)
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={settings.upiId}
-                                        onChange={(e) => handleChange('upiId', e.target.value)}
-                                        placeholder="e.g. synoslab@hdfcbank or billing@icici"
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-emerald-600 dark:text-emerald-400 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                                    />
-                                    <QrCode size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" />
-                                </div>
-                                <p className="text-[10px] text-zinc-400 mt-1.5 leading-relaxed">
-                                    Dynamic UPI QR is generated on each bill with the exact invoice due amount encoded for 100% error-free patient & doctor collections.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SECTION 3: LETTERHEAD MODES & MARGIN GEOMETRY */}
-                    <div className="synos-dept-card rounded-2xl p-6 space-y-5">
-                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <Sliders size={16} className="text-amber-500" />
-                                <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                    3. Stationery Format & Letterhead Geometry
-                                </h3>
-                            </div>
-                            <span className="text-[10px] text-zinc-400 font-semibold">Physical vs Digital A4</span>
-                        </div>
-
-                        {/* MODE SWITCHER */}
-                        <div className="space-y-2">
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400">
-                                Default Paperwork Print Layout
-                            </label>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => handleChange('defaultLetterheadMode', 'digital')}
-                                    className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
-                                        settings.defaultLetterheadMode === 'digital'
-                                            ? 'border-indigo-500 bg-indigo-500/10 text-indigo-950 dark:text-indigo-200 font-bold shadow-xs'
-                                            : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="font-extrabold text-xs">Digital Stationery</span>
-                                        {settings.defaultLetterheadMode === 'digital' && <Check size={14} className="text-indigo-500" />}
-                                    </div>
-                                    <p className="text-[10px] text-zinc-500 leading-normal">
-                                        Prints full lab branding, header, logo, and address directly on plain white A4 paper.
-                                    </p>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => handleChange('defaultLetterheadMode', 'preprinted')}
-                                    className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${
-                                        settings.defaultLetterheadMode === 'preprinted'
-                                            ? 'border-indigo-500 bg-indigo-500/10 text-indigo-950 dark:text-indigo-200 font-bold shadow-xs'
-                                            : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="font-extrabold text-xs">Pre-Printed Letterhead</span>
-                                        {settings.defaultLetterheadMode === 'preprinted' && <Check size={14} className="text-indigo-500" />}
-                                    </div>
-                                    <p className="text-[10px] text-zinc-500 leading-normal">
-                                        Leaves blank top margin for clinic/lab pre-printed stationery. Perfect for offset printed sheets.
-                                    </p>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* TOP MARGIN SLIDER (ACTIVE WHEN PREPRINTED) */}
-                        <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 space-y-3">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <span className="text-[11px] font-black text-zinc-800 dark:text-zinc-200">
-                                        Top Letterhead Clearance Margin
-                                    </span>
-                                    <p className="text-[10px] text-zinc-400">
-                                        Distance from top of sheet to the first line of content in pre-printed mode.
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <span className="px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-mono font-black text-xs">
-                                        {settings.topMarginMm} mm
-                                    </span>
-                                </div>
-                            </div>
-
-                            <input
-                                type="range"
-                                min={0}
-                                max={80}
-                                step={5}
-                                value={settings.topMarginMm}
-                                onChange={(e) => handleChange('topMarginMm', parseInt(e.target.value) || 0)}
-                                className="w-full accent-indigo-600 cursor-pointer"
-                            />
-                            <div className="flex justify-between text-[9px] text-zinc-400 font-mono">
-                                <span>0 mm (No gap)</span>
-                                <span>40 mm (Standard Lab Letterhead)</span>
-                                <span>80 mm (High Header)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* SECTION 4: TERMS & CONDITIONS AND SIGNATORY */}
-                    <div className="synos-dept-card rounded-2xl p-6 space-y-5">
-                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
-                            <div className="flex items-center gap-2.5">
-                                <ShieldCheck size={16} className="text-purple-500" />
-                                <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                    4. Commercial Terms, Legal Clauses & Signatures
-                                </h3>
-                            </div>
-                            <span className="text-[10px] text-zinc-400 font-semibold">Standard Indian Commercial Terms</span>
-                        </div>
-
+                    {/* VIEW A: DOCUMENT ROUTING & FEATURE MAPPING MATRIX */}
+                    {studioTab === 'matrix' && (
                         <div className="space-y-4">
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Patient & B2B Tax Invoice Terms (Printed at bottom)
-                                </label>
-                                <textarea
-                                    rows={4}
-                                    value={settings.termsAndConditions}
-                                    onChange={(e) => handleChange('termsAndConditions', e.target.value)}
-                                    placeholder="Enter standard payment terms, dispute resolution, jurisdiction..."
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none font-mono text-[11px]"
-                                />
+                            {/* MODULE FILTER BAR */}
+                            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                                {[
+                                    { id: 'all', label: 'All ERP Modules' },
+                                    { id: 'reception', label: '🏥 Reception & Cash' },
+                                    { id: 'referral', label: '🤝 Referral Terminal' },
+                                    { id: 'inventory', label: '📦 Stores & Orders' },
+                                    { id: 'workforce', label: '👥 Workforce & HR' },
+                                    { id: 'finance', label: '💼 Expense & Cash' }
+                                ].map(mod => (
+                                    <button
+                                        key={mod.id}
+                                        type="button"
+                                        onClick={() => setModuleFilter(mod.id)}
+                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+                                            moduleFilter === mod.id
+                                                ? 'bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-sm'
+                                                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
+                                        }`}
+                                    >
+                                        {mod.label}
+                                    </button>
+                                ))}
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Referral Commission & TDS Statutory Policy (Printed on Doctor Payout Vouchers)
-                                </label>
-                                <textarea
-                                    rows={3}
-                                    value={settings.referralTerms || ""}
-                                    onChange={(e) => handleChange('referralTerms', e.target.value)}
-                                    placeholder="Referral commission terms, TDS deduction declaration under Section 194H..."
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none font-mono text-[11px]"
-                                />
-                            </div>
+                            {/* SLOTS LIST CARDS */}
+                            <div className="space-y-4">
+                                {filteredMappings.map(slot => {
+                                    const isSelectedForPreview = previewSlotId === slot.slotId;
+                                    const availableOptions = TEMPLATE_OPTIONS[slot.slotId] || [
+                                        { id: slot.assignedTemplateId, label: slot.templateName }
+                                    ];
 
-                            <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                    Authorized Signatory Designation Title
-                                </label>
-                                <input
-                                    type="text"
-                                    value={settings.signatoryTitle}
-                                    onChange={(e) => handleChange('signatoryTitle', e.target.value)}
-                                    placeholder="e.g. Authorised Signatory / Accounts Desk"
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
-                                />
+                                    return (
+                                        <div 
+                                            key={slot.slotId}
+                                            className={`synos-dept-card rounded-2xl p-5 border transition-all ${
+                                                isSelectedForPreview 
+                                                    ? 'border-indigo-500 shadow-md bg-indigo-500/5 dark:bg-indigo-950/20' 
+                                                    : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                                            }`}
+                                        >
+                                            {/* CARD HEADER */}
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b dark:border-zinc-800 border-zinc-200">
+                                                <div className="flex items-center gap-2.5">
+                                                    <span className="px-2 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-800 text-[10px] font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                                                        {slot.module}
+                                                    </span>
+                                                    <h3 className="text-xs font-black text-zinc-900 dark:text-zinc-100">
+                                                        {slot.slotName}
+                                                    </h3>
+                                                </div>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPreviewSlotId(slot.slotId)}
+                                                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
+                                                        isSelectedForPreview
+                                                            ? 'bg-indigo-600 text-white shadow-xs'
+                                                            : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
+                                                    }`}
+                                                >
+                                                    <Eye size={12} />
+                                                    <span>{isSelectedForPreview ? "Live Preview Active" : "Test Drive in Studio"}</span>
+                                                </button>
+                                            </div>
+
+                                            {/* TRIGGER DESCRIPTION */}
+                                            <p className="text-[11px] text-zinc-500 pt-2 pb-3 font-medium leading-relaxed">
+                                                <strong className="text-zinc-700 dark:text-zinc-300 font-bold mr-1">Trigger Touchpoint:</strong>
+                                                {slot.triggerDescription}
+                                            </p>
+
+                                            {/* CONFIGURATION CONTROLS */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-zinc-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-[11px]">
+                                                {/* TEMPLATE PICKER */}
+                                                <div>
+                                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                                                        Assigned Paperwork Template
+                                                    </label>
+                                                    <select
+                                                        value={slot.assignedTemplateId}
+                                                        onChange={(e) => {
+                                                            const opt = availableOptions.find(o => o.id === e.target.value);
+                                                            handleMappingChange(slot.slotId, 'assignedTemplateId', e.target.value);
+                                                            if (opt) handleMappingChange(slot.slotId, 'templateName', opt.label);
+                                                        }}
+                                                        className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
+                                                    >
+                                                        {availableOptions.map(opt => (
+                                                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                {/* LETTERHEAD MODE PICKER */}
+                                                <div>
+                                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                                                        Letterhead Stationery Mode
+                                                    </label>
+                                                    <select
+                                                        value={slot.letterheadMode}
+                                                        onChange={(e) => handleMappingChange(slot.slotId, 'letterheadMode', e.target.value)}
+                                                        className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
+                                                    >
+                                                        <option value="digital">Digital Stationery (Full Printed Header)</option>
+                                                        <option value="preprinted">Pre-Printed Letterhead (Blank Clearance Gap)</option>
+                                                        {slot.slotId === 'patient_thermal_receipt' && (
+                                                            <option value="raw_thermal">Direct POS Thermal (Roll Printer)</option>
+                                                        )}
+                                                    </select>
+                                                </div>
+
+                                                {/* MARGIN SLIDER (IF PREPRINTED) */}
+                                                {slot.letterheadMode === 'preprinted' && (
+                                                    <div className="sm:col-span-2 space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                                                        <div className="flex justify-between items-center text-[10px]">
+                                                            <span className="text-zinc-500 font-semibold">Top Letterhead Clearance Gap:</span>
+                                                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{slot.topMarginMm || 40} mm</span>
+                                                        </div>
+                                                        <input
+                                                            type="range"
+                                                            min={0}
+                                                            max={80}
+                                                            step={5}
+                                                            value={slot.topMarginMm || 40}
+                                                            onChange={(e) => handleMappingChange(slot.slotId, 'topMarginMm', parseInt(e.target.value) || 0)}
+                                                            className="w-full accent-indigo-600 cursor-pointer"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {/* TOGGLES */}
+                                                <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-1 text-[11px]">
+                                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={slot.enableUpiQr ?? false}
+                                                            onChange={(e) => handleMappingChange(slot.slotId, 'enableUpiQr', e.target.checked)}
+                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                        />
+                                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">Embed Dynamic UPI Payment QR</span>
+                                                    </label>
+
+                                                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={slot.enableBankDetails ?? false}
+                                                            onChange={(e) => handleMappingChange(slot.slotId, 'enableBankDetails', e.target.checked)}
+                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                        />
+                                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">Include Bank Remittance Box</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* VIEW B: COMMERCIAL PROFILE & REMITTANCE */}
+                    {studioTab === 'profile' && (
+                        <div className="space-y-6">
+                            {/* SECTION 1: LAB LEGAL PROFILE */}
+                            <div className="synos-dept-card rounded-2xl p-6 space-y-5">
+                                <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <Building2 size={16} className="text-indigo-600 dark:text-indigo-400" />
+                                        <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                                            1. Commercial Legal Entity & Contact Profile
+                                        </h3>
+                                    </div>
+                                    <span className="text-[10px] text-zinc-400 font-semibold">Shared across all documents</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Legal Entity Registered Name (GSTIN Registered) *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.labLegalName}
+                                            onChange={(e) => handleSettingChange('labLegalName', e.target.value)}
+                                            placeholder="e.g. SynOS Diagnostic Centre & Laboratory Pvt Ltd"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Trade Name / Sub-Header Tagline
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.labTradeName}
+                                            onChange={(e) => handleSettingChange('labTradeName', e.target.value)}
+                                            placeholder="e.g. Comprehensive Pathology, Digital Radiology & Medical Imaging"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            GSTIN Number (15-Digit) *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.gstin}
+                                            onChange={(e) => handleSettingChange('gstin', e.target.value.toUpperCase())}
+                                            maxLength={15}
+                                            placeholder="36AAAAA0000A1Z5"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            PAN Number (Permanent Account No.)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.pan}
+                                            onChange={(e) => handleSettingChange('pan', e.target.value.toUpperCase())}
+                                            maxLength={10}
+                                            placeholder="AAAAA0000A"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Registered Facility Address
+                                        </label>
+                                        <textarea
+                                            rows={2}
+                                            value={settings.address}
+                                            onChange={(e) => handleSettingChange('address', e.target.value)}
+                                            placeholder="Full street address, district, state, PIN code"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Commercial Phone / Helpdesk
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.phone}
+                                            onChange={(e) => handleSettingChange('phone', e.target.value)}
+                                            placeholder="+91 98765 43210"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Billing & Accounts Email
+                                        </label>
+                                        <input
+                                            type="email"
+                                            value={settings.email}
+                                            onChange={(e) => handleSettingChange('email', e.target.value)}
+                                            placeholder="billing@synoslab.in"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* SECTION 2: BANK REMITTANCE & UPI QR */}
+                            <div className="synos-dept-card rounded-2xl p-6 space-y-5">
+                                <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <CreditCard size={16} className="text-emerald-600 dark:text-emerald-400" />
+                                        <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                                            2. Bank Remittance & Dynamic UPI Payment Gateway
+                                        </h3>
+                                    </div>
+                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                                        <QrCode size={12} /> Instant Bharat QR
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Bank Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.bankName}
+                                            onChange={(e) => handleSettingChange('bankName', e.target.value)}
+                                            placeholder="e.g. HDFC Bank, ICICI Bank"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Account Beneficiary Name
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.accountHolderName}
+                                            onChange={(e) => handleSettingChange('accountHolderName', e.target.value)}
+                                            placeholder="Account holder as per bank passbook"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Current Account Number *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.accountNumber}
+                                            onChange={(e) => handleSettingChange('accountNumber', e.target.value)}
+                                            placeholder="50200012345678"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Bank IFSC Code *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.ifscCode}
+                                            onChange={(e) => handleSettingChange('ifscCode', e.target.value.toUpperCase())}
+                                            maxLength={11}
+                                            placeholder="HDFC0001234"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Primary UPI VPA ID
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={settings.upiId}
+                                                onChange={(e) => handleSettingChange('upiId', e.target.value)}
+                                                placeholder="e.g. synoslab@hdfcbank or billing@icici"
+                                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-emerald-600 dark:text-emerald-400 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                            />
+                                            <QrCode size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* SECTION 3: TERMS & SIGNATURE */}
+                            <div className="synos-dept-card rounded-2xl p-6 space-y-5">
+                                <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                                    <div className="flex items-center gap-2.5">
+                                        <ShieldCheck size={16} className="text-purple-500" />
+                                        <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                                            3. Commercial Terms & Authorized Signatory
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Patient & B2B Tax Invoice Terms
+                                        </label>
+                                        <textarea
+                                            rows={3}
+                                            value={settings.termsAndConditions}
+                                            onChange={(e) => handleSettingChange('termsAndConditions', e.target.value)}
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none font-mono text-[11px]"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Authorized Signatory Title
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.signatoryTitle}
+                                            onChange={(e) => handleSettingChange('signatoryTitle', e.target.value)}
+                                            placeholder="e.g. Authorised Signatory / Accounts Desk"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* RIGHT COLUMN: LIVE INTERACTIVE DOCUMENT STUDIO PREVIEW (5 COLS) */}
@@ -736,76 +720,214 @@ export const CommercialPaperworkTab = () => {
                                 </span>
                             </div>
                             <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-mono">
-                                Interactive
+                                {currentActiveSlot.letterheadMode}
                             </span>
                         </div>
 
-                        {/* DOCUMENT TEMPLATE SELECTOR TABS */}
-                        <div className="grid grid-cols-3 gap-1.5 p-1 bg-zinc-800/80 rounded-xl">
-                            <button
-                                type="button"
-                                onClick={() => setPreviewDocType('patient')}
-                                className={`py-2 px-1 text-center rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                    previewDocType === 'patient'
-                                        ? 'bg-synos-primary text-white shadow-sm'
-                                        : 'text-zinc-400 hover:text-white'
-                                }`}
-                            >
-                                Patient Tax Bill
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setPreviewDocType('partner')}
-                                className={`py-2 px-1 text-center rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                    previewDocType === 'partner'
-                                        ? 'bg-synos-primary text-white shadow-sm'
-                                        : 'text-zinc-400 hover:text-white'
-                                }`}
-                            >
-                                B2B Partner Invoice
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setPreviewDocType('voucher')}
-                                className={`py-2 px-1 text-center rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                                    previewDocType === 'voucher'
-                                        ? 'bg-synos-primary text-white shadow-sm'
-                                        : 'text-zinc-400 hover:text-white'
-                                }`}
-                            >
-                                Payout Voucher
-                            </button>
+                        {/* SLOT QUICK SWITCHER CHIPS */}
+                        <div className="flex flex-wrap gap-1.5">
+                            {mappings.map(slot => (
+                                <button
+                                    key={slot.slotId}
+                                    type="button"
+                                    onClick={() => setPreviewSlotId(slot.slotId)}
+                                    className={`px-2 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer ${
+                                        previewSlotId === slot.slotId
+                                            ? 'bg-synos-primary text-white shadow-xs'
+                                            : 'bg-zinc-800/80 text-zinc-400 hover:text-white'
+                                    }`}
+                                >
+                                    {slot.slotName.split('(')[0].trim()}
+                                </button>
+                            ))}
                         </div>
 
                         <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1 border-t border-zinc-800">
-                            <span>Mode: <strong className="text-zinc-200 capitalize">{settings.defaultLetterheadMode}</strong></span>
-                            <span>Margin: <strong className="text-zinc-200 font-mono">{settings.topMarginMm}mm</strong></span>
-                            <span>UPI QR: <strong className="text-emerald-400 font-mono">Active</strong></span>
+                            <span>Slot: <strong className="text-indigo-400">{previewSlotId}</strong></span>
+                            <span>Margin: <strong className="text-zinc-200 font-mono">{currentActiveSlot.topMarginMm ?? 40}mm</strong></span>
+                            <span>Mode: <strong className="text-emerald-400 capitalize">{currentActiveSlot.letterheadMode || 'digital'}</strong></span>
                         </div>
                     </div>
 
                     {/* SCALED A4 CANVAS PREVIEW WRAPPER */}
                     <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-zinc-100 dark:bg-zinc-950 p-3 overflow-hidden shadow-inner max-h-[780px] overflow-y-auto">
                         <div className="bg-white text-zinc-900 rounded-xl shadow-2xl p-6 border border-zinc-300 transform scale-90 sm:scale-95 origin-top transition-all">
-                            {previewDocType === 'patient' && (
+                            {/* 1. PATIENT TAX INVOICE */}
+                            {previewSlotId === 'patient_tax_invoice' && (
                                 <PatientTaxInvoiceA4
-                                    data={mockPatientInvoice}
-                                    letterheadMode={settings.defaultLetterheadMode}
-                                    topMarginMm={settings.topMarginMm}
+                                    data={{
+                                        billNumber: "INV-202610-0042",
+                                        date: new Date().toISOString(),
+                                        dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+                                        status: "Partial",
+                                        lab: mockLabProfile,
+                                        patient: {
+                                            fullName: "K. Ramesh Kumar",
+                                            mrn: "SYN-2026-9042",
+                                            phone: "+91 98480 22334",
+                                            gender: "Male",
+                                            age: "46 Yrs",
+                                            address: "Doctors Colony, Khammam"
+                                        },
+                                        items: [
+                                            { testCode: "CBC", testName: "Complete Blood Count (5-Part Automated)", unitPrice: 350, netPrice: 350 },
+                                            { testCode: "LFT", testName: "Liver Function Test Profile", unitPrice: 850, netPrice: 800 },
+                                            { testCode: "USG", testName: "Ultrasound Whole Abdomen", unitPrice: 1200, netPrice: 1200 }
+                                        ],
+                                        financial: {
+                                            subtotal: 2400,
+                                            itemDiscounts: 50,
+                                            grandTotal: 2350,
+                                            amountPaid: 1500,
+                                            balanceDue: 850,
+                                            amountInWords: "Rupees Two Thousand Three Hundred Fifty Only"
+                                        },
+                                        payments: [
+                                            { receiptNumber: "RCPT-0811", amount: 1500, paymentMethod: "UPI" }
+                                        ],
+                                        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=850.00&cu=INR`
+                                    }}
+                                    letterheadMode={currentActiveSlot.letterheadMode}
+                                    topMarginMm={currentActiveSlot.topMarginMm}
                                 />
                             )}
-                            {previewDocType === 'partner' && (
+
+                            {/* 2. THERMAL POS RECEIPT */}
+                            {previewSlotId === 'patient_thermal_receipt' && (
+                                <ThermalPosReceipt80mm
+                                    data={{
+                                        receiptNumber: "RCPT-202610-0912",
+                                        dateTime: new Date().toLocaleString(),
+                                        token: "T-0142",
+                                        lab: mockLabProfile,
+                                        patient: {
+                                            fullName: "K. Ramesh Kumar",
+                                            mrn: "SYN-2026-9042",
+                                            age: "46Y",
+                                            gender: "M"
+                                        },
+                                        items: [
+                                            { testName: "Complete Blood Count", unitPrice: 350 },
+                                            { testName: "Serum Creatinine", unitPrice: 200 }
+                                        ],
+                                        financial: {
+                                            grandTotal: 550,
+                                            amountPaid: 550,
+                                            balanceDue: 0
+                                        },
+                                        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=550.00&cu=INR`
+                                    }}
+                                />
+                            )}
+
+                            {/* 3. PARTNER B2B INVOICE */}
+                            {previewSlotId === 'partner_b2b_invoice' && (
                                 <PartnerClaimStatementA4
-                                    data={mockPartnerInvoice}
-                                    letterheadMode={settings.defaultLetterheadMode}
-                                    topMarginMm={settings.topMarginMm}
+                                    data={{
+                                        statementNo: "B2B-202610-0019",
+                                        generatedAt: new Date().toISOString(),
+                                        lab: mockLabProfile,
+                                        partner: {
+                                            partnerId: "part-dr-khalikh",
+                                            name: "Dr. Khaleeq Ur Rahman, MD",
+                                            clinicName: "Khaleeq Polyclinic & Maternity Center",
+                                            phone: "+91 98490 11223",
+                                            address: "Wyra Road, Khammam"
+                                        },
+                                        items: [
+                                            { visitToken: "T-0104", date: new Date().toISOString(), patientName: "Mohammed Afzal", investigations: "CBC, Creatinine", grossBilled: 950, amountReceived: 0, netClaimDue: 950 },
+                                            { visitToken: "T-0118", date: new Date().toISOString(), patientName: "Smt. Lakshmi Devi", investigations: "Lipid Profile, Thyroid", grossBilled: 1250, amountReceived: 0, netClaimDue: 1250 }
+                                        ],
+                                        summary: {
+                                            totalVisits: 2,
+                                            grossBilled: 2200,
+                                            amountReceived: 0,
+                                            netClaimDue: 2200,
+                                            amountInWords: "Rupees Two Thousand Two Hundred Only"
+                                        },
+                                        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=2200.00&cu=INR`
+                                    }}
+                                    letterheadMode={currentActiveSlot.letterheadMode}
+                                    topMarginMm={currentActiveSlot.topMarginMm}
                                 />
                             )}
-                            {previewDocType === 'voucher' && (
+
+                            {/* 4. REFERRAL PAYOUT VOUCHER */}
+                            {previewSlotId === 'referral_payout_voucher' && (
                                 <ReferralPayoutVoucherA4
-                                    data={mockPayoutVoucher}
-                                    letterheadMode={settings.defaultLetterheadMode}
-                                    topMarginMm={settings.topMarginMm}
+                                    data={{
+                                        voucherNo: "VCH-202610-0053",
+                                        generatedAt: new Date().toISOString(),
+                                        financialYear: "2026 - 2027",
+                                        lab: mockLabProfile,
+                                        doctor: {
+                                            name: "Dr. Khaleeq Ur Rahman, MD",
+                                            clinicName: "Khaleeq Polyclinic & Maternity Center",
+                                            phone: "+91 98490 11223",
+                                            pan: "BKPPR9988C",
+                                            bankName: "State Bank of India",
+                                            accountNumber: "30291049201",
+                                            ifsc: "SBIN0000854"
+                                        },
+                                        items: [
+                                            { token: "T-0042", date: new Date().toISOString(), patientName: "P. Anjaiah", testNames: "Whole Abdomen USG, LFT", patientPaid: 2050, commissionRatePct: 20, referralAmount: 410 },
+                                            { token: "T-0068", date: new Date().toISOString(), patientName: "B. Suresh Babu", testNames: "CT Brain Plain", patientPaid: 3200, commissionRatePct: 25, referralAmount: 800 }
+                                        ],
+                                        summary: {
+                                            totalReferredVisits: 2,
+                                            totalPatientCollection: 5250,
+                                            grossReferralAmount: 1210,
+                                            tdsPercentage: 5,
+                                            tdsDeduction: 60.5,
+                                            netPayoutAmount: 1149.5,
+                                            netPayoutInWords: "Rupees One Thousand One Hundred Forty Nine Only"
+                                        }
+                                    }}
+                                    letterheadMode={currentActiveSlot.letterheadMode}
+                                    topMarginMm={currentActiveSlot.topMarginMm}
+                                />
+                            )}
+
+                            {/* 5. VENDOR PURCHASE ORDER */}
+                            {(previewSlotId === 'procurement_po' || previewSlotId === 'procurement_grn') && (
+                                <ProcurementPurchaseOrderA4
+                                    data={{
+                                        poNumber: "PO-202610-0012",
+                                        lab: mockLabProfile,
+                                        vendor: {
+                                            name: "Roche Diagnostics India Pvt Ltd",
+                                            contactPerson: "Mr. Anand Varma",
+                                            phone: "+91 98490 88776",
+                                            gstin: "36AABCR1234F1Z9",
+                                            address: "Phase 2, Hyderabad"
+                                        }
+                                    }}
+                                    letterheadMode={currentActiveSlot.letterheadMode}
+                                    topMarginMm={currentActiveSlot.topMarginMm}
+                                />
+                            )}
+
+                            {/* 6. WORKFORCE SALARY PAY SLIP */}
+                            {previewSlotId === 'workforce_payslip' && (
+                                <WorkforcePaySlipA4
+                                    data={{
+                                        lab: mockLabProfile,
+                                        monthYear: "October 2026"
+                                    }}
+                                    letterheadMode={currentActiveSlot.letterheadMode}
+                                    topMarginMm={currentActiveSlot.topMarginMm}
+                                />
+                            )}
+
+                            {/* 7. PETTY CASH EXPENSE VOUCHER */}
+                            {previewSlotId === 'overhead_expense_voucher' && (
+                                <PettyExpenseVoucherA4
+                                    data={{
+                                        lab: mockLabProfile,
+                                        voucherNumber: "EXP-202610-0031"
+                                    }}
+                                    letterheadMode={currentActiveSlot.letterheadMode}
+                                    topMarginMm={currentActiveSlot.topMarginMm}
                                 />
                             )}
                         </div>

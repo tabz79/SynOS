@@ -326,6 +326,154 @@ namespace SynOS.Api.Controllers
             return Ok(new { message = "Billing stationery settings successfully saved." });
         }
 
+        [HttpGet("document-mappings")]
+        public async Task<IActionResult> GetDocumentMappings()
+        {
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+            if (!System.IO.File.Exists(path))
+            {
+                var defaultSlots = new[]
+                {
+                    new {
+                        slotId = "patient_tax_invoice",
+                        module = "Reception & Billing",
+                        moduleCode = "reception",
+                        slotName = "Patient Tax Invoice (A4)",
+                        triggerDescription = "Generated upon patient visit checkout, formal OPD billing receipt, and past invoice reprints.",
+                        assignedTemplateId = "template_patient_a4_modern",
+                        templateName = "Modern GST Tax Invoice (A4)",
+                        letterheadMode = "digital",
+                        topMarginMm = 40,
+                        enableUpiQr = true,
+                        enableBankDetails = true,
+                        customTerms = (string?)null,
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "patient_thermal_receipt",
+                        module = "Reception & Cash Desk",
+                        moduleCode = "reception",
+                        slotName = "Counter Quick Token / Cash Slip (80mm POS)",
+                        triggerDescription = "Printed directly on thermal POS roll printer for quick counter tokens and cash collections.",
+                        assignedTemplateId = "template_thermal_pos_80mm",
+                        templateName = "Thermal 80mm Cash Slip",
+                        letterheadMode = "raw_thermal",
+                        topMarginMm = 0,
+                        enableUpiQr = true,
+                        enableBankDetails = false,
+                        customTerms = (string?)null,
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "partner_b2b_invoice",
+                        module = "Referral Terminal",
+                        moduleCode = "referral",
+                        slotName = "Partner B2B Diagnostic Service Invoice",
+                        triggerDescription = "Generated when billing outsourced doctor clinics and partner healthcare centers for diagnostic dues.",
+                        assignedTemplateId = "template_partner_b2b_a4",
+                        templateName = "B2B Diagnostic Tax Invoice (A4)",
+                        letterheadMode = "digital",
+                        topMarginMm = 40,
+                        enableUpiQr = true,
+                        enableBankDetails = true,
+                        customTerms = (string?)null,
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "referral_payout_voucher",
+                        module = "Referral Terminal",
+                        moduleCode = "referral",
+                        slotName = "Doctor Commission Payout Voucher",
+                        triggerDescription = "Generated when disbursing referral incentives to doctors with TDS Sec 194H deduction and formal acknowledgment.",
+                        assignedTemplateId = "template_referral_voucher_a4",
+                        templateName = "Doctor Commission Payout Voucher (A4)",
+                        letterheadMode = "digital",
+                        topMarginMm = 40,
+                        enableUpiQr = false,
+                        enableBankDetails = true,
+                        customTerms = (string?)null,
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "procurement_po",
+                        module = "Inventory & Procurement",
+                        moduleCode = "inventory",
+                        slotName = "Vendor Purchase Order (PO)",
+                        triggerDescription = "Generated when releasing formal purchase orders for lab reagents, test kits, radiology films, and capital equipment.",
+                        assignedTemplateId = "template_procurement_po_a4",
+                        templateName = "Commercial Purchase Order (A4)",
+                        letterheadMode = "digital",
+                        topMarginMm = 40,
+                        enableUpiQr = false,
+                        enableBankDetails = true,
+                        customTerms = "1. Goods must have minimum 12 months shelf life.\n2. Cold-chain items must be delivered at 2°C - 8°C.\n3. Defective lots subject to immediate replacement.",
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "procurement_grn",
+                        module = "Inventory & Stores",
+                        moduleCode = "inventory",
+                        slotName = "Goods Receipt Note (GRN)",
+                        triggerDescription = "Generated by the storekeeper upon inspecting and checking in delivered items at the receiving dock.",
+                        assignedTemplateId = "template_grn_a4",
+                        templateName = "Material Inward / GRN (A4)",
+                        letterheadMode = "digital",
+                        topMarginMm = 35,
+                        enableUpiQr = false,
+                        enableBankDetails = false,
+                        customTerms = (string?)null,
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "workforce_payslip",
+                        module = "Workforce & HR",
+                        moduleCode = "workforce",
+                        slotName = "Employee Monthly Salary Slip",
+                        triggerDescription = "Generated during monthly payroll processing with earnings, statutory PF/ESI, deductions, and net salary in words.",
+                        assignedTemplateId = "template_payslip_a4",
+                        templateName = "Confidential Salary Pay Slip (A4)",
+                        letterheadMode = "digital",
+                        topMarginMm = 40,
+                        enableUpiQr = false,
+                        enableBankDetails = true,
+                        customTerms = "This is a computer-generated salary slip and requires no physical signature.",
+                        isSystemDefault = true
+                    },
+                    new {
+                        slotId = "overhead_expense_voucher",
+                        module = "Overheads & Expenses",
+                        moduleCode = "finance",
+                        slotName = "Petty Cash & Expense Payment Voucher",
+                        triggerDescription = "Generated when disbursing daily operating expenses, maintenance, courier, utilities, and tea/coffee supplies.",
+                        assignedTemplateId = "template_expense_voucher_a4",
+                        templateName = "Payment & Debit Voucher (A5 / Half-Sheet)",
+                        letterheadMode = "digital",
+                        topMarginMm = 25,
+                        enableUpiQr = false,
+                        enableBankDetails = false,
+                        customTerms = (string?)null,
+                        isSystemDefault = true
+                    }
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(defaultSlots, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                await System.IO.File.WriteAllTextAsync(path, json);
+                return Content(json, "application/json");
+            }
+
+            var existing = await System.IO.File.ReadAllTextAsync(path);
+            return Content(existing, "application/json");
+        }
+
+        [HttpPost("document-mappings")]
+        public async Task<IActionResult> SaveDocumentMappings([FromBody] System.Text.Json.JsonElement mappings)
+        {
+            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+            var json = mappings.ToString();
+            await System.IO.File.WriteAllTextAsync(path, json);
+            return Ok(new { message = "Document mappings registry successfully saved." });
+        }
+
         #endregion
 
         #region Patient Tax Invoice Document

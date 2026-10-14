@@ -153,6 +153,30 @@ export const FinanceApi = {
     },
 
     /**
+     * Gets system document slots and paperwork mapping registry.
+     */
+    getDocumentMappings: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/document-mappings'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load document mappings registry");
+        return response.json();
+    },
+
+    /**
+     * Saves system document slots and paperwork mapping registry.
+     */
+    saveDocumentMappings: async (mappings) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/document-mappings'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(mappings)
+        });
+        if (!response.ok) throw new Error("Failed to save document mappings registry");
+        return response.json();
+    },
+
+    /**
      * Fetches vendor payables.
      */
     getVendorPayables: async () => {
