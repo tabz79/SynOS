@@ -5,13 +5,13 @@ import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 import ReferralDraftForm from './ReferralDraftForm'
 import OutsourceDraftForm from './OutsourceDraftForm'
-import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { 
     MultiPayerSelector, 
     InsuranceContextPanel, 
     CorporateContextPanel, 
     AddInsuranceCompanyModal, 
-    AddCorporateAccountModal 
+    AddCorporateAccountModal,
+    AddReferralPartnerModal 
 } from './MultiPayerPanels'
 
 export function VisitDetails({ 
@@ -38,6 +38,7 @@ export function VisitDetails({
     const [corporateRateRules, setCorporateRateRules] = useState([]); // Rate rules for active corporate account
     const [isAddInsuranceModalOpen, setIsAddInsuranceModalOpen] = useState(false);
     const [isAddCorporateModalOpen, setIsAddCorporateModalOpen] = useState(false);
+    const [isAddPartnerModalOpen, setIsAddPartnerModalOpen] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
 
@@ -499,116 +500,189 @@ export function VisitDetails({
                 )}
             </div>
 
-            {/* SECTION 2: VISIT CONTEXT (Multi-Payer Architecture) */}
+            {/* SECTION 2: VISIT CONTEXT (Dynamic Payer Sub-Panel) */}
             <div className={cn("space-y-3 p-3 xl:p-4 rounded-xl border", ui.section)}>
                 <div className="flex items-center justify-between">
-                    <h4 className="type-section-header">Visit & Payer Context</h4>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border border-synos-border bg-synos-surface">
-                        Mode: {billingMode}
+                    <h4 className="type-section-header">
+                        {billingMode === 'Standard' && "Referring Doctor / Clinic"}
+                        {billingMode === 'PrepaidPartner' && "Prepaid Partner Referral"}
+                        {billingMode === 'Insurance' && "Insurance / TPA Cashless Context"}
+                        {billingMode === 'Corporate' && "Corporate B2B Account"}
+                    </h4>
+                    <span className={cn(
+                        "text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border",
+                        billingMode === 'PrepaidPartner' ? "border-amber-500/40 text-amber-500 bg-amber-500/10" :
+                        billingMode === 'Insurance' ? "border-blue-500/40 text-blue-500 bg-blue-500/10" :
+                        billingMode === 'Corporate' ? "border-indigo-500/40 text-indigo-500 bg-indigo-500/10" :
+                        "border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800"
+                    )}>
+                        {billingMode === 'PrepaidPartner' ? 'Prepaid B2B' : billingMode}
                     </span>
                 </div>
 
-                {/* 4-Card Multi-Payer Segmented Selector */}
-                <MultiPayerSelector
-                    billingMode={billingMode}
-                    onChangeMode={handleModeChange}
-                    disabled={isReadOnly && !isCorrectionIntent}
-                    isDark={isDark}
-                />
-
                 {/* CONTEXTUAL SUB-PANEL: Standard Direct */}
                 {billingMode === 'Standard' && (
-                    <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 space-y-2">
-                        <div className="type-label flex justify-between">
+                    <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 space-y-2.5">
+                        <div className="type-label flex justify-between items-center">
                             <span>Referring Doctor / Clinic (Optional)</span>
-                            <span className="text-zinc-400 type-section-header">Commission cut applies</span>
+                            <button
+                                type="button"
+                                onClick={() => setIsAddPartnerModalOpen(true)}
+                                disabled={!canEditReferral}
+                                className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> Add Referral Partner
+                            </button>
                         </div>
                         {snapshot?.billing?.referral?.partner ? (
-                            <div className={cn("flex items-center gap-2 font-bold p-2 rounded border",
+                            <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
                                 isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
-                                <span className="truncate flex-1 tracking-tight type-value">
-                                    {snapshot.billing.referral.partner.displayName || "Partner"}
-                                </span>
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="truncate tracking-tight text-xs font-bold">
+                                        {snapshot.billing.referral.partner.displayName || "Partner"}
+                                    </div>
+                                    {snapshot.billing.referral.partner.partnerType && (
+                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
+                                            Type: {snapshot.billing.referral.partner.partnerType} • Comm: {snapshot.billing.referral.commissionCutPercentage || 0}%
+                                        </div>
+                                    )}
+                                </div>
                                 {canEditReferral && (
                                     <button
                                         onClick={handleRemoveReferral}
                                         disabled={isProcessing}
                                         className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            <ReferralCombinedInput
-                                initialValue={snapshot?.billing?.referral?.referrerText || ""}
-                                isReadOnly={!canEditReferral}
-                                isProcessing={isProcessing}
-                                partners={referralPartners}
-                                allowFreeText={true}
-                                onApplyPartner={handleApplyReferral}
-                                onUpdateText={async (text) => {
-                                    if (!visitId || !canEditReferral) return;
-                                    if (isCorrectionIntent) {
-                                        setCorrectionState({
-                                            isOpen: true,
-                                            type: 'ChangeReferral',
-                                            payload: { referrerText: text, partnerId: null },
-                                            reason: ""
-                                        });
-                                        return;
-                                    }
-                                    setIsProcessing(true);
-                                    try {
-                                        await ReceptionApi.updateReferrerText(visitId, text);
-                                        if (onVisitUpdated) onVisitUpdated();
-                                    } catch (err) {
-                                        console.error("Failed to update referrer text", err);
-                                        alert(err.message);
-                                    } finally {
-                                        setIsProcessing(false);
-                                    }
-                                }}
-                            />
-                        )}
-                    </div>
-                )}
-
-                {/* CONTEXTUAL SUB-PANEL: Prepaid Partner */}
-                {billingMode === 'PrepaidPartner' && (
-                    <div className="pt-2 border-t border-amber-500/20 space-y-2">
-                        <div className="type-label flex justify-between">
-                            <span>Referral Partner <span className="text-red-500">*</span></span>
-                            <span className="text-amber-500 font-bold type-section-header">Who collected outside?</span>
-                        </div>
-                        {snapshot?.billing?.referral?.partner ? (
-                            <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
-                                isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                <span className="truncate flex-1 tracking-tight text-xs font-bold">
-                                    {snapshot.billing.referral.partner.displayName || "Partner"}
-                                </span>
-                                {canEditReferral && (
-                                    <button
-                                        onClick={handleRemoveReferral}
-                                        disabled={isProcessing}
-                                        className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                        title="Remove Partner"
                                     >
                                         <X className="w-3.5 h-3.5" />
                                     </button>
                                 )}
                             </div>
                         ) : (
-                            <ReferralCombinedInput
-                                initialValue={snapshot?.billing?.referral?.referrerText || ""}
-                                isReadOnly={!canEditReferral}
-                                isProcessing={isProcessing}
-                                partners={referralPartners}
-                                allowFreeText={false}
-                                onApplyPartner={handleApplyReferral}
-                                onUpdateText={() => {}}
-                            />
+                            <div className="space-y-2">
+                                <ReferralCombinedInput
+                                    initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                                    isReadOnly={!canEditReferral}
+                                    isProcessing={isProcessing}
+                                    partners={referralPartners}
+                                    allowFreeText={true}
+                                    onApplyPartner={handleApplyReferral}
+                                    onUpdateText={async (text) => {
+                                        if (!visitId || !canEditReferral) return;
+                                        if (isCorrectionIntent) {
+                                            setCorrectionState({
+                                                isOpen: true,
+                                                type: 'ChangeReferral',
+                                                payload: { referrerText: text, partnerId: null },
+                                                reason: ""
+                                            });
+                                            return;
+                                        }
+                                        setIsProcessing(true);
+                                        try {
+                                            await ReceptionApi.updateReferrerText(visitId, text);
+                                            if (onVisitUpdated) onVisitUpdated();
+                                        } catch (err) {
+                                            console.error("Failed to update referrer text", err);
+                                            alert(err.message);
+                                        } finally {
+                                            setIsProcessing(false);
+                                        }
+                                    }}
+                                />
+                                <div className="flex justify-end">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddPartnerModalOpen(true)}
+                                        disabled={!canEditReferral}
+                                        className={cn("flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-lg border transition-all cursor-pointer",
+                                            isDark ? "bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-700" : "bg-white border-zinc-300 text-zinc-700 shadow-sm hover:border-zinc-400")}
+                                    >
+                                        <Plus className="w-3.5 h-3.5 text-emerald-500" />
+                                        + Add Referral Partner
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* CONTEXTUAL SUB-PANEL: Prepaid Partner */}
+                {billingMode === 'PrepaidPartner' && (
+                    <div className="pt-2 border-t border-amber-500/20 space-y-2.5">
+                        <div className="type-label flex justify-between items-center">
+                            <span>Referral Partner <span className="text-red-500">*</span></span>
+                            <button
+                                type="button"
+                                onClick={() => setIsAddPartnerModalOpen(true)}
+                                disabled={!canEditReferral}
+                                className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> Add Referral Partner
+                            </button>
+                        </div>
+                        {snapshot?.billing?.referral?.partner ? (
+                            <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
+                                isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="truncate tracking-tight text-xs font-bold">
+                                        {snapshot.billing.referral.partner.displayName || "Partner"}
+                                    </div>
+                                    {snapshot.billing.referral.partner.partnerType && (
+                                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-normal">
+                                            Prepaid Center: {snapshot.billing.referral.partner.partnerType}
+                                        </div>
+                                    )}
+                                </div>
+                                {canEditReferral && (
+                                    <button
+                                        onClick={handleRemoveReferral}
+                                        disabled={isProcessing}
+                                        className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                        title="Remove Partner"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <ReferralCombinedInput
+                                    initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                                    isReadOnly={!canEditReferral}
+                                    isProcessing={isProcessing}
+                                    partners={referralPartners}
+                                    allowFreeText={false}
+                                    onApplyPartner={handleApplyReferral}
+                                    onUpdateText={() => {}}
+                                />
+
+                                {/* Action Buttons: Add Referral Partner & Provisional Draft */}
+                                {!isDraftFormVisible && !referralDraft && (
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsAddPartnerModalOpen(true)}
+                                            disabled={!canEditReferral}
+                                            className={cn("flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg border transition-all cursor-pointer",
+                                                isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20" : "bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100")}
+                                        >
+                                            <Plus className="w-3.5 h-3.5" /> Add Referral Partner
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsDraftFormVisible(true)}
+                                            disabled={!canAddDraft}
+                                            className={cn("flex-1 flex items-center justify-center gap-1.5 text-xs font-semibold py-2 px-3 rounded-lg border transition-all cursor-pointer",
+                                                isDark ? "bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-700" : "bg-white border-zinc-300 text-zinc-700 shadow-sm hover:border-zinc-400")}
+                                        >
+                                            <Plus className="w-3.5 h-3.5" /> Provisional Draft
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         )}
 
                         {/* Provisional Referral Draft */}
@@ -637,19 +711,6 @@ export function VisitDetails({
                                 }}
                                 onCancel={() => setIsDraftFormVisible(false)}
                             />
-                        )}
-
-                        {!isDraftFormVisible && !referralDraft && !snapshot?.billing?.referral?.partner && (
-                            <button
-                                type="button"
-                                onClick={() => setIsDraftFormVisible(true)}
-                                disabled={!canAddDraft}
-                                className={cn("flex items-center gap-2 type-section-header transition-all px-3 py-2 rounded-lg border group cursor-pointer",
-                                    isDark ? "border-zinc-800 hover:text-white hover:bg-zinc-800/50" : "bg-white border-zinc-300 shadow-sm hover:border-zinc-400")}
-                            >
-                                <Plus className="w-3 h-3 transition-transform group-hover:rotate-90" />
-                                Add Provisional Referral Partner
-                            </button>
                         )}
                     </div>
                 )}
@@ -972,6 +1033,23 @@ export function VisitDetails({
                 onSuccess={(newCorp) => {
                     setCorporateAccounts(prev => [...prev, newCorp]);
                     handleUpdateBillingContext({ corporateAccountId: newCorp.id });
+                }}
+            />
+
+            {/* Quick Add Referral Partner Modal */}
+            <AddReferralPartnerModal
+                isOpen={isAddPartnerModalOpen}
+                onClose={() => setIsAddPartnerModalOpen(false)}
+                initialPaymentModel={billingMode === 'PrepaidPartner' ? 'PartnerCollects' : 'LabCollects'}
+                isDark={isDark}
+                onSuccess={(newPartner) => {
+                    const partnerObj = {
+                        ...newPartner,
+                        referralPartnerId: newPartner.referralPartnerId || newPartner.id,
+                        displayName: newPartner.name
+                    };
+                    setReferralPartners(prev => [...prev, partnerObj]);
+                    handleApplyReferral(partnerObj.referralPartnerId);
                 }}
             />
 

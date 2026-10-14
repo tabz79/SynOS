@@ -28,7 +28,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> CreateReferralPartner([FromBody] ReferralPartnerCreateDto createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

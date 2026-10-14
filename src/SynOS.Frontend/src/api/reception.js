@@ -663,6 +663,24 @@ export const ReceptionApi = {
     },
 
     /**
+     * Creates a new referral partner in database.
+     * @param {Object} payload - { name, partnerType, contactInfo, defaultCommissionPercentage }
+     * @returns {Promise<Object>}
+     */
+    createReferralPartner: async (payload) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/referral-partners'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to create referral partner");
+        }
+        return response.json();
+    },
+
+    /**
      * Updates the payment collection model (Prepaid vs Commission) for a visit.
      * @param {string} visitId
      * @param {string} model - 'LabCollects' or 'PartnerCollects'

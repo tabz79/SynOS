@@ -14,6 +14,7 @@ import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
 import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
 import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer'
+import { MultiPayerSelector } from './MultiPayerPanels'
 
 export function IntentPanel({ onVisitUpdated }) {
     const { isOpen, closePanel, drawerState } = useReceptionDrawer();
@@ -247,6 +248,28 @@ export function IntentPanel({ onVisitUpdated }) {
         setIsPrepaidIntent(false); // Reset intent
         setBillingMode('Standard');
         setPaymentMethod('Cash');
+    };
+
+    const handleBillingModeChange = async (newMode) => {
+        setBillingMode(newMode);
+        setIsPrepaidIntent(newMode === 'PrepaidPartner');
+        const vId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+        if (vId && !snapshot?.billing?.isLocked) {
+            try {
+                await ReceptionApi.updateBillingContext({
+                    visitId: vId,
+                    billingType: newMode
+                });
+                if (newMode === 'PrepaidPartner') {
+                    await ReceptionApi.updatePaymentCollectionModel(vId, 'PartnerCollects');
+                } else {
+                    await ReceptionApi.updatePaymentCollectionModel(vId, 'LabCollects');
+                }
+                loadSnapshot();
+            } catch (err) {
+                console.error("Failed to switch billing mode:", err);
+            }
+        }
     };
 
     const handleCloseAndReset = () => {
@@ -522,7 +545,7 @@ export function IntentPanel({ onVisitUpdated }) {
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", 
-                hasPatient ? "absolute right-0 top-0 bottom-0 w-[94vw] sm:w-[88vw] md:w-[78vw] lg:w-[68vw] xl:w-[56vw] max-w-[1020px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
+                hasPatient ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[75vw] max-w-[1520px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
                 ui.panel
             )}
         >
@@ -574,34 +597,49 @@ export function IntentPanel({ onVisitUpdated }) {
 
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
                         {(hasPatient || isCorrectionIntent) && (
-                            <div className={cn(
-                                "px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-6 animate-in fade-in duration-300",
-                                hasPatient ? "grid grid-cols-2 gap-3 xl:gap-6" : "flex flex-col gap-3 xl:gap-6",
-                                (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
-                            )}>
-                                <div className={hasPatient ? "flex flex-col gap-6" : ""}>
-                                    <VisitDetails
-                                        snapshot={snapshot}
-                                        visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
-                                        onVisitUpdated={loadSnapshot}
-                                        isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
-                                        setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
-                                        isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
+                            <div className="px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-4 space-y-3.5 xl:space-y-4 animate-in fade-in duration-300">
+                                {/* Full-width 4-mode segmented toggle bar separated from payer box */}
+                                <div className={cn(
+                                    "p-3 rounded-2xl border transition-all shadow-xs",
+                                    isDark ? "bg-zinc-900/60 border-zinc-800" : "bg-white/80 border-black/5"
+                                )}>
+                                    <MultiPayerSelector
                                         billingMode={billingMode}
-                                        setBillingMode={setBillingMode}
+                                        onChangeMode={handleBillingModeChange}
+                                        disabled={snapshot?.billing?.isLocked && !isCorrectionIntent}
+                                        isDark={isDark}
                                     />
                                 </div>
 
-                                <div className={cn("animate-in fade-in duration-700", hasPatient ? "flex flex-col gap-6" : "")}>
-                                    <BillingSummary
-                                        snapshot={snapshot}
-                                        onVisitUpdated={loadSnapshot}
-                                        isCorrectionIntent={isCorrectionIntent} // Pass down Intent
-                                        isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
-                                        billingMode={billingMode}
-                                        paymentMethod={paymentMethod}
-                                        setPaymentMethod={setPaymentMethod}
-                                    />
+                                {/* 2-Column Grid for Visit Details & Billing Summary */}
+                                <div className={cn(
+                                    hasPatient ? "grid grid-cols-2 gap-4 xl:gap-6 items-start" : "flex flex-col gap-4",
+                                    (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
+                                )}>
+                                    <div className={hasPatient ? "flex flex-col gap-6" : ""}>
+                                        <VisitDetails
+                                            snapshot={snapshot}
+                                            visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
+                                            onVisitUpdated={loadSnapshot}
+                                            isPrepaidIntent={isPrepaidIntent} // PASSING DOWN
+                                            setIsPrepaidIntent={setIsPrepaidIntent} // PASSING DOWN
+                                            isCorrectionIntent={isCorrectionIntent} // PHASE 3: CORRECTION INTENT
+                                            billingMode={billingMode}
+                                            setBillingMode={setBillingMode}
+                                        />
+                                    </div>
+
+                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "flex flex-col gap-6" : "")}>
+                                        <BillingSummary
+                                            snapshot={snapshot}
+                                            onVisitUpdated={loadSnapshot}
+                                            isCorrectionIntent={isCorrectionIntent} // Pass down Intent
+                                            isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
+                                            billingMode={billingMode}
+                                            paymentMethod={paymentMethod}
+                                            setPaymentMethod={setPaymentMethod}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         )}

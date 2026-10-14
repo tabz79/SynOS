@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Building2, Briefcase, IndianRupee, Plus, X, Loader2, Sparkles, Check, Building } from 'lucide-react';
-import { ReceptionApi } from '@/api/reception';
+import { ReceptionApi, clearReceptionMasterCaches } from '@/api/reception';
 import { cn } from '@/lib/utils';
 
 export function MultiPayerSelector({
@@ -41,11 +41,14 @@ export function MultiPayerSelector({
     ];
 
     return (
-        <div className="space-y-1.5">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Payer Model / Billing Context
-            </label>
-            <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1.5 w-full">
+            <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Billing & Payer Mode
+                </label>
+                <span className="text-[10px] text-zinc-400 font-medium">Select context to configure pricing & settlement</span>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 xl:gap-3">
                 {modes.map((m) => {
                     const Icon = m.icon;
                     const isSelected = billingMode === m.id;
@@ -709,3 +712,199 @@ export function AddCorporateAccountModal({
         </div>
     );
 }
+
+export function AddReferralPartnerModal({
+    isOpen,
+    onClose,
+    onSuccess,
+    initialPaymentModel = 'LabCollects',
+    isDark = false
+}) {
+    const [name, setName] = useState('');
+    const [partnerType, setPartnerType] = useState('Doctor'); // Doctor | Clinic | Hospital
+    const [contactInfo, setContactInfo] = useState('');
+    const [commissionPercentage, setCommissionPercentage] = useState(10);
+    const [paymentCollectionModel, setPaymentCollectionModel] = useState(initialPaymentModel);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (isOpen) {
+            setPaymentCollectionModel(initialPaymentModel);
+            setName('');
+            setContactInfo('');
+            setError(null);
+        }
+    }, [isOpen, initialPaymentModel]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!name.trim()) {
+            setError("Partner / Doctor / Clinic name is required.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const created = await ReceptionApi.createReferralPartner({
+                name: name.trim(),
+                partnerType: partnerType,
+                contactInfo: contactInfo.trim() || null,
+                defaultCommissionPercentage: parseFloat(commissionPercentage) || 0,
+                calculationBase: 'AfterDiscounts',
+                paymentCollectionModel: paymentCollectionModel,
+                isActive: true
+            });
+            clearReceptionMasterCaches();
+            if (onSuccess) onSuccess(created);
+            onClose();
+        } catch (err) {
+            setError(err.message || "Failed to create referral partner in database");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <div className={cn(
+                "w-full max-w-md rounded-2xl border shadow-2xl p-5 space-y-4 animate-in zoom-in-95 duration-150",
+                isDark ? "bg-zinc-900 border-zinc-800 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900"
+            )}>
+                <div className="flex items-center justify-between border-b pb-3 border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-emerald-500" />
+                        <div>
+                            <h3 className="text-sm font-bold">Add Referral Partner</h3>
+                            <p className="text-[10px] text-zinc-500">Persists directly to database (ReferralPartners table)</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {error && (
+                    <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-3">
+                    <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Partner / Doctor / Clinic Name *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            placeholder="e.g. Dr. Rajesh Sharma, MD or Apex Diagnostic Care"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className={cn(
+                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
+                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                            )}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                        <div>
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                                Partner Type
+                            </label>
+                            <select
+                                value={partnerType}
+                                onChange={(e) => setPartnerType(e.target.value)}
+                                className={cn(
+                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none cursor-pointer",
+                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                )}
+                            >
+                                <option value="Doctor">Doctor / Physician</option>
+                                <option value="Clinic">Clinic / Diagnostic Center</option>
+                                <option value="Hospital">Hospital / Nursing Home</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                                Default Cut %
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.5"
+                                value={commissionPercentage}
+                                onChange={(e) => setCommissionPercentage(e.target.value)}
+                                className={cn(
+                                    "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
+                                    isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Contact Info / Phone / Address
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g. +91 98765 43210, Civil Lines"
+                            value={contactInfo}
+                            onChange={(e) => setContactInfo(e.target.value)}
+                            className={cn(
+                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
+                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                            )}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Default Collection Model
+                        </label>
+                        <select
+                            value={paymentCollectionModel}
+                            onChange={(e) => setPaymentCollectionModel(e.target.value)}
+                            className={cn(
+                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none cursor-pointer",
+                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-emerald-500" : "bg-zinc-50 border-zinc-300 focus:border-emerald-500"
+                            )}
+                        >
+                            <option value="LabCollects">Lab Collects at Desk (Direct / Commission)</option>
+                            <option value="PartnerCollects">Partner Collects Outside (Prepaid B2B Bill)</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
+                        >
+                            {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                            Save Referral Partner
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
