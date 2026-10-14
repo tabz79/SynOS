@@ -23,16 +23,18 @@ import {
     Workflow,
     Package,
     Users,
-    DollarSign
+    DollarSign,
+    CheckSquare,
+    Square,
+    ChevronDown,
+    ChevronRight,
+    Plus,
+    Trash2,
+    Settings2
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
-import { PatientTaxInvoiceA4 } from '@/features/finance/components/documents/PatientTaxInvoiceA4';
-import { ThermalPosReceipt80mm } from '@/features/finance/components/documents/ThermalPosReceipt80mm';
-import { PartnerClaimStatementA4 } from '@/features/finance/components/documents/PartnerClaimStatementA4';
-import { ReferralPayoutVoucherA4 } from '@/features/finance/components/documents/ReferralPayoutVoucherA4';
-import { ProcurementPurchaseOrderA4 } from '@/features/finance/components/documents/ProcurementPurchaseOrderA4';
-import { WorkforcePaySlipA4 } from '@/features/finance/components/documents/WorkforcePaySlipA4';
-import { PettyExpenseVoucherA4 } from '@/features/finance/components/documents/PettyExpenseVoucherA4';
+import { DEFAULT_DOCUMENT_SCHEMAS } from '@/features/finance/components/documents/documentLayoutSchemas';
+import { DynamicInvoiceCanvas } from '@/features/finance/components/documents/DynamicInvoiceCanvas';
 
 export const CommercialPaperworkTab = () => {
     const [studioTab, setStudioTab] = useState('matrix'); // 'matrix' | 'profile'
@@ -43,6 +45,25 @@ export const CommercialPaperworkTab = () => {
     
     // Active Preview Slot (corresponds to slotId)
     const [previewSlotId, setPreviewSlotId] = useState('patient_tax_invoice');
+
+    // Expanded accordions in modular box manager on left
+    const [expandedBoxIds, setExpandedBoxIds] = useState({
+        header: false,
+        docBadge: false,
+        partyDetails: true,
+        itemsTable: false,
+        financialSummary: false,
+        bankAndUpi: false
+    });
+
+    // Custom box creation input state
+    const [newBoxName, setNewBoxName] = useState('');
+    const [showAddBoxInput, setShowAddBoxInput] = useState(false);
+
+    // Reactive Layout Schemas for each document type
+    const [schemas, setSchemas] = useState(() => {
+        return JSON.parse(JSON.stringify(DEFAULT_DOCUMENT_SCHEMAS));
+    });
 
     // Commercial Stationery Settings
     const [settings, setSettings] = useState({
@@ -89,6 +110,16 @@ export const CommercialPaperworkTab = () => {
             }
             if (Array.isArray(mappingsRes)) {
                 setMappings(mappingsRes);
+                // If customLayout exists in any mapping, merge it into schemas
+                setSchemas(prev => {
+                    const merged = { ...prev };
+                    mappingsRes.forEach(m => {
+                        if (m.customLayout && typeof m.customLayout === 'object') {
+                            merged[m.slotId] = m.customLayout;
+                        }
+                    });
+                    return merged;
+                });
             }
         } catch (err) {
             console.error("Failed to load paperwork data:", err);
@@ -101,9 +132,14 @@ export const CommercialPaperworkTab = () => {
         if (e) e.preventDefault();
         try {
             setSaving(true);
+            const mappingsToSave = mappings.map(m => ({
+                ...m,
+                customLayout: schemas[m.slotId] || null
+            }));
+
             await Promise.all([
                 FinanceApi.saveStationerySettings(settings),
-                FinanceApi.saveDocumentMappings(mappings)
+                FinanceApi.saveDocumentMappings(mappingsToSave)
             ]);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 4000);
@@ -131,33 +167,147 @@ export const CommercialPaperworkTab = () => {
         }));
     };
 
-    // Live Mock Lab Profile derived from settings
-    const mockLabProfile = {
-        labLegalName: settings.labLegalName,
-        labTradeName: settings.labTradeName,
-        address: settings.address,
-        phone: settings.phone,
-        email: settings.email,
-        gstin: settings.gstin,
-        pan: settings.pan,
-        bankName: settings.bankName,
-        accountNumber: settings.accountNumber,
-        ifscCode: settings.ifscCode,
-        branch: settings.branch,
-        accountHolderName: settings.accountHolderName,
-        upiId: settings.upiId,
-        termsAndConditions: settings.termsAndConditions,
-        signatoryTitle: settings.signatoryTitle,
-        defaultLetterheadMode: settings.defaultLetterheadMode,
+    // Active Slot Config
+    const currentActiveSlot = mappings.find(s => s.slotId === previewSlotId) || {
+        slotId: previewSlotId,
+        slotName: "Document",
+        letterheadMode: settings.defaultLetterheadMode,
         topMarginMm: settings.topMarginMm,
         enableUpiQr: settings.enableUpiQr
     };
 
-    // Active Slot Config
-    const currentActiveSlot = mappings.find(s => s.slotId === previewSlotId) || {
-        letterheadMode: settings.defaultLetterheadMode,
-        topMarginMm: settings.topMarginMm,
-        enableUpiQr: settings.enableUpiQr
+    // Active layout schema for preview
+    const activeSchema = schemas[previewSlotId] || DEFAULT_DOCUMENT_SCHEMAS[previewSlotId] || {
+        slotId: previewSlotId,
+        boxes: {}
+    };
+
+    // Handle updates from canvas (text edits, deletions, additions)
+    const handleUpdateSchema = (newSchema) => {
+        setSchemas(prev => ({
+            ...prev,
+            [previewSlotId]: newSchema
+        }));
+    };
+
+    // Toggle Box on/off (from Left Checkboxes or from Canvas Delete button)
+    const handleToggleBox = (boxId, forceVal) => {
+        setSchemas(prev => {
+            const currentSlotSchema = prev[previewSlotId] || DEFAULT_DOCUMENT_SCHEMAS[previewSlotId];
+            if (!currentSlotSchema || !currentSlotSchema.boxes) return prev;
+            const currentBox = currentSlotSchema.boxes[boxId];
+            if (!currentBox) return prev;
+
+            const nextVal = forceVal !== undefined ? forceVal : !currentBox.enabled;
+
+            return {
+                ...prev,
+                [previewSlotId]: {
+                    ...currentSlotSchema,
+                    boxes: {
+                        ...currentSlotSchema.boxes,
+                        [boxId]: {
+                            ...currentBox,
+                            enabled: nextVal
+                        }
+                    }
+                }
+            };
+        });
+    };
+
+    // Toggle individual subfield inside a box on/off
+    const handleToggleField = (boxId, fieldId, enabled) => {
+        setSchemas(prev => {
+            const currentSlotSchema = prev[previewSlotId] || DEFAULT_DOCUMENT_SCHEMAS[previewSlotId];
+            if (!currentSlotSchema?.boxes?.[boxId]) return prev;
+
+            const box = currentSlotSchema.boxes[boxId];
+
+            // If it's a table column
+            if (box.columns && box.columns[fieldId]) {
+                return {
+                    ...prev,
+                    [previewSlotId]: {
+                        ...currentSlotSchema,
+                        boxes: {
+                            ...currentSlotSchema.boxes,
+                            [boxId]: {
+                                ...box,
+                                columns: {
+                                    ...box.columns,
+                                    [fieldId]: {
+                                        ...box.columns[fieldId],
+                                        enabled
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+
+            // Normal field
+            if (!box.fields?.[fieldId]) return prev;
+            return {
+                ...prev,
+                [previewSlotId]: {
+                    ...currentSlotSchema,
+                    boxes: {
+                        ...currentSlotSchema.boxes,
+                        [boxId]: {
+                            ...box,
+                            fields: {
+                                ...box.fields,
+                                [fieldId]: {
+                                    ...box.fields[fieldId],
+                                    enabled
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        });
+    };
+
+    // Add a brand new custom section/box to the bill
+    const handleCreateCustomBox = (e) => {
+        e.preventDefault();
+        if (!newBoxName.trim()) return;
+
+        const boxId = `custom_box_${Date.now()}`;
+        setSchemas(prev => {
+            const currentSlotSchema = prev[previewSlotId] || DEFAULT_DOCUMENT_SCHEMAS[previewSlotId];
+            return {
+                ...prev,
+                [previewSlotId]: {
+                    ...currentSlotSchema,
+                    boxes: {
+                        ...currentSlotSchema.boxes,
+                        [boxId]: {
+                            id: boxId,
+                            name: newBoxName.trim(),
+                            enabled: true,
+                            content: 'Custom document section content...',
+                            customLines: []
+                        }
+                    }
+                }
+            };
+        });
+        setNewBoxName('');
+        setShowAddBoxInput(false);
+    };
+
+    // Reset current document layout to factory defaults
+    const handleResetLayout = () => {
+        if (window.confirm(`Reset "${currentActiveSlot.slotName || previewSlotId}" layout and fields back to factory defaults?`)) {
+            setSchemas(prev => ({
+                ...prev,
+                [previewSlotId]: JSON.parse(JSON.stringify(DEFAULT_DOCUMENT_SCHEMAS[previewSlotId] || {}))
+            }));
+        }
     };
 
     // Available Templates Catalog
@@ -218,7 +368,7 @@ export const CommercialPaperworkTab = () => {
                             </span>
                         </h2>
                         <p className="text-zinc-500 text-xs">
-                            Map specific paperwork templates to software features, configure legal profiles, bank remittance, and letterheads.
+                            Select which boxes belong on each bill, customize text inline in the live preview, and configure clinic stationery.
                         </p>
                     </div>
                 </div>
@@ -271,7 +421,7 @@ export const CommercialPaperworkTab = () => {
                     }`}
                 >
                     <Workflow size={15} />
-                    <span>Document Routing & Feature Mapping ({mappings.length} Slots)</span>
+                    <span>Modular Document Builder & Feature Routing</span>
                 </button>
                 <button
                     type="button"
@@ -291,8 +441,8 @@ export const CommercialPaperworkTab = () => {
                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 animate-in fade-in duration-300">
                     <Check size={18} className="shrink-0 text-emerald-500" />
                     <div>
-                        <strong className="font-bold">Paperwork registry and commercial settings saved!</strong>
-                        <p className="text-[11px] opacity-90">All features across SynOS (Reception, Referral Terminal, Stores, HR, Accounts) will now dynamically resolve these mapped templates.</p>
+                        <strong className="font-bold">Paperwork registry and custom layout settings saved!</strong>
+                        <p className="text-[11px] opacity-90">All features across SynOS will now dynamically generate documents according to your customized boxes and text.</p>
                     </div>
                 </div>
             )}
@@ -300,12 +450,13 @@ export const CommercialPaperworkTab = () => {
             {/* DUAL-COLUMN STUDIO GRID */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
                 
-                {/* LEFT COLUMN: ACTIVE VIEW (7 COLS) */}
+                {/* LEFT COLUMN: MODULAR BOXES & DOCUMENT CONFIGURATION (7 COLS) */}
                 <div className="xl:col-span-7 space-y-6">
 
-                    {/* VIEW A: DOCUMENT ROUTING & FEATURE MAPPING MATRIX */}
+                    {/* VIEW A: DOCUMENT ROUTING & MODULAR BOX BUILDER */}
                     {studioTab === 'matrix' && (
-                        <div className="space-y-4">
+                        <div className="space-y-5">
+                            
                             {/* MODULE FILTER BAR */}
                             <div className="flex flex-wrap items-center gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border dark:border-zinc-800 border-zinc-200">
                                 {[
@@ -331,139 +482,283 @@ export const CommercialPaperworkTab = () => {
                                 ))}
                             </div>
 
-                            {/* SLOTS LIST CARDS */}
-                            <div className="space-y-4">
-                                {filteredMappings.map(slot => {
-                                    const isSelectedForPreview = previewSlotId === slot.slotId;
-                                    const availableOptions = TEMPLATE_OPTIONS[slot.slotId] || [
-                                        { id: slot.assignedTemplateId, label: slot.templateName }
-                                    ];
+                            {/* ACTIVE DOCUMENT MODULAR BOXES MANAGER */}
+                            <div className="synos-dept-card rounded-2xl p-5 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 space-y-4">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
+                                                Active Canvas
+                                            </span>
+                                            <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100">
+                                                {currentActiveSlot.slotName || previewSlotId}
+                                            </h3>
+                                        </div>
+                                        <p className="text-[11px] text-zinc-500 pt-0.5">
+                                            Check or uncheck boxes below to decide which sections appear on the bill.
+                                        </p>
+                                    </div>
 
-                                    return (
-                                        <div 
-                                            key={slot.slotId}
-                                            className={`synos-dept-card rounded-2xl p-5 border transition-all ${
-                                                isSelectedForPreview 
-                                                    ? 'border-indigo-500 shadow-md bg-indigo-500/5 dark:bg-indigo-950/20' 
-                                                    : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                                            }`}
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleResetLayout}
+                                            className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer"
+                                            title="Reset this bill back to default structure"
                                         >
-                                            {/* CARD HEADER */}
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b dark:border-zinc-800 border-zinc-200">
-                                                <div className="flex items-center gap-2.5">
-                                                    <span className="px-2 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-800 text-[10px] font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                                                        {slot.module}
-                                                    </span>
-                                                    <h3 className="text-xs font-black text-zinc-900 dark:text-zinc-100">
-                                                        {slot.slotName}
-                                                    </h3>
-                                                </div>
+                                            Reset Default
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowAddBoxInput(prev => !prev)}
+                                            className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-indigo-700 shadow-xs"
+                                        >
+                                            <Plus size={12} /> Add Custom Box
+                                        </button>
+                                    </div>
+                                </div>
 
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setPreviewSlotId(slot.slotId)}
-                                                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
-                                                        isSelectedForPreview
-                                                            ? 'bg-indigo-600 text-white shadow-xs'
-                                                            : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
-                                                    }`}
-                                                >
-                                                    <Eye size={12} />
-                                                    <span>{isSelectedForPreview ? "Live Preview Active" : "Test Drive in Studio"}</span>
-                                                </button>
-                                            </div>
+                                {/* ADD CUSTOM BOX FORM */}
+                                {showAddBoxInput && (
+                                    <form onSubmit={handleCreateCustomBox} className="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-indigo-200 dark:border-indigo-800 flex items-center gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={newBoxName}
+                                            onChange={(e) => setNewBoxName(e.target.value)}
+                                            placeholder="Enter Section Name (e.g. Special Clinical Instructions)"
+                                            className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs flex-1 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 outline-none font-bold"
+                                            autoFocus
+                                        />
+                                        <button 
+                                            type="submit"
+                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold cursor-pointer"
+                                        >
+                                            Create Section
+                                        </button>
+                                        <button 
+                                            type="button"
+                                            onClick={() => setShowAddBoxInput(false)}
+                                            className="px-2 py-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-xs cursor-pointer"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </form>
+                                )}
 
-                                            {/* TRIGGER DESCRIPTION */}
-                                            <p className="text-[11px] text-zinc-500 pt-2 pb-3 font-medium leading-relaxed">
-                                                <strong className="text-zinc-700 dark:text-zinc-300 font-bold mr-1">Trigger Touchpoint:</strong>
-                                                {slot.triggerDescription}
-                                            </p>
+                                {/* BOXES CHECKLIST WITH EXPANDABLE SUB-FIELDS */}
+                                <div className="space-y-2">
+                                    {Object.entries(activeSchema.boxes || {}).map(([boxKey, box]) => {
+                                        const isExpanded = !!expandedBoxIds[boxKey];
+                                        const hasSubFields = (box.fields && Object.keys(box.fields).length > 0) || (box.columns && Object.keys(box.columns).length > 0);
 
-                                            {/* CONFIGURATION CONTROLS */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-zinc-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-[11px]">
-                                                {/* TEMPLATE PICKER */}
-                                                <div>
-                                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
-                                                        Assigned Paperwork Template
-                                                    </label>
-                                                    <select
-                                                        value={slot.assignedTemplateId}
-                                                        onChange={(e) => {
-                                                            const opt = availableOptions.find(o => o.id === e.target.value);
-                                                            handleMappingChange(slot.slotId, 'assignedTemplateId', e.target.value);
-                                                            if (opt) handleMappingChange(slot.slotId, 'templateName', opt.label);
-                                                        }}
-                                                        className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
-                                                    >
-                                                        {availableOptions.map(opt => (
-                                                            <option key={opt.id} value={opt.id}>{opt.label}</option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-
-                                                {/* LETTERHEAD MODE PICKER */}
-                                                <div>
-                                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
-                                                        Letterhead Stationery Mode
-                                                    </label>
-                                                    <select
-                                                        value={slot.letterheadMode}
-                                                        onChange={(e) => handleMappingChange(slot.slotId, 'letterheadMode', e.target.value)}
-                                                        className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
-                                                    >
-                                                        <option value="digital">Digital Stationery (Full Printed Header)</option>
-                                                        <option value="preprinted">Pre-Printed Letterhead (Blank Clearance Gap)</option>
-                                                        {slot.slotId === 'patient_thermal_receipt' && (
-                                                            <option value="raw_thermal">Direct POS Thermal (Roll Printer)</option>
-                                                        )}
-                                                    </select>
-                                                </div>
-
-                                                {/* MARGIN SLIDER (IF PREPRINTED) */}
-                                                {slot.letterheadMode === 'preprinted' && (
-                                                    <div className="sm:col-span-2 space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
-                                                        <div className="flex justify-between items-center text-[10px]">
-                                                            <span className="text-zinc-500 font-semibold">Top Letterhead Clearance Gap:</span>
-                                                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{slot.topMarginMm || 40} mm</span>
-                                                        </div>
-                                                        <input
-                                                            type="range"
-                                                            min={0}
-                                                            max={80}
-                                                            step={5}
-                                                            value={slot.topMarginMm || 40}
-                                                            onChange={(e) => handleMappingChange(slot.slotId, 'topMarginMm', parseInt(e.target.value) || 0)}
-                                                            className="w-full accent-indigo-600 cursor-pointer"
+                                        return (
+                                            <div 
+                                                key={boxKey}
+                                                className={`rounded-xl border transition-all ${
+                                                    box.enabled 
+                                                        ? 'bg-white dark:bg-zinc-900/90 border-zinc-300 dark:border-zinc-700 shadow-xs' 
+                                                        : 'bg-zinc-100/60 dark:bg-zinc-950/40 border-zinc-200 dark:border-zinc-800/80 opacity-60'
+                                                }`}
+                                            >
+                                                {/* BOX ROW HEADER */}
+                                                <div className="flex items-center justify-between p-3">
+                                                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={box.enabled}
+                                                            onChange={() => handleToggleBox(boxKey)}
+                                                            className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                         />
+                                                        <span className="font-black text-xs text-zinc-900 dark:text-zinc-100">
+                                                            {box.name || boxKey}
+                                                        </span>
+                                                        <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${box.enabled ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'}`}>
+                                                            {box.enabled ? "Included on Bill" : "Hidden"}
+                                                        </span>
+                                                    </label>
+
+                                                    <div className="flex items-center gap-1.5">
+                                                        {hasSubFields && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setExpandedBoxIds(prev => ({ ...prev, [boxKey]: !prev[boxKey] }))}
+                                                                className="px-2 py-1 rounded text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1 cursor-pointer"
+                                                            >
+                                                                <span>Fields ({Object.keys(box.fields || box.columns || {}).length})</span>
+                                                                {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {/* EXPANDABLE SUB-FIELDS CHECKLIST */}
+                                                {isExpanded && box.enabled && hasSubFields && (
+                                                    <div className="px-3 pb-3 pt-1 border-t border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-950/30 rounded-b-xl">
+                                                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mb-2">
+                                                            Visible Information Inside this Box
+                                                        </p>
+                                                        
+                                                        {/* Fields */}
+                                                        {box.fields && (
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                {Object.entries(box.fields).map(([fieldKey, field]) => (
+                                                                    <label key={fieldKey} className="flex items-center gap-2 text-[11px] cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
+                                                                        <input 
+                                                                            type="checkbox"
+                                                                            checked={field.enabled}
+                                                                            onChange={(e) => handleToggleField(boxKey, fieldKey, e.target.checked)}
+                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                        />
+                                                                        <span className={`font-semibold ${field.enabled ? 'text-zinc-800 dark:text-zinc-200' : 'text-zinc-400 line-through'}`}>
+                                                                            {field.label || fieldKey}
+                                                                        </span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Table Columns */}
+                                                        {box.columns && (
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                {Object.entries(box.columns).map(([colKey, col]) => (
+                                                                    <label key={colKey} className="flex items-center gap-2 text-[11px] cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
+                                                                        <input 
+                                                                            type="checkbox"
+                                                                            checked={col.enabled}
+                                                                            onChange={(e) => handleToggleField(boxKey, colKey, e.target.checked)}
+                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                        />
+                                                                        <span className={`font-semibold ${col.enabled ? 'text-zinc-800 dark:text-zinc-200' : 'text-zinc-400 line-through'}`}>
+                                                                            Column: {col.label || colKey}
+                                                                        </span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
 
-                                                {/* TOGGLES */}
-                                                <div className="sm:col-span-2 flex flex-wrap items-center gap-4 pt-1 text-[11px]">
-                                                    <label className="flex items-center gap-2 cursor-pointer select-none">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={slot.enableUpiQr ?? false}
-                                                            onChange={(e) => handleMappingChange(slot.slotId, 'enableUpiQr', e.target.checked)}
-                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                                        />
-                                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">Embed Dynamic UPI Payment QR</span>
-                                                    </label>
+                            {/* DOCUMENT SLOTS MATRIX LIST */}
+                            <div className="space-y-3 pt-2">
+                                <h4 className="text-xs font-black uppercase tracking-wider text-zinc-500">
+                                    All Mapped ERP Documents ({filteredMappings.length})
+                                </h4>
 
-                                                    <label className="flex items-center gap-2 cursor-pointer select-none">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={slot.enableBankDetails ?? false}
-                                                            onChange={(e) => handleMappingChange(slot.slotId, 'enableBankDetails', e.target.checked)}
-                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                                        />
-                                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">Include Bank Remittance Box</span>
-                                                    </label>
+                                <div className="space-y-3">
+                                    {filteredMappings.map(slot => {
+                                        const isSelectedForPreview = previewSlotId === slot.slotId;
+                                        const availableOptions = TEMPLATE_OPTIONS[slot.slotId] || [
+                                            { id: slot.assignedTemplateId, label: slot.templateName }
+                                        ];
+
+                                        return (
+                                            <div 
+                                                key={slot.slotId}
+                                                className={`synos-dept-card rounded-2xl p-4 border transition-all ${
+                                                    isSelectedForPreview 
+                                                        ? 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-500/5 dark:bg-indigo-950/20' 
+                                                        : 'border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                                                }`}
+                                            >
+                                                {/* CARD HEADER */}
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b dark:border-zinc-800 border-zinc-200">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-2 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-800 text-[10px] font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                                                            {slot.module}
+                                                        </span>
+                                                        <h3 className="text-xs font-black text-zinc-900 dark:text-zinc-100">
+                                                            {slot.slotName}
+                                                        </h3>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewSlotId(slot.slotId)}
+                                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
+                                                            isSelectedForPreview
+                                                                ? 'bg-indigo-600 text-white shadow-xs'
+                                                                : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
+                                                        }`}
+                                                    >
+                                                        <Eye size={12} />
+                                                        <span>{isSelectedForPreview ? "Active in Canvas" : "Customize Layout"}</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* TRIGGER DESCRIPTION */}
+                                                <p className="text-[11px] text-zinc-500 pt-2 pb-2 font-medium">
+                                                    <strong className="text-zinc-700 dark:text-zinc-300 font-bold mr-1">Trigger Touchpoint:</strong>
+                                                    {slot.triggerDescription}
+                                                </p>
+
+                                                {/* CONFIGURATION CONTROLS */}
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-zinc-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-[11px]">
+                                                    {/* TEMPLATE PICKER */}
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                                                            Assigned Paperwork Template
+                                                        </label>
+                                                        <select
+                                                            value={slot.assignedTemplateId}
+                                                            onChange={(e) => {
+                                                                const opt = availableOptions.find(o => o.id === e.target.value);
+                                                                handleMappingChange(slot.slotId, 'assignedTemplateId', e.target.value);
+                                                                if (opt) handleMappingChange(slot.slotId, 'templateName', opt.label);
+                                                            }}
+                                                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
+                                                        >
+                                                            {availableOptions.map(opt => (
+                                                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    {/* LETTERHEAD MODE PICKER */}
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                                                            Stationery Mode
+                                                        </label>
+                                                        <select
+                                                            value={slot.letterheadMode}
+                                                            onChange={(e) => handleMappingChange(slot.slotId, 'letterheadMode', e.target.value)}
+                                                            className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
+                                                        >
+                                                            <option value="digital">Digital Header (Full Printed)</option>
+                                                            <option value="preprinted">Pre-Printed Letterhead (Blank Clearance Gap)</option>
+                                                            {slot.slotId === 'patient_thermal_receipt' && (
+                                                                <option value="raw_thermal">Direct POS Thermal (Roll Printer)</option>
+                                                            )}
+                                                        </select>
+                                                    </div>
+
+                                                    {/* MARGIN SLIDER (IF PREPRINTED) */}
+                                                    {slot.letterheadMode === 'preprinted' && (
+                                                        <div className="sm:col-span-2 space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                                                            <div className="flex justify-between items-center text-[10px]">
+                                                                <span className="text-zinc-500 font-semibold">Top Letterhead Clearance Gap:</span>
+                                                                <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{slot.topMarginMm || 40} mm</span>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min={0}
+                                                                max={80}
+                                                                step={5}
+                                                                value={slot.topMarginMm || 40}
+                                                                onChange={(e) => handleMappingChange(slot.slotId, 'topMarginMm', parseInt(e.target.value) || 0)}
+                                                                className="w-full accent-indigo-600 cursor-pointer"
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -602,40 +897,40 @@ export const CommercialPaperworkTab = () => {
                                             type="text"
                                             value={settings.bankName}
                                             onChange={(e) => handleSettingChange('bankName', e.target.value)}
-                                            placeholder="e.g. HDFC Bank, ICICI Bank"
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                            placeholder="e.g. HDFC Bank Ltd"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Account Beneficiary Name
+                                            Account Holder Entity Name *
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.accountHolderName}
                                             onChange={(e) => handleSettingChange('accountHolderName', e.target.value)}
-                                            placeholder="Account holder as per bank passbook"
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                            placeholder="e.g. SynOS Healthcare Diagnostic Services"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Current Account Number *
+                                            Bank Account Number *
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.accountNumber}
                                             onChange={(e) => handleSettingChange('accountNumber', e.target.value)}
                                             placeholder="50200012345678"
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Bank IFSC Code *
+                                            IFSC Code (11-Digit) *
                                         </label>
                                         <input
                                             type="text"
@@ -643,35 +938,45 @@ export const CommercialPaperworkTab = () => {
                                             onChange={(e) => handleSettingChange('ifscCode', e.target.value.toUpperCase())}
                                             maxLength={11}
                                             placeholder="HDFC0001234"
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 uppercase focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
-                                    <div className="sm:col-span-2">
+                                    <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Primary UPI VPA ID
+                                            Bank Branch & City
                                         </label>
-                                        <div className="relative">
-                                            <input
-                                                type="text"
-                                                value={settings.upiId}
-                                                onChange={(e) => handleSettingChange('upiId', e.target.value)}
-                                                placeholder="e.g. synoslab@hdfcbank or billing@icici"
-                                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-emerald-600 dark:text-emerald-400 focus:ring-2 focus:ring-emerald-500/20 outline-none transition-all"
-                                            />
-                                            <QrCode size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" />
-                                        </div>
+                                        <input
+                                            type="text"
+                                            value={settings.branch}
+                                            onChange={(e) => handleSettingChange('branch', e.target.value)}
+                                            placeholder="e.g. Wyra Road Branch, Khammam"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                            Official UPI ID / VPA (For Bharat QR) *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={settings.upiId}
+                                            onChange={(e) => handleSettingChange('upiId', e.target.value)}
+                                            placeholder="synoslab@hdfcbank"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-indigo-700 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* SECTION 3: TERMS & SIGNATURE */}
+                            {/* SECTION 3: LEGAL TERMS & SIGNATORY */}
                             <div className="synos-dept-card rounded-2xl p-6 space-y-5">
                                 <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
                                     <div className="flex items-center gap-2.5">
-                                        <ShieldCheck size={16} className="text-purple-500" />
+                                        <ShieldCheck size={16} className="text-amber-600 dark:text-amber-400" />
                                         <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            3. Commercial Terms & Authorized Signatory
+                                            3. Global Terms, Conditions & Signatory
                                         </h3>
                                     </div>
                                 </div>
@@ -708,22 +1013,10 @@ export const CommercialPaperworkTab = () => {
                 </div>
 
                 {/* RIGHT COLUMN: LIVE INTERACTIVE DOCUMENT STUDIO PREVIEW (5 COLS) */}
-                <div className="xl:col-span-5 sticky top-6 space-y-4">
+                <div className="xl:col-span-5 sticky top-6 space-y-3">
                     
-                    {/* PREVIEW CONTROLLER CARD */}
-                    <div className="p-4 rounded-2xl bg-zinc-900 text-white shadow-xl space-y-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Sparkles size={16} className="text-amber-400" />
-                                <span className="font-black text-xs uppercase tracking-wider">
-                                    Live Paperwork Studio Preview
-                                </span>
-                            </div>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 font-mono">
-                                {currentActiveSlot.letterheadMode}
-                            </span>
-                        </div>
-
+                    {/* QUICK SELECTION SHORTCUTS PILLS (THEME MATCHED, ZERO CLUTTER) */}
+                    <div className="synos-dept-card rounded-2xl p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm space-y-2.5">
                         {/* SLOT QUICK SWITCHER CHIPS */}
                         <div className="flex flex-wrap gap-1.5">
                             {mappings.map(slot => (
@@ -731,10 +1024,10 @@ export const CommercialPaperworkTab = () => {
                                     key={slot.slotId}
                                     type="button"
                                     onClick={() => setPreviewSlotId(slot.slotId)}
-                                    className={`px-2 py-1 rounded-lg text-[9px] font-black transition-all cursor-pointer ${
+                                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
                                         previewSlotId === slot.slotId
                                             ? 'bg-synos-primary text-white shadow-xs'
-                                            : 'bg-zinc-800/80 text-zinc-400 hover:text-white'
+                                            : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                                     }`}
                                 >
                                     {slot.slotName.split('(')[0].trim()}
@@ -742,194 +1035,28 @@ export const CommercialPaperworkTab = () => {
                             ))}
                         </div>
 
-                        <div className="flex items-center justify-between text-[10px] text-zinc-400 pt-1 border-t border-zinc-800">
-                            <span>Slot: <strong className="text-indigo-400">{previewSlotId}</strong></span>
-                            <span>Margin: <strong className="text-zinc-200 font-mono">{currentActiveSlot.topMarginMm ?? 40}mm</strong></span>
-                            <span>Mode: <strong className="text-emerald-400 capitalize">{currentActiveSlot.letterheadMode || 'digital'}</strong></span>
+                        {/* HELPER TEXT */}
+                        <div className="flex items-center justify-between text-[10px] text-zinc-500 font-medium pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+                            <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                                <Sparkles size={11} /> Click text to edit • Hover to delete
+                            </span>
+                            <span className="font-mono text-zinc-400 capitalize">
+                                {currentActiveSlot.letterheadMode || 'digital'} mode
+                            </span>
                         </div>
                     </div>
 
                     {/* SCALED A4 CANVAS PREVIEW WRAPPER */}
                     <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-zinc-100 dark:bg-zinc-950 p-3 overflow-hidden shadow-inner max-h-[780px] overflow-y-auto">
                         <div className="bg-white text-zinc-900 rounded-xl shadow-2xl p-6 border border-zinc-300 transform scale-90 sm:scale-95 origin-top transition-all">
-                            {/* 1. PATIENT TAX INVOICE */}
-                            {previewSlotId === 'patient_tax_invoice' && (
-                                <PatientTaxInvoiceA4
-                                    data={{
-                                        billNumber: "INV-202610-0042",
-                                        date: new Date().toISOString(),
-                                        dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
-                                        status: "Partial",
-                                        lab: mockLabProfile,
-                                        patient: {
-                                            fullName: "K. Ramesh Kumar",
-                                            mrn: "SYN-2026-9042",
-                                            phone: "+91 98480 22334",
-                                            gender: "Male",
-                                            age: "46 Yrs",
-                                            address: "Doctors Colony, Khammam"
-                                        },
-                                        items: [
-                                            { testCode: "CBC", testName: "Complete Blood Count (5-Part Automated)", unitPrice: 350, netPrice: 350 },
-                                            { testCode: "LFT", testName: "Liver Function Test Profile", unitPrice: 850, netPrice: 800 },
-                                            { testCode: "USG", testName: "Ultrasound Whole Abdomen", unitPrice: 1200, netPrice: 1200 }
-                                        ],
-                                        financial: {
-                                            subtotal: 2400,
-                                            itemDiscounts: 50,
-                                            grandTotal: 2350,
-                                            amountPaid: 1500,
-                                            balanceDue: 850,
-                                            amountInWords: "Rupees Two Thousand Three Hundred Fifty Only"
-                                        },
-                                        payments: [
-                                            { receiptNumber: "RCPT-0811", amount: 1500, paymentMethod: "UPI" }
-                                        ],
-                                        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=850.00&cu=INR`
-                                    }}
-                                    letterheadMode={currentActiveSlot.letterheadMode}
-                                    topMarginMm={currentActiveSlot.topMarginMm}
-                                />
-                            )}
-
-                            {/* 2. THERMAL POS RECEIPT */}
-                            {previewSlotId === 'patient_thermal_receipt' && (
-                                <ThermalPosReceipt80mm
-                                    data={{
-                                        receiptNumber: "RCPT-202610-0912",
-                                        dateTime: new Date().toLocaleString(),
-                                        token: "T-0142",
-                                        lab: mockLabProfile,
-                                        patient: {
-                                            fullName: "K. Ramesh Kumar",
-                                            mrn: "SYN-2026-9042",
-                                            age: "46Y",
-                                            gender: "M"
-                                        },
-                                        items: [
-                                            { testName: "Complete Blood Count", unitPrice: 350 },
-                                            { testName: "Serum Creatinine", unitPrice: 200 }
-                                        ],
-                                        financial: {
-                                            grandTotal: 550,
-                                            amountPaid: 550,
-                                            balanceDue: 0
-                                        },
-                                        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=550.00&cu=INR`
-                                    }}
-                                />
-                            )}
-
-                            {/* 3. PARTNER B2B INVOICE */}
-                            {previewSlotId === 'partner_b2b_invoice' && (
-                                <PartnerClaimStatementA4
-                                    data={{
-                                        statementNo: "B2B-202610-0019",
-                                        generatedAt: new Date().toISOString(),
-                                        lab: mockLabProfile,
-                                        partner: {
-                                            partnerId: "part-dr-khalikh",
-                                            name: "Dr. Khaleeq Ur Rahman, MD",
-                                            clinicName: "Khaleeq Polyclinic & Maternity Center",
-                                            phone: "+91 98490 11223",
-                                            address: "Wyra Road, Khammam"
-                                        },
-                                        items: [
-                                            { visitToken: "T-0104", date: new Date().toISOString(), patientName: "Mohammed Afzal", investigations: "CBC, Creatinine", grossBilled: 950, amountReceived: 0, netClaimDue: 950 },
-                                            { visitToken: "T-0118", date: new Date().toISOString(), patientName: "Smt. Lakshmi Devi", investigations: "Lipid Profile, Thyroid", grossBilled: 1250, amountReceived: 0, netClaimDue: 1250 }
-                                        ],
-                                        summary: {
-                                            totalVisits: 2,
-                                            grossBilled: 2200,
-                                            amountReceived: 0,
-                                            netClaimDue: 2200,
-                                            amountInWords: "Rupees Two Thousand Two Hundred Only"
-                                        },
-                                        upiQrString: `upi://pay?pa=${encodeURIComponent(settings.upiId)}&pn=${encodeURIComponent(settings.labLegalName)}&am=2200.00&cu=INR`
-                                    }}
-                                    letterheadMode={currentActiveSlot.letterheadMode}
-                                    topMarginMm={currentActiveSlot.topMarginMm}
-                                />
-                            )}
-
-                            {/* 4. REFERRAL PAYOUT VOUCHER */}
-                            {previewSlotId === 'referral_payout_voucher' && (
-                                <ReferralPayoutVoucherA4
-                                    data={{
-                                        voucherNo: "VCH-202610-0053",
-                                        generatedAt: new Date().toISOString(),
-                                        financialYear: "2026 - 2027",
-                                        lab: mockLabProfile,
-                                        doctor: {
-                                            name: "Dr. Khaleeq Ur Rahman, MD",
-                                            clinicName: "Khaleeq Polyclinic & Maternity Center",
-                                            phone: "+91 98490 11223",
-                                            pan: "BKPPR9988C",
-                                            bankName: "State Bank of India",
-                                            accountNumber: "30291049201",
-                                            ifsc: "SBIN0000854"
-                                        },
-                                        items: [
-                                            { token: "T-0042", date: new Date().toISOString(), patientName: "P. Anjaiah", testNames: "Whole Abdomen USG, LFT", patientPaid: 2050, commissionRatePct: 20, referralAmount: 410 },
-                                            { token: "T-0068", date: new Date().toISOString(), patientName: "B. Suresh Babu", testNames: "CT Brain Plain", patientPaid: 3200, commissionRatePct: 25, referralAmount: 800 }
-                                        ],
-                                        summary: {
-                                            totalReferredVisits: 2,
-                                            totalPatientCollection: 5250,
-                                            grossReferralAmount: 1210,
-                                            tdsPercentage: 5,
-                                            tdsDeduction: 60.5,
-                                            netPayoutAmount: 1149.5,
-                                            netPayoutInWords: "Rupees One Thousand One Hundred Forty Nine Only"
-                                        }
-                                    }}
-                                    letterheadMode={currentActiveSlot.letterheadMode}
-                                    topMarginMm={currentActiveSlot.topMarginMm}
-                                />
-                            )}
-
-                            {/* 5. VENDOR PURCHASE ORDER */}
-                            {(previewSlotId === 'procurement_po' || previewSlotId === 'procurement_grn') && (
-                                <ProcurementPurchaseOrderA4
-                                    data={{
-                                        poNumber: "PO-202610-0012",
-                                        lab: mockLabProfile,
-                                        vendor: {
-                                            name: "Roche Diagnostics India Pvt Ltd",
-                                            contactPerson: "Mr. Anand Varma",
-                                            phone: "+91 98490 88776",
-                                            gstin: "36AABCR1234F1Z9",
-                                            address: "Phase 2, Hyderabad"
-                                        }
-                                    }}
-                                    letterheadMode={currentActiveSlot.letterheadMode}
-                                    topMarginMm={currentActiveSlot.topMarginMm}
-                                />
-                            )}
-
-                            {/* 6. WORKFORCE SALARY PAY SLIP */}
-                            {previewSlotId === 'workforce_payslip' && (
-                                <WorkforcePaySlipA4
-                                    data={{
-                                        lab: mockLabProfile,
-                                        monthYear: "October 2026"
-                                    }}
-                                    letterheadMode={currentActiveSlot.letterheadMode}
-                                    topMarginMm={currentActiveSlot.topMarginMm}
-                                />
-                            )}
-
-                            {/* 7. PETTY CASH EXPENSE VOUCHER */}
-                            {previewSlotId === 'overhead_expense_voucher' && (
-                                <PettyExpenseVoucherA4
-                                    data={{
-                                        lab: mockLabProfile,
-                                        voucherNumber: "EXP-202610-0031"
-                                    }}
-                                    letterheadMode={currentActiveSlot.letterheadMode}
-                                    topMarginMm={currentActiveSlot.topMarginMm}
-                                />
-                            )}
+                            <DynamicInvoiceCanvas 
+                                schema={activeSchema}
+                                onUpdateSchema={handleUpdateSchema}
+                                letterheadMode={currentActiveSlot.letterheadMode}
+                                topMarginMm={currentActiveSlot.topMarginMm}
+                                labSettings={settings}
+                                onToggleBox={handleToggleBox}
+                            />
                         </div>
                     </div>
                 </div>
