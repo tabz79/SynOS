@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -21,13 +21,36 @@ import {
     Activity,
     Archive,
     FolderArchive,
-    MessageSquare
+    MessageSquare,
+    PanelLeft,
+    PanelLeftOpen,
+    PanelLeftClose
 } from 'lucide-react';
 import { SystemBar } from '@/components/layout/SystemBar';
 
 export function AdminLayout() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        const saved = localStorage.getItem('synos_sidebar_collapsed');
+        return saved === 'true';
+    });
+
+    useEffect(() => {
+        localStorage.setItem('synos_sidebar_collapsed', isSidebarCollapsed);
+    }, [isSidebarCollapsed]);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+                setIsSidebarCollapsed(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const sidebarGroups = [
         {
@@ -97,8 +120,12 @@ export function AdminLayout() {
                 />
             </div>
 
-            {/* Global System Bar */}
-            <SystemBar syncStatus="Synced" />
+            {/* Global System Bar with Sidebar Toggle */}
+            <SystemBar 
+                syncStatus="Synced" 
+                onToggleSidebar={() => setIsSidebarCollapsed(prev => !prev)} 
+                isSidebarCollapsed={isSidebarCollapsed} 
+            />
 
             <div className="flex flex-1 overflow-hidden relative z-10">
                 {/* Sidebar - STATIC FROST MODEL (No real blur) */}
@@ -108,12 +135,29 @@ export function AdminLayout() {
                         backgroundBlendMode: 'overlay',
                         backgroundRepeat: 'repeat'
                     }}
-                    className="w-64 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative"
+                    className={`
+                        border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 
+                        flex flex-col relative transition-all duration-300 ease-in-out shrink-0 overflow-hidden
+                        ${isSidebarCollapsed ? 'w-0 opacity-0 border-none pointer-events-none' : 'w-64 opacity-100'}
+                    `}
                 >
                     {/* Interior Highlighting (Edge Refraction) */}
                     <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
                     
-                    <nav className="flex-1 overflow-y-auto p-3 pt-6 space-y-6 relative z-10">
+                    {/* Sidebar Header with Minimize Button */}
+                    <div className="flex items-center justify-between px-4 pt-3.5 pb-2 border-b dark:border-zinc-900 border-zinc-200 shrink-0">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Navigation</span>
+                        <button
+                            type="button"
+                            onClick={() => setIsSidebarCollapsed(true)}
+                            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                            title="Minimize Navigation Panel (⌘B / Ctrl+B)"
+                        >
+                            <PanelLeftClose className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+
+                    <nav className="flex-1 overflow-y-auto p-3 pt-3 space-y-6 relative z-10">
                         {sidebarGroups.map((group, idx) => (
                             <div key={idx} className="space-y-1">
                                 <div className="px-3 flex items-center justify-between group cursor-default">
@@ -155,6 +199,18 @@ export function AdminLayout() {
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+                    {/* Floating Expand Tab when Collapsed */}
+                    {isSidebarCollapsed && (
+                        <button
+                            type="button"
+                            onClick={() => setIsSidebarCollapsed(false)}
+                            className="absolute left-0 top-3 z-30 flex items-center gap-1.5 px-2.5 py-1.5 rounded-r-xl bg-white dark:bg-zinc-900 border-y border-r dark:border-zinc-800 border-zinc-200 shadow-md text-zinc-600 dark:text-zinc-300 hover:text-synos-primary dark:hover:text-synos-primary transition-all group cursor-pointer text-[10px] font-bold animate-in fade-in slide-in-from-left-2 duration-200"
+                            title="Expand Navigation Panel (⌘B / Ctrl+B)"
+                        >
+                            <PanelLeftOpen className="w-4 h-4 text-synos-primary group-hover:scale-110 transition-transform" />
+                            <span className="hidden sm:inline font-mono">Menu</span>
+                        </button>
+                    )}
                     <div className="flex-1 overflow-y-auto">
                         <Outlet />
                     </div>

@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity, ShieldAlert, ArrowLeft, PanelLeft, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import { ReceptionApi } from '@/api/reception';
 
-export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
+export function SystemBar({ serverTime, syncStatus = "Not Synced", onToggleSidebar, isSidebarCollapsed }) {
   const { user, logout, activeOversightBranchId, setOversightBranch } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -134,16 +134,38 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
       )}
 
-      {/* LEFT — Identity (Single Brand Lockup) */}
-      <div 
-        className="flex items-center ml-[36px] cursor-pointer shrink-0"
-        onClick={() => navigate('/')}
-      >
-        <img 
-          src="/assets/synos-lockup.svg" 
-          alt="SynOS" 
-          className="h-8 object-contain dark:invert" 
-        />
+      {/* LEFT — Identity & Sidebar Toggle */}
+      <div className={cn("flex items-center gap-2 shrink-0", onToggleSidebar ? "ml-1 sm:ml-2" : "ml-[36px]")}>
+        {onToggleSidebar && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className={cn(
+              "p-1.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center",
+              isSidebarCollapsed
+                ? "bg-synos-primary/10 border-synos-primary/30 text-synos-primary hover:bg-synos-primary/20 shadow-xs"
+                : "border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            )}
+            title={isSidebarCollapsed ? "Expand Navigation Panel (⌘B / Ctrl+B)" : "Minimize Navigation Panel (⌘B / Ctrl+B)"}
+          >
+            {isSidebarCollapsed ? (
+              <PanelLeftOpen className="w-4 h-4 text-synos-primary" />
+            ) : (
+              <PanelLeft className="w-4 h-4 text-current" />
+            )}
+          </button>
+        )}
+
+        <div 
+          className="flex items-center cursor-pointer shrink-0"
+          onClick={() => navigate('/')}
+        >
+          <img 
+            src="/assets/synos-lockup.svg" 
+            alt="SynOS" 
+            className="h-8 object-contain dark:invert" 
+          />
+        </div>
       </div>
 
       {/* MIDDLE — Dynamically Centered Role Takeover Notch */}
