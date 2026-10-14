@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
 import { ReceptionApi } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
-import { usePanelEntry, useFlipGroup } from '@/hooks/useSynOSMotion'
+import { usePanelEntry } from '@/hooks/useSynOSMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
@@ -30,7 +30,6 @@ export function IntentPanel({ onVisitUpdated }) {
     const intent = drawerState?.intent; // 'create' | 'resume' | 'correction'
     const isCorrectionIntent = intent === 'correction';
     const isResumeIntent = intent === 'resume';
-    const isCreateIntent = intent === 'create';
 
     // Lifted State for Prepaid Intent (Shared between VisitDetails and Footer)
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
@@ -719,7 +718,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     )}
                                 </button>
                             </div>
-                            {canLockPrepaid && !Boolean(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
+                            {canLockPrepaid && !(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
                                 <p className="text-xs text-amber-500 dark:text-amber-400 font-medium text-center">
                                     * Please select a Referral Partner above (Who collected payment outside?)
                                 </p>

@@ -690,6 +690,22 @@ export function AddCorporateAccountModal({
                         </div>
                     </div>
 
+                    <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Contact Email
+                        </label>
+                        <input
+                            type="email"
+                            placeholder="hr@company.com"
+                            value={contactEmail}
+                            onChange={(e) => setContactEmail(e.target.value)}
+                            className={cn(
+                                "w-full h-9 px-3 rounded-lg text-xs font-medium border outline-none",
+                                isDark ? "bg-zinc-950 border-zinc-700 focus:border-indigo-500" : "bg-zinc-50 border-zinc-300 focus:border-indigo-500"
+                            )}
+                        />
+                    </div>
+
                     <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                         <button
                             type="button"

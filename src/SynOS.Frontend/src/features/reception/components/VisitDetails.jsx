@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 import ReferralDraftForm from './ReferralDraftForm'
 import OutsourceDraftForm from './OutsourceDraftForm'
+import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { 
-    MultiPayerSelector, 
     InsuranceContextPanel, 
     CorporateContextPanel, 
     AddInsuranceCompanyModal, 
@@ -18,11 +18,9 @@ export function VisitDetails({
     snapshot, 
     visitId, 
     onVisitUpdated, 
-    isPrepaidIntent, 
     setIsPrepaidIntent, 
     isCorrectionIntent,
-    billingMode = 'Standard',
-    setBillingMode
+    billingMode = 'Standard'
 }) {
     const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
@@ -39,7 +37,6 @@ export function VisitDetails({
     const [isAddInsuranceModalOpen, setIsAddInsuranceModalOpen] = useState(false);
     const [isAddCorporateModalOpen, setIsAddCorporateModalOpen] = useState(false);
     const [isAddPartnerModalOpen, setIsAddPartnerModalOpen] = useState(false);
-    const [isSearching, setIsSearching] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false); // Command spinner
 
     // Auto-scroll selected test option into view
@@ -210,32 +207,6 @@ export function VisitDetails({
             .catch(err => console.warn("Failed to load corporate rate rules", err));
         return () => { isMounted = false; };
     }, [activeCorporateAccountId]);
-
-    // Switch billing mode and sync with backend
-    const handleModeChange = async (newMode) => {
-        if (setBillingMode) setBillingMode(newMode);
-        if (setIsPrepaidIntent) setIsPrepaidIntent(newMode === 'PrepaidPartner');
-
-        if (visitId && !isReadOnly) {
-            setIsProcessing(true);
-            try {
-                await ReceptionApi.updateBillingContext({
-                    visitId,
-                    billingType: newMode
-                });
-                if (newMode === 'PrepaidPartner') {
-                    await ReceptionApi.updatePaymentCollectionModel(visitId, 'PartnerCollects');
-                } else {
-                    await ReceptionApi.updatePaymentCollectionModel(visitId, 'LabCollects');
-                }
-                if (onVisitUpdated) onVisitUpdated();
-            } catch (err) {
-                console.error("Failed to switch billing mode:", err);
-            } finally {
-                setIsProcessing(false);
-            }
-        }
-    };
 
     // Update specific context fields (Insurer, Policy #, Pre-Auth #, Corporate Account, Emp ID, Co-Pay)
     const handleUpdateBillingContext = async (patch) => {
