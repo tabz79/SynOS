@@ -146,7 +146,7 @@ export function InsuranceContextPanel({
                     <select
                         value={selectedCompanyId || ''}
                         disabled={disabled}
-                        onChange={(e) => onChange({ insuranceCompanyId: e.target.value ? parseInt(e.target.value, 10) : null })}
+                        onChange={(e) => onChange({ insuranceCompanyId: e.target.value || null })}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
                             isDark
@@ -155,11 +155,14 @@ export function InsuranceContextPanel({
                         )}
                     >
                         <option value="">-- Select Empanelled Insurance Company --</option>
-                        {insuranceCompanies.map(c => (
-                            <option key={c.id} value={c.id}>
-                                {c.name} {c.tpaCode ? `(${c.tpaCode})` : ''} - {c.payerType || 'TPA'}
-                            </option>
-                        ))}
+                        {insuranceCompanies.map(c => {
+                            const compId = c.insuranceCompanyId || c.id;
+                            return (
+                                <option key={compId} value={compId}>
+                                    {c.name} {c.code ? `[${c.code}]` : ''} {c.tpaName ? `(TPA: ${c.tpaName})` : ''}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
@@ -276,7 +279,7 @@ export function CorporateContextPanel({
                     <select
                         value={selectedAccountId || ''}
                         disabled={disabled}
-                        onChange={(e) => onChange({ corporateAccountId: e.target.value ? parseInt(e.target.value, 10) : null })}
+                        onChange={(e) => onChange({ corporateAccountId: e.target.value || null })}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
                             isDark
@@ -285,11 +288,14 @@ export function CorporateContextPanel({
                         )}
                     >
                         <option value="">-- Select Contracted Corporate Account --</option>
-                        {corporateAccounts.map(a => (
-                            <option key={a.id} value={a.id}>
-                                {a.companyName} {a.corporateCode ? `[${a.corporateCode}]` : ''}
-                            </option>
-                        ))}
+                        {corporateAccounts.map(a => {
+                            const accId = a.corporateAccountId || a.id;
+                            return (
+                                <option key={accId} value={accId}>
+                                    {a.companyName} {a.corporateCode ? `[${a.corporateCode}]` : ''}
+                                </option>
+                            );
+                        })}
                     </select>
                 </div>
 
@@ -328,24 +334,29 @@ export function CorporateContextPanel({
 
                     {packageRules.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
-                            {packageRules.map(pkg => (
-                                <button
-                                    key={pkg.id || pkg.testCode}
-                                    type="button"
-                                    onClick={() => onAddPackageTest && onAddPackageTest(pkg)}
-                                    className={cn(
-                                        "px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer",
-                                        isDark
-                                            ? "bg-indigo-950/60 border-indigo-700/60 text-indigo-200 hover:bg-indigo-900/80"
-                                            : "bg-white border-indigo-300 text-indigo-900 hover:bg-indigo-50 shadow-sm"
-                                    )}
-                                    title={`Click to add ${pkg.testName || pkg.name} at contracted corporate rate ₹${pkg.corporatePrice}`}
-                                >
-                                    <Plus className="w-3 h-3 text-indigo-500" />
-                                    <span>{pkg.testName || pkg.name}</span>
-                                    <span className="font-mono text-emerald-600 dark:text-emerald-400">₹{pkg.corporatePrice}</span>
-                                </button>
-                            ))}
+                            {packageRules.map(pkg => {
+                                const pkgCode = pkg.testCode || pkg.packageCode || pkg.code;
+                                const pkgName = pkg.packageName || pkg.testName || pkg.name;
+                                const pkgPrice = pkg.contractedPrice ?? pkg.corporatePrice ?? pkg.price ?? 0;
+                                return (
+                                    <button
+                                        key={pkg.corporateRateRuleId || pkg.id || pkgCode}
+                                        type="button"
+                                        onClick={() => onAddPackageTest && onAddPackageTest({ ...pkg, testCode: pkgCode, name: pkgName, corporatePrice: pkgPrice })}
+                                        className={cn(
+                                            "px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer",
+                                            isDark
+                                                ? "bg-indigo-950/60 border-indigo-700/60 text-indigo-200 hover:bg-indigo-900/80"
+                                                : "bg-white border-indigo-300 text-indigo-900 hover:bg-indigo-50 shadow-sm"
+                                        )}
+                                        title={`Click to add ${pkgName} at contracted corporate rate ₹${pkgPrice}`}
+                                    >
+                                        <Plus className="w-3 h-3 text-indigo-500" />
+                                        <span>{pkgName}</span>
+                                        <span className="font-mono text-emerald-600 dark:text-emerald-400">₹{pkgPrice}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     ) : (
                         <p className="text-[10px] italic text-zinc-500">

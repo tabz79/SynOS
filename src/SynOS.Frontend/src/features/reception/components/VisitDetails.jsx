@@ -231,23 +231,32 @@ export function VisitDetails({
 
     // Pricing calculation helper aware of corporate rate rules
     const getTestPricing = (test) => {
-        const code = test.testCode || test.code;
+        const code = (test.testCode || test.code || '').toLowerCase();
         const testId = test.id || test.testId;
         if (billingMode === 'Corporate' && corporateRateRules.length > 0) {
             const rule = corporateRateRules.find(r => 
-                (r.testCode && code && r.testCode.toLowerCase() === code.toLowerCase()) ||
+                (r.testCode && r.testCode.toLowerCase() === code) ||
+                (r.packageCode && r.packageCode.toLowerCase() === code) ||
                 (r.testId && testId && r.testId === testId)
             );
-            if (rule && rule.corporatePrice !== undefined && rule.corporatePrice !== null) {
+            const corpPrice = rule ? (rule.contractedPrice ?? rule.corporatePrice) : null;
+            if (corpPrice !== null && corpPrice !== undefined) {
                 return {
-                    price: rule.corporatePrice,
+                    price: corpPrice,
                     isCorporateRate: true,
-                    standardPrice: test.basePrice || test.price || test.Price
+                    standardPrice: rule.standardPrice || test.basePrice || test.price || test.Price || corpPrice
+                };
+            }
+            if (test.isCorporateRate) {
+                return {
+                    price: test.price,
+                    isCorporateRate: true,
+                    standardPrice: test.standardPrice || test.basePrice || test.price
                 };
             }
         }
         return {
-            price: test.basePrice || test.price || test.Price,
+            price: test.basePrice || test.price || test.Price || 0,
             isCorporateRate: false
         };
     };
@@ -305,20 +314,92 @@ export function VisitDetails({
     };
 
     // Filter Logic for Search (UI Only)
-    // Backend returns: { testName, testCode, basePrice, department }
-    const internalSuggestions = filter.length < 2 ? [] : catalog.filter(t =>
-        ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
-            (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
-        !tests.some(existing => existing.code === (t.testCode || t.code)) // Don't suggest already added
-    );
+    // When Corporate mode is active:
+    // Strictly restrict to Corporate Packages & Contracted Corporate Rate Rules.
+    // Omit all regular retail tests.
+    let suggestions = [];
+    if (billingMode === 'Corporate') {
+        if (activeCorporateAccountId) {
+            // 1. Build list from corporate contracted rate rules & packages
+            const corpRulesList = corporateRateRules.map(r => {
+                const code = r.testCode || r.packageCode;
+                const name = r.packageName || r.testName;
+                const price = r.contractedPrice ?? r.corporatePrice ?? 0;
+                return {
+                    id: r.testId,
+                    testId: r.testId,
+                    testCode: code,
+                    code: code,
+                    testName: name,
+                    name: name,
+                    price: price,
+                    basePrice: r.standardPrice || price,
+                    standardPrice: r.standardPrice || price,
+                    isCorporateRate: true,
+                    isPackage: r.isPackage || false,
+                    includedTests: r.includedTests || []
+                };
+            });
 
-    const outsourcedSuggestions = filter.length < 2 ? [] : outsourcedCatalog.filter(t =>
-        ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
-            (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
-        !tests.some(existing => existing.code === (t.testCode || t.code))
-    );
+            // 2. Also check if catalog has tests mapped to corporate rules or with explicit corporate pricing
+            const ruleCodeSet = new Set(corporateRateRules.map(r => (r.testCode || r.packageCode || '').toLowerCase()).filter(Boolean));
+            const catalogCorpTests = catalog.filter(t => {
+                const c = (t.testCode || t.code || '').toLowerCase();
+                return ruleCodeSet.has(c) || (t.pricing && t.pricing.corporate > 0);
+            }).map(t => {
+                const rule = corporateRateRules.find(r => (r.testCode || r.packageCode || '').toLowerCase() === (t.testCode || t.code || '').toLowerCase());
+                const price = rule ? (rule.contractedPrice ?? rule.corporatePrice) : (t.pricing?.corporate || t.basePrice || t.price);
+                return {
+                    ...t,
+                    price,
+                    basePrice: t.basePrice || t.price,
+                    isCorporateRate: true
+                };
+            });
 
-    const suggestions = [...internalSuggestions, ...outsourcedSuggestions];
+            // Combine unique by testCode
+            const seenCodes = new Set();
+            const combinedCorp = [];
+            for (const item of [...corpRulesList, ...catalogCorpTests]) {
+                const c = (item.testCode || item.code || '').toLowerCase();
+                if (c && !seenCodes.has(c)) {
+                    seenCodes.add(c);
+                    combinedCorp.push(item);
+                }
+            }
+
+            // Exclude tests already added to this visit
+            const availableCorp = combinedCorp.filter(t => 
+                !tests.some(existing => (existing.code || '').toLowerCase() === (t.testCode || t.code || '').toLowerCase())
+            );
+
+            if (filter.trim().length > 0) {
+                const q = filter.trim().toLowerCase();
+                suggestions = availableCorp.filter(t =>
+                    ((t.testName || t.name || "").toLowerCase().includes(q) ||
+                     (t.testCode || t.code || "").toLowerCase().includes(q))
+                );
+            } else {
+                suggestions = availableCorp;
+            }
+        } else {
+            suggestions = [];
+        }
+    } else {
+        const internalSuggestions = filter.length < 2 ? [] : catalog.filter(t =>
+            ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
+                (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
+            !tests.some(existing => existing.code === (t.testCode || t.code)) // Don't suggest already added
+        );
+
+        const outsourcedSuggestions = filter.length < 2 ? [] : outsourcedCatalog.filter(t =>
+            ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
+                (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
+            !tests.some(existing => existing.code === (t.testCode || t.code))
+        );
+
+        suggestions = [...internalSuggestions, ...outsourcedSuggestions];
+    }
 
     // State for Correction Reason Modal
     const [correctionState, setCorrectionState] = useState({
@@ -677,13 +758,30 @@ export function VisitDetails({
 
             {/* SECTION 3: Test Selection (Reordered Down) */}
             <div className={cn("p-2.5 xl:p-4 rounded-xl space-y-1.5 xl:space-y-2", ui.section)}>
-                <h4 className={ui.sectionTitle}>Test Selection</h4>
+                <div className="flex items-center justify-between">
+                    <h4 className={ui.sectionTitle}>Test Selection</h4>
+                    {billingMode === 'Corporate' && (
+                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">
+                            Corporate Mode: Contracted Only
+                        </span>
+                    )}
+                </div>
+
+                {billingMode === 'Corporate' && !activeCorporateAccountId && (
+                    <div className="p-2.5 rounded-lg border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-800 dark:text-indigo-300 flex items-center gap-2 text-xs font-medium">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-indigo-500" />
+                        <span>Select a Contracted Corporate Account above to load corporate packages & rates</span>
+                    </div>
+                )}
+
                 {!isReadOnly && (
                     <div className="relative z-10">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
                         <input
                             type="text"
-                            placeholder="Add Test Code or Name..."
+                            placeholder={billingMode === 'Corporate' 
+                                ? (activeCorporateAccountId ? "Search Corporate Packages & Contracted Tests..." : "Select Corporate Account above first...") 
+                                : "Add Test Code or Name..."}
                             value={filter}
                             onChange={(e) => {
                                 setFilter(e.target.value);
@@ -706,14 +804,14 @@ export function VisitDetails({
                                     }
                                 }
                             }}
-                            disabled={isProcessing}
+                            disabled={isProcessing || (billingMode === 'Corporate' && !activeCorporateAccountId)}
                             className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none transition-colors disabled:opacity-50 type-code", ui.input)}
                         />
 
                         {/* Search Suggestions Dropdown */}
-                        {suggestions.length > 0 && (
+                        {suggestions.length > 0 && (filter.trim().length > 0 || billingMode === 'Corporate') && (
                             <div ref={testListRef} className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
-                                {/* INTERNAL & OUTSOURCED TESTS */}
+                                {/* INTERNAL & OUTSOURCED & CORPORATE TESTS */}
                                 {suggestions.map((test, idx) => {
                                     const pricing = getTestPricing(test);
                                     return (
@@ -735,6 +833,11 @@ export function VisitDetails({
                                                     <div className="type-value">{test.testName || test.name}</div>
                                                     <div className="type-code flex items-center gap-1.5">
                                                         <span>{test.testCode || test.code}</span>
+                                                        {test.isPackage && (
+                                                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-500 font-bold border border-amber-500/30">
+                                                                Package
+                                                            </span>
+                                                        )}
                                                         {pricing.isCorporateRate && (
                                                             <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-500/15 text-indigo-400 font-bold border border-indigo-500/30">
                                                                 Corporate Rate

@@ -27,6 +27,8 @@ import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
 import { OverheadExpensesScreen } from '@/features/finance/OverheadScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
+import { InsuranceTerminal } from '@/features/finance/InsuranceTerminal'
+import { CorporateTerminal } from '@/features/finance/CorporateTerminal'
 import { WorkforceTerminal, IdentityProvisioningScreen } from '@/features/finance/WorkforceScreens'
 import { StaffLayout } from '@/features/employee/StaffLayout'
 import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
@@ -256,6 +258,14 @@ function App() {
                 {/* Referral Department */}
                 <Route path="/finance/referrals" element={<ReferralTerminal />} />
                 <Route path="/finance/referrals/:tab" element={<ReferralTerminal />} />
+
+                {/* Insurance / TPA Department */}
+                <Route path="/finance/insurance" element={<InsuranceTerminal />} />
+                <Route path="/finance/insurance/:tab" element={<InsuranceTerminal />} />
+
+                {/* Corporate B2B Department */}
+                <Route path="/finance/corporate" element={<CorporateTerminal />} />
+                <Route path="/finance/corporate/:tab" element={<CorporateTerminal />} />
 
                 {/* Workforce & Payroll Department */}
                 <Route path="/finance/workforce" element={<WorkforceTerminal />} />

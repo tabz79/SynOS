@@ -11,7 +11,9 @@ import {
     Building2, 
     BarChart3,
     ChevronRight,
-    LayoutDashboard
+    LayoutDashboard,
+    ShieldCheck,
+    Briefcase
 } from 'lucide-react';
 import { SystemBar } from '@/components/layout/SystemBar';
 
@@ -73,6 +75,30 @@ export function FinanceLayout() {
                 { name: "Pending Pricing", path: "/finance/outsourcing/pricing" },
                 { name: "Reference Labs", path: "/finance/outsourcing/labs" },
                 { name: "Settlement History", path: "/finance/outsourcing/history" }
+            ]
+        },
+        {
+            name: "Insurance / TPA",
+            path: "/finance/insurance",
+            icon: ShieldCheck,
+            subItems: [
+                { name: "Overview", path: "/finance/insurance/overview" },
+                { name: "Empanelment & Config", path: "/finance/insurance/empanelment" },
+                { name: "Cashless Claims", path: "/finance/insurance/claims" },
+                { name: "Receivables", path: "/finance/insurance/receivables" },
+                { name: "Settlements", path: "/finance/insurance/settlements" }
+            ]
+        },
+        {
+            name: "Corporate B2B",
+            path: "/finance/corporate",
+            icon: Briefcase,
+            subItems: [
+                { name: "Overview", path: "/finance/corporate/overview" },
+                { name: "Client Organizations", path: "/finance/corporate/clients" },
+                { name: "Corporate Packages", path: "/finance/corporate/packages" },
+                { name: "Invoices & Billing", path: "/finance/corporate/invoices" },
+                { name: "Settlements", path: "/finance/corporate/settlements" }
             ]
         },
         {

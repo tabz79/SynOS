@@ -100,11 +100,89 @@ namespace SynOS.Api.Controllers.Admin
             return CreatedAtAction(nameof(GetById), new { id = account.CorporateAccountId }, account);
         }
 
+        [HttpGet("visits")]
+        public async Task<IActionResult> GetVisits([FromQuery] Guid? corporateAccountId)
+        {
+            var query = _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Invoices)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                .AsNoTracking()
+                .Where(v => v.CorporateAccountId != null || v.PaymentCollectionModel == "Corporate");
+
+            if (corporateAccountId.HasValue)
+            {
+                query = query.Where(v => v.CorporateAccountId == corporateAccountId.Value);
+            }
+
+            var visits = await query
+                .OrderByDescending(v => v.CreatedAt)
+                .Take(100)
+                .ToListAsync();
+
+            var corpIds = visits.Where(v => v.CorporateAccountId.HasValue).Select(v => v.CorporateAccountId!.Value).Distinct().ToList();
+            var corps = await _context.CorporateAccounts
+                .Where(c => corpIds.Contains(c.CorporateAccountId))
+                .ToDictionaryAsync(c => c.CorporateAccountId, c => c.CompanyName);
+
+            var result = visits.Select(v =>
+            {
+                var invoice = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                var grossAmount = invoice != null ? invoice.GrossAmount : v.Orders.Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled).Sum(o => o.Price);
+                var compName = v.CorporateAccountId.HasValue && corps.ContainsKey(v.CorporateAccountId.Value)
+                    ? corps[v.CorporateAccountId.Value]
+                    : "Corporate Account";
+                var patName = !string.IsNullOrWhiteSpace(v.Patient?.DisplayName)
+                    ? v.Patient.DisplayName
+                    : $"{v.Patient?.FirstName} {v.Patient?.LastName}".Trim();
+
+                return new
+                {
+                    VisitId = v.VisitId,
+                    PatientName = !string.IsNullOrWhiteSpace(patName) ? patName : "Unknown Patient",
+                    PatientMrn = v.Patient?.MRN ?? "",
+                    CorporateAccountId = v.CorporateAccountId,
+                    CompanyName = compName,
+                    EmployeeId = v.EmployeeId ?? "N/A",
+                    GrossAmount = grossAmount,
+                    Status = invoice?.Status ?? v.Status.ToString(),
+                    CreatedAt = v.CreatedAt
+                };
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCorporateAccountDto dto)
+        {
+            var account = await _context.CorporateAccounts.FindAsync(id);
+            if (account == null) return NotFound(new { message = $"Corporate account {id} not found" });
+
+            if (!string.IsNullOrWhiteSpace(dto.CompanyName)) account.CompanyName = dto.CompanyName.Trim();
+            if (!string.IsNullOrWhiteSpace(dto.CorporateCode)) account.CorporateCode = dto.CorporateCode.Trim().ToUpperInvariant();
+            account.GstNumber = dto.GstNumber?.Trim();
+            account.ContactPerson = dto.ContactPerson?.Trim();
+            account.ContactEmail = dto.ContactEmail?.Trim();
+            account.ContactPhone = dto.ContactPhone?.Trim();
+            account.BillingAddress = dto.BillingAddress?.Trim();
+            if (dto.CreditLimit.HasValue) account.CreditLimit = dto.CreditLimit.Value;
+            if (dto.PaymentTermsDays.HasValue && dto.PaymentTermsDays.Value > 0) account.PaymentTermsDays = dto.PaymentTermsDays.Value;
+            if (dto.IsActive.HasValue) account.IsActive = dto.IsActive.Value;
+            account.UpdatedAt = DateTimeOffset.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return Ok(account);
+        }
+
         [HttpGet("{id}/rate-rules")]
         public async Task<IActionResult> GetRateRules(Guid id)
         {
             var rules = await _context.CorporateRateRules
                 .Include(r => r.Test)
+                    .ThenInclude(t => t.ProfileChildren)
+                        .ThenInclude(pc => pc.ChildTest)
                 .AsNoTracking()
                 .Where(r => r.CorporateAccountId == id && r.IsActive)
                 .Select(r => new
@@ -119,6 +197,12 @@ namespace SynOS.Api.Controllers.Admin
                     r.IsPackage,
                     r.PackageCode,
                     r.PackageName,
+                    IncludedTests = r.Test.ProfileChildren.Select(pc => new
+                    {
+                        pc.ChildTest.TestId,
+                        pc.ChildTest.TestCode,
+                        pc.ChildTest.TestName
+                    }).ToList(),
                     r.EffectiveFrom,
                     r.EffectiveTo,
                     r.IsActive
@@ -170,6 +254,112 @@ namespace SynOS.Api.Controllers.Admin
             await _context.SaveChangesAsync();
             return Ok(new { success = true });
         }
+
+        [HttpDelete("{id}/rate-rules/{ruleId}")]
+        public async Task<IActionResult> DeleteRateRule(Guid id, Guid ruleId)
+        {
+            var rule = await _context.CorporateRateRules.FirstOrDefaultAsync(r => r.CorporateAccountId == id && r.CorporateRateRuleId == ruleId);
+            if (rule == null) return NotFound(new { message = "Rate rule not found" });
+
+            _context.CorporateRateRules.Remove(rule);
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("{id}/packages")]
+        public async Task<IActionResult> CreateCorporatePackage(Guid id, [FromBody] CreateCorporatePackageDto dto)
+        {
+            var account = await _context.CorporateAccounts.FindAsync(id);
+            if (account == null) return NotFound(new { message = $"Corporate account {id} not found" });
+
+            if (string.IsNullOrWhiteSpace(dto.PackageName))
+                return BadRequest(new { message = "Package Name is required." });
+
+            var code = !string.IsNullOrWhiteSpace(dto.PackageCode)
+                ? dto.PackageCode.Trim().ToUpperInvariant()
+                : $"PKG-{account.CorporateCode}-{new Random().Next(100, 999)}";
+
+            var existingTest = await _context.Tests
+                .Include(t => t.ProfileChildren)
+                .FirstOrDefaultAsync(t => t.TestCode == code);
+
+            Test packageTest;
+            if (existingTest != null)
+            {
+                packageTest = existingTest;
+                packageTest.TestName = dto.PackageName.Trim();
+                packageTest.IsProfile = true;
+                packageTest.Category = "CorporatePackage";
+            }
+            else
+            {
+                packageTest = new Test
+                {
+                    TestId = Guid.NewGuid(),
+                    TestCode = code,
+                    TestName = dto.PackageName.Trim(),
+                    IsProfile = true,
+                    Category = "CorporatePackage",
+                    SpecimenTypeCode = "SER",
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                _context.Tests.Add(packageTest);
+            }
+
+            if (dto.IncludedTestIds != null && dto.IncludedTestIds.Any())
+            {
+                var existingMaps = await _context.ProfileMaps
+                    .Where(m => m.ParentTestId == packageTest.TestId)
+                    .ToListAsync();
+                _context.ProfileMaps.RemoveRange(existingMaps);
+
+                int order = 1;
+                foreach (var childId in dto.IncludedTestIds)
+                {
+                    _context.ProfileMaps.Add(new ProfileMap
+                    {
+                        ProfileMapId = Guid.NewGuid(),
+                        ParentTestId = packageTest.TestId,
+                        ChildTestId = childId,
+                        Sequence = order++
+                    });
+                }
+            }
+
+            var existingRule = await _context.CorporateRateRules
+                .FirstOrDefaultAsync(r => r.CorporateAccountId == id && r.TestId == packageTest.TestId);
+
+            if (existingRule != null)
+            {
+                existingRule.ContractedPrice = dto.ContractedPrice;
+                existingRule.IsPackage = true;
+                existingRule.PackageCode = code;
+                existingRule.PackageName = dto.PackageName.Trim();
+                existingRule.IsActive = true;
+                existingRule.UpdatedAt = DateTimeOffset.UtcNow;
+            }
+            else
+            {
+                var rule = new CorporateRateRule
+                {
+                    CorporateRateRuleId = Guid.NewGuid(),
+                    CorporateAccountId = id,
+                    TestId = packageTest.TestId,
+                    ContractedPrice = dto.ContractedPrice,
+                    IsPackage = true,
+                    PackageCode = code,
+                    PackageName = dto.PackageName.Trim(),
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.CorporateRateRules.Add(rule);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, packageTestId = packageTest.TestId, packageCode = code });
+        }
     }
 
     public class CreateCorporateAccountDto
@@ -186,6 +376,20 @@ namespace SynOS.Api.Controllers.Admin
         public int PaymentTermsDays { get; set; } = 30;
     }
 
+    public class UpdateCorporateAccountDto
+    {
+        public string? CompanyName { get; set; }
+        public string? CorporateCode { get; set; }
+        public string? GstNumber { get; set; }
+        public string? ContactPerson { get; set; }
+        public string? ContactEmail { get; set; }
+        public string? ContactPhone { get; set; }
+        public string? BillingAddress { get; set; }
+        public decimal? CreditLimit { get; set; }
+        public int? PaymentTermsDays { get; set; }
+        public bool? IsActive { get; set; }
+    }
+
     public class AddCorporateRateRuleDto
     {
         [Required]
@@ -195,5 +399,15 @@ namespace SynOS.Api.Controllers.Admin
         public bool IsPackage { get; set; } = false;
         public string? PackageCode { get; set; }
         public string? PackageName { get; set; }
+    }
+
+    public class CreateCorporatePackageDto
+    {
+        [Required]
+        public string PackageName { get; set; } = string.Empty;
+        public string? PackageCode { get; set; }
+        [Required]
+        public decimal ContractedPrice { get; set; }
+        public System.Collections.Generic.List<Guid> IncludedTestIds { get; set; } = new();
     }
 }

@@ -52,6 +52,65 @@ namespace SynOS.Api.Controllers.Admin
             return Ok(companies);
         }
 
+        [HttpGet("claims")]
+        public async Task<IActionResult> GetClaims([FromQuery] Guid? companyId)
+        {
+            var query = _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Invoices)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                .AsNoTracking()
+                .Where(v => v.InsuranceCompanyId != null || v.PaymentCollectionModel == "Insurance");
+
+            if (companyId.HasValue)
+            {
+                query = query.Where(v => v.InsuranceCompanyId == companyId.Value);
+            }
+
+            var visits = await query
+                .OrderByDescending(v => v.CreatedAt)
+                .Take(100)
+                .ToListAsync();
+
+            var companyIds = visits.Where(v => v.InsuranceCompanyId.HasValue).Select(v => v.InsuranceCompanyId!.Value).Distinct().ToList();
+            var companies = await _context.InsuranceCompanies
+                .Where(c => companyIds.Contains(c.InsuranceCompanyId))
+                .ToDictionaryAsync(c => c.InsuranceCompanyId, c => c.Name);
+
+            var claims = visits.Select(v =>
+            {
+                var invoice = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                var grossAmount = invoice != null ? invoice.GrossAmount : v.Orders.Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled).Sum(o => o.Price);
+                var coPay = v.InsuranceCoPayAmount;
+                var claimDue = Math.Max(0m, grossAmount - coPay);
+                var compName = v.InsuranceCompanyId.HasValue && companies.ContainsKey(v.InsuranceCompanyId.Value)
+                    ? companies[v.InsuranceCompanyId.Value]
+                    : "Empanelled Insurer";
+                var patName = !string.IsNullOrWhiteSpace(v.Patient?.DisplayName)
+                    ? v.Patient.DisplayName
+                    : $"{v.Patient?.FirstName} {v.Patient?.LastName}".Trim();
+
+                return new
+                {
+                    VisitId = v.VisitId,
+                    PatientName = !string.IsNullOrWhiteSpace(patName) ? patName : "Unknown Patient",
+                    PatientMrn = v.Patient?.MRN ?? "",
+                    InsuranceCompanyId = v.InsuranceCompanyId,
+                    InsuranceCompanyName = compName,
+                    PolicyNumber = v.PolicyNumber ?? "N/A",
+                    PreAuthApprovalNumber = v.PreAuthApprovalNumber ?? "PENDING",
+                    GrossAmount = grossAmount,
+                    CoPayAmount = coPay,
+                    ClaimAmount = claimDue,
+                    Status = invoice?.Status ?? v.Status.ToString(),
+                    CreatedAt = v.CreatedAt
+                };
+            }).ToList();
+
+            return Ok(claims);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
