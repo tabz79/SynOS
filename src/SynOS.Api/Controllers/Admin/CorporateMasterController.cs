@@ -106,6 +106,7 @@ namespace SynOS.Api.Controllers.Admin
             var query = _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
                 .AsNoTracking()
@@ -137,17 +138,33 @@ namespace SynOS.Api.Controllers.Admin
                     ? v.Patient.DisplayName
                     : $"{v.Patient?.FirstName} {v.Patient?.LastName}".Trim();
 
+                var testNames = v.Orders.Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled && o.Test != null).Select(o => o.Test.TestName).ToList();
+                var testsSummary = string.Join(", ", testNames);
+                var paidAmount = invoice != null && invoice.Payments != null ? invoice.Payments.Sum(p => p.Amount) : 0;
+                var balanceDue = invoice != null ? Math.Max(0m, invoice.GrossAmount - paidAmount) : grossAmount;
+                var invNum = invoice != null ? $"INV-{invoice.InvoiceId.ToString().Substring(0, 8).ToUpper()}" : v.Token;
+
                 return new
                 {
                     VisitId = v.VisitId,
+                    Token = v.Token,
+                    VisitToken = v.Token,
+                    InvoiceNumber = invNum,
                     PatientName = !string.IsNullOrWhiteSpace(patName) ? patName : "Unknown Patient",
                     PatientMrn = v.Patient?.MRN ?? "",
                     CorporateAccountId = v.CorporateAccountId,
                     CompanyName = compName,
                     EmployeeId = v.EmployeeId ?? "N/A",
                     GrossAmount = grossAmount,
+                    TotalAmount = grossAmount,
+                    AmountPaid = paidAmount,
+                    PaidAmount = paidAmount,
+                    BalanceDue = balanceDue,
                     Status = invoice?.Status ?? v.Status.ToString(),
-                    CreatedAt = v.CreatedAt
+                    TestsSummary = testsSummary,
+                    Tests = testNames,
+                    CreatedAt = v.CreatedAt,
+                    Date = v.CreatedAt
                 };
             }).ToList();
 

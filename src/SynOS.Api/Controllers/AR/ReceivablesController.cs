@@ -31,7 +31,7 @@ namespace SynOS.Api.Controllers.AR
                 var lowerType = type.Trim().ToLowerInvariant();
                 if (lowerType == "partner")
                 {
-                    baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Partner || r.ReferralPartnerId != null);
+                    baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Partner);
                 }
                 else if (lowerType == "insurance")
                 {
@@ -43,36 +43,74 @@ namespace SynOS.Api.Controllers.AR
                 }
             }
 
-            var query = from r in baseQuery
-                        join v in _context.Visits on r.SourceVisitId equals v.VisitId
-                        join p in _context.Patients on v.PatientId equals p.PatientId
-                        orderby r.OccurredAt descending
-                        select new
-                        {
-                            receivableFactId = r.ReceivableFactId,
-                            sourceVisitId = r.SourceVisitId,
-                            debtorType = r.DebtorType.ToString(),
-                            debtorId = r.DebtorId != Guid.Empty ? r.DebtorId : (r.ReferralPartnerId ?? Guid.Empty),
-                            debtorName = !string.IsNullOrEmpty(r.DebtorName) 
-                                ? r.DebtorName 
-                                : (r.ReferralPartner != null ? r.ReferralPartner.Name : "Unknown Account"),
-                            claimReference = r.ClaimReference,
-                            referralPartnerId = r.ReferralPartnerId ?? (r.DebtorType == DebtorType.Partner ? r.DebtorId : (Guid?)null),
-                            partnerName = !string.IsNullOrEmpty(r.DebtorName)
-                                ? r.DebtorName
-                                : (r.ReferralPartner != null ? r.ReferralPartner.Name : "Unknown Partner"),
-                            amount = r.Amount,
-                            amountReceived = r.AmountReceived,
-                            pendingAmount = r.Amount - r.AmountReceived,
-                            currency = r.Currency,
-                            occurredAt = r.OccurredAt,
-                            settledAt = r.SettledAt,
-                            status = r.SettledAt.HasValue ? "Settled" : (r.AmountReceived > 0 ? "Partial" : "Pending"),
-                            patientName = p.FirstName + " " + p.LastName,
-                            token = v.Token
-                        };
+            var raw = await (from r in baseQuery
+                             join v in _context.Visits on r.SourceVisitId equals v.VisitId
+                             join p in _context.Patients on v.PatientId equals p.PatientId
+                             orderby r.OccurredAt descending
+                             select new
+                             {
+                                 r.ReceivableFactId,
+                                 r.SourceVisitId,
+                                 DebtorType = r.DebtorType.ToString(),
+                                 r.DebtorId,
+                                 r.DebtorName,
+                                 r.ClaimReference,
+                                 r.ReferralPartnerId,
+                                 PartnerName = v.ReferralPartner != null ? v.ReferralPartner.Name : (r.DebtorType == DebtorType.Partner ? r.DebtorName : ""),
+                                 CorporateName = v.CorporateAccount != null ? v.CorporateAccount.CompanyName : (r.DebtorType == DebtorType.Corporate ? r.DebtorName : ""),
+                                 InsuranceName = v.InsuranceCompany != null ? v.InsuranceCompany.Name : (r.DebtorType == DebtorType.Insurance ? r.DebtorName : ""),
+                                 r.Amount,
+                                 r.AmountReceived,
+                                 r.Currency,
+                                 r.OccurredAt,
+                                 r.SettledAt,
+                                 PatientName = (p.FirstName + " " + p.LastName).Trim(),
+                                 PatientMrn = p.MRN,
+                                 Token = v.Token,
+                                 InvoiceId = v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (Guid?)i.InvoiceId).FirstOrDefault(),
+                                 TestNames = v.Orders.Where(o => o.Status != OrderStatus.Cancelled).Select(o => o.Test.TestName).ToList()
+                             }).ToListAsync();
 
-            var receivables = await query.ToListAsync();
+            var receivables = raw.Select(x =>
+            {
+                var testList = x.TestNames.Where(t => !string.IsNullOrEmpty(t)).ToList();
+                var testsSummary = string.Join(", ", testList);
+                var pending = x.Amount - x.AmountReceived;
+                var status = x.SettledAt.HasValue ? "Settled" : (x.AmountReceived > 0 ? "Partial" : "Pending");
+
+                return new
+                {
+                    receivableFactId = x.ReceivableFactId,
+                    sourceVisitId = x.SourceVisitId,
+                    debtorType = x.DebtorType,
+                    debtorId = x.DebtorId != Guid.Empty ? x.DebtorId : (x.ReferralPartnerId ?? Guid.Empty),
+                    debtorName = !string.IsNullOrEmpty(x.DebtorName) ? x.DebtorName : (x.PartnerName != "" ? x.PartnerName : "Unknown Account"),
+                    claimReference = x.ClaimReference,
+                    referralPartnerId = x.ReferralPartnerId,
+                    partnerName = !string.IsNullOrEmpty(x.PartnerName) ? x.PartnerName : (x.DebtorType == "Partner" ? x.DebtorName : "Direct / Walk-in"),
+                    corporateName = x.CorporateName,
+                    insuranceName = x.InsuranceName,
+                    amount = x.Amount,
+                    totalAmount = x.Amount,
+                    amountReceived = x.AmountReceived,
+                    paidAmount = x.AmountReceived,
+                    pendingAmount = pending,
+                    balanceDue = pending,
+                    currency = x.Currency,
+                    occurredAt = x.OccurredAt,
+                    settledAt = x.SettledAt,
+                    status = status,
+                    patientName = x.PatientName,
+                    patientMrn = x.PatientMrn,
+                    token = x.Token,
+                    visitToken = x.Token,
+                    invoiceNumber = x.InvoiceId.HasValue ? $"INV-{x.InvoiceId.Value.ToString().Substring(0, 8).ToUpper()}" : x.Token,
+                    tests = testList,
+                    testNames = testList,
+                    testsSummary = testsSummary
+                };
+            }).ToList();
+
             return Ok(receivables);
         }
     }

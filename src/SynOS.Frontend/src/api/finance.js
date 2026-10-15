@@ -445,10 +445,11 @@ export const FinanceApi = {
     },
 
     /**
-     * Fetches pending partner receivables.
+     * Fetches pending receivables (supports filtering by type e.g. 'partner', 'corporate', 'insurance').
      */
-    getReceivables: async () => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/receivables'), {
+    getReceivables: async (type = null) => {
+        const query = type ? `?type=${encodeURIComponent(type)}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/receivables${query}`), {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load receivables");

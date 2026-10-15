@@ -89,9 +89,13 @@ export const ReferralTerminal = () => {
                 setTabData(prev => ({ ...prev, payouts: res || [] }));
                 return res || [];
             } else if (targetTab === 'receivables') {
-                const res = await FinanceApi.getReceivables();
-                setTabData(prev => ({ ...prev, receivables: res || [] }));
-                return res || [];
+                const res = await FinanceApi.getReceivables('partner');
+                const partnerOnly = (res || []).filter(r => {
+                    const dt = String(r.debtorType || '').toLowerCase();
+                    return dt === 'partner' || dt === '1' || (!r.corporateName && !r.corporateAccountId && !r.insuranceName && !r.insuranceCompanyId);
+                });
+                setTabData(prev => ({ ...prev, receivables: partnerOnly }));
+                return partnerOnly;
             } else if (targetTab === 'history') {
                 const res = await FinanceApi.getSettlementHistory();
                 setTabData(prev => ({ ...prev, history: res || [] }));
@@ -136,17 +140,23 @@ export const ReferralTerminal = () => {
                 `"${p.status || 'Pending'}"`
             ]);
         } else if (tab === 'receivables') {
-            headers = ["Partner / Clinic Name", "Payer Category", "Visit Token", "Patient Name", "Total Bill (INR)", "Paid (INR)", "Balance Due (INR)", "Status"];
-            rows = (data || []).map(r => [
-                `"${(r.partnerName || r.clinicName || '').replace(/"/g, '""')}"`,
-                `"${r.payerType || 'Partner B2B'}"`,
-                `"${r.visitToken || ''}"`,
-                `"${(r.patientName || '').replace(/"/g, '""')}"`,
-                r.totalAmount || 0,
-                r.paidAmount || 0,
-                r.balanceDue ?? (r.totalAmount - (r.paidAmount || 0)),
-                `"${r.status || 'Pending'}"`
-            ]);
+            headers = ["Partner / Clinic Name", "Visit Token", "Patient Name", "Tests / Investigations Billed", "Total Bill (INR)", "Paid (INR)", "Balance Due (INR)", "Status"];
+            rows = (data || []).map(r => {
+                const total = Number(r.totalAmount || r.amount || 0);
+                const paid = Number(r.paidAmount || r.amountReceived || 0);
+                const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (total - paid);
+                const tests = r.testsSummary || (r.testNames?.join('; ')) || (r.tests?.join('; ')) || '-';
+                return [
+                    `"${(r.partnerName || r.clinicName || '').replace(/"/g, '""')}"`,
+                    `"${r.visitToken || r.token || ''}"`,
+                    `"${(r.patientName || '').replace(/"/g, '""')}"`,
+                    `"${tests.replace(/"/g, '""')}"`,
+                    total,
+                    paid,
+                    isNaN(due) ? 0 : due,
+                    `"${r.status || 'Pending'}"`
+                ];
+            });
         } else if (tab === 'history') {
             headers = ["Date", "Payee / Doctor Name", "Transaction Type", "Reference No", "Payment Mode", "Amount (INR)", "Notes"];
             rows = (data || []).map(h => [
@@ -236,7 +246,12 @@ export const ReferralTerminal = () => {
                 }
             };
         } else if (tab === 'receivables') {
-            const totalRec = data.reduce((sum, r) => sum + (Number(r.balanceDue ?? (r.totalAmount - (r.paidAmount || 0)))), 0);
+            const totalRec = data.reduce((sum, r) => {
+                const due = r.balanceDue !== undefined && !isNaN(r.balanceDue)
+                    ? Number(r.balanceDue)
+                    : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
+                return sum + (isNaN(due) ? 0 : due);
+            }, 0);
             return {
                 title: "Partner Clinic B2B Receivables Ledger",
                 subtitle: "Diagnostic receivables and institutional invoices owed by clinical partners",
@@ -248,14 +263,19 @@ export const ReferralTerminal = () => {
                 ],
                 columns: [
                     { key: 'partnerName', label: 'Partner / Clinic', render: (v, r) => v || r.clinicName || 'Clinic' },
-                    { key: 'visitToken', label: 'Visit / Token', render: (v) => v || '-' },
+                    { key: 'visitToken', label: 'Visit / Token', render: (v, r) => v || r.token || '-' },
                     { key: 'patientName', label: 'Patient', render: (v) => v || '-' },
-                    { key: 'totalAmount', label: 'Invoice Total (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
-                    { key: 'balanceDue', label: 'Balance Due (₹)', align: 'right', render: (v, r) => `₹${Number(v ?? (r.totalAmount - (r.paidAmount || 0))).toLocaleString()}` },
+                    { key: 'testsSummary', label: 'Tests / Investigations', render: (v, r) => v || (r.testNames?.join(', ')) || (r.tests?.join(', ')) || '-' },
+                    { key: 'totalAmount', label: 'Invoice Total (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.amount || 0).toLocaleString()}` },
+                    { key: 'balanceDue', label: 'Balance Due (₹)', align: 'right', render: (v, r) => {
+                        const due = v !== undefined && !isNaN(v) ? v : ((r.totalAmount || r.amount || 0) - (r.paidAmount || r.amountReceived || 0));
+                        return `₹${Number(due || 0).toLocaleString()}`;
+                    }},
                     { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Pending' }
                 ],
                 data: data,
                 summaryTotals: {
+                    totalAmount: `₹${data.reduce((sum, r) => sum + Number(r.totalAmount || r.amount || 0), 0).toLocaleString()}`,
                     balanceDue: `₹${totalRec.toLocaleString()}`
                 }
             };

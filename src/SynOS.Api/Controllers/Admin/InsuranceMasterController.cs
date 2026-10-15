@@ -91,9 +91,15 @@ namespace SynOS.Api.Controllers.Admin
                     ? v.Patient.DisplayName
                     : $"{v.Patient?.FirstName} {v.Patient?.LastName}".Trim();
 
+                var testNames = v.Orders.Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled && o.Test != null).Select(o => o.Test.TestName).ToList();
+                var testsSummary = string.Join(", ", testNames);
+
                 return new
                 {
                     VisitId = v.VisitId,
+                    Token = v.Token,
+                    VisitToken = v.Token,
+                    InvoiceNumber = invoice != null ? $"INV-{invoice.InvoiceId.ToString().Substring(0, 8).ToUpper()}" : v.Token,
                     PatientName = !string.IsNullOrWhiteSpace(patName) ? patName : "Unknown Patient",
                     PatientMrn = v.Patient?.MRN ?? "",
                     InsuranceCompanyId = v.InsuranceCompanyId,
@@ -104,7 +110,11 @@ namespace SynOS.Api.Controllers.Admin
                     CoPayAmount = coPay,
                     ClaimAmount = claimDue,
                     Status = invoice?.Status ?? v.Status.ToString(),
-                    CreatedAt = v.CreatedAt
+                    TestsSummary = testsSummary,
+                    Tests = testNames,
+                    CreatedAt = v.CreatedAt,
+                    OccurredAt = v.CreatedAt,
+                    Date = v.CreatedAt
                 };
             }).ToList();
 

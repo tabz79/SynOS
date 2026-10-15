@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Building2, Beaker, Activity, Calendar } from 'lucide-react';
+import { Search, Building2, Beaker, Activity, Calendar, Stethoscope } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const FilterPill = ({ label, count, isActive, onClick, variant = "default" }) => {
@@ -71,6 +71,9 @@ export const FinanceFilterBar = ({
     modalityFilter,
     onModalityChange,
     modalityOptions,
+    doctorFilter,
+    onDoctorChange,
+    doctorOptions = [],
     dateRange,
     onDateRangeChange,
     dateRangeOptions = ['Today', 'Yesterday', 'This Week', 'This Month', 'All Time', 'Custom Range'],
@@ -214,6 +217,25 @@ export const FinanceFilterBar = ({
                                     )}
                                 </>
                             )}
+                        </select>
+                    </div>
+                )}
+
+                {/* Doctor / Referring Provider Selector */}
+                {onDoctorChange && (
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <Stethoscope size={13} className="text-zinc-400" />
+                        <select
+                            value={doctorFilter || 'All'}
+                            onChange={(e) => onDoctorChange(e.target.value)}
+                            className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer max-w-[180px] truncate"
+                        >
+                            <option value="All">All Doctors / Referrers</option>
+                            {doctorOptions.map(doc => {
+                                const val = typeof doc === 'object' ? doc.value || doc.name : doc;
+                                const label = typeof doc === 'object' ? doc.label || doc.name : doc;
+                                return <option key={val} value={val}>{label}</option>;
+                            })}
                         </select>
                     </div>
                 )}

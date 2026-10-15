@@ -260,11 +260,12 @@ export function CorporateTerminal() {
                     { label: "Employee Visits", value: filteredVisits.length, subtext: "Investigations Undertaken" }
                 ],
                 columns: [
-                    { key: 'visitToken', label: 'Token / Inv No', render: (v, r) => v || r.token || '-' },
+                    { key: 'visitToken', label: 'Token / Inv No', render: (v, r) => v || r.token || r.invoiceNumber || '-' },
                     { key: 'createdAt', label: 'Date', render: (v, r) => new Date(v || r.date || Date.now()).toLocaleDateString() },
                     { key: 'employeeId', label: 'Employee ID', render: (v) => v || 'N/A' },
                     { key: 'patientName', label: 'Staff / Patient Name' },
                     { key: 'companyName', label: 'Corporate Client', render: (v) => v || activeAccountObj?.companyName || '-' },
+                    { key: 'testsSummary', label: 'Tests Billed', render: (v, r) => v || (r.tests?.join(', ')) || '-' },
                     { key: 'grossAmount', label: 'Total (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.totalAmount || 0).toLocaleString()}` },
                     { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Invoiced' }
                 ],
@@ -1194,41 +1195,53 @@ export function CorporateTerminal() {
                                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                             <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
+                                                    <th className="px-6 py-3.5">Token / Inv No</th>
                                                     <th className="px-6 py-3.5">Employee / Patient</th>
                                                     <th className="px-6 py-3.5">Corporate Client</th>
                                                     <th className="px-6 py-3.5">Employee / Staff ID</th>
-                                                    <th className="px-6 py-3.5 text-right">Invoiced (₹0 at Desk)</th>
+                                                    <th className="px-6 py-3.5">Tests Billed</th>
+                                                    <th className="px-6 py-3.5">Date</th>
+                                                    <th className="px-6 py-3.5 text-right">Invoiced (₹)</th>
                                                     <th className="px-6 py-3.5 text-center">Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                                                 {filteredVisits.map(v => (
-                                                    <tr key={v.visitId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                                                    <tr key={v.visitId || v.token || v.invoiceNumber} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                                                        <td className="px-6 py-3.5 font-mono text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                                                            {v.token || v.visitToken || v.invoiceNumber || '-'}
+                                                        </td>
                                                         <td className="px-6 py-3.5">
                                                             <div className="font-bold text-sm dark:text-zinc-100">{v.patientName}</div>
-                                                            <div className="text-[10px] text-zinc-400 font-mono">MRN: {v.patientMrn}</div>
+                                                            <div className="text-[10px] text-zinc-400 font-mono">MRN: {v.patientMrn || '-'}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 font-medium dark:text-zinc-200">
-                                                            {v.companyName}
+                                                            {v.companyName || activeAccountObj?.companyName || '-'}
                                                         </td>
                                                         <td className="px-6 py-3.5 font-mono text-[11px] text-indigo-500 font-bold">
-                                                            {v.employeeId}
+                                                            {v.employeeId || 'N/A'}
+                                                        </td>
+                                                        <td className="px-6 py-3.5 text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={v.testsSummary || (v.tests?.join(', ')) || '-'}>
+                                                            {v.testsSummary || (v.tests?.join(', ')) || '-'}
+                                                        </td>
+                                                        <td className="px-6 py-3.5 text-zinc-500 font-medium">
+                                                            {new Date(v.createdAt || v.date || Date.now()).toLocaleDateString()}
                                                         </td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-emerald-500 font-bold">
-                                                            ₹{v.grossAmount?.toLocaleString()}
+                                                            ₹{(v.grossAmount || v.totalAmount || 0).toLocaleString()}
                                                         </td>
                                                         <td className="px-6 py-3.5 text-center">
                                                             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-500">
-                                                                {v.status}
+                                                                {v.status || 'Invoiced'}
                                                             </span>
                                                         </td>
                                                     </tr>
                                                 ))}
                                                 {filteredVisits.length === 0 && (
                                                     <tr>
-                                                        <td colSpan={5} className="px-6 py-8 text-center text-zinc-400">
+                                                        <td colSpan={8} className="px-6 py-8 text-center text-zinc-400">
                                                             No corporate B2B visits found.
                                                         </td>
                                                     </tr>

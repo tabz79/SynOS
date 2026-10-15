@@ -26,6 +26,8 @@ export const FinancePrintableSummaryModal = ({
     columns = [],
     data = [],
     summaryTotals = null,
+    secondaryTable = null,
+    extraContent = null,
     onDownloadCsv = null,
     categoryLabel = "FINANCE LEDGER SUMMARY",
     labInfo = null
@@ -294,6 +296,91 @@ export const FinancePrintableSummaryModal = ({
                                     )}
                                 </table>
                             </div>
+
+                            {/* SECONDARY / ITEMIZED DATA TABLE */}
+                            {secondaryTable && (
+                                <div className="mb-6">
+                                    {(secondaryTable.title || secondaryTable.subtitle) && (
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xs font-black uppercase tracking-wider text-zinc-800">
+                                                {secondaryTable.title || "Itemized Breakdown"}
+                                            </h3>
+                                            {secondaryTable.subtitle && (
+                                                <span className="text-[10px] text-zinc-500 font-medium">
+                                                    {secondaryTable.subtitle}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="border border-zinc-200 rounded-xl overflow-hidden">
+                                        <table className="w-full text-left text-xs border-collapse">
+                                            <thead>
+                                                <tr className="bg-zinc-100 border-b border-zinc-200 text-zinc-600 font-bold uppercase tracking-wider text-[10px]">
+                                                    <th className="py-2.5 px-3 w-8 text-center">#</th>
+                                                    {(secondaryTable.columns || []).map(col => (
+                                                        <th 
+                                                            key={col.key} 
+                                                            className={cn(
+                                                                "py-2.5 px-3",
+                                                                col.align === 'right' ? 'text-right' : (col.align === 'center' ? 'text-center' : 'text-left')
+                                                            )}
+                                                        >
+                                                            {col.label}
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-zinc-200">
+                                                {(secondaryTable.data || []).map((row, idx) => (
+                                                    <tr key={row.id || row.token || row.receivableFactId || idx} className="hover:bg-zinc-50/50">
+                                                        <td className="py-2 px-3 text-center text-[10px] text-zinc-400 font-mono">
+                                                            {idx + 1}
+                                                        </td>
+                                                        {(secondaryTable.columns || []).map(col => (
+                                                            <td 
+                                                                key={col.key} 
+                                                                className={cn(
+                                                                    "py-2 px-3 text-[11px]",
+                                                                    col.align === 'right' ? 'text-right font-mono font-semibold' : (col.align === 'center' ? 'text-center' : 'text-left')
+                                                                )}
+                                                            >
+                                                                {col.render ? col.render(row[col.key], row, idx) : (row[col.key] !== undefined && row[col.key] !== null ? String(row[col.key]) : '-')}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                                {(!secondaryTable.data || secondaryTable.data.length === 0) && (
+                                                    <tr>
+                                                        <td colSpan={(secondaryTable.columns?.length || 1) + 1} className="py-6 text-center text-zinc-400 text-xs italic">
+                                                            No itemized entries found.
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                            {secondaryTable.summaryTotals && secondaryTable.data?.length > 0 && (
+                                                <tfoot>
+                                                    <tr className="bg-zinc-100 border-t-2 border-zinc-300 font-bold text-zinc-900 text-[11px]">
+                                                        <td className="py-2.5 px-3 text-center font-bold text-zinc-500">TOTAL</td>
+                                                        {(secondaryTable.columns || []).map(col => (
+                                                            <td 
+                                                                key={col.key} 
+                                                                className={cn(
+                                                                    "py-2.5 px-3",
+                                                                    col.align === 'right' ? 'text-right font-mono font-black' : (col.align === 'center' ? 'text-center font-bold' : 'text-left font-bold')
+                                                                )}
+                                                            >
+                                                                {secondaryTable.summaryTotals[col.key] !== undefined ? secondaryTable.summaryTotals[col.key] : ''}
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                </tfoot>
+                                            )}
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {extraContent}
                         </div>
 
                         {/* 7. AUDIT & SIGNATORY FOOTER */}

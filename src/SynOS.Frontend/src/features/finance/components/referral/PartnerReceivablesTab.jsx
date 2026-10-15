@@ -55,35 +55,57 @@ export const PartnerReceivablesTab = () => {
         }
     };
 
+    const normalizeDebtorType = (val) => {
+        if (!val && val !== 0) return 'partner';
+        const s = String(val).toLowerCase();
+        if (s === '1' || s === 'partner') return 'partner';
+        if (s === '2' || s === 'insurance') return 'insurance';
+        if (s === '3' || s === 'corporate') return 'corporate';
+        return s;
+    };
+
     const groupReceivables = (data, tab = activePayerTab) => {
         const groups = {};
         if (!Array.isArray(data)) return [];
         data.forEach(r => {
             if (!r) return;
-            // DebtorType: 1 = Partner, 2 = Insurance, 3 = Corporate
-            const debtorType = r.debtorType || (r.referralPartnerId ? 1 : null);
-            if (tab === 'partner' && debtorType !== 1 && r.referralPartnerId == null) return;
-            if (tab === 'insurance' && debtorType !== 2) return;
-            if (tab === 'corporate' && debtorType !== 3) return;
+            const normType = normalizeDebtorType(r.debtorType);
+            
+            // STRICT TAB MATCHING:
+            if (tab === 'partner' && normType !== 'partner') return;
+            if (tab === 'insurance' && normType !== 'insurance') return;
+            if (tab === 'corporate' && normType !== 'corporate') return;
 
-            const key = r.debtorId || r.referralPartnerId || r.debtorName || 'Unknown';
+            const key = r.debtorId || r.referralPartnerId || r.partnerId || r.debtorName || 'Unknown';
             if (!groups[key]) {
                 groups[key] = {
                     partnerId: key,
-                    debtorType: debtorType,
+                    debtorType: normType,
                     partnerName: r.debtorName || r.partnerName || (tab === 'insurance' ? 'Empanelled Insurer' : tab === 'corporate' ? 'Corporate Account' : 'Unknown Partner'),
                     totalAmount: 0,
                     billCount: 0,
-                    oldestDate: r.occurredAt || new Date().toISOString(),
+                    oldestDate: r.occurredAt || r.date || new Date().toISOString(),
                     items: []
                 };
             }
-            groups[key].totalAmount += (r.amount - r.amountReceived);
+            const total = Number(r.totalAmount || r.amount || 0);
+            const paid = Number(r.paidAmount || r.amountReceived || 0);
+            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (total - paid);
+            const safeDue = isNaN(due) ? 0 : due;
+
+            groups[key].totalAmount += safeDue;
             groups[key].billCount += 1;
-            if (new Date(r.occurredAt) < new Date(groups[key].oldestDate)) {
-                groups[key].oldestDate = r.occurredAt;
+            const itemDate = r.occurredAt || r.date;
+            if (itemDate && new Date(itemDate) < new Date(groups[key].oldestDate)) {
+                groups[key].oldestDate = itemDate;
             }
-            groups[key].items.push(r);
+            groups[key].items.push({
+                ...r,
+                totalAmount: total,
+                paidAmount: paid,
+                balanceDue: safeDue,
+                token: r.token || r.visitToken || '-'
+            });
         });
         return Object.values(groups).filter(g => g.totalAmount > 0);
     };
@@ -97,16 +119,25 @@ export const PartnerReceivablesTab = () => {
     };
 
     const partnerTotal = rawReceivables
-        .filter(r => (r.debtorType === 1 || (!r.debtorType && r.referralPartnerId)))
-        .reduce((sum, r) => sum + (r.amount - r.amountReceived), 0);
+        .filter(r => normalizeDebtorType(r.debtorType) === 'partner')
+        .reduce((sum, r) => {
+            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
+            return sum + (isNaN(due) ? 0 : due);
+        }, 0);
 
     const insuranceTotal = rawReceivables
-        .filter(r => r.debtorType === 2)
-        .reduce((sum, r) => sum + (r.amount - r.amountReceived), 0);
+        .filter(r => normalizeDebtorType(r.debtorType) === 'insurance')
+        .reduce((sum, r) => {
+            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
+            return sum + (isNaN(due) ? 0 : due);
+        }, 0);
 
     const corporateTotal = rawReceivables
-        .filter(r => r.debtorType === 3)
-        .reduce((sum, r) => sum + (r.amount - r.amountReceived), 0);
+        .filter(r => normalizeDebtorType(r.debtorType) === 'corporate')
+        .reduce((sum, r) => {
+            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
+            return sum + (isNaN(due) ? 0 : due);
+        }, 0);
 
     const handleSettleRecovery = async (partner, amount, method) => {
         try {
@@ -320,7 +351,7 @@ export const PartnerReceivablesTab = () => {
 
                                         return (
                                             <tr>
-                                                <td colSpan="5" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                <td colSpan="6" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
                                                     <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
                                                         
                                                         {/* BATCH SELECTION ACTION BAR */}
@@ -332,7 +363,7 @@ export const PartnerReceivablesTab = () => {
                                                                     </div>
                                                                     <div>
                                                                         <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
-                                                                            {selectedCount} of {partner.items.length} Bills Selected
+                                                                            {selectedCount} of {partner.items.length} Invoices Selected
                                                                         </p>
                                                                         <p className="text-[10px] text-zinc-500 font-medium">
                                                                             Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
@@ -384,6 +415,7 @@ export const PartnerReceivablesTab = () => {
                                                                     </th>
                                                                     <th className="pb-2">Token / Reference</th>
                                                                     <th className="pb-2">Patient</th>
+                                                                    <th className="pb-2">Tests / Investigations</th>
                                                                     <th className="pb-2">Date</th>
                                                                     <th className="pb-2 text-right">Original</th>
                                                                     <th className="pb-2 text-right">Outstanding</th>
@@ -411,7 +443,7 @@ export const PartnerReceivablesTab = () => {
                                                                                 />
                                                                             </td>
                                                                             <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">
-                                                                                <div>{fact.token || fact.receivableFactId.toString().substring(0, 13)}</div>
+                                                                                <div>{fact.token || fact.visitToken || fact.receivableFactId.toString().substring(0, 13)}</div>
                                                                                 {fact.claimReference && (
                                                                                     <div className="text-[9px] text-indigo-500 font-sans font-semibold">
                                                                                         {activePayerTab === 'insurance' ? `Policy/Claim: ${fact.claimReference}` : `Emp ID: ${fact.claimReference}`}
@@ -419,9 +451,12 @@ export const PartnerReceivablesTab = () => {
                                                                                 )}
                                                                             </td>
                                                                             <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
-                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt).toLocaleDateString()}</td>
-                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.amount.toLocaleString()}</td>
-                                                                            <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.amount - fact.amountReceived).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}>
+                                                                                {fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}
+                                                                            </td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt || fact.date).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{(fact.totalAmount || fact.amount || 0).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.balanceDue !== undefined && !isNaN(fact.balanceDue) ? fact.balanceDue : (fact.amount || 0) - (fact.amountReceived || 0)).toLocaleString()}</td>
                                                                         </tr>
                                                                     );
                                                                 })}
