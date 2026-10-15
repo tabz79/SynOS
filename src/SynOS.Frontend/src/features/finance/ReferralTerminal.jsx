@@ -440,6 +440,7 @@ export const ReferralTerminal = () => {
             <FinancePrintableSummaryModal 
                 isOpen={isPrintSummaryOpen}
                 onClose={() => setIsPrintSummaryOpen(false)}
+                slotId="summary_doctor_dues"
                 title={printConfig.title}
                 subtitle={printConfig.subtitle}
                 categoryLabel={printConfig.categoryLabel}
@@ -447,7 +448,7 @@ export const ReferralTerminal = () => {
                 columns={printConfig.columns}
                 data={printConfig.data}
                 summaryTotals={printConfig.summaryTotals}
-                onExportCsv={handleDownloadTabSummary}
+                onDownloadCsv={handleDownloadTabSummary}
             />
         </div>
     );

@@ -37,6 +37,8 @@ import {
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 import { cn } from '@/lib/utils';
 import { VendorMasterScreen } from './VendorMasterScreen';
 import { OverheadExpensesScreen } from './OverheadScreens';
@@ -904,6 +906,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
     const [loading, setLoading] = useState(true);
     const [settleModal, setSettleModal] = useState({ isOpen: false, payable: null });
     const [pricingModal, setPricingModal] = useState({ isOpen: false, payable: null });
+    const [activePayableForManifest, setActivePayableForManifest] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -1050,21 +1053,31 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                                 <StatusBadge status={payable.status} />
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                {payable.status === 'PendingPricing' ? (
+                                                <div className="flex items-center justify-end gap-2">
                                                     <button 
-                                                        onClick={() => setPricingModal({ isOpen: true, payable })}
-                                                        className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-1.5"
+                                                        onClick={() => setActivePayableForManifest(payable)}
+                                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer shadow-xs"
+                                                        title="Print Outsource Slip / Manifest"
                                                     >
-                                                        <AlertCircle className="w-3 h-3" /> Resolve
+                                                        <Printer size={13} />
+                                                        <span>Slip</span>
                                                     </button>
-                                                ) : payable.status !== 'Settled' && tab !== 'history' && (
-                                                    <button 
-                                                        onClick={() => setSettleModal({ isOpen: true, payable })}
-                                                        className="px-3 py-1.5 bg-synos-primary text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors"
-                                                    >
-                                                        Settle
-                                                    </button>
-                                                )}
+                                                    {payable.status === 'PendingPricing' ? (
+                                                        <button 
+                                                            onClick={() => setPricingModal({ isOpen: true, payable })}
+                                                            className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                        >
+                                                            <AlertCircle className="w-3 h-3" /> Resolve
+                                                        </button>
+                                                    ) : payable.status !== 'Settled' && tab !== 'history' && (
+                                                        <button 
+                                                            onClick={() => setSettleModal({ isOpen: true, payable })}
+                                                            className="px-3 py-1.5 bg-synos-primary text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors cursor-pointer"
+                                                        >
+                                                            Settle
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -1088,6 +1101,21 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                 onClose={() => setPricingModal({ isOpen: false, payable: null })}
                 onResolved={() => loadData()}
             />
+
+            {/* INDIVIDUAL OUTSOURCE SLIP MODAL */}
+            {activePayableForManifest && (
+                <CommercialDocumentViewer
+                    isOpen={!!activePayableForManifest}
+                    onClose={() => setActivePayableForManifest(null)}
+                    title="Outsource Slip (A4)"
+                    paperSize="a4"
+                >
+                    <DynamicDocumentRenderer
+                        slotId="outsourced_lab_manifest"
+                        data={activePayableForManifest}
+                    />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 };
@@ -2411,6 +2439,7 @@ export const OutsourcingTerminal = () => {
             <FinancePrintableSummaryModal 
                 isOpen={isPrintSummaryOpen}
                 onClose={() => setIsPrintSummaryOpen(false)}
+                slotId="summary_outsource"
                 title={printConfig.title}
                 subtitle={printConfig.subtitle}
                 categoryLabel={printConfig.categoryLabel}
@@ -2418,7 +2447,7 @@ export const OutsourcingTerminal = () => {
                 columns={printConfig.columns}
                 data={printConfig.data}
                 summaryTotals={printConfig.summaryTotals}
-                onExportCsv={handleDownloadTabSummary}
+                onDownloadCsv={handleDownloadTabSummary}
             />
         </div>
     );

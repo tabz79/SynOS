@@ -35,6 +35,8 @@ import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import { ReceptionApi, fetchTestCatalogCached } from '@/api/reception';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
 export function CorporateTerminal() {
     const { tab = 'overview' } = useParams();
@@ -58,6 +60,7 @@ export function CorporateTerminal() {
     const [isAddRateRuleModalOpen, setIsAddRateRuleModalOpen] = useState(false);
     const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+    const [activeBillForPrint, setActiveBillForPrint] = useState(null);
 
     // Corporate Test Pricing Master Filter & Pagination States
     const [testSearchQuery, setTestSearchQuery] = useState('');
@@ -1205,6 +1208,7 @@ export function CorporateTerminal() {
                                                     <th className="px-6 py-3.5">Date</th>
                                                     <th className="px-6 py-3.5 text-right">Invoiced (₹)</th>
                                                     <th className="px-6 py-3.5 text-center">Status</th>
+                                                    <th className="px-6 py-3.5 text-right">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -1235,13 +1239,23 @@ export function CorporateTerminal() {
                                                         <td className="px-6 py-3.5 text-center">
                                                             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-500">
                                                                 {v.status || 'Invoiced'}
-                                                            </span>
+                                                             </span>
+                                                        </td>
+                                                        <td className="px-6 py-3.5 text-right">
+                                                            <button
+                                                                onClick={() => setActiveBillForPrint(v)}
+                                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 transition-all cursor-pointer shadow-xs"
+                                                                title="Print Corporate Bill"
+                                                            >
+                                                                <Printer size={13} />
+                                                                <span>Bill</span>
+                                                            </button>
                                                         </td>
                                                     </tr>
                                                 ))}
                                                 {filteredVisits.length === 0 && (
                                                     <tr>
-                                                        <td colSpan={8} className="px-6 py-8 text-center text-zinc-400">
+                                                        <td colSpan={9} className="px-6 py-8 text-center text-zinc-400">
                                                             No corporate B2B visits found.
                                                         </td>
                                                     </tr>
@@ -1390,6 +1404,7 @@ export function CorporateTerminal() {
                     <FinancePrintableSummaryModal
                         isOpen={isPrintSummaryOpen}
                         onClose={() => setIsPrintSummaryOpen(false)}
+                        slotId="summary_corporate"
                         title={cfg.title}
                         subtitle={cfg.subtitle}
                         categoryLabel={cfg.categoryLabel}
@@ -1402,6 +1417,21 @@ export function CorporateTerminal() {
                     />
                 );
             })()}
+
+            {/* INDIVIDUAL CORPORATE BILL MODAL */}
+            {activeBillForPrint && (
+                <CommercialDocumentViewer
+                    isOpen={!!activeBillForPrint}
+                    onClose={() => setActiveBillForPrint(null)}
+                    title="Corporate Bill (A4)"
+                    paperSize="a4"
+                >
+                    <DynamicDocumentRenderer
+                        slotId="corporate_b2b_invoice"
+                        data={activeBillForPrint}
+                    />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 }

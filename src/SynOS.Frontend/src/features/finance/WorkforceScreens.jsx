@@ -3979,7 +3979,7 @@ export const WorkforceTerminal = () => {
                 columns={printConfig.columns}
                 data={printConfig.data}
                 summaryTotals={printConfig.summaryTotals}
-                onExportCsv={handleDownloadTabSummary}
+                onDownloadCsv={handleDownloadTabSummary}
             />
         </div>
     );

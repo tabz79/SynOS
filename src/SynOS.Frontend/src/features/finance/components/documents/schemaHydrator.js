@@ -353,6 +353,49 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             break;
         }
 
+        case 'procurement_grn': {
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.grnNumber) boxes.docBadge.fields.grnNumber.value = liveData.grnNumber || liveData.movementId || liveData.lotNumber || boxes.docBadge.fields.grnNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.movedAt || liveData.date ? new Date(liveData.movedAt || liveData.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+                if (boxes.docBadge.fields.poNumber) boxes.docBadge.fields.poNumber.value = liveData.poNumber || liveData.poReference || 'DIRECT INWARD';
+                if (boxes.docBadge.fields.receivedBy) boxes.docBadge.fields.receivedBy.value = liveData.recordedBy || liveData.receivedBy || 'Store Incharge';
+            }
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.supplierName) boxes.partyDetails.fields.supplierName.value = liveData.supplierName || liveData.vendorName || liveData.supplier?.name || boxes.partyDetails.fields.supplierName.value;
+                if (boxes.partyDetails.fields.invoiceNumber) boxes.partyDetails.fields.invoiceNumber.value = liveData.invoiceNumber || liveData.vendorInvoiceNo || boxes.partyDetails.fields.invoiceNumber.value;
+                if (boxes.partyDetails.fields.challanNumber) boxes.partyDetails.fields.challanNumber.value = liveData.challanNumber || boxes.partyDetails.fields.challanNumber.value;
+                if (boxes.partyDetails.fields.storageLocation) boxes.partyDetails.fields.storageLocation.value = liveData.storageLocation || liveData.branchName || boxes.partyDetails.fields.storageLocation.value;
+            }
+            if (boxes.itemsTable) {
+                const itemsToMap = Array.isArray(liveData.items) && liveData.items.length > 0 
+                    ? liveData.items 
+                    : (liveData.itemName || liveData.name ? [liveData] : []);
+                if (itemsToMap.length > 0) {
+                    boxes.itemsTable.rows = itemsToMap.map((it, idx) => {
+                        const qty = Number(it.receivedQuantity || it.quantity || 1);
+                        const rate = Number(it.unitCost || it.unitPrice || 0);
+                        return {
+                            id: `grn-${idx}`,
+                            index: idx + 1,
+                            description: it.description || it.itemName || it.name || 'Consumable Item',
+                            batchNumber: it.batchNumber || it.lotNumber || '-',
+                            expiryDate: it.expiryDate ? new Date(it.expiryDate).toLocaleDateString('en-IN') : '-',
+                            receivedQuantity: qty,
+                            unitCost: rate,
+                            total: Number(it.total || (qty * rate))
+                        };
+                    });
+                }
+            }
+            if (boxes.financialSummary?.fields) {
+                const itemsCount = boxes.itemsTable?.rows?.length || 1;
+                const totalVal = boxes.itemsTable?.rows?.reduce((s, r) => s + (Number(r.total) || 0), 0) || Number(liveData.totalAmount || 0);
+                if (boxes.financialSummary.fields.totalItemsCount) boxes.financialSummary.fields.totalItemsCount.value = `${itemsCount} Material Lines`;
+                if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${totalVal.toLocaleString('en-IN')}`;
+            }
+            break;
+        }
+
         case 'workforce_payslip': {
             const emp = liveData.employee || liveData.staff || {};
             const empName = liveData.employeeName || emp.name || emp.fullName;
@@ -498,39 +541,48 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
         case 'corporate_b2b_invoice': {
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || boxes.docBadge.fields.billNumber.value;
-                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
-                if (boxes.docBadge.fields.corporateCode) boxes.docBadge.fields.corporateCode.value = liveData.corporateCode || boxes.docBadge.fields.corporateCode.value;
+                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || liveData.token || boxes.docBadge.fields.billNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date || liveData.createdAt ? new Date(liveData.date || liveData.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+                if (boxes.docBadge.fields.corporateCode) boxes.docBadge.fields.corporateCode.value = liveData.corporateCode || liveData.corporateAccountId || boxes.docBadge.fields.corporateCode.value;
                 if (boxes.docBadge.fields.paymentStatus) {
-                    const due = Number(liveData.balanceDue || 0);
+                    const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : (liveData.status === 'Paid' ? 0 : (liveData.grossAmount || 0)));
                     boxes.docBadge.fields.paymentStatus.value = due <= 0 ? "PAID / SETTLED" : "BALANCE DUE";
                 }
             }
             if (boxes.partyDetails?.fields) {
-                if (boxes.partyDetails.fields.corporateName) boxes.partyDetails.fields.corporateName.value = liveData.corporateName || liveData.clientName || boxes.partyDetails.fields.corporateName.value;
+                if (boxes.partyDetails.fields.corporateName) boxes.partyDetails.fields.corporateName.value = liveData.corporateName || liveData.companyName || liveData.clientName || boxes.partyDetails.fields.corporateName.value;
                 if (boxes.partyDetails.fields.employeeName) boxes.partyDetails.fields.employeeName.value = liveData.employeeName || liveData.patientName || boxes.partyDetails.fields.employeeName.value;
                 if (boxes.partyDetails.fields.employeeId) boxes.partyDetails.fields.employeeId.value = liveData.employeeId || boxes.partyDetails.fields.employeeId.value;
                 if (boxes.partyDetails.fields.designation) boxes.partyDetails.fields.designation.value = liveData.designation || liveData.branchName || boxes.partyDetails.fields.designation.value;
                 if (boxes.partyDetails.fields.gstin) boxes.partyDetails.fields.gstin.value = liveData.corporateGstin || boxes.partyDetails.fields.gstin.value;
                 if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = liveData.corporateAddress || boxes.partyDetails.fields.address.value;
-                if (boxes.partyDetails.fields.packageSelected) boxes.partyDetails.fields.packageSelected.value = liveData.packageSelected || boxes.partyDetails.fields.packageSelected.value;
+                if (boxes.partyDetails.fields.packageSelected) boxes.partyDetails.fields.packageSelected.value = liveData.packageSelected || liveData.packageName || boxes.partyDetails.fields.packageSelected.value;
             }
-            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
-                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
-                    id: `corp-${idx}`,
-                    index: idx + 1,
-                    description: it.description || it.testName || it.name || 'Corporate Investigation',
-                    department: it.department || 'Diagnostics',
-                    price: Number(it.price || it.amount || 0),
-                    discount: Number(it.discount || 0),
-                    amount: Number(it.amount || it.price || 0)
-                }));
+            if (boxes.itemsTable) {
+                let rawList = liveData.items || liveData.tests;
+                if (!rawList && liveData.testsSummary) {
+                    rawList = liveData.testsSummary.split(',').map(s => s.trim()).filter(Boolean);
+                }
+                if (Array.isArray(rawList) && rawList.length > 0) {
+                    boxes.itemsTable.rows = rawList.map((it, idx) => {
+                        const isStr = typeof it === 'string';
+                        return {
+                            id: `corp-${idx}`,
+                            index: idx + 1,
+                            description: isStr ? it : (it.description || it.testName || it.name || 'Corporate Investigation'),
+                            department: isStr ? 'Diagnostics' : (it.department || 'Diagnostics'),
+                            price: isStr ? Number(liveData.grossAmount || 0) : Number(it.price || it.amount || 0),
+                            discount: isStr ? 0 : Number(it.discount || 0),
+                            amount: isStr ? Number(liveData.grossAmount || 0) : Number(it.amount || it.price || 0)
+                        };
+                    });
+                }
             }
             if (boxes.financialSummary?.fields) {
                 const gross = Number(liveData.grossSubtotal || liveData.grossAmount || liveData.totalAmount || 0);
                 const disc = Number(liveData.discountAmount || 0);
                 const total = Number(liveData.totalAmount || (gross - disc));
-                const paid = Number(liveData.totalPaid || liveData.paidAmount || 0);
+                const paid = Number(liveData.totalPaid || liveData.paidAmount || (liveData.status === 'Paid' ? total : 0));
                 const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : (total - paid));
 
                 if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${gross.toLocaleString('en-IN')}`;
@@ -545,33 +597,42 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
         case 'insurance_tpa_claim': {
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || boxes.docBadge.fields.billNumber.value;
-                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
-                if (boxes.docBadge.fields.claimStatus) boxes.docBadge.fields.claimStatus.value = liveData.claimStatus || "APPROVED / PRE-AUTH";
+                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || liveData.visitId || boxes.docBadge.fields.billNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date || liveData.createdAt ? new Date(liveData.date || liveData.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+                if (boxes.docBadge.fields.claimStatus) boxes.docBadge.fields.claimStatus.value = liveData.status || liveData.claimStatus || "APPROVED / PRE-AUTH";
             }
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = liveData.patientName || boxes.partyDetails.fields.fullName.value;
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = liveData.uhid || boxes.partyDetails.fields.uhid.value;
-                if (boxes.partyDetails.fields.insuranceProvider) boxes.partyDetails.fields.insuranceProvider.value = liveData.insuranceCompany || liveData.insuranceProvider || boxes.partyDetails.fields.insuranceProvider.value;
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = liveData.patientMrn || liveData.uhid || boxes.partyDetails.fields.uhid.value;
+                if (boxes.partyDetails.fields.insuranceProvider) boxes.partyDetails.fields.insuranceProvider.value = liveData.insuranceCompanyName || liveData.insuranceCompany || liveData.insuranceProvider || boxes.partyDetails.fields.insuranceProvider.value;
                 if (boxes.partyDetails.fields.tpaName) boxes.partyDetails.fields.tpaName.value = liveData.tpaName || boxes.partyDetails.fields.tpaName.value;
                 if (boxes.partyDetails.fields.policyNumber) boxes.partyDetails.fields.policyNumber.value = liveData.policyNumber || boxes.partyDetails.fields.policyNumber.value;
                 if (boxes.partyDetails.fields.preAuthApprovalNumber) boxes.partyDetails.fields.preAuthApprovalNumber.value = liveData.preAuthApprovalNumber || boxes.partyDetails.fields.preAuthApprovalNumber.value;
             }
-            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
-                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
-                    id: `ins-${idx}`,
-                    index: idx + 1,
-                    description: it.description || it.testName || 'Investigation',
-                    sacCode: it.sacCode || '999312',
-                    price: Number(it.price || it.amount || 0),
-                    discount: Number(it.discount || 0),
-                    amount: Number(it.amount || it.price || 0)
-                }));
+            if (boxes.itemsTable) {
+                let rawList = liveData.items || liveData.tests;
+                if (!rawList && liveData.testsSummary) {
+                    rawList = liveData.testsSummary.split(',').map(s => s.trim()).filter(Boolean);
+                }
+                if (Array.isArray(rawList) && rawList.length > 0) {
+                    boxes.itemsTable.rows = rawList.map((it, idx) => {
+                        const isStr = typeof it === 'string';
+                        return {
+                            id: `ins-${idx}`,
+                            index: idx + 1,
+                            description: isStr ? it : (it.description || it.testName || 'Investigation'),
+                            sacCode: isStr ? '999312' : (it.sacCode || '999312'),
+                            price: isStr ? Number(liveData.grossAmount || 0) : Number(it.price || it.amount || 0),
+                            discount: isStr ? 0 : Number(it.discount || 0),
+                            amount: isStr ? Number(liveData.grossAmount || 0) : Number(it.amount || it.price || 0)
+                        };
+                    });
+                }
             }
             if (boxes.financialSummary?.fields) {
-                const total = Number(liveData.totalAmount || 0);
+                const total = Number(liveData.grossAmount || liveData.totalAmount || 0);
                 const coPay = Number(liveData.coPayAmount || 0);
-                const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : total);
+                const due = Number(liveData.claimAmount !== undefined ? liveData.claimAmount : (total - coPay));
                 if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${total.toLocaleString('en-IN')}`;
                 if (boxes.financialSummary.fields.coPayAmount) boxes.financialSummary.fields.coPayAmount.value = `₹${coPay.toLocaleString('en-IN')}`;
                 if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${total.toLocaleString('en-IN')}`;
@@ -582,22 +643,27 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
         case 'outsourced_lab_manifest': {
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.manifestNumber) boxes.docBadge.fields.manifestNumber.value = liveData.manifestNumber || boxes.docBadge.fields.manifestNumber.value;
-                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
+                if (boxes.docBadge.fields.manifestNumber) boxes.docBadge.fields.manifestNumber.value = liveData.manifestNumber || liveData.id || boxes.docBadge.fields.manifestNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date || liveData.createdAt ? new Date(liveData.date || liveData.createdAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
             }
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.referenceLabName) boxes.partyDetails.fields.referenceLabName.value = liveData.referenceLabName || boxes.partyDetails.fields.referenceLabName.value;
             }
-            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
-                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
-                    id: `out-${idx}`,
-                    index: idx + 1,
-                    patientName: it.patientName || it.name || 'Patient',
-                    token: it.token || '',
-                    description: it.description || it.testName || 'Investigation',
-                    sampleType: it.sampleType || 'Serum',
-                    rate: Number(it.rate || it.price || 0)
-                }));
+            if (boxes.itemsTable) {
+                const itemsToMap = Array.isArray(liveData.items) && liveData.items.length > 0 
+                    ? liveData.items 
+                    : (liveData.patientName ? [liveData] : []);
+                if (itemsToMap.length > 0) {
+                    boxes.itemsTable.rows = itemsToMap.map((it, idx) => ({
+                        id: `out-${idx}`,
+                        index: idx + 1,
+                        patientName: it.patientName || it.name || 'Patient',
+                        token: it.token || it.sampleBarcode || it.testCode || '-',
+                        description: it.description || it.testName || 'Investigation',
+                        sampleType: it.sampleType || 'Specimen / Blood',
+                        rate: Number(it.rate || it.amountDue || it.amount || 0)
+                    }));
+                }
             }
             break;
         }
@@ -608,18 +674,59 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
         case 'summary_insurance':
         case 'summary_outsource': {
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.statementPeriod) boxes.docBadge.fields.statementPeriod.value = liveData.statementPeriod || liveData.period || boxes.docBadge.fields.statementPeriod.value;
-                if (boxes.docBadge.fields.generatedAt) boxes.docBadge.fields.generatedAt.value = new Date().toLocaleString('en-IN');
-                if (boxes.docBadge.fields.branchName) boxes.docBadge.fields.branchName.value = liveData.branchName || 'All Branches';
+                if (boxes.docBadge.fields.badgeTitle && liveData.title) {
+                    boxes.docBadge.fields.badgeTitle.value = liveData.title.toUpperCase();
+                }
+                if (boxes.docBadge.fields.statementPeriod) {
+                    boxes.docBadge.fields.statementPeriod.value = liveData.dateRangeText || liveData.statementPeriod || liveData.period || boxes.docBadge.fields.statementPeriod.value;
+                }
+                if (boxes.docBadge.fields.generatedAt) {
+                    boxes.docBadge.fields.generatedAt.value = new Date().toLocaleString('en-IN');
+                }
+                if (boxes.docBadge.fields.branchName) {
+                    boxes.docBadge.fields.branchName.value = liveData.branchName || 'All Branches';
+                }
             }
-            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
-                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
+            if (Array.isArray(liveData.columns) && liveData.columns.length > 0 && boxes.itemsTable) {
+                const dynamicCols = {
+                    index: { id: 'index', enabled: true, label: '#' }
+                };
+                liveData.columns.forEach(col => {
+                    dynamicCols[col.key] = {
+                        id: col.key,
+                        label: col.label,
+                        enabled: true
+                    };
+                });
+                boxes.itemsTable.columns = dynamicCols;
+            }
+            const rows = Array.isArray(liveData.data) ? liveData.data : (Array.isArray(liveData.items) ? liveData.items : []);
+            if (boxes.itemsTable && rows.length > 0) {
+                boxes.itemsTable.rows = rows.map((it, idx) => ({
                     ...it,
-                    id: it.id || `row-${idx}`,
+                    id: it.id || it.visitId || it.billId || `row-${idx}`,
                     index: idx + 1
                 }));
             }
             if (boxes.financialSummary?.fields) {
+                if (liveData.summaryTotals) {
+                    Object.entries(liveData.summaryTotals).forEach(([k, val]) => {
+                        if (boxes.financialSummary.fields[k]) {
+                            boxes.financialSummary.fields[k].value = typeof val === 'number' ? `₹${val.toLocaleString('en-IN')}` : String(val);
+                        }
+                    });
+                }
+                if (Array.isArray(liveData.kpis) && liveData.kpis.length > 0) {
+                    liveData.kpis.forEach((kpi, idx) => {
+                        const kpiKey = `kpi_${idx}`;
+                        boxes.financialSummary.fields[kpiKey] = {
+                            id: kpiKey,
+                            label: kpi.label,
+                            value: String(kpi.value),
+                            enabled: true
+                        };
+                    });
+                }
                 if (boxes.financialSummary.fields.totalBilled && liveData.totalBilled !== undefined) {
                     boxes.financialSummary.fields.totalBilled.value = `₹${Number(liveData.totalBilled).toLocaleString('en-IN')}`;
                 }

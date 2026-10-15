@@ -24,6 +24,7 @@ export const CommercialDocumentViewer = ({
     title = "Commercial Document", 
     children, 
     onWhatsAppShare,
+    onDownloadCsv,
     defaultLetterheadMode = "digital",
     topMarginMm = 40,
     paperSize = "a4" // "a4" | "thermal80"
@@ -146,6 +147,18 @@ export const CommercialDocumentViewer = ({
                                 <Printer size={12} />
                                 <span>POS 80mm Roll</span>
                             </div>
+                        )}
+
+                        {/* CSV Export Button */}
+                        {onDownloadCsv && (
+                            <button
+                                onClick={onDownloadCsv}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 text-xs font-bold transition-all shadow-xs cursor-pointer border border-zinc-200 dark:border-zinc-700"
+                                title="Download CSV / Excel"
+                            >
+                                <FileSpreadsheet size={14} className="text-emerald-600 dark:text-emerald-400" />
+                                <span className="hidden sm:inline">CSV</span>
+                            </button>
                         )}
 
                         {/* WhatsApp Share Button */}

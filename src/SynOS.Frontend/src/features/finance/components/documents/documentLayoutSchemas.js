@@ -538,6 +538,85 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
         }
     },
 
+    procurement_grn: {
+        slotId: 'procurement_grn',
+        title: 'Material GRN (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Central Reagent Stores & Receiving Dock' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Khammam - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Document Badge & Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'GOODS RECEIPT NOTE (GRN)' },
+                    grnNumber: { id: 'grnNumber', enabled: true, label: 'GRN No', value: 'GRN-202610-0014' },
+                    date: { id: 'date', enabled: true, label: 'Inward Date', value: '14/10/2026' },
+                    poNumber: { id: 'poNumber', enabled: true, label: 'PO Reference', value: 'PO-202610-008' },
+                    receivedBy: { id: 'receivedBy', enabled: true, label: 'Received By', value: 'Store Incharge' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Supplier & Delivery Info',
+                enabled: true,
+                title: 'Vendor / Delivery Details',
+                fields: {
+                    supplierName: { id: 'supplierName', enabled: true, label: 'Supplier Name', value: 'Transasia Bio-Medicals Ltd' },
+                    invoiceNumber: { id: 'invoiceNumber', enabled: true, label: 'Vendor Invoice No', value: 'INV-TB-99182' },
+                    challanNumber: { id: 'challanNumber', enabled: true, label: 'Delivery Challan No', value: 'DC-88192' },
+                    storageLocation: { id: 'storageLocation', enabled: true, label: 'Cold-Chain / Room', value: 'Cold Room (2°C - 8°C)' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Received Materials Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Item / Reagent Name' },
+                    batchNumber: { id: 'batchNumber', enabled: true, label: 'Batch No' },
+                    expiryDate: { id: 'expiryDate', enabled: true, label: 'Expiry Date' },
+                    receivedQuantity: { id: 'receivedQuantity', enabled: true, label: 'Qty Received' },
+                    unitCost: { id: 'unitCost', enabled: true, label: 'Unit Rate (₹)' },
+                    total: { id: 'total', enabled: true, label: 'Total Value (₹)' }
+                },
+                rows: [
+                    { id: 'grn-1', index: 1, description: 'Erba LFT Reagent Kit (Pack of 500 Tests)', batchNumber: 'ERB-9921', expiryDate: '11/2027', receivedQuantity: 2, unitCost: 4500, total: 9000 },
+                    { id: 'grn-2', index: 2, description: 'Vacutainer K2 EDTA Blood Collection Tubes (Pack of 100)', batchNumber: 'BD-8812', expiryDate: '06/2028', receivedQuantity: 5, unitCost: 650, total: 3250 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'GRN Totals',
+                enabled: true,
+                fields: {
+                    totalItemsCount: { id: 'totalItemsCount', enabled: true, label: 'Total Material Lines', value: '2 Lines' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Total Inward Value', value: '₹12,250.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Verification Signatures',
+                enabled: true,
+                title: 'Inspected & Received By (Stores)',
+                subtitle: 'Accounts / GRN Stamp'
+            }
+        }
+    },
+
     workforce_payslip: {
         slotId: 'workforce_payslip',
         title: 'Confidential Salary Pay Slip (A4)',

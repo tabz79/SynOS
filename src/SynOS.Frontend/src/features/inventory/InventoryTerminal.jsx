@@ -19,7 +19,8 @@ import {
     Download,
     Upload,
     Sparkles,
-    Loader2
+    Loader2,
+    Printer
 } from 'lucide-react'
 import { SignalRService } from '@/lib/signalr'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,8 @@ import { ShoppingCart } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { AdminApi } from '@/api/admin'
 import { INVENTORY_SERVICE_AREAS, RADIOLOGY_MODALITIES } from '@/constants/inventoryConstants'
+import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
+import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer'
 
 const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
     const [formData, setFormData] = useState({
@@ -1163,6 +1166,7 @@ const RequestsQueue = () => {
 const MovementHistory = () => {
     const [movements, setMovements] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [grnForPrint, setGrnForPrint] = useState(null);
 
     const load = async () => {
         setIsLoading(true);
@@ -1258,8 +1262,34 @@ const MovementHistory = () => {
                                         {move.recordedBy}
                                     </td>
                                     <td className="px-4 py-4 text-right">
-                                        <div className="text-[9px] font-mono text-zinc-500 uppercase">
-                                            {move.reference}
+                                        <div className="flex items-center justify-end gap-2">
+                                            <span className="text-[9px] font-mono text-zinc-500 uppercase">
+                                                {move.reference}
+                                            </span>
+                                            {move.movementType === 'Receive' && (
+                                                <button
+                                                    onClick={() => setGrnForPrint({
+                                                        grnNumber: `GRN-${move.movementId.substring(0, 8).toUpperCase()}`,
+                                                        date: move.movedAt,
+                                                        poNumber: move.reference || 'DIRECT INWARD',
+                                                        recordedBy: move.recordedBy,
+                                                        supplierName: move.supplierName || 'Stores Vendor',
+                                                        storageLocation: move.branchName,
+                                                        items: [{
+                                                            description: move.itemName,
+                                                            batchNumber: move.lotNumber || '-',
+                                                            receivedQuantity: Math.abs(move.quantity || 1),
+                                                            unitCost: 0,
+                                                            total: 0
+                                                        }]
+                                                    })}
+                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer shadow-xs"
+                                                    title="Print Material GRN Slip"
+                                                >
+                                                    <Printer size={12} />
+                                                    <span>GRN</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -1268,6 +1298,21 @@ const MovementHistory = () => {
                     </table>
                 )}
             </div>
+
+            {/* INDIVIDUAL MATERIAL GRN SLIP MODAL */}
+            {grnForPrint && (
+                <CommercialDocumentViewer
+                    isOpen={!!grnForPrint}
+                    onClose={() => setGrnForPrint(null)}
+                    title="Material GRN (A4)"
+                    paperSize="a4"
+                >
+                    <DynamicDocumentRenderer
+                        slotId="procurement_grn"
+                        data={grnForPrint}
+                    />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 };

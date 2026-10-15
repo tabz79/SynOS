@@ -28,6 +28,8 @@ import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import { ReceptionApi } from '@/api/reception';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
 export function InsuranceTerminal() {
     const { tab = 'overview' } = useParams();
@@ -98,6 +100,7 @@ export function InsuranceTerminal() {
     });
 
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+    const [activeClaimForPrint, setActiveClaimForPrint] = useState(null);
 
     const handleDownloadTabSummary = () => {
         let headers = [];
@@ -616,6 +619,7 @@ export function InsuranceTerminal() {
                                                     <th className="px-6 py-3.5 text-right">Desk Co-Pay</th>
                                                     <th className="px-6 py-3.5 text-right">TPA Due</th>
                                                     <th className="px-6 py-3.5 text-center">Status</th>
+                                                    <th className="px-6 py-3.5 text-right">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -640,11 +644,21 @@ export function InsuranceTerminal() {
                                                                 {c.status}
                                                             </span>
                                                         </td>
+                                                        <td className="px-6 py-3.5 text-right">
+                                                            <button
+                                                                onClick={() => setActiveClaimForPrint(c)}
+                                                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 transition-all cursor-pointer shadow-xs"
+                                                                title="Print TPA Insurance Claim"
+                                                            >
+                                                                <Printer size={13} />
+                                                                <span>Claim</span>
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))}
                                                 {filteredClaims.length === 0 && (
                                                     <tr>
-                                                        <td colSpan={7} className="px-6 py-8 text-center text-zinc-400">
+                                                        <td colSpan={8} className="px-6 py-8 text-center text-zinc-400">
                                                             No claims found matching search criteria.
                                                         </td>
                                                     </tr>
@@ -798,6 +812,7 @@ export function InsuranceTerminal() {
                     <FinancePrintableSummaryModal
                         isOpen={isPrintSummaryOpen}
                         onClose={() => setIsPrintSummaryOpen(false)}
+                        slotId="summary_insurance"
                         title={cfg.title}
                         subtitle={cfg.subtitle}
                         categoryLabel={cfg.categoryLabel}
@@ -810,6 +825,21 @@ export function InsuranceTerminal() {
                     />
                 );
             })()}
+
+            {/* INDIVIDUAL INSURANCE CLAIM MODAL */}
+            {activeClaimForPrint && (
+                <CommercialDocumentViewer
+                    isOpen={!!activeClaimForPrint}
+                    onClose={() => setActiveClaimForPrint(null)}
+                    title="Insurance TPA Claim (A4)"
+                    paperSize="a4"
+                >
+                    <DynamicDocumentRenderer
+                        slotId="insurance_tpa_claim"
+                        data={activeClaimForPrint}
+                    />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 }

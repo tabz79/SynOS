@@ -1116,6 +1116,7 @@ export const BillsCollectionsScreen = () => {
             <FinancePrintableSummaryModal
                 isOpen={isPrintSummaryOpen}
                 onClose={() => setIsPrintSummaryOpen(false)}
+                slotId="summary_bills_daybook"
                 title="Bills & Collections Revenue Ledger"
                 subtitle="Operational ledger with branch, department, and modality transaction breakdowns"
                 dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
@@ -1675,6 +1676,7 @@ export const PendingReceivablesScreen = () => {
             <FinancePrintableSummaryModal
                 isOpen={isPrintSummaryOpen}
                 onClose={() => setIsPrintSummaryOpen(false)}
+                slotId="summary_bills_daybook"
                 title="Institutional & Referral Partner Receivables Ledger"
                 subtitle="B2B credit balances, aging distribution, and recovery liabilities"
                 dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
@@ -1949,6 +1951,7 @@ export const CollectionHistoryScreen = () => {
             <FinancePrintableSummaryModal
                 isOpen={isPrintSummaryOpen}
                 onClose={() => setIsPrintSummaryOpen(false)}
+                slotId="summary_bills_daybook"
                 title="Revenue Collection & Cashier Receipts Ledger"
                 subtitle="Itemized settlement audit trail across counter, digital, and institutional receipts"
                 dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
