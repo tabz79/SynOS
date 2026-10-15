@@ -330,139 +330,289 @@ namespace SynOS.Api.Controllers
         [HttpGet("document-mappings")]
         public async Task<IActionResult> GetDocumentMappings()
         {
+            var defaultSlots = new[]
+            {
+                new {
+                    slotId = "patient_tax_invoice",
+                    module = "Counter",
+                    moduleCode = "reception",
+                    slotName = "Patient Bill",
+                    triggerDescription = "Printed at patient counter checkout and billing history reprints.",
+                    assignedTemplateId = "template_patient_a4_modern",
+                    templateName = "Patient Bill (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = true,
+                    enableBankDetails = true,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "patient_thermal_receipt",
+                    module = "Counter",
+                    moduleCode = "reception",
+                    slotName = "Counter Slip",
+                    triggerDescription = "Printed directly on 80mm thermal POS printer for quick counter token & payment slip.",
+                    assignedTemplateId = "template_thermal_pos_80mm",
+                    templateName = "Counter Slip (80mm POS)",
+                    letterheadMode = "raw_thermal",
+                    topMarginMm = 0,
+                    enableUpiQr = true,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "partner_b2b_invoice",
+                    module = "Doctors",
+                    moduleCode = "referral",
+                    slotName = "Doctor Bill",
+                    triggerDescription = "Generated for referring clinics and partner doctors for testing dues.",
+                    assignedTemplateId = "template_partner_b2b_a4",
+                    templateName = "Doctor Bill (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = true,
+                    enableBankDetails = true,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "referral_payout_voucher",
+                    module = "Doctors",
+                    moduleCode = "referral",
+                    slotName = "Doctor Payout",
+                    triggerDescription = "Generated for doctor referral commission disbursement with TDS.",
+                    assignedTemplateId = "template_referral_voucher_a4",
+                    templateName = "Doctor Payout Voucher (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = false,
+                    enableBankDetails = true,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "corporate_b2b_invoice",
+                    module = "Corporate",
+                    moduleCode = "corporate",
+                    slotName = "Corporate Bill",
+                    triggerDescription = "Generated for corporate tie-ups and employee wellness diagnostics.",
+                    assignedTemplateId = "template_corporate_b2b_a4",
+                    templateName = "Corporate Bill (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = true,
+                    enableBankDetails = true,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "insurance_tpa_claim",
+                    module = "Insurance",
+                    moduleCode = "insurance",
+                    slotName = "Insurance Bill",
+                    triggerDescription = "Generated for insurance providers and TPA cashless claims.",
+                    assignedTemplateId = "template_insurance_tpa_a4",
+                    templateName = "Insurance Bill (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = true,
+                    enableBankDetails = true,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "outsourced_lab_manifest",
+                    module = "Outsource",
+                    moduleCode = "outsource",
+                    slotName = "Outsource Slip",
+                    triggerDescription = "Generated when dispatching samples to external reference labs.",
+                    assignedTemplateId = "template_outsource_manifest_a4",
+                    templateName = "Outsource Manifest (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "procurement_po",
+                    module = "Stores",
+                    moduleCode = "inventory",
+                    slotName = "Purchase Order",
+                    triggerDescription = "Generated when placing orders with reagent and kit suppliers.",
+                    assignedTemplateId = "template_procurement_po_a4",
+                    templateName = "Purchase Order (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = false,
+                    enableBankDetails = true,
+                    customTerms = "1. Goods must have minimum 12 months shelf life.\n2. Cold-chain items must be delivered at 2°C - 8°C.\n3. Defective lots subject to immediate replacement.",
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "procurement_grn",
+                    module = "Stores",
+                    moduleCode = "inventory",
+                    slotName = "GRN Slip",
+                    triggerDescription = "Generated upon receiving and checking in inward store materials.",
+                    assignedTemplateId = "template_grn_a4",
+                    templateName = "Material GRN (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "workforce_payslip",
+                    module = "Staff",
+                    moduleCode = "workforce",
+                    slotName = "Salary Slip",
+                    triggerDescription = "Generated during monthly staff payroll processing.",
+                    assignedTemplateId = "template_payslip_a4",
+                    templateName = "Salary Slip (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = false,
+                    enableBankDetails = true,
+                    customTerms = "Computer-generated salary slip and requires no physical signature.",
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "overhead_expense_voucher",
+                    module = "Expenses",
+                    moduleCode = "finance",
+                    slotName = "Expense Voucher",
+                    triggerDescription = "Generated when paying daily petty cash and lab operating expenses.",
+                    assignedTemplateId = "template_expense_voucher_a4",
+                    templateName = "Expense Voucher (A5)",
+                    letterheadMode = "digital",
+                    topMarginMm = 25,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "summary_bills_daybook",
+                    module = "Summaries",
+                    moduleCode = "summary",
+                    slotName = "Bills Daybook",
+                    triggerDescription = "Daily bills and collections daybook report.",
+                    assignedTemplateId = "template_summary_daybook_a4",
+                    templateName = "Bills Daybook (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "summary_doctor_dues",
+                    module = "Summaries",
+                    moduleCode = "summary",
+                    slotName = "Doctor Dues Summary",
+                    triggerDescription = "Doctor-wise pending receivables and commissions statement.",
+                    assignedTemplateId = "template_summary_doctor_dues_a4",
+                    templateName = "Doctor Dues Summary (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "summary_corporate",
+                    module = "Summaries",
+                    moduleCode = "summary",
+                    slotName = "Corporate Summary",
+                    triggerDescription = "Corporate B2B accounts, visits, and settlement summary.",
+                    assignedTemplateId = "template_summary_corporate_a4",
+                    templateName = "Corporate Summary (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "summary_insurance",
+                    module = "Summaries",
+                    moduleCode = "summary",
+                    slotName = "Insurance Summary",
+                    triggerDescription = "Insurance / TPA cashless claims and receivables summary.",
+                    assignedTemplateId = "template_summary_insurance_a4",
+                    templateName = "Insurance Summary (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "summary_outsource",
+                    module = "Summaries",
+                    moduleCode = "summary",
+                    slotName = "Outsource Summary",
+                    triggerDescription = "Outsourced lab tests and partner lab payable summary.",
+                    assignedTemplateId = "template_summary_outsource_a4",
+                    templateName = "Outsource Summary (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 35,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                }
+            };
+
             var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
             if (!System.IO.File.Exists(path))
             {
-                var defaultSlots = new[]
-                {
-                    new {
-                        slotId = "patient_tax_invoice",
-                        module = "Reception & Billing",
-                        moduleCode = "reception",
-                        slotName = "Patient Tax Invoice (A4)",
-                        triggerDescription = "Generated upon patient visit checkout, formal OPD billing receipt, and past invoice reprints.",
-                        assignedTemplateId = "template_patient_a4_modern",
-                        templateName = "Modern GST Tax Invoice (A4)",
-                        letterheadMode = "digital",
-                        topMarginMm = 40,
-                        enableUpiQr = true,
-                        enableBankDetails = true,
-                        customTerms = (string?)null,
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "patient_thermal_receipt",
-                        module = "Reception & Cash Desk",
-                        moduleCode = "reception",
-                        slotName = "Counter Quick Token / Cash Slip (80mm POS)",
-                        triggerDescription = "Printed directly on thermal POS roll printer for quick counter tokens and cash collections.",
-                        assignedTemplateId = "template_thermal_pos_80mm",
-                        templateName = "Thermal 80mm Cash Slip",
-                        letterheadMode = "raw_thermal",
-                        topMarginMm = 0,
-                        enableUpiQr = true,
-                        enableBankDetails = false,
-                        customTerms = (string?)null,
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "partner_b2b_invoice",
-                        module = "Referral Terminal",
-                        moduleCode = "referral",
-                        slotName = "Partner B2B Diagnostic Service Invoice",
-                        triggerDescription = "Generated when billing outsourced doctor clinics and partner healthcare centers for diagnostic dues.",
-                        assignedTemplateId = "template_partner_b2b_a4",
-                        templateName = "B2B Diagnostic Tax Invoice (A4)",
-                        letterheadMode = "digital",
-                        topMarginMm = 40,
-                        enableUpiQr = true,
-                        enableBankDetails = true,
-                        customTerms = (string?)null,
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "referral_payout_voucher",
-                        module = "Referral Terminal",
-                        moduleCode = "referral",
-                        slotName = "Doctor Commission Payout Voucher",
-                        triggerDescription = "Generated when disbursing referral incentives to doctors with TDS Sec 194H deduction and formal acknowledgment.",
-                        assignedTemplateId = "template_referral_voucher_a4",
-                        templateName = "Doctor Commission Payout Voucher (A4)",
-                        letterheadMode = "digital",
-                        topMarginMm = 40,
-                        enableUpiQr = false,
-                        enableBankDetails = true,
-                        customTerms = (string?)null,
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "procurement_po",
-                        module = "Inventory & Procurement",
-                        moduleCode = "inventory",
-                        slotName = "Vendor Purchase Order (PO)",
-                        triggerDescription = "Generated when releasing formal purchase orders for lab reagents, test kits, radiology films, and capital equipment.",
-                        assignedTemplateId = "template_procurement_po_a4",
-                        templateName = "Commercial Purchase Order (A4)",
-                        letterheadMode = "digital",
-                        topMarginMm = 40,
-                        enableUpiQr = false,
-                        enableBankDetails = true,
-                        customTerms = "1. Goods must have minimum 12 months shelf life.\n2. Cold-chain items must be delivered at 2°C - 8°C.\n3. Defective lots subject to immediate replacement.",
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "procurement_grn",
-                        module = "Inventory & Stores",
-                        moduleCode = "inventory",
-                        slotName = "Goods Receipt Note (GRN)",
-                        triggerDescription = "Generated by the storekeeper upon inspecting and checking in delivered items at the receiving dock.",
-                        assignedTemplateId = "template_grn_a4",
-                        templateName = "Material Inward / GRN (A4)",
-                        letterheadMode = "digital",
-                        topMarginMm = 35,
-                        enableUpiQr = false,
-                        enableBankDetails = false,
-                        customTerms = (string?)null,
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "workforce_payslip",
-                        module = "Workforce & HR",
-                        moduleCode = "workforce",
-                        slotName = "Employee Monthly Salary Slip",
-                        triggerDescription = "Generated during monthly payroll processing with earnings, statutory PF/ESI, deductions, and net salary in words.",
-                        assignedTemplateId = "template_payslip_a4",
-                        templateName = "Confidential Salary Pay Slip (A4)",
-                        letterheadMode = "digital",
-                        topMarginMm = 40,
-                        enableUpiQr = false,
-                        enableBankDetails = true,
-                        customTerms = "This is a computer-generated salary slip and requires no physical signature.",
-                        isSystemDefault = true
-                    },
-                    new {
-                        slotId = "overhead_expense_voucher",
-                        module = "Overheads & Expenses",
-                        moduleCode = "finance",
-                        slotName = "Petty Cash & Expense Payment Voucher",
-                        triggerDescription = "Generated when disbursing daily operating expenses, maintenance, courier, utilities, and tea/coffee supplies.",
-                        assignedTemplateId = "template_expense_voucher_a4",
-                        templateName = "Payment & Debit Voucher (A5 / Half-Sheet)",
-                        letterheadMode = "digital",
-                        topMarginMm = 25,
-                        enableUpiQr = false,
-                        enableBankDetails = false,
-                        customTerms = (string?)null,
-                        isSystemDefault = true
-                    }
-                };
-
                 var json = System.Text.Json.JsonSerializer.Serialize(defaultSlots, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 await System.IO.File.WriteAllTextAsync(path, json);
                 return Content(json, "application/json");
             }
 
             var existing = await System.IO.File.ReadAllTextAsync(path);
+            try
+            {
+                // Check if any default slots are missing from existing JSON, if so merge them
+                using var doc = System.Text.Json.JsonDocument.Parse(existing);
+                if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+                {
+                    var existingSlotIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        if (elem.TryGetProperty("slotId", out var sid))
+                        {
+                            var s = sid.GetString();
+                            if (!string.IsNullOrEmpty(s)) existingSlotIds.Add(s);
+                        }
+                    }
+
+                    bool missingAny = defaultSlots.Any(ds => !existingSlotIds.Contains(ds.slotId));
+                    if (missingAny)
+                    {
+                        // Merge and save
+                        var list = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.JsonElement>>(existing) ?? new List<System.Text.Json.JsonElement>();
+                        // Overwrite with fresh defaults to ensure clean Indian English slot names
+                        var json = System.Text.Json.JsonSerializer.Serialize(defaultSlots, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                        await System.IO.File.WriteAllTextAsync(path, json);
+                        return Content(json, "application/json");
+                    }
+                }
+            }
+            catch { }
+
             return Content(existing, "application/json");
         }
 

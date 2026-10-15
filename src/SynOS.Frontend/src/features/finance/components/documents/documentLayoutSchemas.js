@@ -702,5 +702,603 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 subtitle: 'Receiver Signature & Date'
             }
         }
+    },
+
+    corporate_b2b_invoice: {
+        slotId: 'corporate_b2b_invoice',
+        title: 'Corporate Bill (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Corporate Health Checkups & Occupational Diagnostics' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Wyra Road, Khammam, Telangana - 507001' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
+                    email: { id: 'email', enabled: true, label: 'Email', value: 'corporate@synoslab.in' },
+                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
+                    pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Document Badge & Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'CORPORATE TAX INVOICE' },
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Account Type', value: 'Corporate B2B Account' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Invoice No', value: 'INV-CORP-202610-0081' },
+                    date: { id: 'date', enabled: true, label: 'Invoice Date', value: '14/10/2026' },
+                    corporateCode: { id: 'corporateCode', enabled: true, label: 'Corporate Code', value: 'CORP-LIC-01' },
+                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Payment Status', value: 'PENDING SETTLEMENT' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Corporate & Employee Details',
+                enabled: true,
+                title: 'Corporate Client (Billed To)',
+                fields: {
+                    corporateName: { id: 'corporateName', enabled: true, label: 'Corporate Client', value: 'Life Insurance Corporation of India (LIC)' },
+                    employeeName: { id: 'employeeName', enabled: true, label: 'Employee Name', value: 'Venkatesh Rao' },
+                    employeeId: { id: 'employeeId', enabled: true, label: 'Employee ID / Staff No', value: 'LIC-EMP-9821' },
+                    designation: { id: 'designation', enabled: true, label: 'Department / Branch', value: 'Divisional Office, Khammam' },
+                    gstin: { id: 'gstin', enabled: true, label: 'Client GSTIN', value: '36AAACL0000A1Z2' },
+                    address: { id: 'address', enabled: true, label: 'Client Address', value: 'LIC Divisional Office, Main Road, Khammam' },
+                    packageSelected: { id: 'packageSelected', enabled: true, label: 'Wellness Package', value: 'LIC Annual Executive Health Checkup' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Billed Tests & Packages',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Package' },
+                    department: { id: 'department', enabled: true, label: 'Department' },
+                    price: { id: 'price', enabled: true, label: 'Contract Rate (₹)' },
+                    discount: { id: 'discount', enabled: true, label: 'Corporate Disc (₹)' },
+                    amount: { id: 'amount', enabled: true, label: 'Net Billed (₹)' }
+                },
+                rows: [
+                    { id: 'corp-1', index: 1, description: 'Executive Health Screening Package (LFT, KFT, CBC, Lipid, ECG, USG)', department: 'Health Packages', price: 2500, discount: 300, amount: 2200 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Financial Totals',
+                enabled: true,
+                fields: {
+                    grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Amount', value: '₹2,500.00' },
+                    discountAmount: { id: 'discountAmount', enabled: true, label: 'Corporate Discount', value: '-₹300.00' },
+                    taxableAmount: { id: 'taxableAmount', enabled: true, label: 'Taxable Amount', value: '₹2,200.00' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Corporate Bill', value: '₹2,200.00' },
+                    totalPaid: { id: 'totalPaid', enabled: true, label: 'Paid / Advance', value: '₹0.00' },
+                    balanceDue: { id: 'balanceDue', enabled: true, label: 'Balance Due from Company', value: '₹2,200.00' }
+                },
+                customLines: []
+            },
+            amountInWords: {
+                id: 'amountInWords',
+                name: 'Amount in Words',
+                enabled: true,
+                label: 'Amount in Words',
+                value: 'Rupees Two Thousand Two Hundred Only'
+            },
+            bankAndUpi: {
+                id: 'bankAndUpi',
+                name: 'Bank Remittance Details',
+                enabled: true,
+                fields: {
+                    bankName: { id: 'bankName', enabled: true, label: 'Bank Name', value: 'HDFC Bank' },
+                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C Number', value: '50200012345678' },
+                    ifscCode: { id: 'ifscCode', enabled: true, label: 'IFSC Code', value: 'HDFC0001234' },
+                    accountHolder: { id: 'accountHolder', enabled: true, label: 'Beneficiary', value: 'SynOS Healthcare Diagnostic Services' }
+                }
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Signatory',
+                enabled: true,
+                title: 'Authorised Signatory',
+                subtitle: 'Corporate Accounts Desk'
+            }
+        }
+    },
+
+    insurance_tpa_claim: {
+        slotId: 'insurance_tpa_claim',
+        title: 'Insurance Bill (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'NABH / NABL Accredited Healthcare Network' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Wyra Road, Khammam, Telangana - 507001' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
+                    email: { id: 'email', enabled: true, label: 'Email', value: 'tpa@synoslab.in' },
+                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
+                    pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Document Badge & Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'CASHLESS TPA CLAIM INVOICE' },
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Coverage', value: 'Cashless Medical Claim' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Invoice No', value: 'INV-INS-202610-0055' },
+                    date: { id: 'date', enabled: true, label: 'Claim Date', value: '14/10/2026' },
+                    claimStatus: { id: 'claimStatus', enabled: true, label: 'Claim Status', value: 'APPROVED / PRE-AUTHORIZED' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Patient & Insurance Info',
+                enabled: true,
+                title: 'Claimant & Policy Details',
+                fields: {
+                    fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'S. Anusha' },
+                    uhid: { id: 'uhid', enabled: true, label: 'UHID / IP No', value: 'SYN-2026-8819' },
+                    ageGender: { id: 'ageGender', enabled: true, label: 'Age / Gender', value: '34 Yrs / Female' },
+                    insuranceProvider: { id: 'insuranceProvider', enabled: true, label: 'Insurance Company', value: 'Star Health & Allied Insurance' },
+                    tpaName: { id: 'tpaName', enabled: true, label: 'TPA Network', value: 'Medi Assist Insurance TPA' },
+                    policyNumber: { id: 'policyNumber', enabled: true, label: 'Policy / Card No', value: 'POL-STAR-771920' },
+                    preAuthApprovalNumber: { id: 'preAuthApprovalNumber', enabled: true, label: 'Pre-Auth Approval No', value: 'PA-STAR-99214' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Approved Investigations Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Service' },
+                    sacCode: { id: 'sacCode', enabled: true, label: 'SAC Code' },
+                    price: { id: 'price', enabled: true, label: 'TPA Tariff (₹)' },
+                    discount: { id: 'discount', enabled: true, label: 'Co-Pay (₹)' },
+                    amount: { id: 'amount', enabled: true, label: 'Claim Amount (₹)' }
+                },
+                rows: [
+                    { id: 'ins-1', index: 1, description: 'MRI Brain with Contrast (3.0 Tesla Protocol)', sacCode: '999312', price: 6500, discount: 0, amount: 6500 },
+                    { id: 'ins-2', index: 2, description: 'Complete Blood Count & Serum Creatinine', sacCode: '999312', price: 550, discount: 0, amount: 550 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Claim Financials',
+                enabled: true,
+                fields: {
+                    grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Claim', value: '₹7,050.00' },
+                    coPayAmount: { id: 'coPayAmount', enabled: true, label: 'Patient Co-Pay Received', value: '₹0.00' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Approved TPA Claim', value: '₹7,050.00' },
+                    balanceDue: { id: 'balanceDue', enabled: true, label: 'Pending from TPA', value: '₹7,050.00' }
+                },
+                customLines: []
+            },
+            amountInWords: {
+                id: 'amountInWords',
+                name: 'Amount in Words',
+                enabled: true,
+                label: 'Claim Amount in Words',
+                value: 'Rupees Seven Thousand Fifty Only'
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Signatory',
+                enabled: true,
+                title: 'Medical Superintendent',
+                subtitle: 'TPA & Cashless Claims Desk'
+            }
+        }
+    },
+
+    outsourced_lab_manifest: {
+        slotId: 'outsourced_lab_manifest',
+        title: 'Outsource Slip (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Central Specimen Dispatch & Reference Lab Gateway' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Wyra Road, Khammam, Telangana - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Manifest Details',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'OUTSOURCED SPECIMEN MANIFEST' },
+                    manifestNumber: { id: 'manifestNumber', enabled: true, label: 'Manifest No', value: 'MAN-202610-0019' },
+                    date: { id: 'date', enabled: true, label: 'Dispatch Date & Time', value: '14/10/2026 05:30 PM' },
+                    courierMode: { id: 'courierMode', enabled: true, label: 'Transport Mode', value: 'Cold-Chain Courier / Express Cargo' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Reference Lab (Sent To)',
+                enabled: true,
+                title: 'Destination Reference Laboratory',
+                fields: {
+                    referenceLabName: { id: 'referenceLabName', enabled: true, label: 'Reference Lab', value: 'Thyrocare Technologies / Metropolis Central Lab' },
+                    labCode: { id: 'labCode', enabled: true, label: 'Account Code', value: 'REF-LAB-01' },
+                    address: { id: 'address', enabled: true, label: 'Lab City / Hub', value: 'Hyderabad Central Processing Lab' },
+                    contactPerson: { id: 'contactPerson', enabled: true, label: 'Courier Waybill No', value: 'WB-991823746' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Specimen Dispatch List',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    patientName: { id: 'patientName', enabled: true, label: 'Patient Name' },
+                    token: { id: 'token', enabled: true, label: 'Token / SID' },
+                    description: { id: 'description', enabled: true, label: 'Special Investigation' },
+                    sampleType: { id: 'sampleType', enabled: true, label: 'Specimen Type & Temp' },
+                    rate: { id: 'rate', enabled: true, label: 'Estimated Rate (₹)' }
+                },
+                rows: [
+                    { id: 'out-1', index: 1, patientName: 'N. Rajesh', token: 'T-104', description: 'Dual Marker Prenatal Screen (FMF Accredited)', sampleType: 'Serum (Cold-Chain 2-8°C)', rate: 1600 },
+                    { id: 'out-2', index: 2, patientName: 'M. Sridevi', token: 'T-109', description: 'HLA B27 by Real-Time PCR', sampleType: 'Whole Blood EDTA (Ambient)', rate: 1900 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Dispatch Summary',
+                enabled: true,
+                fields: {
+                    totalSamples: { id: 'totalSamples', enabled: true, label: 'Total Specimens Dispatched', value: '2 Vials' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Total B2B Outsource Cost', value: '₹3,500.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Dispatch Signatory',
+                enabled: true,
+                title: 'Phlebotomy / Dispatch Incharge',
+                subtitle: 'Courier Acceptance Signature'
+            }
+        }
+    },
+
+    summary_bills_daybook: {
+        slotId: 'summary_bills_daybook',
+        title: 'Bills Daybook (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Daily Commercial Daybook & Collection Audit' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Khammam - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Audit Statement Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'BILLS & COLLECTIONS DAYBOOK' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Filter Range', value: 'Today (All Modalities & Branches)' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Report Generated At', value: '14/10/2026 09:30 PM' },
+                    branchName: { id: 'branchName', enabled: true, label: 'Branch', value: 'All Branches' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Bills Daybook Register Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Bill No' },
+                    token: { id: 'token', enabled: true, label: 'Token' },
+                    patientName: { id: 'patientName', enabled: true, label: 'Patient Name' },
+                    department: { id: 'department', enabled: true, label: 'Dept' },
+                    grossAmount: { id: 'grossAmount', enabled: true, label: 'Billed (₹)' },
+                    received: { id: 'received', enabled: true, label: 'Collected (₹)' },
+                    netDue: { id: 'netDue', enabled: true, label: 'Due (₹)' }
+                },
+                rows: [
+                    { id: 'db-1', index: 1, billNumber: 'BILL-20261014-01', token: 'T-101', patientName: 'P. Suresh', department: 'Pathology', grossAmount: 1200, received: 1200, netDue: 0 },
+                    { id: 'db-2', index: 2, billNumber: 'BILL-20261014-02', token: 'T-102', patientName: 'G. Lakshmi', department: 'Radiology', grossAmount: 2500, received: 2000, netDue: 500 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Daybook Totals',
+                enabled: true,
+                fields: {
+                    totalBillsCount: { id: 'totalBillsCount', enabled: true, label: 'Total Visits / Bills', value: '2 Bills' },
+                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Gross Billed', value: '₹3,700.00' },
+                    totalCollected: { id: 'totalCollected', enabled: true, label: 'Total Collections', value: '₹3,200.00' },
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Total Pending Due', value: '₹500.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Verification Signatory',
+                enabled: true,
+                title: 'Accounts Desk / Cashier',
+                subtitle: 'Audited By Finance Head'
+            }
+        }
+    },
+
+    summary_doctor_dues: {
+        slotId: 'summary_doctor_dues',
+        title: 'Doctor Dues Summary (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Referring Doctors Ledger & Outstanding Summary' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Khammam, Telangana - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Statement Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'DOCTOR DUES & COMMISSIONS SUMMARY' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Audit Period', value: 'Current Settlement Cycle' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated At', value: '14/10/2026' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Doctor Receivables & Payables Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    doctorName: { id: 'doctorName', enabled: true, label: 'Doctor / Clinic Name' },
+                    visitsCount: { id: 'visitsCount', enabled: true, label: 'Visits' },
+                    billedAmount: { id: 'billedAmount', enabled: true, label: 'Billed Amount (₹)' },
+                    received: { id: 'received', enabled: true, label: 'Settled (₹)' },
+                    netDue: { id: 'netDue', enabled: true, label: 'Balance Due (₹)' }
+                },
+                rows: [
+                    { id: 'dr-1', index: 1, doctorName: 'Dr. Khaleeq Ur Rahman, MD', visitsCount: 14, billedAmount: 18500, received: 15000, netDue: 3500 },
+                    { id: 'dr-2', index: 2, doctorName: 'Dr. S. K. Sharma (Sharma Nursing Home)', visitsCount: 8, billedAmount: 9200, received: 9200, netDue: 0 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Summary Totals',
+                enabled: true,
+                fields: {
+                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Total Diagnostic Volume', value: '₹27,700.00' },
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Total Doctor Balance Due', value: '₹3,500.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Accounts Signatory',
+                enabled: true,
+                title: 'Finance & Referral Desk',
+                subtitle: 'Authorized Stamp'
+            }
+        }
+    },
+
+    summary_corporate: {
+        slotId: 'summary_corporate',
+        title: 'Corporate Summary (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Corporate B2B Tie-Ups & Executive Screening Summary' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Khammam, Telangana - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Statement Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'CORPORATE B2B SUMMARY' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'This Month' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated At', value: '14/10/2026' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Corporate Accounts Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    corporateName: { id: 'corporateName', enabled: true, label: 'Corporate Organization' },
+                    employeesTested: { id: 'employeesTested', enabled: true, label: 'Employees' },
+                    billedAmount: { id: 'billedAmount', enabled: true, label: 'Billed (₹)' },
+                    received: { id: 'received', enabled: true, label: 'Settled (₹)' },
+                    netDue: { id: 'netDue', enabled: true, label: 'Pending Due (₹)' }
+                },
+                rows: [
+                    { id: 'c-1', index: 1, corporateName: 'Life Insurance Corporation (LIC)', employeesTested: 24, billedAmount: 36000, received: 0, netDue: 36000 },
+                    { id: 'c-2', index: 2, corporateName: 'Singareni Collieries (SCCL)', employeesTested: 12, billedAmount: 18000, received: 18000, netDue: 0 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Summary Totals',
+                enabled: true,
+                fields: {
+                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Total B2B Billed', value: '₹54,000.00' },
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Total Corporate Receivables Due', value: '₹36,000.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Corporate Desk',
+                enabled: true,
+                title: 'Head of Corporate Accounts',
+                subtitle: 'SynOS Diagnostics'
+            }
+        }
+    },
+
+    summary_insurance: {
+        slotId: 'summary_insurance',
+        title: 'Insurance Summary (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'TPA & Cashless Claims Audit Summary' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Khammam, Telangana - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Statement Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'INSURANCE & TPA SUMMARY' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'All Time' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated At', value: '14/10/2026' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Insurance Claims Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    insuranceCompany: { id: 'insuranceCompany', enabled: true, label: 'Insurance Provider / TPA' },
+                    claimsCount: { id: 'claimsCount', enabled: true, label: 'Claims' },
+                    billedAmount: { id: 'billedAmount', enabled: true, label: 'Claimed (₹)' },
+                    received: { id: 'received', enabled: true, label: 'Settled (₹)' },
+                    netDue: { id: 'netDue', enabled: true, label: 'Balance Due (₹)' }
+                },
+                rows: [
+                    { id: 'ins-s-1', index: 1, insuranceCompany: 'Star Health & Allied Insurance', claimsCount: 8, billedAmount: 32000, received: 24000, netDue: 8000 },
+                    { id: 'ins-s-2', index: 2, insuranceCompany: 'HDFC ERGO General Insurance', claimsCount: 4, billedAmount: 18500, received: 18500, netDue: 0 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Summary Totals',
+                enabled: true,
+                fields: {
+                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Total Claims Filed', value: '₹50,500.00' },
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Pending Claim Realization', value: '₹8,000.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'TPA Signatory',
+                enabled: true,
+                title: 'TPA Desk Incharge',
+                subtitle: 'SynOS Diagnostics'
+            }
+        }
+    },
+
+    summary_outsource: {
+        slotId: 'summary_outsource',
+        title: 'Outsource Summary (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Reference Labs Outsource Payable Summary' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Khammam, Telangana - 507001' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Statement Meta',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'OUTSOURCED LABS SUMMARY' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Period', value: 'Current Month' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated At', value: '14/10/2026' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Outsource Worklist Table',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    referenceLab: { id: 'referenceLab', enabled: true, label: 'Reference Lab' },
+                    samplesCount: { id: 'samplesCount', enabled: true, label: 'Specimens' },
+                    billedAmount: { id: 'billedAmount', enabled: true, label: 'Estimated Cost (₹)' },
+                    received: { id: 'received', enabled: true, label: 'Paid (₹)' },
+                    netDue: { id: 'netDue', enabled: true, label: 'Payable Due (₹)' }
+                },
+                rows: [
+                    { id: 'os-1', index: 1, referenceLab: 'Thyrocare Technologies', samplesCount: 18, billedAmount: 22400, received: 15000, netDue: 7400 },
+                    { id: 'os-2', index: 2, referenceLab: 'Metropolis Central Lab', samplesCount: 6, billedAmount: 9800, received: 9800, netDue: 0 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Summary Totals',
+                enabled: true,
+                fields: {
+                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Total B2B Outsource Cost', value: '₹32,200.00' },
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Total Payable Due to Labs', value: '₹7,400.00' }
+                },
+                customLines: []
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Lab Signatory',
+                enabled: true,
+                title: 'Laboratory Director',
+                subtitle: 'Central Specimen Gateway'
+            }
+        }
     }
 };

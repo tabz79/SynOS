@@ -496,6 +496,146 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             break;
         }
 
+        case 'corporate_b2b_invoice': {
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || boxes.docBadge.fields.billNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+                if (boxes.docBadge.fields.corporateCode) boxes.docBadge.fields.corporateCode.value = liveData.corporateCode || boxes.docBadge.fields.corporateCode.value;
+                if (boxes.docBadge.fields.paymentStatus) {
+                    const due = Number(liveData.balanceDue || 0);
+                    boxes.docBadge.fields.paymentStatus.value = due <= 0 ? "PAID / SETTLED" : "BALANCE DUE";
+                }
+            }
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.corporateName) boxes.partyDetails.fields.corporateName.value = liveData.corporateName || liveData.clientName || boxes.partyDetails.fields.corporateName.value;
+                if (boxes.partyDetails.fields.employeeName) boxes.partyDetails.fields.employeeName.value = liveData.employeeName || liveData.patientName || boxes.partyDetails.fields.employeeName.value;
+                if (boxes.partyDetails.fields.employeeId) boxes.partyDetails.fields.employeeId.value = liveData.employeeId || boxes.partyDetails.fields.employeeId.value;
+                if (boxes.partyDetails.fields.designation) boxes.partyDetails.fields.designation.value = liveData.designation || liveData.branchName || boxes.partyDetails.fields.designation.value;
+                if (boxes.partyDetails.fields.gstin) boxes.partyDetails.fields.gstin.value = liveData.corporateGstin || boxes.partyDetails.fields.gstin.value;
+                if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = liveData.corporateAddress || boxes.partyDetails.fields.address.value;
+                if (boxes.partyDetails.fields.packageSelected) boxes.partyDetails.fields.packageSelected.value = liveData.packageSelected || boxes.partyDetails.fields.packageSelected.value;
+            }
+            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
+                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
+                    id: `corp-${idx}`,
+                    index: idx + 1,
+                    description: it.description || it.testName || it.name || 'Corporate Investigation',
+                    department: it.department || 'Diagnostics',
+                    price: Number(it.price || it.amount || 0),
+                    discount: Number(it.discount || 0),
+                    amount: Number(it.amount || it.price || 0)
+                }));
+            }
+            if (boxes.financialSummary?.fields) {
+                const gross = Number(liveData.grossSubtotal || liveData.grossAmount || liveData.totalAmount || 0);
+                const disc = Number(liveData.discountAmount || 0);
+                const total = Number(liveData.totalAmount || (gross - disc));
+                const paid = Number(liveData.totalPaid || liveData.paidAmount || 0);
+                const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : (total - paid));
+
+                if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${gross.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.discountAmount) boxes.financialSummary.fields.discountAmount.value = `-₹${disc.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.taxableAmount) boxes.financialSummary.fields.taxableAmount.value = `₹${total.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${total.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.totalPaid) boxes.financialSummary.fields.totalPaid.value = `₹${paid.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.balanceDue) boxes.financialSummary.fields.balanceDue.value = `₹${due.toLocaleString('en-IN')}`;
+            }
+            break;
+        }
+
+        case 'insurance_tpa_claim': {
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || boxes.docBadge.fields.billNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
+                if (boxes.docBadge.fields.claimStatus) boxes.docBadge.fields.claimStatus.value = liveData.claimStatus || "APPROVED / PRE-AUTH";
+            }
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = liveData.patientName || boxes.partyDetails.fields.fullName.value;
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = liveData.uhid || boxes.partyDetails.fields.uhid.value;
+                if (boxes.partyDetails.fields.insuranceProvider) boxes.partyDetails.fields.insuranceProvider.value = liveData.insuranceCompany || liveData.insuranceProvider || boxes.partyDetails.fields.insuranceProvider.value;
+                if (boxes.partyDetails.fields.tpaName) boxes.partyDetails.fields.tpaName.value = liveData.tpaName || boxes.partyDetails.fields.tpaName.value;
+                if (boxes.partyDetails.fields.policyNumber) boxes.partyDetails.fields.policyNumber.value = liveData.policyNumber || boxes.partyDetails.fields.policyNumber.value;
+                if (boxes.partyDetails.fields.preAuthApprovalNumber) boxes.partyDetails.fields.preAuthApprovalNumber.value = liveData.preAuthApprovalNumber || boxes.partyDetails.fields.preAuthApprovalNumber.value;
+            }
+            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
+                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
+                    id: `ins-${idx}`,
+                    index: idx + 1,
+                    description: it.description || it.testName || 'Investigation',
+                    sacCode: it.sacCode || '999312',
+                    price: Number(it.price || it.amount || 0),
+                    discount: Number(it.discount || 0),
+                    amount: Number(it.amount || it.price || 0)
+                }));
+            }
+            if (boxes.financialSummary?.fields) {
+                const total = Number(liveData.totalAmount || 0);
+                const coPay = Number(liveData.coPayAmount || 0);
+                const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : total);
+                if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${total.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.coPayAmount) boxes.financialSummary.fields.coPayAmount.value = `₹${coPay.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${total.toLocaleString('en-IN')}`;
+                if (boxes.financialSummary.fields.balanceDue) boxes.financialSummary.fields.balanceDue.value = `₹${due.toLocaleString('en-IN')}`;
+            }
+            break;
+        }
+
+        case 'outsourced_lab_manifest': {
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.manifestNumber) boxes.docBadge.fields.manifestNumber.value = liveData.manifestNumber || boxes.docBadge.fields.manifestNumber.value;
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
+            }
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.referenceLabName) boxes.partyDetails.fields.referenceLabName.value = liveData.referenceLabName || boxes.partyDetails.fields.referenceLabName.value;
+            }
+            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
+                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
+                    id: `out-${idx}`,
+                    index: idx + 1,
+                    patientName: it.patientName || it.name || 'Patient',
+                    token: it.token || '',
+                    description: it.description || it.testName || 'Investigation',
+                    sampleType: it.sampleType || 'Serum',
+                    rate: Number(it.rate || it.price || 0)
+                }));
+            }
+            break;
+        }
+
+        case 'summary_bills_daybook':
+        case 'summary_doctor_dues':
+        case 'summary_corporate':
+        case 'summary_insurance':
+        case 'summary_outsource': {
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.statementPeriod) boxes.docBadge.fields.statementPeriod.value = liveData.statementPeriod || liveData.period || boxes.docBadge.fields.statementPeriod.value;
+                if (boxes.docBadge.fields.generatedAt) boxes.docBadge.fields.generatedAt.value = new Date().toLocaleString('en-IN');
+                if (boxes.docBadge.fields.branchName) boxes.docBadge.fields.branchName.value = liveData.branchName || 'All Branches';
+            }
+            if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
+                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
+                    ...it,
+                    id: it.id || `row-${idx}`,
+                    index: idx + 1
+                }));
+            }
+            if (boxes.financialSummary?.fields) {
+                if (boxes.financialSummary.fields.totalBilled && liveData.totalBilled !== undefined) {
+                    boxes.financialSummary.fields.totalBilled.value = `₹${Number(liveData.totalBilled).toLocaleString('en-IN')}`;
+                }
+                if (boxes.financialSummary.fields.totalCollected && liveData.totalCollected !== undefined) {
+                    boxes.financialSummary.fields.totalCollected.value = `₹${Number(liveData.totalCollected).toLocaleString('en-IN')}`;
+                }
+                if (boxes.financialSummary.fields.totalDue && liveData.totalDue !== undefined) {
+                    boxes.financialSummary.fields.totalDue.value = `₹${Number(liveData.totalDue).toLocaleString('en-IN')}`;
+                }
+                if (boxes.financialSummary.fields.totalBillsCount && liveData.totalVisitsCount !== undefined) {
+                    boxes.financialSummary.fields.totalBillsCount.value = `${liveData.totalVisitsCount} Bills`;
+                }
+            }
+            break;
+        }
+
         default:
             break;
     }

@@ -1212,7 +1212,7 @@ export function SystemSettingsScreen() {
             { id: 'branches', label: 'Branches', icon: Globe },
             { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
             { id: 'printing', label: 'Printing Setup', icon: Printer },
-            { id: 'paperwork', label: 'Invoices & Paperwork', icon: FileSpreadsheet },
+            { id: 'paperwork', label: 'Billing & Print', icon: FileSpreadsheet },
             { id: 'machines', label: 'Machine Interfacing', icon: Cpu },
             { id: 'audit', label: 'Audit Logs', icon: History },
             { id: 'backup', label: 'Backup & Restore', icon: Database },

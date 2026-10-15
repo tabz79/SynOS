@@ -380,36 +380,54 @@ export const CommercialPaperworkTab = () => {
     // Available Templates Catalog
     const TEMPLATE_OPTIONS = {
         patient_tax_invoice: [
-            { id: 'template_patient_a4_modern', label: 'Modern GST Tax Invoice (A4)' },
-            { id: 'template_patient_a4_compact', label: 'Compact Single-Page Bill (A4)' },
-            { id: 'template_patient_a4_detailed', label: 'Detailed Clinical Breakdown (A4)' }
+            { id: 'template_patient_a4_modern', label: 'Patient Bill (A4)' },
+            { id: 'template_patient_a4_compact', label: 'Compact Bill (A4)' }
         ],
         patient_thermal_receipt: [
-            { id: 'template_thermal_pos_80mm', label: 'Thermal 80mm Standard Cash Slip' },
-            { id: 'template_thermal_pos_58mm', label: 'Thermal 58mm Ultra-Compact Slip' }
+            { id: 'template_thermal_pos_80mm', label: '80mm POS Slip' },
+            { id: 'template_thermal_pos_58mm', label: '58mm POS Slip' }
         ],
         partner_b2b_invoice: [
-            { id: 'template_partner_b2b_a4', label: 'B2B Diagnostic Tax Invoice (A4)' },
-            { id: 'template_partner_b2b_consolidated', label: 'Monthly Consolidated Statement (A4)' }
+            { id: 'template_partner_b2b_a4', label: 'Doctor Bill (A4)' }
         ],
         referral_payout_voucher: [
-            { id: 'template_referral_voucher_a4', label: 'Doctor Commission Payout Voucher (A4)' },
-            { id: 'template_referral_summary_slip', label: 'Direct Bank Remittance Advice (A4)' }
+            { id: 'template_referral_voucher_a4', label: 'Doctor Payout (A4)' }
+        ],
+        corporate_b2b_invoice: [
+            { id: 'template_corporate_b2b_a4', label: 'Corporate Bill (A4)' }
+        ],
+        insurance_tpa_claim: [
+            { id: 'template_insurance_tpa_a4', label: 'Insurance Bill (A4)' }
+        ],
+        outsourced_lab_manifest: [
+            { id: 'template_outsource_manifest_a4', label: 'Outsource Manifest (A4)' }
         ],
         procurement_po: [
-            { id: 'template_procurement_po_a4', label: 'Commercial Purchase Order (A4)' },
-            { id: 'template_procurement_po_reagent', label: 'Reagents & Cold-Chain PO (A4)' }
+            { id: 'template_procurement_po_a4', label: 'Purchase Order (A4)' }
         ],
         procurement_grn: [
-            { id: 'template_grn_a4', label: 'Material Inward / Goods Receipt Note (A4)' }
+            { id: 'template_grn_a4', label: 'Material GRN (A4)' }
         ],
         workforce_payslip: [
-            { id: 'template_payslip_a4', label: 'Confidential Salary Pay Slip (A4)' },
-            { id: 'template_payslip_executive', label: 'Executive Compensation Advice (A4)' }
+            { id: 'template_payslip_a4', label: 'Salary Slip (A4)' }
         ],
         overhead_expense_voucher: [
-            { id: 'template_expense_voucher_a4', label: 'Payment & Debit Voucher (A5 / Half-Sheet)' },
-            { id: 'template_expense_cash_slip', label: 'Petty Cash Slip (A4 Dual-Voucher)' }
+            { id: 'template_expense_voucher_a4', label: 'Expense Voucher (A5)' }
+        ],
+        summary_bills_daybook: [
+            { id: 'template_summary_daybook_a4', label: 'Bills Daybook (A4)' }
+        ],
+        summary_doctor_dues: [
+            { id: 'template_summary_doctor_dues_a4', label: 'Doctor Dues Summary (A4)' }
+        ],
+        summary_corporate: [
+            { id: 'template_summary_corporate_a4', label: 'Corporate Summary (A4)' }
+        ],
+        summary_insurance: [
+            { id: 'template_summary_insurance_a4', label: 'Insurance Summary (A4)' }
+        ],
+        summary_outsource: [
+            { id: 'template_summary_outsource_a4', label: 'Outsource Summary (A4)' }
         ]
     };
 
@@ -421,22 +439,16 @@ export const CommercialPaperworkTab = () => {
 
     return (
         <div className="space-y-6 animate-fadeIn text-xs">
-            {/* TOP HEADER & STUDIO CONTROLS */}
+            {/* TOP HEADER */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b dark:border-zinc-800 border-zinc-200 pb-5">
                 <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-inner">
-                        <FileSpreadsheet size={24} />
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-inner">
+                        <FileSpreadsheet size={22} />
                     </div>
                     <div>
-                        <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                            Commercial Paperwork & Invoicing Studio
-                            <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider">
-                                ERP Matrix
-                            </span>
+                        <h2 className="text-lg font-black text-zinc-900 dark:text-zinc-100">
+                            Billing & Print Setup
                         </h2>
-                        <p className="text-zinc-500 text-xs">
-                            Select which boxes belong on each bill, customize text inline in the live preview, and configure clinic stationery.
-                        </p>
                     </div>
                 </div>
 
@@ -445,7 +457,7 @@ export const CommercialPaperworkTab = () => {
                         type="button"
                         onClick={loadAllData}
                         disabled={loading || saving}
-                        className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-bold flex items-center gap-2 transition-all cursor-pointer"
+                        className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-bold flex items-center gap-2 transition-all cursor-pointer"
                     >
                         <RotateCcw size={14} />
                         <span>Reload</span>
@@ -454,7 +466,7 @@ export const CommercialPaperworkTab = () => {
                         type="button"
                         onClick={handleSaveAll}
                         disabled={saving}
-                        className="px-6 py-2.5 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-synos-primary/25 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        className="px-6 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-synos-primary/25 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
                     >
                         {saving ? (
                             <>
@@ -464,19 +476,19 @@ export const CommercialPaperworkTab = () => {
                         ) : saveSuccess ? (
                             <>
                                 <Check size={16} className="text-emerald-300" />
-                                <span>Saved Successfully!</span>
+                                <span>Saved!</span>
                             </>
                         ) : (
                             <>
                                 <Save size={16} />
-                                <span>Save All Changes</span>
+                                <span>Save</span>
                             </>
                         )}
                     </button>
                 </div>
             </div>
 
-            {/* STUDIO SUB-TABS: MATRIX VS PROFILE */}
+            {/* SUB-TABS */}
             <div className="flex items-center gap-3 border-b dark:border-zinc-800 border-zinc-200 pb-2">
                 <button
                     type="button"
@@ -488,7 +500,7 @@ export const CommercialPaperworkTab = () => {
                     }`}
                 >
                     <Workflow size={15} />
-                    <span>Modular Document Builder & Feature Routing</span>
+                    <span>Bill Formats</span>
                 </button>
                 <button
                     type="button"
@@ -500,17 +512,14 @@ export const CommercialPaperworkTab = () => {
                     }`}
                 >
                     <Building2 size={15} />
-                    <span>Commercial Legal Profile & Remittance Gateway</span>
+                    <span>Lab Details & Bank</span>
                 </button>
             </div>
 
             {saveSuccess && (
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center gap-3 animate-in fade-in duration-300">
-                    <Check size={18} className="shrink-0 text-emerald-500" />
-                    <div>
-                        <strong className="font-bold">Paperwork registry and custom layout settings saved!</strong>
-                        <p className="text-[11px] opacity-90">All features across SynOS will now dynamically generate documents according to your customized boxes and text.</p>
-                    </div>
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center gap-2.5 animate-in fade-in duration-300 font-bold">
+                    <Check size={16} className="shrink-0 text-emerald-500" />
+                    <span>Settings saved successfully.</span>
                 </div>
             )}
 
@@ -520,19 +529,23 @@ export const CommercialPaperworkTab = () => {
                 {/* LEFT COLUMN: MODULAR BOXES & DOCUMENT CONFIGURATION (7 COLS) */}
                 <div className="xl:col-span-7 space-y-6">
 
-                    {/* VIEW A: DOCUMENT ROUTING & MODULAR BOX BUILDER */}
+                    {/* VIEW A: BILL FORMATS */}
                     {studioTab === 'matrix' && (
                         <div className="space-y-5">
                             
                             {/* MODULE FILTER BAR */}
-                            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                            <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border dark:border-zinc-800 border-zinc-200">
                                 {[
-                                    { id: 'all', label: 'All ERP Modules' },
-                                    { id: 'reception', label: '🏥 Reception & Cash' },
-                                    { id: 'referral', label: '🤝 Referral Terminal' },
-                                    { id: 'inventory', label: '📦 Stores & Orders' },
-                                    { id: 'workforce', label: '👥 Workforce & HR' },
-                                    { id: 'finance', label: '💼 Expense & Cash' }
+                                    { id: 'all', label: 'All' },
+                                    { id: 'reception', label: 'Counter' },
+                                    { id: 'referral', label: 'Doctors' },
+                                    { id: 'corporate', label: 'Corporate' },
+                                    { id: 'insurance', label: 'Insurance' },
+                                    { id: 'outsource', label: 'Outsource' },
+                                    { id: 'inventory', label: 'Stores' },
+                                    { id: 'workforce', label: 'Staff' },
+                                    { id: 'finance', label: 'Expenses' },
+                                    { id: 'summary', label: 'Summaries' }
                                 ].map(mod => (
                                     <button
                                         key={mod.id}
@@ -552,18 +565,13 @@ export const CommercialPaperworkTab = () => {
                             {/* ACTIVE DOCUMENT MODULAR BOXES MANAGER */}
                             <div className="synos-dept-card rounded-2xl p-5 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 space-y-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b dark:border-zinc-800 border-zinc-200 pb-3">
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
-                                                Active Canvas
-                                            </span>
-                                            <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100">
-                                                {currentActiveSlot.slotName || previewSlotId}
-                                            </h3>
-                                        </div>
-                                        <p className="text-[11px] text-zinc-500 pt-0.5">
-                                            Check or uncheck boxes below to decide which sections appear on the bill.
-                                        </p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
+                                            Active
+                                        </span>
+                                        <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100">
+                                            {currentActiveSlot.slotName || previewSlotId}
+                                        </h3>
                                     </div>
 
                                     <div className="flex items-center gap-2">
@@ -571,16 +579,15 @@ export const CommercialPaperworkTab = () => {
                                             type="button"
                                             onClick={handleResetLayout}
                                             className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer"
-                                            title="Reset this bill back to default structure"
                                         >
-                                            Reset Default
+                                            Reset
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setShowAddBoxInput(prev => !prev)}
                                             className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-indigo-700 shadow-xs"
                                         >
-                                            <Plus size={12} /> Add Custom Box
+                                            <Plus size={12} /> Add Box
                                         </button>
                                     </div>
                                 </div>
@@ -592,7 +599,7 @@ export const CommercialPaperworkTab = () => {
                                             type="text" 
                                             value={newBoxName}
                                             onChange={(e) => setNewBoxName(e.target.value)}
-                                            placeholder="Enter Section Name (e.g. Special Clinical Instructions)"
+                                            placeholder="Enter Section Name"
                                             className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 rounded-lg text-xs flex-1 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 outline-none font-bold"
                                             autoFocus
                                         />
@@ -600,7 +607,7 @@ export const CommercialPaperworkTab = () => {
                                             type="submit"
                                             className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold cursor-pointer"
                                         >
-                                            Create Section
+                                            Add
                                         </button>
                                         <button 
                                             type="button"
@@ -764,10 +771,10 @@ export const CommercialPaperworkTab = () => {
                                 </div>
                             </div>
 
-                            {/* DOCUMENT SLOTS MATRIX LIST */}
+                            {/* BILL FORMATS LIST */}
                             <div className="space-y-3 pt-2">
                                 <h4 className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                                    All Mapped ERP Documents ({filteredMappings.length})
+                                    All Bill Formats ({filteredMappings.length})
                                 </h4>
 
                                 <div className="space-y-3">
@@ -807,13 +814,12 @@ export const CommercialPaperworkTab = () => {
                                                         }`}
                                                     >
                                                         <Eye size={12} />
-                                                        <span>{isSelectedForPreview ? "Active in Canvas" : "Customize Layout"}</span>
+                                                        <span>{isSelectedForPreview ? "Active" : "Customize"}</span>
                                                     </button>
                                                 </div>
 
                                                 {/* TRIGGER DESCRIPTION */}
                                                 <p className="text-[11px] text-zinc-500 pt-2 pb-2 font-medium">
-                                                    <strong className="text-zinc-700 dark:text-zinc-300 font-bold mr-1">Trigger Touchpoint:</strong>
                                                     {slot.triggerDescription}
                                                 </p>
 
@@ -822,7 +828,7 @@ export const CommercialPaperworkTab = () => {
                                                     {/* TEMPLATE PICKER */}
                                                     <div>
                                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
-                                                            Assigned Paperwork Template
+                                                            Template
                                                         </label>
                                                         <select
                                                             value={slot.assignedTemplateId}
@@ -839,20 +845,20 @@ export const CommercialPaperworkTab = () => {
                                                         </select>
                                                     </div>
 
-                                                    {/* LETTERHEAD MODE PICKER */}
+                                                    {/* PRINT MODE PICKER */}
                                                     <div>
                                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
-                                                            Stationery Mode
+                                                            Print Mode
                                                         </label>
                                                         <select
                                                             value={slot.letterheadMode}
                                                             onChange={(e) => handleMappingChange(slot.slotId, 'letterheadMode', e.target.value)}
                                                             className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-800 dark:text-zinc-200 outline-none cursor-pointer"
                                                         >
-                                                            <option value="digital">Digital Header (Full Printed)</option>
-                                                            <option value="preprinted">Pre-Printed Letterhead (Blank Clearance Gap)</option>
+                                                            <option value="digital">Digital Letterhead</option>
+                                                            <option value="preprinted">Pre-Printed Stationery</option>
                                                             {slot.slotId === 'patient_thermal_receipt' && (
-                                                                <option value="raw_thermal">Direct POS Thermal (Roll Printer)</option>
+                                                                <option value="raw_thermal">POS Thermal Roll</option>
                                                             )}
                                                         </select>
                                                     </div>
@@ -861,7 +867,7 @@ export const CommercialPaperworkTab = () => {
                                                     {slot.letterheadMode === 'preprinted' && (
                                                         <div className="sm:col-span-2 space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
                                                             <div className="flex justify-between items-center text-[10px]">
-                                                                <span className="text-zinc-500 font-semibold">Top Letterhead Clearance Gap:</span>
+                                                                <span className="text-zinc-500 font-semibold">Top Margin (mm):</span>
                                                                 <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{slot.topMarginMm || 40} mm</span>
                                                             </div>
                                                             <input
@@ -884,44 +890,38 @@ export const CommercialPaperworkTab = () => {
                         </div>
                     )}
 
-                    {/* VIEW B: COMMERCIAL PROFILE & REMITTANCE */}
+                    {/* VIEW B: LAB DETAILS & BANK */}
                     {studioTab === 'profile' && (
                         <div className="space-y-6">
-                            {/* SECTION 1: LAB LEGAL PROFILE */}
+                            {/* SECTION 1: LAB DETAILS & LOGO */}
                             <div className="synos-dept-card rounded-2xl p-6 space-y-5">
                                 <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
                                     <div className="flex items-center gap-2.5">
                                         <Building2 size={16} className="text-indigo-600 dark:text-indigo-400" />
                                         <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            1. Commercial Legal Entity & Contact Profile
+                                            1. Lab Details & Logo
                                         </h3>
                                     </div>
-                                    <span className="text-[10px] text-zinc-400 font-semibold">Shared across all documents</span>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {/* DIAGNOSTIC CENTRE BRAND LOGO */}
+                                    {/* LOGO */}
                                     <div className="sm:col-span-2 p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center gap-4">
-                                        <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                                        <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
                                             {settings.logoUrl ? (
-                                                <img src={settings.logoUrl} alt="Diagnostics Logo" className="w-full h-full object-contain p-1.5" />
+                                                <img src={settings.logoUrl} alt="Logo" className="w-full h-full object-contain p-1" />
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center text-zinc-400 text-center p-2">
-                                                    <Building2 size={28} className="mb-1 text-zinc-400" />
+                                                    <Building2 size={24} className="mb-1 text-zinc-400" />
                                                     <span className="text-[9px] font-bold uppercase tracking-wider">No Logo</span>
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex-1 space-y-2 text-center sm:text-left">
-                                            <div>
-                                                <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
-                                                    Diagnostic Centre Official Brand Logo
-                                                </h4>
-                                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                                                    Upload your diagnostic brand emblem (PNG, JPG, WebP, SVG up to 2MB). This logo automatically renders at the top-left corner of all invoices, delivery challans, POs, salary vouchers, and thermal receipt slips across SynOS.
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2 justify-center sm:justify-start">
+                                        <div className="flex-1 space-y-1.5 text-center sm:text-left">
+                                            <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+                                                Lab Logo
+                                            </h4>
+                                            <div className="flex items-center gap-2 justify-center sm:justify-start pt-1">
                                                 <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs cursor-pointer shadow-xs active:scale-95 transition-all">
                                                     <Upload size={14} />
                                                     <span>{settings.logoUrl ? "Change Logo" : "Upload Logo"}</span>
@@ -948,33 +948,33 @@ export const CommercialPaperworkTab = () => {
 
                                     <div className="sm:col-span-2">
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Legal Entity Registered Name (GSTIN Registered) *
+                                            Lab Name *
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.labLegalName}
                                             onChange={(e) => handleSettingChange('labLegalName', e.target.value)}
-                                            placeholder="e.g. SynOS Diagnostic Centre & Laboratory Pvt Ltd"
+                                            placeholder="Lab Name"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div className="sm:col-span-2">
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Trade Name / Sub-Header Tagline
+                                            Tagline
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.labTradeName}
                                             onChange={(e) => handleSettingChange('labTradeName', e.target.value)}
-                                            placeholder="e.g. Comprehensive Pathology, Digital Radiology & Medical Imaging"
+                                            placeholder="Tagline / Description"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            GSTIN Number (15-Digit) *
+                                            GSTIN *
                                         </label>
                                         <input
                                             type="text"
@@ -988,7 +988,7 @@ export const CommercialPaperworkTab = () => {
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            PAN Number (Permanent Account No.)
+                                            PAN
                                         </label>
                                         <input
                                             type="text"
@@ -1002,20 +1002,20 @@ export const CommercialPaperworkTab = () => {
 
                                     <div className="sm:col-span-2">
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Registered Facility Address
+                                            Address
                                         </label>
                                         <textarea
                                             rows={2}
                                             value={settings.address}
                                             onChange={(e) => handleSettingChange('address', e.target.value)}
-                                            placeholder="Full street address, district, state, PIN code"
+                                            placeholder="Full Address"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Commercial Phone / Helpdesk
+                                            Phone
                                         </label>
                                         <input
                                             type="text"
@@ -1028,7 +1028,7 @@ export const CommercialPaperworkTab = () => {
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Billing & Accounts Email
+                                            Email
                                         </label>
                                         <input
                                             type="email"
@@ -1041,17 +1041,17 @@ export const CommercialPaperworkTab = () => {
                                 </div>
                             </div>
 
-                            {/* SECTION 2: BANK REMITTANCE & UPI QR */}
+                            {/* SECTION 2: BANK & UPI DETAILS */}
                             <div className="synos-dept-card rounded-2xl p-6 space-y-5">
                                 <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
                                     <div className="flex items-center gap-2.5">
                                         <CreditCard size={16} className="text-emerald-600 dark:text-emerald-400" />
                                         <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            2. Bank Remittance & Dynamic UPI Payment Gateway
+                                            2. Bank & UPI Details
                                         </h3>
                                     </div>
                                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
-                                        <QrCode size={12} /> Instant Bharat QR
+                                        <QrCode size={12} /> UPI QR
                                     </span>
                                 </div>
 
@@ -1064,40 +1064,40 @@ export const CommercialPaperworkTab = () => {
                                             type="text"
                                             value={settings.bankName}
                                             onChange={(e) => handleSettingChange('bankName', e.target.value)}
-                                            placeholder="e.g. HDFC Bank Ltd"
+                                            placeholder="Bank Name"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Account Holder Entity Name *
+                                            Account Holder Name *
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.accountHolderName}
                                             onChange={(e) => handleSettingChange('accountHolderName', e.target.value)}
-                                            placeholder="e.g. SynOS Healthcare Diagnostic Services"
+                                            placeholder="Account Holder Name"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Bank Account Number *
+                                            Account Number *
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.accountNumber}
                                             onChange={(e) => handleSettingChange('accountNumber', e.target.value)}
-                                            placeholder="50200012345678"
+                                            placeholder="Account Number"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            IFSC Code (11-Digit) *
+                                            IFSC Code *
                                         </label>
                                         <input
                                             type="text"
@@ -1111,20 +1111,20 @@ export const CommercialPaperworkTab = () => {
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Bank Branch & City
+                                            Branch
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.branch}
                                             onChange={(e) => handleSettingChange('branch', e.target.value)}
-                                            placeholder="e.g. Wyra Road Branch, Khammam"
+                                            placeholder="Branch"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Official UPI ID / VPA (For Bharat QR) *
+                                            UPI ID (For QR Code) *
                                         </label>
                                         <input
                                             type="text"
@@ -1137,13 +1137,13 @@ export const CommercialPaperworkTab = () => {
                                 </div>
                             </div>
 
-                            {/* SECTION 3: LEGAL TERMS & SIGNATORY */}
+                            {/* SECTION 3: TERMS & SIGNATORY */}
                             <div className="synos-dept-card rounded-2xl p-6 space-y-5">
                                 <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
                                     <div className="flex items-center gap-2.5">
                                         <ShieldCheck size={16} className="text-amber-600 dark:text-amber-400" />
                                         <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            3. Global Terms, Conditions & Signatory
+                                            3. Terms & Signatory
                                         </h3>
                                     </div>
                                 </div>
@@ -1151,7 +1151,7 @@ export const CommercialPaperworkTab = () => {
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Patient & B2B Tax Invoice Terms
+                                            Bill Terms & Conditions
                                         </label>
                                         <textarea
                                             rows={3}
@@ -1169,40 +1169,36 @@ export const CommercialPaperworkTab = () => {
                                             type="text"
                                             value={settings.signatoryTitle}
                                             onChange={(e) => handleSettingChange('signatoryTitle', e.target.value)}
-                                            placeholder="e.g. Authorised Signatory / Accounts Desk"
+                                            placeholder="Authorized Signatory"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* SECTION 4: HARDWARE & THERMAL PRINTER ROUTING */}
+                            {/* SECTION 4: SLIP PRINTER */}
                             <div className="synos-dept-card rounded-2xl p-6 space-y-5">
                                 <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
                                     <div className="flex items-center gap-2.5">
                                         <Printer size={16} className="text-emerald-600 dark:text-emerald-400" />
                                         <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            4. Hardware & Thermal Slip Printer Routing
+                                            4. Receipt Printer
                                         </h3>
                                     </div>
-                                    <span className="text-[10px] text-zinc-400 font-semibold">POS Slip Routing</span>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-                                            Assigned Reception Desk Thermal Receipt Printer Name
+                                            Printer Name
                                         </label>
                                         <input
                                             type="text"
                                             value={settings.receiptPrinterName || ""}
                                             onChange={(e) => handleSettingChange('receiptPrinterName', e.target.value)}
-                                            placeholder="e.g. EPSON TM-T82, POS-80, Citizen CT-S310II, Star TSP100"
+                                            placeholder="e.g. EPSON TM-T82, POS-80"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
-                                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5 leading-relaxed">
-                                            When configured, SynOS directly routes 80mm patient payment slips to this hardware device without prompting standard A4 laser printer dialogs.
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -1233,13 +1229,13 @@ export const CommercialPaperworkTab = () => {
                             ))}
                         </div>
 
-                        {/* HELPER TEXT */}
+                        {/* STATUS */}
                         <div className="flex items-center justify-between text-[10px] text-zinc-500 font-medium pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
                             <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
-                                <Sparkles size={11} /> Click text to edit • Hover to delete
+                                <Sparkles size={11} /> Click text to edit
                             </span>
                             <span className="font-mono text-zinc-400 capitalize">
-                                {currentActiveSlot.letterheadMode || 'digital'} mode
+                                {currentActiveSlot.letterheadMode || 'digital'}
                             </span>
                         </div>
                     </div>
