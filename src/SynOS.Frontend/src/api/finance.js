@@ -707,6 +707,60 @@ export const FinanceApi = {
         return true;
     },
 
+    /**
+     * Doctor Registry & CRM Engine API
+     */
+    getDoctorDirectory: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.query) queryParams.append('query', params.query);
+        if (params.status && params.status !== 'all') queryParams.append('status', params.status);
+        if (params.speciality && params.speciality !== 'all') queryParams.append('speciality', params.speciality);
+        if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+        if (params.page) queryParams.append('page', params.page);
+        if (params.pageSize) queryParams.append('pageSize', params.pageSize);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/doctor-crm/directory${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load doctor directory");
+        return response.json();
+    },
+
+    getDoctorProfile: async (id) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/doctor-crm/${id}/profile`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load doctor profile");
+        return response.json();
+    },
+
+    updateDoctorDemographics: async (id, payload) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/doctor-crm/${id}/demographics`), {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to update doctor demographics");
+        }
+        return response.json();
+    },
+
+    quickLearnRate: async (id, payload) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/doctor-crm/${id}/quick-learn`), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to save rate rule");
+        }
+        return response.json();
+    },
+
     getSettlementHistory: async () => {
         // We'll use a combined feed of SpendFacts and RevenueFacts with 'Referral' or 'Partner' source
         const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/settlement-history?category=Referral'), {

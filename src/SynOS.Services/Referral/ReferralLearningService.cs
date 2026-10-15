@@ -14,13 +14,16 @@ namespace SynOS.Services.Referral
     public class ReferralLearningService : IReferralLearningService
     {
         private readonly SynOSDbContext _context;
+        private readonly IReferralCommissionGoverningEngine _governingEngine;
         private readonly ILogger<ReferralLearningService> _logger;
 
         public ReferralLearningService(
             SynOSDbContext context,
+            IReferralCommissionGoverningEngine governingEngine,
             ILogger<ReferralLearningService> logger)
         {
             _context = context;
+            _governingEngine = governingEngine;
             _logger = logger;
         }
 
@@ -178,124 +181,27 @@ namespace SynOS.Services.Referral
                 }
 
                 await _context.SaveChangesAsync();
-
-                // 2. Retroactive Recalculation Engine for affected Doctors
-                // Recalculates all visits for these doctors where commissions are not yet settled
-                var visitsToRecalculate = await _context.Visits
-                    .Include(v => v.Orders)
-                    .Include(v => v.ReferralPartner)
-                    .Where(v => v.IsReferred && v.ReferralPartnerId != null && affectedPartnerIds.Contains(v.ReferralPartnerId.Value))
-                    .ToListAsync();
-
-                // Load all updated active rules for affected partners
-                var currentPartnerRules = await _context.ReferralCommissionRules
-                    .AsNoTracking()
-                    .Where(r => affectedPartnerIds.Contains(r.ReferralPartnerId) && r.IsActive)
-                    .ToListAsync();
-
-                var rulesLookup = currentPartnerRules
-                    .GroupBy(r => (r.ReferralPartnerId, r.TestId))
-                    .ToDictionary(g => g.Key, g => g.OrderByDescending(r => r.EffectiveFrom).First());
-
-                var recalculatedVisitsCount = 0;
-                var totalCommissionRecognized = 0m;
-
-                foreach (var visit in visitsToRecalculate)
-                {
-                    if (visit.ReferralPartner == null) continue;
-                    var partner = visit.ReferralPartner;
-
-                    // Calculate total visit commission based on learned test rules
-                    var visitCommission = 0m;
-                    foreach (var order in visit.Orders)
-                    {
-                        if (order.IsOutsourced) continue; // Margin protection
-
-                        decimal testCommission = 0;
-                        if (rulesLookup.TryGetValue((partner.ReferralPartnerId, order.TestId), out var rule))
-                        {
-                            decimal baseAmount = (partner.CalculationBase == CommissionCalculationBase.BeforeDiscounts)
-                                ? order.Price
-                                : (order.Price - order.Discount);
-
-                            if (rule.CommissionType == CommissionType.Percentage)
-                            {
-                                testCommission = baseAmount * (rule.CommissionValue / 100m);
-                            }
-                            else if (rule.CommissionType == CommissionType.Flat)
-                            {
-                                testCommission = rule.CommissionValue;
-                            }
-                        }
-                        else if (partner.DefaultCommissionPercentage > 0)
-                        {
-                            decimal baseAmount = (partner.CalculationBase == CommissionCalculationBase.BeforeDiscounts)
-                                ? order.Price
-                                : (order.Price - order.Discount);
-                            testCommission = baseAmount * (partner.DefaultCommissionPercentage / 100m);
-                        }
-
-                        visitCommission += testCommission;
-                    }
-
-                    // Update or insert ReferralPayableFact
-                    var existingPayable = await _context.ReferralPayableFacts
-                        .FirstOrDefaultAsync(f => f.SourceVisitId == visit.VisitId);
-
-                    if (existingPayable != null)
-                    {
-                        if (existingPayable.Status == "Pending")
-                        {
-                            // Update existing pending liability fact
-                            _context.Entry(existingPayable).CurrentValues.SetValues(new
-                            {
-                                existingPayable.ReferralPayableFactId,
-                                existingPayable.ReferralPartnerId,
-                                Amount = visitCommission,
-                                existingPayable.AmountPaid,
-                                existingPayable.Currency,
-                                existingPayable.SourceVisitId,
-                                existingPayable.OccurredAt,
-                                RecordedAt = DateTime.UtcNow,
-                                existingPayable.Description,
-                                existingPayable.SettledAt,
-                                existingPayable.Status
-                            });
-                            recalculatedVisitsCount++;
-                            totalCommissionRecognized += visitCommission;
-                        }
-                    }
-                    else if (visitCommission > 0)
-                    {
-                        var newPayable = new ReferralPayableFact
-                        {
-                            ReferralPayableFactId = Guid.NewGuid(),
-                            ReferralPartnerId = partner.ReferralPartnerId,
-                            Amount = visitCommission,
-                            Currency = "INR",
-                            SourceVisitId = visit.VisitId,
-                            OccurredAt = visit.CreatedAt,
-                            RecordedAt = DateTime.UtcNow,
-                            Status = "Pending",
-                            Description = "Auto-calculated via Referral Rate Learning"
-                        };
-                        _context.ReferralPayableFacts.Add(newPayable);
-                        recalculatedVisitsCount++;
-                        totalCommissionRecognized += visitCommission;
-                    }
-                }
-
-                await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                _logger.LogInformation("Committed {RuleCount} learned rules. Recalculated {VisitCount} visits.", learnedCount, recalculatedVisitsCount);
+                // 2. Central Governing Authority: Recalculate pending visits for affected doctors
+                var recalculatedVisitsCount = 0;
+                foreach (var partnerId in affectedPartnerIds)
+                {
+                    recalculatedVisitsCount += await _governingEngine.RecalculatePartnerPendingVisitsAsync(partnerId);
+                }
+
+                var totalCommissionRecognized = await _context.ReferralPayableFacts
+                    .Where(f => affectedPartnerIds.Contains(f.ReferralPartnerId) && f.Status == "Pending")
+                    .SumAsync(f => f.Amount);
+
+                _logger.LogInformation("Committed {RuleCount} learned rules. Recalculated {VisitCount} visits via Governing Engine.", learnedCount, recalculatedVisitsCount);
 
                 return new CommitLearningBatchResponseDto
                 {
                     LearnedRulesCount = learnedCount,
                     RecalculatedVisitsCount = recalculatedVisitsCount,
                     TotalCommissionRecognized = totalCommissionRecognized,
-                    Message = $"Successfully learned {learnedCount} test rate rules and updated {recalculatedVisitsCount} pending visits."
+                    Message = $"Successfully locked {learnedCount} rule(s) across {affectedPartnerIds.Count} doctor(s) through Commission Governing Engine."
                 };
             }
             catch (Exception ex)

@@ -49,7 +49,7 @@ export const ReferralTerminal = () => {
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'rate-queue', label: 'Rate Queue', icon: Zap, badge: unmappedQueueCount },
-        { id: 'registry', label: 'Partner Registry', icon: Users },
+        { id: 'registry', label: 'Doctor Registry', icon: Users },
         { id: 'payouts', label: 'Pending Payouts', icon: ArrowUpRight },
         { id: 'receivables', label: 'Partner Receivables', icon: ArrowDownLeft },
         { id: 'history', label: 'Settlement History', icon: History },

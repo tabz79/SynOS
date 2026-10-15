@@ -10,7 +10,7 @@ namespace SynOS.Models.Entities.Referral
 
         public Guid ReferralPartnerId { get; init; }
 
-        public decimal Amount { get; init; }
+        public decimal Amount { get; set; }
         
         public decimal AmountPaid { get; set; } = 0;
 
@@ -22,7 +22,7 @@ namespace SynOS.Models.Entities.Referral
 
         public DateTime RecordedAt { get; init; } = DateTime.UtcNow;
 
-        public string Description { get; init; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
 
         public DateTimeOffset? SettledAt { get; set; } // Mutable settlement status
 
