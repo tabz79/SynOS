@@ -206,9 +206,26 @@ export function VisitDetails({
     }, [activeCorporateAccountId]);
 
     // Update specific context fields (Insurer, Policy #, Pre-Auth #, Corporate Account, Emp ID, Co-Pay)
-    const handleUpdateBillingContext = async (patch) => {
+    const handleUpdateBillingContext = async (patch, options = {}) => {
         if (!visitId || isReadOnly) return;
-        setIsProcessing(true);
+        const { silent = false, persist = true, refreshSnapshot = true } = options;
+
+        // Synchronously update in-memory visit snapshot so validations see latest values
+        if (snapshot?.visit) {
+            if (patch.employeeId !== undefined) snapshot.visit.employeeId = patch.employeeId;
+            if (patch.policyNumber !== undefined) snapshot.visit.policyNumber = patch.policyNumber;
+            if (patch.preAuthApprovalNumber !== undefined) snapshot.visit.preAuthApprovalNumber = patch.preAuthApprovalNumber;
+            if (patch.insuranceCoPayAmount !== undefined) snapshot.visit.insuranceCoPayAmount = patch.insuranceCoPayAmount;
+            if (patch.corporateAccountId !== undefined) snapshot.visit.corporateAccountId = patch.corporateAccountId;
+            if (patch.corporatePackageId !== undefined) snapshot.visit.corporatePackageId = patch.corporatePackageId;
+            if (patch.insuranceCompanyId !== undefined) snapshot.visit.insuranceCompanyId = patch.insuranceCompanyId;
+            if (patch.billingType !== undefined) snapshot.visit.billingType = patch.billingType;
+        }
+
+        // If not persisting to backend yet (e.g. intermediate typing sync), return immediately
+        if (!persist) return;
+
+        if (!silent) setIsProcessing(true);
         try {
             const v = snapshot?.visit;
             const payload = {
@@ -223,12 +240,12 @@ export function VisitDetails({
                 corporatePackageId: patch.corporatePackageId !== undefined ? patch.corporatePackageId : (v?.corporatePackageId || null)
             };
             await ReceptionApi.updateBillingContext(payload);
-            if (onVisitUpdated) onVisitUpdated();
+            if (refreshSnapshot && onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to update billing context:", err);
-            alert("Failed to update billing details: " + err.message);
+            if (!silent) alert("Failed to update billing details: " + err.message);
         } finally {
-            setIsProcessing(false);
+            if (!silent) setIsProcessing(false);
         }
     };
 

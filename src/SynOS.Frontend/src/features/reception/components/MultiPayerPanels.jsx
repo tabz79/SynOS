@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShieldCheck, Building2, Briefcase, IndianRupee, Plus, X, Loader2, Sparkles, Check, Building } from 'lucide-react';
 import { ReceptionApi, clearReceptionMasterCaches } from '@/api/reception';
 import { cn } from '@/lib/utils';
@@ -115,6 +115,91 @@ export function InsuranceContextPanel({
     isDark = false,
     disabled = false
 }) {
+    const [localPolicy, setLocalPolicy] = useState(policyNumber || '');
+    const [localPreAuth, setLocalPreAuth] = useState(preAuthNumber || '');
+    const [localCoPay, setLocalCoPay] = useState(coPayAmount === undefined || coPayAmount === null ? '' : coPayAmount);
+
+    const isPolicyFocusedRef = useRef(false);
+    const isPreAuthFocusedRef = useRef(false);
+    const isCoPayFocusedRef = useRef(false);
+
+    const policyTimerRef = useRef(null);
+    const preAuthTimerRef = useRef(null);
+    const coPayTimerRef = useRef(null);
+
+    useEffect(() => {
+        if (!isPolicyFocusedRef.current) setLocalPolicy(policyNumber || '');
+    }, [policyNumber]);
+
+    useEffect(() => {
+        if (!isPreAuthFocusedRef.current) setLocalPreAuth(preAuthNumber || '');
+    }, [preAuthNumber]);
+
+    useEffect(() => {
+        if (!isCoPayFocusedRef.current) setLocalCoPay(coPayAmount === undefined || coPayAmount === null ? '' : coPayAmount);
+    }, [coPayAmount]);
+
+    useEffect(() => {
+        return () => {
+            if (policyTimerRef.current) clearTimeout(policyTimerRef.current);
+            if (preAuthTimerRef.current) clearTimeout(preAuthTimerRef.current);
+            if (coPayTimerRef.current) clearTimeout(coPayTimerRef.current);
+        };
+    }, []);
+
+    const handlePolicyChange = (val) => {
+        setLocalPolicy(val);
+        // Immediate in-memory sync (no API call, no spinner)
+        onChange({ policyNumber: val }, { persist: false });
+        // Debounced silent background persist
+        if (policyTimerRef.current) clearTimeout(policyTimerRef.current);
+        policyTimerRef.current = setTimeout(() => {
+            onChange({ policyNumber: val }, { persist: true, silent: true, refreshSnapshot: false });
+        }, 500);
+    };
+
+    const handlePolicyBlur = () => {
+        isPolicyFocusedRef.current = false;
+        if (policyTimerRef.current) clearTimeout(policyTimerRef.current);
+        onChange({ policyNumber: localPolicy }, { persist: true, silent: true, refreshSnapshot: false });
+    };
+
+    const handlePreAuthChange = (val) => {
+        setLocalPreAuth(val);
+        // Immediate in-memory sync (no API call, no spinner)
+        onChange({ preAuthApprovalNumber: val }, { persist: false });
+        // Debounced silent background persist
+        if (preAuthTimerRef.current) clearTimeout(preAuthTimerRef.current);
+        preAuthTimerRef.current = setTimeout(() => {
+            onChange({ preAuthApprovalNumber: val }, { persist: true, silent: true, refreshSnapshot: false });
+        }, 500);
+    };
+
+    const handlePreAuthBlur = () => {
+        isPreAuthFocusedRef.current = false;
+        if (preAuthTimerRef.current) clearTimeout(preAuthTimerRef.current);
+        onChange({ preAuthApprovalNumber: localPreAuth }, { persist: true, silent: true, refreshSnapshot: false });
+    };
+
+    const handleCoPayChange = (val) => {
+        setLocalCoPay(val);
+        const parsed = val ? parseFloat(val) : 0;
+        // Immediate in-memory sync
+        onChange({ insuranceCoPayAmount: parsed }, { persist: false });
+        // Debounced silent background persist
+        if (coPayTimerRef.current) clearTimeout(coPayTimerRef.current);
+        coPayTimerRef.current = setTimeout(() => {
+            onChange({ insuranceCoPayAmount: parsed }, { persist: true, silent: true, refreshSnapshot: false });
+        }, 500);
+    };
+
+    const handleCoPayBlur = () => {
+        isCoPayFocusedRef.current = false;
+        if (coPayTimerRef.current) clearTimeout(coPayTimerRef.current);
+        const parsed = localCoPay ? parseFloat(localCoPay) : 0;
+        onChange({ insuranceCoPayAmount: parsed }, { persist: true, silent: true, refreshSnapshot: false });
+    };
+
     return (
         <div className={cn(
             "p-3 rounded-xl border space-y-3 animate-in fade-in duration-200",
@@ -146,7 +231,7 @@ export function InsuranceContextPanel({
                     <select
                         value={selectedCompanyId || ''}
                         disabled={disabled}
-                        onChange={(e) => onChange({ insuranceCompanyId: e.target.value || null })}
+                        onChange={(e) => onChange({ insuranceCompanyId: e.target.value || null }, { persist: true, silent: false, refreshSnapshot: true })}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
                             isDark
@@ -174,9 +259,11 @@ export function InsuranceContextPanel({
                     <input
                         type="text"
                         placeholder="e.g. POL-84920491"
-                        value={policyNumber || ''}
+                        value={localPolicy}
                         disabled={disabled}
-                        onChange={(e) => onChange({ policyNumber: e.target.value })}
+                        onFocus={() => { isPolicyFocusedRef.current = true; }}
+                        onBlur={handlePolicyBlur}
+                        onChange={(e) => handlePolicyChange(e.target.value)}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
                             isDark
@@ -194,9 +281,11 @@ export function InsuranceContextPanel({
                     <input
                         type="text"
                         placeholder="e.g. AUTH-2026-X89"
-                        value={preAuthNumber || ''}
+                        value={localPreAuth}
                         disabled={disabled}
-                        onChange={(e) => onChange({ preAuthApprovalNumber: e.target.value })}
+                        onFocus={() => { isPreAuthFocusedRef.current = true; }}
+                        onBlur={handlePreAuthBlur}
+                        onChange={(e) => handlePreAuthChange(e.target.value)}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
                             isDark
@@ -217,9 +306,11 @@ export function InsuranceContextPanel({
                             type="number"
                             min="0"
                             placeholder="0"
-                            value={coPayAmount === undefined || coPayAmount === null ? '' : coPayAmount}
+                            value={localCoPay}
                             disabled={disabled}
-                            onChange={(e) => onChange({ insuranceCoPayAmount: e.target.value ? parseFloat(e.target.value) : 0 })}
+                            onFocus={() => { isCoPayFocusedRef.current = true; }}
+                            onBlur={handleCoPayBlur}
+                            onChange={(e) => handleCoPayChange(e.target.value)}
                             className={cn(
                                 "w-full h-8 pl-6 pr-2.5 rounded-lg text-xs font-bold border outline-none transition-all font-mono",
                                 isDark
@@ -245,8 +336,42 @@ export function CorporateContextPanel({
     isDark = false,
     disabled = false
 }) {
-    // Packages configured for this corporate (isProfile === true or package rules)
-    const packageRules = corporateRateRules.filter(r => r.isPackage || r.isProfile);
+    const [localEmployeeId, setLocalEmployeeId] = useState(employeeId || '');
+    const isFocusedRef = useRef(false);
+    const debounceTimerRef = useRef(null);
+
+    // Sync external changes only when not actively typing/focused
+    useEffect(() => {
+        if (!isFocusedRef.current) {
+            setLocalEmployeeId(employeeId || '');
+        }
+    }, [employeeId]);
+
+    // Clean up timer on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        };
+    }, []);
+
+    const handleEmployeeIdChange = (val) => {
+        setLocalEmployeeId(val);
+
+        // Immediate in-memory sync to avoid stale validations (no API call, no spinner)
+        onChange({ employeeId: val }, { persist: false });
+
+        // Debounce backend persistence (silent background save, no spinner, no snapshot refresh)
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+            onChange({ employeeId: val }, { persist: true, silent: true, refreshSnapshot: false });
+        }, 500);
+    };
+
+    const handleEmployeeIdBlur = () => {
+        isFocusedRef.current = false;
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        onChange({ employeeId: localEmployeeId }, { persist: true, silent: true, refreshSnapshot: false });
+    };
 
     return (
         <div className={cn(
@@ -279,7 +404,7 @@ export function CorporateContextPanel({
                     <select
                         value={selectedAccountId || ''}
                         disabled={disabled}
-                        onChange={(e) => onChange({ corporateAccountId: e.target.value || null })}
+                        onChange={(e) => onChange({ corporateAccountId: e.target.value || null }, { persist: true, silent: false, refreshSnapshot: true })}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
                             isDark
@@ -307,9 +432,11 @@ export function CorporateContextPanel({
                     <input
                         type="text"
                         placeholder="e.g. EMP-10492 or STAFF-SBI-829"
-                        value={employeeId || ''}
+                        value={localEmployeeId}
                         disabled={disabled}
-                        onChange={(e) => onChange({ employeeId: e.target.value })}
+                        onFocus={() => { isFocusedRef.current = true; }}
+                        onBlur={handleEmployeeIdBlur}
+                        onChange={(e) => handleEmployeeIdChange(e.target.value)}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
                             isDark

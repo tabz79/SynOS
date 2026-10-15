@@ -398,7 +398,8 @@ export function IntentPanel({ onVisitUpdated }) {
                 setError("Please select an Insurance Company / TPA Provider.");
                 return;
             }
-            if (!v?.policyNumber) {
+            const policyNum = (v?.policyNumber || '').trim();
+            if (!policyNum) {
                 setError("Please specify the Policy / Member ID for this cashless insurance claim.");
                 return;
             }
@@ -406,6 +407,16 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsLoading(true);
             setIsActionSubmitting(true);
             try {
+                // Ensure latest insurance context is committed before authorizing
+                await ReceptionApi.updateBillingContext({
+                    visitId: snapshot.visit.visitId,
+                    billingType: 'Insurance',
+                    insuranceCompanyId: v.insuranceCompanyId,
+                    policyNumber: policyNum,
+                    preAuthApprovalNumber: v?.preAuthApprovalNumber?.trim() || null,
+                    insuranceCoPayAmount: v?.insuranceCoPayAmount || 0
+                });
+
                 const res = await ReceptionApi.markVisitAsInsurance(snapshot.visit.visitId);
 
                 // Collect Patient Co-Pay if defined
@@ -433,7 +444,8 @@ export function IntentPanel({ onVisitUpdated }) {
                 setError("Please select a Corporate Client / Organization.");
                 return;
             }
-            if (!v?.employeeId) {
+            const empId = (v?.employeeId || '').trim();
+            if (!empId) {
                 setError("Please specify the Employee ID / Staff Number for this corporate visit.");
                 return;
             }
@@ -441,6 +453,14 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsLoading(true);
             setIsActionSubmitting(true);
             try {
+                // Ensure latest corporate context is committed before authorizing
+                await ReceptionApi.updateBillingContext({
+                    visitId: snapshot.visit.visitId,
+                    billingType: 'Corporate',
+                    corporateAccountId: v.corporateAccountId,
+                    employeeId: empId
+                });
+
                 const res = await ReceptionApi.markVisitAsCorporate(snapshot.visit.visitId);
 
                 // Auto-print thermal receipt slip
