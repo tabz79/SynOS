@@ -12,7 +12,8 @@ import {
     ArrowUpRight,
     ArrowDownLeft,
     Filter,
-    MoreHorizontal
+    MoreHorizontal,
+    Zap
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
@@ -22,6 +23,7 @@ import { PartnerReceivablesTab } from './components/referral/PartnerReceivablesT
 import { SettlementHistoryTab } from './components/referral/SettlementHistoryTab';
 import { CommissionRulesTab } from './components/referral/CommissionRulesTab';
 import { ReferralOverviewTab } from './components/referral/ReferralOverviewTab';
+import { ReferralRateQueueTab } from './components/referral/ReferralRateQueueTab';
 import { Printer, Download, Loader2 } from 'lucide-react';
 
 /**
@@ -34,6 +36,7 @@ export const ReferralTerminal = () => {
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+    const [unmappedQueueCount, setUnmappedQueueCount] = useState(0);
     const [tabData, setTabData] = useState({
         registry: [],
         payouts: [],
@@ -45,6 +48,7 @@ export const ReferralTerminal = () => {
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+        { id: 'rate-queue', label: 'Rate Queue', icon: Zap, badge: unmappedQueueCount },
         { id: 'registry', label: 'Partner Registry', icon: Users },
         { id: 'payouts', label: 'Pending Payouts', icon: ArrowUpRight },
         { id: 'receivables', label: 'Partner Receivables', icon: ArrowDownLeft },
@@ -54,7 +58,18 @@ export const ReferralTerminal = () => {
 
     useEffect(() => {
         loadSummary();
+        loadUnmappedCount();
     }, []);
+
+    const loadUnmappedCount = async () => {
+        try {
+            const queue = await FinanceApi.getPendingLearningQueue();
+            const total = (queue || []).reduce((acc, g) => acc + (g.unmappedTests?.length || 0), 0);
+            setUnmappedQueueCount(total);
+        } catch (e) {
+            console.error("Failed to load rate queue count", e);
+        }
+    };
 
     useEffect(() => {
         if (tabsRef.current) {
@@ -104,6 +119,9 @@ export const ReferralTerminal = () => {
                 const res = await FinanceApi.getReferralRules();
                 setTabData(prev => ({ ...prev, rules: res || [] }));
                 return res || [];
+            } else if (targetTab === 'rate-queue') {
+                const res = await FinanceApi.getPendingLearningQueue();
+                return res || [];
             }
         } catch (e) {
             console.error("Failed to load tab data for", targetTab, e);
@@ -117,7 +135,22 @@ export const ReferralTerminal = () => {
         let rows = [];
         let filename = `synos_referral_${tab}_${new Date().toISOString().slice(0, 10)}.csv`;
 
-        if (tab === 'registry') {
+        if (tab === 'rate-queue') {
+            headers = ["Doctor Name", "Clinic", "Test Name", "Test Code", "Department", "MRP (INR)", "Times Prescribed"];
+            (data || []).forEach(g => {
+                (g.unmappedTests || []).forEach(t => {
+                    rows.push([
+                        `"${(g.doctorName || '').replace(/"/g, '""')}"`,
+                        `"${(g.clinicName || '').replace(/"/g, '""')}"`,
+                        `"${(t.testName || '').replace(/"/g, '""')}"`,
+                        `"${t.testCode || ''}"`,
+                        `"${t.departmentName || ''}"`,
+                        t.price || 0,
+                        t.prescribedCount || 0
+                    ]);
+                });
+            });
+        } else if (tab === 'registry') {
             headers = ["Partner Name", "Partner Type", "Clinic / Hospital", "Phone", "Email", "Default Commission (%)", "Status"];
             rows = (data || []).map(p => [
                 `"${(p.name || '').replace(/"/g, '""')}"`,
@@ -200,7 +233,42 @@ export const ReferralTerminal = () => {
 
     const getPrintSummaryConfig = () => {
         const data = tabData[tab] || [];
-        if (tab === 'registry') {
+        if (tab === 'rate-queue') {
+            let totalUnmapped = 0;
+            const flatList = [];
+            (data || []).forEach(g => {
+                (g.unmappedTests || []).forEach(t => {
+                    totalUnmapped++;
+                    flatList.push({
+                        doctorName: g.doctorName,
+                        clinicName: g.clinicName || '-',
+                        testName: `${t.testName} (${t.testCode})`,
+                        department: t.departmentName || '-',
+                        price: t.price,
+                        prescribedCount: t.prescribedCount
+                    });
+                });
+            });
+            return {
+                title: "Doctor Commission Learning Queue",
+                subtitle: "Unmapped doctor-test pairs waiting for rate configuration",
+                categoryLabel: "RATE LEARNING QUEUE",
+                kpis: [
+                    { label: "Unmapped Tests", value: totalUnmapped, color: "text-amber-600", subtext: "Awaiting Rate Cut" },
+                    { label: "Doctors in Queue", value: (data || []).length, subtext: "Prescribing Clinicians" }
+                ],
+                columns: [
+                    { key: 'doctorName', label: 'Doctor' },
+                    { key: 'clinicName', label: 'Hospital / Clinic' },
+                    { key: 'testName', label: 'Investigation' },
+                    { key: 'department', label: 'Department' },
+                    { key: 'price', label: 'MRP (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'prescribedCount', label: 'Prescribed', align: 'center', render: (v) => `${v}x` }
+                ],
+                data: flatList,
+                summaryTotals: {}
+            };
+        } else if (tab === 'registry') {
             return {
                 title: "Doctor Referral Partner Directory",
                 subtitle: "Authorized clinical referral partners, clinic tie-ups, and contracted commission schedules",
@@ -421,7 +489,12 @@ export const ReferralTerminal = () => {
                         }`}
                     >
                         <t.icon size={16} />
-                        {t.label}
+                        <span>{t.label}</span>
+                        {Boolean(t.badge && t.badge > 0) && (
+                            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                {t.badge}
+                            </span>
+                        )}
                     </button>
                 ))}
             </div>
@@ -429,6 +502,7 @@ export const ReferralTerminal = () => {
             {/* MAIN CONTENT AREA */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {tab === 'overview' && <ReferralOverviewTab summary={summary} loading={loading} />}
+                {tab === 'rate-queue' && <ReferralRateQueueTab onUpdateCount={setUnmappedQueueCount} />}
                 {tab === 'registry' && <PartnerRegistryTab />}
                 {tab === 'payouts' && <PendingPayoutsTab />}
                 {tab === 'receivables' && <PartnerReceivablesTab />}

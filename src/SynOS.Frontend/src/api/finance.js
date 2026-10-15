@@ -657,6 +657,56 @@ export const FinanceApi = {
         return response.json();
     },
 
+    /**
+     * Referral Self-Learning Engine API
+     */
+    getPendingLearningQueue: async () => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/referral-learning/pending'), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load pending learning queue");
+        return response.json();
+    },
+
+    commitLearningRates: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/referral-learning/commit'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to commit referral rates");
+        }
+        return response.json();
+    },
+
+    getDoctorRateCard: async (partnerId) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/referral-learning/doctor/${partnerId}/rate-card`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load doctor rate card");
+        return response.json();
+    },
+
+    searchLearnedRules: async (query = '') => {
+        const qs = query ? `?query=${encodeURIComponent(query)}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/referral-learning/rules${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to search learned rules");
+        return response.json();
+    },
+
+    deleteLearnedRule: async (ruleId) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/referral-learning/rules/${ruleId}`), {
+            method: 'DELETE',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to delete learned rule");
+        return true;
+    },
+
     getSettlementHistory: async () => {
         // We'll use a combined feed of SpendFacts and RevenueFacts with 'Referral' or 'Partner' source
         const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/settlement-history?category=Referral'), {

@@ -10,6 +10,7 @@ namespace SynOS.Services
             services.AddScoped<IReferralPartnerService, ReferralPartnerService>();
             services.AddScoped<IReferralCommissionService, ReferralCommissionService>();
             services.AddScoped<IReferralFinancialService, ReferralFinancialService>();
+            services.AddScoped<IReferralLearningService, ReferralLearningService>();
             return services;
         }
     }
