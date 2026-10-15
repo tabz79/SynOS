@@ -58,7 +58,8 @@ export function FinanceLayout() {
             icon: Users,
             subItems: [
                 { name: "Overview", path: "/finance/referrals/overview" },
-                { name: "Partner Registry", path: "/finance/referrals/registry" },
+                { name: "Rate Queue", path: "/finance/referrals/rate-queue" },
+                { name: "Doctor Registry", path: "/finance/referrals/registry" },
                 { name: "Pending Payouts", path: "/finance/referrals/payouts" },
                 { name: "Partner Receivables", path: "/finance/referrals/receivables" },
                 { name: "Settlement History", path: "/finance/referrals/history" },
