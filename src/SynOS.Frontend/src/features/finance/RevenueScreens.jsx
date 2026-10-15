@@ -23,7 +23,8 @@ import {
     FileSpreadsheet,
     Receipt,
     FileText,
-    Share2
+    Share2,
+    Printer
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -34,6 +35,8 @@ import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
+import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
+import { FinanceFilterBar } from './components/FinanceFilterBar';
 
 import { cn } from '@/lib/utils';
 
@@ -478,6 +481,7 @@ export const BillsCollectionsScreen = () => {
     const [docModalType, setDocModalType] = useState(null); // 'invoice' | 'claim' | null
     const [docData, setDocData] = useState(null);
     const [loadingDoc, setLoadingDoc] = useState(false);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
     
     // Filter states
     const [statusFilter, setStatusFilter] = useState('All');
@@ -768,6 +772,15 @@ export const BillsCollectionsScreen = () => {
                     >
                         <Download size={15} />
                         <span>Download Summary ({filteredBills.length})</span>
+                    </button>
+
+                    <button
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        disabled={filteredBills.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        <Printer size={15} />
+                        <span>Print Summary</span>
                     </button>
                 </div>
             </div>
@@ -1098,6 +1111,51 @@ export const BillsCollectionsScreen = () => {
                     />
                 </CommercialDocumentViewer>
             )}
+
+            {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
+            <FinancePrintableSummaryModal
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title="Bills & Collections Revenue Ledger"
+                subtitle="Operational ledger with branch, department, and modality transaction breakdowns"
+                dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
+                categoryLabel="REVENUE LEDGER AUDIT"
+                filterTags={[
+                    branchFilter !== 'All' ? `Branch: ${branches.find(b => (b.branchId || b.id) === branchFilter)?.name || branchFilter}` : null,
+                    departmentFilter !== 'All' ? `Dept: ${departmentFilter}` : null,
+                    modalityFilter !== 'All' ? `Modality: ${modalityFilter}` : null,
+                    statusFilter !== 'All' ? `Status: ${statusFilter}` : null,
+                    categoryFilter !== 'All' ? `Category: ${categoryFilter}` : null,
+                    searchQuery ? `Search: "${searchQuery}"` : null
+                ].filter(Boolean)}
+                kpis={[
+                    { label: "Total Billed", value: `₹${totalBilled.toLocaleString()}`, color: "text-zinc-900", subtext: `${filteredBills.length} Invoices` },
+                    { label: "Cash Collected", value: `₹${totalCash.toLocaleString()}`, color: "text-emerald-600", subtext: "Physical Currency" },
+                    { label: "Online / Digital", value: `₹${totalOnline.toLocaleString()}`, color: "text-sky-600", subtext: "UPI & Cards" },
+                    { label: "Wallet / Advance", value: `₹${totalPrepaid.toLocaleString()}`, color: "text-amber-600", subtext: "Prepaid Balances" },
+                    { label: "Pending Dues", value: `₹${totalPending.toLocaleString()}`, color: "text-rose-600", subtext: "Receivables Balance" },
+                    { label: "Partner Commissions", value: `₹${totalReferralCut.toLocaleString()}`, color: "text-purple-600", subtext: "Referral Liability" }
+                ]}
+                columns={[
+                    { key: 'billNumber', label: 'Bill / Inv No' },
+                    { key: 'date', label: 'Date', render: (v) => new Date(v).toLocaleDateString() },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'branchName', label: 'Branch', render: (v) => v || 'Main Facility' },
+                    { key: 'department', label: 'Dept / Modality', render: (_, r) => `${r.department || 'Pathology'}${r.modality ? ` (${r.modality})` : ''}` },
+                    { key: 'partnerCategory', label: 'Billing Model', render: (v) => v || 'Direct Counter' },
+                    { key: 'totalAmount', label: 'Billed (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'paidAmount', label: 'Paid (₹)', align: 'right', render: (_, r) => `₹${Number((r.cashAmount || 0) + (r.onlineAmount || 0) + (r.prepaidAmount || 0)).toLocaleString()}` },
+                    { key: 'pendingAmount', label: 'Due (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Pending' }
+                ]}
+                data={filteredBills}
+                summaryTotals={{
+                    totalAmount: `₹${totalBilled.toLocaleString()}`,
+                    paidAmount: `₹${(totalCash + totalOnline + totalPrepaid).toLocaleString()}`,
+                    pendingAmount: `₹${totalPending.toLocaleString()}`
+                }}
+                onDownloadCsv={handleDownloadSummary}
+            />
         </div>
     );
 };
@@ -1106,6 +1164,7 @@ export const PendingReceivablesScreen = () => {
     const { user } = useAuth();
     const [partnerSummaries, setPartnerSummaries] = useState([]);
     const [allBills, setAllBills] = useState([]);
+    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [selectedBillIds, setSelectedBillIds] = useState([]);
@@ -1118,8 +1177,17 @@ export const PendingReceivablesScreen = () => {
     const [generatingClaim, setGeneratingClaim] = useState(false);
     const [selectedFactIds, setSelectedFactIds] = useState(new Set());
 
+    // Multi-dimensional filter states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
+    const [dateRange, setDateRange] = useState('All Time');
+    const [customDates, setCustomDates] = useState({ start: '', end: '' });
+    const [branchFilter, setBranchFilter] = useState('All');
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
     useEffect(() => {
         loadData();
+        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
     }, []);
 
     const loadData = async () => {
@@ -1129,8 +1197,8 @@ export const PendingReceivablesScreen = () => {
                 FinanceApi.getPartnerReceivablesSummary(),
                 FinanceApi.getReceivables()
             ]);
-            setPartnerSummaries(summaries);
-            setAllBills(bills);
+            setPartnerSummaries(summaries || []);
+            setAllBills(bills || []);
         } catch (err) {
             console.error("Failed to load receivables:", err);
         } finally {
@@ -1191,31 +1259,125 @@ export const PendingReceivablesScreen = () => {
         setExpandedPartnerId(expandedPartnerId === partnerId ? null : partnerId);
     };
 
+    // Filter partners based on search, status, and aging
+    const filteredPartnerSummaries = partnerSummaries.filter(p => {
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            const matchName = (p.partnerName || '').toLowerCase().includes(q);
+            const matchId = (p.partnerId || '').toString().toLowerCase().includes(q);
+            if (!matchName && !matchId) return false;
+        }
+        if (statusFilter === 'Critical (>30d)' && !(p.aging_30_Plus > 0)) return false;
+        if (statusFilter === 'Moderate (7-30d)' && !(p.aging_7_30 > 0)) return false;
+        if (statusFilter === 'Recent (0-7d)' && !(p.aging_0_7 > 0)) return false;
+        return true;
+    });
+
     const totals = {
-        outstanding: partnerSummaries.reduce((acc, p) => acc + p.totalOutstanding, 0),
-        count: partnerSummaries.reduce((acc, p) => acc + p.billCount, 0),
-        overdue: partnerSummaries.reduce((acc, p) => acc + p.aging_30_Plus, 0)
+        outstanding: filteredPartnerSummaries.reduce((acc, p) => acc + (p.totalOutstanding || 0), 0),
+        count: filteredPartnerSummaries.reduce((acc, p) => acc + (p.billCount || 0), 0),
+        overdue: filteredPartnerSummaries.reduce((acc, p) => acc + (p.aging_30_Plus || 0), 0)
+    };
+
+    // Tab-Aware CSV Download for Partner Receivables
+    const handleDownloadSummary = () => {
+        const headers = [
+            "Partner / Doctor Name",
+            "Partner Code / ID",
+            "Open Bills Count",
+            "Total Outstanding (INR)",
+            "0-7 Days (INR)",
+            "7-30 Days (INR)",
+            "30+ Days Critical Overdue (INR)",
+            "Oldest Due Date",
+            "Aging Classification"
+        ];
+        const rows = filteredPartnerSummaries.map(p => [
+            `"${(p.partnerName || '').replace(/"/g, '""')}"`,
+            `"${p.partnerId || ''}"`,
+            p.billCount || 0,
+            p.totalOutstanding || 0,
+            p.aging_0_7 || 0,
+            p.aging_7_30 || 0,
+            p.aging_30_Plus || 0,
+            `"${p.oldestDueDate ? new Date(p.oldestDueDate).toLocaleDateString() : 'N/A'}"`,
+            `"${FinanceUtils.getAgingCategory(p.oldestDueDate)}"`
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `synos_partner_receivables_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
-        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
+            {/* Header & Actions Bar */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Partner Receivables</h1>
-                    <p className="text-sm text-zinc-500 font-medium italic">Operational inbox for institutional recovery and B2B settlements.</p>
+                    <p className="text-xs text-zinc-500 font-medium">Operational inbox for institutional recovery and B2B settlements.</p>
                 </div>
                 
-                <div className="flex items-center gap-4">
-                    <div className="px-6 py-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200">
-                        <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-1">Total Outstanding</div>
-                        <div className="text-xl font-bold dark:text-white">{FinanceUtils.formatCurrency(totals.outstanding)}</div>
-                    </div>
-                    <div className="px-6 py-4 rounded-2xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20">
-                        <div className="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1">Critical Overdue</div>
-                        <div className="text-xl font-bold text-rose-500">{FinanceUtils.formatCurrency(totals.overdue)}</div>
-                    </div>
+                <div className="flex items-center flex-wrap gap-2.5">
+                    <button
+                        onClick={handleDownloadSummary}
+                        disabled={filteredPartnerSummaries.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        <Download size={15} />
+                        <span>Download Summary ({filteredPartnerSummaries.length})</span>
+                    </button>
+
+                    <button
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        disabled={filteredPartnerSummaries.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        <Printer size={15} />
+                        <span>Print Summary</span>
+                    </button>
                 </div>
             </div>
+
+            {/* KPI Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Outstanding</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{FinanceUtils.formatCurrency(totals.outstanding)}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">{totals.count} Open Investigation Invoices</span>
+                </div>
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-rose-500/20 bg-rose-500/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Critical Overdue (&gt;30d)</p>
+                    <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{FinanceUtils.formatCurrency(totals.overdue)}</p>
+                    <span className="text-[10px] text-rose-500/70 font-medium">Overdue Recovery Liabilities</span>
+                </div>
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Debtors</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{filteredPartnerSummaries.length}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Contracted Clinical Partners</span>
+                </div>
+            </div>
+
+            {/* Comprehensive Multi-Dimensional Filters Bar */}
+            <FinanceFilterBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search partner name or account ID..."
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                statusOptions={['All', 'Critical (>30d)', 'Moderate (7-30d)', 'Recent (0-7d)']}
+                branchFilter={branchFilter}
+                onBranchChange={setBranchFilter}
+                branches={branches}
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+                customDates={customDates}
+                onCustomDatesChange={setCustomDates}
+            />
 
             <div className="rounded-3xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
                 {loading ? (
@@ -1233,7 +1395,7 @@ export const PendingReceivablesScreen = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
-                            {partnerSummaries.map((partner) => (
+                            {filteredPartnerSummaries.map((partner) => (
                                 <React.Fragment key={partner.partnerId}>
                                     <tr className={`group transition-all ${expandedPartnerId === partner.partnerId ? 'bg-synos-primary/5' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30'}`}>
                                         <td className="p-6">
@@ -1437,6 +1599,42 @@ export const PendingReceivablesScreen = () => {
                     <DynamicDocumentRenderer slotId="partner_b2b_invoice" data={claimDocData} />
                 </CommercialDocumentViewer>
             )}
+
+            {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
+            <FinancePrintableSummaryModal
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title="Institutional & Referral Partner Receivables Ledger"
+                subtitle="B2B credit balances, aging distribution, and recovery liabilities"
+                dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
+                categoryLabel="RECEIVABLES LEDGER AUDIT"
+                filterTags={[
+                    statusFilter !== 'All' ? `Status: ${statusFilter}` : null,
+                    branchFilter !== 'All' ? `Branch: ${branches.find(b => (b.branchId || b.id) === branchFilter)?.name || branchFilter}` : null,
+                    searchQuery ? `Search: "${searchQuery}"` : null
+                ].filter(Boolean)}
+                kpis={[
+                    { label: "Total Outstanding", value: `₹${totals.outstanding.toLocaleString()}`, color: "text-zinc-900", subtext: `${totals.count} Open Invoices` },
+                    { label: "Critical Overdue (>30d)", value: `₹${totals.overdue.toLocaleString()}`, color: "text-rose-600", subtext: "Immediate Action Required" },
+                    { label: "Debtor Partners", value: filteredPartnerSummaries.length, color: "text-indigo-600", subtext: "Referred Clinic Accounts" }
+                ]}
+                columns={[
+                    { key: 'partnerName', label: 'Partner / Account Name' },
+                    { key: 'partnerId', label: 'Account ID', render: (v) => (v || '').toString().substring(0, 10) },
+                    { key: 'billCount', label: 'Open Invoices', align: 'center' },
+                    { key: 'totalOutstanding', label: 'Outstanding (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'aging_0_7', label: '0-7 Days (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'aging_7_30', label: '7-30 Days (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'aging_30_Plus', label: '>30 Days Overdue (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'oldestDueDate', label: 'Oldest Due', render: (v) => v ? new Date(v).toLocaleDateString() : 'N/A' }
+                ]}
+                data={filteredPartnerSummaries}
+                summaryTotals={{
+                    totalOutstanding: `₹${totals.outstanding.toLocaleString()}`,
+                    aging_30_Plus: `₹${totals.overdue.toLocaleString()}`
+                }}
+                onDownloadCsv={handleDownloadSummary}
+            />
         </div>
     );
 };
@@ -1444,6 +1642,14 @@ export const PendingReceivablesScreen = () => {
 export const CollectionHistoryScreen = () => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Multi-dimensional filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [paymentModeFilter, setPaymentModeFilter] = useState('All');
+    const [sourceFilter, setSourceFilter] = useState('All');
+    const [dateRange, setDateRange] = useState('This Month');
+    const [customDates, setCustomDates] = useState({ start: '', end: '' });
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
         loadHistory();
@@ -1453,7 +1659,7 @@ export const CollectionHistoryScreen = () => {
         try {
             setLoading(true);
             const data = await FinanceApi.getRevenueHistory();
-            setHistory(data);
+            setHistory(data || []);
         } catch (err) {
             console.error("Failed to load collection history:", err);
         } finally {
@@ -1461,21 +1667,150 @@ export const CollectionHistoryScreen = () => {
         }
     };
 
-    return (
-        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Collection History</h1>
-                <p className="text-sm text-zinc-500 font-medium">Review completed collections and settlement activity.</p>
-            </div>
+    const filteredHistory = history.filter(row => {
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            const matchRef = (row.sourceReferenceId || '').toLowerCase().includes(q);
+            const matchNotes = (row.notes || '').toLowerCase().includes(q);
+            const matchType = (row.sourceType || '').toLowerCase().includes(q);
+            if (!matchRef && !matchNotes && !matchType) return false;
+        }
+        if (paymentModeFilter !== 'All') {
+            const mode = (row.paymentMode || '').toLowerCase();
+            if (!mode.includes(paymentModeFilter.toLowerCase())) return false;
+        }
+        if (sourceFilter !== 'All') {
+            const src = (row.sourceType || '').toLowerCase();
+            if (sourceFilter === 'Doctor Partner' && !src.includes('partner')) return false;
+            if (sourceFilter === 'Counter' && (src.includes('partner') || src.includes('corporate') || src.includes('insurance'))) return false;
+            if (sourceFilter === 'Corporate' && !src.includes('corporate')) return false;
+            if (sourceFilter === 'Insurance' && !src.includes('insurance')) return false;
+        }
+        if (dateRange !== 'All Time') {
+            const d = new Date(row.occurredAt);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (dateRange === 'Today' && d < today) return false;
+            if (dateRange === 'Yesterday') {
+                const y = new Date(today); y.setDate(y.getDate() - 1);
+                if (d < y || d >= today) return false;
+            }
+            if (dateRange === 'This Week') {
+                const w = new Date(today); w.setDate(w.getDate() - 7);
+                if (d < w) return false;
+            }
+            if (dateRange === 'This Month') {
+                const m = new Date(today.getFullYear(), today.getMonth(), 1);
+                if (d < m) return false;
+            }
+            if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
+                const start = new Date(customDates.start);
+                const end = new Date(customDates.end);
+                end.setHours(23, 59, 59, 999);
+                if (d < start || d > end) return false;
+            }
+        }
+        return true;
+    });
 
-            <div className="flex items-center justify-between p-2 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
-                <div className="flex items-center gap-1 ml-1">
-                    {['Latest'].map((f, i) => (
-                        <FilterTab key={f} label={f} isActive={i === 0} />
-                    ))}
+    const totalCollected = filteredHistory.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const cashTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('cash')).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const digitalTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('upi') || (r.paymentMode || '').toLowerCase().includes('online')).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const bankTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('bank') || (r.paymentMode || '').toLowerCase().includes('card') || (r.paymentMode || '').toLowerCase().includes('transfer')).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+
+    // Tab-Aware CSV Download for Collection History
+    const handleDownloadSummary = () => {
+        const headers = ["Date & Time", "Source Category", "Collected Amount (INR)", "Payment Mode", "Reference ID", "Notes"];
+        const rows = filteredHistory.map(r => [
+            `"${new Date(r.occurredAt).toLocaleString()}"`,
+            `"${(r.sourceType || '').replace(/"/g, '""')}"`,
+            r.amount || 0,
+            `"${(r.paymentMode || '').replace(/"/g, '""')}"`,
+            `"${(r.sourceReferenceId || '').replace(/"/g, '""')}"`,
+            `"${(r.notes || '').replace(/"/g, '""')}"`
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `synos_collection_history_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
+            {/* Header & Actions Bar */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Collection History</h1>
+                    <p className="text-xs text-zinc-500 font-medium">Review completed collections and settlement activity.</p>
+                </div>
+
+                <div className="flex items-center flex-wrap gap-2.5">
+                    <button
+                        onClick={handleDownloadSummary}
+                        disabled={filteredHistory.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        <Download size={15} />
+                        <span>Download Summary ({filteredHistory.length})</span>
+                    </button>
+
+                    <button
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        disabled={filteredHistory.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        <Printer size={15} />
+                        <span>Print Summary</span>
+                    </button>
                 </div>
             </div>
 
+            {/* KPI Metric Strip */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Collections</p>
+                    <p className="text-xl font-black text-zinc-900 dark:text-white mt-1">₹{totalCollected.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">{filteredHistory.length} Receipts Reconciled</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collections</p>
+                    <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{cashTotal.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Physical Intake</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-sky-500">Digital / UPI</p>
+                    <p className="text-xl font-black text-sky-600 dark:text-sky-400 mt-1">₹{digitalTotal.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Instant Settlements</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Bank / Card</p>
+                    <p className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">₹{bankTotal.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">POS & Direct Transfers</span>
+                </div>
+            </div>
+
+            {/* Comprehensive Multi-Dimensional Filters Bar */}
+            <FinanceFilterBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Search reference, notes, or category..."
+                statusFilter={sourceFilter}
+                onStatusChange={setSourceFilter}
+                statusOptions={['All', 'Counter', 'Doctor Partner', 'Corporate', 'Insurance']}
+                categoryFilter={paymentModeFilter}
+                onCategoryChange={setPaymentModeFilter}
+                categoryOptions={['All', 'Cash', 'UPI', 'BankTransfer', 'Card']}
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+                customDates={customDates}
+                onCustomDatesChange={setCustomDates}
+            />
+
+            {/* Collection History Table */}
             <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
                 {loading ? (
                     <div className="p-20 text-center text-zinc-500 animate-pulse">Scanning history facts...</div>
@@ -1483,8 +1818,8 @@ export const CollectionHistoryScreen = () => {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Date</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Source Type</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Date & Time</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Source Category</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Amount</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Payment Mode</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Reference</th>
@@ -1492,7 +1827,7 @@ export const CollectionHistoryScreen = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
-                            {history.map((row) => (
+                            {filteredHistory.map((row) => (
                                 <tr key={row.revenueFactId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4 text-xs text-zinc-500 whitespace-nowrap">{new Date(row.occurredAt).toLocaleString()}</td>
                                     <td className="p-4 text-xs font-bold dark:text-zinc-200 uppercase tracking-tighter text-synos-primary">
@@ -1510,7 +1845,7 @@ export const CollectionHistoryScreen = () => {
                                     <td className="p-4 text-xs text-zinc-500">{row.notes}</td>
                                 </tr>
                             ))}
-                            {history.length === 0 && (
+                            {filteredHistory.length === 0 && (
                                 <tr>
                                     <td colSpan="6" className="p-8 text-center text-zinc-500 text-sm italic">No collection history found for the selected period.</td>
                                 </tr>
@@ -1519,6 +1854,40 @@ export const CollectionHistoryScreen = () => {
                     </table>
                 )}
             </div>
+
+            {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
+            <FinancePrintableSummaryModal
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title="Revenue Collection & Cashier Receipts Ledger"
+                subtitle="Itemized settlement audit trail across counter, digital, and institutional receipts"
+                dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
+                categoryLabel="COLLECTION AUDIT TRAIL"
+                filterTags={[
+                    sourceFilter !== 'All' ? `Source: ${sourceFilter}` : null,
+                    paymentModeFilter !== 'All' ? `Mode: ${paymentModeFilter}` : null,
+                    searchQuery ? `Search: "${searchQuery}"` : null
+                ].filter(Boolean)}
+                kpis={[
+                    { label: "Total Collections", value: `₹${totalCollected.toLocaleString()}`, color: "text-zinc-900", subtext: `${filteredHistory.length} Receipts` },
+                    { label: "Cash Collections", value: `₹${cashTotal.toLocaleString()}`, color: "text-emerald-600", subtext: "Physical Currency" },
+                    { label: "Digital / UPI", value: `₹${digitalTotal.toLocaleString()}`, color: "text-sky-600", subtext: "Instant Settlements" },
+                    { label: "Bank / POS", value: `₹${bankTotal.toLocaleString()}`, color: "text-purple-600", subtext: "Direct Transfers" }
+                ]}
+                columns={[
+                    { key: 'occurredAt', label: 'Date & Time', render: (v) => new Date(v).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) },
+                    { key: 'sourceType', label: 'Source Category', render: (v, r) => r.sourceType === 'Partner' && r.notes?.includes('Partner:') ? r.notes.split('|')[0].replace('Partner:', '').trim() : (v || 'Counter') },
+                    { key: 'amount', label: 'Collected (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'paymentMode', label: 'Payment Mode', align: 'center', render: (v) => v || 'Cash' },
+                    { key: 'sourceReferenceId', label: 'Ref / Fact ID', render: (v) => (v || '').toString().substring(0, 12) },
+                    { key: 'notes', label: 'Notes / Attendant', render: (v) => v || '-' }
+                ]}
+                data={filteredHistory}
+                summaryTotals={{
+                    amount: `₹${totalCollected.toLocaleString()}`
+                }}
+                onDownloadCsv={handleDownloadSummary}
+            />
         </div>
     );
 };

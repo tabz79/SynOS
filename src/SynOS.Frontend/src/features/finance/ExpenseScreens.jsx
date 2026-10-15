@@ -32,9 +32,11 @@ import {
     ShieldCheck,
     History,
     Loader2,
-    Settings
+    Settings,
+    Printer
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { cn } from '@/lib/utils';
 import { VendorMasterScreen } from './VendorMasterScreen';
 import { OverheadExpensesScreen } from './OverheadScreens';
@@ -2107,6 +2109,10 @@ export const OutsourcingTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
     const tabsRef = React.useRef(null);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+    const [payablesData, setPayablesData] = useState([]);
+    const [labsData, setLabsData] = useState([]);
+    const [loadingData, setLoadingData] = useState(false);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: Settings },
@@ -2123,18 +2129,256 @@ export const OutsourcingTerminal = () => {
                 activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
+        loadData();
     }, [tab]);
+
+    const loadData = async () => {
+        try {
+            setLoadingData(true);
+            const [payables, labs] = await Promise.all([
+                FinanceApi.getOutsourcedPayables().catch(() => []),
+                FinanceApi.getReferenceLabs().catch(() => [])
+            ]);
+            setPayablesData(payables || []);
+            setLabsData(labs || []);
+        } catch (err) {
+            console.error("Failed to load outsourcing data", err);
+        } finally {
+            setLoadingData(false);
+        }
+    };
+
+    const handleDownloadTabSummary = () => {
+        let headers = [];
+        let rows = [];
+        let filename = `synos_outsourcing_${tab}_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        if (tab === 'labs') {
+            headers = ["Reference Lab Name", "Contact Email", "Contact Phone", "Address / Location", "Status"];
+            rows = labsData.map(l => [
+                `"${(l.name || '').replace(/"/g, '""')}"`,
+                `"${l.email || ''}"`,
+                `"${l.phone || ''}"`,
+                `"${(l.location || l.address || '').replace(/"/g, '""')}"`,
+                `"${l.status || 'Active'}"`
+            ]);
+        } else if (tab === 'pricing') {
+            const pricingList = payablesData.filter(p => p.status === 'PendingPricing');
+            headers = ["Date", "Patient Name", "Investigation / Test", "Reference Lab", "Current Cost", "Status"];
+            rows = pricingList.map(p => [
+                `"${new Date(p.createdAt || Date.now()).toLocaleDateString()}"`,
+                `"${(p.patientName || '').replace(/"/g, '""')}"`,
+                `"${(p.testName || '').replace(/"/g, '""')}"`,
+                `"${(p.referenceLabName || '').replace(/"/g, '""')}"`,
+                p.amountDue || 0,
+                "Awaiting Vendor Cost"
+            ]);
+        } else if (tab === 'history') {
+            const historyList = payablesData.filter(p => p.status === 'Settled');
+            headers = ["Settled Date", "Patient Name", "Test Name", "Reference Lab", "Amount Paid (INR)", "Status"];
+            rows = historyList.map(p => [
+                `"${new Date(p.settledAt || p.createdAt || Date.now()).toLocaleDateString()}"`,
+                `"${(p.patientName || '').replace(/"/g, '""')}"`,
+                `"${(p.testName || '').replace(/"/g, '""')}"`,
+                `"${(p.referenceLabName || '').replace(/"/g, '""')}"`,
+                p.amountPaid || p.amountDue || 0,
+                "Settled"
+            ]);
+        } else if (tab === 'active') {
+            const activeList = payablesData.filter(p => p.status === 'Pending' || p.status === 'PartiallyPaid');
+            headers = ["Date", "Patient Name", "Test Name", "Reference Lab", "Total Cost (INR)", "Amount Paid (INR)", "Balance Due (INR)", "Status"];
+            rows = activeList.map(p => [
+                `"${new Date(p.createdAt || Date.now()).toLocaleDateString()}"`,
+                `"${(p.patientName || '').replace(/"/g, '""')}"`,
+                `"${(p.testName || '').replace(/"/g, '""')}"`,
+                `"${(p.referenceLabName || '').replace(/"/g, '""')}"`,
+                p.amountDue || 0,
+                p.amountPaid || 0,
+                (p.amountDue || 0) - (p.amountPaid || 0),
+                `"${p.status || 'Pending'}"`
+            ]);
+        } else {
+            headers = ["Metric", "Value"];
+            const totalDue = payablesData.reduce((acc, p) => acc + ((p.amountDue || 0) - (p.amountPaid || 0)), 0);
+            const pendingPricingCount = payablesData.filter(p => p.status === 'PendingPricing').length;
+            const pendingCount = payablesData.filter(p => p.status === 'Pending' || p.status === 'PartiallyPaid').length;
+            const settledCount = payablesData.filter(p => p.status === 'Settled').length;
+            rows = [
+                ["Total Reference Lab Liability (INR)", totalDue],
+                ["Pending Pricing Tests", pendingPricingCount],
+                ["Pending Payout Investigations", pendingCount],
+                ["Total Settled Tests", settledCount],
+                ["Registered Reference Laboratories", labsData.length]
+            ];
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const getPrintSummaryConfig = () => {
+        if (tab === 'labs') {
+            return {
+                title: "Reference Laboratories Directory",
+                subtitle: "Authorized external diagnostic facilities, contacts, and empanelled reference centers",
+                categoryLabel: "REFERENCE LAB MASTER",
+                kpis: [
+                    { label: "Total Empanelled Labs", value: labsData.length, subtext: "Diagnostic Facilities" },
+                    { label: "Active Centers", value: labsData.filter(l => l.status === 'Active').length, color: "text-emerald-600", subtext: "Operational Routing" },
+                    { label: "Provisional / Pending", value: labsData.filter(l => l.status !== 'Active').length, color: "text-amber-600", subtext: "Awaiting Validation" }
+                ],
+                columns: [
+                    { key: 'name', label: 'Reference Laboratory Name' },
+                    { key: 'email', label: 'Email', render: (v) => v || '-' },
+                    { key: 'phone', label: 'Phone', render: (v) => v || '-' },
+                    { key: 'location', label: 'Location / City', render: (v, r) => v || r.address || '-' },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Active' }
+                ],
+                data: labsData,
+                summaryTotals: {}
+            };
+        } else if (tab === 'pricing') {
+            const pricingList = payablesData.filter(p => p.status === 'PendingPricing');
+            return {
+                title: "Outsourced Tests Awaiting Vendor Pricing",
+                subtitle: "Diagnostic investigations requiring reference laboratory cost discovery and tariff establishment",
+                categoryLabel: "ORGANIC PRICING DISCOVERY",
+                kpis: [
+                    { label: "Awaiting Pricing", value: pricingList.length, color: "text-amber-600", subtext: "Pending Tests" },
+                    { label: "Action Required", value: "Cost Definition", subtext: "Unlocks Margin Calculation" },
+                    { label: "Reference Centers", value: new Set(pricingList.map(p => p.referenceLabName)).size, subtext: "Laboratories Involved" }
+                ],
+                columns: [
+                    { key: 'createdAt', label: 'Date', render: (v) => new Date(v || Date.now()).toLocaleDateString() },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'testName', label: 'Investigation' },
+                    { key: 'referenceLabName', label: 'Dispatched Lab' },
+                    { key: 'status', label: 'Pricing Status', align: 'center', render: () => 'Awaiting Rate' }
+                ],
+                data: pricingList,
+                summaryTotals: {}
+            };
+        } else if (tab === 'history') {
+            const settledList = payablesData.filter(p => p.status === 'Settled');
+            const totalSettled = settledList.reduce((sum, p) => sum + (Number(p.amountPaid || p.amountDue || 0)), 0);
+            return {
+                title: "Outsourced Lab Payables Settlement History",
+                subtitle: "Audited clearance statements and settled obligations to external reference laboratories",
+                categoryLabel: "REFERENCE LAB CLEARANCE",
+                kpis: [
+                    { label: "Total Settled", value: `₹${totalSettled.toLocaleString()}`, color: "text-emerald-600", subtext: `${settledList.length} Tests Cleared` },
+                    { label: "Clearance Rate", value: "100%", subtext: "Paid in Full" },
+                    { label: "Reference Labs", value: new Set(settledList.map(p => p.referenceLabName)).size, subtext: "External Centers" }
+                ],
+                columns: [
+                    { key: 'settledAt', label: 'Settled Date', render: (v, r) => new Date(v || r.createdAt || Date.now()).toLocaleDateString() },
+                    { key: 'referenceLabName', label: 'Reference Laboratory' },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'testName', label: 'Investigation' },
+                    { key: 'amountPaid', label: 'Amount Cleared (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.amountDue || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: () => 'Settled' }
+                ],
+                data: settledList,
+                summaryTotals: {
+                    amountPaid: `₹${totalSettled.toLocaleString()}`
+                }
+            };
+        } else if (tab === 'active') {
+            const activeList = payablesData.filter(p => p.status === 'Pending' || p.status === 'PartiallyPaid');
+            const totalDue = activeList.reduce((sum, p) => sum + ((p.amountDue || 0) - (p.amountPaid || 0)), 0);
+            return {
+                title: "Active Outsourced Lab Payables Ledger",
+                subtitle: "Current operational liabilities and unsettled amounts owed to reference laboratories",
+                categoryLabel: "ACTIVE LAB LIABILITIES",
+                kpis: [
+                    { label: "Outstanding Liability", value: `₹${totalDue.toLocaleString()}`, color: "text-rose-600", subtext: `${activeList.length} Active Payables` },
+                    { label: "Active Centers", value: new Set(activeList.map(p => p.referenceLabName)).size, subtext: "Laboratories Due" },
+                    { label: "Audit State", value: "Operational", subtext: "Awaiting Disbursement" }
+                ],
+                columns: [
+                    { key: 'createdAt', label: 'Date', render: (v) => new Date(v || Date.now()).toLocaleDateString() },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'testName', label: 'Investigation' },
+                    { key: 'referenceLabName', label: 'Reference Lab' },
+                    { key: 'amountDue', label: 'Lab Cost (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'amountPaid', label: 'Paid (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'balance', label: 'Balance Due (₹)', align: 'right', render: (_, r) => `₹${Number((r.amountDue || 0) - (r.amountPaid || 0)).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Pending' }
+                ],
+                data: activeList,
+                summaryTotals: {
+                    balance: `₹${totalDue.toLocaleString()}`
+                }
+            };
+        } else {
+            const totalDue = payablesData.reduce((acc, p) => acc + ((p.amountDue || 0) - (p.amountPaid || 0)), 0);
+            const pendingPricingCount = payablesData.filter(p => p.status === 'PendingPricing').length;
+            const overviewRows = [
+                { metric: "Total Reference Lab Liability", val: `₹${totalDue.toLocaleString()}`, desc: "Aggregate unsettled balance owed across external test partners" },
+                { metric: "Pending Vendor Pricing", val: `${pendingPricingCount} Investigations`, desc: "External tests sent without an established cost rule" },
+                { metric: "Pending Payout Investigations", val: `${payablesData.filter(p => p.status === 'Pending' || p.status === 'PartiallyPaid').length} Tests`, desc: "Invoiced tests awaiting settlement" },
+                { metric: "Settled Investigations", val: `${payablesData.filter(p => p.status === 'Settled').length} Tests`, desc: "Completed reference lab payouts" },
+                { metric: "Empanelled Reference Laboratories", val: `${labsData.length} Centers`, desc: "Registered and active external lab partners" }
+            ];
+            return {
+                title: "Outsourced Lab Payables Executive Overview",
+                subtitle: "Summary statement of external testing obligations, pricing discoveries, and laboratory partnerships",
+                categoryLabel: "OUTSOURCING OVERVIEW",
+                kpis: [
+                    { label: "Total Liability", value: `₹${totalDue.toLocaleString()}`, color: "text-rose-600", subtext: "Unsettled Vendor Balance" },
+                    { label: "Pending Pricing", value: pendingPricingCount, color: "text-amber-600", subtext: "Need Cost Definition" },
+                    { label: "Partner Labs", value: labsData.length, color: "text-indigo-600", subtext: "Empanelled Centers" }
+                ],
+                columns: [
+                    { key: 'metric', label: 'Operational / Financial Metric' },
+                    { key: 'val', label: 'Reported Value', align: 'right' },
+                    { key: 'desc', label: 'Audit Scope' }
+                ],
+                data: overviewRows,
+                summaryTotals: {}
+            };
+        }
+    };
+
+    const printConfig = getPrintSummaryConfig();
 
     return (
         <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
             {/* HEADER SECTION */}
             <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                        <Beaker className="w-6 h-6 text-synos-primary animate-none" />
-                        Outsourced Lab Payables
-                    </h1>
-                    <p className="text-xs text-zinc-500 font-medium">Reference lab reconciliation and external test settlement management.</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                            <Beaker className="w-6 h-6 text-synos-primary animate-none" />
+                            Outsourced Lab Payables
+                        </h1>
+                        <p className="text-xs text-zinc-500 font-medium">Reference lab reconciliation and external test settlement management.</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={handleDownloadTabSummary}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            title={`Download ${tab.toUpperCase()} Summary (CSV)`}
+                        >
+                            <Download size={14} className="text-zinc-500" />
+                            <span>Download Summary</span>
+                        </button>
+                        <button 
+                            onClick={() => setIsPrintSummaryOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary/10 hover:bg-synos-primary/20 text-synos-primary rounded-xl text-xs font-bold transition-all border border-synos-primary/20 shadow-sm"
+                            title={`Print Printable ${tab.toUpperCase()} Statement`}
+                        >
+                            <Printer size={14} />
+                            <span>Print Summary</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* TABS STRIP */}
@@ -2162,6 +2406,20 @@ export const OutsourcingTerminal = () => {
                 {tab === 'overview' && <OutsourcingOverviewTab />}
                 {tab !== 'overview' && <OutsourcedPayablesScreen isTerminal={true} />}
             </div>
+
+            {/* PRINTABLE SUMMARY MODAL */}
+            <FinancePrintableSummaryModal 
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title={printConfig.title}
+                subtitle={printConfig.subtitle}
+                categoryLabel={printConfig.categoryLabel}
+                kpis={printConfig.kpis}
+                columns={printConfig.columns}
+                data={printConfig.data}
+                summaryTotals={printConfig.summaryTotals}
+                onExportCsv={handleDownloadTabSummary}
+            />
         </div>
     );
 };

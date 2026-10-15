@@ -31,6 +31,23 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
         case 'patient_tax_invoice': {
             const p = liveData.patient || {};
             const fin = liveData.financial || {};
+            const bCtx = liveData.billingContext || {};
+
+            // Context extraction
+            const isCorp = bCtx.isCorporate || Boolean(bCtx.corporateName || p.corporateName);
+            const corpName = bCtx.corporateName || p.corporateName || "";
+            const corpCode = bCtx.corporateCode || p.corporateCode || "";
+            const empId = bCtx.employeeId || p.employeeId || "";
+
+            const isIns = bCtx.isInsurance || Boolean(bCtx.insuranceCompanyName || p.insuranceCompanyName);
+            const insName = bCtx.insuranceCompanyName || p.insuranceCompanyName || "";
+            const insTpa = bCtx.insuranceTpaName || p.insuranceTpaName || "";
+            const policyNo = bCtx.policyNumber || p.policyNumber || "";
+            const preAuth = bCtx.preAuthApprovalNumber || p.preAuthNumber || "";
+
+            const isReferred = bCtx.isReferred || Boolean(bCtx.referralPartnerName || (p.referringDoctor && p.referringDoctor !== "Direct Patient" && p.referringDoctor !== "Self / Direct"));
+            const refPartnerName = bCtx.referralPartnerName || "";
+            const refClinic = bCtx.referralPartnerClinic || "";
 
             if (boxes.docBadge?.fields) {
                 if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || boxes.docBadge.fields.billNumber.value;
@@ -41,6 +58,11 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                     const isPaid = (fin.balanceDue <= 0 || (liveData.status || '').toLowerCase() === 'paid');
                     boxes.docBadge.fields.paymentStatus.value = isPaid ? "PAID FULL" : ((liveData.status || '').toLowerCase() === 'partial' ? "PARTIAL DUE" : "PAYMENT PENDING");
                 }
+                if (isCorp && boxes.docBadge.fields.subBadge) {
+                    boxes.docBadge.fields.subBadge.value = corpName ? `Corporate: ${corpName}` : "Corporate B2B Account";
+                } else if (isIns && boxes.docBadge.fields.subBadge) {
+                    boxes.docBadge.fields.subBadge.value = insName ? `Insurance / TPA: ${insName}` : "Cashless Insurance Claim";
+                }
             }
 
             if (boxes.partyDetails?.fields) {
@@ -48,22 +70,90 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} / ${p.gender || ''}` : "Adult");
                 if (boxes.partyDetails.fields.phone) boxes.partyDetails.fields.phone.value = p.phone || p.mobile || "N/A";
-                if (boxes.partyDetails.fields.refDoctor) boxes.partyDetails.fields.refDoctor.value = p.referringDoctor || liveData.referringDoctorName || "Self / Direct";
+                if (boxes.partyDetails.fields.refDoctor) {
+                    let docStr = p.referringDoctor || liveData.referringDoctorName || "Self / Direct";
+                    if (refPartnerName && !docStr.includes(refPartnerName)) {
+                        docStr = refClinic ? `${refPartnerName} (${refClinic})` : refPartnerName;
+                    }
+                    boxes.partyDetails.fields.refDoctor.value = docStr;
+                }
                 if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = p.address || "N/A";
+
+                // Corporate fields
+                if (isCorp && corpName) {
+                    boxes.partyDetails.fields.corporateClient = {
+                        id: 'corporateClient',
+                        enabled: true,
+                        label: 'Corporate Client',
+                        value: corpCode ? `${corpName} [${corpCode}]` : corpName
+                    };
+                    if (empId) {
+                        boxes.partyDetails.fields.employeeId = {
+                            id: 'employeeId',
+                            enabled: true,
+                            label: 'Employee ID / Staff No',
+                            value: empId
+                        };
+                    }
+                    boxes.partyDetails.fields.billingCategory = {
+                        id: 'billingCategory',
+                        enabled: true,
+                        label: 'Billing Category',
+                        value: 'Corporate B2B Contracted'
+                    };
+                }
+
+                // Insurance / TPA fields
+                if (isIns && insName) {
+                    boxes.partyDetails.fields.insuranceProvider = {
+                        id: 'insuranceProvider',
+                        enabled: true,
+                        label: 'Insurance Provider / TPA',
+                        value: insTpa ? `${insName} (TPA: ${insTpa})` : insName
+                    };
+                    if (policyNo) {
+                        boxes.partyDetails.fields.policyNumber = {
+                            id: 'policyNumber',
+                            enabled: true,
+                            label: 'Policy / Card No',
+                            value: policyNo
+                        };
+                    }
+                    if (preAuth) {
+                        boxes.partyDetails.fields.preAuthApprovalNumber = {
+                            id: 'preAuthApprovalNumber',
+                            enabled: true,
+                            label: 'Pre-Auth Approval No',
+                            value: preAuth
+                        };
+                    }
+                    boxes.partyDetails.fields.billingCategory = {
+                        id: 'billingCategory',
+                        enabled: true,
+                        label: 'Billing Category',
+                        value: 'Cashless Insurance / TPA'
+                    };
+                }
             }
 
             if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
-                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
-                    id: `live-item-${idx}`,
-                    index: it.index || idx + 1,
-                    description: it.name || it.testName || it.description || 'Clinical Investigation',
-                    code: it.code || it.testCode || '',
-                    department: it.department || 'Pathology',
-                    sacCode: it.sacCode || '999312',
-                    price: Number(it.price || it.unitPrice || 0),
-                    discount: Number(it.discount || 0),
-                    amount: Number(it.amount || it.netPrice || it.price || 0)
-                }));
+                boxes.itemsTable.rows = liveData.items.map((it, idx) => {
+                    let desc = it.name || it.testName || it.description || 'Clinical Investigation';
+                    if (it.isOutsourced || it.referenceLabName) {
+                        desc += ` [Outsourced: ${it.referenceLabName || 'Reference Lab'}]`;
+                    }
+                    return {
+                        id: `live-item-${idx}`,
+                        index: it.index || idx + 1,
+                        description: desc,
+                        code: it.code || it.testCode || '',
+                        department: it.department || 'Pathology',
+                        sacCode: it.sacCode || '999312',
+                        price: Number(it.price || it.unitPrice || 0),
+                        discount: Number(it.discount || 0),
+                        amount: Number(it.amount || it.netPrice || it.price || 0)
+                    };
+                });
             }
 
             if (boxes.financialSummary?.fields) {

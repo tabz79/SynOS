@@ -295,25 +295,77 @@ export function IntentPanel({ onVisitUpdated }) {
         const p = snapshot?.patient;
         const b = snapshot?.billing;
         const dueVal = remainingDue !== undefined ? remainingDue : Math.max(0, (b?.netAmount || 0) - (b?.totalPaid || 0));
+
+        const isCorporate = billingMode === 'Corporate' || visitObj?.billingType === 'Corporate' || Boolean(visitObj?.corporateAccountId);
+        const isInsurance = billingMode === 'Insurance' || visitObj?.billingType === 'Insurance' || Boolean(visitObj?.insuranceCompanyId);
+        const isPartner = billingMode === 'PrepaidPartner' || visitObj?.paymentCollectionModel === 'PartnerCollects' || Boolean(visitObj?.referralPartnerId);
+
+        const corpName = visitObj?.corporateAccount?.companyName || visitObj?.corporateAccount?.name || (isCorporate ? 'Corporate Client' : '');
+        const corpCode = visitObj?.corporateAccount?.corporateCode || '';
+        const empId = visitObj?.employeeId || '';
+
+        const insName = visitObj?.insuranceCompany?.name || (isInsurance ? 'Insurance Provider' : '');
+        const insTpa = visitObj?.insuranceCompany?.tpaName || '';
+        const policyNo = visitObj?.policyNumber || '';
+        const preAuth = visitObj?.preAuthApprovalNumber || '';
+        const coPay = visitObj?.insuranceCoPayAmount || 0;
+
+        const refName = visitObj?.referralPartner?.name || b?.referral?.partner?.displayName || (isPartner ? 'Referral Partner' : 'Self / Direct');
+        const refClinic = visitObj?.referralPartner?.clinicName || '';
+        const refCode = visitObj?.referralPartner?.code || '';
+
+        const tests = visitObj?.tests || [];
+        const hasOutsourced = tests.some(t => t.isOutsourced || Boolean(t.referenceLabName));
+        const outsourcedLabs = tests.filter(t => t.isOutsourced && t.referenceLabName).map(t => t.referenceLabName);
+
         return {
             billNumber: visitObj?.visitToken || visitObj?.token || "INV-REC-001",
             date: new Date().toISOString(),
             status: b?.paymentStatus || (dueVal <= 0 ? 'Paid' : 'PendingPayment'),
+            billingContext: {
+                billingType: billingMode || visitObj?.billingType || 'Standard',
+                isCorporate,
+                corporateName: corpName,
+                corporateCode: corpCode,
+                employeeId: empId,
+                isInsurance,
+                insuranceCompanyName: insName,
+                insuranceTpaName: insTpa,
+                policyNumber: policyNo,
+                preAuthApprovalNumber: preAuth,
+                insuranceCoPayAmount: coPay,
+                isReferred: isPartner,
+                referralPartnerName: refName,
+                referralPartnerClinic: refClinic,
+                referralPartnerCode: refCode,
+                hasOutsourcedTests: hasOutsourced,
+                outsourcedLabNames: outsourcedLabs
+            },
             patient: {
                 name: p?.fullName || p?.name || "Direct Patient",
                 uhid: p?.mrn || p?.uhid || "WALK-IN",
                 ageGender: p?.age ? `${p.age} / ${p?.gender || 'M'}` : "Adult",
                 phone: p?.phone || p?.mobile || "N/A",
-                referringDoctor: visitObj?.referralPartner?.name || b?.referral?.partner?.displayName || "Self / Direct"
+                referringDoctor: refName,
+                corporateName: corpName,
+                corporateCode: corpCode,
+                employeeId: empId,
+                insuranceCompanyName: insName,
+                insuranceTpaName: insTpa,
+                policyNumber: policyNo,
+                preAuthNumber: preAuth,
+                billingMode: billingMode || visitObj?.billingType || 'Standard'
             },
-            items: (visitObj?.tests || []).map((t, idx) => ({
+            items: tests.map((t, idx) => ({
                 index: idx + 1,
                 name: t.testName || t.name || t.testCode,
                 code: t.testCode,
                 department: t.department || 'Pathology',
                 price: Number(t.price || 0),
                 discount: 0,
-                amount: Number(t.price || 0)
+                amount: Number(t.price || 0),
+                isOutsourced: Boolean(t.isOutsourced),
+                referenceLabName: t.referenceLabName || ''
             })),
             financial: {
                 grossSubtotal: b?.grossAmount || b?.netAmount || 0,

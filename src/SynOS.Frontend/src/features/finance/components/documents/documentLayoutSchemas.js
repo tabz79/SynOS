@@ -46,7 +46,13 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     ageGender: { id: 'ageGender', enabled: true, label: 'Age / Gender', value: '46 Yrs / Male' },
                     phone: { id: 'phone', enabled: true, label: 'Contact Phone', value: '+91 98480 22334' },
                     refDoctor: { id: 'refDoctor', enabled: true, label: 'Referring Doctor', value: 'Dr. Khaleeq Ur Rahman, MD' },
-                    address: { id: 'address', enabled: true, label: 'Patient Address', value: 'Doctors Colony, Khammam' }
+                    address: { id: 'address', enabled: true, label: 'Patient Address', value: 'Doctors Colony, Khammam' },
+                    corporateClient: { id: 'corporateClient', enabled: false, label: 'Corporate Client', value: '' },
+                    employeeId: { id: 'employeeId', enabled: false, label: 'Employee ID / Staff No', value: '' },
+                    insuranceProvider: { id: 'insuranceProvider', enabled: false, label: 'Insurance / TPA', value: '' },
+                    policyNumber: { id: 'policyNumber', enabled: false, label: 'Policy / Card No', value: '' },
+                    preAuthApprovalNumber: { id: 'preAuthApprovalNumber', enabled: false, label: 'Pre-Auth Approval No', value: '' },
+                    billingCategory: { id: 'billingCategory', enabled: false, label: 'Billing Category', value: '' }
                 },
                 customLines: []
             },

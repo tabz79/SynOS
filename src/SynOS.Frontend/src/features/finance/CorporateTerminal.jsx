@@ -27,11 +27,14 @@ import {
     RotateCcw,
     Save,
     ShieldCheck,
-    Layers
+    Layers,
+    Printer,
+    Download
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import { ReceptionApi, fetchTestCatalogCached } from '@/api/reception';
+import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 
 export function CorporateTerminal() {
     const { tab = 'overview' } = useParams();
@@ -54,6 +57,7 @@ export function CorporateTerminal() {
     const [editingPackage, setEditingPackage] = useState(null);
     const [isAddRateRuleModalOpen, setIsAddRateRuleModalOpen] = useState(false);
     const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     // Corporate Test Pricing Master Filter & Pagination States
     const [testSearchQuery, setTestSearchQuery] = useState('');
@@ -136,6 +140,166 @@ export function CorporateTerminal() {
     });
 
     const activeAccountObj = accounts.find(a => (a.corporateAccountId || a.id) === selectedAccountId);
+
+    const handleDownloadTabSummary = () => {
+        let headers = [];
+        let rows = [];
+        let filename = `synos_corporate_${tab}_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        if (tab === 'clients') {
+            headers = ["Company Name", "Corporate Code", "Contact Person", "Phone", "Email", "Credit Limit (INR)", "Payment Terms (Days)", "Status"];
+            rows = filteredAccounts.map(a => [
+                `"${(a.companyName || '').replace(/"/g, '""')}"`,
+                `"${a.corporateCode || ''}"`,
+                `"${(a.contactPerson || a.contactPersonName || '').replace(/"/g, '""')}"`,
+                `"${a.contactPhone || ''}"`,
+                `"${a.contactEmail || ''}"`,
+                a.creditLimit || 0,
+                a.paymentTermsDays || 30,
+                a.isActive ? "Active" : "Inactive"
+            ]);
+        } else if (tab === 'packages') {
+            headers = ["Package Name", "Code", "Type", "Corporate Account", "Contracted Rate (INR)", "Status"];
+            rows = corporatePackages.map(p => [
+                `"${(p.packageName || p.name || p.testName || '').replace(/"/g, '""')}"`,
+                `"${p.packageCode || p.code || p.testCode || ''}"`,
+                "Corporate Package",
+                `"${(activeAccountObj?.companyName || 'All Clients').replace(/"/g, '""')}"`,
+                p.contractedPrice ?? p.corporatePrice ?? p.price ?? 0,
+                "Active"
+            ]);
+        } else if (tab === 'invoices') {
+            headers = ["Token / Bill No", "Date", "Employee ID", "Patient Name", "Corporate Client", "Tests Billed", "Total Amount (INR)", "Status"];
+            rows = filteredVisits.map(v => [
+                `"${v.visitToken || v.token || ''}"`,
+                `"${new Date(v.createdAt || v.date || Date.now()).toLocaleDateString()}"`,
+                `"${v.employeeId || ''}"`,
+                `"${(v.patientName || '').replace(/"/g, '""')}"`,
+                `"${(v.companyName || activeAccountObj?.companyName || '').replace(/"/g, '""')}"`,
+                `"${(v.testsSummary || '').replace(/"/g, '""')}"`,
+                v.grossAmount || v.totalAmount || 0,
+                `"${v.status || 'Invoiced'}"`
+            ]);
+        } else {
+            // overview / settlements
+            headers = ["Token", "Date", "Employee ID", "Patient Name", "Corporate Client", "Amount (INR)", "Status"];
+            rows = filteredVisits.map(v => [
+                `"${v.visitToken || v.token || ''}"`,
+                `"${new Date(v.createdAt || v.date || Date.now()).toLocaleDateString()}"`,
+                `"${v.employeeId || ''}"`,
+                `"${(v.patientName || '').replace(/"/g, '""')}"`,
+                `"${(v.companyName || activeAccountObj?.companyName || '').replace(/"/g, '""')}"`,
+                v.grossAmount || v.totalAmount || 0,
+                `"${v.status || 'Invoiced'}"`
+            ]);
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const getPrintSummaryConfig = () => {
+        if (tab === 'clients') {
+            return {
+                title: "Corporate Client Master Directory",
+                subtitle: "Contracted corporate organizations, credit exposure & payment terms",
+                categoryLabel: "CORPORATE B2B DIRECTORY",
+                kpis: [
+                    { label: "Total Corporate Accounts", value: accounts.length, subtext: "Contracted Companies" },
+                    { label: "Active Clients", value: accounts.filter(a => a.isActive).length, color: "text-emerald-600", subtext: "Operational Tie-ups" },
+                    { label: "Total Credit Exposure", value: `₹${accounts.reduce((s, a) => s + (Number(a.creditLimit) || 0), 0).toLocaleString()}`, color: "text-indigo-600", subtext: "Sanctioned Credit Line" }
+                ],
+                columns: [
+                    { key: 'companyName', label: 'Company / Organization' },
+                    { key: 'corporateCode', label: 'Code', render: (v) => v || '-' },
+                    { key: 'contactPerson', label: 'Contact Person', render: (v, r) => v || r.contactPersonName || '-' },
+                    { key: 'contactPhone', label: 'Phone', render: (v) => v || '-' },
+                    { key: 'creditLimit', label: 'Credit Limit (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'paymentTermsDays', label: 'Terms', align: 'center', render: (v) => `${v || 30} Days` },
+                    { key: 'isActive', label: 'Status', align: 'center', render: (v) => v ? 'Active' : 'Inactive' }
+                ],
+                data: filteredAccounts,
+                summaryTotals: {
+                    creditLimit: `₹${accounts.reduce((s, a) => s + (Number(a.creditLimit) || 0), 0).toLocaleString()}`
+                }
+            };
+        } else if (tab === 'packages') {
+            return {
+                title: `Corporate Packages & Rate Master - ${activeAccountObj?.companyName || 'Corporate Client'}`,
+                subtitle: "Pre-bundled wellness profiles and negotiated investigation tariff rules",
+                categoryLabel: "CORPORATE TARIFF AUDIT",
+                kpis: [
+                    { label: "Configured Packages", value: corporatePackages.length, subtext: "Wellness Bundles" },
+                    { label: "Individual Rate Overrides", value: individualRateRules.length, subtext: "Negotiated Investigations" },
+                    { label: "Corporate Account", value: activeAccountObj?.companyName || "Select Client", color: "text-indigo-600", subtext: activeAccountObj?.corporateCode || "Contract" }
+                ],
+                columns: [
+                    { key: 'packageName', label: 'Package / Profile Name', render: (v, r) => v || r.name || r.testName || 'Package' },
+                    { key: 'packageCode', label: 'Code', render: (v, r) => v || r.code || r.testCode || '-' },
+                    { key: 'contractedPrice', label: 'Contracted Rate (₹)', align: 'right', render: (v, r) => `₹${Number(v ?? r.corporatePrice ?? r.price ?? 0).toLocaleString()}` },
+                    { key: 'isPackage', label: 'Classification', align: 'center', render: (v) => v ? 'Package Profile' : 'Test Override' }
+                ],
+                data: rateRules,
+                summaryTotals: {}
+            };
+        } else if (tab === 'invoices') {
+            const totalInvoiced = filteredVisits.reduce((sum, v) => sum + (v.grossAmount || v.totalAmount || 0), 0);
+            return {
+                title: "Corporate B2B Receivables & Invoices Ledger",
+                subtitle: "Itemized staff investigation claims and institutional billing balances",
+                categoryLabel: "CORPORATE RECEIVABLES",
+                kpis: [
+                    { label: "Total B2B Invoiced", value: `₹${totalInvoiced.toLocaleString()}`, color: "text-indigo-600", subtext: `${filteredVisits.length} Employee Visits` },
+                    { label: "Corporate Client", value: activeAccountObj?.companyName || "All Accounts", subtext: "Target Organization" },
+                    { label: "Employee Visits", value: filteredVisits.length, subtext: "Investigations Undertaken" }
+                ],
+                columns: [
+                    { key: 'visitToken', label: 'Token / Inv No', render: (v, r) => v || r.token || '-' },
+                    { key: 'createdAt', label: 'Date', render: (v, r) => new Date(v || r.date || Date.now()).toLocaleDateString() },
+                    { key: 'employeeId', label: 'Employee ID', render: (v) => v || 'N/A' },
+                    { key: 'patientName', label: 'Staff / Patient Name' },
+                    { key: 'companyName', label: 'Corporate Client', render: (v) => v || activeAccountObj?.companyName || '-' },
+                    { key: 'grossAmount', label: 'Total (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.totalAmount || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Invoiced' }
+                ],
+                data: filteredVisits,
+                summaryTotals: {
+                    grossAmount: `₹${totalInvoiced.toLocaleString()}`
+                }
+            };
+        } else {
+            // overview / settlements
+            return {
+                title: "Corporate B2B Executive & Operational Summary",
+                subtitle: "Consolidated corporate diagnostic volume, receivables, and institutional accounts",
+                categoryLabel: "CORPORATE EXECUTIVE AUDIT",
+                kpis: [
+                    { label: "Total Invoiced (B2B)", value: `₹${totalB2BAmount.toLocaleString()}`, color: "text-indigo-600", subtext: "Gross Billing Liability" },
+                    { label: "Active Corporate Clients", value: accounts.filter(a => a.isActive).length, color: "text-zinc-900", subtext: "Contracted Organizations" },
+                    { label: "Corporate Patient Visits", value: visits.length, subtext: "Staff Diagnostics" }
+                ],
+                columns: [
+                    { key: 'visitToken', label: 'Token', render: (v, r) => v || r.token || '-' },
+                    { key: 'createdAt', label: 'Date', render: (v, r) => new Date(v || r.date || Date.now()).toLocaleDateString() },
+                    { key: 'employeeId', label: 'Staff ID', render: (v) => v || 'N/A' },
+                    { key: 'patientName', label: 'Employee Name' },
+                    { key: 'companyName', label: 'Corporate Company', render: (v) => v || '-' },
+                    { key: 'grossAmount', label: 'Amount (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.totalAmount || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Invoiced' }
+                ],
+                data: filteredVisits,
+                summaryTotals: {
+                    grossAmount: `₹${totalB2BAmount.toLocaleString()}`
+                }
+            };
+        }
+    };
 
     // Extract unique departments and modalities
     const departments = useMemo(() => {
@@ -295,6 +459,27 @@ export function CorporateTerminal() {
                         <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Active Corporate Clients</p>
                         <p className="text-base font-bold text-zinc-900 dark:text-zinc-100">{accounts.filter(a => a.isActive).length}</p>
                     </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleDownloadTabSummary}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
+                            title="Download CSV for current tab"
+                        >
+                            <Download size={14} />
+                            <span>Download Summary</span>
+                        </button>
+
+                        <button
+                            onClick={() => setIsPrintSummaryOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                            title="Print official A4 summary for current tab"
+                        >
+                            <Printer size={14} />
+                            <span>Print Summary</span>
+                        </button>
+                    </div>
+
                     <button 
                         onClick={loadData} 
                         className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all cursor-pointer"
@@ -1184,6 +1369,26 @@ export function CorporateTerminal() {
                     </div>
                 </div>
             )}
+
+            {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
+            {(() => {
+                const cfg = getPrintSummaryConfig();
+                return (
+                    <FinancePrintableSummaryModal
+                        isOpen={isPrintSummaryOpen}
+                        onClose={() => setIsPrintSummaryOpen(false)}
+                        title={cfg.title}
+                        subtitle={cfg.subtitle}
+                        categoryLabel={cfg.categoryLabel}
+                        dateRangeText={new Date().toLocaleDateString()}
+                        kpis={cfg.kpis}
+                        columns={cfg.columns}
+                        data={cfg.data}
+                        summaryTotals={cfg.summaryTotals}
+                        onDownloadCsv={handleDownloadTabSummary}
+                    />
+                );
+            })()}
         </div>
     );
 }

@@ -20,11 +20,14 @@ import {
     Filter,
     DollarSign,
     Clock,
-    AlertCircle
+    AlertCircle,
+    Printer,
+    Download
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import { ReceptionApi } from '@/api/reception';
+import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 
 export function InsuranceTerminal() {
     const { tab = 'overview' } = useParams();
@@ -94,6 +97,143 @@ export function InsuranceTerminal() {
         return matchesSearch && matchesComp;
     });
 
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
+    const handleDownloadTabSummary = () => {
+        let headers = [];
+        let rows = [];
+        let filename = `synos_insurance_${tab}_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        if (tab === 'empanelment') {
+            headers = ["Company Name", "Code", "TPA / Network", "Contact Person", "Phone", "Email", "Pre-Auth Required", "Status"];
+            rows = filteredCompanies.map(c => [
+                `"${(c.name || '').replace(/"/g, '""')}"`,
+                `"${c.code || ''}"`,
+                `"${(c.tpaName || '').replace(/"/g, '""')}"`,
+                `"${(c.contactPerson || '').replace(/"/g, '""')}"`,
+                `"${c.phone || ''}"`,
+                `"${c.email || ''}"`,
+                c.preAuthRequired ? "Yes" : "No",
+                c.isActive ? "Active" : "Inactive"
+            ]);
+        } else if (tab === 'claims' || tab === 'receivables') {
+            headers = ["Visit / Claim Ref", "Date", "Patient Name", "UHID", "Insurance Company", "TPA", "Policy No", "Pre-Auth No", "Claim Amount (INR)", "Desk Co-Pay (INR)", "Status"];
+            rows = filteredClaims.map(c => [
+                `"${c.visitToken || c.token || ''}"`,
+                `"${new Date(c.occurredAt || c.date || Date.now()).toLocaleDateString()}"`,
+                `"${(c.patientName || '').replace(/"/g, '""')}"`,
+                `"${c.patientMrn || ''}"`,
+                `"${(c.insuranceCompanyName || '').replace(/"/g, '""')}"`,
+                `"${(c.tpaName || '').replace(/"/g, '""')}"`,
+                `"${c.policyNumber || ''}"`,
+                `"${c.preAuthApprovalNumber || ''}"`,
+                c.claimAmount || 0,
+                c.coPayAmount || 0,
+                `"${c.status || 'Pending'}"`
+            ]);
+        } else {
+            headers = ["Visit / Claim Ref", "Date", "Patient Name", "Insurance Company", "Claim Amount (INR)", "Desk Co-Pay (INR)", "Status"];
+            rows = filteredClaims.map(c => [
+                `"${c.visitToken || c.token || ''}"`,
+                `"${new Date(c.occurredAt || c.date || Date.now()).toLocaleDateString()}"`,
+                `"${(c.patientName || '').replace(/"/g, '""')}"`,
+                `"${(c.insuranceCompanyName || '').replace(/"/g, '""')}"`,
+                c.claimAmount || 0,
+                c.coPayAmount || 0,
+                `"${c.status || 'Pending'}"`
+            ]);
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const getPrintSummaryConfig = () => {
+        if (tab === 'empanelment') {
+            return {
+                title: "Insurance & TPA Empanelment Master Directory",
+                subtitle: "Cashless insurance providers, TPA intermediaries & pre-authorization protocols",
+                categoryLabel: "INSURANCE EMPANELMENT DIRECTORY",
+                kpis: [
+                    { label: "Empanelled Insurers", value: companies.length, subtext: "Master Directory" },
+                    { label: "Active Network TPAs", value: companies.filter(c => c.isActive).length, color: "text-emerald-600", subtext: "Operational Cashless" },
+                    { label: "Pre-Auth Mandatory", value: companies.filter(c => c.preAuthRequired).length, color: "text-blue-600", subtext: "Strict Desk Validation" }
+                ],
+                columns: [
+                    { key: 'name', label: 'Insurance Provider' },
+                    { key: 'code', label: 'Code', render: (v) => v || '-' },
+                    { key: 'tpaName', label: 'TPA Network', render: (v) => v || 'Direct Cashless' },
+                    { key: 'contactPerson', label: 'Desk Officer', render: (v) => v || '-' },
+                    { key: 'phone', label: 'Helpline Phone', render: (v) => v || '-' },
+                    { key: 'preAuthRequired', label: 'Pre-Auth Rule', align: 'center', render: (v) => v ? 'Mandatory' : 'Optional' },
+                    { key: 'isActive', label: 'Status', align: 'center', render: (v) => v ? 'Active' : 'Inactive' }
+                ],
+                data: filteredCompanies,
+                summaryTotals: {}
+            };
+        } else if (tab === 'claims' || tab === 'receivables') {
+            const sumClaim = filteredClaims.reduce((s, c) => s + (Number(c.claimAmount) || 0), 0);
+            const sumCopay = filteredClaims.reduce((s, c) => s + (Number(c.coPayAmount) || 0), 0);
+            return {
+                title: tab === 'receivables' ? "TPA Cashless Receivables Ledger" : "Insurance Cashless Claims & Pre-Auths Ledger",
+                subtitle: "Cashless diagnostic claims, patient desk co-pay & insurance settlement balances",
+                categoryLabel: "CASHLESS CLAIMS AUDIT",
+                kpis: [
+                    { label: "Total Claims Value", value: `₹${sumClaim.toLocaleString()}`, color: "text-blue-600", subtext: `${filteredClaims.length} Cashless Claims` },
+                    { label: "Desk Co-Pay Collected", value: `₹${sumCopay.toLocaleString()}`, color: "text-emerald-600", subtext: "Patient Counter Share" },
+                    { label: "Pending Claims", value: filteredClaims.filter(c => c.status !== 'Paid' && c.status !== 'Settled').length, color: "text-amber-600", subtext: "Under TPA Review" }
+                ],
+                columns: [
+                    { key: 'visitToken', label: 'Token / Claim Ref', render: (v, r) => v || r.token || '-' },
+                    { key: 'occurredAt', label: 'Date', render: (v, r) => new Date(v || r.date || Date.now()).toLocaleDateString() },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'insuranceCompanyName', label: 'Insurer / TPA', render: (v, r) => r.tpaName ? `${v} (${r.tpaName})` : v },
+                    { key: 'policyNumber', label: 'Policy / Card No', render: (v) => v || '-' },
+                    { key: 'preAuthApprovalNumber', label: 'Pre-Auth Approval', render: (v) => v || 'Counter' },
+                    { key: 'claimAmount', label: 'Claim (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'coPayAmount', label: 'Co-Pay (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Pending' }
+                ],
+                data: filteredClaims,
+                summaryTotals: {
+                    claimAmount: `₹${sumClaim.toLocaleString()}`,
+                    coPayAmount: `₹${sumCopay.toLocaleString()}`
+                }
+            };
+        } else {
+            return {
+                title: "Insurance & TPA Operations Executive Summary",
+                subtitle: "Consolidated cashless claim throughput, desk co-pay, and empanelled networks",
+                categoryLabel: "INSURANCE EXECUTIVE AUDIT",
+                kpis: [
+                    { label: "Total Claims Value", value: `₹${totalClaimsAmount.toLocaleString()}`, color: "text-blue-600", subtext: `${claims.length} Total Claims` },
+                    { label: "Desk Co-Pay Collected", value: `₹${totalCoPayCollected.toLocaleString()}`, color: "text-emerald-600", subtext: "Physical Desk Intake" },
+                    { label: "Active Empanelled TPAs", value: companies.filter(c => c.isActive).length, color: "text-zinc-900", subtext: "Approved Intermediaries" }
+                ],
+                columns: [
+                    { key: 'visitToken', label: 'Token', render: (v, r) => v || r.token || '-' },
+                    { key: 'occurredAt', label: 'Date', render: (v, r) => new Date(v || r.date || Date.now()).toLocaleDateString() },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'insuranceCompanyName', label: 'Insurance Provider' },
+                    { key: 'claimAmount', label: 'Claim (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'coPayAmount', label: 'Co-Pay (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Pending' }
+                ],
+                data: filteredClaims,
+                summaryTotals: {
+                    claimAmount: `₹${totalClaimsAmount.toLocaleString()}`,
+                    coPayAmount: `₹${totalCoPayCollected.toLocaleString()}`
+                }
+            };
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-zinc-50 dark:bg-black overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER */}
@@ -127,6 +267,27 @@ export function InsuranceTerminal() {
                         <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Active Empanelled TPAs</p>
                         <p className="text-base font-bold text-zinc-900 dark:text-zinc-100">{companies.filter(c => c.isActive).length}</p>
                     </div>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleDownloadTabSummary}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
+                            title="Download CSV for current tab"
+                        >
+                            <Download size={14} />
+                            <span>Download Summary</span>
+                        </button>
+
+                        <button
+                            onClick={() => setIsPrintSummaryOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                            title="Print official A4 summary for current tab"
+                        >
+                            <Printer size={14} />
+                            <span>Print Summary</span>
+                        </button>
+                    </div>
+
                     <button 
                         onClick={loadData} 
                         className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all cursor-pointer"
@@ -625,11 +786,30 @@ export function InsuranceTerminal() {
                         </div>
                         <div className="flex justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                             <button onClick={() => setIsSettlementModalOpen(false)} className="px-3.5 py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white cursor-pointer">Cancel</button>
-                            <button onClick={() => { alert("Remittance advice recorded successfully!"); setIsSettlementModalOpen(false); }} className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white cursor-pointer">Record Remittance</button>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
+            {(() => {
+                const cfg = getPrintSummaryConfig();
+                return (
+                    <FinancePrintableSummaryModal
+                        isOpen={isPrintSummaryOpen}
+                        onClose={() => setIsPrintSummaryOpen(false)}
+                        title={cfg.title}
+                        subtitle={cfg.subtitle}
+                        categoryLabel={cfg.categoryLabel}
+                        dateRangeText={new Date().toLocaleDateString()}
+                        kpis={cfg.kpis}
+                        columns={cfg.columns}
+                        data={cfg.data}
+                        summaryTotals={cfg.summaryTotals}
+                        onDownloadCsv={handleDownloadTabSummary}
+                    />
+                );
+            })()}
         </div>
     );
 }

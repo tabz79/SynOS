@@ -490,6 +490,10 @@ namespace SynOS.Api.Controllers
                 .Include(i => i.Visit)
                     .ThenInclude(v => v!.ReferralPartner)
                 .Include(i => i.Visit)
+                    .ThenInclude(v => v!.CorporateAccount)
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.InsuranceCompany)
+                .Include(i => i.Visit)
                     .ThenInclude(v => v!.Orders)
                         .ThenInclude(o => o.Test)
                             .ThenInclude(t => t.ModalityMaster)
@@ -507,6 +511,10 @@ namespace SynOS.Api.Controllers
                         .ThenInclude(v => v!.Branch)
                     .Include(i => i.Visit)
                         .ThenInclude(v => v!.ReferralPartner)
+                    .Include(i => i.Visit)
+                        .ThenInclude(v => v!.CorporateAccount)
+                    .Include(i => i.Visit)
+                        .ThenInclude(v => v!.InsuranceCompany)
                     .Include(i => i.Visit)
                         .ThenInclude(v => v!.Orders)
                             .ThenInclude(o => o.Test)
@@ -545,7 +553,9 @@ namespace SynOS.Api.Controllers
                     Price = price,
                     Discount = 0m,
                     TaxPercent = 0m,
-                    Amount = price
+                    Amount = price,
+                    IsOutsourced = ord.IsOutsourced,
+                    ReferenceLabName = ord.ReferenceLabName ?? ""
                 });
             }
 
@@ -568,6 +578,11 @@ namespace SynOS.Api.Controllers
             var billNo = $"BILL-{inv.CreatedAt:yyyyMMdd}-{inv.InvoiceId.ToString().Substring(0, 4).ToUpper()}";
             var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={balanceDue:F2}&cu=INR&tn={billNo}";
 
+            var visit = inv.Visit;
+            var isCorporate = visit?.BillingType == SynOS.Models.Enums.BillingType.Corporate || visit?.CorporateAccountId != null;
+            var isInsurance = visit?.BillingType == SynOS.Models.Enums.BillingType.Insurance || visit?.InsuranceCompanyId != null;
+            var isPartner = visit?.BillingType == SynOS.Models.Enums.BillingType.PrepaidPartner || visit?.PaymentCollectionModel == "PartnerCollects" || visit?.ReferralPartnerId != null;
+
             return Ok(new
             {
                 InvoiceId = inv.InvoiceId,
@@ -580,7 +595,34 @@ namespace SynOS.Api.Controllers
                 // Stationery & Lab Profile
                 Lab = settings,
 
-                // Patient Profile
+                // Context-Aware Billing & Payer Metadata
+                BillingContext = new
+                {
+                    BillingType = visit?.BillingType.ToString() ?? "Standard",
+                    PaymentCollectionModel = visit?.PaymentCollectionModel ?? "LabCollects",
+                    // Corporate B2B
+                    IsCorporate = isCorporate,
+                    CorporateName = visit?.CorporateAccount?.CompanyName ?? "",
+                    CorporateCode = visit?.CorporateAccount?.CorporateCode ?? "",
+                    EmployeeId = visit?.EmployeeId ?? "",
+                    // Insurance / TPA
+                    IsInsurance = isInsurance,
+                    InsuranceCompanyName = visit?.InsuranceCompany?.Name ?? "",
+                    InsuranceTpaName = visit?.InsuranceCompany?.TpaName ?? "",
+                    PolicyNumber = visit?.PolicyNumber ?? "",
+                    PreAuthApprovalNumber = visit?.PreAuthApprovalNumber ?? "",
+                    InsuranceCoPayAmount = visit?.InsuranceCoPayAmount ?? 0,
+                    // Referral Partner
+                    IsReferred = isPartner,
+                    ReferralPartnerName = visit?.ReferralPartner?.Name ?? "",
+                    ReferralPartnerClinic = visit?.ReferralPartner?.ClinicName ?? "",
+                    ReferralPartnerCode = visit?.ReferralPartner != null ? visit.ReferralPartner.ReferralPartnerId.ToString().Substring(0, 8).ToUpper() : "",
+                    // Outsourced
+                    HasOutsourcedTests = orders.Any(o => o.IsOutsourced || !string.IsNullOrEmpty(o.ReferenceLabName)),
+                    OutsourcedLabNames = orders.Where(o => o.IsOutsourced && !string.IsNullOrEmpty(o.ReferenceLabName)).Select(o => o.ReferenceLabName).Distinct().ToList()
+                },
+
+                // Patient Profile (enriched with context)
                 Patient = new
                 {
                     Name = patientName,
@@ -588,10 +630,18 @@ namespace SynOS.Api.Controllers
                     AgeGender = ageGender,
                     Phone = patient?.CurrentPhoneNumber ?? "N/A",
                     Email = "",
-                    Token = inv.Visit?.Token ?? "",
-                    ReferringDoctor = inv.Visit?.ReferralPartner?.Name ?? "Direct Patient",
-                    PaymentCollectionModel = inv.Visit?.PaymentCollectionModel ?? "LabCollects",
-                    BranchName = inv.Visit?.Branch?.Name ?? "Main Facility"
+                    Token = visit?.Token ?? "",
+                    ReferringDoctor = visit?.ReferralPartner?.Name ?? "Direct Patient",
+                    PaymentCollectionModel = visit?.PaymentCollectionModel ?? "LabCollects",
+                    BranchName = visit?.Branch?.Name ?? "Main Facility",
+                    CorporateName = visit?.CorporateAccount?.CompanyName ?? "",
+                    CorporateCode = visit?.CorporateAccount?.CorporateCode ?? "",
+                    EmployeeId = visit?.EmployeeId ?? "",
+                    InsuranceCompanyName = visit?.InsuranceCompany?.Name ?? "",
+                    InsuranceTpaName = visit?.InsuranceCompany?.TpaName ?? "",
+                    PolicyNumber = visit?.PolicyNumber ?? "",
+                    PreAuthNumber = visit?.PreAuthApprovalNumber ?? "",
+                    BillingMode = visit?.BillingType.ToString() ?? "Standard"
                 },
 
                 // Line Items

@@ -29,11 +29,13 @@ import {
     Edit,
     Check,
     X,
-    Unlock
+    Unlock,
+    Printer
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { AdminApi } from '@/api/admin';
 import { UsersApi } from '@/api/users';
+import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { AddStaffModal } from './components/workforce/AddStaffModal';
 import { AdvanceRequestModal } from './components/workforce/AdvanceRequestModal';
 import { StatutoryConfigModal } from './components/workforce/StatutoryConfigModal';
@@ -3624,6 +3626,12 @@ export const WorkforceTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
     const tabsRef = useRef(null);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+    const [staffList, setStaffList] = useState([]);
+    const [advancesList, setAdvancesList] = useState([]);
+    const [periodsList, setPeriodsList] = useState([]);
+    const [leavesList, setLeavesList] = useState([]);
+    const [loadingData, setLoadingData] = useState(false);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -3642,18 +3650,291 @@ export const WorkforceTerminal = () => {
                 activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
+        loadData();
     }, [tab]);
+
+    const loadData = async () => {
+        try {
+            setLoadingData(true);
+            const [staff, advances, periods, leaves] = await Promise.all([
+                WorkforceApi.getStaff().catch(() => []),
+                WorkforceApi.getAdvances().catch(() => []),
+                WorkforceApi.getPeriods().catch(() => []),
+                WorkforceApi.getPendingLeaves().catch(() => [])
+            ]);
+            setStaffList(staff || []);
+            setAdvancesList(advances || []);
+            setPeriodsList(periods || []);
+            setLeavesList(leaves || []);
+        } catch (err) {
+            console.error("Failed to load workforce terminal data", err);
+        } finally {
+            setLoadingData(false);
+        }
+    };
+
+    const handleDownloadTabSummary = () => {
+        let headers = [];
+        let rows = [];
+        let filename = `synos_workforce_${tab}_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        if (tab === 'staff' || tab === 'identity') {
+            headers = ["Employee ID", "Full Name", "Designation", "Department", "Base Salary (INR)", "Phone", "Email", "Status"];
+            rows = staffList.map(s => [
+                `"${s.employeeId || s.id || ''}"`,
+                `"${(s.fullName || '').replace(/"/g, '""')}"`,
+                `"${(s.designation || '').replace(/"/g, '""')}"`,
+                `"${(s.department || '').replace(/"/g, '""')}"`,
+                s.baseSalary || 0,
+                `"${s.phone || ''}"`,
+                `"${s.email || ''}"`,
+                s.isActive ? "Active" : "Inactive"
+            ]);
+        } else if (tab === 'attendance') {
+            headers = ["Staff Name", "Department", "Leave Type", "Start Date", "End Date", "Days", "Reason", "Status"];
+            rows = leavesList.map(l => [
+                `"${(l.staffName || '').replace(/"/g, '""')}"`,
+                `"${(l.department || '').replace(/"/g, '""')}"`,
+                `"${l.leaveType || 'Casual'}"`,
+                `"${l.startDate || ''}"`,
+                `"${l.endDate || ''}"`,
+                l.daysCount || 1,
+                `"${(l.reason || '').replace(/"/g, '""')}"`,
+                `"${l.status || 'Pending'}"`
+            ]);
+        } else if (tab === 'process') {
+            headers = ["Employee ID", "Full Name", "Designation", "Base Salary (INR)", "Gross Salary (INR)", "Status"];
+            rows = staffList.filter(s => s.isActive).map(s => [
+                `"${s.employeeId || s.id || ''}"`,
+                `"${(s.fullName || '').replace(/"/g, '""')}"`,
+                `"${(s.designation || '').replace(/"/g, '""')}"`,
+                s.baseSalary || 0,
+                s.grossSalary || s.baseSalary || 0,
+                "Ready for Payroll Calculation"
+            ]);
+        } else if (tab === 'history') {
+            headers = ["Period Name", "Start Date", "End Date", "Status", "Processing Date"];
+            rows = periodsList.map(p => [
+                `"${(p.name || p.periodName || '').replace(/"/g, '""')}"`,
+                `"${p.startDate || ''}"`,
+                `"${p.endDate || ''}"`,
+                p.status === 2 ? "Finalized / Paid" : (p.status === 1 ? "Locked" : "Open"),
+                `"${p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : '-'}"`
+            ]);
+        } else if (tab === 'adjustments') {
+            headers = ["Staff Name", "Amount (INR)", "Reason / Purpose", "Monthly Installment", "Status"];
+            rows = advancesList.map(a => [
+                `"${(a.staffName || 'Employee').replace(/"/g, '""')}"`,
+                a.amount || 0,
+                `"${(a.reason || a.notes || '').replace(/"/g, '""')}"`,
+                a.monthlyDeduction || 0,
+                `"${a.status || 'Pending'}"`
+            ]);
+        } else {
+            headers = ["Workforce Metric", "Reported Value"];
+            const totalMonthlyPayroll = staffList.filter(s => s.isActive).reduce((sum, s) => sum + (Number(s.baseSalary) || 0), 0);
+            const totalAdvances = advancesList.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+            rows = [
+                ["Total Registered Staff", staffList.length],
+                ["Active Staff On Roster", staffList.filter(s => s.isActive).length],
+                ["Estimated Monthly Salary Liability (INR)", totalMonthlyPayroll],
+                ["Pending Advance Obligations (INR)", totalAdvances],
+                ["Pending Leave Approvals", leavesList.length],
+                ["Configured Payroll Periods", periodsList.length]
+            ];
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const getPrintSummaryConfig = () => {
+        if (tab === 'staff' || tab === 'identity') {
+            const activeCount = staffList.filter(s => s.isActive).length;
+            const totalPayroll = staffList.filter(s => s.isActive).reduce((acc, s) => acc + (Number(s.baseSalary) || 0), 0);
+            return {
+                title: "Workforce Staff Master Registry",
+                subtitle: "Authorized organizational personnel, designations, clinical departments and compensation",
+                categoryLabel: "WORKFORCE STAFF DIRECTORY",
+                kpis: [
+                    { label: "Total Staff Roster", value: staffList.length, subtext: "Personnel Profiles" },
+                    { label: "Active Employees", value: activeCount, color: "text-emerald-600", subtext: "Operational Shift Duty" },
+                    { label: "Monthly Base Payroll", value: `₹${totalPayroll.toLocaleString()}`, color: "text-indigo-600", subtext: "Contracted Compensation" }
+                ],
+                columns: [
+                    { key: 'employeeId', label: 'Emp ID', render: (v, r) => v || (r.id ? r.id.slice(0, 8) : '-') },
+                    { key: 'fullName', label: 'Employee Name' },
+                    { key: 'designation', label: 'Designation / Role', render: (v) => v || '-' },
+                    { key: 'department', label: 'Department', render: (v) => v || 'Clinical' },
+                    { key: 'phone', label: 'Phone', render: (v) => v || '-' },
+                    { key: 'baseSalary', label: 'Base Pay (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'isActive', label: 'Status', align: 'center', render: (v) => v ? 'Active' : 'Inactive' }
+                ],
+                data: staffList,
+                summaryTotals: {
+                    baseSalary: `₹${totalPayroll.toLocaleString()}`
+                }
+            };
+        } else if (tab === 'attendance') {
+            return {
+                title: "Workforce Attendance & Leave Applications",
+                subtitle: "Pending leave requests, absence audit logs and duty coverage exceptions",
+                categoryLabel: "ATTENDANCE & LEAVES AUDIT",
+                kpis: [
+                    { label: "Pending Leave Requests", value: leavesList.length, color: "text-amber-600", subtext: "Awaiting Clearance" },
+                    { label: "Staff on Roster", value: staffList.filter(s => s.isActive).length, subtext: "Active Workforce" },
+                    { label: "Audit State", value: "Verified", color: "text-emerald-600", subtext: "Shift Coverage Maintained" }
+                ],
+                columns: [
+                    { key: 'staffName', label: 'Employee Name' },
+                    { key: 'department', label: 'Department', render: (v) => v || 'Clinical' },
+                    { key: 'leaveType', label: 'Leave Category', align: 'center', render: (v) => v || 'Casual' },
+                    { key: 'startDate', label: 'From Date' },
+                    { key: 'endDate', label: 'To Date' },
+                    { key: 'daysCount', label: 'Days', align: 'center', render: (v) => `${v || 1} d` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Pending' }
+                ],
+                data: leavesList,
+                summaryTotals: {}
+            };
+        } else if (tab === 'process') {
+            const activeStaff = staffList.filter(s => s.isActive);
+            const totalMonthlyBase = activeStaff.reduce((sum, s) => sum + (Number(s.baseSalary) || 0), 0);
+            return {
+                title: "Salary Processing & Monthly Payroll Calculation Sheet",
+                subtitle: "Pre-execution payroll calculations, base compensation tiers, and disbursement projections",
+                categoryLabel: "PAYROLL WORKSHEET",
+                kpis: [
+                    { label: "Eligible Staff", value: activeStaff.length, color: "text-indigo-600", subtext: "Active for Computation" },
+                    { label: "Gross Base Obligation", value: `₹${totalMonthlyBase.toLocaleString()}`, color: "text-rose-600", subtext: "Pre-Deduction Commitment" },
+                    { label: "Processing State", value: "Ready for Calc", color: "text-emerald-600", subtext: "Auto-Applies Statutory Dues" }
+                ],
+                columns: [
+                    { key: 'employeeId', label: 'Emp ID', render: (v, r) => v || (r.id ? r.id.slice(0, 8) : '-') },
+                    { key: 'fullName', label: 'Staff Member' },
+                    { key: 'designation', label: 'Designation', render: (v) => v || '-' },
+                    { key: 'department', label: 'Department', render: (v) => v || 'General' },
+                    { key: 'baseSalary', label: 'Contract Base (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'grossSalary', label: 'Gross Projected (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.baseSalary || 0).toLocaleString()}` }
+                ],
+                data: activeStaff,
+                summaryTotals: {
+                    baseSalary: `₹${totalMonthlyBase.toLocaleString()}`,
+                    grossSalary: `₹${totalMonthlyBase.toLocaleString()}`
+                }
+            };
+        } else if (tab === 'history') {
+            return {
+                title: "Historical Payroll Periods & Clearance Audit",
+                subtitle: "Archived monthly payroll runs, banking disbursement authorizations, and statutory reconciliations",
+                categoryLabel: "PAYROLL PERIODS AUDIT",
+                kpis: [
+                    { label: "Total Pay Periods", value: periodsList.length, subtext: "Recorded Cycles" },
+                    { label: "Finalized & Disbursed", value: periodsList.filter(p => p.status === 2).length, color: "text-emerald-600", subtext: "Closed Cycles" },
+                    { label: "Open / Processing", value: periodsList.filter(p => p.status !== 2).length, color: "text-amber-600", subtext: "Active Cycles" }
+                ],
+                columns: [
+                    { key: 'name', label: 'Payroll Period', render: (v, r) => v || r.periodName || 'Monthly Cycle' },
+                    { key: 'startDate', label: 'Cycle Start', render: (v) => v ? new Date(v).toLocaleDateString() : '-' },
+                    { key: 'endDate', label: 'Cycle End', render: (v) => v ? new Date(v).toLocaleDateString() : '-' },
+                    { key: 'status', label: 'Cycle Status', align: 'center', render: (v) => v === 2 ? 'Finalized / Disbursed' : (v === 1 ? 'Locked' : 'Open') }
+                ],
+                data: periodsList,
+                summaryTotals: {}
+            };
+        } else if (tab === 'adjustments') {
+            const totalAdvances = advancesList.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+            return {
+                title: "Salary Advances & Monthly Deductions Ledger",
+                subtitle: "Approved staff salary advances, emergency credits, and structured payroll amortization schedules",
+                categoryLabel: "ADVANCES & DEDUCTIONS",
+                kpis: [
+                    { label: "Total Advance Capital", value: `₹${totalAdvances.toLocaleString()}`, color: "text-rose-600", subtext: `${advancesList.length} Active Records` },
+                    { label: "Beneficiary Staff", value: new Set(advancesList.map(a => a.staffName || a.staffId)).size, subtext: "Employees Assisted" },
+                    { label: "Amortization", value: "Auto-Deduct", color: "text-emerald-600", subtext: "Recouped on Payroll Run" }
+                ],
+                columns: [
+                    { key: 'staffName', label: 'Staff Member', render: (v) => v || 'Employee' },
+                    { key: 'amount', label: 'Disbursed Principal (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'reason', label: 'Reason / Purpose', render: (v, r) => v || r.notes || 'Emergency Advance' },
+                    { key: 'monthlyDeduction', label: 'Monthly Recovery (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'status', label: 'Status', align: 'center', render: (v) => v || 'Active' }
+                ],
+                data: advancesList,
+                summaryTotals: {
+                    amount: `₹${totalAdvances.toLocaleString()}`
+                }
+            };
+        } else {
+            const totalMonthlyPayroll = staffList.filter(s => s.isActive).reduce((sum, s) => sum + (Number(s.baseSalary) || 0), 0);
+            const totalAdvances = advancesList.reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+            const overviewRows = [
+                { metric: "Total Registered Personnel", val: `${staffList.length} Employees`, desc: "Total staff across all branches and lab facilities" },
+                { metric: "Active Duty Roster", val: `${staffList.filter(s => s.isActive).length} Employees`, desc: "Staff currently active on the operational duty roster" },
+                { metric: "Contracted Monthly Base Payroll", val: `₹${totalMonthlyPayroll.toLocaleString()}`, desc: "Aggregate monthly gross salary liability" },
+                { metric: "Active Advance Obligations", val: `₹${totalAdvances.toLocaleString()}`, desc: "Disbursed advances awaiting automated payroll recovery" },
+                { metric: "Pending Leave Applications", val: `${leavesList.length} Requests`, desc: "Time-off requests awaiting administrative approval" },
+                { metric: "Managed Payroll Periods", val: `${periodsList.length} Cycles`, desc: "Configured statutory payroll cycles and archives" }
+            ];
+            return {
+                title: "Workforce & Payroll Executive Summary",
+                subtitle: "High-level overview of human resource assets, monthly compensation commitments, and administrative workflows",
+                categoryLabel: "WORKFORCE HUB OVERVIEW",
+                kpis: [
+                    { label: "Monthly Base Payroll", value: `₹${totalMonthlyPayroll.toLocaleString()}`, color: "text-indigo-600", subtext: "Salary Obligation" },
+                    { label: "Active Staff", value: staffList.filter(s => s.isActive).length, color: "text-emerald-600", subtext: "Operational Roster" },
+                    { label: "Advance Exposure", value: `₹${totalAdvances.toLocaleString()}`, color: "text-amber-600", subtext: "Recoverable Capital" }
+                ],
+                columns: [
+                    { key: 'metric', label: 'Workforce & Operational Indicator' },
+                    { key: 'val', label: 'Audited Value', align: 'right' },
+                    { key: 'desc', label: 'Organizational Scope' }
+                ],
+                data: overviewRows,
+                summaryTotals: {}
+            };
+        }
+    };
+
+    const printConfig = getPrintSummaryConfig();
 
     return (
         <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
             {/* HEADER SECTION */}
             <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                        <Users className="w-6 h-6 text-synos-primary animate-none" />
-                        Workforce Hub
-                    </h1>
-                    <p className="text-xs text-zinc-500 font-medium">Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                            <Users className="w-6 h-6 text-synos-primary animate-none" />
+                            Workforce Hub
+                        </h1>
+                        <p className="text-xs text-zinc-500 font-medium">Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.</p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={handleDownloadTabSummary}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            title={`Download ${tab.toUpperCase()} Summary (CSV)`}
+                        >
+                            <Download size={14} className="text-zinc-500" />
+                            <span>Download Summary</span>
+                        </button>
+                        <button 
+                            onClick={() => setIsPrintSummaryOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary/10 hover:bg-synos-primary/20 text-synos-primary rounded-xl text-xs font-bold transition-all border border-synos-primary/20 shadow-sm"
+                            title={`Print Printable ${tab.toUpperCase()} Statement`}
+                        >
+                            <Printer size={14} />
+                            <span>Print Summary</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* TABS STRIP */}
@@ -3686,6 +3967,20 @@ export const WorkforceTerminal = () => {
                 {tab === 'history' && <PayrollHistoryScreen />}
                 {tab === 'adjustments' && <AdvancesDeductionsScreen />}
             </div>
+
+            {/* PRINTABLE SUMMARY MODAL */}
+            <FinancePrintableSummaryModal 
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title={printConfig.title}
+                subtitle={printConfig.subtitle}
+                categoryLabel={printConfig.categoryLabel}
+                kpis={printConfig.kpis}
+                columns={printConfig.columns}
+                data={printConfig.data}
+                summaryTotals={printConfig.summaryTotals}
+                onExportCsv={handleDownloadTabSummary}
+            />
         </div>
     );
 };
