@@ -208,50 +208,17 @@ export function SystemSettingsScreen() {
   const [showPrinterForm, setShowPrinterForm] = useState(false);
   const [editingTerminal, setEditingTerminal] = useState(null);
   const [showTerminalForm, setShowTerminalForm] = useState(false);
-  const [thermalSettings, setThermalSettings] = useState({
-    paperWidth: '80mm',
-    textSize: 'standard',
-    fontFamily: 'sans-serif',
-    showHeader: true,
-    showAgeGender: true,
-    showVisitId: true,
-    showTokenBox: true,
-    showDoctorName: true,
-    showItemDiscounts: true,
-    showUpiQr: false,
-    upiId: '',
-    headerSubtext: '',
-    footerDisclaimer: '* Clinical correlation required'
-  });
-  const [isOverrideActive, setIsOverrideActive] = useState(false);
-
   const loadPrintingData = async () => {
     setLoading(true);
     try {
-      const [printersRes, terminalsRes, branchesRes, globalSettings] = await Promise.all([
+      const [printersRes, terminalsRes, branchesRes] = await Promise.all([
         AdminApi.getBranchPrinters(),
         AdminApi.getTerminalPrinterConfigs(),
-        AdminApi.getBranches(),
-        AdminApi.getGlobalThermalSettings()
+        AdminApi.getBranches()
       ]);
       setPrinters(printersRes || []);
       setTerminals(terminalsRes || []);
       setBranches(branchesRes || []);
-
-      const local = localStorage.getItem('synos_thermal_layout_settings');
-      if (local) {
-        try {
-          const parsed = JSON.parse(local);
-          setThermalSettings(parsed);
-          setIsOverrideActive(true);
-        } catch {
-          setThermalSettings(globalSettings || {});
-          setIsOverrideActive(false);
-        }
-      } else {
-        setThermalSettings(globalSettings || {});
-        setIsOverrideActive(false);
-      }
     } catch (err) {
       setSaveError(err.message || 'Failed to load printing hardware configurations.');
     } finally {
@@ -376,33 +343,6 @@ export function SystemSettingsScreen() {
     }
   };
 
-  const handleSaveGlobalThermalSettings = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setSaveError(null);
-    setSaveSuccess(null);
-    try {
-      await AdminApi.saveGlobalThermalSettings(thermalSettings);
-      setSaveSuccess('Global thermal layout settings successfully updated and saved on server.');
-    } catch (err) {
-      setSaveError(err.message || 'Failed to save global settings.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveLocalOverride = () => {
-    localStorage.setItem('synos_thermal_layout_settings', JSON.stringify(thermalSettings));
-    setIsOverrideActive(true);
-    setSaveSuccess('Workstation-specific print layout override applied locally.');
-  };
-
-  const handleClearLocalOverride = async () => {
-    localStorage.removeItem('synos_thermal_layout_settings');
-    setIsOverrideActive(false);
-    setSaveSuccess('Workstation-specific override cleared. Reverted to global server fallback.');
-    await loadPrintingData();
-  };
 
   // Load Settings Tab
   const loadSettings = async () => {
@@ -1211,7 +1151,7 @@ export function SystemSettingsScreen() {
             { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
             { id: 'branches', label: 'Branches', icon: Globe },
             { id: 'workspaces', label: 'Workspace Registry', icon: ShieldAlert },
-            { id: 'printing', label: 'Printing Setup', icon: Printer },
+            { id: 'printing', label: 'Hardware Printers', icon: Printer },
             { id: 'paperwork', label: 'Billing & Print', icon: FileSpreadsheet },
             { id: 'machines', label: 'Machine Interfacing', icon: Cpu },
             { id: 'audit', label: 'Audit Logs', icon: History },
@@ -2990,9 +2930,9 @@ export function SystemSettingsScreen() {
             {/* Helper Info Box displaying current workstation Terminal ID */}
             <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Your Workstation Terminal</h4>
+                <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Workstation Terminal</h4>
                 <p className="text-zinc-500 text-xs font-semibold mt-1">
-                  Active Web Terminal ID: <strong className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-150 dark:bg-zinc-900 px-2 py-0.5 rounded border dark:border-white/5">{localStorage.getItem('synos_terminal_id') || 'Not Generated'}</strong>
+                  Active Terminal: <strong className="font-mono text-zinc-800 dark:text-zinc-200 bg-zinc-150 dark:bg-zinc-900 px-2 py-0.5 rounded border dark:border-white/5">{localStorage.getItem('synos_terminal_id') || 'Not Generated'}</strong>
                 </p>
               </div>
               <button
@@ -3009,9 +2949,9 @@ export function SystemSettingsScreen() {
                   });
                   setShowTerminalForm(true);
                 }}
-                className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all shrink-0"
+                className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all shrink-0 cursor-pointer"
               >
-                Authorize This Workstation
+                Authorize Workstation
               </button>
             </div>
 
@@ -3019,8 +2959,7 @@ export function SystemSettingsScreen() {
             <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-4">
               <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">1. Branch Printers Registry</h3>
-                  <p className="text-zinc-500 text-xs font-semibold">Expose physical thermal or barcode printer hardware available in your branch nodes.</p>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Branch Printers</h3>
                 </div>
                 <button
                   onClick={() => {
@@ -3099,8 +3038,7 @@ export function SystemSettingsScreen() {
             <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-4">
               <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">2. Workstation Terminals Authorization</h3>
-                  <p className="text-zinc-500 text-xs font-semibold">Authorize workstation endpoints, toggle Lead Print capability, and map dedicated receipt hardware.</p>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Workstation Terminals</h3>
                 </div>
                 <button
                   onClick={() => {
@@ -3195,216 +3133,21 @@ export function SystemSettingsScreen() {
               </div>
             </div>
 
-            {/* Section 3: Thermal Receipt Layout Customizer */}
-            <div className="synos-dept-card rounded-2xl p-6 mb-8 border border-zinc-200 dark:border-white/5 space-y-6">
-              <div className="flex justify-between items-center pb-2 border-b dark:border-zinc-800 border-zinc-200">
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">3. Thermal Receipt Layout Customizer</h3>
-                  <p className="text-zinc-500 text-xs font-semibold">Customize thermal receipt dimensions, spacing, typography, and transaction UPI QR codes.</p>
+            {/* Bill & Slip Formats Governing Studio Link */}
+            <div className="synos-dept-card rounded-2xl p-5 mb-8 border border-zinc-200 dark:border-white/5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                  <Printer size={18} />
                 </div>
-                {isOverrideActive && (
-                  <button
-                    onClick={handleClearLocalOverride}
-                    className="px-4 py-2 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-550 font-bold text-xxs uppercase tracking-wider rounded-xl transition-all"
-                  >
-                    Clear Workstation Override
-                  </button>
-                )}
+                <h4 className="font-bold text-xs text-zinc-900 dark:text-zinc-100">Bill & Slip Formats</h4>
               </div>
-
-              <form onSubmit={handleSaveGlobalThermalSettings} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Paper Dimensions & Font Setup */}
-                  <div>
-                    <h4 className="font-bold text-xs text-zinc-700 dark:text-zinc-300 mb-3 border-b dark:border-zinc-850 pb-1.5 uppercase tracking-wider">Dimensions & Font</h4>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Paper Width Size</label>
-                        <select
-                          value={thermalSettings.paperWidth || '80mm'}
-                          onChange={e => setThermalSettings({ ...thermalSettings, paperWidth: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                        >
-                          <option value="80mm">Standard Thermal roll (80mm width / 3-inch)</option>
-                          <option value="58mm">Compact Thermal roll (58mm width / 2-inch)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Typography & Font Family</label>
-                        <select
-                          value={thermalSettings.fontFamily || 'sans-serif'}
-                          onChange={e => setThermalSettings({ ...thermalSettings, fontFamily: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                        >
-                          <option value="sans-serif">Standard sans-serif (Clean & Modern)</option>
-                          <option value="mono">Monospace typewriter (Fixed Width Alignment)</option>
-                          <option value="outfit">Elegant Outfit Sans (Premium Look)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Text Size & Line Spacing</label>
-                        <select
-                          value={thermalSettings.textSize || 'standard'}
-                          onChange={e => setThermalSettings({ ...thermalSettings, textSize: e.target.value })}
-                          className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                        >
-                          <option value="standard">Standard Size (Comfortable legibility)</option>
-                          <option value="compact">Compact / Ultra-Save (Saves paper roll, tight padding)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Content Toggles */}
-                  <div>
-                    <h4 className="font-bold text-xs text-zinc-700 dark:text-zinc-300 mb-3 border-b dark:border-zinc-855 pb-1.5 uppercase tracking-wider">Content Toggles</h4>
-                    <div className="space-y-3 pt-1">
-                      <label className="flex items-center space-x-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showHeader ?? true}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showHeader: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Show Branding Header / Title</span>
-                      </label>
-
-                      <label className="flex items-center space-x-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showAgeGender ?? true}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showAgeGender: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Show Patient Sex & Age</span>
-                      </label>
-
-                      <label className="flex items-center space-x-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showVisitId ?? true}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showVisitId: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Show Visit ID / Accession Code</span>
-                      </label>
-
-                      <label className="flex items-center space-x-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showTokenBox ?? true}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showTokenBox: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Show Large Token Callout Box</span>
-                      </label>
-
-                      <label className="flex items-center space-x-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showDoctorName ?? true}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showDoctorName: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Show Referring Doctor Name</span>
-                      </label>
-
-                      <label className="flex items-center space-x-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showItemDiscounts ?? true}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showItemDiscounts: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Show Itemized Discount Column</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Payment UPI QR Code Setup */}
-                  <div>
-                    <h4 className="font-bold text-xs text-zinc-700 dark:text-zinc-300 mb-3 border-b dark:border-zinc-855 pb-1.5 uppercase tracking-wider">Transaction UPI QR</h4>
-                    <div className="space-y-4">
-                      <label className="flex items-center space-x-3 cursor-pointer select-none pt-1">
-                        <input
-                          type="checkbox"
-                          checked={thermalSettings.showUpiQr ?? false}
-                          onChange={e => setThermalSettings({ ...thermalSettings, showUpiQr: e.target.checked })}
-                          className="form-checkbox h-4.5 w-4.5 text-indigo-600 rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
-                        />
-                        <span className="font-semibold text-zinc-350">Print Dynamic UPI Payment QR Code</span>
-                      </label>
-
-                      {thermalSettings.showUpiQr && (
-                        <div className="animate-fadeIn">
-                          <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Lab Merchant UPI ID</label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="e.g. labmerchant@okaxis"
-                            value={thermalSettings.upiId || ''}
-                            onChange={e => setThermalSettings({ ...thermalSettings, upiId: e.target.value.trim() })}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 font-mono shadow-sm"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Headers & Footers Texts */}
-                  <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                    <div>
-                      <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Receipt Sub-Header Greeting Text</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Welcome to Khammam Branch. Diagnostics Excellence."
-                        value={thermalSettings.headerSubtext || ''}
-                        onChange={e => setThermalSettings({ ...thermalSettings, headerSubtext: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xxs font-bold text-zinc-400 mb-1.5 uppercase tracking-wide">Receipt Footer Disclaimer / Instructions</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. * Clinical correlation required. Bring this slip for reports."
-                        value={thermalSettings.footerDisclaimer || ''}
-                        onChange={e => setThermalSettings({ ...thermalSettings, footerDisclaimer: e.target.value })}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Save Buttons */}
-                <div className="pt-4 border-t dark:border-zinc-900 border-zinc-250/20 flex flex-col md:flex-row justify-between items-center gap-4">
-                  <div className="text-xxs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
-                    Active Setup: {isOverrideActive ? (
-                      <span className="text-amber-500 font-bold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/10">Workstation Local Override Active</span>
-                    ) : (
-                      <span className="text-emerald-500 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/10">Global Server Defaults Applied</span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-3 w-full md:w-auto">
-                    <button
-                      type="button"
-                      onClick={handleSaveLocalOverride}
-                      className="flex-1 md:flex-initial px-5 py-2.5 border dark:border-zinc-800 border-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl transition-all shadow-xs"
-                    >
-                      Apply for This Workstation Only
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 md:flex-initial px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all"
-                    >
-                      Save Globally as Default
-                    </button>
-                  </div>
-                </div>
-              </form>
+              <button
+                type="button"
+                onClick={() => setActiveTab('paperwork')}
+                className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs transition-all shrink-0 cursor-pointer"
+              >
+                Open Billing & Print
+              </button>
             </div>
 
             {/* Printer Form Dialog */}
