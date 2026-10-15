@@ -877,8 +877,21 @@ const normalizeDbTest = (dbTest) => {
     }
   };
 };
+// Module-level SWR In-Memory Caches for Test Master (prevents unmount/remount data flashes)
+let cachedCatalog = null;
+let cachedOriginalDbTests = null;
+let cachedDepartments = null;
+let cachedDbDeptsList = null;
+let cachedModalitiesList = null;
+let cachedTemplatesList = null;
+
 export function TestMasterScreen() {
-  const [catalog, setCatalog] = useState(() => sanitizeCatalogSigs(INITIAL_TEST_CATALOG));
+  const [catalog, setCatalog] = useState(() => {
+    if (cachedCatalog && cachedCatalog.length > 0) {
+      return cachedCatalog;
+    }
+    return sanitizeCatalogSigs(INITIAL_TEST_CATALOG);
+  });
 
   const getCompiledProfileParameters = (test, catalogList) => {
     if (!test || !test.isProfile) {
@@ -902,15 +915,30 @@ export function TestMasterScreen() {
     return compiled;
   };
 
-  const [selectedTest, setSelectedTest] = useState(() => INITIAL_TEST_CATALOG[0]);
+  const [selectedTest, setSelectedTest] = useState(() => {
+    const activeCatalog = (cachedCatalog && cachedCatalog.length > 0)
+      ? cachedCatalog
+      : INITIAL_TEST_CATALOG;
+    const savedSelectedId = localStorage.getItem("synos_selected_test_id");
+    if (savedSelectedId) {
+      const found = activeCatalog.find(t => t.id === savedSelectedId);
+      if (found) return found;
+    }
+    return activeCatalog[0];
+  });
   const [draggedParamIdx, setDraggedParamIdx] = useState(null);
   const [draggedChildTestIdx, setDraggedChildTestIdx] = useState(null);
   const [profileSearchTerm, setProfileSearchTerm] = useState("");
-  const [originalDbTests, setOriginalDbTests] = useState([]);
+  const [originalDbTests, setOriginalDbTests] = useState(() => cachedOriginalDbTests || []);
   const [isLoadingTests, setIsLoadingTests] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDept, setSelectedDept] = useState("All");
-  const [departments, setDepartments] = useState(["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"]);
+  const [departments, setDepartments] = useState(() => {
+    if (cachedDepartments && cachedDepartments.length > 0) {
+      return cachedDepartments;
+    }
+    return ["All", "Hematology", "Biochemistry", "Health Panels", "Microbiology", "Serology", "Radiology"];
+  });
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchContainerRef = useRef(null);
 
@@ -987,8 +1015,8 @@ export function TestMasterScreen() {
     return catalog.filter(t => (t.department || "").toLowerCase() === deptName.toLowerCase()).length;
   };
   
-  const [dbDeptsList, setDbDeptsList] = useState([]);
-  const [modalitiesList, setModalitiesList] = useState([]);
+  const [dbDeptsList, setDbDeptsList] = useState(() => cachedDbDeptsList || []);
+  const [modalitiesList, setModalitiesList] = useState(() => cachedModalitiesList || []);
   const [showCreateDeptModal, setShowCreateDeptModal] = useState(false);
   const [showCreateModalityModal, setShowCreateModalityModal] = useState(false);
 
@@ -1722,8 +1750,15 @@ function TestInventoryTab({ selectedTest }) {
   const [isSavedSuccessfully, setIsSavedSuccessfully] = useState(false);
   const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
-  // Dynamic Template List Hook (initialized directly using default templates fallback before API load)
-  const [reportTemplatesList, setReportTemplatesList] = useState(DEFAULT_TEMPLATES);
+  // Dynamic Template List Hook (initialized from memory cache or default templates fallback)
+  const [reportTemplatesList, setReportTemplatesList] = useState(() => cachedTemplatesList || DEFAULT_TEMPLATES);
+
+  // Keep catalog memory cache in sync with local mutations
+  useEffect(() => {
+    if (catalog && catalog.length > 0 && catalog !== INITIAL_TEST_CATALOG) {
+      cachedCatalog = catalog;
+    }
+  }, [catalog]);
 
   const loadTemplatesFromBackend = async () => {
     try {
@@ -1740,6 +1775,7 @@ function TestInventoryTab({ selectedTest }) {
         return mapBackendDslToTemplate(dsl, item.templateId, item.isDefault, item.isPublished);
       });
       setReportTemplatesList(mapped);
+      cachedTemplatesList = mapped;
     } catch (e) {
       console.error("Failed to load templates from backend", e);
     }
@@ -1783,17 +1819,23 @@ function TestInventoryTab({ selectedTest }) {
 
   useEffect(() => {
     const loadDbTests = async () => {
-      setIsLoadingTests(true);
+      // Only show full loader if there is no cached catalog to display immediately
+      if (!cachedCatalog || cachedCatalog.length === 0) {
+        setIsLoadingTests(true);
+      }
       try {
         const dbTests = await AdminApi.getTests();
         setOriginalDbTests(dbTests || []);
+        cachedOriginalDbTests = dbTests || [];
         
         try {
           const dbDepts = await AdminApi.getDepartments();
           setDbDeptsList(dbDepts || []);
+          cachedDbDeptsList = dbDepts || [];
           if (dbDepts && dbDepts.length > 0) {
             const mappedDepts = ["All", ...dbDepts.map(d => d.name)];
             setDepartments(mappedDepts);
+            cachedDepartments = mappedDepts;
           }
         } catch (deptErr) {
           console.error("Failed to fetch database departments on mount:", deptErr);
@@ -1802,6 +1844,7 @@ function TestInventoryTab({ selectedTest }) {
         try {
           const dbModalities = await AdminApi.getModalities();
           setModalitiesList(dbModalities || []);
+          cachedModalitiesList = dbModalities || [];
         } catch (modalitiesErr) {
           console.error("Failed to fetch database modalities on mount:", modalitiesErr);
         }
@@ -1819,20 +1862,30 @@ function TestInventoryTab({ selectedTest }) {
         });
         
         setCatalog(normalized);
+        cachedCatalog = normalized;
         
         const savedSelectedId = localStorage.getItem("synos_selected_test_id");
-        let currentSelected = null;
-        if (savedSelectedId) {
-          currentSelected = normalized.find(t => t.id === savedSelectedId);
-        }
-        if (!currentSelected && normalized.length > 0) {
-          currentSelected = normalized[0];
-        }
-        
-        if (currentSelected) {
-          setSelectedTest(currentSelected);
-          localStorage.setItem("synos_selected_test_id", currentSelected.id);
-        }
+        setSelectedTest(prevSelected => {
+          let currentSelected = null;
+          // 1. Preserve currently selected test if it exists in the newly fetched catalog
+          if (prevSelected?.id) {
+            currentSelected = normalized.find(t => t.id === prevSelected.id);
+          }
+          // 2. Otherwise fall back to localStorage
+          if (!currentSelected && savedSelectedId) {
+            currentSelected = normalized.find(t => t.id === savedSelectedId);
+          }
+          // 3. Fall back to first catalog test
+          if (!currentSelected && normalized.length > 0) {
+            currentSelected = normalized[0];
+          }
+          
+          if (currentSelected) {
+            localStorage.setItem("synos_selected_test_id", currentSelected.id);
+            return currentSelected;
+          }
+          return prevSelected;
+        });
       } catch (err) {
         console.error("Failed to fetch database tests on mount:", err);
       } finally {
@@ -3463,7 +3516,7 @@ function TestInventoryTab({ selectedTest }) {
   });
 
   return (
-    <div className="w-full lg:h-[calc(100vh-56px)] flex flex-col overflow-hidden px-6 pt-4 pb-6 space-y-4 animate-in fade-in duration-500 relative">
+    <div className="w-full lg:h-[calc(100vh-56px)] flex flex-col overflow-hidden px-6 pt-4 pb-6 space-y-4 relative">
       
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-3 shrink-0">
