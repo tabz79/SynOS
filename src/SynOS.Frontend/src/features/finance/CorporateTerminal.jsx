@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
     Briefcase, 
@@ -21,7 +21,13 @@ import {
     Clock,
     AlertCircle,
     Sparkles,
-    CheckCircle2
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
+    RotateCcw,
+    Save,
+    ShieldCheck,
+    Layers
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -41,12 +47,24 @@ export function CorporateTerminal() {
     const [selectedAccountId, setSelectedAccountId] = useState('');
     const [rateRules, setRateRules] = useState([]);
 
-    // Modals
+    // Modals & Editing
     const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState(null);
     const [isPackageBuilderOpen, setIsPackageBuilderOpen] = useState(false);
+    const [editingPackage, setEditingPackage] = useState(null);
     const [isAddRateRuleModalOpen, setIsAddRateRuleModalOpen] = useState(false);
     const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
+
+    // Corporate Test Pricing Master Filter & Pagination States
+    const [testSearchQuery, setTestSearchQuery] = useState('');
+    const [selectedDepartment, setSelectedDepartment] = useState('ALL');
+    const [selectedModality, setSelectedModality] = useState('ALL');
+    const [rateFilter, setRateFilter] = useState('ALL'); // 'ALL' | 'OVERRIDE' | 'STANDARD'
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(15);
+    const [editingTestId, setEditingTestId] = useState(null);
+    const [inlineRate, setInlineRate] = useState('');
+    const [isSavingRate, setIsSavingRate] = useState(false);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -119,6 +137,136 @@ export function CorporateTerminal() {
 
     const activeAccountObj = accounts.find(a => (a.corporateAccountId || a.id) === selectedAccountId);
 
+    // Extract unique departments and modalities
+    const departments = useMemo(() => {
+        const set = new Set();
+        testCatalog.forEach(t => {
+            const d = t.department || 'PATHOLOGY';
+            if (d) set.add(d);
+        });
+        return Array.from(set).sort();
+    }, [testCatalog]);
+
+    const modalities = useMemo(() => {
+        const set = new Set();
+        testCatalog.forEach(t => {
+            const m = t.category || t.modality;
+            if (m && m !== 'CorporatePackage') set.add(m);
+        });
+        return Array.from(set).sort();
+    }, [testCatalog]);
+
+    // Map of testId -> CorporateRateRule (account-level override)
+    const rateRulesMap = useMemo(() => {
+        const map = new Map();
+        rateRules.filter(r => !r.isPackage).forEach(r => {
+            if (r.testId) map.set(r.testId, r);
+        });
+        return map;
+    }, [rateRules]);
+
+    // Filtered Test Master catalog for Corporate Pricing Master
+    const filteredTestMasterList = useMemo(() => {
+        return testCatalog.filter(t => {
+            if (t.category === 'CorporatePackage') return false;
+
+            const code = (t.testCode || t.code || '').toLowerCase();
+            const name = (t.testName || t.name || '').toLowerCase();
+            const search = testSearchQuery.toLowerCase().trim();
+            const matchesSearch = !search || code.includes(search) || name.includes(search);
+
+            const dept = t.department || 'PATHOLOGY';
+            const matchesDept = selectedDepartment === 'ALL' || dept.toUpperCase() === selectedDepartment.toUpperCase();
+
+            const mod = t.category || t.modality || '';
+            const matchesMod = selectedModality === 'ALL' || mod.toUpperCase() === selectedModality.toUpperCase();
+
+            const testId = t.testId || t.id;
+            const hasOverride = rateRulesMap.has(testId);
+            const matchesRateFilter = 
+                rateFilter === 'ALL' ? true :
+                rateFilter === 'OVERRIDE' ? hasOverride :
+                !hasOverride;
+
+            return matchesSearch && matchesDept && matchesMod && matchesRateFilter;
+        });
+    }, [testCatalog, testSearchQuery, selectedDepartment, selectedModality, rateFilter, rateRulesMap]);
+
+    const totalPages = Math.ceil(filteredTestMasterList.length / pageSize) || 1;
+    const paginatedTests = useMemo(() => {
+        const start = (currentPage - 1) * pageSize;
+        return filteredTestMasterList.slice(start, start + pageSize);
+    }, [filteredTestMasterList, currentPage, pageSize]);
+
+    // Reset pagination when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [testSearchQuery, selectedDepartment, selectedModality, rateFilter, pageSize]);
+
+    // Handler to save contracted rate inline and sync with Test Master
+    const handleSaveCorporateRate = async (test) => {
+        const testId = test.testId || test.id;
+        const rateNum = parseFloat(inlineRate);
+        if (isNaN(rateNum) || rateNum < 0) return;
+        if (!selectedAccountId) return;
+
+        setIsSavingRate(true);
+        try {
+            const res = await fetch(`/api/v1/corporate-accounts/${selectedAccountId}/rate-rules`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`
+                },
+                body: JSON.stringify({
+                    testId: testId,
+                    contractedPrice: rateNum,
+                    isPackage: false
+                })
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || "Failed to save corporate contracted rate");
+            }
+
+            // Immediately reflect in local testCatalog
+            setTestCatalog(prev => prev.map(t => {
+                const tid = t.testId || t.id;
+                if (tid === testId) {
+                    return { ...t, corporatePrice: rateNum };
+                }
+                return t;
+            }));
+
+            // Refresh rules from backend
+            const updatedRules = await ReceptionApi.getCorporateRateRules(selectedAccountId);
+            setRateRules(updatedRules || []);
+
+            setEditingTestId(null);
+            setInlineRate('');
+        } catch (err) {
+            console.error("Failed to save rate:", err);
+            alert(err.message || "Failed to update corporate rate");
+        } finally {
+            setIsSavingRate(false);
+        }
+    };
+
+    const handleRevertRateOverride = async (ruleId) => {
+        if (!window.confirm("Revert this test's contracted rate back to the default Test Master corporate tier?")) return;
+        try {
+            await fetch(`/api/v1/corporate-accounts/${selectedAccountId}/rate-rules/${ruleId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+            });
+            const updatedRules = await ReceptionApi.getCorporateRateRules(selectedAccountId);
+            setRateRules(updatedRules || []);
+        } catch (err) {
+            console.error("Failed to revert override:", err);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full bg-zinc-50 dark:bg-black overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER */}
@@ -186,7 +334,7 @@ export function CorporateTerminal() {
             </div>
 
             {/* TAB CONTENT BODY */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 w-full custom-scrollbar">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-64 gap-3 text-zinc-400">
                         <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
@@ -196,7 +344,7 @@ export function CorporateTerminal() {
                     <>
                         {/* 1. OVERVIEW TAB */}
                         {tab === 'overview' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
                                         <div className="flex items-center justify-between mb-2">
@@ -299,7 +447,7 @@ export function CorporateTerminal() {
 
                         {/* 2. CLIENT DIRECTORY (CONFIGURATION SCREEN) */}
                         {tab === 'clients' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="relative flex-1 max-w-md">
                                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -415,10 +563,10 @@ export function CorporateTerminal() {
                             </div>
                         )}
 
-                        {/* 3. DEDICATED CORPORATE PACKAGE BUILDER */}
+                        {/* 3. DEDICATED CORPORATE PACKAGE BUILDER & PRICING MASTER */}
                         {tab === 'packages' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
-                                {/* Account Selector Banner */}
+                            <div className="space-y-6 w-full">
+                                {/* Account Selector Banner (Marker 2 Refinement) */}
                                 <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
@@ -430,16 +578,17 @@ export function CorporateTerminal() {
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-zinc-400 uppercase">Target Client:</span>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                                            <Building2 size={15} className="text-indigo-500 shrink-0" />
+                                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">Client:</span>
                                             <select
                                                 value={selectedAccountId}
                                                 onChange={(e) => setSelectedAccountId(e.target.value)}
-                                                className="h-10 px-3.5 rounded-xl text-xs font-bold border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none cursor-pointer focus:ring-1 focus:ring-indigo-500"
+                                                className="bg-transparent text-xs font-bold dark:text-white outline-none cursor-pointer pr-2"
                                             >
                                                 {accounts.map(a => (
-                                                    <option key={a.corporateAccountId || a.id} value={a.corporateAccountId || a.id}>
+                                                    <option key={a.corporateAccountId || a.id} value={a.corporateAccountId || a.id} className="dark:bg-zinc-900">
                                                         {a.companyName} [{a.corporateCode || 'CORP'}]
                                                     </option>
                                                 ))}
@@ -448,25 +597,16 @@ export function CorporateTerminal() {
 
                                         <button
                                             type="button"
-                                            onClick={() => setIsPackageBuilderOpen(true)}
+                                            onClick={() => { setEditingPackage(null); setIsPackageBuilderOpen(true); }}
                                             disabled={!selectedAccountId}
                                             className="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
                                         >
                                             <Plus size={16} /> + Build Corporate Package
                                         </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsAddRateRuleModalOpen(true)}
-                                            disabled={!selectedAccountId}
-                                            className="px-3.5 py-2.5 rounded-xl text-xs font-bold border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shrink-0"
-                                        >
-                                            <Plus size={14} /> Custom Test Rate
-                                        </button>
                                     </div>
                                 </div>
 
-                                {/* Active Corporate Packages Section */}
+                                {/* Active Corporate Packages Section (Marker 3: SynOS Card System) */}
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
@@ -474,7 +614,7 @@ export function CorporateTerminal() {
                                             Commercial Bundles & Health Packages ({corporatePackages.length})
                                         </h4>
                                         <span className="text-[11px] text-zinc-400">
-                                            Auto-expands constituent tests upon reception selection
+                                            Click any card or pencil to edit package details and bundled tests
                                         </span>
                                     </div>
 
@@ -482,37 +622,49 @@ export function CorporateTerminal() {
                                         {corporatePackages.map(pkg => (
                                             <div 
                                                 key={pkg.corporateRateRuleId} 
-                                                className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col justify-between space-y-4 hover:border-indigo-500/50 transition-all"
+                                                onClick={() => { setEditingPackage(pkg); setIsPackageBuilderOpen(true); }}
+                                                className="group relative p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs hover:shadow-lg hover:border-indigo-500/50 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4"
                                             >
-                                                <div className="space-y-2">
+                                                <div className="space-y-3">
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div>
-                                                            <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold">
-                                                                {pkg.packageCode || pkg.testCode}
-                                                            </span>
-                                                            <h5 className="font-bold text-sm dark:text-white mt-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold border border-indigo-500/20">
+                                                                    {pkg.packageCode || pkg.testCode}
+                                                                </span>
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                                    Active Package
+                                                                </span>
+                                                            </div>
+                                                            <h5 className="font-bold text-sm text-zinc-900 dark:text-white group-hover:text-indigo-500 transition-colors">
                                                                 {pkg.packageName || pkg.testName}
                                                             </h5>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <span className="text-xs text-zinc-400 line-through font-mono block">
-                                                                ₹{pkg.standardPrice || 0}
-                                                            </span>
-                                                            <span className="text-base font-black text-emerald-500 font-mono">
-                                                                ₹{pkg.contractedPrice}
+                                                        <div className="text-right shrink-0">
+                                                            {pkg.standardPrice > 0 && (
+                                                                <span className="text-xs text-zinc-400 line-through font-mono block">
+                                                                    ₹{pkg.standardPrice?.toLocaleString()}
+                                                                </span>
+                                                            )}
+                                                            <span className="text-lg font-black text-emerald-500 font-mono">
+                                                                ₹{pkg.contractedPrice?.toLocaleString()}
                                                             </span>
                                                         </div>
                                                     </div>
 
                                                     {/* Bundled Tests */}
                                                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
                                                             Bundled Tests ({(pkg.includedTests || []).length})
                                                         </span>
-                                                        <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                                                        <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto custom-scrollbar">
                                                             {(pkg.includedTests && pkg.includedTests.length > 0) ? (
                                                                 pkg.includedTests.map(t => (
-                                                                    <span key={t.testId || t.testCode} className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium">
+                                                                    <span 
+                                                                        key={t.testId || t.testCode} 
+                                                                        className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium border border-zinc-200/50 dark:border-zinc-700/50"
+                                                                    >
                                                                         {t.testName}
                                                                     </span>
                                                                 ))
@@ -523,22 +675,36 @@ export function CorporateTerminal() {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                                                <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
                                                     <span className="text-[10px] text-zinc-400">Available at reception Intent Panel</span>
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (!window.confirm(`Delete package ${pkg.packageName || pkg.testName}?`)) return;
-                                                            await fetch(`/api/v1/corporate-accounts/${selectedAccountId}/rate-rules/${pkg.corporateRateRuleId}`, {
-                                                                method: 'DELETE',
-                                                                headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
-                                                            });
-                                                            ReceptionApi.getCorporateRateRules(selectedAccountId).then(r => setRateRules(r || []));
-                                                        }}
-                                                        className="text-zinc-400 hover:text-rose-500 p-1 rounded-lg hover:bg-rose-500/10 transition-colors cursor-pointer"
-                                                        title="Delete Package"
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setEditingPackage(pkg);
+                                                                setIsPackageBuilderOpen(true);
+                                                            }}
+                                                            className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-indigo-500/10 hover:border-indigo-500/30 text-zinc-400 hover:text-indigo-500 transition-colors cursor-pointer"
+                                                            title="Edit Package"
+                                                        >
+                                                            <Edit size={13} />
+                                                        </button>
+                                                        <button
+                                                            onClick={async (e) => {
+                                                                e.stopPropagation();
+                                                                if (!window.confirm(`Delete package ${pkg.packageName || pkg.testName}?`)) return;
+                                                                await fetch(`/api/v1/corporate-accounts/${selectedAccountId}/rate-rules/${pkg.corporateRateRuleId}`, {
+                                                                    method: 'DELETE',
+                                                                    headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
+                                                                });
+                                                                ReceptionApi.getCorporateRateRules(selectedAccountId).then(r => setRateRules(r || []));
+                                                            }}
+                                                            className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-rose-500/10 hover:border-rose-500/30 text-zinc-400 hover:text-rose-500 transition-colors cursor-pointer"
+                                                            title="Delete Package"
+                                                        >
+                                                            <Trash2 size={13} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -555,62 +721,254 @@ export function CorporateTerminal() {
                                     </div>
                                 </div>
 
-                                {/* Custom Contracted Test Price Overrides */}
+                                {/* Marker 4: Full Corporate Test Pricing Master */}
                                 <div className="space-y-3 pt-4">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
-                                            <DollarSign size={14} className="text-emerald-500" />
-                                            Individual Contracted Test Rates ({individualRateRules.length})
-                                        </h4>
-                                        <span className="text-[11px] text-zinc-400">Overrides retail base price for this organization</span>
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                                        <div>
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                                <ShieldCheck size={15} className="text-indigo-500" />
+                                                Corporate Test Pricing Master ({filteredTestMasterList.length})
+                                            </h4>
+                                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                                Bidirectional sync with Test Master. Rates edited below immediately reflect inside Test Master pricing &amp; corporate billing.
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[11px] text-indigo-500 font-bold bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20 font-mono">
+                                                {individualRateRules.length} Client Overrides Active
+                                            </span>
+                                        </div>
                                     </div>
 
+                                    {/* Filters & Search Control Bar */}
+                                    <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-3">
+                                        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                                            <div className="relative flex-1 min-w-[200px]">
+                                                <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-zinc-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search test by name or code (e.g. CBC, Lipid, CBP)..."
+                                                    value={testSearchQuery}
+                                                    onChange={(e) => setTestSearchQuery(e.target.value)}
+                                                    className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                                                />
+                                            </div>
+
+                                            {/* Department Filter */}
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Dept:</span>
+                                                <select
+                                                    value={selectedDepartment}
+                                                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                                                    className="h-8 px-2.5 rounded-xl text-xs font-semibold border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none cursor-pointer"
+                                                >
+                                                    <option value="ALL">All Departments</option>
+                                                    {departments.map(d => (
+                                                        <option key={d} value={d}>{d}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Modality Filter */}
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Modality:</span>
+                                                <select
+                                                    value={selectedModality}
+                                                    onChange={(e) => setSelectedModality(e.target.value)}
+                                                    className="h-8 px-2.5 rounded-xl text-xs font-semibold border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none cursor-pointer"
+                                                >
+                                                    <option value="ALL">All Modalities</option>
+                                                    {modalities.map(m => (
+                                                        <option key={m} value={m}>{m}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Rate Status Filter */}
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Status:</span>
+                                                <select
+                                                    value={rateFilter}
+                                                    onChange={(e) => setRateFilter(e.target.value)}
+                                                    className="h-8 px-2.5 rounded-xl text-xs font-semibold border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none cursor-pointer"
+                                                >
+                                                    <option value="ALL">All Tests</option>
+                                                    <option value="OVERRIDE">Contract Overrides Only</option>
+                                                    <option value="STANDARD">Default Corporate Tier</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-zinc-400 uppercase">Show:</span>
+                                            <select
+                                                value={pageSize}
+                                                onChange={(e) => setPageSize(Number(e.target.value))}
+                                                className="h-8 px-2 rounded-xl text-xs font-semibold border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none cursor-pointer"
+                                            >
+                                                <option value={15}>15 / page</option>
+                                                <option value={30}>30 / page</option>
+                                                <option value={50}>50 / page</option>
+                                                <option value={100}>100 / page</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Pricing Master Table */}
                                     <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left text-xs">
                                                 <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
                                                     <tr>
-                                                        <th className="px-6 py-3">Test Code</th>
-                                                        <th className="px-6 py-3">Test Name</th>
-                                                        <th className="px-6 py-3 text-right">Retail Base Price</th>
-                                                        <th className="px-6 py-3 text-right">Negotiated Corporate Rate</th>
-                                                        <th className="px-6 py-3 text-right">Actions</th>
+                                                        <th className="px-6 py-3.5">Test Code &amp; Modality</th>
+                                                        <th className="px-6 py-3.5">Test Name &amp; Department</th>
+                                                        <th className="px-6 py-3.5 text-right">Retail Base Price</th>
+                                                        <th className="px-6 py-3.5 text-right">Negotiated Corporate Rate</th>
+                                                        <th className="px-6 py-3.5 text-right">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-                                                    {individualRateRules.map(rule => (
-                                                        <tr key={rule.corporateRateRuleId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40">
-                                                            <td className="px-6 py-3 font-mono font-bold text-indigo-500">{rule.testCode}</td>
-                                                            <td className="px-6 py-3 font-medium dark:text-zinc-200">{rule.testName}</td>
-                                                            <td className="px-6 py-3 text-right font-mono text-zinc-400 line-through">₹{rule.standardPrice || 0}</td>
-                                                            <td className="px-6 py-3 text-right font-mono font-bold text-emerald-500">₹{rule.contractedPrice}</td>
-                                                            <td className="px-6 py-3 text-right">
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        await fetch(`/api/v1/corporate-accounts/${selectedAccountId}/rate-rules/${rule.corporateRateRuleId}`, {
-                                                                            method: 'DELETE',
-                                                                            headers: { 'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}` }
-                                                                        });
-                                                                        ReceptionApi.getCorporateRateRules(selectedAccountId).then(r => setRateRules(r || []));
-                                                                    }}
-                                                                    className="text-zinc-400 hover:text-rose-500 p-1 cursor-pointer"
-                                                                    title="Remove Override"
-                                                                >
-                                                                    <Trash2 size={13} />
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                    {individualRateRules.length === 0 && (
+                                                    {paginatedTests.map(test => {
+                                                        const testId = test.testId || test.id;
+                                                        const overrideRule = rateRulesMap.get(testId);
+                                                        const isEditing = editingTestId === testId;
+                                                        
+                                                        // Fallback chain: account override -> test.corporatePrice -> test.pricing?.corporate -> test.basePrice
+                                                        const corporateRate = overrideRule
+                                                            ? overrideRule.contractedPrice
+                                                            : (test.corporatePrice ?? test.pricing?.corporate ?? test.basePrice ?? 0);
+                                                        const retailPrice = test.basePrice ?? test.price ?? 0;
+
+                                                        return (
+                                                            <tr key={testId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                                                                <td className="px-6 py-3.5 font-mono">
+                                                                    <div className="font-bold text-indigo-500">{test.testCode || test.code}</div>
+                                                                    <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-sans font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase">
+                                                                        {test.category || test.modality || 'LAB'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-6 py-3.5">
+                                                                    <div className="font-semibold dark:text-zinc-200">{test.testName || test.name}</div>
+                                                                    <div className="text-[10px] text-zinc-400 mt-0.5">{test.department || 'PATHOLOGY'}</div>
+                                                                </td>
+                                                                <td className="px-6 py-3.5 text-right font-mono text-zinc-500 dark:text-zinc-400 font-semibold">
+                                                                    ₹{retailPrice.toLocaleString()}
+                                                                </td>
+                                                                <td className="px-6 py-3.5 text-right">
+                                                                    {isEditing ? (
+                                                                        <div className="flex items-center justify-end gap-1.5">
+                                                                            <span className="text-zinc-400 font-mono text-xs">₹</span>
+                                                                            <input
+                                                                                type="number"
+                                                                                autoFocus
+                                                                                min="0"
+                                                                                value={inlineRate}
+                                                                                onChange={(e) => setInlineRate(e.target.value)}
+                                                                                onKeyDown={(e) => {
+                                                                                    if (e.key === 'Enter') handleSaveCorporateRate(test);
+                                                                                    if (e.key === 'Escape') setEditingTestId(null);
+                                                                                }}
+                                                                                className="w-24 h-7 px-2 text-right rounded-lg border border-indigo-500 bg-white dark:bg-zinc-950 font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400 outline-none focus:ring-1 focus:ring-indigo-500"
+                                                                            />
+                                                                            <button
+                                                                                onClick={() => handleSaveCorporateRate(test)}
+                                                                                disabled={isSavingRate}
+                                                                                className="p-1 rounded bg-emerald-600 text-white hover:bg-emerald-500 transition-colors cursor-pointer disabled:opacity-50"
+                                                                                title="Save Rate"
+                                                                            >
+                                                                                {isSavingRate ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => setEditingTestId(null)}
+                                                                                className="p-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                                                                                title="Cancel"
+                                                                            >
+                                                                                <X size={12} />
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="space-y-0.5">
+                                                                            <div className="font-mono font-bold text-emerald-500 text-sm">
+                                                                                ₹{corporateRate?.toLocaleString()}
+                                                                            </div>
+                                                                            {overrideRule ? (
+                                                                                <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                                                                                    Client Contract
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800">
+                                                                                    Test Master Tier
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </td>
+                                                                <td className="px-6 py-3.5 text-right">
+                                                                    <div className="flex items-center justify-end gap-1.5">
+                                                                        {!isEditing && (
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setEditingTestId(testId);
+                                                                                    setInlineRate(corporateRate.toString());
+                                                                                }}
+                                                                                className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer"
+                                                                                title="Edit Corporate Rate"
+                                                                            >
+                                                                                <Edit size={13} />
+                                                                            </button>
+                                                                        )}
+                                                                        {overrideRule && (
+                                                                            <button
+                                                                                onClick={() => handleRevertRateOverride(overrideRule.corporateRateRuleId)}
+                                                                                className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-amber-500/10 hover:border-amber-500/30 text-zinc-400 hover:text-amber-500 transition-colors cursor-pointer"
+                                                                                title="Revert to Test Master Default Tier"
+                                                                            >
+                                                                                <RotateCcw size={13} />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                    {paginatedTests.length === 0 && (
                                                         <tr>
-                                                            <td colSpan={5} className="px-6 py-6 text-center text-zinc-400 text-xs">
-                                                                No individual test rate overrides set for this client. Default corporate tier from Test Master applies.
+                                                            <td colSpan={5} className="px-6 py-8 text-center text-zinc-400 text-xs">
+                                                                No tests matching the selected filter criteria.
                                                             </td>
                                                         </tr>
                                                     )}
                                                 </tbody>
                                             </table>
                                         </div>
+
+                                        {/* Pagination Controls */}
+                                        {totalPages > 1 && (
+                                            <div className="px-6 py-3.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs text-zinc-500">
+                                                <div>
+                                                    Showing <span className="font-bold text-zinc-700 dark:text-zinc-300">{((currentPage - 1) * pageSize) + 1}</span> to <span className="font-bold text-zinc-700 dark:text-zinc-300">{Math.min(currentPage * pageSize, filteredTestMasterList.length)}</span> of <span className="font-bold text-zinc-700 dark:text-zinc-300">{filteredTestMasterList.length}</span> tests
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <button
+                                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                        disabled={currentPage === 1}
+                                                        className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 cursor-pointer"
+                                                    >
+                                                        <ChevronLeft size={14} />
+                                                    </button>
+                                                    <span className="px-2 font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                                                        {currentPage} / {totalPages}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                        disabled={currentPage === totalPages}
+                                                        className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 cursor-pointer"
+                                                    >
+                                                        <ChevronRight size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -618,7 +976,7 @@ export function CorporateTerminal() {
 
                         {/* 4. B2B INVOICES & RECEIVABLES */}
                         {tab === 'invoices' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="relative flex-1 max-w-md">
                                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -699,7 +1057,7 @@ export function CorporateTerminal() {
 
                         {/* 5. CORPORATE SETTLEMENTS */}
                         {tab === 'settlements' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="text-base font-bold dark:text-white">Corporate B2B Settlements & Remittances</h3>
@@ -731,13 +1089,18 @@ export function CorporateTerminal() {
             {isPackageBuilderOpen && (
                 <CorporatePackageBuilderModal
                     isOpen={isPackageBuilderOpen}
+                    packageData={editingPackage}
                     corporateAccountId={selectedAccountId}
                     corporateAccountName={activeAccountObj?.companyName || "Corporate Client"}
                     catalog={testCatalog}
                     isDark={isDark}
-                    onClose={() => setIsPackageBuilderOpen(false)}
+                    onClose={() => {
+                        setIsPackageBuilderOpen(false);
+                        setEditingPackage(null);
+                    }}
                     onSuccess={() => {
                         setIsPackageBuilderOpen(false);
+                        setEditingPackage(null);
                         ReceptionApi.getCorporateRateRules(selectedAccountId).then(r => setRateRules(r || []));
                     }}
                 />
@@ -829,14 +1192,32 @@ export function CorporateTerminal() {
  * Dedicated Corporate Package Builder Modal
  * Bundles tests into a standalone commercial package with negotiated package pricing.
  */
-function CorporatePackageBuilderModal({ isOpen, corporateAccountId, corporateAccountName, catalog, isDark, onClose, onSuccess }) {
-    const [packageName, setPackageName] = useState('');
-    const [packageCode, setPackageCode] = useState('');
-    const [contractedPrice, setContractedPrice] = useState('');
+function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId, corporateAccountName, catalog, isDark, onClose, onSuccess }) {
+    const isEdit = !!packageData;
+    const [packageName, setPackageName] = useState(packageData?.packageName || packageData?.testName || '');
+    const [packageCode, setPackageCode] = useState(packageData?.packageCode || packageData?.testCode || '');
+    const [contractedPrice, setContractedPrice] = useState(packageData?.contractedPrice != null ? packageData.contractedPrice.toString() : '');
     const [testFilter, setTestFilter] = useState('');
-    const [selectedTestIds, setSelectedTestIds] = useState([]);
+    const [selectedTestIds, setSelectedTestIds] = useState(
+        (packageData?.includedTests || []).map(t => t.testId || t.id).filter(Boolean)
+    );
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
+
+    useEffect(() => {
+        if (packageData) {
+            setPackageName(packageData.packageName || packageData.testName || '');
+            setPackageCode(packageData.packageCode || packageData.testCode || '');
+            setContractedPrice(packageData.contractedPrice != null ? packageData.contractedPrice.toString() : '');
+            setSelectedTestIds((packageData.includedTests || []).map(t => t.testId || t.id).filter(Boolean));
+        } else {
+            setPackageName('');
+            setPackageCode('');
+            setContractedPrice('');
+            setSelectedTestIds([]);
+        }
+        setError(null);
+    }, [packageData]);
 
     if (!isOpen) return null;
 
@@ -860,8 +1241,13 @@ function CorporatePackageBuilderModal({ isOpen, corporateAccountId, corporateAcc
         setIsSubmitting(true);
         setError(null);
         try {
-            const res = await fetch(`/api/v1/corporate-accounts/${corporateAccountId}/packages`, {
-                method: 'POST',
+            const url = isEdit
+                ? `/api/v1/corporate-accounts/${corporateAccountId}/packages/${packageData.corporateRateRuleId}`
+                : `/api/v1/corporate-accounts/${corporateAccountId}/packages`;
+            const method = isEdit ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method,
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('synos_jwt')}`
@@ -876,7 +1262,7 @@ function CorporatePackageBuilderModal({ isOpen, corporateAccountId, corporateAcc
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.message || "Failed to create corporate package");
+                throw new Error(errData.message || `Failed to ${isEdit ? 'update' : 'create'} corporate package`);
             }
             onSuccess();
         } catch (err) {
@@ -899,7 +1285,14 @@ function CorporatePackageBuilderModal({ isOpen, corporateAccountId, corporateAcc
                             <Package size={20} />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold">Build Corporate Package</h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-bold">{isEdit ? 'Edit Corporate Package' : 'Build Corporate Package'}</h3>
+                                {isEdit && (packageData.packageCode || packageData.testCode) && (
+                                    <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold border border-indigo-500/20">
+                                        {packageData.packageCode || packageData.testCode}
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-[10px] text-zinc-500 font-medium">For: <span className="text-indigo-500 font-bold">{corporateAccountName}</span></p>
                         </div>
                     </div>
@@ -1021,7 +1414,7 @@ function CorporatePackageBuilderModal({ isOpen, corporateAccountId, corporateAcc
                             className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                            Save Corporate Package
+                            {isEdit ? 'Update Corporate Package' : 'Create Corporate Package'}
                         </button>
                     </div>
                 </form>

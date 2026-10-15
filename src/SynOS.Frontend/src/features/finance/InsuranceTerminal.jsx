@@ -166,7 +166,7 @@ export function InsuranceTerminal() {
             </div>
 
             {/* TAB CONTENT BODY */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto p-6 w-full custom-scrollbar">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-64 gap-3 text-zinc-400">
                         <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
@@ -176,7 +176,7 @@ export function InsuranceTerminal() {
                     <>
                         {/* 1. OVERVIEW TAB */}
                         {tab === 'overview' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
                                         <div className="flex items-center justify-between mb-2">
@@ -282,7 +282,7 @@ export function InsuranceTerminal() {
 
                         {/* 2. EMPANELMENT MASTER (CONFIGURATION SCREEN) */}
                         {tab === 'empanelment' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="relative flex-1 max-w-md">
                                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -413,7 +413,7 @@ export function InsuranceTerminal() {
 
                         {/* 3. CLAIMS & PRE-AUTHS QUEUE */}
                         {tab === 'claims' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="relative flex-1 max-w-md">
                                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
@@ -497,7 +497,7 @@ export function InsuranceTerminal() {
 
                         {/* 4. TPA RECEIVABLES & AGING */}
                         {tab === 'receivables' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div>
@@ -547,7 +547,7 @@ export function InsuranceTerminal() {
 
                         {/* 5. REMITTANCE & SETTLEMENTS */}
                         {tab === 'settlements' && (
-                            <div className="space-y-6 max-w-7xl mx-auto">
+                            <div className="space-y-6 w-full">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <h3 className="text-base font-bold dark:text-white">TPA Remittances & Settlement Reconciliation</h3>

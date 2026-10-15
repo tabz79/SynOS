@@ -29,6 +29,7 @@ namespace SynOS.Models.DTOs.Admin
         public DateTimeOffset? DefaultInterpretationLastUpdatedAt { get; set; }
         public Guid? DefaultInterpretationLastUpdatedBy { get; set; }
         public string? ReportTitle { get; set; }
+        public decimal? CorporatePrice { get; set; }
     }
 
     public class ParameterSaveDto
@@ -165,6 +166,7 @@ namespace SynOS.Models.DTOs.Admin
 
         public string? DefaultInterpretation { get; set; }
         public string? ReportTitle { get; set; }
+        public decimal? CorporatePrice { get; set; }
     }
 
     public class UpdateTestDto : CreateTestDto

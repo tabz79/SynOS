@@ -251,6 +251,19 @@ namespace SynOS.Api.Controllers.Admin
                 _context.CorporateRateRules.Add(rule);
             }
 
+            // Sync with Test.ExtraInfo corporatePrice for bidirectional reflection with Test Master
+            try
+            {
+                var dict = new Dictionary<string, object>();
+                if (!string.IsNullOrWhiteSpace(test.ExtraInfo))
+                {
+                    dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(test.ExtraInfo) ?? dict;
+                }
+                dict["corporatePrice"] = dto.ContractedPrice;
+                test.ExtraInfo = System.Text.Json.JsonSerializer.Serialize(dict);
+            }
+            catch {}
+
             await _context.SaveChangesAsync();
             return Ok(new { success = true });
         }
@@ -360,6 +373,64 @@ namespace SynOS.Api.Controllers.Admin
             await _context.SaveChangesAsync();
             return Ok(new { success = true, packageTestId = packageTest.TestId, packageCode = code });
         }
+
+        [HttpPut("{id}/packages/{ruleId}")]
+        public async Task<IActionResult> UpdateCorporatePackage(Guid id, Guid ruleId, [FromBody] UpdateCorporatePackageDto dto)
+        {
+            var rule = await _context.CorporateRateRules
+                .Include(r => r.Test)
+                    .ThenInclude(t => t.ProfileChildren)
+                .FirstOrDefaultAsync(r => r.CorporateAccountId == id && r.CorporateRateRuleId == ruleId);
+
+            if (rule == null) return NotFound(new { message = "Package rate rule not found" });
+
+            if (!string.IsNullOrWhiteSpace(dto.PackageName))
+            {
+                rule.PackageName = dto.PackageName.Trim();
+                if (rule.Test != null)
+                {
+                    rule.Test.TestName = dto.PackageName.Trim();
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.PackageCode))
+            {
+                rule.PackageCode = dto.PackageCode.Trim().ToUpperInvariant();
+                if (rule.Test != null)
+                {
+                    rule.Test.TestCode = rule.PackageCode;
+                }
+            }
+
+            if (dto.ContractedPrice.HasValue && dto.ContractedPrice.Value >= 0)
+            {
+                rule.ContractedPrice = dto.ContractedPrice.Value;
+            }
+
+            if (dto.IncludedTestIds != null && rule.Test != null)
+            {
+                var existingMaps = await _context.ProfileMaps
+                    .Where(m => m.ParentTestId == rule.Test.TestId)
+                    .ToListAsync();
+                _context.ProfileMaps.RemoveRange(existingMaps);
+
+                int order = 1;
+                foreach (var childId in dto.IncludedTestIds)
+                {
+                    _context.ProfileMaps.Add(new ProfileMap
+                    {
+                        ProfileMapId = Guid.NewGuid(),
+                        ParentTestId = rule.Test.TestId,
+                        ChildTestId = childId,
+                        Sequence = order++
+                    });
+                }
+            }
+
+            rule.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true });
+        }
     }
 
     public class CreateCorporateAccountDto
@@ -409,5 +480,13 @@ namespace SynOS.Api.Controllers.Admin
         [Required]
         public decimal ContractedPrice { get; set; }
         public System.Collections.Generic.List<Guid> IncludedTestIds { get; set; } = new();
+    }
+
+    public class UpdateCorporatePackageDto
+    {
+        public string? PackageName { get; set; }
+        public string? PackageCode { get; set; }
+        public decimal? ContractedPrice { get; set; }
+        public System.Collections.Generic.List<Guid>? IncludedTestIds { get; set; }
     }
 }

@@ -867,7 +867,14 @@ const normalizeDbTest = (dbTest) => {
         showNarrative: !!p.showNarrative
       };
     }).sort((a, b) => a.sortOrder - b.sortOrder),
-    dbIncludedTestCodes: dbTest.includedTestCodes || []
+    dbIncludedTestCodes: dbTest.includedTestCodes || [],
+    pricing: {
+      branchA: Number(basePrice) || 0,
+      branchB: Number(basePrice) || 0,
+      corporate: dbTest.corporatePrice !== undefined && dbTest.corporatePrice !== null
+        ? Number(dbTest.corporatePrice)
+        : (dbTest.pricing?.corporate !== undefined ? Number(dbTest.pricing.corporate) : (Number(basePrice) || 0))
+    }
   };
 };
 export function TestMasterScreen() {
@@ -2655,6 +2662,7 @@ function TestInventoryTab({ selectedTest }) {
           ModalityId: isRadiology ? item.modalityId : null,
           Category: isRadiology ? (modalitiesList.find(m => m.modalityId === item.modalityId)?.name || item.category || "X-Ray") : (item.category || "General"),
           BasePrice: Number(item.basePrice) || 0,
+          CorporatePrice: Number(item.pricing?.corporate) || Number(item.corporatePrice) || 0,
           TAT_Hours: Number(item.tatHours || item.TAT_Hours) || 24,
           IsOutsourced: !!(item.isOutsourced || (item.outsource && item.outsource.enabled)),
           SpecimenTypeCode: isRadiology ? "NO_SPECIMEN" : (item.specimenTypeCode || "SERUM"),

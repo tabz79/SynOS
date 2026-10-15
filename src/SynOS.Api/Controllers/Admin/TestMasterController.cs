@@ -168,6 +168,17 @@ namespace SynOS.Api.Controllers.Admin
             }
 
             var test = await _testMasterService.CreateTestAsync(dto, GetCurrentUserId());
+            if (dto.CorporatePrice.HasValue)
+            {
+                var dict = new Dictionary<string, object>();
+                if (!string.IsNullOrWhiteSpace(test.ExtraInfo))
+                {
+                    try { dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(test.ExtraInfo) ?? dict; } catch {}
+                }
+                dict["corporatePrice"] = dto.CorporatePrice.Value;
+                test.ExtraInfo = System.Text.Json.JsonSerializer.Serialize(dict);
+                await _context.SaveChangesAsync();
+            }
             var testDto = _mapper.Map<TestDto>(test);
             var enriched = await EnrichTestDtoAsync(testDto);
             return Ok(enriched);
@@ -213,6 +224,17 @@ namespace SynOS.Api.Controllers.Admin
             }
 
             var test = await _testMasterService.UpdateTestAsync(id, dto, GetCurrentUserId());
+            if (dto.CorporatePrice.HasValue)
+            {
+                var dict = new Dictionary<string, object>();
+                if (!string.IsNullOrWhiteSpace(test.ExtraInfo))
+                {
+                    try { dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(test.ExtraInfo) ?? dict; } catch {}
+                }
+                dict["corporatePrice"] = dto.CorporatePrice.Value;
+                test.ExtraInfo = System.Text.Json.JsonSerializer.Serialize(dict);
+                await _context.SaveChangesAsync();
+            }
             var testDto = _mapper.Map<TestDto>(test);
             var enriched = await EnrichTestDtoAsync(testDto);
             return Ok(enriched);
@@ -345,8 +367,27 @@ namespace SynOS.Api.Controllers.Admin
                 .Where(ct => testCodes.Contains(ct.TestCode))
                 .ToListAsync();
 
+            var testExtras = await _context.Tests
+                .Where(t => testCodes.Contains(t.TestCode))
+                .Select(t => new { t.TestCode, t.ExtraInfo })
+                .ToListAsync();
+
             foreach (var dto in dtos)
             {
+                var extraObj = testExtras.FirstOrDefault(e => e.TestCode == dto.TestCode);
+                if (extraObj != null && !string.IsNullOrWhiteSpace(extraObj.ExtraInfo))
+                {
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse(extraObj.ExtraInfo);
+                        if (doc.RootElement.TryGetProperty("corporatePrice", out var cp))
+                        {
+                            dto.CorporatePrice = cp.GetDecimal();
+                        }
+                    }
+                    catch {}
+                }
+
                 var catTest = catalogTests.FirstOrDefault(ct => ct.TestCode == dto.TestCode);
                 if (catTest != null)
                 {
