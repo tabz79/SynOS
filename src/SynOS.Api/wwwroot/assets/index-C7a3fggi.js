@@ -15986,16 +15986,16 @@ Compensation details are strictly confidential between employee and SynOS Health
     if ((_c2 = D.header) == null ? void 0 : _c2.enabled) {
       const W = D.header.fields || {}, ce = f.legalName || f.labTradeName || ((_d2 = W.legalName) == null ? void 0 : _d2.value) || "SYNOS DIAGNOSTIC CENTRE", ne = f.tagline || ((_e = W.tagline) == null ? void 0 : _e.value) || "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE", ee = f.address || ((_f = W.address) == null ? void 0 : _f.value) || "", $ = f.gstin || ((_g = W.gstin) == null ? void 0 : _g.value) || "", te = f.phone || ((_h = W.phone) == null ? void 0 : _h.value) || "", oe = f.logoUrl || (typeof window < "u" ? (_i = window.localStorage) == null ? void 0 : _i.getItem("synos_lab_logo") : "");
       M = `
-            <div style="text-align: center; border-bottom: 2px solid #18181b; padding-bottom: 6px; margin-bottom: 8px;">
+            <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 6px; margin-bottom: 6px;">
                 ${oe ? `
-                    <div style="margin-bottom: 5px; display: flex; justify-content: center;">
-                        <img src="${oe}" style="max-height: 44px; max-width: 140px; object-fit: contain; filter: grayscale(100%) contrast(150%);" alt="Diagnostic Brand Logo" />
+                    <div style="margin-bottom: 4px; display: flex; justify-content: center;">
+                        <img src="${oe}" style="max-height: 48px; max-width: 160px; object-fit: contain; filter: grayscale(100%) contrast(200%);" alt="Logo" />
                     </div>
                 ` : ""}
-                ${((_j2 = W.legalName) == null ? void 0 : _j2.enabled) !== false ? `<div style="font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em; color: #09090b;">${ce}</div>` : ""}
-                ${((_k2 = W.tagline) == null ? void 0 : _k2.enabled) !== false && ne ? `<div style="font-size: 8.5px; font-weight: 700; color: #52525b; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.02em;">${ne}</div>` : ""}
-                ${((_l = W.address) == null ? void 0 : _l.enabled) !== false && ee ? `<div style="font-size: 8px; color: #71717a; margin-top: 2px; line-height: 1.25;">${ee}</div>` : ""}
-                <div style="font-size: 8px; font-weight: 700; color: #27272a; margin-top: 2px;">
+                ${((_j2 = W.legalName) == null ? void 0 : _j2.enabled) !== false ? `<div style="font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; color: #000000; line-height: 1.2;">${ce}</div>` : ""}
+                ${((_k2 = W.tagline) == null ? void 0 : _k2.enabled) !== false && ne ? `<div style="font-size: 10px; font-weight: 700; color: #000000; text-transform: uppercase; margin-top: 2px; letter-spacing: 0.02em;">${ne}</div>` : ""}
+                ${((_l = W.address) == null ? void 0 : _l.enabled) !== false && ee ? `<div style="font-size: 10px; font-weight: 600; color: #000000; margin-top: 2px; line-height: 1.25;">${ee}</div>` : ""}
+                <div style="font-size: 10.5px; font-weight: 800; color: #000000; margin-top: 2px;">
                     ${((_m = W.gstin) == null ? void 0 : _m.enabled) !== false && $ ? `GSTIN: <span style="font-family: monospace;">${$}</span>` : ""}
                     ${te ? ` | Ph: ${te}` : ""}
                 </div>
@@ -16006,22 +16006,22 @@ Compensation details are strictly confidential between employee and SynOS Health
     if ((_n = D.docBadge) == null ? void 0 : _n.enabled) {
       const W = D.docBadge.fields || {}, ce = ((_o2 = W.badgeTitle) == null ? void 0 : _o2.value) || "CASH PAYMENT RECEIPT", ne = ((_p2 = W.date) == null ? void 0 : _p2.value) || b.dateTime, ee = ((_q2 = W.receiptNumber) == null ? void 0 : _q2.value) || b.receiptNumber;
       F = `
-            <div style="text-align: center; margin-bottom: 6px; border-bottom: 1px solid #e4e4e7; padding-bottom: 6px;">
+            <div style="text-align: center; margin-bottom: 6px; border-bottom: 1.5px solid #000000; padding-bottom: 6px;">
                 ${((_r2 = W.badgeTitle) == null ? void 0 : _r2.enabled) !== false ? `
-                    <div style="margin-bottom: 4px;">
-                        <span style="background: #18181b; color: #ffffff; padding: 2.5px 10px; border-radius: 4px; font-weight: 900; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;">
+                    <div style="margin-bottom: 5px;">
+                        <span style="background: #000000; color: #ffffff; padding: 3px 12px; border-radius: 3px; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block;">
                             ${ce}
                         </span>
                     </div>
                 ` : ""}
-                <div style="display: flex; justify-content: space-between; font-size: 8.5px; color: #52525b; padding: 0 1px;">
-                    ${((_s2 = W.date) == null ? void 0 : _s2.enabled) !== false ? `<span>Date/Time: <b>${ne}</b></span>` : ""}
-                    ${((_t = W.receiptNumber) == null ? void 0 : _t.enabled) !== false ? `<span>Receipt: <b style="font-family: monospace;">${ee}</b></span>` : ""}
+                <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #000000; padding: 0 1px;">
+                    ${((_s2 = W.date) == null ? void 0 : _s2.enabled) !== false ? `<span>Date: <b>${ne}</b></span>` : ""}
+                    ${((_t = W.receiptNumber) == null ? void 0 : _t.enabled) !== false ? `<span>Rcpt: <b style="font-family: monospace;">${ee}</b></span>` : ""}
                 </div>
                 ${e && ((_u2 = W.tokenNumber) == null ? void 0 : _u2.enabled) !== false ? `
-                    <div style="margin-top: 6px; padding: 4px; background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 6px; text-align: center;">
-                        <span style="font-size: 8px; font-weight: 700; text-transform: uppercase; color: #71717a; letter-spacing: 0.05em;">Token Number</span>
-                        <div style="font-size: 18px; font-weight: 900; font-family: monospace; color: #18181b;">${e}</div>
+                    <div style="margin-top: 6px; padding: 4px; border: 2px solid #000000; text-align: center; background: #ffffff;">
+                        <span style="font-size: 10px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.05em;">Token Number</span>
+                        <div style="font-size: 26px; font-weight: 900; font-family: monospace; color: #000000; line-height: 1.1; margin-top: 2px;">${e}</div>
                     </div>
                 ` : ""}
             </div>
@@ -16031,18 +16031,18 @@ Compensation details are strictly confidential between employee and SynOS Health
     if ((_v = D.partyDetails) == null ? void 0 : _v.enabled) {
       const W = D.partyDetails.fields || {}, ce = ((_w2 = W.fullName) == null ? void 0 : _w2.value) || b.patient.fullName, ne = ((_x = W.uhid) == null ? void 0 : _x.value) || b.patient.uhid, ee = ((_y = W.ageGender) == null ? void 0 : _y.value) || b.patient.ageGender;
       z = `
-            <div style="border: 1px solid #d4d4d8; border-radius: 6px; padding: 5px 7px; margin-bottom: 6px; background: #fafafa;">
-                <div style="font-size: 7.5px; font-weight: 900; text-transform: uppercase; color: #71717a; letter-spacing: 0.05em; border-bottom: 1px solid #e4e4e7; padding-bottom: 2px; margin-bottom: 4px;">
-                    ${D.partyDetails.title || "PATIENT"}
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 5px; margin-bottom: 6px;">
+                <div style="font-size: 10px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.05em; margin-bottom: 3px;">
+                    ${D.partyDetails.title || "PATIENT DETAILS"}
                 </div>
-                <div style="font-size: 9.5px; line-height: 1.35;">
-                    <div style="display: flex; justify-content: space-between;">
-                        ${((_z = W.fullName) == null ? void 0 : _z.enabled) !== false ? `<span>Patient Name: <b style="color: #09090b;">${ce}</b></span>` : ""}
-                        ${((_A = W.uhid) == null ? void 0 : _A.enabled) !== false ? `<span style="font-family: monospace; font-size: 8.5px;">UHID: <b>${ne}</b></span>` : ""}
+                <div style="font-size: 11.5px; line-height: 1.35; color: #000000;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                        ${((_z = W.fullName) == null ? void 0 : _z.enabled) !== false ? `<span>Patient: <b style="font-weight: 900;">${ce}</b></span>` : ""}
+                        ${((_A = W.uhid) == null ? void 0 : _A.enabled) !== false ? `<span style="font-family: monospace;">UHID: <b>${ne}</b></span>` : ""}
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 1px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; margin-top: 2px;">
                         ${((_B = W.ageGender) == null ? void 0 : _B.enabled) !== false ? `<span>Age/Sex: <b>${ee}</b></span>` : ""}
-                        ${c ? `<span style="font-size: 8.5px; color: #52525b;">Ref: <b>${c}</b></span>` : ""}
+                        ${c ? `<span>Ref: <b>${c}</b></span>` : ""}
                     </div>
                 </div>
             </div>
@@ -16050,21 +16050,21 @@ Compensation details are strictly confidential between employee and SynOS Health
     }
     let H = "";
     ((_C = D.itemsTable) == null ? void 0 : _C.enabled) && (H = `
-            <div style="border: 1px solid #d4d4d8; border-radius: 6px; overflow: hidden; margin-bottom: 6px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 9px; text-align: left;">
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 6px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; color: #000000;">
                     <thead>
-                        <tr style="background: #f4f4f5; border-bottom: 1px solid #d4d4d8; font-size: 7.5px; font-weight: 900; text-transform: uppercase; color: #52525b;">
-                            <th style="padding: 3px 5px; width: 14px; text-align: center;">#</th>
-                            <th style="padding: 3px 5px;">TEST ITEM</th>
-                            <th style="padding: 3px 5px; text-align: right; width: 55px;">AMOUNT</th>
+                        <tr style="border-bottom: 1.5px solid #000000; font-size: 10px; font-weight: 900; text-transform: uppercase;">
+                            <th style="padding: 3px 2px; width: 14px; text-align: center;">#</th>
+                            <th style="padding: 3px 2px;">TEST ITEM</th>
+                            <th style="padding: 3px 2px; text-align: right; width: 65px;">AMOUNT</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${(D.itemsTable.rows || []).map((ce, ne) => `
-                            <tr style="border-bottom: 1px dashed #e4e4e7;">
-                                <td style="padding: 3.5px 5px; text-align: center; color: #71717a;">${ne + 1}</td>
-                                <td style="padding: 3.5px 5px; font-weight: 600; color: #18181b;">${ce.description || ce.testName || "Test"}</td>
-                                <td style="padding: 3.5px 5px; text-align: right; font-family: monospace; font-weight: 700;">\u20B9${Number(ce.amount || ce.price || 0).toFixed(2)}</td>
+                            <tr style="border-bottom: 1px dotted #000000;">
+                                <td style="padding: 4px 2px; text-align: center; font-weight: 700;">${ne + 1}</td>
+                                <td style="padding: 4px 2px; font-weight: 800;">${ce.description || ce.testName || "Test"}</td>
+                                <td style="padding: 4px 2px; text-align: right; font-family: monospace; font-weight: 900;">\u20B9${Number(ce.amount || ce.price || 0).toFixed(2)}</td>
                             </tr>
                         `).join("")}
                     </tbody>
@@ -16075,22 +16075,22 @@ Compensation details are strictly confidential between employee and SynOS Health
     if ((_D2 = D.financialSummary) == null ? void 0 : _D2.enabled) {
       const W = D.financialSummary.fields || {}, ce = ((_E2 = W.totalAmount) == null ? void 0 : _E2.value) || `\u20B9${b.financial.totalAmount.toFixed(2)}`, ne = ((_F2 = W.totalPaid) == null ? void 0 : _F2.value) || `\u20B9${b.financial.totalPaid.toFixed(2)}`, ee = ((_G2 = W.balanceDue) == null ? void 0 : _G2.value) || `\u20B9${b.financial.balanceDue.toFixed(2)}`;
       O = `
-            <div style="border: 1px solid #d4d4d8; border-radius: 6px; padding: 5px 7px; margin-bottom: 6px; background: #fafafa; font-size: 9.5px;">
+            <div style="border-bottom: 1.5px solid #000000; padding-bottom: 5px; margin-bottom: 6px; font-size: 12px; color: #000000;">
                 ${((_H2 = W.totalAmount) == null ? void 0 : _H2.enabled) !== false ? `
-                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 10.5px; border-bottom: 1px solid #18181b; padding-bottom: 2px; margin-bottom: 3px;">
-                        <span>Grand Total:</span>
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 14.5px; border-bottom: 1px dashed #000000; padding-bottom: 3px; margin-bottom: 3px;">
+                        <span>GRAND TOTAL:</span>
                         <span style="font-family: monospace;">${ce}</span>
                     </div>
                 ` : ""}
                 ${((_I2 = W.totalPaid) == null ? void 0 : _I2.enabled) !== false ? `
-                    <div style="display: flex; justify-content: space-between; color: #15803d; font-weight: 700; margin-bottom: 1.5px;">
-                        <span>Amount Received (Cash):</span>
+                    <div style="display: flex; justify-content: space-between; font-weight: 800; margin-bottom: 2px;">
+                        <span>Amount Received:</span>
                         <span style="font-family: monospace;">${ne}</span>
                     </div>
                 ` : ""}
                 ${((_J2 = W.balanceDue) == null ? void 0 : _J2.enabled) !== false ? `
-                    <div style="display: flex; justify-content: space-between; font-weight: 700; ${b.financial.balanceDue > 0 ? "color: #dc2626;" : "color: #71717a;"}">
-                        <span>Balance Due:</span>
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; ${b.financial.balanceDue > 0 ? "font-size: 13px;" : ""}">
+                        <span>${b.financial.balanceDue > 0 ? "*** BALANCE DUE ***:" : "Balance Due:"}</span>
                         <span style="font-family: monospace;">${ee}</span>
                     </div>
                 ` : ""}
@@ -16101,13 +16101,13 @@ Compensation details are strictly confidential between employee and SynOS Health
     if (((_K2 = D.bankAndUpi) == null ? void 0 : _K2.enabled) && ((_M2 = (_L2 = D.bankAndUpi.fields) == null ? void 0 : _L2.showQr) == null ? void 0 : _M2.enabled) !== false) {
       const W = ((_O2 = (_N2 = D.bankAndUpi.fields) == null ? void 0 : _N2.upiId) == null ? void 0 : _O2.value) || f.upiId || "synoslab@hdfcbank", ce = ((_R = (_Q2 = (_P2 = D.header) == null ? void 0 : _P2.fields) == null ? void 0 : _Q2.legalName) == null ? void 0 : _R.value) || f.labTradeName || "SynOS Lab", ne = b.financial.balanceDue > 0 ? b.financial.balanceDue : b.financial.totalAmount, ee = `upi://pay?pa=${encodeURIComponent(W)}&pn=${encodeURIComponent(ce)}&am=${encodeURIComponent(ne.toFixed(2))}&cu=INR`;
       Y = `
-            <div style="border: 1px solid #d4d4d8; border-radius: 6px; padding: 5px; margin-bottom: 6px; text-align: center; background: #fafafa;">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <img src="${`https://api.qrserver.com/v1/create-qr-code/?size=85x85&data=${encodeURIComponent(ee)}`}" style="width: 65px; height: 65px; display: block;" alt="UPI QR" />
-                    <div style="text-align: left;">
-                        <div style="font-size: 7.5px; font-weight: 900; text-transform: uppercase; color: #27272a; letter-spacing: 0.04em;">SCAN QR TO PAY</div>
-                        <div style="font-size: 7px; font-family: monospace; color: #52525b; margin-top: 2px;">${W}</div>
-                        <div style="font-size: 6.5px; color: #71717a; margin-top: 1px;">Instant Bharat UPI</div>
+            <div style="border: 1px dashed #000000; padding: 6px; margin-bottom: 6px; text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <img src="${`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(ee)}`}" style="width: 75px; height: 75px; display: block; image-rendering: pixelated;" alt="UPI QR" />
+                    <div style="text-align: left; color: #000000;">
+                        <div style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em;">SCAN QR TO PAY</div>
+                        <div style="font-size: 9.5px; font-family: monospace; font-weight: 700; margin-top: 2px; word-break: break-all;">${W}</div>
+                        <div style="font-size: 9px; font-weight: 700; margin-top: 1px;">Instant Bharat UPI</div>
                     </div>
                 </div>
             </div>
@@ -16115,42 +16115,51 @@ Compensation details are strictly confidential between employee and SynOS Health
     }
     let V = "";
     return ((_S2 = D.termsAndConditions) == null ? void 0 : _S2.enabled) && (V = `
-            <div style="text-align: center; margin-top: 6px; font-size: 7.5px; color: #71717a;">
-                ${D.termsAndConditions.text ? `<div style="white-space: pre-line; line-height: 1.3;">${D.termsAndConditions.text}</div>` : ""}
-                ${D.termsAndConditions.systemNote ? `<div style="font-size: 7px; color: #a1a1aa; margin-top: 3px; font-weight: 700; letter-spacing: 0.02em;">${D.termsAndConditions.systemNote}</div>` : ""}
+            <div style="text-align: center; margin-top: 4px; font-size: 9.5px; font-weight: 700; color: #000000; line-height: 1.3;">
+                ${D.termsAndConditions.text ? `<div style="white-space: pre-line;">${D.termsAndConditions.text}</div>` : ""}
+                ${D.termsAndConditions.systemNote ? `<div style="font-size: 9px; font-weight: 800; margin-top: 3px; letter-spacing: 0.02em;">${D.termsAndConditions.systemNote}</div>` : ""}
             </div>
         `), `
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Thermal-Slip-80mm</title>
+    <title>Cash-Slip</title>
     <style>
         @page {
-            size: 80mm 220mm;
-            margin: 0;
+            size: 80mm auto;
+            margin: 0mm !important;
         }
         @media print {
+            @page {
+                size: 80mm auto;
+                margin: 0mm !important;
+            }
             html, body {
-                width: 80mm !important;
+                width: 78mm !important;
                 max-width: 80mm !important;
                 margin: 0 !important;
-                padding: 2mm 3mm !important;
+                padding: 1.5mm 1mm !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
             margin: 0;
-            padding: 2.5mm;
-            width: 76mm;
+            padding: 1.5mm 1mm;
+            width: 78mm;
             max-width: 80mm;
-            color: #18181b;
-            font-size: 10px;
-            line-height: 1.3;
+            color: #000000;
+            font-size: 11px;
+            line-height: 1.35;
             background: #ffffff;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
             box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
         }
     </style>
 </head>
@@ -30350,8 +30359,8 @@ Details: ${s.inner}`);
                         display: none !important;
                     }
                     @page {
-                        size: ${p ? "80mm 220mm" : "A4 portrait"};
-                        margin: ${p ? "0" : "8mm"};
+                        size: ${p ? "80mm auto" : "A4 portrait"};
+                        margin: ${p ? "0 !important" : "8mm"};
                     }
                 }
             `

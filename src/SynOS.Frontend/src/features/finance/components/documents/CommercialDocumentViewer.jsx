@@ -68,8 +68,8 @@ export const CommercialDocumentViewer = ({
                         display: none !important;
                     }
                     @page {
-                        size: ${isThermal ? '80mm 220mm' : 'A4 portrait'};
-                        margin: ${isThermal ? '0' : '8mm'};
+                        size: ${isThermal ? '80mm auto' : 'A4 portrait'};
+                        margin: ${isThermal ? '0 !important' : '8mm'};
                     }
                 }
             `}</style>
