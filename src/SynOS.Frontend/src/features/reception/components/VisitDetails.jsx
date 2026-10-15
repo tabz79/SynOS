@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker, ShieldCheck } from 'lucide-react'
+import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker, ShieldCheck, Package, CheckCircle2, Sparkles } from 'lucide-react'
 import { ReceptionApi, fetchTestCatalogCached, fetchReferralPartnersCached, fetchReferenceLabsCached, fetchOutsourcedCatalogCached } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -23,6 +23,7 @@ export function VisitDetails({
     const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
     const [filter, setFilter] = useState("");
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [testSelectedIndex, setTestSelectedIndex] = useState(0);
     const testListRef = useRef(null);
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
@@ -188,6 +189,8 @@ export function VisitDetails({
 
     // Load corporate rate rules whenever corporate account changes
     const activeCorporateAccountId = snapshot?.visit?.corporateAccountId;
+    const activeCorporateAccount = corporateAccounts.find(a => (a.corporateAccountId || a.id) === activeCorporateAccountId);
+    const corporatePackagesList = corporateRateRules.filter(r => r.isPackage || r.isProfile);
     useEffect(() => {
         if (!activeCorporateAccountId) {
             setCorporateRateRules([]);
@@ -380,7 +383,7 @@ export function VisitDetails({
                      (t.testCode || t.code || "").toLowerCase().includes(q))
                 );
             } else {
-                suggestions = availableCorp;
+                suggestions = [];
             }
         } else {
             suggestions = [];
@@ -746,8 +749,6 @@ export function VisitDetails({
                         corporateAccounts={corporateAccounts}
                         selectedAccountId={snapshot?.visit?.corporateAccountId}
                         employeeId={snapshot?.visit?.employeeId}
-                        corporateRateRules={corporateRateRules}
-                        onAddPackageTest={(pkg) => handleAddTest({ testCode: pkg.testCode, name: pkg.testName, price: pkg.corporatePrice })}
                         onChange={handleUpdateBillingContext}
                         onOpenAddModal={() => onOpenModal && onOpenModal('corporate')}
                         isDark={isDark}
@@ -783,6 +784,10 @@ export function VisitDetails({
                                 ? (activeCorporateAccountId ? "Search Corporate Packages & Contracted Tests..." : "Select Corporate Account above first...") 
                                 : "Add Test Code or Name..."}
                             value={filter}
+                            onFocus={() => setIsSearchFocused(true)}
+                            onBlur={() => {
+                                setTimeout(() => setIsSearchFocused(false), 200);
+                            }}
                             onChange={(e) => {
                                 setFilter(e.target.value);
                                 setTestSelectedIndex(0);
@@ -800,6 +805,7 @@ export function VisitDetails({
                                         e.preventDefault();
                                         handleAddTest(suggestions[testSelectedIndex]);
                                         setFilter("");
+                                        setIsSearchFocused(false);
                                         setTestSelectedIndex(0);
                                     }
                                 }
@@ -809,8 +815,8 @@ export function VisitDetails({
                         />
 
                         {/* Search Suggestions Dropdown */}
-                        {suggestions.length > 0 && (filter.trim().length > 0 || billingMode === 'Corporate') && (
-                            <div ref={testListRef} className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-60")}>
+                        {suggestions.length > 0 && filter.trim().length > 0 && isSearchFocused && (
+                            <div ref={testListRef} className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border shadow-lg", ui.suggestionBox, "max-h-60")}>
                                 {/* INTERNAL & OUTSOURCED & CORPORATE TESTS */}
                                 {suggestions.map((test, idx) => {
                                     const pricing = getTestPricing(test);
@@ -821,6 +827,7 @@ export function VisitDetails({
                                             onClick={() => {
                                                 handleAddTest({ ...test, price: pricing.price });
                                                 setFilter("");
+                                                setIsSearchFocused(false);
                                                 setTestSelectedIndex(0);
                                             }}
                                             className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
@@ -911,7 +918,125 @@ export function VisitDetails({
                         </div>
                     ))}
                 </div>
-            </div >
+            </div>
+
+            {/* SECTION 3B: Dedicated Contracted Corporate Packages Box */}
+            {billingMode === 'Corporate' && activeCorporateAccountId && (
+                <div className={cn(
+                    "p-3 xl:p-4 rounded-xl space-y-2.5 border transition-all animate-in fade-in duration-300",
+                    isDark 
+                        ? "bg-zinc-900/90 border-indigo-900/40 shadow-xs" 
+                        : "bg-indigo-50/40 border-indigo-200/70 shadow-xs"
+                )}>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
+                                <Package size={16} />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                                        Contracted Corporate Packages
+                                    </h4>
+                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
+                                        {corporatePackagesList.length} Available
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                    Pre-bundled wellness profiles for {activeCorporateAccount?.companyName || 'this corporate client'}.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {corporatePackagesList.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                            {corporatePackagesList.map(pkg => {
+                                const pkgCode = pkg.testCode || pkg.packageCode || pkg.code;
+                                const pkgName = pkg.packageName || pkg.testName || pkg.name;
+                                const pkgPrice = pkg.contractedPrice ?? pkg.corporatePrice ?? pkg.price ?? 0;
+                                const isAlreadyAdded = tests.some(t => (t.code || '').toLowerCase() === (pkgCode || '').toLowerCase());
+
+                                return (
+                                    <div
+                                        key={pkg.corporateRateRuleId || pkg.id || pkgCode}
+                                        className={cn(
+                                            "p-3 rounded-xl border flex flex-col justify-between transition-all",
+                                            isAlreadyAdded
+                                                ? (isDark 
+                                                    ? "bg-emerald-950/20 border-emerald-800/40 shadow-xs" 
+                                                    : "bg-emerald-50/70 border-emerald-300 shadow-xs")
+                                                : (isDark 
+                                                    ? "bg-zinc-950 border-zinc-800 hover:border-indigo-500/50 hover:bg-zinc-900" 
+                                                    : "bg-white border-zinc-200 hover:border-indigo-400 hover:shadow-xs")
+                                        )}
+                                    >
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                                    {pkgCode}
+                                                </span>
+                                                <div className="text-right">
+                                                    {pkg.standardPrice > 0 && (
+                                                        <span className="text-[10px] text-zinc-400 line-through font-mono block">
+                                                            ₹{pkg.standardPrice?.toLocaleString()}
+                                                        </span>
+                                                    )}
+                                                    <span className="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                                                        ₹{pkgPrice.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <h5 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 line-clamp-1">
+                                                {pkgName}
+                                            </h5>
+
+                                            {pkg.includedTests && pkg.includedTests.length > 0 && (
+                                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
+                                                    <span className="font-medium text-zinc-400">Tests ({pkg.includedTests.length}):</span>
+                                                    <span>
+                                                        {pkg.includedTests.slice(0, 3).map(t => t.testName || t.testCode).join(', ')}
+                                                        {pkg.includedTests.length > 3 && ` +${pkg.includedTests.length - 3} more`}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-2.5 mt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                                            {isAlreadyAdded ? (
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                                        <CheckCircle2 size={14} className="text-emerald-500" />
+                                                        Included in Bill
+                                                    </span>
+                                                    <span className="text-[10px] text-zinc-400 font-mono">
+                                                        Constituent tests active
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    disabled={isProcessing || isReadOnly}
+                                                    onClick={() => handleAddTest({ testCode: pkgCode, name: pkgName, price: pkgPrice, isPackage: true })}
+                                                    className="w-full py-1.5 px-3 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-98 cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <Plus size={13} />
+                                                    <span>Add Package to Bill</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="p-4 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 text-center text-zinc-400 text-xs">
+                            No corporate packages configured for this client. Contracted individual test rates can be selected via the Test Selection search above.
+                        </div>
+                    )}
+                </div>
+            )}
  
             {/* SECTION 3b: Outsourced Tests List */}
             {outsourcedTests.length > 0 && (

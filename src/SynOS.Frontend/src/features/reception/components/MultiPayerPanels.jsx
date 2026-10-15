@@ -257,7 +257,7 @@ export function CorporateContextPanel({
                 <div className="flex items-center gap-1.5">
                     <Briefcase className="w-4 h-4 text-indigo-500" />
                     <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                        Corporate Tie-up & B2B Packages
+                        Corporate Tie-up Account
                     </span>
                 </div>
                 <button
@@ -320,49 +320,13 @@ export function CorporateContextPanel({
                 </div>
             </div>
 
-            {/* Contracted Packages Quick Chips */}
+            {/* Active Corporate Account Info Footer */}
             {selectedAccountId && (
-                <div className="pt-1 border-t border-indigo-200/50 dark:border-indigo-900/50 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-amber-500" /> Contracted Corporate Bundles
-                        </span>
-                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                            {packageRules.length} packages available
-                        </span>
-                    </div>
-
-                    {packageRules.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                            {packageRules.map(pkg => {
-                                const pkgCode = pkg.testCode || pkg.packageCode || pkg.code;
-                                const pkgName = pkg.packageName || pkg.testName || pkg.name;
-                                const pkgPrice = pkg.contractedPrice ?? pkg.corporatePrice ?? pkg.price ?? 0;
-                                return (
-                                    <button
-                                        key={pkg.corporateRateRuleId || pkg.id || pkgCode}
-                                        type="button"
-                                        onClick={() => onAddPackageTest && onAddPackageTest({ ...pkg, testCode: pkgCode, name: pkgName, corporatePrice: pkgPrice })}
-                                        className={cn(
-                                            "px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 border transition-all active:scale-95 cursor-pointer",
-                                            isDark
-                                                ? "bg-indigo-950/60 border-indigo-700/60 text-indigo-200 hover:bg-indigo-900/80"
-                                                : "bg-white border-indigo-300 text-indigo-900 hover:bg-indigo-50 shadow-sm"
-                                        )}
-                                        title={`Click to add ${pkgName} at contracted corporate rate ₹${pkgPrice}`}
-                                    >
-                                        <Plus className="w-3 h-3 text-indigo-500" />
-                                        <span>{pkgName}</span>
-                                        <span className="font-mono text-emerald-600 dark:text-emerald-400">₹{pkgPrice}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <p className="text-[10px] italic text-zinc-500">
-                            Corporate pricing active: Catalog search will automatically reflect negotiated rates.
-                        </p>
-                    )}
+                <div className="pt-1.5 border-t border-indigo-200/50 dark:border-indigo-900/50 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-medium">
+                        <Sparkles className="w-3 h-3 text-amber-500" /> Contracted corporate rates & packages active below
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-400">₹0 collected at desk</span>
                 </div>
             )}
         </div>
