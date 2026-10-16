@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynOS.Updater", "src\SynOS.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynOS.RemoteBridge", "src\SynOS.RemoteBridge\SynOS.RemoteBridge.csproj", "{1B47E6F7-671A-48B1-AE05-CF48A53F3CB9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynOS.Gateway", "src\SynOS.Gateway\SynOS.Gateway.csproj", "{371EFCDC-CC52-4B14-8050-48C84BC40DCC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{1B47E6F7-671A-48B1-AE05-CF48A53F3CB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B47E6F7-671A-48B1-AE05-CF48A53F3CB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B47E6F7-671A-48B1-AE05-CF48A53F3CB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{371EFCDC-CC52-4B14-8050-48C84BC40DCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{371EFCDC-CC52-4B14-8050-48C84BC40DCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{371EFCDC-CC52-4B14-8050-48C84BC40DCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{371EFCDC-CC52-4B14-8050-48C84BC40DCC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +60,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{DE1FAA21-C107-402A-81C2-599A6E4FB45F} = {434324A8-AAEF-429E-91D1-48639FF3D71F}
 		{1B47E6F7-671A-48B1-AE05-CF48A53F3CB9} = {434324A8-AAEF-429E-91D1-48639FF3D71F}
+		{371EFCDC-CC52-4B14-8050-48C84BC40DCC} = {434324A8-AAEF-429E-91D1-48639FF3D71F}
 	EndGlobalSection
 EndGlobal

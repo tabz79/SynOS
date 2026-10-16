@@ -84,6 +84,12 @@ int activePort = !string.IsNullOrEmpty(envPort) && int.TryParse(envPort, out var
     ? p 
     : (isSetupMode ? SynOS.Api.Services.SystemSetupState.SetupPort : SynOS.Api.Services.SystemSetupState.ServicePort);
 
+var portArgIdx = Array.IndexOf(args, "--port");
+if (portArgIdx >= 0 && portArgIdx + 1 < args.Length && int.TryParse(args[portArgIdx + 1], out var cmdPort) && cmdPort > 0)
+{
+    activePort = cmdPort;
+}
+
 // Pre-flight Port Availability Check (Fail-fast if port is already bound)
 try
 {

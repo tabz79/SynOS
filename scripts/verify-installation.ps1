@@ -65,18 +65,36 @@ try {
 
 # 2. Fix Service ImagePath Quoting, Clear Hardcoded Dependencies & Pre-Migrate Schema
 try {
+    $gwDir = Join-Path $AppDir "Gateway"
+    $gwExe = Join-Path $gwDir "SynOS.Gateway.exe"
+    $hasGateway = Test-Path $gwExe
+
     $serviceRegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$SynOSService"
     if (Test-Path $serviceRegPath) {
-        $expectedPath = "`"$AppDir\SynOS.Api.exe`""
+        $expectedPath = if ($hasGateway) { "`"$AppDir\SynOS.Api.exe`" --port 59998" } else { "`"$AppDir\SynOS.Api.exe`"" }
         Set-ItemProperty -Path $serviceRegPath -Name "ImagePath" -Value $expectedPath
-        Log-Message "Enforced quoted service ImagePath in registry: $expectedPath"
+        Log-Message "Enforced service ImagePath: $expectedPath"
     }
 
-    # Clear any hardcoded service dependencies (e.g. MSSQL$SYNOS) so service starts regardless of SQL instance naming
+    # Clear any hardcoded service dependencies
     & sc.exe config $SynOSService depend= / | Out-Null
     Log-Message "Ensured Windows Service '$SynOSService' has no blocking hardcoded service dependencies."
+
+    # Register & Configure Gateway Windows Service if present
+    if ($hasGateway) {
+        Log-Message "Configuring SynOS Enterprise Gateway service (TBZSynOSGateway)..."
+        & sc.exe create TBZSynOSGateway start= auto binPath= "`"$gwExe`"" DisplayName= "TBZ Labs - SynOS Enterprise Gateway" depend= / | Out-Null
+        & sc.exe config TBZSynOSGateway start= auto binPath= "`"$gwExe`"" DisplayName= "TBZ Labs - SynOS Enterprise Gateway" depend= / | Out-Null
+        & sc.exe failure TBZSynOSGateway reset= 86400 actions= restart/5000/restart/5000/restart/5000 | Out-Null
+        
+        # Ensure firewall rule for port 59998 as well
+        $backendRule = Get-NetFirewallRule -DisplayName "TBZ Labs - SynOS Backend" -ErrorAction SilentlyContinue
+        if (-not $backendRule) {
+            New-NetFirewallRule -DisplayName "TBZ Labs - SynOS Backend" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 59998 -Profile Private, Public -ErrorAction SilentlyContinue | Out-Null
+        }
+    }
 } catch {
-    Log-Message "WARNING: Failed to enforce quoted ImagePath or clear service dependencies: $_"
+    Log-Message "WARNING: Failed to enforce quoted ImagePath or configure Gateway: $_"
 }
 
 try {
@@ -90,12 +108,18 @@ try {
     Log-Message "WARNING: Pre-service schema migration encountered an error: $_"
 }
 
-# 3. Start Windows Service & Verify
+# 3. Start Windows Services & Verify
 try {
     Log-Message "Starting Windows Service ($SynOSService)..."
     Start-Service -Name $SynOSService -ErrorAction Stop
 
-    $maxWait = 15
+    $gwExe = Join-Path $AppDir "Gateway\SynOS.Gateway.exe"
+    if (Test-Path $gwExe) {
+        Log-Message "Starting Windows Service (TBZSynOSGateway)..."
+        Start-Service -Name "TBZSynOSGateway" -ErrorAction SilentlyContinue
+    }
+
+    $maxWait = 25
     $elapsed = 0
     $isRunning = $false
     while ($elapsed -lt $maxWait) {
@@ -110,6 +134,14 @@ try {
     }
     if (-not $isRunning) {
         Log-Message "WARNING: Windows Service '$SynOSService' was started but did not reach 'Running' state within $maxWait s."
+    }
+
+    # Verify Gateway health check
+    try {
+        $healthCheck = Invoke-WebRequest -Uri "http://127.0.0.1:59999/api/health" -TimeoutSec 3 -UseBasicParsing -ErrorAction Stop
+        Log-Message "Health Check on port 59999 returned Status: $($healthCheck.StatusCode) OK."
+    } catch {
+        Log-Message "Notice: Port 59999 health check warming up: $_"
     }
 } catch {
     Log-Message "WARNING: Failed to start Windows Service '$SynOSService': $_"

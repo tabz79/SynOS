@@ -126,6 +126,15 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "  -> ServerManager publish successful." -ForegroundColor Green
 
+# STEP 6.5: PUBLISH ENTERPRISE GATEWAY
+Write-Host "`nPublishing SynOS.Gateway (Enterprise Edge Gateway)..." -ForegroundColor Yellow
+Set-Location -Path $rootDir
+& dotnet publish src/SynOS.Gateway/SynOS.Gateway.csproj -c Release -r win-x64 --self-contained true
+if ($LASTEXITCODE -ne 0) {
+    Throw "SynOS.Gateway publish failed with exit code $LASTEXITCODE"
+}
+Write-Host "  -> Gateway publish successful." -ForegroundColor Green
+
 # STEP 7: BUILD INNO SETUP INSTALLER
 Write-Host "`n[7/7] Compiling Inno Setup Installer (SynOS_Setup_v282_cloud_testing.exe)..." -ForegroundColor Yellow
 $isccPath = "C:\Users\Asus\AppData\Local\Programs\Inno Setup 6\iscc.exe"

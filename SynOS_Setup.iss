@@ -57,6 +57,7 @@ Type: files; Name: "{app}\wwwroot\index.html"
 Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist; Permissions: everyone-modify
 Source: "src\SynOS.Api\bin\Release\net8.0\win-x64\publish\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace; Excludes: "appsettings.json, Logs\*"; Permissions: everyone-modify
 Source: "src\SynOS.ServerManager\bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}\ServerManager"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace
+Source: "src\SynOS.Gateway\bin\Release\net8.0\win-x64\publish\*"; DestDir: "{app}\Gateway"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace
 Source: "installer-assets\SynOS.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Copy verification, prerequisite, configuration, export/import and decommission scripts
@@ -1020,20 +1021,20 @@ begin
     if (InstallTypeVal = 0) or (InstallTypeVal = 2) then
     begin
       WizardForm.StatusLabel.Caption := 'Registering TBZ Labs - SynOS service...';
-      Exec('sc.exe', 'create TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      Exec('sc.exe', 'create TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe --port 59998" DisplayName= "TBZ Labs - SynOS" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
       if ExitCode = 1073 then
       begin
-        Exec('sc.exe', 'config TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe" DisplayName= "TBZ Labs - SynOS" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+        Exec('sc.exe', 'config TBZSynOSService start= auto binPath= "' + AppPath + '\SynOS.Api.exe --port 59998" DisplayName= "TBZ Labs - SynOS" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
       end;
-      if (ExitCode <> 0) and (ExitCode <> 1073) then
-      begin
-        InstallSuccess := False;
-        InstallErrorMsg := 'Failed to register the Windows Service (TBZSynOSService).';
-        exit;
-      end;
+      Exec('sc.exe', 'failure TBZSynOSService reset= 86400 actions= restart/10000/restart/10000/restart/10000', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
 
-      // Configure Windows Service Recovery (Auto-restart on 1st, 2nd, and subsequent crashes after 60s)
-      Exec('sc.exe', 'failure TBZSynOSService reset= 86400 actions= restart/60000/restart/60000/restart/60000', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      WizardForm.StatusLabel.Caption := 'Registering SynOS Enterprise Gateway...';
+      Exec('sc.exe', 'create TBZSynOSGateway start= auto binPath= "' + AppPath + '\Gateway\SynOS.Gateway.exe" DisplayName= "TBZ Labs - SynOS Enterprise Gateway" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      if ExitCode = 1073 then
+      begin
+        Exec('sc.exe', 'config TBZSynOSGateway start= auto binPath= "' + AppPath + '\Gateway\SynOS.Gateway.exe" DisplayName= "TBZ Labs - SynOS Enterprise Gateway" depend= /', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      end;
+      Exec('sc.exe', 'failure TBZSynOSGateway reset= 86400 actions= restart/5000/restart/5000/restart/5000', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     end;
 
     // 4. Run Firewall Setup, Service Startup & Health check verification
