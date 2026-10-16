@@ -96,110 +96,114 @@ namespace SynOS.Services
 
             _logger.LogInformation("ProductionDatabasePreparer: Schema validation completed. {Count} transactional entities targeted for purge (Scope={Scope}).", transactionalTypes.Count, scope);
 
-            // 2. Execution Phase (Dynamic SQL)
-            using var dbTransaction = await _context.Database.BeginTransactionAsync();
-            try
+            // 2. Execution Phase (Dynamic SQL wrapped in Execution Strategy)
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                _logger.LogInformation("ProductionDatabasePreparer: Disabling foreign key constraints...");
-                await _context.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
-
-                _logger.LogInformation("ProductionDatabasePreparer: Executing bulk deletions...");
-                foreach (var type in transactionalTypes)
+                using var dbTransaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var entityType = _context.Model.FindEntityType(type);
-                    var tableName = entityType?.GetTableName();
-                    var schema = entityType?.GetSchema() ?? "dbo";
+                    _logger.LogInformation("ProductionDatabasePreparer: Disabling foreign key constraints...");
+                    await _context.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
 
-                    if (!string.IsNullOrEmpty(tableName))
+                    _logger.LogInformation("ProductionDatabasePreparer: Executing bulk deletions...");
+                    foreach (var type in transactionalTypes)
                     {
-                        await _context.Database.ExecuteSqlRawAsync($"DELETE FROM [{schema}].[{tableName}]");
-                    }
-                }
+                        var entityType = _context.Model.FindEntityType(type);
+                        var tableName = entityType?.GetTableName();
+                        var schema = entityType?.GetSchema() ?? "dbo";
 
-                _logger.LogInformation("ProductionDatabasePreparer: Reseeding identity counters...");
-                foreach (var type in transactionalTypes)
-                {
-                    var entityType = _context.Model.FindEntityType(type);
-                    var tableName = entityType?.GetTableName();
-                    var schema = entityType?.GetSchema() ?? "dbo";
-
-                    if (!string.IsNullOrEmpty(tableName))
-                    {
-                        var hasIdentity = entityType.GetProperties().Any(p => p.ValueGenerated == Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.OnAdd);
-                        if (hasIdentity)
+                        if (!string.IsNullOrEmpty(tableName))
                         {
-                            try
+                            await _context.Database.ExecuteSqlRawAsync($"DELETE FROM [{schema}].[{tableName}]");
+                        }
+                    }
+
+                    _logger.LogInformation("ProductionDatabasePreparer: Reseeding identity counters...");
+                    foreach (var type in transactionalTypes)
+                    {
+                        var entityType = _context.Model.FindEntityType(type);
+                        var tableName = entityType?.GetTableName();
+                        var schema = entityType?.GetSchema() ?? "dbo";
+
+                        if (!string.IsNullOrEmpty(tableName))
+                        {
+                            var hasIdentity = entityType.GetProperties().Any(p => p.ValueGenerated == Microsoft.EntityFrameworkCore.Metadata.ValueGenerated.OnAdd);
+                            if (hasIdentity)
                             {
-                                await _context.Database.ExecuteSqlRawAsync($"DBCC CHECKIDENT ('[{schema}].[{tableName}]', RESEED, 0)");
-                            }
-                            catch
-                            {
-                                // Fail-safe for keyless/composite identity tables without identity seeds in SQL Server
+                                try
+                                {
+                                    await _context.Database.ExecuteSqlRawAsync($"DBCC CHECKIDENT ('[{schema}].[{tableName}]', RESEED, 0)");
+                                }
+                                catch
+                                {
+                                    // Fail-safe for keyless/composite identity tables without identity seeds in SQL Server
+                                }
                             }
                         }
                     }
-                }
 
-                _logger.LogInformation("ProductionDatabasePreparer: Re-enabling foreign key constraints...");
-                await _context.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'");
+                    _logger.LogInformation("ProductionDatabasePreparer: Re-enabling foreign key constraints...");
+                    await _context.Database.ExecuteSqlRawAsync("EXEC sp_MSforeachtable 'ALTER TABLE ? CHECK CONSTRAINT ALL'");
 
-                // 3. Verification Phase
-                _logger.LogInformation("ProductionDatabasePreparer: Starting post-purge verification checks...");
+                    // 3. Verification Phase
+                    _logger.LogInformation("ProductionDatabasePreparer: Starting post-purge verification checks...");
 
-                var patientsCount = await _context.Patients.CountAsync();
-                var visitsCount = await _context.Visits.CountAsync();
-                var reportsCount = await _context.Reports.CountAsync();
-                var resultsCount = await _context.Results.CountAsync();
-                var invoicesCount = await _context.Invoices.CountAsync();
-                var expensesCount = await _context.OverheadExpenses.CountAsync();
+                    var patientsCount = await _context.Patients.CountAsync();
+                    var visitsCount = await _context.Visits.CountAsync();
+                    var reportsCount = await _context.Reports.CountAsync();
+                    var resultsCount = await _context.Results.CountAsync();
+                    var invoicesCount = await _context.Invoices.CountAsync();
+                    var expensesCount = await _context.OverheadExpenses.CountAsync();
 
-                if (isOperationalOnly)
-                {
-                    if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0)
+                    if (isOperationalOnly)
                     {
-                        throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}");
+                        if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0)
+                        {
+                            throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}");
+                        }
+                    }
+                    else
+                    {
+                        if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0 || invoicesCount > 0 || expensesCount > 0)
+                        {
+                            throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}, Invoices: {invoicesCount}, Expenses: {expensesCount}");
+                        }
+                    }
+
+                    var testsCount = await _context.Tests.CountAsync();
+                    var departmentsCount = await _context.DepartmentMasters.CountAsync();
+                    var rangesCount = await _context.ReferenceRanges.CountAsync();
+                    var templatesCount = await _context.ReportTemplates.CountAsync();
+                    var usersCount = await _context.Users.CountAsync();
+                    var rolesCount = await _context.Roles.CountAsync();
+
+                    if (testsCount == 0 || departmentsCount == 0 || rangesCount == 0 || templatesCount == 0 || usersCount == 0 || rolesCount == 0)
+                    {
+                        throw new InvalidOperationException($"Master config verification failed. Empty master counts detected: Tests: {testsCount}, Departments: {departmentsCount}, Ranges: {rangesCount}, Templates: {templatesCount}, Users: {usersCount}, Roles: {rolesCount}");
+                    }
+
+                    // 4. Commit/Rollback Handover
+                    if (isDryRun)
+                    {
+                        _logger.LogInformation("[DRY RUN] Verification successful. Rolling back all database mutations...");
+                        await dbTransaction.RollbackAsync();
+                        _logger.LogInformation("[DRY RUN] Database rollback complete. Production database preparation test passed successfully.");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("ProductionDatabasePreparer: Verification successful. Committing changes...");
+                        await dbTransaction.CommitAsync();
+                        _logger.LogInformation("\nProduction database verified.\nREADY FOR BACKUP\n");
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0 || invoicesCount > 0 || expensesCount > 0)
-                    {
-                        throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}, Invoices: {invoicesCount}, Expenses: {expensesCount}");
-                    }
-                }
-
-                var testsCount = await _context.Tests.CountAsync();
-                var departmentsCount = await _context.DepartmentMasters.CountAsync();
-                var rangesCount = await _context.ReferenceRanges.CountAsync();
-                var templatesCount = await _context.ReportTemplates.CountAsync();
-                var usersCount = await _context.Users.CountAsync();
-                var rolesCount = await _context.Roles.CountAsync();
-
-                if (testsCount == 0 || departmentsCount == 0 || rangesCount == 0 || templatesCount == 0 || usersCount == 0 || rolesCount == 0)
-                {
-                    throw new InvalidOperationException($"Master config verification failed. Empty master counts detected: Tests: {testsCount}, Departments: {departmentsCount}, Ranges: {rangesCount}, Templates: {templatesCount}, Users: {usersCount}, Roles: {rolesCount}");
-                }
-
-                // 4. Commit/Rollback Handover
-                if (isDryRun)
-                {
-                    _logger.LogInformation("[DRY RUN] Verification successful. Rolling back all database mutations...");
+                    _logger.LogError(ex, "ProductionDatabasePreparer ERROR: Database preparation failed. Rolling back transaction.");
                     await dbTransaction.RollbackAsync();
-                    _logger.LogInformation("[DRY RUN] Database rollback complete. Production database preparation test passed successfully.");
+                    throw;
                 }
-                else
-                {
-                    _logger.LogInformation("ProductionDatabasePreparer: Verification successful. Committing changes...");
-                    await dbTransaction.CommitAsync();
-                    _logger.LogInformation("\nProduction database verified.\nREADY FOR BACKUP\n");
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ProductionDatabasePreparer ERROR: Database preparation failed. Rolling back transaction.");
-                await dbTransaction.RollbackAsync();
-                throw;
-            }
+            });
         }
 
         public static EntityCategory? ClassifyEntity(Type type)
