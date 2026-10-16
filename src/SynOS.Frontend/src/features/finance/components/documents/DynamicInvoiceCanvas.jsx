@@ -804,6 +804,30 @@ export const DynamicInvoiceCanvas = ({
                 const colCount = activeColumns.length;
                 const isDense = colCount >= 7;
 
+                const getDenseColWidth = (key, count) => {
+                    if (count < 7) return undefined;
+                    const denseMap = {
+                        index: '3.5%',
+                        billNumber: '14%',
+                        date: '12%',
+                        patientName: '14%',
+                        branchName: '10%',
+                        department: '13%',
+                        partnerCategory: '9.5%',
+                        totalAmount: '8%',
+                        paidAmount: '8%',
+                        pendingAmount: '8%',
+                        status: '7%',
+                        occurredAt: '13%',
+                        sourceType: '14%',
+                        amount: '10%',
+                        paymentMode: '10%',
+                        sourceReferenceId: '13%',
+                        notes: '15%'
+                    };
+                    return denseMap[key] || `${Math.floor(100 / count)}%`;
+                };
+
                 return (
                     <ModularBoxWrapper 
                         boxId="itemsTable" 
@@ -831,21 +855,22 @@ export const DynamicInvoiceCanvas = ({
                         }}
                     >
                         <div className="mb-3 overflow-x-auto print:overflow-visible rounded-lg border border-zinc-300">
-                            <table className="w-full text-left border-collapse table-auto">
+                            <table className={`w-full text-left border-collapse ${isDense ? 'table-fixed' : 'table-auto'}`}>
                                 <thead>
                                     <tr className={`bg-zinc-100 border-b border-zinc-300 font-black uppercase text-zinc-700 tracking-wider ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}>
                                         {activeColumns.map(([colKey, col]) => {
-                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total'].includes(colKey);
+                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount'].includes(colKey);
                                             return (
                                                 <th 
                                                     key={colKey} 
-                                                    className={`${isDense ? 'px-1.5 py-1' : 'p-2'} border-r last:border-r-0 border-zinc-200 ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                    style={{ width: isDense ? getDenseColWidth(colKey, colCount) : undefined }}
+                                                    className={`${isDense ? 'px-1.5 py-1' : 'p-2'} border-r last:border-r-0 border-zinc-200 overflow-hidden ${isNumeric ? 'text-right' : 'text-left'}`}
                                                 >
                                                     <EditableField 
                                                         value={col.label}
                                                         onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
                                                         onDelete={() => deleteColumn('itemsTable', colKey)}
-                                                        valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}
+                                                        valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} truncate block`}
                                                     />
                                                 </th>
                                             );
@@ -855,37 +880,63 @@ export const DynamicInvoiceCanvas = ({
                                 </thead>
                                 <tbody className={`divide-y divide-zinc-200 ${isDense ? 'text-[9.5px]' : 'text-[11px]'}`}>
                                     {(boxes.itemsTable.rows || []).map((row, idx) => (
-                                        <tr key={row.id || idx} className="hover:bg-zinc-50 group/row">
-                                            {activeColumns.map(([colKey, col]) => {
-                                                const cellVal = row[colKey] !== undefined ? row[colKey] : (row[col.id] ?? '');
-                                                const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total'].includes(colKey);
-                                                return (
-                                                    <td 
-                                                        key={colKey} 
-                                                        className={`${isDense ? 'px-1.5 py-1' : 'p-2'} border-r last:border-r-0 border-zinc-200 break-words whitespace-normal ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
-                                                    >
-                                                        <EditableField 
-                                                            value={String(cellVal)}
-                                                            onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
-                                                            canDelete={false}
-                                                            valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : ''}`}
-                                                        />
+                                        <React.Fragment key={row.id || idx}>
+                                            {/* A4 Sheet Demarcation Guide (Visual aid in screen preview, strictly hidden in print) */}
+                                            {isDense && idx === 18 && (
+                                                <tr className="no-print select-none bg-amber-50/70 border-y-2 border-dashed border-amber-300">
+                                                    <td colSpan={colCount + (readOnly ? 0 : 1)} className="px-3 py-1.5 text-center text-amber-800 font-bold text-[9px]">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <span className="w-12 h-px bg-amber-300"></span>
+                                                            <span>✂ A4 Sheet 1 Boundary (~18 Rows) • Subsequent Rows Continue on Sheet 2</span>
+                                                            <span className="w-12 h-px bg-amber-300"></span>
+                                                        </div>
                                                     </td>
-                                                );
-                                            })}
-                                            {!readOnly && (
-                                                <td className="p-1 text-center">
-                                                    <button 
-                                                        type="button"
-                                                        onClick={() => deleteRow('itemsTable', row.id)}
-                                                        className="opacity-0 group-hover/row:opacity-100 p-0.5 text-rose-500 hover:text-rose-700 rounded cursor-pointer"
-                                                        title="Delete line item row"
-                                                    >
-                                                        <Trash2 size={11} />
-                                                    </button>
-                                                </td>
+                                                </tr>
                                             )}
-                                        </tr>
+                                            {isDense && idx > 18 && (idx - 18) % 28 === 0 && (
+                                                <tr className="no-print select-none bg-amber-50/70 border-y-2 border-dashed border-amber-300">
+                                                    <td colSpan={colCount + (readOnly ? 0 : 1)} className="px-3 py-1.5 text-center text-amber-800 font-bold text-[9px]">
+                                                        <div className="flex items-center justify-center gap-2">
+                                                            <span className="w-12 h-px bg-amber-300"></span>
+                                                            <span>✂ A4 Sheet {1 + Math.ceil((idx - 18) / 28)} Boundary (~28 Rows) • Continues on Next Sheet</span>
+                                                            <span className="w-12 h-px bg-amber-300"></span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            <tr className="hover:bg-zinc-50 group/row break-inside-avoid print:break-inside-avoid">
+                                                {activeColumns.map(([colKey, col]) => {
+                                                    const cellVal = row[colKey] !== undefined ? row[colKey] : (row[col.id] ?? '');
+                                                    const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount'].includes(colKey);
+                                                    return (
+                                                        <td 
+                                                            key={colKey} 
+                                                            style={{ width: isDense ? getDenseColWidth(colKey, colCount) : undefined }}
+                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2'} border-r last:border-r-0 border-zinc-200 overflow-hidden truncate ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
+                                                        >
+                                                            <EditableField 
+                                                                value={String(cellVal)}
+                                                                onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
+                                                                canDelete={false}
+                                                                valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : ''} truncate block`}
+                                                            />
+                                                        </td>
+                                                    );
+                                                })}
+                                                {!readOnly && (
+                                                    <td className="p-1 text-center">
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => deleteRow('itemsTable', row.id)}
+                                                            className="opacity-0 group-hover/row:opacity-100 p-0.5 text-rose-500 hover:text-rose-700 rounded cursor-pointer"
+                                                            title="Delete line item row"
+                                                        >
+                                                            <Trash2 size={11} />
+                                                        </button>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>
@@ -899,6 +950,7 @@ export const DynamicInvoiceCanvas = ({
                 <ModularBoxWrapper 
                     boxId="financialSummary" 
                     boxName={boxes.financialSummary.name || "Financial Totals Box"}
+                    className="break-inside-avoid print:break-inside-avoid synos-avoid-page-break"
                     onDeleteBox={() => deleteBox('financialSummary')}
                     onAddCustomLine={(line) => addCustomLine('financialSummary', line)}
                 >
@@ -1121,6 +1173,7 @@ export const DynamicInvoiceCanvas = ({
                 <ModularBoxWrapper 
                     boxId="signatory" 
                     boxName={boxes.signatory.name || "Signatory Stamp"}
+                    className="break-inside-avoid print:break-inside-avoid synos-avoid-page-break"
                     onDeleteBox={() => deleteBox('signatory')}
                 >
                     <div className="text-right space-y-6 min-w-[150px] ml-auto mb-2">

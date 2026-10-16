@@ -38,7 +38,7 @@ import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentR
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { FinanceFilterBar } from './components/FinanceFilterBar';
 
-import { cn } from '@/lib/utils';
+import { cn, formatDateCompact } from '@/lib/utils';
 
 // --- SCREENS ---
 
@@ -1035,9 +1035,16 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                                {bill.modality || bill.department || 'General'}
-                                            </span>
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-xs font-semibold dark:text-zinc-200">
+                                                    {bill.department || 'Pathology'}
+                                                </span>
+                                                {bill.modality && bill.modality !== 'General' && bill.modality !== bill.department && (
+                                                    <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                                                        {bill.modality}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4 text-xs text-zinc-500">
                                             <span>{bill.partnerName}</span>
@@ -1073,8 +1080,8 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                         <td className="p-4 text-center">
                                             <StatusBadge status={bill.status} />
                                         </td>
-                                        <td className="p-4 text-xs text-zinc-400">
-                                            {new Date(bill.date).toLocaleDateString()}
+                                        <td className="p-4 text-xs text-zinc-400 font-mono whitespace-nowrap">
+                                            {formatDateCompact(bill.date)}
                                         </td>
                                         {/* ALWAYS VISIBLE ACTIONS WITH ENTERPRISE DOCUMENT GENERATION */}
                                         <td className="p-4 text-right">
@@ -1181,10 +1188,14 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                 ]}
                 columns={[
                     { key: 'billNumber', label: 'Bill / Inv No' },
-                    { key: 'date', label: 'Date', render: (v) => new Date(v).toLocaleDateString() },
+                    { key: 'date', label: 'Date', render: (v) => formatDateCompact(v) },
                     { key: 'patientName', label: 'Patient Name' },
                     { key: 'branchName', label: 'Branch', render: (v) => v || 'Main Facility' },
-                    { key: 'department', label: 'Dept / Modality', render: (_, r) => `${r.department || 'Pathology'}${r.modality ? ` (${r.modality})` : ''}` },
+                    { key: 'department', label: 'Dept / Modality', render: (_, r) => {
+                        const dept = r.department || 'Pathology';
+                        const mod = r.modality && r.modality !== 'General' && r.modality !== dept ? ` / ${r.modality}` : '';
+                        return `${dept}${mod}`;
+                    }},
                     { key: 'partnerCategory', label: 'Billing Model', render: (v) => v || 'Direct Counter' },
                     { key: 'totalAmount', label: 'Billed (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
                     { key: 'paidAmount', label: 'Paid (₹)', align: 'right', render: (_, r) => `₹${Number((r.cashAmount || 0) + (r.onlineAmount || 0) + (r.prepaidAmount || 0)).toLocaleString()}` },
@@ -2001,7 +2012,7 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {filteredHistory.map((row) => (
                                 <tr key={row.revenueFactId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
-                                    <td className="p-4 text-xs text-zinc-500 whitespace-nowrap">{new Date(row.occurredAt).toLocaleString()}</td>
+                                    <td className="p-4 text-xs text-zinc-500 font-mono whitespace-nowrap">{formatDateCompact(row.occurredAt)}</td>
                                     <td className="p-4 text-xs font-bold dark:text-zinc-200 uppercase tracking-tighter text-synos-primary">
                                         {row.sourceType === 'Partner' && row.notes?.includes('Partner:') 
                                             ? row.notes.split('|')[0].replace('Partner:', '').trim()
@@ -2048,7 +2059,7 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
                     { label: "Bank / POS", value: `₹${bankTotal.toLocaleString()}`, color: "text-purple-600", subtext: "Direct Transfers" }
                 ]}
                 columns={[
-                    { key: 'occurredAt', label: 'Date & Time', render: (v) => new Date(v).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) },
+                    { key: 'occurredAt', label: 'Date & Time', render: (v) => formatDateCompact(v) },
                     { key: 'sourceType', label: 'Source Category', render: (v, r) => r.sourceType === 'Partner' && r.notes?.includes('Partner:') ? r.notes.split('|')[0].replace('Partner:', '').trim() : (v || 'Counter') },
                     { key: 'amount', label: 'Collected (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
                     { key: 'paymentMode', label: 'Payment Mode', align: 'center', render: (v) => v || 'Cash' },

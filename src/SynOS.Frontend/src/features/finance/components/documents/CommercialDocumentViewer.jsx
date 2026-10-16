@@ -27,7 +27,8 @@ export const CommercialDocumentViewer = ({
     onDownloadCsv,
     defaultLetterheadMode = "digital",
     topMarginMm = 40,
-    paperSize = "a4" // "a4" | "thermal80"
+    paperSize = "a4", // "a4" | "thermal80"
+    recordCount = null
 }) => {
     const [letterheadMode, setLetterheadMode] = useState(defaultLetterheadMode); // "digital" | "preprinted"
     const [customMargin, setCustomMargin] = useState(topMarginMm);
@@ -37,6 +38,15 @@ export const CommercialDocumentViewer = ({
     if (!isOpen) return null;
 
     const isThermal = paperSize === 'thermal80';
+
+    // A4 Sheet Physical Governance Calculation:
+    // Page 1 budget: ~18 rows with Header, Badges & KPIs
+    // Continuation pages: ~28 rows with repeating thead & margins
+    const estimatedPages = isThermal 
+        ? 1 
+        : (typeof recordCount === 'number' && recordCount > 0 
+            ? (recordCount <= 18 ? 1 : 1 + Math.ceil((recordCount - 18) / 28))
+            : 1);
 
     const handlePrint = () => {
         window.print();
@@ -57,19 +67,34 @@ export const CommercialDocumentViewer = ({
                         position: absolute !important;
                         left: 0 !important;
                         top: 0 !important;
-                        width: ${isThermal ? '80mm' : '100%'} !important;
-                        max-width: ${isThermal ? '80mm' : 'none'} !important;
+                        width: 100% !important;
+                        max-width: none !important;
                         margin: 0 !important;
-                        padding: ${isThermal ? '2mm 3mm' : '0'} !important;
+                        padding: ${isThermal ? '2mm 3mm' : '8mm 10mm'} !important;
                         box-shadow: none !important;
                         border: none !important;
+                        background: white !important;
                     }
                     .no-print {
                         display: none !important;
                     }
                     @page {
                         size: ${isThermal ? '80mm auto' : 'A4 portrait'};
-                        margin: ${isThermal ? '0 !important' : '8mm'};
+                        margin: ${isThermal ? '0 !important' : '10mm 10mm 12mm 10mm'};
+                    }
+                    thead {
+                        display: table-header-group !important;
+                    }
+                    tfoot {
+                        display: table-footer-group !important;
+                    }
+                    tr {
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
+                    }
+                    .synos-avoid-page-break {
+                        break-inside: avoid !important;
+                        page-break-inside: avoid !important;
                     }
                 }
             `}</style>
@@ -86,9 +111,16 @@ export const CommercialDocumentViewer = ({
                             {isThermal ? <Receipt size={18} /> : <FileText size={18} />}
                         </div>
                         <div>
-                            <h2 className="text-sm font-black text-zinc-900 dark:text-white leading-tight">{title}</h2>
+                            <div className="flex items-center gap-2">
+                                <h2 className="text-sm font-black text-zinc-900 dark:text-white leading-tight">{title}</h2>
+                                {!isThermal && typeof recordCount === 'number' && recordCount > 0 && (
+                                    <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                        {recordCount} Records • ~{estimatedPages} A4 Page{estimatedPages > 1 ? 's' : ''}
+                                    </span>
+                                )}
+                            </div>
                             <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider">
-                                {isThermal ? "Point of Sale • 80mm Thermal Receipt" : "Enterprise Document System • A4 Standard"}
+                                {isThermal ? "Point of Sale • 80mm Thermal Receipt" : `Enterprise Document System • A4 Standard (Page 1: ~18 rows; subsequent: ~28 rows/page)`}
                             </p>
                         </div>
                     </div>
@@ -211,6 +243,14 @@ export const CommercialDocumentViewer = ({
                             letterheadMode, 
                             topMarginMm: customMargin 
                         })}
+
+                        {/* RUNNING A4 DOCUMENT FOOTER */}
+                        {!isThermal && (
+                            <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none print:text-zinc-500 synos-avoid-page-break">
+                                <span>SynOS Enterprise Clinical & Financial OS • Confidential</span>
+                                <span>A4 Verified Statement • Generated: {new Date().toLocaleDateString()}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

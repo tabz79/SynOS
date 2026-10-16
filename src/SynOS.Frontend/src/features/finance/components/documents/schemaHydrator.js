@@ -1,5 +1,6 @@
 // Schema Hydrator: Binds live domain entities into customizable document schemas
 import { DEFAULT_DOCUMENT_SCHEMAS } from './documentLayoutSchemas';
+import { formatDateCompact } from '@/lib/utils';
 
 export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySettings = {}) {
     // Start from active custom schema or factory default
@@ -702,11 +703,36 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             }
             const rows = Array.isArray(liveData.data) ? liveData.data : (Array.isArray(liveData.items) ? liveData.items : []);
             if (boxes.itemsTable && rows.length > 0) {
-                boxes.itemsTable.rows = rows.map((it, idx) => ({
-                    ...it,
-                    id: it.id || it.visitId || it.billId || `row-${idx}`,
-                    index: idx + 1
-                }));
+                boxes.itemsTable.rows = rows.map((it, idx) => {
+                    const row = {
+                        ...it,
+                        id: it.id || it.visitId || it.billId || `row-${idx}`,
+                        index: idx + 1
+                    };
+                    // Evaluate custom render callbacks from caller column definitions
+                    if (Array.isArray(liveData.columns)) {
+                        liveData.columns.forEach(col => {
+                            if (typeof col.render === 'function') {
+                                try {
+                                    row[col.key] = col.render(it[col.key], it);
+                                } catch (e) {
+                                    console.warn(`Error evaluating col.render for ${col.key}:`, e);
+                                }
+                            }
+                        });
+                    }
+                    // Enterprise Fallback: Compact date format for any unrendered ISO date strings
+                    ['date', 'occurredAt', 'createdAt', 'timestamp'].forEach(dk => {
+                        if (row[dk] && typeof row[dk] === 'string' && row[dk].includes('T') && row[dk].includes('-')) {
+                            row[dk] = formatDateCompact(row[dk]);
+                        }
+                    });
+                    // Enterprise Fallback: Dept/Modality synthesis if unrendered
+                    if (row.department && row.modality && row.modality !== 'General' && row.modality !== row.department && !String(row.department).includes('/')) {
+                        row.department = `${row.department} / ${row.modality}`;
+                    }
+                    return row;
+                });
             }
             if (boxes.financialSummary?.fields) {
                 if (liveData.summaryTotals) {

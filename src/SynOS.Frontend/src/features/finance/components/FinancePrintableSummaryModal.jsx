@@ -48,6 +48,7 @@ export const FinancePrintableSummaryModal = ({
             onClose={onClose}
             title={title}
             paperSize="a4"
+            recordCount={data?.length || 0}
             onDownloadCsv={onDownloadCsv}
         >
             <DynamicDocumentRenderer
