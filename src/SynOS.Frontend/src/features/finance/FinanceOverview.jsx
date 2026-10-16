@@ -190,7 +190,7 @@ export const FinanceOverview = () => {
 
                 <div className="flex flex-wrap items-center gap-3">
                     {/* Time Horizon Selector */}
-                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                         {[
                             { id: 'today', label: 'Today' },
                             { id: 'month', label: 'This Month' },
@@ -201,9 +201,9 @@ export const FinanceOverview = () => {
                                 key={t.id}
                                 onClick={() => setPresetRange(t.id)}
                                 className={cn(
-                                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                                     presetRange === t.id 
-                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm" 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" 
                                         : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                                 )}
                             >
@@ -214,13 +214,13 @@ export const FinanceOverview = () => {
 
                     {/* Consolidated Switcher */}
                     {isAdmin && (
-                        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/50 p-1.5 rounded-2xl border border-black/5 dark:border-white/5">
+                        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                             <button
                                 onClick={() => setIsConsolidated(true)}
                                 className={cn(
-                                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                                     isConsolidated 
-                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
                                         : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                                 )}
                             >
@@ -229,9 +229,9 @@ export const FinanceOverview = () => {
                             <button
                                 onClick={() => setIsConsolidated(false)}
                                 className={cn(
-                                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                                     !isConsolidated 
-                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
                                         : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                                 )}
                             >
@@ -243,7 +243,7 @@ export const FinanceOverview = () => {
             </div>
 
             {/* EXECUTIVE SUMMARY BANNER */}
-            <div className="p-6 rounded-2xl synos-card-elevated flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="p-6 rounded-2xl synos-dept-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2">
                         <Zap className="w-5 h-5 text-synos-primary" />
@@ -268,7 +268,7 @@ export const FinanceOverview = () => {
             {/* KEY METRICS GRID - SIMPLIFIED TERMINOLOGY */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* 1. Actual Cash Profit */}
-                <div className="p-6 rounded-2xl synos-card-elevated flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Actual Cash Profit</p>
                     <p className={`text-2xl font-black tracking-tight ${netCashPosition >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         ₹{netCashPosition.toLocaleString()}
@@ -277,7 +277,7 @@ export const FinanceOverview = () => {
                 </div>
 
                 {/* 2. Money Collected */}
-                <div className="p-6 rounded-2xl synos-card-elevated flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Money Collected (Cash)</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
                         ₹{cashInflow.toLocaleString()}
@@ -286,7 +286,7 @@ export const FinanceOverview = () => {
                 </div>
 
                 {/* 3. Uncollected Dues */}
-                <div className="p-6 rounded-2xl synos-card-elevated flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Uncollected Dues</p>
                     <p className="text-2xl font-black text-amber-500 tracking-tight">
                         ₹{pendingCollectionsVal.toLocaleString()}
@@ -295,7 +295,7 @@ export const FinanceOverview = () => {
                 </div>
 
                 {/* 4. Bills We Owe */}
-                <div className="p-6 rounded-2xl synos-card-elevated flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Bills We Owe</p>
                     <p className="text-2xl font-black text-rose-500 tracking-tight">
                         ₹{totalAggregatedLiability.toLocaleString()}

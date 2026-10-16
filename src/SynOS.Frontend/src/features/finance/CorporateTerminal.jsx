@@ -436,94 +436,98 @@ export function CorporateTerminal() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-zinc-50 dark:bg-black overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER */}
-            <div className="flex items-center justify-between px-8 py-5 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 border-zinc-200">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-indigo-500/10 text-indigo-500 rounded-2xl">
-                        <Briefcase size={26} />
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
+            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
+            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+                        <Briefcase size={24} />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold dark:text-white text-zinc-900 tracking-tight">
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
                             Corporate B2B Terminal
                         </h1>
-                        <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">
+                        <p className="text-xs text-zinc-500 font-medium mt-0.5">
                             Client Directory, Contracted Rates & Corporate Package Infrastructure
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="text-right">
-                        <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Total B2B Invoiced</p>
-                        <p className="text-base font-bold text-indigo-500">₹{totalB2BAmount.toLocaleString()}</p>
-                    </div>
-                    <div className="w-px h-8 bg-zinc-200 dark:bg-zinc-800" />
-                    <div className="text-right">
-                        <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Active Corporate Clients</p>
-                        <p className="text-base font-bold text-zinc-900 dark:text-zinc-100">{accounts.filter(a => a.isActive).length}</p>
+                <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
+                        <div className="text-right">
+                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total B2B Invoiced</p>
+                            <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">₹{totalB2BAmount.toLocaleString()}</p>
+                        </div>
+                        <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
+                        <div className="text-right">
+                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Active Clients</p>
+                            <p className="text-xs font-black text-zinc-900 dark:text-zinc-100">{accounts.filter(a => a.isActive).length}</p>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
                             title="Download CSV for current tab"
                         >
-                            <Download size={14} />
+                            <Download size={14} className="text-zinc-500" />
                             <span>Download Summary</span>
                         </button>
 
                         <button
                             onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
                             title="Print official A4 summary for current tab"
                         >
                             <Printer size={14} />
                             <span>Print Summary</span>
                         </button>
-                    </div>
 
-                    <button 
-                        onClick={loadData} 
-                        className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all cursor-pointer"
-                        title="Refresh"
-                    >
-                        <History size={18} className="text-zinc-400" />
-                    </button>
+                        <button 
+                            onClick={loadData} 
+                            className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer"
+                            title="Refresh"
+                        >
+                            <History size={16} className="text-zinc-500" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* TAB STRIP */}
-            <div className="flex items-center gap-1.5 px-8 py-2 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 border-zinc-200 overflow-x-auto">
-                {tabs.map(t => {
-                    const Icon = t.icon;
-                    const isActive = tab === t.id;
-                    return (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/finance/corporate/${t.id}`)}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer",
-                                isActive
-                                    ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                            )}
-                        >
-                            <Icon size={15} />
-                            <span>{t.label}</span>
-                            {t.id === 'packages' && corporatePackages.length > 0 && (
-                                <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full font-mono">
-                                    {corporatePackages.length}
-                                </span>
-                            )}
-                        </button>
-                    );
-                })}
+            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
+            <div className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                    {tabs.map(t => {
+                        const Icon = t.icon;
+                        const isActive = tab === t.id;
+                        return (
+                            <button
+                                key={t.id}
+                                onClick={() => navigate(`/finance/corporate/${t.id}`)}
+                                className={cn(
+                                    "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
+                                    isActive
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                )}
+                            >
+                                <Icon size={14} />
+                                <span>{t.label}</span>
+                                {t.id === 'packages' && corporatePackages.length > 0 && (
+                                    <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full font-mono">
+                                        {corporatePackages.length}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
             {/* TAB CONTENT BODY */}
-            <div className="flex-1 overflow-y-auto p-6 w-full custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-8 py-4 w-full custom-scrollbar">
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-64 gap-3 text-zinc-400">
                         <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />

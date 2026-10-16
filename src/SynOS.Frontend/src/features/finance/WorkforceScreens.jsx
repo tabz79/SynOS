@@ -41,6 +41,7 @@ import { AdvanceRequestModal } from './components/workforce/AdvanceRequestModal'
 import { StatutoryConfigModal } from './components/workforce/StatutoryConfigModal';
 import { AttendanceExceptionModal } from './components/workforce/AttendanceExceptionModal';
 import { WorkforcePolicyModal } from './components/workforce/WorkforcePolicyModal';
+import { cn } from '@/lib/utils';
 
 const { WorkforceApi } = FinanceApi;
 
@@ -3905,53 +3906,60 @@ export const WorkforceTerminal = () => {
     const printConfig = getPrintSummaryConfig();
 
     return (
-        <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
-            {/* HEADER SECTION */}
-            <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200 bg-white dark:bg-zinc-950 flex flex-col gap-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                            <Users className="w-6 h-6 text-synos-primary animate-none" />
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
+            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
+            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-synos-primary/10 text-synos-primary rounded-xl">
+                        <Users size={24} />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
                             Workforce Hub
                         </h1>
-                        <p className="text-xs text-zinc-500 font-medium">Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <button 
-                            onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all shadow-sm"
-                            title={`Download ${tab.toUpperCase()} Summary (CSV)`}
-                        >
-                            <Download size={14} className="text-zinc-500" />
-                            <span>Download Summary</span>
-                        </button>
-                        <button 
-                            onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary/10 hover:bg-synos-primary/20 text-synos-primary rounded-xl text-xs font-bold transition-all border border-synos-primary/20 shadow-sm"
-                            title={`Print Printable ${tab.toUpperCase()} Statement`}
-                        >
-                            <Printer size={14} />
-                            <span>Print Summary</span>
-                        </button>
+                        <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                            Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.
+                        </p>
                     </div>
                 </div>
 
-                {/* TABS STRIP */}
-                <div ref={tabsRef} className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={handleDownloadTabSummary}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
+                        title={`Download ${tab.toUpperCase()} Summary (CSV)`}
+                    >
+                        <Download size={14} className="text-zinc-500" />
+                        <span>Download Summary</span>
+                    </button>
+                    <button 
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
+                        title={`Print Printable ${tab.toUpperCase()} Statement`}
+                    >
+                        <Printer size={14} />
+                        <span>Print Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
+            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map((t) => (
                         <button
                             key={t.id}
                             onClick={() => navigate(`/finance/workforce/${t.id}`)}
                             data-active-tab={tab === t.id ? "true" : "false"}
-                            className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border shrink-0 ${
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
                                 tab === t.id
-                                    ? 'bg-synos-primary/10 border-synos-primary/30 text-synos-primary shadow-sm shadow-synos-primary/5'
-                                    : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-                            }`}
+                                    ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                            )}
                         >
                             <t.icon className="w-3.5 h-3.5" />
-                            {t.label}
+                            <span>{t.label}</span>
                         </button>
                     ))}
                 </div>

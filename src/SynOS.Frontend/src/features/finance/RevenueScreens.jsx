@@ -362,54 +362,55 @@ export const RevenueTerminal = () => {
   );
 
   return (
-    <div className="flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-950/50">
-      {/* HEADER SECTION */}
-      <div className="p-8 pb-4 border-b dark:border-zinc-900 border-zinc-200/90 bg-white dark:bg-zinc-950 flex flex-col gap-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Revenue Command Center</h1>
-            <p className="text-xs text-zinc-500 font-medium">Monitor incoming payments, receivables, and drawer balances.</p>
-          </div>
-
-          {/* Time Horizon Selector */}
-          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900/50 p-1 rounded-2xl border border-zinc-200/80 dark:border-white/5 shrink-0 self-start sm:self-auto">
-            {[
-              { id: 'today', label: 'Today' },
-              { id: 'month', label: 'This Month' },
-              { id: 'quarter', label: 'This Quarter' },
-              { id: 'year', label: 'This Year' }
-            ].map(t => (
-              <button
-                key={t.id}
-                onClick={() => setPresetRange(t.id)}
-                className={cn(
-                  "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer",
-                  presetRange === t.id 
-                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs" 
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                )}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+    <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
+      {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
+      <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Revenue Command Center</h1>
+          <p className="text-xs text-zinc-500 font-medium mt-0.5">Monitor incoming payments, receivables, and drawer balances.</p>
         </div>
 
-        {/* TABS STRIP */}
-        <div ref={tabsRef} className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+        {/* Time Horizon Selector */}
+        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+          {[
+            { id: 'today', label: 'Today' },
+            { id: 'month', label: 'This Month' },
+            { id: 'quarter', label: 'This Quarter' },
+            { id: 'year', label: 'This Year' }
+          ].map(t => (
+            <button
+              key={t.id}
+              onClick={() => setPresetRange(t.id)}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                presetRange === t.id 
+                  ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" 
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
+      <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+        <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => navigate(`/finance/revenue/${t.id}`)}
               data-active-tab={tab === t.id ? "true" : "false"}
-              className={`flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border shrink-0 cursor-pointer ${
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
                 tab === t.id
-                  ? 'bg-synos-primary/10 border-synos-primary/30 text-synos-primary shadow-sm shadow-synos-primary/5'
-                  : 'bg-transparent border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
-              }`}
+                  ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
             >
               <t.icon className="w-3.5 h-3.5" />
-              {t.label}
+              <span>{t.label}</span>
             </button>
           ))}
         </div>
