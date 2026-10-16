@@ -75,10 +75,10 @@ const handleResponse = async (response) => {
     }
     
     if (!response.ok) {
-        if (data && !data.message && (data.rowLevelErrors || data.globalErrors || data.errorCount)) {
+        if (data && !data.message && !data.error && (data.rowLevelErrors || data.globalErrors || data.errorCount)) {
             throw new Error(JSON.stringify(data));
         }
-        throw new Error(data.message || `API Error: ${response.status}`);
+        throw new Error(data.error || data.message || data.title || `API Error: ${response.status}`);
     }
     
     return data;

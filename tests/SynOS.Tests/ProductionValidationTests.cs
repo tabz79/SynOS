@@ -482,5 +482,26 @@ namespace SynOS.Tests
             Assert.Equal("AutoDerived", filmMapped.OriginType);
             Assert.Equal("Chest X-Ray PA", filmMapped.DerivedFromTestName);
         }
+
+        [Fact]
+        public void ProductionDatabasePreparer_Classifies_All_Entities_Without_Unclassified_Exceptions()
+        {
+            using var db = GetDbContext();
+            var entityTypes = db.Model.GetEntityTypes();
+            var unclassified = new List<string>();
+
+            foreach (var entity in entityTypes)
+            {
+                var type = entity.ClrType;
+                if (type == null) continue;
+                var cat = ProductionDatabasePreparer.ClassifyEntity(type);
+                if (cat == null)
+                {
+                    unclassified.Add(type.FullName ?? type.Name);
+                }
+            }
+
+            Assert.Empty(unclassified);
+        }
     }
 }

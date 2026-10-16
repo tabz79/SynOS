@@ -237,6 +237,7 @@ namespace SynOS.Services
                 name == "StatutoryConfig" || name == "WorkforcePolicy" ||
                 name == "ReferenceLab" || name == "ReferenceLabRateRule" ||
                 name == "ParameterMaster" || name == "DerivedParameterRule" || name == "AnalyzerParameterMap" || name.StartsWith("Range") ||
+                name == "CorporateAccount" || name == "CorporateRateRule" || name == "InsuranceCompany" ||
                 name == "MedicalMacro" || name == "TimePeriod")
             {
                 return EntityCategory.MasterData;
@@ -264,7 +265,7 @@ namespace SynOS.Services
                 name == "LabAnalyzerResultInbox" ||
                 name == "ReferralApprovalLog" || name == "ReferralDraft" ||
                 name.StartsWith("ImsStock") || name == "ImsPurchaseOrder" || name == "ImsPOItem" ||
-                name == "PacsSeries" || name == "PacsInstance")
+                name.StartsWith("Pacs"))
             {
                 return EntityCategory.Transactional;
             }

@@ -24218,7 +24218,7 @@ Compensation details are strictly confidential between employee and SynOS Health
     } catch (r) {
       console.error("Failed to parse API response as JSON:", r);
     }
-    if (!t.ok) throw n && !n.message && (n.rowLevelErrors || n.globalErrors || n.errorCount) ? new Error(JSON.stringify(n)) : new Error(n.message || `API Error: ${t.status}`);
+    if (!t.ok) throw n && !n.message && !n.error && (n.rowLevelErrors || n.globalErrors || n.errorCount) ? new Error(JSON.stringify(n)) : new Error(n.error || n.message || n.title || `API Error: ${t.status}`);
     return n;
   }, ln = {
     get: async (t, e = {}) => {
