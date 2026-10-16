@@ -71,8 +71,10 @@ namespace SynOS.Services.Referral
 
             var partner = _mapper.Map<ReferralPartner>(createDto);
             partner.ReferralPartnerId = Guid.NewGuid();
-            partner.Status = PartnerStatus.Draft;
-            partner.IsActive = false;
+            partner.Status = PartnerStatus.Active; // Auto-approved: reception doctors are immediately active, admin only sets rates
+            partner.IsActive = true;
+            partner.ApprovedByUserId = userId;
+            partner.ApprovedAt = DateTimeOffset.UtcNow;
             partner.CreatedAt = DateTimeOffset.UtcNow;
             partner.UpdatedAt = DateTimeOffset.UtcNow;
 

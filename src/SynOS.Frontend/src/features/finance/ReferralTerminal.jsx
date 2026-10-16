@@ -424,37 +424,32 @@ export const ReferralTerminal = () => {
     const printConfig = getPrintSummaryConfig();
 
     return (
-        <div className="flex flex-col h-full bg-zinc-50 dark:bg-black overflow-hidden animate-in fade-in duration-700">
-            {/* TERMINAL HEADER */}
-            <div className="flex items-center justify-between px-8 py-6 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 border-zinc-100">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-synos-primary/10 text-synos-primary rounded-2xl">
-                        <Users size={24} />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold dark:text-white text-zinc-900 tracking-tight">Referral Terminal</h1>
-                        <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">Doctor Relationship Finance Infrastructure</p>
-                    </div>
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
+            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
+            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Referral Terminal</h1>
+                    <p className="text-xs text-zinc-500 font-medium mt-1">Doctor Relationship Finance Infrastructure</p>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                     {summary && (
-                        <>
+                        <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                             <div className="text-right">
-                                <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">Total Payout Liability</p>
-                                <p className="text-sm font-bold text-rose-500">₹{summary.totalPendingPayouts?.toLocaleString()}</p>
+                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Payout Due</span>
+                                <span className="text-xs font-black text-rose-600 dark:text-rose-400">₹{summary.totalPendingPayouts?.toLocaleString()}</span>
                             </div>
-                            <div className="w-px h-8 bg-zinc-100 dark:bg-zinc-900" />
+                            <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
                             <div className="text-right">
-                                <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-tighter">Partner Receivables</p>
-                                <p className="text-sm font-bold text-emerald-500">₹{summary.totalPendingReceivables?.toLocaleString()}</p>
+                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Receivables</span>
+                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{summary.totalPendingReceivables?.toLocaleString()}</span>
                             </div>
-                        </>
+                        </div>
                     )}
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm"
                             title={`Download ${tab.toUpperCase()} Summary (CSV)`}
                         >
                             <Download size={14} className="text-zinc-500" />
@@ -462,41 +457,41 @@ export const ReferralTerminal = () => {
                         </button>
                         <button 
                             onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary/10 hover:bg-synos-primary/20 text-synos-primary rounded-xl text-xs font-bold transition-all border border-synos-primary/20 shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105"
                             title={`Print Printable ${tab.toUpperCase()} Statement`}
                         >
                             <Printer size={14} />
                             <span>Print Summary</span>
                         </button>
+                        <button onClick={loadSummary} className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all" title="Refresh Summary">
+                            <History size={16} className="text-zinc-500" />
+                        </button>
                     </div>
-                    <button onClick={loadSummary} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all" title="Refresh Summary">
-                        <History size={18} className="text-zinc-400" />
-                    </button>
                 </div>
             </div>
 
-            {/* TAB NAVIGATION */}
-            <div ref={tabsRef} className="flex items-center gap-1 px-8 py-2 bg-white dark:bg-zinc-950 border-b dark:border-zinc-900 border-zinc-100 overflow-x-auto scrollbar-thin">
-                {tabs.map(t => (
-                    <button
-                        key={t.id}
-                        onClick={() => setActiveTab(t.id)}
-                        data-active-tab={tab === t.id ? "true" : "false"}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                            tab === t.id 
-                            ? 'bg-synos-primary/10 text-synos-primary' 
-                            : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-50 dark:hover:bg-zinc-900'
-                        }`}
-                    >
-                        <t.icon size={16} />
-                        <span>{t.label}</span>
-                        {Boolean(t.badge && t.badge > 0) && (
-                            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                                {t.badge}
-                            </span>
-                        )}
-                    </button>
-                ))}
+            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
+            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                    {tabs.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setActiveTab(t.id)}
+                            data-active-tab={tab === t.id ? "true" : "false"}
+                            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${
+                                tab === t.id 
+                                ? 'bg-white dark:bg-zinc-700 text-synos-primary shadow-sm' 
+                                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
+                            }`}
+                        >
+                            <t.icon size={14} />
+                            <span>{t.label}</span>
+                            {Boolean(t.badge && t.badge > 0) && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                            )}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* MAIN CONTENT AREA */}

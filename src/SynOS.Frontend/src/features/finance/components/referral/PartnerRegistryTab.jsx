@@ -2,29 +2,32 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Users, 
     Search, 
-    UserPlus,
-    Building2,
-    ShieldCheck,
-    AlertCircle,
-    X,
-    ChevronRight,
-    ChevronLeft,
-    Phone,
-    IndianRupee,
-    Stethoscope,
-    Sparkles,
-    Zap,
-    TrendingUp,
-    RefreshCw,
-    Edit3,
-    Save,
-    ExternalLink,
-    Award,
-    CreditCard,
-    Trash2,
-    Loader2,
-    ArrowRight,
-    Activity
+    UserPlus, 
+    Building2, 
+    ShieldCheck, 
+    AlertCircle, 
+    X, 
+    ChevronRight, 
+    ChevronLeft, 
+    Phone, 
+    IndianRupee, 
+    Stethoscope, 
+    Sparkles, 
+    Zap, 
+    TrendingUp, 
+    RefreshCw, 
+    Edit3, 
+    Save, 
+    ExternalLink, 
+    Award, 
+    CreditCard, 
+    Trash2, 
+    Loader2, 
+    ArrowRight, 
+    Activity,
+    LayoutGrid,
+    List,
+    ArrowUpDown
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn } from '@/lib/utils';
@@ -44,19 +47,29 @@ export const PartnerRegistryTab = () => {
     });
     const [loading, setLoading] = useState(true);
 
+    // View Mode: 'grid' (Thumbnails / Cards) vs 'details' (Enterprise High-Density Table)
+    const [viewMode, setViewMode] = useState(() => {
+        return localStorage.getItem('synos_doctor_view_mode') || 'grid';
+    });
+
     // Filters & Pagination
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'has_unmapped' | 'active' | 'draft'
+    const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'has_unmapped' | 'active'
     const [specialityFilter, setSpecialityFilter] = useState('all');
     const [sortBy, setSortBy] = useState('revenue');
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(24);
 
     // Modals & Drawers
     const [selectedDoctorId, setSelectedDoctorId] = useState(null);
     const [isAddDoctorModalOpen, setIsAddDoctorModalOpen] = useState(false);
-    const [approvalTarget, setApprovalTarget] = useState(null);
     const [editTarget, setEditTarget] = useState(null);
+
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+        localStorage.setItem('synos_doctor_view_mode', mode);
+    };
 
     // Debounce search input
     useEffect(() => {
@@ -76,13 +89,13 @@ export const PartnerRegistryTab = () => {
                 speciality: specialityFilter,
                 sortBy: sortBy,
                 page: page,
-                pageSize: 24
+                pageSize: pageSize
             });
             setDirectoryData(data || {
                 items: [],
                 totalCount: 0,
                 page: 1,
-                pageSize: 24,
+                pageSize: pageSize,
                 totalPages: 0,
                 totalDoctorsCount: 0,
                 activeReferrersThisMonthCount: 0,
@@ -94,25 +107,15 @@ export const PartnerRegistryTab = () => {
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, statusFilter, specialityFilter, sortBy, page]);
+    }, [debouncedSearch, statusFilter, specialityFilter, sortBy, page, pageSize]);
 
     useEffect(() => {
         loadDirectory();
     }, [loadDirectory]);
 
-    const handleApprove = async (id, commission) => {
-        try {
-            await FinanceApi.approvePartner(id, commission);
-            loadDirectory();
-            setApprovalTarget(null);
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
     return (
-        <div className="p-8 space-y-8 pb-16 relative z-10 animate-in fade-in duration-300">
-            {/* SECTION 1: KEY PERFORMANCE METRICS (SYSTEM METRICBOX DESIGN) */}
+        <div className="p-8 space-y-6 pb-16 bg-transparent relative z-10 animate-in fade-in duration-300">
+            {/* SECTION 1: KEY PERFORMANCE METRICS (NATIVE FLOATING METRICBOX CARDS) */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
                     <span className="w-1 h-4 bg-synos-primary rounded-full" />
@@ -184,28 +187,28 @@ export const PartnerRegistryTab = () => {
                 </div>
             </div>
 
-            {/* SECTION 2: TOOLBAR & CONTROLS */}
-            <div className="synos-dept-card p-4 rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex flex-wrap items-center gap-3 flex-1">
+            {/* SECTION 2: TOOLBAR & CONTROLS (NATIVE FLOATING BAR WITH DUAL VIEW SWITCHER) */}
+            <div className="synos-dept-card p-3 rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2.5 flex-1">
                     {/* Search Input */}
-                    <div className="relative flex-1 min-w-[260px] max-w-md group">
-                        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
+                    <div className="relative flex-1 min-w-[240px] max-w-sm group">
+                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
                         <input 
                             type="text" 
                             placeholder="Search doctor, clinic, speciality, phone..." 
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-8 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-synos-primary/20 outline-none transition-all placeholder:text-zinc-400 text-zinc-900 dark:text-zinc-100"
+                            className="w-full pl-9 pr-7 py-1.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-synos-primary/20 outline-none transition-all placeholder:text-zinc-400 text-zinc-900 dark:text-zinc-100"
                         />
                         {search && (
-                            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
-                                <X size={14} />
+                            <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
+                                <X size={12} />
                             </button>
                         )}
                     </div>
 
                     {/* Filter Segmented Control */}
-                    <div className="flex items-center bg-slate-100 dark:bg-zinc-800/80 p-1 rounded-xl">
+                    <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-0.5 rounded-lg">
                         {[
                             { id: 'all', label: 'All Doctors' },
                             { 
@@ -214,13 +217,12 @@ export const PartnerRegistryTab = () => {
                                 count: directoryData.doctorsWithUnmappedTestsCount 
                             },
                             { id: 'active', label: 'Active' },
-                            { id: 'draft', label: 'Walk-in / Draft' },
                         ].map((btn) => (
                             <button
                                 key={btn.id}
                                 onClick={() => { setStatusFilter(btn.id); setPage(1); }}
                                 className={cn(
-                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                                    "px-2.5 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1.5",
                                     statusFilter === btn.id 
                                         ? "bg-white dark:bg-zinc-700 text-synos-primary shadow-sm" 
                                         : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -238,7 +240,7 @@ export const PartnerRegistryTab = () => {
                     <select
                         value={sortBy}
                         onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
-                        className="px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                        className="px-2.5 py-1.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
                     >
                         <option value="revenue">Sort: Highest Revenue</option>
                         <option value="patients">Sort: Most Patients</option>
@@ -246,38 +248,82 @@ export const PartnerRegistryTab = () => {
                         <option value="recent">Sort: Recently Active</option>
                         <option value="name">Sort: Name (A-Z)</option>
                     </select>
+
+                    {/* Page Size Selector for Large Scales */}
+                    <div className="flex items-center gap-1 text-xs type-meta">
+                        <span className="text-zinc-400">Show:</span>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
+                            className="px-2 py-1 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                        >
+                            <option value={24}>24</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {/* View Switcher: Grid View vs Details View (File Explorer Style) */}
+                    <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-0.5 rounded-lg border border-slate-300/40 dark:border-zinc-700/50">
+                        <button
+                            onClick={() => handleViewModeChange('grid')}
+                            className={cn(
+                                "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all",
+                                viewMode === 'grid' 
+                                    ? "bg-white dark:bg-zinc-700 text-synos-primary shadow-sm" 
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                            )}
+                            title="Grid View (Cards)"
+                        >
+                            <LayoutGrid size={14} />
+                            <span className="hidden sm:inline">Grid</span>
+                        </button>
+                        <button
+                            onClick={() => handleViewModeChange('details')}
+                            className={cn(
+                                "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all",
+                                viewMode === 'details' 
+                                    ? "bg-white dark:bg-zinc-700 text-synos-primary shadow-sm" 
+                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                            )}
+                            title="Details View (Enterprise Data Table)"
+                        >
+                            <List size={14} />
+                            <span className="hidden sm:inline">Details</span>
+                        </button>
+                    </div>
+
                     <button 
                         onClick={loadDirectory}
-                        className="p-2 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-900 text-zinc-500 rounded-xl transition-all"
-                        title="Refresh"
+                        className="p-1.5 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-900 text-zinc-500 rounded-lg transition-all"
+                        title="Refresh Directory"
                     >
-                        <RefreshCw size={15} className={cn(loading && "animate-spin text-synos-primary")} />
+                        <RefreshCw size={14} className={cn(loading && "animate-spin text-synos-primary")} />
                     </button>
                     <button 
                         onClick={() => setIsAddDoctorModalOpen(true)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 active:scale-95 transition-all shadow-sm"
+                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-synos-primary text-white rounded-lg text-xs font-bold hover:brightness-105 active:scale-95 transition-all shadow-sm"
                     >
-                        <UserPlus size={15} /> Add Doctor
+                        <UserPlus size={14} /> Add Doctor
                     </button>
                 </div>
             </div>
 
-            {/* SECTION 3: DOCTOR CARDS (MATCHING SYNOS DEPARTMENT CARD PATTERN) */}
+            {/* SECTION 3: DOCTOR DIRECTORY CONTENT (GRID VIEW OR DETAILS VIEW) */}
             <div className="space-y-4">
                 <div className="flex items-center justify-between border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
                     <div className="flex items-center gap-2">
                         <span className="w-1 h-4 bg-synos-primary rounded-full" />
                         <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">
-                            Doctor Registry Directory
+                            Doctor Registry Directory ({viewMode === 'grid' ? 'Grid View' : 'Details View'})
                         </h2>
                     </div>
 
                     <div className="text-xs type-meta flex items-center gap-3">
                         <span>
-                            Showing {directoryData.items.length > 0 ? (page - 1) * 24 + 1 : 0} - {Math.min(page * 24, directoryData.totalCount)} of {directoryData.totalCount} Doctors
+                            Showing {directoryData.items.length > 0 ? (page - 1) * pageSize + 1 : 0} - {Math.min(page * pageSize, directoryData.totalCount)} of {directoryData.totalCount} Doctors
                         </span>
                         {directoryData.totalPages > 1 && (
                             <div className="flex items-center gap-1">
@@ -302,11 +348,19 @@ export const PartnerRegistryTab = () => {
                 </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[1,2,3,4,5,6].map(i => (
-                            <div key={i} className="h-64 synos-dept-card rounded-xl animate-pulse" />
-                        ))}
-                    </div>
+                    viewMode === 'grid' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[1,2,3,4,5,6].map(i => (
+                                <div key={i} className="h-64 synos-dept-card rounded-xl animate-pulse" />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="synos-dept-card rounded-xl p-8 space-y-3">
+                            {[1,2,3,4,5,6,7,8].map(i => (
+                                <div key={i} className="h-8 bg-slate-100 dark:bg-zinc-800 rounded animate-pulse" />
+                            ))}
+                        </div>
+                    )
                 ) : directoryData.items.length === 0 ? (
                     <div className="synos-dept-card rounded-xl text-center py-16 space-y-3">
                         <div className="w-12 h-12 mx-auto rounded-xl bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
@@ -327,14 +381,219 @@ export const PartnerRegistryTab = () => {
                             </button>
                         )}
                     </div>
+                ) : viewMode === 'details' ? (
+                    /* ENTERPRISE DETAILS VIEW (HIGH DENSITY TABLE FOR 1,000+ DOCTORS) */
+                    <div className="synos-dept-card rounded-xl overflow-hidden shadow-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900 text-[10px] type-meta font-bold uppercase tracking-wider">
+                                        <th 
+                                            onClick={() => setSortBy('name')} 
+                                            className="py-3 px-4 cursor-pointer hover:text-synos-primary transition-colors"
+                                        >
+                                            <div className="flex items-center gap-1.5">
+                                                <span>Doctor / Clinician</span>
+                                                <ArrowUpDown size={11} className="opacity-50" />
+                                            </div>
+                                        </th>
+                                        <th className="py-3 px-3">Speciality & Clinic</th>
+                                        <th className="py-3 px-3">Contact</th>
+                                        <th 
+                                            onClick={() => setSortBy('unmapped')} 
+                                            className="py-3 px-3 cursor-pointer hover:text-synos-primary transition-colors"
+                                        >
+                                            <div className="flex items-center gap-1.5">
+                                                <span>Rate Governance</span>
+                                                <ArrowUpDown size={11} className="opacity-50" />
+                                            </div>
+                                        </th>
+                                        <th 
+                                            onClick={() => setSortBy('patients')} 
+                                            className="py-3 px-3 text-right cursor-pointer hover:text-synos-primary transition-colors"
+                                        >
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <span>Patients</span>
+                                                <ArrowUpDown size={11} className="opacity-50" />
+                                            </div>
+                                        </th>
+                                        <th 
+                                            onClick={() => setSortBy('revenue')} 
+                                            className="py-3 px-3 text-right cursor-pointer hover:text-synos-primary transition-colors"
+                                        >
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <span>Revenue</span>
+                                                <ArrowUpDown size={11} className="opacity-50" />
+                                            </div>
+                                        </th>
+                                        <th className="py-3 px-3 text-right">Commission Due</th>
+                                        <th className="py-3 px-3 text-center">Status</th>
+                                        <th className="py-3 px-4 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05]">
+                                    {directoryData.items.map(doctor => {
+                                        const phone = doctor.demographics?.phone || doctor.contactInfo;
+                                        const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
+                                        const hasUnmapped = doctor.hasUnmappedWaiting || doctor.unmappedTestsCount > 0;
+
+                                        return (
+                                            <tr 
+                                                key={doctor.referralPartnerId}
+                                                className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/60 transition-colors group/row"
+                                            >
+                                                {/* Doctor Name & MCI Tag */}
+                                                <td className="py-3 px-4">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 font-bold text-xs shrink-0 group-hover/row:text-synos-primary transition-colors">
+                                                            {doctor.name
+                                                                .replace(/^(Dr\.?|Prof\.?|Mr\.?|Mrs\.?)\s+/i, '')
+                                                                .split(' ')
+                                                                .map(n => n[0])
+                                                                .slice(0, 2)
+                                                                .join('')
+                                                                .toUpperCase() || 'DR'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <span 
+                                                                    onClick={() => setSelectedDoctorId(doctor.referralPartnerId)}
+                                                                    className="type-value !text-xs text-zinc-900 dark:text-white hover:text-synos-primary cursor-pointer font-bold transition-colors"
+                                                                >
+                                                                    {doctor.name}
+                                                                </span>
+                                                                {doctor.demographics?.registrationNumber && (
+                                                                    <span className="type-code text-[9px] px-1 py-0.2 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
+                                                                        {doctor.demographics.registrationNumber}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <span className="type-meta text-[10px] text-zinc-400 block">
+                                                                {doctor.partnerType || 'Doctor'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Speciality & Clinic */}
+                                                <td className="py-3 px-3">
+                                                    <span className="type-value !text-xs block">
+                                                        {doctor.demographics?.speciality || 'General Medicine'}
+                                                    </span>
+                                                    <span className="type-meta text-[11px] text-zinc-400 block line-clamp-1">
+                                                        {doctor.clinicName || doctor.location || 'Walk-in Partner'}
+                                                    </span>
+                                                </td>
+
+                                                {/* Contact */}
+                                                <td className="py-3 px-3">
+                                                    {cleanPhone ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <a 
+                                                                href={`tel:${cleanPhone}`} 
+                                                                className="type-code text-xs text-zinc-600 dark:text-zinc-300 hover:text-synos-primary"
+                                                                title="Call"
+                                                            >
+                                                                {cleanPhone}
+                                                            </a>
+                                                            <a 
+                                                                href={`https://wa.me/91${cleanPhone}`}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="text-emerald-600 hover:opacity-80"
+                                                                title="WhatsApp"
+                                                            >
+                                                                <ExternalLink size={11} />
+                                                            </a>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="type-meta text-zinc-400">-</span>
+                                                    )}
+                                                </td>
+
+                                                {/* Rate Governance Status */}
+                                                <td className="py-3 px-3">
+                                                    {hasUnmapped ? (
+                                                        <span 
+                                                            onClick={() => setSelectedDoctorId(doctor.referralPartnerId)}
+                                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 text-[10px] font-bold cursor-pointer hover:bg-amber-100 transition-colors"
+                                                        >
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                                            <span>{doctor.unmappedTestsCount} Tests Awaiting Rate</span>
+                                                        </span>
+                                                    ) : doctor.learnedRulesCount > 0 ? (
+                                                        <span className="type-code text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                                                            {doctor.learnedRulesCount} Learned Rules
+                                                        </span>
+                                                    ) : (
+                                                        <span className="type-meta text-[11px] text-zinc-500">
+                                                            Default: {doctor.defaultCommissionPercentage}%
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Patients */}
+                                                <td className="py-3 px-3 text-right">
+                                                    <span className="type-value !text-xs block">
+                                                        {doctor.totalPatientsReferred || 0}
+                                                    </span>
+                                                    {doctor.thisMonthPatientsReferred > 0 && (
+                                                        <span className="type-meta text-[10px] text-cyan-600 dark:text-cyan-400 block">
+                                                            +{doctor.thisMonthPatientsReferred} this mo
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Revenue */}
+                                                <td className="py-3 px-3 text-right">
+                                                    <span className="type-value !text-xs font-bold block">
+                                                        ₹ {Number(doctor.totalRevenueGenerated || 0).toLocaleString()}
+                                                    </span>
+                                                </td>
+
+                                                {/* Commission Due */}
+                                                <td className="py-3 px-3 text-right">
+                                                    <span className={cn(
+                                                        "type-value !text-xs font-bold block",
+                                                        doctor.pendingPayoutDue > 0 ? "text-amber-600 dark:text-amber-400" : "text-zinc-700 dark:text-zinc-300"
+                                                    )}>
+                                                        ₹ {Number(doctor.pendingPayoutDue || 0).toLocaleString()}
+                                                    </span>
+                                                </td>
+
+                                                {/* Status */}
+                                                <td className="py-3 px-3 text-center">
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                                                        <span className="type-meta text-[11px]">Active</span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Action */}
+                                                <td className="py-3 px-4 text-right">
+                                                    <button
+                                                        onClick={() => setSelectedDoctorId(doctor.referralPartnerId)}
+                                                        className="px-2.5 py-1 text-xs font-bold text-synos-primary hover:bg-synos-primary/10 rounded-lg transition-colors inline-flex items-center gap-1"
+                                                    >
+                                                        <span>Profile</span>
+                                                        <ArrowRight size={12} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 ) : (
+                    /* GRID VIEW (STANDARDIZED WITH SYNOS DEPARTMENT CARD PATTERN) */
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {directoryData.items.map(doctor => (
                             <DoctorDepartmentCard 
                                 key={doctor.referralPartnerId}
                                 doctor={doctor}
                                 onOpenProfile={(docId) => setSelectedDoctorId(docId)}
-                                onApprove={() => setApprovalTarget(doctor)}
                                 onEdit={() => setEditTarget(doctor)}
                             />
                         ))}
@@ -388,29 +647,15 @@ export const PartnerRegistryTab = () => {
                     onSave={loadDirectory} 
                 />
             )}
-
-            {/* APPROVE WALK-IN DRAFT MODAL */}
-            {approvalTarget && (
-                <ApprovalModal 
-                    partner={approvalTarget} 
-                    onClose={() => setApprovalTarget(null)} 
-                    onConfirm={(commission) => handleApprove(approvalTarget.referralPartnerId, commission)} 
-                />
-            )}
         </div>
     );
 };
 
 /* -------------------------------------------------------------------------- */
-/* DOCTOR DEPARTMENT CARD (STANDARDIZED WITH SYNOS SYSTEM CARD ARCHITECTURE) */
+/* DOCTOR DEPARTMENT CARD (GRID VIEW)                                         */
 /* -------------------------------------------------------------------------- */
-const DoctorDepartmentCard = ({ doctor, onOpenProfile, onApprove, onEdit }) => {
-    const status = doctor.status;
-    const isDraft = status === 'Draft' || status === 0;
-    const isActive = status === 'Active' || status === 1;
-    const isSuspended = status === 'Suspended' || status === 3;
+const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
     const hasUnmapped = doctor.hasUnmappedWaiting || doctor.unmappedTestsCount > 0;
-
     const phone = doctor.demographics?.phone || doctor.contactInfo;
     const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
 
@@ -442,28 +687,12 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onApprove, onEdit }) => {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                        {isActive && (
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                                <span className="type-meta text-zinc-600 dark:text-zinc-400">Active</span>
-                            </div>
-                        )}
-                        {isDraft && (
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                <span className="type-meta text-amber-600 dark:text-amber-400 font-semibold">Draft</span>
-                            </div>
-                        )}
-                        {isSuspended && (
-                            <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                                <span className="type-meta">Suspended</span>
-                            </div>
-                        )}
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
+                        <span className="type-meta text-zinc-600 dark:text-zinc-400">Active</span>
                     </div>
                 </div>
 
-                {/* Awaiting Rate Banner (Subtle System Notice, Not Neon Rainbow) */}
+                {/* Awaiting Rate Banner */}
                 {hasUnmapped && (
                     <div 
                         onClick={() => onOpenProfile(doctor.referralPartnerId)}
@@ -531,7 +760,7 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onApprove, onEdit }) => {
                 </div>
             </div>
 
-            {/* Standard System Card Footer (Like Control Tower Department Cards) */}
+            {/* Standard System Card Footer */}
             <div className="border-t border-black/[0.05] dark:border-white/[0.05] flex items-center">
                 <button 
                     onClick={() => onOpenProfile(doctor.referralPartnerId)} 
@@ -540,22 +769,13 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onApprove, onEdit }) => {
                     <span>Open Profile & Rates</span>
                     <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                 </button>
-                {isDraft ? (
-                    <button
-                        onClick={onApprove}
-                        className="px-4 py-3 border-l border-black/[0.05] dark:border-white/[0.05] text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-colors"
-                    >
-                        Approve
-                    </button>
-                ) : (
-                    <button
-                        onClick={onEdit}
-                        className="px-3 py-3 border-l border-black/[0.05] dark:border-white/[0.05] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors"
-                        title="Edit Details"
-                    >
-                        <Edit3 size={14} />
-                    </button>
-                )}
+                <button
+                    onClick={onEdit}
+                    className="px-3 py-3 border-l border-black/[0.05] dark:border-white/[0.05] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors"
+                    title="Edit Details"
+                >
+                    <Edit3 size={14} />
+                </button>
             </div>
         </div>
     );
@@ -1089,65 +1309,6 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             )}
                         </>
                     )}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-/* -------------------------------------------------------------------------- */
-/* APPROVE MODAL                                                              */
-/* -------------------------------------------------------------------------- */
-const ApprovalModal = ({ partner, onClose, onConfirm }) => {
-    const [commission, setCommission] = useState(partner.defaultCommissionPercentage || 10);
-    const [loading, setLoading] = useState(false);
-
-    return (
-        <div className="fixed inset-0 z-[130] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
-            <div className="synos-dept-card w-full max-w-md rounded-2xl p-6 space-y-5 bg-white dark:bg-zinc-950">
-                <div className="flex items-center gap-3">
-                    <ShieldCheck className="w-6 h-6 text-synos-primary" />
-                    <div>
-                        <h3 className="type-value !text-base">Approve Doctor</h3>
-                        <p className="type-meta text-xs">Empanel {partner.name}</p>
-                    </div>
-                </div>
-
-                <div className="p-3 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl space-y-1">
-                    <span className="type-section-header text-[11px] block">Automatic Backfill</span>
-                    <p className="type-meta text-xs">
-                        Approving this doctor will trigger the Central Commission Governing Engine to atomically backfill pending visits.
-                    </p>
-                </div>
-
-                <div className="space-y-1.5">
-                    <label className="type-label text-xs">Default Commission (%)</label>
-                    <input 
-                        type="number"
-                        value={commission}
-                        onChange={(e) => setCommission(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-lg font-bold text-center outline-none"
-                    />
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                    <button 
-                        onClick={onClose}
-                        className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-zinc-900"
-                    >
-                        Cancel
-                    </button>
-                    <button 
-                        onClick={async () => {
-                            setLoading(true);
-                            await onConfirm(parseFloat(commission));
-                            setLoading(false);
-                        }}
-                        disabled={loading}
-                        className="flex-1 py-2.5 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 disabled:opacity-50"
-                    >
-                        {loading ? "Processing..." : "Confirm & Backfill"}
-                    </button>
                 </div>
             </div>
         </div>

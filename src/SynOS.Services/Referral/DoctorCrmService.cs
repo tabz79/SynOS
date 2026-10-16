@@ -55,9 +55,7 @@ namespace SynOS.Services.Referral
             if (!string.IsNullOrWhiteSpace(filter.Status) && filter.Status != "all")
             {
                 if (filter.Status == "active")
-                    query = query.Where(p => p.Status == PartnerStatus.Active);
-                else if (filter.Status == "draft")
-                    query = query.Where(p => p.Status == PartnerStatus.Draft);
+                    query = query.Where(p => p.Status == PartnerStatus.Active || p.Status == PartnerStatus.Draft);
                 else if (filter.Status == "suspended")
                     query = query.Where(p => p.Status == PartnerStatus.Suspended);
             }
@@ -369,7 +367,7 @@ namespace SynOS.Services.Referral
                 ClinicName = partner.ClinicName,
                 Location = partner.Location,
                 Demographics = ParseDemographics(partner.ContactInfo),
-                Status = partner.Status,
+                Status = partner.Status == PartnerStatus.Draft ? PartnerStatus.Active : partner.Status,
                 PaymentCollectionModel = partner.PaymentCollectionModel,
                 DefaultCommissionPercentage = partner.DefaultCommissionPercentage,
                 CalculationBase = partner.CalculationBase,
