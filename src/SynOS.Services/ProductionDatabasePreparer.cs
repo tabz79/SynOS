@@ -134,10 +134,11 @@ namespace SynOS.Services
                 var reportsCount = await _context.Reports.CountAsync();
                 var resultsCount = await _context.Results.CountAsync();
                 var invoicesCount = await _context.Invoices.CountAsync();
+                var expensesCount = await _context.OverheadExpenses.CountAsync();
 
-                if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0 || invoicesCount > 0)
+                if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0 || invoicesCount > 0 || expensesCount > 0)
                 {
-                    throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}, Invoices: {invoicesCount}");
+                    throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}, Invoices: {invoicesCount}, Expenses: {expensesCount}");
                 }
 
                 var testsCount = await _context.Tests.CountAsync();
@@ -186,7 +187,6 @@ namespace SynOS.Services
                 name == "Branch" || name == "Employee" || 
                 name == "AccessionCounter" || name == "TokenCounter" ||
                 name == "OperationalResource" || name == "DeltaCheckConfig" ||
-                name == "OverheadExpense" ||
                 name.StartsWith("CatalogProvisioning"))
             {
                 return EntityCategory.SystemInternal;
@@ -229,6 +229,7 @@ namespace SynOS.Services
                 name == "WorkAssignment" || name == "WorkAssignmentAccession" || name == "ProcessingAssignment" ||
                 name == "AuditLog" || name == "RefreshToken" || name == "EditLock" ||
                 name.EndsWith("Fact") ||
+                name == "OverheadExpense" ||
                 name == "SalaryAdvance" || name == "PayrollRun" || name == "PayrollAdjustment" ||
                 name == "AttendanceLog" ||
                 name == "SupportTicket" ||

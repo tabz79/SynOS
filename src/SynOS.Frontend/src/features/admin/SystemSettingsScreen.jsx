@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminApi } from '@/api/admin';
 import { useTheme } from '@/context/ThemeContext';
 // Native Date helpers to avoid dayjs dependency
@@ -58,6 +59,7 @@ import {
   Edit2, 
   AlertCircle,
   Eye,
+  Type,
   Globe,
   Printer,
   Database,
@@ -71,8 +73,10 @@ import { MachineIntegrationTab } from './components/MachineIntegrationTab';
 import { CommercialPaperworkTab } from './components/CommercialPaperworkTab';
 
 export function SystemSettingsScreen() {
-  const { theme } = useTheme();
-  const [activeTab, setActiveTab] = useState('settings');
+  const { theme, fontSize, setFontSize } = useTheme();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'settings';
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -1146,6 +1150,7 @@ export function SystemSettingsScreen() {
           </div>
           {[
             { id: 'settings', label: 'System Configuration', icon: Settings },
+            { id: 'ui_settings', label: 'Display & UI Settings', icon: Type },
             { id: 'permissions', label: 'Roles Matrix', icon: ShieldAlert },
             { id: 'departments', label: 'Department Hours', icon: Clock },
             { id: 'pricing', label: 'Pricing & Discounts', icon: Tag },
@@ -1164,6 +1169,7 @@ export function SystemSettingsScreen() {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
+                setSearchParams({ tab: tab.id });
                 setAuditOffset(0);
                 setIsCollapsed(true);
               }}
@@ -1592,6 +1598,150 @@ export function SystemSettingsScreen() {
               </button>
             </div>
           </form>
+        )}
+
+        {/* UI & FONT SIZE SETTINGS TAB */}
+        {activeTab === 'ui_settings' && !loading && (
+          <div className="space-y-8 animate-fadeIn text-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-200 dark:border-zinc-800">
+              <div>
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
+                  <Type className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  UI Display & Typography Settings
+                </h3>
+                <p className="text-xs text-zinc-500 font-medium mt-1">
+                  Customise display readability, text scale, and visual ergonomics across counters, workstations, and small laptop displays.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                  Active Scale: {fontSize?.toUpperCase() || 'MEDIUM'}
+                </span>
+              </div>
+            </div>
+
+            {/* Typography Scale Selection */}
+            <div className="synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 space-y-6">
+              <div>
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                  Interface Font Size Customisation
+                </h4>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Select your preferred optical size. Changes take effect across the entire system immediately and persist for your workstation.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  {
+                    id: 'small',
+                    label: 'Small (Compact)',
+                    scale: '14px Base Scale',
+                    desc: 'Optimised for large 24"-32" QHD / 4K displays where maximum data density and multi-column ledger view is preferred.',
+                    badge: 'High Density'
+                  },
+                  {
+                    id: 'medium',
+                    label: 'Medium (Standard)',
+                    scale: '16px Base Scale (Default)',
+                    desc: 'Balanced comfort for 14"-15.6" Full HD laptops and standard clinic monitors. Provides crisp readability without horizontal overflow.',
+                    badge: 'Recommended'
+                  },
+                  {
+                    id: 'large',
+                    label: 'Large (High Legibility)',
+                    scale: '18px Base Scale',
+                    desc: 'Engineered specifically for small displays, 1366x768 counter screens, or operators needing elevated legibility.',
+                    badge: 'Enhanced Legibility'
+                  }
+                ].map(opt => {
+                  const isSelected = (fontSize || 'medium') === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setFontSize(opt.id)}
+                      className={`text-left p-5 rounded-2xl border transition-all cursor-pointer relative flex flex-col justify-between ${
+                        isSelected 
+                          ? 'bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500 ring-2 ring-indigo-500/30 shadow-md' 
+                          : 'bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">{opt.label}</span>
+                          {isSelected && (
+                            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">
+                              ✓
+                            </span>
+                          )}
+                        </div>
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                          {opt.scale}
+                        </span>
+                        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+                          {opt.desc}
+                        </p>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[11px] font-bold">
+                        <span className="text-zinc-400">{opt.badge}</span>
+                        <span className={isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-400'}>
+                          {isSelected ? 'Active Mode' : 'Click to Apply'}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* LIVE REAL-TIME PREVIEW CARD */}
+              <div className="mt-8 p-6 rounded-2xl bg-zinc-50/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h5 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    Live Interface Typography Preview
+                  </h5>
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    Changes reflect live across this preview and all open screens
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Sample Patient Card */}
+                  <div className="p-3.5 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 shadow-xs">
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Patient Identification</span>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-white">Rajesh Kumar Sharma</p>
+                    <p className="text-xs text-zinc-500 font-mono">UHID: SYN-2026-0842 • Age: 42Y / Male</p>
+                  </div>
+
+                  {/* Sample Diagnostic Order */}
+                  <div className="p-3.5 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 shadow-xs">
+                    <span className="text-[10px] uppercase font-bold text-indigo-500 block">Investigation Master</span>
+                    <p className="text-sm font-bold text-zinc-900 dark:text-white">Complete Blood Count (CBC)</p>
+                    <p className="text-xs text-zinc-500">Pathology / Hematology • Fasting EDTA Whole Blood</p>
+                  </div>
+
+                  {/* Sample Financial Metric */}
+                  <div className="p-3.5 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 shadow-xs">
+                    <span className="text-[10px] uppercase font-bold text-emerald-500 block">Finance Ledger Balance</span>
+                    <p className="text-lg font-black text-zinc-900 dark:text-white font-mono">₹4,250.00</p>
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Counter Settled • Direct Patient</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Caveats & Design Integrity Notes */}
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs space-y-2">
+                <p className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <span>ℹ️</span> Typography Scale Engineering & Layout Integrity Notes
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-xs opacity-90 pl-1">
+                  <li><strong>Optical Size vs Weight:</strong> This setting scales text glyph size cleanly without forcing elements into artificial bolding or thickening font weights.</li>
+                  <li><strong>Preserved Layout Densities:</strong> Table cell padding and card structures remain mathematically balanced so data does not clip or overflow.</li>
+                  <li><strong>Paperwork Isolation:</strong> Official printable documents (A4 diagnostic reports, thermal receipts, B2B invoices) remain strictly governed by standard legal printing rules and will not be altered by screen zoom settings.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* ROLES & CAPABILITIES TAB */}
@@ -4331,22 +4481,67 @@ export function SystemSettingsScreen() {
         {/* Reset Operational Data Confirmation Dialog */}
         {showResetDialog && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl text-zinc-850 dark:text-zinc-200">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-red-600 dark:text-red-400 uppercase tracking-wider">
-                ⚠️ Reset Operational Data
-              </h3>
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full space-y-5 shadow-2xl text-zinc-850 dark:text-zinc-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-600">
+                  <Database size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight">
+                    Client Deployment & Financial Reset
+                  </h3>
+                  <p className="text-[11px] text-zinc-400 font-medium">
+                    Purges operational ledgers so the client can start completely fresh with zeroed accounts.
+                  </p>
+                </div>
+              </div>
               
-              <div className="space-y-2 text-xs text-zinc-650 dark:text-zinc-400">
-                <p className="font-semibold text-zinc-800 dark:text-zinc-200">This operation will:</p>
-                <ul className="list-disc list-inside space-y-1.5 pl-2 font-medium">
-                  <li>Automatically create a complete database backup before making any changes.</li>
-                  <li>Remove all operational data (patients, visits, reports, billing, results, operational logs, etc.).</li>
-                  <li>Preserve all master data (tests, pricing, departments, users, roles, settings, templates, reference ranges, branches, license, etc.).</li>
-                </ul>
+              <div className="space-y-3 text-xs">
+                {/* 2-Column Transparency Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Column 1: Wiped / Zeroed */}
+                  <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-955/20 border border-rose-200 dark:border-rose-900/40 space-y-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                      ✕ Reset to ₹0 / Purged
+                    </span>
+                    <ul className="text-[11px] text-rose-900 dark:text-rose-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
+                      <li>Patient Invoices, Bills & Dues</li>
+                      <li>Cashier Counter Collections (₹0)</li>
+                      <li>Operational Overhead Expenses</li>
+                      <li>Doctor Referral Cut Payables</li>
+                      <li>Outsourced Reference Lab Bills</li>
+                      <li>Payroll Runs & Salary Advances</li>
+                      <li>Patient Visits, Orders & Samples</li>
+                      <li>Clinical Test Results & Reports</li>
+                    </ul>
+                  </div>
+
+                  {/* Column 2: Preserved */}
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-955/20 border border-emerald-200 dark:border-emerald-900/40 space-y-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                      ✓ 100% Kept / Preserved
+                    </span>
+                    <ul className="text-[11px] text-emerald-900 dark:text-emerald-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
+                      <li>Doctor Registry (Referral Partners)</li>
+                      <li>Test Catalog, Panels & Pricing</li>
+                      <li>Reference Labs & B2B Rate Lists</li>
+                      <li>Staff Users, Accounts & Roles</li>
+                      <li>Branch Setup & Organization Profile</li>
+                      <li>Printer Routes & Stationery Layouts</li>
+                      <li>Statutory Policies & Pay Components</li>
+                    </ul>
+                  </div>
+                </div>
                 
-                <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl">
-                  <span className="text-[10px] uppercase font-bold text-zinc-400 block mb-0.5">Backup Location</span>
-                  <code className="text-xxs font-mono font-bold text-synos-primary">C:\ProgramData\TBZ Labs\SynOS\Backups\</code>
+                {/* Backup Safety Guarantee Banner */}
+                <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Pre-Flight Safety Guarantee</span>
+                    <span className="text-[10px] font-mono font-bold text-emerald-600">Auto SQL Backup Pre-Executed</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 font-medium">
+                    A full database backup will be generated and verified to disk before any deletion is committed.
+                  </p>
                 </div>
               </div>
 

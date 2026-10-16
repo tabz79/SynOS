@@ -12,6 +12,11 @@ export function ThemeProvider({ children }) {
         return 'light';
     });
 
+    // Font size customisation: 'small' | 'medium' | 'large' (default: 'medium')
+    const [fontSize, setFontSizeState] = useState(() => {
+        return localStorage.getItem('synos_font_size') || 'medium';
+    });
+
     useEffect(() => {
         const root = window.document.documentElement;
 
@@ -25,14 +30,34 @@ export function ThemeProvider({ children }) {
         localStorage.setItem('synos_theme', theme);
     }, [theme]);
 
+    useEffect(() => {
+        const root = window.document.documentElement;
+
+        // Apply font size attribute and classes
+        root.setAttribute('data-font-size', fontSize);
+        root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
+        root.classList.add(`font-size-${fontSize}`);
+
+        // Persist
+        localStorage.setItem('synos_font_size', fontSize);
+    }, [fontSize]);
+
     const handleSetTheme = (newTheme) => {
         localStorage.setItem('synos_theme_explicit', 'true');
         setTheme(newTheme);
     };
 
+    const handleSetFontSize = (newSize) => {
+        if (['small', 'medium', 'large'].includes(newSize)) {
+            setFontSizeState(newSize);
+        }
+    };
+
     const value = {
         theme,
         setTheme: handleSetTheme,
+        fontSize,
+        setFontSize: handleSetFontSize
     };
 
     return (

@@ -3,23 +3,109 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-size: 16px;
+  /* 
+   * SYNOS WORKSTATION TYPOGRAPHY GOVERNANCE 
+   * Dynamic Root Scaling by Font Size Customisation setting:
+   * - small: Compact for high-res / QHD / 4K multi-column workstations (14px - 15.5px)
+   * - medium: Standard Comfort (Default) - replaces the aggressive 12.5px drop on 1366x768 screens! (15px - 16.5px)
+   * - large: High Legibility for small screens / low-res operator counter displays (17px - 18.5px)
+   */
+
+  /* Default & Medium Scale */
+  html,
+  html.font-size-medium,
+  html[data-font-size="medium"] {
+    font-size: 16.5px;
   }
   @media (max-width: 1536px) or (max-height: 900px) {
-    html {
-      font-size: 13.75px;
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 15.5px;
     }
   }
   @media (max-width: 1366px) or (max-height: 768px) {
-    html {
-      font-size: 12.5px;
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 15px; /* Immediately readable on 768p displays */
     }
   }
   @media (max-width: 1100px) or (max-height: 650px) {
-    html {
-      font-size: 11.5px;
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 14px;
     }
+  }
+
+  /* Small / Compact Scale (Dense data for high-res 27"+ monitors) */
+  html.font-size-small,
+  html[data-font-size="small"] {
+    font-size: 15px;
+  }
+  @media (max-width: 1536px) or (max-height: 900px) {
+    html.font-size-small,
+    html[data-font-size="small"] {
+      font-size: 14px;
+    }
+  }
+  @media (max-width: 1366px) or (max-height: 768px) {
+    html.font-size-small,
+    html[data-font-size="small"] {
+      font-size: 13px;
+    }
+  }
+  @media (max-width: 1100px) or (max-height: 650px) {
+    html.font-size-small,
+    html[data-font-size="small"] {
+      font-size: 12px;
+    }
+  }
+
+  /* Large / High Legibility Scale (For admins with small displays or vision preference) */
+  html.font-size-large,
+  html[data-font-size="large"] {
+    font-size: 18.5px;
+  }
+  @media (max-width: 1536px) or (max-height: 900px) {
+    html.font-size-large,
+    html[data-font-size="large"] {
+      font-size: 17.5px;
+    }
+  }
+  @media (max-width: 1366px) or (max-height: 768px) {
+    html.font-size-large,
+    html[data-font-size="large"] {
+      font-size: 17px; /* Provides large, comfortable readability on small displays */
+    }
+  }
+  @media (max-width: 1100px) or (max-height: 650px) {
+    html.font-size-large,
+    html[data-font-size="large"] {
+      font-size: 16px;
+    }
+  }
+
+  /* Micro-typography scaling when Large or Medium size is selected (STRICT: preserve font-weight without making fat/bold) */
+  html.font-size-large .text-xxs,
+  html.font-size-large .text-\[10px\],
+  html.font-size-large .text-\[9\.5px\],
+  html.font-size-large .text-\[9px\],
+  html.font-size-large .text-\[8\.5px\],
+  html.font-size-large .text-\[8px\] {
+    font-size: 0.72rem !important; /* ~12.2px at base 17px */
+    font-weight: inherit;
+  }
+
+  html.font-size-medium .text-xxs,
+  html.font-size-medium .text-\[10px\],
+  html.font-size-medium .text-\[9\.5px\],
+  html.font-size-medium .text-\[9px\],
+  html.font-size-medium .text-\[8\.5px\],
+  html.font-size-medium .text-\[8px\] {
+    font-size: 0.68rem !important; /* ~10.5px at base 15px */
+    font-weight: inherit;
   }
 
   /* LIGHT MODE (DEFAULT) */
