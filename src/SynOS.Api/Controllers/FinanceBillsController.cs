@@ -38,23 +38,41 @@ namespace SynOS.Api.Controllers
                 var p = preset.Trim().ToLower();
                 if (p == "today")
                 {
-                    startDate = now.Date;
+                    startDate = now.Date.AddHours(-6);
                     endDate = now.Date.AddDays(1).AddTicks(-1);
                 }
                 else if (p == "yesterday")
                 {
-                    startDate = now.Date.AddDays(-1);
+                    startDate = now.Date.AddDays(-1).AddHours(-6);
                     endDate = now.Date.AddTicks(-1);
                 }
                 else if (p == "this week" || p == "week")
                 {
-                    startDate = now.Date.AddDays(-7);
+                    startDate = now.Date.AddDays(-7).AddHours(-6);
                     endDate = now.Date.AddDays(1).AddTicks(-1);
                 }
                 else if (p == "this month" || p == "month")
                 {
-                    startDate = new DateTime(now.Year, now.Month, 1);
+                    startDate = new DateTime(now.Year, now.Month, 1).AddHours(-6);
                     endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this quarter" || p == "quarter" || p.StartsWith("q"))
+                {
+                    var quarter = (now.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    startDate = new DateTime(now.Year, qStartMonth, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this year" || p == "year" || p == "fy")
+                {
+                    var fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                    startDate = new DateTime(fyStartYear, 4, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "all" || p == "all time")
+                {
+                    startDate = null;
+                    endDate = null;
                 }
             }
 

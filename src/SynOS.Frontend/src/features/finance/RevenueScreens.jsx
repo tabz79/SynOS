@@ -376,7 +376,8 @@ export const RevenueTerminal = () => {
             { id: 'today', label: 'Today' },
             { id: 'month', label: 'This Month' },
             { id: 'quarter', label: 'This Quarter' },
-            { id: 'year', label: 'This Year' }
+            { id: 'year', label: 'This Year' },
+            { id: 'all', label: 'All Time' }
           ].map(t => (
             <button
               key={t.id}
@@ -426,9 +427,9 @@ export const RevenueTerminal = () => {
             onRefresh={() => loadStats(presetRange)} 
           />
         )}
-        {tab === 'bills' && <BillsCollectionsScreen />}
-        {tab === 'receivables' && <PendingReceivablesScreen />}
-        {tab === 'history' && <CollectionHistoryScreen />}
+        {tab === 'bills' && <BillsCollectionsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
+        {tab === 'receivables' && <PendingReceivablesScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
+        {tab === 'history' && <CollectionHistoryScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
       </div>
     </div>
   );
@@ -463,7 +464,7 @@ const FilterTab = ({ label, count, isActive, onClick }) => (
 
 // --- SCREENS ---
 
-export const BillsCollectionsScreen = () => {
+export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }) => {
     const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     
@@ -484,15 +485,46 @@ export const BillsCollectionsScreen = () => {
     const [loadingDoc, setLoadingDoc] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
     
+    // Preset range mapping
+    const presetToLabel = useMemo(() => ({
+        today: 'Today',
+        month: 'This Month',
+        quarter: 'This Quarter',
+        year: 'This Year',
+        all: 'All Time'
+    }), []);
+
+    const labelToPreset = useMemo(() => ({
+        'Today': 'today',
+        'This Month': 'month',
+        'This Quarter': 'quarter',
+        'This Year': 'year',
+        'All Time': 'all'
+    }), []);
+
     // Filter states
     const [statusFilter, setStatusFilter] = useState('All');
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [departmentFilter, setDepartmentFilter] = useState(initialDept);
     const [modalityFilter, setModalityFilter] = useState(initialMod);
     const [branchFilter, setBranchFilter] = useState(initialBranch);
-    const [dateRange, setDateRange] = useState('Today');
+    const [dateRange, setDateRange] = useState(() => presetToLabel[presetRange] || 'This Month');
     const [customDates, setCustomDates] = useState({ start: '', end: '' });
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Keep dateRange in sync with header presetRange
+    useEffect(() => {
+        if (presetRange && presetToLabel[presetRange] && dateRange !== presetToLabel[presetRange]) {
+            setDateRange(presetToLabel[presetRange]);
+        }
+    }, [presetRange, presetToLabel]);
+
+    const handleDateRangeChange = (newVal) => {
+        setDateRange(newVal);
+        if (setPresetRange && labelToPreset[newVal]) {
+            setPresetRange(labelToPreset[newVal]);
+        }
+    };
 
     useEffect(() => {
         loadBranches();
@@ -660,6 +692,13 @@ export const BillsCollectionsScreen = () => {
         } else if (dateRange === 'This Month') {
             const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
             if (billDate < monthStart) return false;
+        } else if (dateRange === 'This Quarter') {
+            const currentQuarter = Math.floor(today.getMonth() / 3);
+            const quarterStart = new Date(today.getFullYear(), currentQuarter * 3, 1);
+            if (billDate < quarterStart) return false;
+        } else if (dateRange === 'This Year') {
+            const yearStart = new Date(today.getFullYear(), 0, 1);
+            if (billDate < yearStart) return false;
         } else if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
             const start = new Date(customDates.start);
             const end = new Date(customDates.end);
@@ -930,13 +969,15 @@ export const BillsCollectionsScreen = () => {
                         )}
                         <select 
                             value={dateRange}
-                            onChange={(e) => setDateRange(e.target.value)}
+                            onChange={(e) => handleDateRangeChange(e.target.value)}
                             className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold dark:text-zinc-300 outline-none focus:border-synos-primary transition-all cursor-pointer"
                         >
                             <option>Today</option>
                             <option>Yesterday</option>
                             <option>This Week</option>
                             <option>This Month</option>
+                            <option>This Quarter</option>
+                            <option>This Year</option>
                             <option>All Time</option>
                             <option>Custom Range</option>
                         </select>
@@ -1162,7 +1203,7 @@ export const BillsCollectionsScreen = () => {
     );
 };
 
-export const PendingReceivablesScreen = () => {
+export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange }) => {
     const { user } = useAuth();
     const [partnerSummaries, setPartnerSummaries] = useState([]);
     const [allBills, setAllBills] = useState([]);
@@ -1732,17 +1773,46 @@ export const PendingReceivablesScreen = () => {
     );
 };
 
-export const CollectionHistoryScreen = () => {
+export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange }) => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const presetToLabel = useMemo(() => ({
+        today: 'Today',
+        month: 'This Month',
+        quarter: 'This Quarter',
+        year: 'This Year',
+        all: 'All Time'
+    }), []);
+
+    const labelToPreset = useMemo(() => ({
+        'Today': 'today',
+        'This Month': 'month',
+        'This Quarter': 'quarter',
+        'This Year': 'year',
+        'All Time': 'all'
+    }), []);
 
     // Multi-dimensional filters
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentModeFilter, setPaymentModeFilter] = useState('All');
     const [sourceFilter, setSourceFilter] = useState('All');
-    const [dateRange, setDateRange] = useState('This Month');
+    const [dateRange, setDateRange] = useState(() => presetToLabel[presetRange] || 'This Month');
     const [customDates, setCustomDates] = useState({ start: '', end: '' });
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
+    useEffect(() => {
+        if (presetRange && presetToLabel[presetRange] && dateRange !== presetToLabel[presetRange]) {
+            setDateRange(presetToLabel[presetRange]);
+        }
+    }, [presetRange, presetToLabel]);
+
+    const handleDateRangeChange = (newVal) => {
+        setDateRange(newVal);
+        if (setPresetRange && labelToPreset[newVal]) {
+            setPresetRange(labelToPreset[newVal]);
+        }
+    };
 
     useEffect(() => {
         loadHistory();
@@ -1795,6 +1865,15 @@ export const CollectionHistoryScreen = () => {
             if (dateRange === 'This Month') {
                 const m = new Date(today.getFullYear(), today.getMonth(), 1);
                 if (d < m) return false;
+            }
+            if (dateRange === 'This Quarter') {
+                const currentQuarter = Math.floor(today.getMonth() / 3);
+                const quarterStart = new Date(today.getFullYear(), currentQuarter * 3, 1);
+                if (d < quarterStart) return false;
+            }
+            if (dateRange === 'This Year') {
+                const yearStart = new Date(today.getFullYear(), 0, 1);
+                if (d < yearStart) return false;
             }
             if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
                 const start = new Date(customDates.start);
@@ -1898,7 +1977,7 @@ export const CollectionHistoryScreen = () => {
                 onCategoryChange={setPaymentModeFilter}
                 categoryOptions={['All', 'Cash', 'UPI', 'BankTransfer', 'Card']}
                 dateRange={dateRange}
-                onDateRangeChange={setDateRange}
+                onDateRangeChange={handleDateRangeChange}
                 customDates={customDates}
                 onCustomDatesChange={setCustomDates}
             />

@@ -74,16 +74,18 @@ export const FinanceApi = {
      */
     getFinanceBills: async (params = {}) => {
         const query = new URLSearchParams();
-        if (params.branchId) query.append('branchId', params.branchId);
-        if (params.department) query.append('department', params.department);
-        if (params.modality) query.append('modality', params.modality);
+        if (params.branchId && params.branchId !== 'All') query.append('branchId', params.branchId);
+        if (params.department && params.department !== 'All') query.append('department', params.department);
+        if (params.modality && params.modality !== 'All') query.append('modality', params.modality);
         if (params.startDate) query.append('startDate', params.startDate);
         if (params.endDate) query.append('endDate', params.endDate);
-        if (params.preset) query.append('preset', params.preset);
-        if (params.status) query.append('status', params.status);
-        if (params.category) query.append('category', params.category);
+        if (params.preset && params.preset !== 'All Time' && params.preset !== 'all') query.append('preset', params.preset);
+        if (params.status && params.status !== 'All') query.append('status', params.status);
+        if (params.category && params.category !== 'All') query.append('category', params.category);
         const qs = query.toString() ? `?${query.toString()}` : '';
-        const url = FinanceApi.withBranchId(`/api/v1/finance/bills${qs}`);
+        const url = (params.branchId && params.branchId !== 'All')
+            ? FinanceApi.withBranchId(`/api/v1/finance/bills${qs}`)
+            : `/api/v1/finance/bills${qs}`;
         const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });

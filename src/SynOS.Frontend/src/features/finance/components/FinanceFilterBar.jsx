@@ -76,7 +76,7 @@ export const FinanceFilterBar = ({
     doctorOptions = [],
     dateRange,
     onDateRangeChange,
-    dateRangeOptions = ['Today', 'Yesterday', 'This Week', 'This Month', 'All Time', 'Custom Range'],
+    dateRangeOptions = ['Today', 'Yesterday', 'This Week', 'This Month', 'This Quarter', 'This Year', 'All Time', 'Custom Range'],
     customDates = { start: '', end: '' },
     onCustomDatesChange,
     extraControls
