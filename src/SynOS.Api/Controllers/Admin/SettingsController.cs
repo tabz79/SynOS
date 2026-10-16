@@ -952,39 +952,57 @@ namespace SynOS.Api.Controllers.Admin
                 return BadRequest(new { error = "Invalid administrator password." });
             }
 
+            var scope = string.IsNullOrWhiteSpace(dto.Scope) ? "operational" : dto.Scope.ToLowerInvariant();
+            var isDeployment = scope == "deployment" || scope == "full";
+            var backupTag = isDeployment ? "ClientDeploymentReset" : "OperationalDataReset";
+
             // 1. Execute SQL backup first
             Guid backupId;
             try
             {
-                backupId = await _backupService.ExecuteBackupAsync("SystemMaintenanceReset");
+                backupId = await _backupService.ExecuteBackupAsync(backupTag);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create database backup before operational reset.");
+                _logger.LogError(ex, "Failed to create database backup before database reset. Scope={Scope}", scope);
                 return StatusCode(500, new { error = $"Database backup failed: {ex.Message}. Operation aborted." });
             }
 
-            // 2. Execute database preparer (purge transactional data)
+            // 2. Execute database preparer (purge transactional data according to scope)
             try
             {
-                await _databasePreparer.PrepareDatabaseAsync(isDryRun: false);
+                await _databasePreparer.PrepareDatabaseAsync(isDryRun: false, scope: isDeployment ? "deployment" : "operational");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to purge database during operational reset. Backup ID: {BackupId}", backupId);
+                _logger.LogError(ex, "Failed to purge database during reset. Scope={Scope}, Backup ID: {BackupId}", scope, backupId);
                 return StatusCode(500, new { error = $"Database reset failed: {ex.Message}. A backup was created with ID {backupId}." });
             }
 
             // 3. Log Audit
-            await _auditService.LogAsync(userId, "ResetOperationalData", "Settings", Guid.Empty, new { BackupId = backupId });
+            var auditAction = isDeployment ? "ClientDeploymentReset" : "ResetOperationalData";
+            await _auditService.LogAsync(userId, auditAction, "Settings", Guid.Empty, new { BackupId = backupId, Scope = scope });
 
-            return Ok(new { success = true, message = "Operational data successfully reset.", backupId = backupId });
+            var successMessage = isDeployment
+                ? "Client deployment reset completed successfully. All financial ledgers and operational data have been purged."
+                : "Operational workflow data successfully reset. Financial ledgers, overheads, and payroll preserved.";
+
+            return Ok(new { success = true, message = successMessage, backupId = backupId, scope = scope });
+        }
+
+        [HttpPost("client-deployment-reset")]
+        public async Task<IActionResult> ClientDeploymentReset([FromBody] ResetOperationalDataDto dto)
+        {
+            if (dto == null) dto = new ResetOperationalDataDto();
+            dto.Scope = "deployment";
+            return await ResetOperationalData(dto);
         }
     }
 
     public class ResetOperationalDataDto
     {
         public string Password { get; set; } = string.Empty;
+        public string Scope { get; set; } = "operational";
     }
 
     public class AdvancedSettingsDto

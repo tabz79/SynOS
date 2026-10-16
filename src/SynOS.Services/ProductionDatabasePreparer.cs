@@ -36,9 +36,9 @@ namespace SynOS.Services
             _logger = logger;
         }
 
-        public async Task PrepareDatabaseAsync(bool isDryRun)
+        public async Task PrepareDatabaseAsync(bool isDryRun, string scope = "deployment")
         {
-            _logger.LogInformation("ProductionDatabasePreparer: Database preparation started.");
+            _logger.LogInformation("ProductionDatabasePreparer: Database preparation started with scope '{Scope}'.", scope);
 
             // 1. Classify and validate all EF entities
             var entityTypes = _context.Model.GetEntityTypes();
@@ -77,7 +77,24 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Refusing to prepare database. Unclassified entities detected: {string.Join(", ", unclassified)}");
             }
 
-            _logger.LogInformation("ProductionDatabasePreparer: Schema validation completed. {Count} transactional entities identified.", transactionalTypes.Count);
+            bool isOperationalOnly = scope.Equals("operational", StringComparison.OrdinalIgnoreCase) ||
+                                     scope.Equals("operational_only", StringComparison.OrdinalIgnoreCase);
+
+            if (isOperationalOnly)
+            {
+                // In operational-only reset, preserve standalone financial ledgers, payroll records, and inventory stock
+                transactionalTypes = transactionalTypes.Where(t =>
+                    t.Name != "OverheadExpense" &&
+                    t.Name != "SalaryAdvance" &&
+                    t.Name != "PayrollRun" &&
+                    t.Name != "PayrollAdjustment" &&
+                    t.Name != "ImsPurchaseOrder" &&
+                    t.Name != "ImsPOItem" &&
+                    !t.Name.StartsWith("ImsStock")
+                ).ToList();
+            }
+
+            _logger.LogInformation("ProductionDatabasePreparer: Schema validation completed. {Count} transactional entities targeted for purge (Scope={Scope}).", transactionalTypes.Count, scope);
 
             // 2. Execution Phase (Dynamic SQL)
             using var dbTransaction = await _context.Database.BeginTransactionAsync();
@@ -136,9 +153,19 @@ namespace SynOS.Services
                 var invoicesCount = await _context.Invoices.CountAsync();
                 var expensesCount = await _context.OverheadExpenses.CountAsync();
 
-                if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0 || invoicesCount > 0 || expensesCount > 0)
+                if (isOperationalOnly)
                 {
-                    throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}, Invoices: {invoicesCount}, Expenses: {expensesCount}");
+                    if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0)
+                    {
+                        throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}");
+                    }
+                }
+                else
+                {
+                    if (patientsCount > 0 || visitsCount > 0 || reportsCount > 0 || resultsCount > 0 || invoicesCount > 0 || expensesCount > 0)
+                    {
+                        throw new InvalidOperationException($"Purged table verification failed. Records detected: Patients: {patientsCount}, Visits: {visitsCount}, Reports: {reportsCount}, Results: {resultsCount}, Invoices: {invoicesCount}, Expenses: {expensesCount}");
+                    }
                 }
 
                 var testsCount = await _context.Tests.CountAsync();

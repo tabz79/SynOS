@@ -63,6 +63,7 @@ import {
   Globe,
   Printer,
   Database,
+  RotateCcw,
   LifeBuoy,
   Info,
   Cpu,
@@ -89,9 +90,12 @@ export function SystemSettingsScreen() {
   const [restoringBackupId, setRestoringBackupId] = useState(null);
   const [uploadingBackup, setUploadingBackup] = useState(false);
 
-  // Reset Operational Data State
+  // Reset Operational / Deployment Data State
   const [showResetDialog, setShowResetDialog] = useState(false);
+  const [resetMode, setResetMode] = useState('operational'); // 'operational' | 'deployment'
   const [resetPassword, setResetPassword] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+  const [understoodChecked, setUnderstoodChecked] = useState(false);
   const [resetError, setResetError] = useState('');
   const [resetSuccess, setResetSuccess] = useState('');
   const [resetting, setResetting] = useState(false);
@@ -654,23 +658,37 @@ export function SystemSettingsScreen() {
 
   const handleResetOperationalData = async (e) => {
     e.preventDefault();
+    if (!understoodChecked) {
+      setResetError('Please confirm that you understand the data impact by checking the acknowledgment box.');
+      return;
+    }
+    if (confirmText.trim().toUpperCase() !== 'RESET') {
+      setResetError('Please type RESET in the confirmation box to proceed.');
+      return;
+    }
     if (!resetPassword) {
-      setResetError('Password is required');
+      setResetError('Administrator password is required.');
       return;
     }
     setResetting(true);
     setResetError('');
     setResetSuccess('');
     try {
-      const res = await apiClient.post('/api/v1/admin/settings/reset-operational-data', {
-        password: resetPassword
+      const endpoint = resetMode === 'deployment'
+        ? '/api/v1/admin/settings/client-deployment-reset'
+        : '/api/v1/admin/settings/reset-operational-data';
+      const res = await apiClient.post(endpoint, {
+        password: resetPassword,
+        scope: resetMode
       });
-      setResetSuccess(res?.message || 'Operational data successfully reset.');
+      setResetSuccess(res?.message || 'Data successfully reset.');
       setShowResetDialog(false);
       setResetPassword('');
-      alert(`Success: ${res?.message || 'Operational data successfully reset.'}\nBackup ID: ${res?.backupId}`);
+      setConfirmText('');
+      setUnderstoodChecked(false);
+      alert(`Success: ${res?.message || 'Data successfully reset.'}\nBackup ID: ${res?.backupId}`);
     } catch (err) {
-      setResetError(err.response?.data?.error || err.message || 'Failed to reset operational data.');
+      setResetError(err.response?.data?.error || err.message || 'Failed to execute reset.');
     } finally {
       setResetting(false);
     }
@@ -3625,19 +3643,45 @@ export function SystemSettingsScreen() {
 
               {/* System Reset & Maintenance */}
               <div className="bg-red-50 dark:bg-red-955/10 p-6 rounded-2xl border border-red-200 dark:border-red-900/30 mt-8 space-y-4">
-                <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest flex items-center gap-2">
-                  ⚠️ System Maintenance
-                </h3>
-                <p className="text-xxs text-red-650/80 dark:text-red-400/85 font-semibold leading-relaxed">
-                  Purge all transactional data, reports, billing, and patient records from the system while preserving static configurations. This action is irreversible.
-                </p>
-                <div className="flex justify-start">
+                <div>
+                  <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest flex items-center gap-2">
+                    ⚠️ System Maintenance & Data Reset
+                  </h3>
+                  <p className="text-xxs text-red-650/80 dark:text-red-400/85 font-semibold leading-relaxed mt-1">
+                    Select the target reset procedure: purge routine clinical testing workflows or execute a complete zero-slate financial deployment reset prior to client handover.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 pt-1">
                   <button
                     type="button"
-                    onClick={() => setShowResetDialog(true)}
-                    className="h-10 px-6 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                    onClick={() => {
+                      setResetMode('operational');
+                      setResetPassword('');
+                      setConfirmText('');
+                      setUnderstoodChecked(false);
+                      setResetError('');
+                      setShowResetDialog(true);
+                    }}
+                    className="h-10 px-5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 font-bold text-xxs tracking-wider rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    Reset Operational Data
+                    <RotateCcw size={14} className="text-amber-600 dark:text-amber-400" />
+                    <span>Reset Operational Data</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetMode('deployment');
+                      setResetPassword('');
+                      setConfirmText('');
+                      setUnderstoodChecked(false);
+                      setResetError('');
+                      setShowResetDialog(true);
+                    }}
+                    className="h-10 px-5 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Database size={14} />
+                    <span>Client Deployment Reset</span>
                   </button>
                 </div>
               </div>
@@ -4107,19 +4151,45 @@ export function SystemSettingsScreen() {
 
           {/* System Reset & Maintenance */}
           <div className="bg-red-50 dark:bg-red-950/10 p-6 rounded-2xl border border-red-200 dark:border-red-900/30 mt-8 space-y-4">
-            <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest flex items-center gap-2">
-              ⚠️ System Maintenance
-            </h3>
-            <p className="text-xxs text-red-600/80 dark:text-red-400/80 font-semibold leading-relaxed">
-              Purge all transactional data, reports, billing, and patient records from the system while preserving static configurations. This action is irreversible.
-            </p>
-            <div className="flex justify-start">
+            <div>
+              <h3 className="text-sm font-bold text-red-700 dark:text-red-400 uppercase tracking-widest flex items-center gap-2">
+                ⚠️ System Maintenance & Data Reset
+              </h3>
+              <p className="text-xxs text-red-600/80 dark:text-red-400/80 font-semibold leading-relaxed mt-1">
+                Select the target reset procedure: purge routine clinical testing workflows or execute a complete zero-slate financial deployment reset prior to client handover.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => setShowResetDialog(true)}
-                className="h-10 px-6 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                onClick={() => {
+                  setResetMode('operational');
+                  setResetPassword('');
+                  setConfirmText('');
+                  setUnderstoodChecked(false);
+                  setResetError('');
+                  setShowResetDialog(true);
+                }}
+                className="h-10 px-5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 font-bold text-xxs tracking-wider rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                Reset Operational Data
+                <RotateCcw size={14} className="text-amber-600 dark:text-amber-400" />
+                <span>Reset Operational Data</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setResetMode('deployment');
+                  setResetPassword('');
+                  setConfirmText('');
+                  setUnderstoodChecked(false);
+                  setResetError('');
+                  setShowResetDialog(true);
+                }}
+                className="h-10 px-5 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <Database size={14} />
+                <span>Client Deployment Reset</span>
               </button>
             </div>
           </div>
@@ -4478,20 +4548,35 @@ export function SystemSettingsScreen() {
           </div>
         )}
 
-        {/* Reset Operational Data Confirmation Dialog */}
+        {/* Reset Operational & Deployment Confirmation Dialog */}
         {showResetDialog && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full space-y-5 shadow-2xl text-zinc-850 dark:text-zinc-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-600">
-                  <Database size={20} />
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                  resetMode === 'deployment' 
+                    ? 'bg-rose-500/10 border border-rose-500/20 text-rose-600' 
+                    : 'bg-amber-500/10 border border-amber-500/20 text-amber-600'
+                }`}>
+                  {resetMode === 'deployment' ? <Database size={20} /> : <RotateCcw size={20} />}
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight">
-                    Client Deployment & Financial Reset
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 font-medium">
-                    Purges operational ledgers so the client can start completely fresh with zeroed accounts.
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight">
+                      {resetMode === 'deployment' ? 'Client Deployment Reset' : 'Operational Data Reset'}
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider uppercase ${
+                      resetMode === 'deployment' 
+                        ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800' 
+                        : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
+                    }`}>
+                      {resetMode === 'deployment' ? 'Factory Clean Slate' : 'Workflow Purge'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 font-medium mt-0.5">
+                    {resetMode === 'deployment'
+                      ? 'Purges 100% of financial ledgers and operational records back to ₹0 so the client starts fresh at Day 0.'
+                      : 'Cleans patient testing orders, specimens, results, and worklists while preserving financial overheads and payroll ledgers.'}
                   </p>
                 </div>
               </div>
@@ -4502,17 +4587,33 @@ export function SystemSettingsScreen() {
                   {/* Column 1: Wiped / Zeroed */}
                   <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-955/20 border border-rose-200 dark:border-rose-900/40 space-y-2">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
-                      ✕ Reset to ₹0 / Purged
+                      ✕ Reset to {resetMode === 'deployment' ? '₹0' : 'Empty'} / Purged
                     </span>
                     <ul className="text-[11px] text-rose-900 dark:text-rose-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
-                      <li>Patient Invoices, Bills & Dues</li>
-                      <li>Cashier Counter Collections (₹0)</li>
-                      <li>Operational Overhead Expenses</li>
-                      <li>Doctor Referral Cut Payables</li>
-                      <li>Outsourced Reference Lab Bills</li>
-                      <li>Payroll Runs & Salary Advances</li>
-                      <li>Patient Visits, Orders & Samples</li>
-                      <li>Clinical Test Results & Reports</li>
+                      {resetMode === 'deployment' ? (
+                        <>
+                          <li>Patient Invoices, Bills & Dues (₹0)</li>
+                          <li>Cashier Counter Collections (₹0)</li>
+                          <li>Operational Overhead Expenses (₹0)</li>
+                          <li>Doctor Referral Cut Payables (₹0)</li>
+                          <li>Outsourced Reference Lab Bills (₹0)</li>
+                          <li>Payroll Runs & Salary Advances (₹0)</li>
+                          <li>Economics Intelligence Facts (₹0)</li>
+                          <li>Patient Visits, Orders & Samples</li>
+                          <li>Clinical Test Results & Reports</li>
+                          <li>Reseeds Bill Numbers to #1</li>
+                        </>
+                      ) : (
+                        <>
+                          <li>Patient Registrations & Visits</li>
+                          <li>Lab Orders, Samples & Worklists</li>
+                          <li>Parameter Results & Delta Checks</li>
+                          <li>Radiology Scans & PACS Links</li>
+                          <li>Diagnostic Reports & Deliveries</li>
+                          <li>Notification Queues & Logs</li>
+                          <li>Associated Visit Invoices & Dues</li>
+                        </>
+                      )}
                     </ul>
                   </div>
 
@@ -4526,9 +4627,17 @@ export function SystemSettingsScreen() {
                       <li>Test Catalog, Panels & Pricing</li>
                       <li>Reference Labs & B2B Rate Lists</li>
                       <li>Staff Users, Accounts & Roles</li>
-                      <li>Branch Setup & Organization Profile</li>
-                      <li>Printer Routes & Stationery Layouts</li>
-                      <li>Statutory Policies & Pay Components</li>
+                      <li>Branch Setup & Lab Profile</li>
+                      <li>Printer Routes & Templates</li>
+                      {resetMode === 'operational' ? (
+                        <>
+                          <li>Overhead Expenses (Rent, Bills)</li>
+                          <li>Staff Payroll Runs & Advances</li>
+                          <li>Inventory POs & Opening Stock</li>
+                        </>
+                      ) : (
+                        <li>Statutory Policies & Pay Structures</li>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -4540,26 +4649,55 @@ export function SystemSettingsScreen() {
                     <span className="text-[10px] font-mono font-bold text-emerald-600">Auto SQL Backup Pre-Executed</span>
                   </div>
                   <p className="text-[11px] text-zinc-500 font-medium">
-                    A full database backup will be generated and verified to disk before any deletion is committed.
+                    A full database backup tagged <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">"{resetMode === 'deployment' ? 'ClientDeploymentReset' : 'OperationalDataReset'}"</span> will be verified on disk before any deletion is committed.
                   </p>
                 </div>
               </div>
 
-              <form onSubmit={handleResetOperationalData} className="space-y-4 pt-2">
+              <form onSubmit={handleResetOperationalData} className="space-y-3 pt-1">
                 {resetError && (
                   <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xxs font-semibold text-red-600 dark:text-red-450">
                     {resetError}
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <label className="block text-xxs font-bold text-zinc-400 uppercase tracking-wider">
+                {/* Explicit Understanding Checkbox */}
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={understoodChecked}
+                    onChange={e => setUnderstoodChecked(e.target.checked)}
+                    className="mt-0.5 rounded border-zinc-300 text-red-600 focus:ring-red-500 cursor-pointer"
+                  />
+                  <span className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed">
+                    I understand what this button does to the data. I confirm that I want to proceed and accept that all purged items cannot be undone except via backup restoration.
+                  </span>
+                </label>
+
+                {/* Type RESET Confirmation */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                    Type <span className="font-mono text-red-600 font-extrabold">RESET</span> to confirm
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Type RESET"
+                    value={confirmText}
+                    onChange={e => setConfirmText(e.target.value)}
+                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs font-mono font-bold tracking-widest outline-none focus:border-red-500 transition-colors text-zinc-800 dark:text-zinc-200 shadow-sm"
+                  />
+                </div>
+
+                {/* Password Confirmation */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                     Confirm Administrator Password
                   </label>
                   <input
                     type="password"
                     required
-                    placeholder="Enter your password"
+                    placeholder="Enter administrator password"
                     value={resetPassword}
                     onChange={e => setResetPassword(e.target.value)}
                     className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl text-xs outline-none focus:border-red-500 transition-colors text-zinc-800 dark:text-zinc-200 shadow-sm"
@@ -4572,6 +4710,8 @@ export function SystemSettingsScreen() {
                     onClick={() => {
                       setShowResetDialog(false);
                       setResetPassword('');
+                      setConfirmText('');
+                      setUnderstoodChecked(false);
                       setResetError('');
                     }}
                     disabled={resetting}
@@ -4581,10 +4721,14 @@ export function SystemSettingsScreen() {
                   </button>
                   <button
                     type="submit"
-                    disabled={resetting}
-                    className="flex-1 h-10 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    disabled={resetting || !understoodChecked || confirmText.trim().toUpperCase() !== 'RESET' || !resetPassword}
+                    className={`flex-1 h-10 font-bold text-xxs tracking-wider rounded-xl shadow active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white ${
+                      resetMode === 'deployment' ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-600 hover:bg-amber-700'
+                    }`}
                   >
-                    {resetting ? 'Backing up & Resetting...' : 'Backup & Reset'}
+                    {resetting 
+                      ? 'Backing up & Resetting...' 
+                      : (resetMode === 'deployment' ? 'Proceed with Deployment Reset' : 'Proceed with Operational Reset')}
                   </button>
                 </div>
               </form>

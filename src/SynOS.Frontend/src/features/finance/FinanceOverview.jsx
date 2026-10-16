@@ -267,18 +267,6 @@ export const FinanceOverview = () => {
                             </button>
                         </div>
                     )}
-
-                    {/* Client Deployment Reset Button */}
-                    {isAdmin && (
-                        <button
-                            onClick={() => navigate('/settings?tab=backup')}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50 dark:bg-rose-955/40 text-rose-700 dark:text-rose-300 text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all cursor-pointer shadow-2xs"
-                            title="Purge all operational test numbers so client can start fresh"
-                        >
-                            <RotateCcw size={13} className="text-rose-600 dark:text-rose-400" />
-                            <span>Client Deployment Reset</span>
-                        </button>
-                    )}
                 </div>
             </div>
 
