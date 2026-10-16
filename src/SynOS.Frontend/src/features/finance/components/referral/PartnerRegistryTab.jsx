@@ -435,7 +435,7 @@ export const PartnerRegistryTab = () => {
                                     {directoryData.items.map(doctor => {
                                         const phone = doctor.demographics?.phone || doctor.contactInfo;
                                         const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
-                                        const hasUnmapped = doctor.hasUnmappedWaiting || doctor.unmappedTestsCount > 0;
+                                        const hasUnmapped = doctor.hasUnmappedWaiting || (doctor.unmappedTestsCount > 0);
 
                                         return (
                                             <tr 
@@ -447,12 +447,12 @@ export const PartnerRegistryTab = () => {
                                                     <div className="flex items-center gap-2.5">
                                                         <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 font-bold text-xs shrink-0 group-hover/row:text-synos-primary transition-colors">
                                                             {doctor.name
-                                                                .replace(/^(Dr\.?|Prof\.?|Mr\.?|Mrs\.?)\s+/i, '')
-                                                                .split(' ')
-                                                                .map(n => n[0])
-                                                                .slice(0, 2)
-                                                                .join('')
-                                                                .toUpperCase() || 'DR'}
+                                                                ?.replace(/^(Dr\.?|Prof\.?|Mr\.?|Mrs\.?)\s+/i, '')
+                                                                ?.split(' ')
+                                                                ?.map(n => n[0])
+                                                                ?.slice(0, 2)
+                                                                ?.join('')
+                                                                ?.toUpperCase() || 'DR'}
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-1.5">
@@ -527,7 +527,7 @@ export const PartnerRegistryTab = () => {
                                                         </span>
                                                     ) : (
                                                         <span className="type-meta text-[11px] text-zinc-500">
-                                                            Default: {doctor.defaultCommissionPercentage}%
+                                                            Default: {doctor.defaultCommissionPercentage ?? 10}%
                                                         </span>
                                                     )}
                                                 </td>
@@ -655,7 +655,7 @@ export const PartnerRegistryTab = () => {
 /* DOCTOR DEPARTMENT CARD (GRID VIEW)                                         */
 /* -------------------------------------------------------------------------- */
 const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
-    const hasUnmapped = doctor.hasUnmappedWaiting || doctor.unmappedTestsCount > 0;
+    const hasUnmapped = doctor.hasUnmappedWaiting || (doctor.unmappedTestsCount > 0);
     const phone = doctor.demographics?.phone || doctor.contactInfo;
     const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
 
@@ -742,7 +742,7 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
                         {doctor.learnedRulesCount > 0 ? (
                             <span className="font-semibold text-zinc-700 dark:text-zinc-300">{doctor.learnedRulesCount} Learned Rates</span>
                         ) : (
-                            <span>Default: <b>{doctor.defaultCommissionPercentage}%</b></span>
+                            <span>Default: <b>{doctor.defaultCommissionPercentage ?? 10}%</b></span>
                         )}
                     </span>
                     <div className="flex items-center gap-2">
@@ -785,7 +785,7 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
 /* SLIDE-OUT DOCTOR PROFILE DRAWER (360° PROFILE & RATE CARD)                  */
 /* -------------------------------------------------------------------------- */
 const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
-    const [profile, setProfile] = useState(null);
+    const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('rates');
     
@@ -804,14 +804,18 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
         try {
             setLoading(true);
             const data = await FinanceApi.getDoctorProfile(doctorId);
-            setProfile(data);
-            setDemographicsForm(data.demographics || {});
+            setProfileData(data);
+            
+            // Normalize backend payload: can be under .profile or .partner
+            const doc = data?.profile || data?.partner || {};
+            setDemographicsForm(doc.demographics || {});
 
+            const unmapped = data?.unmappedTests || data?.unmappedPrescribedTests || [];
             const initialInputs = {};
-            (data.unmappedPrescribedTests || []).forEach(t => {
+            unmapped.forEach(t => {
                 initialInputs[t.testId] = {
                     type: 'Percentage',
-                    value: data.partner?.defaultCommissionPercentage || 10
+                    value: doc.defaultCommissionPercentage ?? 10
                 };
             });
             setQuickLearnInputs(initialInputs);
@@ -821,6 +825,12 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
             setLoading(false);
         }
     };
+
+    const doc = profileData?.profile || profileData?.partner || {};
+    const rateCardList = profileData?.rateCard || profileData?.learnedRules || [];
+    const unmappedList = profileData?.unmappedTests || profileData?.unmappedPrescribedTests || [];
+    const recentVisitsList = profileData?.recentVisits || [];
+    const topTestsList = profileData?.topPrescribedTests || [];
 
     const handleQuickLearnRate = async (testId) => {
         const input = quickLearnInputs[testId];
@@ -851,9 +861,9 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
         try {
             setSavingDemographics(true);
             await FinanceApi.updateDoctorDemographics(doctorId, {
-                name: profile.partner.name,
-                clinicName: demographicsForm.clinicName || profile.partner.clinicName,
-                location: demographicsForm.location || profile.partner.location,
+                name: doc.name || '',
+                clinicName: demographicsForm.clinicName || doc.clinicName || '',
+                location: demographicsForm.location || doc.location || '',
                 demographics: demographicsForm
             });
             setDemoSuccess(true);
@@ -885,7 +895,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
             <div className="w-full max-w-2xl bg-white dark:bg-zinc-950 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden">
                 {/* DRAWER TOP BAR */}
                 <div className="p-6 border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50/50 dark:bg-zinc-900/40 flex items-start justify-between">
-                    {loading || !profile ? (
+                    {loading || !profileData ? (
                         <div className="flex items-center gap-3 animate-pulse">
                             <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-zinc-800" />
                             <div className="space-y-1.5">
@@ -901,17 +911,17 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h2 className="type-value !text-base text-zinc-900 dark:text-white">
-                                        {profile.partner?.name}
+                                        {doc.name}
                                     </h2>
-                                    {profile.demographics?.registrationNumber && (
+                                    {doc.demographics?.registrationNumber && (
                                         <span className="type-code text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
-                                            {profile.demographics.registrationNumber}
+                                            {doc.demographics.registrationNumber}
                                         </span>
                                     )}
                                 </div>
                                 <p className="type-meta text-xs text-zinc-500 mt-0.5">
-                                    <span>{profile.demographics?.speciality || profile.partner?.partnerType || 'Doctor'}</span>
-                                    {profile.partner?.clinicName && <span> • {profile.partner.clinicName}</span>}
+                                    <span>{doc.demographics?.speciality || doc.partnerType || 'Doctor'}</span>
+                                    {doc.clinicName && <span> • {doc.clinicName}</span>}
                                 </p>
                             </div>
                         </div>
@@ -926,23 +936,23 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                 </div>
 
                 {/* COMMERCIAL SUMMARY STRIP */}
-                {profile && (
+                {profileData && (
                     <div className="grid grid-cols-4 gap-2 px-6 py-3.5 bg-slate-50 dark:bg-zinc-900/40 border-b border-black/[0.05] dark:border-white/[0.05]">
                         <div>
                             <span className="type-meta uppercase !text-[9px] block">Patients</span>
-                            <span className="type-value block mt-0.5">{profile.partner?.totalPatientsReferred || 0}</span>
+                            <span className="type-value block mt-0.5">{doc.totalPatientsReferred || 0}</span>
                         </div>
                         <div>
                             <span className="type-meta uppercase !text-[9px] block">Revenue</span>
-                            <span className="type-value block mt-0.5">₹ {Number(profile.partner?.totalRevenueGenerated || 0).toLocaleString()}</span>
+                            <span className="type-value block mt-0.5">₹ {Number(doc.totalRevenueGenerated || 0).toLocaleString()}</span>
                         </div>
                         <div>
                             <span className="type-meta uppercase !text-[9px] block">Earned</span>
-                            <span className="type-value block mt-0.5">₹ {Number(profile.partner?.totalCommissionEarned || 0).toLocaleString()}</span>
+                            <span className="type-value block mt-0.5">₹ {Number(doc.totalCommissionEarned || 0).toLocaleString()}</span>
                         </div>
                         <div>
                             <span className="type-meta uppercase !text-[9px] block">Due</span>
-                            <span className="type-value block mt-0.5 text-amber-600 dark:text-amber-400">₹ {Number(profile.partner?.pendingPayoutDue || 0).toLocaleString()}</span>
+                            <span className="type-value block mt-0.5 text-amber-600 dark:text-amber-400">₹ {Number(doc.pendingPayoutDue || 0).toLocaleString()}</span>
                         </div>
                     </div>
                 )}
@@ -953,10 +963,10 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                         { 
                             id: 'rates', 
                             label: 'Rate Card & Learning', 
-                            badge: profile?.unmappedPrescribedTests?.length || 0 
+                            badge: unmappedList.length 
                         },
                         { id: 'demographics', label: 'Doctor Demographics' },
-                        { id: 'visits', label: 'Referred Visits', count: profile?.recentVisits?.length || 0 },
+                        { id: 'visits', label: 'Referred Visits', count: recentVisitsList.length },
                         { id: 'mix', label: 'Top Tests Mix' },
                     ].map(tab => (
                         <button
@@ -979,7 +989,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                 {/* DRAWER BODY */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-                    {loading || !profile ? (
+                    {loading || !profileData ? (
                         <div className="flex flex-col items-center justify-center h-48 gap-3 text-zinc-400">
                             <Loader2 size={24} className="animate-spin text-synos-primary" />
                             <span className="type-meta">Loading Profile...</span>
@@ -990,13 +1000,13 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             {activeTab === 'rates' && (
                                 <div className="space-y-6">
                                     {/* Unmapped Prescribed Tests */}
-                                    {profile.unmappedPrescribedTests?.length > 0 && (
+                                    {unmappedList.length > 0 && (
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                                     <span className="type-section-header uppercase text-amber-700 dark:text-amber-400">
-                                                        Unmapped Tests Prescribed at Reception ({profile.unmappedPrescribedTests.length})
+                                                        Unmapped Tests Prescribed at Reception ({unmappedList.length})
                                                     </span>
                                                 </div>
                                             </div>
@@ -1005,8 +1015,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                             </p>
 
                                             <div className="space-y-2.5">
-                                                {profile.unmappedPrescribedTests.map(test => {
-                                                    const input = quickLearnInputs[test.testId] || { type: 'Percentage', value: 10 };
+                                                {unmappedList.map(test => {
+                                                    const input = quickLearnInputs[test.testId] || { type: 'Percentage', value: doc.defaultCommissionPercentage ?? 10 };
                                                     const isSaving = savingTestId === test.testId;
 
                                                     return (
@@ -1087,18 +1097,18 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <span className="type-section-header uppercase">
-                                                Active Learned Rate Card ({profile.learnedRules?.length || 0})
+                                                Active Learned Rate Card ({rateCardList.length})
                                             </span>
                                             <span className="type-meta text-xs">
-                                                Default Cut: <b className="text-zinc-800 dark:text-zinc-200">{profile.partner.defaultCommissionPercentage}%</b>
+                                                Default Cut: <b className="text-zinc-800 dark:text-zinc-200">{doc.defaultCommissionPercentage ?? 10}%</b>
                                             </span>
                                         </div>
 
-                                        {profile.learnedRules?.length === 0 ? (
+                                        {rateCardList.length === 0 ? (
                                             <div className="p-6 text-center synos-dept-card rounded-xl space-y-1">
                                                 <p className="type-value !text-xs">No Custom Rates Configured</p>
                                                 <p className="type-meta text-xs">
-                                                    This doctor currently receives the default {profile.partner.defaultCommissionPercentage}% cut.
+                                                    This doctor currently receives the default {doc.defaultCommissionPercentage ?? 10}% cut.
                                                 </p>
                                             </div>
                                         ) : (
@@ -1114,7 +1124,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05]">
-                                                        {profile.learnedRules.map(rule => (
+                                                        {rateCardList.map(rule => (
                                                             <tr key={rule.ruleId} className="hover:bg-slate-50/50 dark:hover:bg-zinc-900/50">
                                                                 <td className="py-2.5 px-3">
                                                                     <p className="type-value !text-xs">{rule.testName}</p>
@@ -1198,7 +1208,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                             <label className="type-label text-[11px]">Clinic Address</label>
                                             <input 
                                                 type="text"
-                                                value={demographicsForm.clinicAddress || profile.partner.location || ''}
+                                                value={demographicsForm.clinicAddress || doc.location || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, clinicAddress: e.target.value, location: e.target.value})}
                                                 placeholder="Location / Area"
                                                 className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
@@ -1244,13 +1254,13 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             {activeTab === 'visits' && (
                                 <div className="space-y-3">
                                     <span className="type-section-header uppercase">Recent Referred Visits</span>
-                                    {profile.recentVisits?.length === 0 ? (
+                                    {recentVisitsList.length === 0 ? (
                                         <div className="p-6 text-center synos-dept-card rounded-xl">
                                             <span className="type-meta text-xs">No visits recorded yet.</span>
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            {profile.recentVisits.map(visit => (
+                                            {recentVisitsList.map(visit => (
                                                 <div 
                                                     key={visit.visitId}
                                                     className="synos-dept-card p-3 rounded-xl flex items-center justify-between"
@@ -1282,23 +1292,23 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             {activeTab === 'mix' && (
                                 <div className="space-y-3">
                                     <span className="type-section-header uppercase">Top Prescribed Tests</span>
-                                    {profile.topPrescribedTests?.length === 0 ? (
+                                    {topTestsList.length === 0 ? (
                                         <div className="p-6 text-center synos-dept-card rounded-xl">
                                             <span className="type-meta text-xs">No prescription history recorded yet.</span>
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            {profile.topPrescribedTests.map(t => (
+                                            {topTestsList.map(t => (
                                                 <div 
                                                     key={t.testId}
                                                     className="synos-dept-card p-3 rounded-xl flex items-center justify-between"
                                                 >
                                                     <div>
                                                         <p className="type-value !text-xs">{t.testName}</p>
-                                                        <p className="type-meta text-[11px]">{t.departmentName} • {t.prescriptionCount} Prescriptions</p>
+                                                        <p className="type-meta text-[11px]">{t.departmentName} • {t.prescribedCount || t.prescriptionCount || 0} Prescriptions</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="type-value !text-xs block">₹{Number(t.totalRevenueGenerated || 0).toLocaleString()}</span>
+                                                        <span className="type-value !text-xs block">₹{Number(t.totalRevenue || t.totalRevenueGenerated || 0).toLocaleString()}</span>
                                                         <span className="type-meta text-[10px]">Total Revenue</span>
                                                     </div>
                                                 </div>
@@ -1325,7 +1335,7 @@ const PartnerFormModal = ({ partner, onClose, onSave }) => {
         partnerType: partner?.partnerType || 'Doctor',
         clinicName: partner?.clinicName || '',
         location: partner?.location || '',
-        defaultCommissionPercentage: partner?.defaultCommissionPercentage || 10,
+        defaultCommissionPercentage: partner?.defaultCommissionPercentage ?? 10,
         calculationBase: partner?.calculationBase ?? 1,
         paymentCollectionModel: partner?.paymentCollectionModel || 'LabCollects',
         contactInfo: partner?.contactInfo || '',
@@ -1339,7 +1349,7 @@ const PartnerFormModal = ({ partner, onClose, onSave }) => {
             setSubmitting(true);
             const payload = {
                 ...formData,
-                defaultCommissionPercentage: parseFloat(formData.defaultCommissionPercentage)
+                defaultCommissionPercentage: parseFloat(formData.defaultCommissionPercentage) || 0
             };
             
             if (isEdit) {
@@ -1365,7 +1375,7 @@ const PartnerFormModal = ({ partner, onClose, onSave }) => {
                         <UserPlus className="w-5 h-5 text-synos-primary" />
                         <div>
                             <h3 className="type-value !text-base">{isEdit ? 'Update Doctor' : 'Onboard Doctor'}</h3>
-                            <p className="type-meta text-xs">{isEdit ? `Editing ${partner.name}` : 'Empanel a referring doctor or center'}</p>
+                            <p className="type-meta text-xs">{isEdit ? `Editing ${partner?.name}` : 'Empanel a referring doctor or center'}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600">
