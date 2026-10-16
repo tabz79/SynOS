@@ -32,7 +32,7 @@ VersionInfoVersion=1.5.2.0
 
 LicenseFile=scripts\eula.txt
 
-CloseApplications=force
+CloseApplications=no
 RestartApplications=no
 
 [Messages]
@@ -912,15 +912,18 @@ var
   i: Integer;
   WwwrootDir: String;
 begin
+  Exec('net.exe', 'stop TBZSynOSGateway', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+  Exec('sc.exe', 'stop TBZSynOSGateway', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
   Exec('net.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
   Exec('sc.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
   
   for i := 1 to 5 do
   begin
+    Exec('taskkill.exe', '/F /IM SynOS.Gateway.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     Exec('taskkill.exe', '/F /IM SynOS.Api.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     Exec('taskkill.exe', '/F /IM SynOS.ServerManager.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
     Exec('taskkill.exe', '/F /IM SynOS.Updater.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
-    Sleep(1000);
+    Sleep(500);
   end;
   Sleep(1000);
   
@@ -1045,7 +1048,9 @@ begin
       // HEALTH VERIFICATION FAILED! Trigger rollback
       WizardForm.StatusLabel.Caption := 'Verification failed. Rolling back installation changes...';
       
-      // Stop and delete service
+      // Stop and delete services
+      Exec('sc.exe', 'stop TBZSynOSGateway', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
+      Exec('sc.exe', 'delete TBZSynOSGateway', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
       Exec('sc.exe', 'stop TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
       Exec('sc.exe', 'delete TBZSynOSService', '', SW_HIDE, ewWaitUntilTerminated, ExitCode);
       

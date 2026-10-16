@@ -49,8 +49,19 @@ Log-Message "Decommissioning script started."
 Log-Message "App Directory: $AppDir"
 Log-Message "Options - RemoveDb: $RemoveDb, RemoveReports: $RemoveReports, RemovePacs: $RemovePacs, RemoveBackups: $RemoveBackups"
 
-# 1. Stop and Delete Windows Service
+# 1. Stop and Delete Windows Services
 try {
+    Log-Message "Stopping SynOS Gateway Service (TBZSynOSGateway)..."
+    $gwService = Get-Service -Name "TBZSynOSGateway" -ErrorAction SilentlyContinue
+    if ($gwService) {
+        if ($gwService.Status -eq "Running") {
+            Stop-Service -Name "TBZSynOSGateway" -Force -ErrorAction SilentlyContinue
+            Log-Message "SynOS Gateway Service stopped."
+        }
+        Log-Message "Removing SynOS Gateway Windows Service..."
+        sc.exe delete "TBZSynOSGateway" | Out-String | Log-Message
+    }
+
     Log-Message "Stopping SynOS Windows Service ($SynOSService)..."
     $service = Get-Service -Name $SynOSService -ErrorAction SilentlyContinue
     if ($service) {
@@ -67,7 +78,7 @@ try {
     Log-Message "ERROR during service removal: $_"
 }
 
-# 2. Remove Firewall Exception
+# 2. Remove Firewall Exceptions
 try {
     Log-Message "Removing firewall rule '$SynOSDisplayName' on port $SynOSPort..."
     $ruleExists = Get-NetFirewallRule -DisplayName "$SynOSDisplayName" -ErrorAction SilentlyContinue
@@ -76,6 +87,12 @@ try {
         Log-Message "Firewall rule removed successfully."
     } else {
         Log-Message "Firewall rule not found."
+    }
+
+    $backendRule = Get-NetFirewallRule -DisplayName "TBZ Labs - SynOS Backend" -ErrorAction SilentlyContinue
+    if ($backendRule) {
+        Remove-NetFirewallRule -DisplayName "TBZ Labs - SynOS Backend" -ErrorAction Stop
+        Log-Message "Backend firewall rule removed successfully."
     }
 } catch {
     Log-Message "WARNING: Failed to remove firewall rule: $_"
