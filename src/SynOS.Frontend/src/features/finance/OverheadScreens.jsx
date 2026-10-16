@@ -260,9 +260,9 @@ export const OverheadExpensesScreen = () => {
                 </div>
             ) : (
                 /* Live Bills Table Register */
-                <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
                     {/* Search and Filters */}
-                    <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
+                    <div className="p-4 border-b dark:border-zinc-800 border-slate-300 flex items-center justify-between bg-slate-50/80 dark:bg-zinc-900/50">
                         <div className="relative flex-1 max-w-sm">
                             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                             <input 
@@ -276,9 +276,9 @@ export const OverheadExpensesScreen = () => {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse synos-table">
                             <thead>
-                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20">
+                                <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
                                     <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Due Date</th>
                                     <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Description</th>
                                     <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
@@ -289,7 +289,7 @@ export const OverheadExpensesScreen = () => {
                                     <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
                                 {filteredBills.length === 0 ? (
                                     <tr>
                                         <td colSpan="8" className="px-6 py-10 text-center text-xs text-zinc-500">No bills match your search criteria.</td>
@@ -850,10 +850,10 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                 No active recurring cycles found. Select a cycle like Monthly or 1 Year above to create one.
                             </div>
                         ) : (
-                            <div className="border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-zinc-900/10">
-                                <table className="w-full text-left border-collapse">
+                            <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
+                                <table className="w-full text-left border-collapse synos-table">
                                     <thead>
-                                        <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-zinc-200">
+                                        <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
                                             <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
                                             <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Obligation Description</th>
                                             <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Cost</th>
@@ -862,7 +862,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                             <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                    <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
                                         {templates.map((tpl) => {
                                             const cat = getCategoryDetails(tpl.category);
                                             const cycle = extractCycle(tpl.description);

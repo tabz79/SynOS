@@ -566,7 +566,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                             <p className="text-zinc-500">No matching items found</p>
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse synos-table">
                             <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
                                 <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                     <th className="px-4 py-4">Item</th>
@@ -577,7 +577,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                     <th className="px-4 py-4 text-right">Quick Ops</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y dark:divide-white/5">
+                            <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                                 {filteredStock.map((item, idx) => (
                                     <tr 
                                         key={idx} 
@@ -1090,7 +1090,7 @@ const RequestsQueue = () => {
                         <p className="text-zinc-500 font-bold text-xs">All branch requests fulfilled</p>
                     </div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse synos-table">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
                             <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                 <th className="px-4 py-4">Consumable</th>
@@ -1101,7 +1101,7 @@ const RequestsQueue = () => {
                                 <th className="px-4 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-white/5">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                             {requests.map((req) => (
                                 <tr key={req.requestId} className="group hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors">
                                     <td className="px-4 py-4">
@@ -1220,7 +1220,7 @@ const MovementHistory = () => {
                         <p className="text-zinc-500 font-bold text-xs">No movements recorded yet</p>
                     </div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse synos-table">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
                             <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
                                 <th className="px-4 py-4">Item & Batch</th>
@@ -1231,7 +1231,7 @@ const MovementHistory = () => {
                                 <th className="px-4 py-4 text-right">Reference</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-white/5">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                             {movements.map((move) => (
                                 <tr key={move.movementId} className="group hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors">
                                     <td className="px-4 py-4">

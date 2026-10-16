@@ -98,17 +98,17 @@ export function PatientSearchScreen() {
         </div>
       )}
 
-      {/* Table Container - matching Identity & Access perfectly */}
-      <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2">
+      {/* Table Container - matching SynOS Design */}
+      <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50 flex items-center gap-2">
           <Users className="w-4 h-4 text-synos-primary" />
           <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Managed Patients Demographics</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse synos-table">
             <thead>
-              <tr className="text-xs font-medium text-zinc-400 border-b dark:border-zinc-900 border-zinc-100 bg-zinc-50/10 dark:bg-zinc-900/5">
+              <tr className="text-xs font-medium text-zinc-400 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/50 dark:bg-zinc-900/10">
                 <th className="px-6 py-3.5 font-medium">Patient</th>
                 <th className="px-6 py-3.5 font-medium">Demographics</th>
                 <th className="px-6 py-3.5 font-medium">MRN Code</th>
@@ -117,7 +117,7 @@ export function PatientSearchScreen() {
                 <th className="px-6 py-3.5 text-right font-medium">Operational Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y dark:divide-zinc-900 border-zinc-100">
+            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
               {loading ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-xs text-zinc-400 animate-pulse font-normal">

@@ -460,7 +460,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                             <th className="py-3 px-5 text-right">Action</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900 text-xs font-medium">
+                                                    <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium">
                                                         {group.unmappedTests.map(test => {
                                                             const key = `${group.referralPartnerId}_${test.testId}`;
                                                             const staged = stagedRates[key] || { type: 'Percentage', value: '' };
@@ -638,7 +638,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                             <th className="py-3 px-5 text-right">Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900 text-xs font-medium">
+                                    <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium">
                                         {learnedRules.map(rule => {
                                             const isPercentage = rule.commissionType === 0 || rule.commissionType === 'Percentage';
                                             const payout = isPercentage 

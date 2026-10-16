@@ -117,17 +117,17 @@ export const CommissionPayoutsScreen = () => {
             
             <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
                 {loading ? <LoadingState /> : (
-                    <table className="w-full text-left">
+                    <table className="w-full text-left synos-table">
                         <thead>
-                            <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Commission Amount</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Status</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Due Since</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
+                            <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Commission Amount</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Due Since</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {payables.map(p => (
                                 <tr key={p.factId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4">

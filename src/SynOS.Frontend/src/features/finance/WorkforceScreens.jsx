@@ -153,7 +153,7 @@ export function AttendanceLeavesScreen() {
                         <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-950/50">
                             <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Employee List</h3>
                         </div>
-                        <div className="flex-1 overflow-y-auto divide-y dark:divide-zinc-800 divide-zinc-100">
+                        <div className="flex-1 overflow-y-auto divide-y divide-slate-200/80 dark:divide-zinc-800">
                             {staff.map(s => (
                                 <button 
                                     key={s.employeeId}

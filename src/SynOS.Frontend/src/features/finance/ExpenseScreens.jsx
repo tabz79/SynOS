@@ -270,9 +270,9 @@ export const ExpenseFeedScreen = () => {
             </div>
 
             {/* Content Area */}
-            <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
                 {/* Table Filter Bar */}
-                <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
+                <div className="p-4 border-b dark:border-zinc-800 border-slate-300 flex items-center justify-between bg-slate-50/80 dark:bg-zinc-900/50">
                     <div className="flex items-center gap-2">
                         {['Today', '7D', '30D', 'All Time'].map(range => (
                             <button 
@@ -301,9 +301,9 @@ export const ExpenseFeedScreen = () => {
 
                 {/* Table */}
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse synos-table">
                         <thead>
-                            <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20">
+                            <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Payee</th>
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
@@ -312,7 +312,7 @@ export const ExpenseFeedScreen = () => {
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
                             {loading ? (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-10 text-center text-xs text-zinc-500 animate-pulse">Reconstructing operational timeline...</td>
@@ -433,11 +433,11 @@ export const VendorPayablesScreen = () => {
                 <SummaryCard title="Active Vendors" value={summary.length.toString()} subtitle="Supplying Lab" />
             </div>
 
-            <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse synos-table">
                         <thead>
-                            <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20">
+                            <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Vendor Name</th>
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Bills</th>
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Oldest Bill</th>
@@ -445,7 +445,7 @@ export const VendorPayablesScreen = () => {
                                 <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
                             {loading ? (
                                 <tr>
                                     <td colSpan="5" className="px-6 py-10 text-center text-xs text-zinc-500 animate-pulse">Calculating vendor liabilities...</td>
@@ -1008,9 +1008,9 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                     {tab === 'labs' ? (
                         <ReferenceLabsView />
                     ) : (
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse synos-table">
                             <thead>
-                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20">
+                                <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
                                     <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date</th>
                                     <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient & Test</th>
                                     <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference Lab</th>
@@ -1019,7 +1019,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                     <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
                                 {loading ? (
                                     <tr>
                                         <td colSpan="6" className="px-6 py-10 text-center text-xs text-zinc-500 animate-pulse">Synchronizing with reference lab facts...</td>
@@ -1913,18 +1913,18 @@ export const ExpenseOverviewTab = () => {
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-xs border-collapse">
+                            <table className="w-full text-left text-xs border-collapse synos-table">
                                 <thead>
-                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
-                                        <th className="pb-3">Date</th>
-                                        <th className="pb-3">Description</th>
-                                        <th className="pb-3 text-right">Amount</th>
-                                        <th className="pb-3 text-center">Category</th>
+                                    <tr className="border-b dark:border-zinc-800 border-slate-300 pb-2 text-[10px] uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50">
+                                        <th className="p-3">Date</th>
+                                        <th className="p-3">Description</th>
+                                        <th className="p-3 text-right">Amount</th>
+                                        <th className="p-3 text-center">Category</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {recentExpenses.map((t, idx) => (
-                                        <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                                        <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors">
                                             <td className="py-3 text-zinc-500">{new Date(t.occurredAt).toLocaleDateString()}</td>
                                             <td className="py-3 font-semibold dark:text-zinc-200">{t.description || t.notes || 'Operational Payout'}</td>
                                             <td className="py-3 text-right font-black text-rose-500">₹{t.amount?.toLocaleString()}</td>
@@ -2105,19 +2105,19 @@ export const OutsourcingOverviewTab = () => {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs border-collapse">
+                        <table className="w-full text-left text-xs border-collapse synos-table">
                             <thead>
-                                <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
-                                    <th className="pb-3">Reference Lab</th>
-                                    <th className="pb-3">Patient</th>
-                                    <th className="pb-3">Test</th>
-                                    <th className="pb-3 text-right">Balance Due</th>
-                                    <th className="pb-3 text-center">Status</th>
+                                <tr className="border-b dark:border-zinc-800 border-slate-300 pb-2 text-[10px] uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50">
+                                    <th className="p-3">Reference Lab</th>
+                                    <th className="p-3">Patient</th>
+                                    <th className="p-3">Test</th>
+                                    <th className="p-3 text-right">Balance Due</th>
+                                    <th className="p-3 text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {stats.recent.map((p, idx) => (
-                                    <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                                    <tr key={idx} className="hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors">
                                         <td className="py-3 font-semibold dark:text-zinc-200">{p.referenceLabName}</td>
                                         <td className="py-3 text-zinc-500">{p.patientName}</td>
                                         <td className="py-3 dark:text-zinc-400">{p.testName}</td>

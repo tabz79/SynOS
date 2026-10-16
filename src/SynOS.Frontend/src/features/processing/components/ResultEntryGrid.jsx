@@ -57,7 +57,7 @@ export function ResultEntryGrid({ test, results, onValueChange, onSaveDraft, isS
     return (
         <div className="flex flex-col">
             {/* Grid Header */}
-            <div className="grid grid-cols-[1fr_120px_80px_140px] px-4 py-2 text-[10px] uppercase font-black tracking-tighter dark:text-zinc-500 text-zinc-400 border-b dark:border-white/5 border-zinc-100">
+            <div className="grid grid-cols-[1fr_120px_80px_140px] px-4 py-2 text-[10px] uppercase font-black tracking-tighter dark:text-zinc-400 text-slate-500 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
                 <div>Parameter</div>
                 <div className="text-center">Result</div>
                 <div className="text-center">Unit</div>
@@ -65,7 +65,7 @@ export function ResultEntryGrid({ test, results, onValueChange, onSaveDraft, isS
             </div>
 
             {/* Grid Rows */}
-            <div className="divide-y dark:divide-white/5 divide-zinc-100">
+            <div className="divide-y dark:divide-zinc-800/80 divide-slate-200">
                 {test.parameters?.map((param, idx) => (
                     <div 
                         key={param.parameterCode} 

@@ -299,7 +299,7 @@ export const PartnerReceivablesTab = () => {
                                 <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {filtered.map((partner) => (
                                 <React.Fragment key={partner.partnerId}>
                                     <tr className={`group transition-all ${expandedPartnerId === partner.partnerId ? 'bg-emerald-500/5' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30'}`}>
@@ -421,7 +421,7 @@ export const PartnerReceivablesTab = () => {
                                                                     <th className="pb-2 text-right">Outstanding</th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
+                                                            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                                                                 {partner.items.map(fact => {
                                                                     const isChecked = selectedFactIds.has(fact.receivableFactId);
                                                                     return (

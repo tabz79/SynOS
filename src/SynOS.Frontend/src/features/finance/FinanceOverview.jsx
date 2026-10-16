@@ -444,7 +444,7 @@ export const FinanceOverview = () => {
                                 <p className="text-[10px] text-zinc-400 font-semibold mt-1">Total Collections cleared this period</p>
                             </div>
 
-                            <div className="pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100">
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Collected</span>
                                     <span className="font-bold text-emerald-500">₹{cashInflow.toLocaleString()}</span>
@@ -479,7 +479,7 @@ export const FinanceOverview = () => {
                                 <p className="text-[10px] text-zinc-400 font-semibold mt-1">Total pending active liabilities</p>
                             </div>
 
-                            <div className="pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100">
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Supplier Dues</span>
                                     <span className="font-bold text-rose-500">₹{activeVendorsLiability.toLocaleString()}</span>
@@ -514,7 +514,7 @@ export const FinanceOverview = () => {
                                 <p className="text-[10px] text-zinc-400 font-semibold mt-1">Pending commissions owed to doctors</p>
                             </div>
 
-                            <div className="pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100">
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">We Owe Doctors</span>
                                     <span className="font-bold text-rose-500">₹{activeDoctorPayouts.toLocaleString()}</span>
@@ -549,7 +549,7 @@ export const FinanceOverview = () => {
                                 <p className="text-[10px] text-zinc-400 font-semibold mt-1">Reference tests awaiting pricing</p>
                             </div>
 
-                            <div className="pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100">
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Pending pricing</span>
                                     <span className="font-bold text-amber-500">{outsourced.filter(o => o.status === 'PendingPricing').length} Tests</span>
@@ -584,7 +584,7 @@ export const FinanceOverview = () => {
                                 <p className="text-[10px] text-zinc-400 font-semibold mt-1">Total registered laboratory staff</p>
                             </div>
 
-                            <div className="pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100">
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Payroll Cycle</span>
                                     <span className="font-bold text-violet-500">{activePayrollRun ? activePayrollRun.status : 'Idle'}</span>

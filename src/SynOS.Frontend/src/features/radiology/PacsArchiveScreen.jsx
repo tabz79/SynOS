@@ -491,10 +491,10 @@ export function PacsArchiveScreen() {
                             <span>No archived DICOM studies match your search criteria.</span>
                         </div>
                     ) : (
-                        <div className="synos-card-elevated dark:bg-synos-surface bg-white rounded-2xl border border-zinc-250 dark:border-zinc-700 overflow-hidden shadow-sm">
-                            <table className="w-full text-left text-xs border-collapse">
+                        <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
+                            <table className="w-full text-left text-xs border-collapse synos-table">
                                 <thead>
-                                    <tr className="bg-zinc-100/90 dark:bg-zinc-800/90 border-b border-zinc-250 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 font-bold uppercase text-xxs tracking-wider">
+                                    <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300 text-zinc-600 dark:text-zinc-400 font-bold uppercase text-xxs tracking-wider">
                                         <th className="p-3.5">Patient & UHID</th>
                                         <th className="p-3.5">Study / Modality</th>
                                         <th className="p-3.5">Accession Number</th>
@@ -504,7 +504,7 @@ export function PacsArchiveScreen() {
                                         <th className="p-3.5 text-right">ACTIONS</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-zinc-150 dark:divide-zinc-800">
+                                <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
                                     {filteredStudies.map((study) => {
                                         const isSelected = selectedStudy?.radiologyStudyId === study.radiologyStudyId;
                                         const totalImagesCount = study.images?.length || 0;

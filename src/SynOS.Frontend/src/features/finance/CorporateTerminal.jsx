@@ -1624,7 +1624,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                             />
                         </div>
 
-                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl max-h-48 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl max-h-48 overflow-y-auto divide-y divide-slate-200/80 dark:divide-zinc-800">
                             {filteredTests.map(t => {
                                 const id = t.testId || t.id;
                                 const isChecked = selectedTestIds.includes(id);

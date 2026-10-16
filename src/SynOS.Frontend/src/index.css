@@ -336,6 +336,95 @@
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4) !important;
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     📊 SYNOS CANONICAL TABLE SPECIFICATION 📊
+     Unified row separation borders, headers, and hovers across all windows.
+     Guarantees crisp borders in Safari (WebKit), Chrome, Edge, and Windows WebView2.
+     ═══════════════════════════════════════════════════════════════════════════ */
+  .synos-table,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table),
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table),
+  .synos-item-card table:not(#printable-report table):not(.print-page-container table) {
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+  }
+
+  /* Canonical Table Header */
+  .synos-table thead tr,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) thead tr,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) thead tr {
+    background-color: rgba(248, 250, 252, 0.85) !important; /* slate-50/85 */
+    border-bottom: 1px solid #CBD5E1 !important; /* slate-300 */
+  }
+
+  .dark .synos-table thead tr,
+  .dark .synos-dept-card table:not(#printable-report table):not(.print-page-container table) thead tr,
+  .dark .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) thead tr {
+    background-color: rgba(24, 24, 27, 0.85) !important; /* zinc-900/85 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .synos-table thead th,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) thead th,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) thead th {
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #64748B !important; /* slate-500 */
+    border-bottom: 1px solid #CBD5E1 !important;
+  }
+
+  .dark .synos-table thead th,
+  .dark .synos-dept-card table:not(#printable-report table):not(.print-page-container table) thead th,
+  .dark .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) thead th {
+    color: #A1A1AA !important; /* zinc-400 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* Canonical Row Separation Borders (tr and td for 100% WebKit/Safari reliability) */
+  .synos-table tbody tr,
+  .synos-table tbody tr td,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr td,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr td {
+    border-bottom: 1px solid #E2E8F0 !important; /* slate-200 crisp divider */
+  }
+
+  .dark .synos-table tbody tr,
+  .dark .synos-table tbody tr td,
+  .dark .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr,
+  .dark .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr td,
+  .dark .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr,
+  .dark .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Last Row: Clean borderless finish inside rounded card container */
+  .synos-table tbody tr:last-child,
+  .synos-table tbody tr:last-child td,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr:last-child,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr:last-child td,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr:last-child,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr:last-child td {
+    border-bottom: none !important;
+  }
+
+  /* Canonical Row Hover */
+  .synos-table tbody tr:hover,
+  .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr:hover,
+  .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr:hover {
+    background-color: rgba(241, 245, 249, 0.7) !important; /* slate-100/70 */
+  }
+
+  .dark .synos-table tbody tr:hover,
+  .dark .synos-dept-card table:not(#printable-report table):not(.print-page-container table) tbody tr:hover,
+  .dark .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr:hover {
+    background-color: rgba(39, 39, 42, 0.4) !important;
+  }
 }
 
 @media print {

@@ -169,14 +169,14 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-zinc-100 dark:border-zinc-900 pb-2 text-[10px] uppercase font-bold text-zinc-400">
+                    <tr className="border-b border-slate-200 dark:border-zinc-800 pb-2 text-[10px] uppercase font-bold text-zinc-500">
                       <th className="pb-3 font-extrabold">Date</th>
                       <th className="pb-3 font-extrabold">Account / Category</th>
                       <th className="pb-3 text-right font-extrabold">Amount</th>
                       <th className="pb-3 text-center font-extrabold">Payment Mode</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900">
+                  <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                     {recentTransactions.map((t, idx) => (
                       <tr key={idx} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-900/40 transition-colors">
                         <td className="py-3 text-zinc-500 font-medium">{new Date(t.occurredAt).toLocaleDateString()}</td>
@@ -999,22 +999,22 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse synos-table">
                             <thead>
-                                <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Bill No</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Patient</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Dept / Modality</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Total</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Payment Breakup</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Pending</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Status</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Date</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
+                                <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Bill No</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Dept / Modality</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Payment Breakup</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Pending</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                                 {filteredBills.map((bill) => (
                                     <tr key={bill.billId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                         <td className="p-4 text-xs font-bold dark:text-zinc-200">
@@ -1489,22 +1489,22 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                 onCustomDatesChange={setCustomDates}
             />
 
-            <div className="rounded-3xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 {loading ? (
                     <div className="p-20 text-center text-zinc-500 animate-pulse">Reconciling partner ledgers...</div>
                 ) : (
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse synos-table">
                         <thead>
-                            <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Open Bills</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Total Outstanding</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Oldest Dues</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Aging Profile</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
+                            <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Open Bills</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Oldest Dues</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Aging Profile</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {filteredPartnerSummaries.map((partner) => (
                                 <React.Fragment key={partner.partnerId}>
                                     <tr className={`group transition-all ${expandedPartnerId === partner.partnerId ? 'bg-synos-primary/5' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30'}`}>
@@ -1640,7 +1640,7 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                                                                     <th className="pb-2 text-right">Outstanding</th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody className="divide-y dark:divide-zinc-900/50 divide-zinc-100">
+                                                            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                                                                 {partnerBills.map(bill => {
                                                                     const isChecked = selectedFactIds.has(bill.receivableFactId);
                                                                     return (
@@ -1987,18 +1987,18 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
                 {loading ? (
                     <div className="p-20 text-center text-zinc-500 animate-pulse">Scanning history facts...</div>
                 ) : (
-                    <table className="w-full text-left">
+                    <table className="w-full text-left synos-table">
                         <thead>
-                            <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Date & Time</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Source Category</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Amount</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Payment Mode</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Reference</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Notes</th>
+                            <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Source Category</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Payment Mode</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Notes</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {filteredHistory.map((row) => (
                                 <tr key={row.revenueFactId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4 text-xs text-zinc-500 whitespace-nowrap">{new Date(row.occurredAt).toLocaleString()}</td>

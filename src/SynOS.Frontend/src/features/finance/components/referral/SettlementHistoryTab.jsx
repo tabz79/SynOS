@@ -61,17 +61,17 @@ export const SettlementHistoryTab = () => {
 
             {/* HISTORY TABLE */}
             <div className="synos-dept-card rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
+                <table className="w-full text-left synos-table">
                     <thead>
-                        <tr className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Type</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Partner / Payee</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Reference & Notes</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Amount</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Handled By</th>
+                        <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
+                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Type</th>
+                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Partner / Payee</th>
+                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Reference & Notes</th>
+                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Handled By</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y dark:divide-zinc-900 divide-zinc-100">
+                    <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                         {loading ? [1,2,3,4,5].map(i => <tr key={i} className="animate-pulse"><td colSpan="5" className="p-8 bg-zinc-50/20" /></tr>) : (
                             filtered.length === 0 ? (
                                 <tr>

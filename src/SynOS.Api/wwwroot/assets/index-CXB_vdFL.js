@@ -37959,7 +37959,7 @@ Details: ${s.inner}`);
       className: "flex flex-col",
       children: [
         A.jsxs("div", {
-          className: "grid grid-cols-[1fr_120px_80px_140px] px-4 py-2 text-[10px] uppercase font-black tracking-tighter dark:text-zinc-500 text-zinc-400 border-b dark:border-white/5 border-zinc-100",
+          className: "grid grid-cols-[1fr_120px_80px_140px] px-4 py-2 text-[10px] uppercase font-black tracking-tighter dark:text-zinc-400 text-slate-500 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50",
           children: [
             A.jsx("div", {
               children: "Parameter"
@@ -37979,7 +37979,7 @@ Details: ${s.inner}`);
           ]
         }),
         A.jsx("div", {
-          className: "divide-y dark:divide-white/5 divide-zinc-100",
+          className: "divide-y dark:divide-zinc-800/80 divide-slate-200",
           children: (_a2 = t.parameters) == null ? void 0 : _a2.map((d, g) => A.jsxs("div", {
             ref: (u) => o.current[g] = u,
             className: _e("grid grid-cols-[1fr_120px_80px_140px] px-4 py-3 transition-colors", a === g ? "dark:bg-white/5 bg-zinc-50" : "hover:dark:bg-white/[0.02] hover:bg-zinc-50/50"),
@@ -93034,7 +93034,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           ]
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
           children: [
             A.jsxs("div", {
               className: "p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900/40 flex items-center justify-between",
@@ -93066,11 +93066,11 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
             A.jsx("div", {
               className: "overflow-x-auto",
               children: A.jsxs("table", {
-                className: "w-full text-left border-collapse",
+                className: "w-full text-left border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     children: A.jsxs("tr", {
-                      className: "border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/10",
+                      className: "border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50",
                       children: [
                         A.jsx("th", {
                           className: "px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -93096,7 +93096,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     })
                   }),
                   A.jsx("tbody", {
-                    className: "divide-y dark:divide-zinc-800 divide-zinc-200",
+                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: n ? A.jsx("tr", {
                       children: A.jsx("td", {
                         colSpan: "5",
@@ -93982,7 +93982,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   children: "No matching items found"
                 })
               }) : A.jsxs("table", {
-                className: "w-full text-left border-collapse",
+                className: "w-full text-left border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     className: "sticky top-0 bg-white dark:bg-zinc-900 z-10",
@@ -94017,7 +94017,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     })
                   }),
                   A.jsx("tbody", {
-                    className: "divide-y dark:divide-white/5",
+                    className: "divide-y divide-slate-200/80 dark:divide-white/5",
                     children: $.map((ce, ue) => A.jsxs("tr", {
                       onClick: () => te(ce),
                       className: _e("group cursor-pointer transition-all duration-200", (f == null ? void 0 : f.itemId) === ce.itemId && (f == null ? void 0 : f.branchId) === ce.branchId ? "bg-synos-primary/5 border-l-2 border-synos-primary" : "hover:bg-zinc-50 dark:hover:bg-white/[0.02]"),
@@ -94715,7 +94715,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               })
             ]
           }) : A.jsxs("table", {
-            className: "w-full text-left border-collapse",
+            className: "w-full text-left border-collapse synos-table",
             children: [
               A.jsx("thead", {
                 className: "sticky top-0 bg-white dark:bg-zinc-900 z-10",
@@ -94750,7 +94750,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 })
               }),
               A.jsx("tbody", {
-                className: "divide-y dark:divide-white/5",
+                className: "divide-y divide-slate-200/80 dark:divide-white/5",
                 children: t.map((c) => A.jsxs("tr", {
                   className: "group hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors",
                   children: [
@@ -94912,7 +94912,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               children: "No movements recorded yet"
             })
           }) : A.jsxs("table", {
-            className: "w-full text-left border-collapse",
+            className: "w-full text-left border-collapse synos-table",
             children: [
               A.jsx("thead", {
                 className: "sticky top-0 bg-white dark:bg-zinc-900 z-10",
@@ -94947,7 +94947,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 })
               }),
               A.jsx("tbody", {
-                className: "divide-y dark:divide-white/5",
+                className: "divide-y divide-slate-200/80 dark:divide-white/5",
                 children: t.map((l) => A.jsxs("tr", {
                   className: "group hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors",
                   children: [
@@ -96345,7 +96345,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           ]
                         }),
                         A.jsxs("div", {
-                          className: "pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100",
+                          className: "pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70",
                           children: [
                             A.jsxs("div", {
                               className: "flex justify-between py-1.5 text-xs",
@@ -96439,7 +96439,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           ]
                         }),
                         A.jsxs("div", {
-                          className: "pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100",
+                          className: "pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70",
                           children: [
                             A.jsxs("div", {
                               className: "flex justify-between py-1.5 text-xs",
@@ -96533,7 +96533,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           ]
                         }),
                         A.jsxs("div", {
-                          className: "pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100",
+                          className: "pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70",
                           children: [
                             A.jsxs("div", {
                               className: "flex justify-between py-1.5 text-xs",
@@ -96624,7 +96624,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           ]
                         }),
                         A.jsxs("div", {
-                          className: "pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100",
+                          className: "pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70",
                           children: [
                             A.jsxs("div", {
                               className: "flex justify-between py-1.5 text-xs",
@@ -96715,7 +96715,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           ]
                         }),
                         A.jsxs("div", {
-                          className: "pt-3 divide-y divide-zinc-100 dark:divide-zinc-900 border-t dark:border-zinc-900 border-zinc-100",
+                          className: "pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70",
                           children: [
                             A.jsxs("div", {
                               className: "flex justify-between py-1.5 text-xs",
@@ -97571,7 +97571,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                         children: [
                           A.jsx("thead", {
                             children: A.jsxs("tr", {
-                              className: "border-b border-zinc-100 dark:border-zinc-900 pb-2 text-[10px] uppercase font-bold text-zinc-400",
+                              className: "border-b border-slate-200 dark:border-zinc-800 pb-2 text-[10px] uppercase font-bold text-zinc-500",
                               children: [
                                 A.jsx("th", {
                                   className: "pb-3 font-extrabold",
@@ -97593,7 +97593,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                             })
                           }),
                           A.jsx("tbody", {
-                            className: "divide-y divide-zinc-100 dark:divide-zinc-900",
+                            className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                             children: a.map((B, E) => A.jsxs("tr", {
                               className: "hover:bg-zinc-50/70 dark:hover:bg-zinc-900/40 transition-colors",
                               children: [
@@ -98684,57 +98684,57 @@ Thank you!`;
           }) : A.jsx("div", {
             className: "overflow-x-auto",
             children: A.jsxs("table", {
-              className: "w-full text-left border-collapse",
+              className: "w-full text-left border-collapse synos-table",
               children: [
                 A.jsx("thead", {
                   children: A.jsxs("tr", {
-                    className: "bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100",
+                    className: "bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800",
                     children: [
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                         children: "Bill No"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                         children: "Patient"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                         children: "Dept / Modality"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                         children: "Partner / Account"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                         children: "Total"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                         children: "Payment Breakup"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                         children: "Pending"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center",
                         children: "Status"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                         children: "Date"
                       }),
                       A.jsx("th", {
-                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                        className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                         children: "Actions"
                       })
                     ]
                   })
                 }),
                 A.jsx("tbody", {
-                  className: "divide-y dark:divide-zinc-900 divide-zinc-100",
+                  className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                   children: Me.map((fe) => A.jsxs("tr", {
                     className: "group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors",
                     children: [
@@ -99346,46 +99346,46 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           onCustomDatesChange: le
         }),
         A.jsx("div", {
-          className: "rounded-3xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: c ? A.jsx("div", {
             className: "p-20 text-center text-zinc-500 animate-pulse",
             children: "Reconciling partner ledgers..."
           }) : A.jsxs("table", {
-            className: "w-full text-left border-collapse",
+            className: "w-full text-left border-collapse synos-table",
             children: [
               A.jsx("thead", {
                 children: A.jsxs("tr", {
-                  className: "bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100",
+                  className: "bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800",
                   children: [
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Partner / Account"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center",
+                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center",
                       children: "Open Bills"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                       children: "Total Outstanding"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Oldest Dues"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Aging Profile"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                      className: "p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                       children: "Actions"
                     })
                   ]
                 })
               }),
               A.jsx("tbody", {
-                className: "divide-y dark:divide-zinc-900 divide-zinc-100",
+                className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                 children: xe.map((Ee) => A.jsxs(Is.Fragment, {
                   children: [
                     A.jsxs("tr", {
@@ -99636,7 +99636,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                     })
                                   }),
                                   A.jsx("tbody", {
-                                    className: "divide-y dark:divide-zinc-900/50 divide-zinc-100",
+                                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                                     children: Ue.map((ze) => {
                                       var _a3, _b3, _c3, _d3, _e2;
                                       const fe = O.has(ze.receivableFactId);
@@ -100139,41 +100139,41 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             className: "p-20 text-center text-zinc-500 animate-pulse",
             children: "Scanning history facts..."
           }) : A.jsxs("table", {
-            className: "w-full text-left",
+            className: "w-full text-left synos-table",
             children: [
               A.jsx("thead", {
                 children: A.jsxs("tr", {
-                  className: "bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100",
+                  className: "bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300",
                   children: [
                     A.jsx("th", {
-                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Date & Time"
                     }),
                     A.jsx("th", {
-                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Source Category"
                     }),
                     A.jsx("th", {
-                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right",
+                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right",
                       children: "Amount"
                     }),
                     A.jsx("th", {
-                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center",
+                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center",
                       children: "Payment Mode"
                     }),
                     A.jsx("th", {
-                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Reference"
                     }),
                     A.jsx("th", {
-                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-400",
+                      className: "p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
                       children: "Notes"
                     })
                   ]
                 })
               }),
               A.jsxs("tbody", {
-                className: "divide-y dark:divide-zinc-900 divide-zinc-100",
+                className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                 children: [
                   v.map((U) => {
                     var _a2;
@@ -101033,10 +101033,10 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             })
           ]
         }) : A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
           children: [
             A.jsx("div", {
-              className: "p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40",
+              className: "p-4 border-b dark:border-zinc-800 border-slate-300 flex items-center justify-between bg-slate-50/80 dark:bg-zinc-900/50",
               children: A.jsxs("div", {
                 className: "relative flex-1 max-w-sm",
                 children: [
@@ -101056,11 +101056,11 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             A.jsx("div", {
               className: "overflow-x-auto",
               children: A.jsxs("table", {
-                className: "w-full text-left border-collapse",
+                className: "w-full text-left border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     children: A.jsxs("tr", {
-                      className: "border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20",
+                      className: "border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50",
                       children: [
                         A.jsx("th", {
                           className: "px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -101098,7 +101098,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     })
                   }),
                   A.jsx("tbody", {
-                    className: "divide-y dark:divide-zinc-800 divide-zinc-200",
+                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: M.length === 0 ? A.jsx("tr", {
                       children: A.jsx("td", {
                         colSpan: "8",
@@ -101753,13 +101753,13 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     className: "p-8 text-center text-xs text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-850 rounded-2xl",
                     children: "No active recurring cycles found. Select a cycle like Monthly or 1 Year above to create one."
                   }) : A.jsx("div", {
-                    className: "border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-zinc-900/10",
+                    className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
                     children: A.jsxs("table", {
-                      className: "w-full text-left border-collapse",
+                      className: "w-full text-left border-collapse synos-table",
                       children: [
                         A.jsx("thead", {
                           children: A.jsxs("tr", {
-                            className: "bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-zinc-200",
+                            className: "bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300",
                             children: [
                               A.jsx("th", {
                                 className: "px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -101789,7 +101789,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           })
                         }),
                         A.jsx("tbody", {
-                          className: "divide-y dark:divide-zinc-800 divide-zinc-200",
+                          className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                           children: a.map((w) => {
                             const v = zF(w.category), M = OF(w.description), F = new Date(w.expenseDate), O = g === w.id;
                             return A.jsxs("tr", {
@@ -102153,10 +102153,10 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           ]
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
           children: [
             A.jsxs("div", {
-              className: "p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40",
+              className: "p-4 border-b dark:border-zinc-800 border-slate-300 flex items-center justify-between bg-slate-50/80 dark:bg-zinc-900/50",
               children: [
                 A.jsx("div", {
                   className: "flex items-center gap-2",
@@ -102200,11 +102200,11 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             A.jsx("div", {
               className: "overflow-x-auto",
               children: A.jsxs("table", {
-                className: "w-full text-left border-collapse",
+                className: "w-full text-left border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     children: A.jsxs("tr", {
-                      className: "border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20",
+                      className: "border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50",
                       children: [
                         A.jsx("th", {
                           className: "px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -102234,7 +102234,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     })
                   }),
                   A.jsx("tbody", {
-                    className: "divide-y dark:divide-zinc-800 divide-zinc-200",
+                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: n ? A.jsx("tr", {
                       children: A.jsx("td", {
                         colSpan: "6",
@@ -102414,15 +102414,15 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           ]
         }),
         A.jsx("div", {
-          className: "bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
           children: A.jsx("div", {
             className: "overflow-x-auto",
             children: A.jsxs("table", {
-              className: "w-full text-left border-collapse",
+              className: "w-full text-left border-collapse synos-table",
               children: [
                 A.jsx("thead", {
                   children: A.jsxs("tr", {
-                    className: "border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20",
+                    className: "border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50",
                     children: [
                       A.jsx("th", {
                         className: "px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -102448,7 +102448,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   })
                 }),
                 A.jsx("tbody", {
-                  className: "divide-y dark:divide-zinc-800 divide-zinc-200",
+                  className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                   children: n ? A.jsx("tr", {
                     children: A.jsx("td", {
                       colSpan: "5",
@@ -103345,11 +103345,11 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             A.jsx("div", {
               className: "overflow-x-auto",
               children: e === "labs" ? A.jsx(g3e, {}) : A.jsxs("table", {
-                className: "w-full text-left border-collapse",
+                className: "w-full text-left border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     children: A.jsxs("tr", {
-                      className: "border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20",
+                      className: "border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50",
                       children: [
                         A.jsx("th", {
                           className: "px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -103379,7 +103379,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     })
                   }),
                   A.jsx("tbody", {
-                    className: "divide-y dark:divide-zinc-800 divide-zinc-200",
+                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: a ? A.jsx("tr", {
                       children: A.jsx("td", {
                         colSpan: "6",
@@ -104655,26 +104655,26 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                 }) : A.jsx("div", {
                   className: "overflow-x-auto",
                   children: A.jsxs("table", {
-                    className: "w-full text-left text-xs border-collapse",
+                    className: "w-full text-left text-xs border-collapse synos-table",
                     children: [
                       A.jsx("thead", {
                         children: A.jsxs("tr", {
-                          className: "border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400",
+                          className: "border-b dark:border-zinc-800 border-slate-300 pb-2 text-[10px] uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50",
                           children: [
                             A.jsx("th", {
-                              className: "pb-3",
+                              className: "p-3",
                               children: "Date"
                             }),
                             A.jsx("th", {
-                              className: "pb-3",
+                              className: "p-3",
                               children: "Description"
                             }),
                             A.jsx("th", {
-                              className: "pb-3 text-right",
+                              className: "p-3 text-right",
                               children: "Amount"
                             }),
                             A.jsx("th", {
-                              className: "pb-3 text-center",
+                              className: "p-3 text-center",
                               children: "Category"
                             })
                           ]
@@ -104684,7 +104684,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                         children: n.map((o, l) => {
                           var _a2;
                           return A.jsxs("tr", {
-                            className: "border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors",
+                            className: "hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors",
                             children: [
                               A.jsx("td", {
                                 className: "py-3 text-zinc-500",
@@ -105000,30 +105000,30 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             }) : A.jsx("div", {
               className: "overflow-x-auto",
               children: A.jsxs("table", {
-                className: "w-full text-left text-xs border-collapse",
+                className: "w-full text-left text-xs border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     children: A.jsxs("tr", {
-                      className: "border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400",
+                      className: "border-b dark:border-zinc-800 border-slate-300 pb-2 text-[10px] uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50",
                       children: [
                         A.jsx("th", {
-                          className: "pb-3",
+                          className: "p-3",
                           children: "Reference Lab"
                         }),
                         A.jsx("th", {
-                          className: "pb-3",
+                          className: "p-3",
                           children: "Patient"
                         }),
                         A.jsx("th", {
-                          className: "pb-3",
+                          className: "p-3",
                           children: "Test"
                         }),
                         A.jsx("th", {
-                          className: "pb-3 text-right",
+                          className: "p-3 text-right",
                           children: "Balance Due"
                         }),
                         A.jsx("th", {
-                          className: "pb-3 text-center",
+                          className: "p-3 text-center",
                           children: "Status"
                         })
                       ]
@@ -105031,7 +105031,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   }),
                   A.jsx("tbody", {
                     children: t.recent.map((a, s) => A.jsxs("tr", {
-                      className: "border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors",
+                      className: "hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 transition-colors",
                       children: [
                         A.jsx("td", {
                           className: "py-3 font-semibold dark:text-zinc-200",
@@ -108377,7 +108377,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                 })
               }),
               A.jsx("tbody", {
-                className: "divide-y dark:divide-zinc-900 divide-zinc-100",
+                className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                 children: O.map((Y) => A.jsxs(Is.Fragment, {
                   children: [
                     A.jsxs("tr", {
@@ -108588,7 +108588,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                                     })
                                   }),
                                   A.jsx("tbody", {
-                                    className: "divide-y dark:divide-zinc-900/50 divide-zinc-100",
+                                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                                     children: Y.items.map((te) => {
                                       var _a3, _b3, _c3;
                                       const $ = B.has(te.factId);
@@ -109116,7 +109116,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 })
               }),
               A.jsx("tbody", {
-                className: "divide-y dark:divide-zinc-900 divide-zinc-100",
+                className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                 children: Z.map((ne) => {
                   var _a3, _b3;
                   return A.jsxs(Is.Fragment, {
@@ -109329,7 +109329,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       })
                                     }),
                                     A.jsx("tbody", {
-                                      className: "divide-y dark:divide-zinc-900/50 divide-zinc-100",
+                                      className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                                       children: ne.items.map((ve) => {
                                         var _a4, _b4, _c3, _d2;
                                         const Ze = v.has(ve.receivableFactId);
@@ -109664,37 +109664,37 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         A.jsx("div", {
           className: "synos-dept-card rounded-2xl overflow-hidden",
           children: A.jsxs("table", {
-            className: "w-full text-left",
+            className: "w-full text-left synos-table",
             children: [
               A.jsx("thead", {
                 children: A.jsxs("tr", {
-                  className: "bg-zinc-50/50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100",
+                  className: "bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300",
                   children: [
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500",
                       children: "Type"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500",
                       children: "Partner / Payee"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500",
                       children: "Reference & Notes"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right",
+                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right",
                       children: "Amount"
                     }),
                     A.jsx("th", {
-                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400",
+                      className: "p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500",
                       children: "Handled By"
                     })
                   ]
                 })
               }),
               A.jsx("tbody", {
-                className: "divide-y dark:divide-zinc-900 divide-zinc-100",
+                className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80",
                 children: n ? [
                   1,
                   2,
@@ -111049,7 +111049,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                             })
                           }),
                           A.jsx("tbody", {
-                            className: "divide-y divide-zinc-100 dark:divide-zinc-900 text-xs font-medium",
+                            className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium",
                             children: $.unmappedTests.map((ce) => {
                               const ue = `${$.referralPartnerId}_${ce.testId}`, he = C[ue] || {
                                 type: "Percentage",
@@ -111299,7 +111299,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       })
                     }),
                     A.jsx("tbody", {
-                      className: "divide-y divide-zinc-100 dark:divide-zinc-900 text-xs font-medium",
+                      className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium",
                       children: o.map(($) => {
                         const Z = $.commissionType === 0 || $.commissionType === "Percentage", ne = Z ? $.testPrice * $.commissionValue / 100 : $.commissionValue;
                         return A.jsxs("tr", {
@@ -116361,7 +116361,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsx("div", {
-                    className: "border border-zinc-200 dark:border-zinc-800 rounded-xl max-h-48 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800",
+                    className: "border border-zinc-200 dark:border-zinc-800 rounded-xl max-h-48 overflow-y-auto divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: M.map((Y) => {
                       const P = Y.testId || Y.id, U = x.includes(P);
                       return A.jsxs("div", {
@@ -118604,7 +118604,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     })
                   }),
                   A.jsx("div", {
-                    className: "flex-1 overflow-y-auto divide-y dark:divide-zinc-800 divide-zinc-100",
+                    className: "flex-1 overflow-y-auto divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: t.map((F) => A.jsxs("button", {
                       onClick: () => {
                         r(F), v(F.employeeId);
@@ -126079,10 +126079,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           children: l
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
           children: [
             A.jsxs("div", {
-              className: "px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2",
+              className: "px-6 py-4 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50 flex items-center gap-2",
               children: [
                 A.jsx(Qs, {
                   className: "w-4 h-4 text-synos-primary"
@@ -126096,11 +126096,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             A.jsx("div", {
               className: "overflow-x-auto",
               children: A.jsxs("table", {
-                className: "w-full text-left border-collapse",
+                className: "w-full text-left border-collapse synos-table",
                 children: [
                   A.jsx("thead", {
                     children: A.jsxs("tr", {
-                      className: "text-xs font-medium text-zinc-400 border-b dark:border-zinc-900 border-zinc-100 bg-zinc-50/10 dark:bg-zinc-900/5",
+                      className: "text-xs font-medium text-zinc-400 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/50 dark:bg-zinc-900/10",
                       children: [
                         A.jsx("th", {
                           className: "px-6 py-3.5 font-medium",
@@ -126130,7 +126130,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     })
                   }),
                   A.jsx("tbody", {
-                    className: "divide-y dark:divide-zinc-900 border-zinc-100",
+                    className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                     children: s ? A.jsx("tr", {
                       children: A.jsx("td", {
                         colSpan: "6",
@@ -246612,13 +246612,13 @@ Input: ` + this.err.str);
                   })
                 ]
               }) : A.jsx("div", {
-                className: "synos-card-elevated dark:bg-synos-surface bg-white rounded-2xl border border-zinc-250 dark:border-zinc-700 overflow-hidden shadow-sm",
+                className: "synos-dept-card rounded-2xl overflow-hidden shadow-sm",
                 children: A.jsxs("table", {
-                  className: "w-full text-left text-xs border-collapse",
+                  className: "w-full text-left text-xs border-collapse synos-table",
                   children: [
                     A.jsx("thead", {
                       children: A.jsxs("tr", {
-                        className: "bg-zinc-100/90 dark:bg-zinc-800/90 border-b border-zinc-250 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 font-bold uppercase text-xxs tracking-wider",
+                        className: "bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300 text-zinc-600 dark:text-zinc-400 font-bold uppercase text-xxs tracking-wider",
                         children: [
                           A.jsx("th", {
                             className: "p-3.5",
@@ -246652,7 +246652,7 @@ Input: ` + this.err.str);
                       })
                     }),
                     A.jsx("tbody", {
-                      className: "divide-y divide-zinc-150 dark:divide-zinc-800",
+                      className: "divide-y divide-slate-200/80 dark:divide-zinc-800",
                       children: Ve.map((tt) => {
                         var _a2;
                         const Ne = (v == null ? void 0 : v.radiologyStudyId) === tt.radiologyStudyId, bt = ((_a2 = tt.images) == null ? void 0 : _a2.length) || 0, et = [
