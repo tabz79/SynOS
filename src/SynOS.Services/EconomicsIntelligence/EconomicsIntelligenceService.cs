@@ -481,7 +481,7 @@ namespace SynOS.Services.EconomicsIntelligence
                 // If no direct matches in DB or revenue is 0, provide realistic distribution
                 if (deptRev <= 0)
                 {
-                    deptRev = Math.Round(totalRev * target.Share, 2);
+                    deptRev = Math.Round(totalRev * target.Share, MidpointRounding.AwayFromZero);
                     testsCount = Math.Max(1, (int)Math.Round(target.DefaultCount * (totalRev > 100000 ? (totalRev / 200000m) : 1m)));
                 }
 
@@ -490,11 +490,11 @@ namespace SynOS.Services.EconomicsIntelligence
                 decimal deptCost = 0;
                 if (target.Category == "Pathology" && summary.ConsumableCashOutflow > 0)
                 {
-                    deptCost = Math.Round(summary.ConsumableCashOutflow * target.CostShare, 2);
+                    deptCost = Math.Round(summary.ConsumableCashOutflow * target.CostShare, MidpointRounding.AwayFromZero);
                 }
                 else
                 {
-                    deptCost = Math.Round(deptRev * target.CostShare, 2);
+                    deptCost = Math.Round(deptRev * target.CostShare, MidpointRounding.AwayFromZero);
                 }
 
                 decimal baseMargin = totalRev > 0 ? (summary.NetCashPosition / totalRev) : 0.70m;
@@ -507,7 +507,7 @@ namespace SynOS.Services.EconomicsIntelligence
                     Category = target.Category,
                     Modality = target.Modality,
                     BilledRevenue = deptRev,
-                    CashCollected = Math.Round(deptRev * Math.Min(1.0m, Math.Max(0.5m, cashRatio)), 2),
+                    CashCollected = Math.Round(deptRev * Math.Min(1.0m, Math.Max(0.5m, cashRatio)), MidpointRounding.AwayFromZero),
                     DirectCost = deptCost,
                     ProfitMultiplier = multiplier > 0 ? multiplier : 1.0m,
                     TotalTestsCompleted = testsCount
@@ -546,7 +546,7 @@ namespace SynOS.Services.EconomicsIntelligence
                 foreach (var ps in partnerStats)
                 {
                     // Calculate revenue generated from referral payout base
-                    var estRevenue = ps.TotalCommission > 0 ? Math.Round(ps.TotalCommission / 0.18m, 2) : 0m;
+                    var estRevenue = ps.TotalCommission > 0 ? Math.Round(ps.TotalCommission / 0.18m, MidpointRounding.AwayFromZero) : 0m;
                     var netMargin = estRevenue > 0 ? Math.Round(((estRevenue - ps.TotalCommission) / estRevenue) * 100m, 1) : 0m;
                     
                     partnerRoiList.Add(new PartnerRoiDto
@@ -554,7 +554,7 @@ namespace SynOS.Services.EconomicsIntelligence
                         PartnerId = ps.PartnerId,
                         PartnerName = ps.PartnerName,
                         TotalRevenueGenerated = estRevenue,
-                        TotalCommissionEarned = ps.TotalCommission,
+                        TotalCommissionEarned = Math.Round(ps.TotalCommission, MidpointRounding.AwayFromZero),
                         PatientCount = ps.PatientCount,
                         GrowthPercentage = netMargin
                     });

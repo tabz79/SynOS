@@ -49,80 +49,30 @@ namespace SynOS.Services.Referral
             var partner = await _context.ReferralPartners.FindAsync(partnerId);
             if (partner == null) return;
 
-            // 1. Find all pending visits for this partner that were created AFTER onboarding
-            // and do NOT have a payout fact yet.
-            var pendingVisits = await _context.Visits
-                .Include(v => v.Orders)
-                .Include(v => v.Invoices)
-                .Where(v => v.ReferralPartnerId == partnerId 
-                         && v.IsReferred 
-                         && v.CreatedAt >= partner.CreatedAt)
-                .ToListAsync();
+            partner.DefaultCommissionPercentage = commissionPercentage;
+            partner.ApprovedByUserId = userId;
+            partner.ApprovedAt = DateTimeOffset.UtcNow;
+            partner.UpdatedAt = DateTimeOffset.UtcNow;
+            await _context.SaveChangesAsync();
 
-            var backfilledCount = 0;
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            // Authoritative calculation via Central Self-Learning Governing Engine
+            var recalculatedCount = await _governingEngine.RecalculatePartnerPendingVisitsAsync(partnerId);
+
+            var approvalLog = new ReferralApprovalLog
             {
-                foreach (var visit in pendingVisits)
-                {
-                    // Skip if already has a payout fact (Idempotency)
-                    if (await _context.ReferralPayableFacts.AnyAsync(f => f.SourceVisitId == visit.VisitId)) continue;
+                LogId = Guid.NewGuid(),
+                PartnerId = partnerId,
+                ApprovedByUserId = userId,
+                CommissionPercentageAssigned = commissionPercentage,
+                BackfilledVisitCount = recalculatedCount,
+                Timestamp = DateTimeOffset.UtcNow,
+                Note = "Governing Engine Recalculation"
+            };
+            _context.ReferralApprovalLogs.Add(approvalLog);
+            await _context.SaveChangesAsync();
 
-                    // Skip if it was a Prepaid bill (PartnerCollects) - these already handled in receivables
-                    if (visit.PaymentCollectionModel == "PartnerCollects") continue;
-
-                    var totalCommission = 0m;
-                    foreach (var order in visit.Orders)
-                    {
-                        // Calculate using the new approved percentage
-                        decimal baseAmount = (partner.CalculationBase == CommissionCalculationBase.BeforeDiscounts)
-                            ? order.Price 
-                            : (order.Price - order.Discount);
-                        
-                        totalCommission += baseAmount * (commissionPercentage / 100m);
-                    }
-
-                    if (totalCommission > 0)
-                    {
-                        var payableFact = new ReferralPayableFact
-                        {
-                            ReferralPayableFactId = Guid.NewGuid(),
-                            ReferralPartnerId = partnerId,
-                            Amount = totalCommission,
-                            Currency = "INR",
-                            SourceVisitId = visit.VisitId,
-                            OccurredAt = visit.CreatedAt,
-                            RecordedAt = DateTime.UtcNow,
-                            Status = "Pending"
-                        };
-                        _context.ReferralPayableFacts.Add(payableFact);
-                        backfilledCount++;
-                    }
-                }
-
-                // 2. Log the Approval Event
-                var approvalLog = new ReferralApprovalLog
-                {
-                    LogId = Guid.NewGuid(),
-                    PartnerId = partnerId,
-                    ApprovedByUserId = userId,
-                    CommissionPercentageAssigned = commissionPercentage,
-                    BackfilledVisitCount = backfilledCount,
-                    Timestamp = DateTimeOffset.UtcNow,
-                    Note = "OPX-GPT-5: Atomic Backfill"
-                };
-                _context.ReferralApprovalLogs.Add(approvalLog);
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                _logger.LogInformation("Successfully backfilled {Count} visits for Partner {PartnerId}.", backfilledCount, partnerId);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to backfill commissions for Partner {PartnerId}.", partnerId);
-                throw;
-            }
+            _logger.LogInformation("Governing Engine recalculated {Count} visits for Partner {PartnerId} with default rate {Rate}%.", 
+                recalculatedCount, partnerId, commissionPercentage);
         }
 
 

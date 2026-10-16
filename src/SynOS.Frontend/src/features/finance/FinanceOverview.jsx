@@ -17,9 +17,12 @@ import {
     CheckCircle2,
     Activity,
     CreditCard,
-    ChevronRight
+    ChevronRight,
+    ShieldCheck,
+    Briefcase
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { ReceptionApi } from '@/api/reception';
 import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
 import { cn } from '@/lib/utils';
@@ -46,6 +49,10 @@ export const FinanceOverview = () => {
     const [referenceLabs, setReferenceLabs] = useState([]);
     const [staff, setStaff] = useState([]);
     const [payrollRuns, setPayrollRuns] = useState([]);
+    const [insuranceCompanies, setInsuranceCompanies] = useState([]);
+    const [insuranceClaims, setInsuranceClaims] = useState([]);
+    const [corporateAccounts, setCorporateAccounts] = useState([]);
+    const [corporateVisits, setCorporateVisits] = useState([]);
 
     useEffect(() => {
         if (isAdmin) {
@@ -82,7 +89,11 @@ export const FinanceOverview = () => {
                 outsourcedRes,
                 labsRes,
                 staffRes,
-                runsRes
+                runsRes,
+                insCompsRes,
+                insClaimsRes,
+                corpAccsRes,
+                corpVisitsRes
             ] = await Promise.allSettled([
                 FinanceApi.getProfitabilitySummary(null, null, bId, isCons, presetRange),
                 FinanceApi.getVendors(),
@@ -93,7 +104,11 @@ export const FinanceOverview = () => {
                 FinanceApi.getOutsourcedPayables(),
                 FinanceApi.getReferenceLabs(),
                 FinanceApi.WorkforceApi.getStaff(),
-                FinanceApi.WorkforceApi.getRuns()
+                FinanceApi.WorkforceApi.getRuns(),
+                ReceptionApi.getInsuranceCompanies(),
+                fetch('/api/v1/insurance-companies/claims', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
+                ReceptionApi.getCorporateAccounts(),
+                fetch('/api/v1/corporate-accounts/visits', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : [])
             ]);
 
             if (profitRes.status === 'fulfilled') setProfitability(profitRes.value);
@@ -106,6 +121,10 @@ export const FinanceOverview = () => {
             if (labsRes.status === 'fulfilled') setReferenceLabs(labsRes.value);
             if (staffRes.status === 'fulfilled') setStaff(staffRes.value);
             if (runsRes.status === 'fulfilled') setPayrollRuns(runsRes.value);
+            if (insCompsRes.status === 'fulfilled') setInsuranceCompanies(insCompsRes.value || []);
+            if (insClaimsRes.status === 'fulfilled') setInsuranceClaims(insClaimsRes.value || []);
+            if (corpAccsRes.status === 'fulfilled') setCorporateAccounts(corpAccsRes.value || []);
+            if (corpVisitsRes.status === 'fulfilled') setCorporateVisits(corpVisitsRes.value || []);
 
         } catch (err) {
             console.error("Dashboard aggregation failed", err);
@@ -127,6 +146,8 @@ export const FinanceOverview = () => {
     }
 
     // Calculations & Simple User-Friendly Variables
+    const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
+
     const netCashPosition = Number(profitability?.netCashPosition || profitability?.operationalNetPosition) || 0;
     const pendingCollectionsVal = Number(profitability?.pendingCollections) || 0;
     const cashInflow = Number(profitability?.cashInflow || profitability?.totalRevenueCash) || 0;
@@ -146,6 +167,13 @@ export const FinanceOverview = () => {
     const activePayrollLiability = Number(activePayrollRun?.totalGrossSalary) || 0;
     
     const totalAggregatedLiability = activeVendorsLiability + activeOverheadsLiability + activeDoctorPayouts + activePayrollLiability;
+
+    const pendingInsuranceClaims = insuranceClaims.filter(c => c.status !== 'Paid' && c.status !== 'Settled');
+    const totalInsuranceReceivables = pendingInsuranceClaims.reduce((sum, c) => sum + (Number(c.claimAmount || 0)), 0);
+
+    const pendingCorporateVisits = corporateVisits.filter(v => v.status !== 'Settled');
+    const totalCorporateReceivables = pendingCorporateVisits.reduce((sum, v) => sum + (Number(v.totalAmount || v.billAmount || 0) - Number(v.paidAmount || 0)), 0);
+
     const rawDeptList = profitability?.departmentProfitability || [];
 
     // Fallback baseline departments if none loaded from API
@@ -185,7 +213,6 @@ export const FinanceOverview = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Finance Hub</h1>
-                    <p className="text-xs text-zinc-500 font-medium mt-1">Real-time overview of money collected, doctor payouts, staff salaries, and test margins.</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -251,9 +278,9 @@ export const FinanceOverview = () => {
                     </div>
                     <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200 leading-relaxed">
                         {presetRange === 'today' ? (
-                            <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashInflow.toLocaleString()}</strong> in cash today. You owe <strong className="text-rose-500">₹{activeDoctorPayouts.toLocaleString()}</strong> in doctor payouts today, leaving <strong className="text-synos-primary">₹{(cashInflow - activeDoctorPayouts).toLocaleString()}</strong> Actual Cash Profit for today's settlement.</>
+                            <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{formatInr(cashInflow)}</strong> in cash today. You owe <strong className="text-rose-500">₹{formatInr(activeDoctorPayouts)}</strong> in doctor payouts today, leaving <strong className="text-synos-primary">₹{formatInr(cashInflow - activeDoctorPayouts)}</strong> Actual Cash Profit for today's settlement.</>
                         ) : (
-                            <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashInflow.toLocaleString()}</strong> in cash. Total bills created stand at <strong>₹{billedRevenue.toLocaleString()}</strong>. Doctor payouts owed are <strong className="text-synos-primary">₹{activeDoctorPayouts.toLocaleString()}</strong>, and total bills we owe (salaries, rent & vendors) are <strong className="text-rose-500">₹{totalAggregatedLiability.toLocaleString()}</strong>.</>
+                            <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{formatInr(cashInflow)}</strong> in cash. Total bills created stand at <strong>₹{formatInr(billedRevenue)}</strong>. Doctor payouts owed are <strong className="text-synos-primary">₹{formatInr(activeDoctorPayouts)}</strong>, and total bills we owe (salaries, rent & vendors) are <strong className="text-rose-500">₹{formatInr(totalAggregatedLiability)}</strong>.</>
                         )}
                     </p>
                 </div>
@@ -271,36 +298,32 @@ export const FinanceOverview = () => {
                 <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Actual Cash Profit</p>
                     <p className={`text-2xl font-black tracking-tight ${netCashPosition >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                        ₹{netCashPosition.toLocaleString()}
+                        ₹{formatInr(netCashPosition)}
                     </p>
-                    <span className="text-[10px] text-zinc-400 mt-1">Money Collected minus Cash Outflows</span>
                 </div>
 
                 {/* 2. Money Collected */}
                 <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Money Collected (Cash)</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
-                        ₹{cashInflow.toLocaleString()}
+                        ₹{formatInr(cashInflow)}
                     </p>
-                    <span className="text-[10px] text-zinc-400 mt-1">Cleared in bank/cash</span>
                 </div>
 
                 {/* 3. Uncollected Dues */}
                 <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Uncollected Dues</p>
                     <p className="text-2xl font-black text-amber-500 tracking-tight">
-                        ₹{pendingCollectionsVal.toLocaleString()}
+                        ₹{formatInr(pendingCollectionsVal)}
                     </p>
-                    <span className="text-[10px] text-zinc-400 mt-1">Owed by patients & B2B clients</span>
                 </div>
 
                 {/* 4. Bills We Owe */}
                 <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Bills We Owe</p>
                     <p className="text-2xl font-black text-rose-500 tracking-tight">
-                        ₹{totalAggregatedLiability.toLocaleString()}
+                        ₹{formatInr(totalAggregatedLiability)}
                     </p>
-                    <span className="text-[10px] text-zinc-400 mt-1">Staff Salaries + Doctors + Vendors + Rent</span>
                 </div>
             </div>
 
@@ -311,9 +334,6 @@ export const FinanceOverview = () => {
                         <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
                             Department & Modality Economics
                         </h3>
-                        <p className="text-[11px] text-zinc-500 mt-0.5">
-                            Hybrid matrix tracking sales volume, cash collections, and calculated operational margins. Click any card to drill down into bills.
-                        </p>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-synos-primary bg-synos-primary/10 px-2.5 py-1 rounded-full flex items-center gap-1">
@@ -352,14 +372,14 @@ export const FinanceOverview = () => {
                                 <div>
                                     <div className="flex items-baseline justify-between">
                                         <p className="text-lg font-black text-zinc-900 dark:text-white">
-                                            ₹{dept.billedRevenue?.toLocaleString() || 0}
+                                            ₹{formatInr(dept.billedRevenue)}
                                         </p>
                                         <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                            ₹{dept.cashCollected?.toLocaleString() || 0} collected
+                                            ₹{formatInr(dept.cashCollected)} collected
                                         </span>
                                     </div>
                                     <p className="text-[10px] text-zinc-500 mt-0.5">
-                                        Direct Material: ₹{dept.directCost?.toLocaleString() || 0}
+                                        Direct Material: ₹{formatInr(dept.directCost)}
                                     </p>
                                 </div>
                                 <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between text-[10px] font-bold">
@@ -401,14 +421,14 @@ export const FinanceOverview = () => {
                                 <div>
                                     <div className="flex items-baseline justify-between">
                                         <p className="text-lg font-black text-zinc-900 dark:text-white">
-                                            ₹{dept.billedRevenue?.toLocaleString() || 0}
+                                            ₹{formatInr(dept.billedRevenue)}
                                         </p>
                                         <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                                            ₹{dept.cashCollected?.toLocaleString() || 0} collected
+                                            ₹{formatInr(dept.cashCollected)} collected
                                         </span>
                                     </div>
                                     <p className="text-[10px] text-zinc-500 mt-0.5">
-                                        Material/Consumable: ₹{dept.directCost?.toLocaleString() || 0}
+                                        Material/Consumable: ₹{formatInr(dept.directCost)}
                                     </p>
                                 </div>
                                 <div className="pt-2 border-t border-zinc-100 dark:border-zinc-900 flex justify-between text-[10px] font-bold">
@@ -424,7 +444,7 @@ export const FinanceOverview = () => {
             {/* FINANCIAL OPERATIONS & MODULES GRID */}
             <div className="space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-1">Financial Operations & Modules</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     
                     {/* 1. REVENUE */}
                     <div onClick={() => navigate('/finance/revenue/overview')} className="p-6 rounded-2xl synos-card-elevated flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group">
@@ -439,19 +459,18 @@ export const FinanceOverview = () => {
 
                             <div>
                                 <p className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
-                                    ₹{cashInflow.toLocaleString()}
+                                    ₹{formatInr(cashInflow)}
                                 </p>
-                                <p className="text-[10px] text-zinc-400 font-semibold mt-1">Total Collections cleared this period</p>
                             </div>
 
                             <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Collected</span>
-                                    <span className="font-bold text-emerald-500">₹{cashInflow.toLocaleString()}</span>
+                                    <span className="font-bold text-emerald-500">₹{formatInr(cashInflow)}</span>
                                 </div>
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Outstanding</span>
-                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">₹{pendingCollectionsVal.toLocaleString()}</span>
+                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">₹{formatInr(pendingCollectionsVal)}</span>
                                 </div>
                             </div>
                         </div>
@@ -474,19 +493,18 @@ export const FinanceOverview = () => {
 
                             <div>
                                 <p className="text-3xl font-black tracking-tight text-rose-500">
-                                    ₹{(activeVendorsLiability + activeOverheadsLiability).toLocaleString()}
+                                    ₹{formatInr(activeVendorsLiability + activeOverheadsLiability)}
                                 </p>
-                                <p className="text-[10px] text-zinc-400 font-semibold mt-1">Total pending active liabilities</p>
                             </div>
 
                             <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Supplier Dues</span>
-                                    <span className="font-bold text-rose-500">₹{activeVendorsLiability.toLocaleString()}</span>
+                                    <span className="font-bold text-rose-500">₹{formatInr(activeVendorsLiability)}</span>
                                 </div>
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Monthly Overheads</span>
-                                    <span className="font-bold text-rose-500">₹{activeOverheadsLiability.toLocaleString()}</span>
+                                    <span className="font-bold text-rose-500">₹{formatInr(activeOverheadsLiability)}</span>
                                 </div>
                             </div>
                         </div>
@@ -509,19 +527,18 @@ export const FinanceOverview = () => {
 
                             <div>
                                 <p className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
-                                    ₹{activeDoctorPayouts.toLocaleString()}
+                                    ₹{formatInr(activeDoctorPayouts)}
                                 </p>
-                                <p className="text-[10px] text-zinc-400 font-semibold mt-1">Pending commissions owed to doctors</p>
                             </div>
 
                             <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">We Owe Doctors</span>
-                                    <span className="font-bold text-rose-500">₹{activeDoctorPayouts.toLocaleString()}</span>
+                                    <span className="font-bold text-rose-500">₹{formatInr(activeDoctorPayouts)}</span>
                                 </div>
                                 <div className="flex justify-between py-1.5 text-xs">
                                     <span className="text-zinc-500">Doctors Owe Us</span>
-                                    <span className="font-bold text-emerald-500">₹{(referrals?.totalPendingReceivables || 0).toLocaleString()}</span>
+                                    <span className="font-bold text-emerald-500">₹{formatInr(referrals?.totalPendingReceivables || 0)}</span>
                                 </div>
                             </div>
                         </div>
@@ -546,7 +563,6 @@ export const FinanceOverview = () => {
                                 <p className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
                                     {outsourced.filter(o => o.status === 'PendingPricing').length}
                                 </p>
-                                <p className="text-[10px] text-zinc-400 font-semibold mt-1">Reference tests awaiting pricing</p>
                             </div>
 
                             <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
@@ -581,7 +597,6 @@ export const FinanceOverview = () => {
                                 <p className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
                                     {staff.length}
                                 </p>
-                                <p className="text-[10px] text-zinc-400 font-semibold mt-1">Total registered laboratory staff</p>
                             </div>
 
                             <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
@@ -597,6 +612,74 @@ export const FinanceOverview = () => {
                         </div>
                         <div className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-wider text-synos-primary mt-6 pt-2 border-t border-transparent group-hover:border-zinc-100 dark:group-hover:border-zinc-900">
                             <span>Open Payroll Screen</span>
+                            <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </div>
+
+                    {/* 6. INSURANCE / TPA */}
+                    <div onClick={() => navigate('/finance/insurance')} className="p-6 rounded-2xl synos-card-elevated flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-2 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                                    <ShieldCheck size={16} className="text-sky-500" />
+                                    6. Insurance / TPA
+                                </span>
+                                <span className="text-[9px] bg-sky-500/10 text-sky-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Cashless Desk</span>
+                            </div>
+
+                            <div>
+                                <p className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+                                    ₹{formatInr(totalInsuranceReceivables)}
+                                </p>
+                            </div>
+
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
+                                <div className="flex justify-between py-1.5 text-xs">
+                                    <span className="text-zinc-500">Pending Claims</span>
+                                    <span className="font-bold text-amber-500">{pendingInsuranceClaims.length} Claims</span>
+                                </div>
+                                <div className="flex justify-between py-1.5 text-xs">
+                                    <span className="text-zinc-500">Empanelled TPAs</span>
+                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">{insuranceCompanies.length} Payers</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-wider text-synos-primary mt-6 pt-2 border-t border-transparent group-hover:border-zinc-100 dark:group-hover:border-zinc-900">
+                            <span>Open Insurance Screen</span>
+                            <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </div>
+
+                    {/* 7. CORPORATE B2B */}
+                    <div onClick={() => navigate('/finance/corporate')} className="p-6 rounded-2xl synos-card-elevated flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="flex items-center gap-2 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                                    <Briefcase size={16} className="text-amber-500" />
+                                    7. Corporate B2B
+                                </span>
+                                <span className="text-[9px] bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">B2B Contracts</span>
+                            </div>
+
+                            <div>
+                                <p className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+                                    ₹{formatInr(totalCorporateReceivables)}
+                                </p>
+                            </div>
+
+                            <div className="pt-3 divide-y divide-slate-200/70 dark:divide-zinc-800 border-t dark:border-zinc-800 border-slate-200/70">
+                                <div className="flex justify-between py-1.5 text-xs">
+                                    <span className="text-zinc-500">Client Organizations</span>
+                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">{corporateAccounts.length} Clients</span>
+                                </div>
+                                <div className="flex justify-between py-1.5 text-xs">
+                                    <span className="text-zinc-500">Pending Invoices</span>
+                                    <span className="font-bold text-amber-500">{pendingCorporateVisits.length} Invoices</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between w-full text-[10px] font-bold uppercase tracking-wider text-synos-primary mt-6 pt-2 border-t border-transparent group-hover:border-zinc-100 dark:group-hover:border-zinc-900">
+                            <span>Open Corporate Screen</span>
                             <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </div>
                     </div>

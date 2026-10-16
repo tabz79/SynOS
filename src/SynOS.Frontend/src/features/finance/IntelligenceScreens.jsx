@@ -12,6 +12,7 @@ import {
     Filter,
     Download
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { FinanceApi } from '@/api/finance';
 
 // --- SHARED COMPONENTS ---
@@ -31,8 +32,8 @@ const MetricCard = ({ title, value, subtext, icon: Icon, trend, isPositive }) =>
         </div>
         <div>
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">{title}</h3>
-            <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">₹{value.toLocaleString()}</p>
-            <p className="text-[10px] text-zinc-500 mt-1 font-medium">{subtext}</p>
+            <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">₹{Math.round(Number(value) || 0).toLocaleString('en-IN')}</p>
+            {subtext && <p className="text-[10px] text-zinc-500 mt-1 font-medium">{subtext}</p>}
         </div>
     </div>
 );
@@ -40,6 +41,7 @@ const MetricCard = ({ title, value, subtext, icon: Icon, trend, isPositive }) =>
 // --- SCREENS ---
 
 export const IntelligenceDashboard = () => {
+    const { user, activeOversightBranchId } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState('month');
@@ -48,7 +50,9 @@ export const IntelligenceDashboard = () => {
         const load = async () => {
             try {
                 setLoading(true);
-                const data = await FinanceApi.getProfitabilitySummary(null, null, null, false, dateRange);
+                const bId = activeOversightBranchId || user?.branchId;
+                const isCons = !bId;
+                const data = await FinanceApi.getProfitabilitySummary(null, null, bId, isCons, dateRange);
                 setStats(data);
             } catch (err) {
                 console.error(err);
@@ -57,22 +61,25 @@ export const IntelligenceDashboard = () => {
             }
         };
         load();
-    }, [dateRange]);
+    }, [dateRange, activeOversightBranchId, user?.branchId]);
 
     if (loading || !stats) return <LoadingState />;
 
-    const totalBilled = Number(stats.billedRevenue || 0);
-    const cashCollected = Number(stats.moneyCollectedCash || 0);
-    const materialCosts = Number(stats.materialCost || 0);
-    const doctorPayouts = Number(stats.doctorPayouts || 0);
-    const payrollCosts = Number(stats.payrollSalary || 0);
-    const overheadCosts = Number(stats.monthlyOverheads || 0);
-    const totalExpenses = materialCosts + doctorPayouts + payrollCosts + overheadCosts;
-    const actualProfit = Number(stats.netCashProfit || (cashCollected - totalExpenses));
+    const totalBilled = Math.round(Number(stats.totalRevenueAccrual ?? stats.billedRevenue ?? 0));
+    const cashCollected = Math.round(Number(stats.totalRevenueCash ?? stats.cashInflow ?? stats.cashCollected ?? stats.moneyCollectedCash ?? 0));
+    const materialCosts = Math.round(Number(stats.consumableCashOutflow ?? stats.materialCost ?? 0));
+    const doctorPayouts = Math.round(Number(stats.referralCashOutflow ?? stats.doctorPayouts ?? 0));
+    const payrollCosts = Math.round(Number(stats.payrollCashOutflow ?? stats.payrollSalary ?? 0));
+    const overheadCosts = Math.round(Number(stats.overheadCashOutflow ?? stats.monthlyOverheads ?? 0));
+    const outsourcedCosts = Math.round(Number(stats.outsourcedTestCashOutflow ?? 0));
+    const totalExpenses = Math.round(Number(stats.totalExpensesCash ?? (materialCosts + doctorPayouts + payrollCosts + overheadCosts + outsourcedCosts)));
+    const actualProfit = Math.round(Number(stats.netCashPosition ?? stats.netCashProfit ?? (cashCollected - totalExpenses)));
 
     const handleExportPnl = async () => {
         try {
-            await FinanceApi.downloadPnlReport(dateRange);
+            const bId = activeOversightBranchId || user?.branchId;
+            const isCons = !bId;
+            await FinanceApi.exportProfitabilityPnl(dateRange, isCons, bId);
         } catch {
             alert("Failed to download P&L Statement");
         }
@@ -121,9 +128,9 @@ export const IntelligenceDashboard = () => {
                 </div>
                 <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {dateRange === 'today' ? (
-                        <>Today your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString()}</strong> in cash. Doctor payouts owed today stand at <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString()}</strong>, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{(cashCollected - doctorPayouts).toLocaleString()}</strong> Actual Cash Profit for today's settlement.</>
+                        <>Today your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString('en-IN')}</strong> in cash. Doctor payouts owed today stand at <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString('en-IN')}</strong>, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{(cashCollected - doctorPayouts).toLocaleString('en-IN')}</strong> Actual Cash Profit for today's settlement.</>
                     ) : (
-                        <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString()}</strong> in cash against <strong className="text-zinc-900 dark:text-white">₹{totalBilled.toLocaleString()}</strong> total bills created. You spent <strong className="text-zinc-700 dark:text-zinc-300 font-bold">₹{materialCosts.toLocaleString()}</strong> on reagents/materials, <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString()}</strong> on doctor payouts, and <strong className="text-zinc-700 dark:text-zinc-300 font-bold">₹{payrollCosts.toLocaleString()}</strong> on staff salaries, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{actualProfit.toLocaleString()}</strong> Actual Cash Profit.</>
+                        <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString('en-IN')}</strong> in cash against <strong className="text-zinc-900 dark:text-white">₹{totalBilled.toLocaleString('en-IN')}</strong> total bills created. You spent <strong className="text-zinc-700 dark:text-zinc-300 font-bold">₹{materialCosts.toLocaleString('en-IN')}</strong> on reagents/materials, <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString('en-IN')}</strong> on doctor payouts, and <strong className="text-zinc-700 dark:text-zinc-300 font-bold">₹{payrollCosts.toLocaleString('en-IN')}</strong> on staff salaries, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{actualProfit.toLocaleString('en-IN')}</strong> Actual Cash Profit.</>
                     )}
                 </p>
             </div>
@@ -166,23 +173,23 @@ export const IntelligenceDashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 text-center">
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">1. Money Collected</p>
-                        <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{cashCollected.toLocaleString()}</p>
+                        <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{cashCollected.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">− Reagents & Materials</p>
-                        <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{materialCosts.toLocaleString()}</p>
+                        <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{materialCosts.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
                         <p className="text-[10px] font-bold text-synos-primary uppercase tracking-wider">− Doctor Payouts</p>
-                        <p className="text-base font-black text-synos-primary mt-1">₹{doctorPayouts.toLocaleString()}</p>
+                        <p className="text-base font-black text-synos-primary mt-1">₹{doctorPayouts.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
                         <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">− Salaries & Rent</p>
-                        <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{payrollCosts.toLocaleString()}</p>
+                        <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{(payrollCosts + overheadCosts).toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
                         <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">= Actual Cash Profit</p>
-                        <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{actualProfit.toLocaleString()}</p>
+                        <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{actualProfit.toLocaleString('en-IN')}</p>
                     </div>
                 </div>
             </div>
@@ -198,7 +205,7 @@ export const IntelligenceDashboard = () => {
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-xs font-bold dark:text-zinc-300">{p.partnerName}</span>
                                         <span className="text-[10px] text-zinc-500 font-medium">
-                                            {p.patientCount} Patients • ₹{Number(p.totalRevenueGenerated || 0).toLocaleString()} Billed • ₹{Number(p.totalCommissionEarned || 0).toLocaleString()} Payout
+                                            {p.patientCount} Patients • ₹{Math.round(Number(p.totalRevenueGenerated || 0)).toLocaleString('en-IN')} Billed • ₹{Math.round(Number(p.totalCommissionEarned || 0)).toLocaleString('en-IN')} Payout
                                         </span>
                                     </div>
                                     <span className={`text-xs font-bold ${p.growthPercentage >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
