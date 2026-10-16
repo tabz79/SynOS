@@ -67575,7 +67575,7 @@ ${n}
     var _a2;
     return A.jsxs("div", {
       style: s,
-      className: Pe("rounded-xl flex flex-col transition-[transform,opacity,box-shadow] duration-200 group overflow-hidden", o, "hover:scale-[1.01] hover:shadow-xl will-change-transform"),
+      className: Pe("rounded-xl flex flex-col transition-all duration-200 group overflow-hidden", o, "hover:-translate-y-0.5 hover:shadow-xl"),
       children: [
         A.jsxs("div", {
           className: "p-5 flex-1 space-y-4",
@@ -67690,7 +67690,7 @@ ${n}
   function oE({ label: t, value: e, icon: n, isCurrency: r, highlight: i, cardStyle: a, cardClasses: s }) {
     return A.jsxs("div", {
       style: i ? void 0 : a,
-      className: Pe("p-4 rounded-xl transition-[transform,opacity] duration-200 will-change-transform", i ? "bg-synos-primary/10 border border-synos-primary/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : s, "hover:scale-[1.02]"),
+      className: Pe("p-4 rounded-xl transition-all duration-200", i ? "bg-synos-primary/10 border border-synos-primary/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "synos-kpi-card"),
       children: [
         A.jsxs("div", {
           className: "flex items-center justify-between mb-3",
@@ -95952,7 +95952,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
           children: [
             A.jsxs("div", {
-              className: "p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5",
+              className: "p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -95972,7 +95972,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               ]
             }),
             A.jsxs("div", {
-              className: "p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5",
+              className: "p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -95992,7 +95992,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               ]
             }),
             A.jsxs("div", {
-              className: "p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5",
+              className: "p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -96012,7 +96012,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               ]
             }),
             A.jsxs("div", {
-              className: "p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5",
+              className: "p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -96399,7 +96399,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 }),
                 A.jsxs("div", {
                   onClick: () => t("/finance/expenses/overview"),
-                  className: "p-6 rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 shadow-sm flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group",
+                  className: "p-6 rounded-2xl synos-card-elevated flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group",
                   children: [
                     A.jsxs("div", {
                       className: "space-y-4",
@@ -97101,7 +97101,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 A.jsx("button", {
                   disabled: !a || parseFloat(a) <= 0,
                   onClick: () => n(parseFloat(a), o),
-                  className: "flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:hover:scale-100",
+                  className: "flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale",
                   children: "Process Settlement"
                 })
               ]
@@ -97485,7 +97485,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
         A.jsx("div", {
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
           children: x.map((B, E) => A.jsxs("div", {
-            className: "p-6 bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between space-y-3",
+            className: "p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3",
             children: [
               A.jsxs("div", {
                 className: "flex justify-between items-start",
@@ -97522,7 +97522,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           className: "grid grid-cols-1 lg:grid-cols-3 gap-6",
           children: [
             A.jsxs("div", {
-              className: "lg:col-span-2 bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none flex flex-col justify-between space-y-4",
+              className: "lg:col-span-2 synos-dept-card rounded-2xl p-6 flex flex-col justify-between space-y-4",
               children: [
                 A.jsxs("div", {
                   children: [
@@ -97658,7 +97658,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               className: "space-y-6",
               children: [
                 A.jsxs("div", {
-                  className: "bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4",
+                  className: "synos-dept-card rounded-2xl p-6 space-y-4",
                   children: [
                     A.jsxs("div", {
                       className: "flex items-center justify-between",
@@ -97778,7 +97778,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   ]
                 }),
                 A.jsxs("div", {
-                  className: "bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none space-y-3",
+                  className: "synos-dept-card rounded-2xl p-6 space-y-3",
                   children: [
                     A.jsx("h3", {
                       className: "text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider",
@@ -98255,7 +98255,7 @@ Thank you!`;
           className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3",
           children: [
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -98278,7 +98278,7 @@ Thank you!`;
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-emerald-500",
@@ -98298,7 +98298,7 @@ Thank you!`;
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-indigo-500",
@@ -98318,7 +98318,7 @@ Thank you!`;
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-purple-500",
@@ -98338,7 +98338,7 @@ Thank you!`;
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-amber-500",
@@ -98358,7 +98358,7 @@ Thank you!`;
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-rose-500",
@@ -98614,7 +98614,7 @@ Thank you!`;
           ]
         }),
         A.jsx("div", {
-          className: "rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: c ? A.jsx("div", {
             className: "p-20 text-center text-zinc-500 animate-pulse text-xs font-bold uppercase tracking-wider",
             children: "Synchronizing bill ledger..."
@@ -99219,7 +99219,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           className: "grid grid-cols-1 sm:grid-cols-3 gap-4",
           children: [
             A.jsxs("div", {
-              className: "p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-5 rounded-2xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -99239,7 +99239,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               ]
             }),
             A.jsxs("div", {
-              className: "p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-rose-500/20 bg-rose-500/5",
+              className: "p-5 rounded-2xl synos-kpi-card border-rose-300 dark:border-rose-900/50",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-rose-500",
@@ -99256,7 +99256,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               ]
             }),
             A.jsxs("div", {
-              className: "p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-5 rounded-2xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -99945,7 +99945,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           className: "grid grid-cols-2 md:grid-cols-4 gap-3",
           children: [
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-zinc-400",
@@ -99968,7 +99968,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-emerald-500",
@@ -99988,7 +99988,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-sky-500",
@@ -100008,7 +100008,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               ]
             }),
             A.jsxs("div", {
-              className: "p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800",
+              className: "p-4 rounded-xl synos-kpi-card",
               children: [
                 A.jsx("p", {
                   className: "text-[10px] font-bold uppercase tracking-wider text-purple-500",
@@ -100057,7 +100057,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           onCustomDatesChange: h
         }),
         A.jsx("div", {
-          className: "rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: n ? A.jsx("div", {
             className: "p-20 text-center text-zinc-500 animate-pulse",
             children: "Scanning history facts..."
@@ -100317,7 +100317,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             }),
             A.jsxs("button", {
               onClick: () => C(),
-              className: "flex items-center gap-2 bg-synos-primary text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all",
+              className: "flex items-center gap-2 bg-synos-primary text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all",
               children: [
                 A.jsx(OA, {
                   className: "w-5 h-5"
@@ -100328,7 +100328,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           ]
         }),
         A.jsx("div", {
-          className: "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-3xl p-4 flex items-center gap-4 shadow-sm",
+          className: "synos-dept-card rounded-2xl p-4 flex items-center gap-4",
           children: A.jsxs("div", {
             className: "relative flex-1",
             children: [
@@ -100348,9 +100348,9 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
         A.jsx("div", {
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
           children: n ? Array(6).fill(0).map((B, E) => A.jsx("div", {
-            className: "h-64 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] animate-pulse border border-zinc-200 dark:border-white/5"
+            className: "h-64 synos-dept-card rounded-2xl animate-pulse"
           }, E)) : x.map((B) => A.jsxs("div", {
-            className: "group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl hover:shadow-synos-primary/5 hover:border-synos-primary/20 transition-all duration-500 relative overflow-hidden",
+            className: "group synos-dept-card rounded-2xl p-6 transition-all duration-200 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-xl",
             children: [
               A.jsx("div", {
                 className: "absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity",
@@ -100657,7 +100657,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   A.jsx("button", {
                     type: "submit",
                     disabled: d,
-                    className: "w-full bg-synos-primary text-white font-black py-6 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50",
+                    className: "w-full bg-synos-primary text-white font-black py-6 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50",
                     children: d ? A.jsx("div", {
                       className: "w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"
                     }) : A.jsxs(A.Fragment, {
@@ -100739,7 +100739,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
       neutral: "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900/10"
     };
     return A.jsxs("div", {
-      className: `border p-5 rounded-2xl shadow-sm transition-all duration-300 group flex items-center justify-between ${a[n]}`,
+      className: `synos-kpi-card p-5 rounded-2xl group flex items-center justify-between ${a[n]}`,
       children: [
         A.jsxs("div", {
           className: "space-y-1.5",
@@ -100867,7 +100867,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                 }),
                 A.jsxs("button", {
                   onClick: () => h(true),
-                  className: "px-4 py-2.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 hover:bg-synos-primary/95 hover:scale-[1.01] active:scale-95 transition-all flex items-center gap-2",
+                  className: "px-4 py-2.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 hover:bg-synos-primary/95 active:scale-95 transition-all flex items-center gap-2",
                   children: [
                     A.jsx(of, {
                       className: "w-4 h-4"
@@ -101344,7 +101344,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               A.jsxs("button", {
                 type: "submit",
                 disabled: l || !i,
-                className: "w-full bg-emerald-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50",
+                className: "w-full bg-emerald-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-600/20 hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50",
                 children: [
                   l ? "Recording Ledger Update..." : "Save Recorded Payment",
                   A.jsx(dA, {
@@ -101621,7 +101621,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                 ...h,
                                 cycle: w
                               }),
-                              className: `px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-[1.01] ${v ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 shadow-sm" : "bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900"}`,
+                              className: `px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${v ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 shadow-sm" : "bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900"}`,
                               children: w
                             }, w);
                           })
@@ -101831,7 +101831,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
       children: n[t] || t
     });
   }, xg = ({ title: t, value: e, type: n = "neutral", subtitle: r }) => A.jsxs("div", {
-    className: "p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900/40 bg-white shadow-sm flex flex-col gap-1",
+    className: "p-4 rounded-xl synos-kpi-card flex flex-col gap-1 justify-between",
     children: [
       A.jsx("p", {
         className: "text-[10px] font-bold uppercase tracking-widest text-zinc-500",
@@ -103245,7 +103245,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           ]
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: [
             A.jsx("div", {
               className: "p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40",
@@ -103524,7 +103524,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               })
             ]
           }) : t.map((B) => A.jsxs("div", {
-            className: "bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all group border-b-4 border-b-synos-primary/20",
+            className: "synos-dept-card rounded-2xl p-6 transition-all group border-b-4 border-b-synos-primary/20",
             children: [
               A.jsxs("div", {
                 className: "flex items-center justify-between mb-6",
@@ -104531,7 +104531,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
         A.jsx("div", {
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
           children: s.map((o, l) => A.jsxs("div", {
-            className: "p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all",
+            className: "p-6 synos-kpi-card rounded-2xl flex flex-col justify-between",
             children: [
               A.jsxs("div", {
                 className: "flex justify-between items-start mb-4",
@@ -104563,7 +104563,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           className: "grid grid-cols-1 lg:grid-cols-3 gap-8",
           children: [
             A.jsxs("div", {
-              className: "lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm",
+              className: "lg:col-span-2 synos-dept-card rounded-2xl p-6",
               children: [
                 A.jsx("h2", {
                   className: "text-lg font-bold dark:text-white text-zinc-900 mb-6",
@@ -104641,7 +104641,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               ]
             }),
             A.jsx("div", {
-              className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm flex flex-col justify-between",
+              className: "synos-dept-card rounded-2xl p-6 flex flex-col justify-between",
               children: A.jsxs("div", {
                 children: [
                   A.jsx("h2", {
@@ -104876,7 +104876,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
         A.jsx("div", {
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
           children: i.map((a, s) => A.jsxs("div", {
-            className: "p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all",
+            className: "p-6 synos-kpi-card rounded-2xl flex flex-col justify-between",
             children: [
               A.jsxs("div", {
                 className: "flex justify-between items-start mb-4",
@@ -104908,7 +104908,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           }, s))
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm",
+          className: "synos-dept-card rounded-2xl p-6",
           children: [
             A.jsx("h2", {
               className: "text-lg font-bold dark:text-white text-zinc-900 mb-6",
@@ -105563,7 +105563,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
       ]
     });
   }, hD = ({ title: t, value: e, subtext: n, icon: r, trend: i, isPositive: a }) => A.jsxs("div", {
-    className: "p-6 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3",
+    className: "p-6 rounded-2xl synos-kpi-card flex flex-col justify-between space-y-3",
     children: [
       A.jsxs("div", {
         className: "flex justify-between items-start",
@@ -106182,7 +106182,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
               children: [
                 A.jsxs("div", {
-                  className: "synos-dept-card p-4 rounded-xl flex flex-col justify-between",
+                  className: "synos-kpi-card p-4 rounded-xl flex flex-col justify-between",
                   children: [
                     A.jsxs("div", {
                       className: "flex items-center justify-between mb-3",
@@ -106207,7 +106207,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   ]
                 }),
                 A.jsxs("div", {
-                  className: "synos-dept-card p-4 rounded-xl flex flex-col justify-between",
+                  className: "synos-kpi-card p-4 rounded-xl flex flex-col justify-between",
                   children: [
                     A.jsxs("div", {
                       className: "flex items-center justify-between mb-3",
@@ -106235,7 +106235,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   onClick: () => {
                     g("has_unmapped"), x(1);
                   },
-                  className: Pe("synos-dept-card p-4 rounded-xl flex flex-col justify-between cursor-pointer transition-all", t.doctorsWithUnmappedTestsCount > 0 && "border-amber-300 dark:border-amber-900/50"),
+                  className: Pe("synos-kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer transition-all", t.doctorsWithUnmappedTestsCount > 0 && "border-amber-300 dark:border-amber-900/50"),
                   children: [
                     A.jsxs("div", {
                       className: "flex items-center justify-between mb-3",
@@ -106268,7 +106268,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   ]
                 }),
                 A.jsxs("div", {
-                  className: "synos-dept-card p-4 rounded-xl flex flex-col justify-between",
+                  className: "synos-kpi-card p-4 rounded-xl flex flex-col justify-between",
                   children: [
                     A.jsxs("div", {
                       className: "flex items-center justify-between mb-3",
@@ -106939,7 +106939,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
     var _a2, _b2;
     const r = t.hasUnmappedWaiting || t.unmappedTestsCount > 0, i = ((_a2 = t.demographics) == null ? void 0 : _a2.phone) || t.contactInfo, a = i ? i.replace(/[^0-9]/g, "") : null;
     return A.jsxs("div", {
-      className: "synos-dept-card rounded-xl flex flex-col justify-between transition-[transform,opacity,box-shadow] duration-200 group overflow-hidden hover:scale-[1.01] hover:shadow-xl will-change-transform",
+      className: "synos-dept-card rounded-xl flex flex-col justify-between transition-all duration-200 group overflow-hidden hover:-translate-y-0.5 hover:shadow-xl",
       children: [
         A.jsxs("div", {
           className: "p-5 flex-1 space-y-4",
@@ -109585,7 +109585,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         A.jsx("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-[32px] overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: A.jsxs("table", {
             className: "w-full text-left",
             children: [
@@ -110283,7 +110283,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         A.jsx("div", {
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
           children: s.map((o, l) => A.jsxs("div", {
-            className: "p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all group",
+            className: "p-6 synos-kpi-card rounded-2xl flex flex-col justify-between group",
             children: [
               A.jsx("div", {
                 className: "flex justify-between items-start mb-4",
@@ -110313,7 +110313,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           className: "grid grid-cols-1 lg:grid-cols-3 gap-8",
           children: [
             A.jsxs("div", {
-              className: "lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm",
+              className: "lg:col-span-2 synos-dept-card rounded-2xl p-6",
               children: [
                 A.jsx("div", {
                   className: "flex justify-between items-center mb-6",
@@ -110408,7 +110408,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             A.jsxs("div", {
-              className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm",
+              className: "synos-dept-card rounded-2xl p-6",
               children: [
                 A.jsx("h2", {
                   className: "text-lg font-bold dark:text-white text-zinc-900 mb-6",
@@ -110824,7 +110824,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 var _a2;
                 const Z = x[ee.referralPartnerId], te = ((_a2 = ee.unmappedTests) == null ? void 0 : _a2.length) || 0, oe = E === ee.referralPartnerId;
                 return A.jsxs("div", {
-                  className: "bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl shadow-sm overflow-hidden transition-all",
+                  className: "synos-dept-card rounded-2xl overflow-hidden transition-all",
                   children: [
                     A.jsxs("div", {
                       className: "p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-900/30 border-b border-zinc-100 dark:border-zinc-900",
@@ -111157,7 +111157,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             A.jsx("div", {
-              className: "bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-2xl shadow-sm overflow-hidden",
+              className: "synos-dept-card rounded-2xl overflow-hidden",
               children: c ? A.jsxs("div", {
                 className: "py-20 flex flex-col items-center justify-center gap-3 text-zinc-400",
                 children: [
@@ -112691,7 +112691,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
                     children: [
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -112716,7 +112716,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -112747,7 +112747,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -112775,7 +112775,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -112802,7 +112802,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsxs("div", {
-                    className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                    className: "synos-dept-card rounded-2xl overflow-hidden",
                     children: [
                       A.jsxs("div", {
                         className: "px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between",
@@ -112991,7 +112991,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsx("div", {
-                    className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                    className: "synos-dept-card rounded-2xl overflow-hidden",
                     children: A.jsx("div", {
                       className: "overflow-x-auto",
                       children: A.jsxs("table", {
@@ -113207,7 +113207,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsx("div", {
-                    className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                    className: "synos-dept-card rounded-2xl overflow-hidden",
                     children: A.jsx("div", {
                       className: "overflow-x-auto",
                       children: A.jsxs("table", {
@@ -113364,7 +113364,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               t === "receivables" && A.jsx("div", {
                 className: "space-y-6 w-full",
                 children: A.jsxs("div", {
-                  className: "p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4",
+                  className: "synos-dept-card rounded-2xl p-6 space-y-4",
                   children: [
                     A.jsxs("div", {
                       className: "flex items-center justify-between",
@@ -114563,7 +114563,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4",
                     children: [
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -114588,7 +114588,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -114616,7 +114616,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -114641,7 +114641,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs",
+                        className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between",
                         children: [
                           A.jsxs("div", {
                             className: "flex items-center justify-between mb-2",
@@ -114668,7 +114668,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsxs("div", {
-                    className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                    className: "synos-dept-card rounded-2xl overflow-hidden",
                     children: [
                       A.jsxs("div", {
                         className: "px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between",
@@ -114823,7 +114823,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsx("div", {
-                    className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                    className: "synos-dept-card rounded-2xl overflow-hidden",
                     children: A.jsx("div", {
                       className: "overflow-x-auto",
                       children: A.jsxs("table", {
@@ -115406,7 +115406,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       A.jsxs("div", {
-                        className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                        className: "synos-dept-card rounded-2xl overflow-hidden",
                         children: [
                           A.jsx("div", {
                             className: "overflow-x-auto",
@@ -115696,7 +115696,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     ]
                   }),
                   A.jsx("div", {
-                    className: "bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs",
+                    className: "synos-dept-card rounded-2xl overflow-hidden",
                     children: A.jsx("div", {
                       className: "overflow-x-auto",
                       children: A.jsxs("table", {
@@ -117435,7 +117435,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   A.jsx("button", {
                     type: "submit",
                     disabled: s,
-                    className: "px-8 py-2.5 bg-synos-primary text-white rounded-xl text-sm font-bold shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50",
+                    className: "px-8 py-2.5 bg-synos-primary text-white rounded-xl text-sm font-bold shadow-xl shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50",
                     children: s ? r ? "Updating..." : "Registering..." : A.jsxs(A.Fragment, {
                       children: [
                         A.jsx(Pu, {
@@ -117656,7 +117656,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   A.jsx("button", {
                     type: "submit",
                     disabled: s || !i.employeeId,
-                    className: "px-8 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50",
+                    className: "px-8 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold shadow-xl shadow-amber-500/20 hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50",
                     children: s ? "Recording..." : A.jsxs(A.Fragment, {
                       children: [
                         A.jsx(Pu, {
@@ -118035,7 +118035,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     A.jsx("button", {
                       type: "submit",
                       disabled: h,
-                      className: "flex-1 py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50",
+                      className: "flex-1 py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50",
                       children: h ? "Saving..." : l ? "Schedule Leave" : "Update Truth"
                     })
                   ]
@@ -118265,7 +118265,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 A.jsx("button", {
                   onClick: p,
                   disabled: g || h,
-                  className: "flex-[2] py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2",
+                  className: "flex-[2] py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2",
                   children: g ? "Saving Policy..." : A.jsxs(A.Fragment, {
                     children: [
                       A.jsx(Pu, {
@@ -118887,7 +118887,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         A.jsxs("div", {
-          className: "dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm backdrop-blur-md",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: [
             A.jsxs("div", {
               className: "p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between gap-4",
@@ -119349,7 +119349,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             A.jsxs("div", {
-              className: "dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm",
+              className: "synos-dept-card rounded-2xl overflow-hidden",
               children: [
                 A.jsxs("div", {
                   className: "p-4 border-b dark:border-zinc-800 border-zinc-200 bg-amber-500/5 flex items-center justify-between",
@@ -119449,7 +119449,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             l.length > 0 && A.jsxs("div", {
-              className: "dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm animate-in fade-in duration-300",
+              className: "synos-dept-card rounded-2xl overflow-hidden animate-in fade-in duration-300",
               children: [
                 A.jsxs("div", {
                   className: "p-4 border-b dark:border-zinc-800 border-zinc-200 bg-emerald-500/5 flex items-center justify-between",
@@ -119902,7 +119902,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }
                       },
                       disabled: u,
-                      className: "flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:scale-[1.01] hover:border-synos-primary",
+                      className: "flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:-translate-y-0.5 hover:border-synos-primary",
                       children: [
                         A.jsx(Wu, {
                           className: "w-8 h-8 text-synos-primary"
@@ -119931,7 +119931,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }
                       },
                       disabled: u,
-                      className: "flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:scale-[1.01] hover:border-amber-500",
+                      className: "flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:-translate-y-0.5 hover:border-amber-500",
                       children: [
                         A.jsx(yh, {
                           className: "w-8 h-8 text-amber-500"
@@ -119951,7 +119951,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             A.jsxs("div", {
-              className: "dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-3xl overflow-hidden shadow-sm",
+              className: "synos-dept-card rounded-2xl overflow-hidden",
               children: [
                 A.jsxs("div", {
                   className: "p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900 flex items-center justify-between",
@@ -120155,7 +120155,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         A.jsx("div", {
-          className: "dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: A.jsxs("table", {
             className: "w-full text-left text-xs",
             children: [
@@ -120866,7 +120866,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       zinc: "bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 text-white shadow-black/10"
     };
     return A.jsxs("div", {
-      className: "dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group",
+      className: "synos-kpi-card p-5 rounded-2xl flex flex-col justify-between group",
       children: [
         A.jsxs("div", {
           className: "flex justify-between items-start mb-4",
@@ -121054,7 +121054,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
   }
   function K3e({ month: t, status: e, staffCount: n, accrual: r, onSelect: i, isCurrent: a }) {
     return A.jsxs("div", {
-      className: `p-6 rounded-2xl border transition-all hover:scale-[1.02] cursor-pointer group ${a ? "bg-synos-primary/5 border-synos-primary shadow-lg shadow-synos-primary/5" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm"}`,
+      className: `p-6 rounded-2xl border transition-all hover:-translate-y-0.5 cursor-pointer group ${a ? "bg-synos-primary/5 border-synos-primary shadow-lg shadow-synos-primary/5" : "synos-dept-card"}`,
       onClick: i,
       children: [
         A.jsxs("div", {
@@ -121607,7 +121607,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         ct.length > 0 && A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: [
             A.jsxs("div", {
               className: "px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center justify-between",
@@ -121704,7 +121704,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm",
+          className: "synos-dept-card rounded-2xl overflow-hidden",
           children: [
             A.jsxs("div", {
               className: "px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2",
@@ -122012,7 +122012,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           }
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm mt-8 animate-in slide-in-from-bottom duration-300",
+          className: "synos-dept-card rounded-2xl overflow-hidden mt-8 animate-in slide-in-from-bottom duration-300",
           children: [
             A.jsxs("div", {
               className: "px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2.5",
@@ -122050,7 +122050,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         l && l.map((Ge) => {
                           const Ce = v === Ge.code;
                           return A.jsx("div", {
-                            className: "p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:scale-[1.01] transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/dept",
+                            className: "p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:-translate-y-0.5 transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/dept",
                             children: Ce ? A.jsxs("div", {
                               className: "space-y-3 w-full",
                               children: [
@@ -122283,7 +122283,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         A.jsxs("div", {
-          className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm mt-8 animate-in slide-in-from-bottom duration-300",
+          className: "synos-dept-card rounded-2xl overflow-hidden mt-8 animate-in slide-in-from-bottom duration-300",
           children: [
             A.jsxs("div", {
               className: "px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2.5",
@@ -122321,7 +122321,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         W && W.map((Ge) => {
                           const Ce = he === Ge.workspaceId;
                           return A.jsx("div", {
-                            className: "p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:scale-[1.01] transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/ws",
+                            className: "p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:-translate-y-0.5 transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/ws",
                             children: Ce ? A.jsxs("div", {
                               className: "space-y-3 w-full",
                               children: [
@@ -123405,7 +123405,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         A.jsx("div", {
           className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
           children: i.map((a, s) => A.jsxs("div", {
-            className: "p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all",
+            className: "p-6 synos-kpi-card rounded-2xl flex flex-col justify-between",
             children: [
               A.jsxs("div", {
                 className: "flex justify-between items-start mb-4",
@@ -123440,7 +123440,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           className: "grid grid-cols-1 lg:grid-cols-3 gap-8",
           children: [
             A.jsxs("div", {
-              className: "lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm",
+              className: "lg:col-span-2 synos-dept-card rounded-2xl p-6",
               children: [
                 A.jsx("h2", {
                   className: "text-lg font-bold dark:text-white text-zinc-900 mb-6",
@@ -123518,7 +123518,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             A.jsxs("div", {
-              className: "bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm",
+              className: "synos-dept-card rounded-2xl p-6",
               children: [
                 A.jsx("h2", {
                   className: "text-lg font-bold dark:text-white text-zinc-900 mb-6",
@@ -127146,7 +127146,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         O.map((De) => A.jsx("div", {
                           onClick: () => he(De),
-                          className: Pe("p-4 rounded-xl border transition-all duration-200 cursor-pointer text-xxs flex flex-col justify-between hover:scale-[1.01] shadow-sm", (P == null ? void 0 : P.patientId) === De.patientId ? "bg-synos-primary/10 border-synos-primary/35 shadow-md shadow-synos-primary/5" : "bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-850/80 hover:border-synos-primary/15"),
+                          className: Pe("p-4 rounded-xl border transition-all duration-200 cursor-pointer text-xxs flex flex-col justify-between hover:-translate-y-0.5 shadow-sm", (P == null ? void 0 : P.patientId) === De.patientId ? "bg-synos-primary/10 border-synos-primary/35 shadow-md shadow-synos-primary/5" : "bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-850/80 hover:border-synos-primary/15"),
                           children: A.jsxs("div", {
                             children: [
                               A.jsxs("div", {

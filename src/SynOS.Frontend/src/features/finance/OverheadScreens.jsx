@@ -63,7 +63,7 @@ const SummaryCard = ({ title, value, type = 'neutral', subtitle, icon: Icon }) =
     };
 
     return (
-        <div className={`border p-5 rounded-2xl shadow-sm transition-all duration-300 group flex items-center justify-between ${borders[type]}`}>
+        <div className={`synos-kpi-card p-5 rounded-2xl group flex items-center justify-between ${borders[type]}`}>
             <div className="space-y-1.5">
                 <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">{title}</p>
                 <p className="text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">{value}</p>
@@ -196,7 +196,7 @@ export const OverheadExpensesScreen = () => {
 
                     <button 
                         onClick={() => setBillModal(true)}
-                        className="px-4 py-2.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 hover:bg-synos-primary/95 hover:scale-[1.01] active:scale-95 transition-all flex items-center gap-2"
+                        className="px-4 py-2.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-md shadow-synos-primary/10 hover:bg-synos-primary/95 active:scale-95 transition-all flex items-center gap-2"
                     >
                         <PlusCircle className="w-4 h-4" />
                         Add Bill
@@ -517,7 +517,7 @@ const RecordPaymentModal = ({ isOpen, bill, onClose, onSaved }) => {
                     <button 
                         type="submit"
                         disabled={isSaving || !amount}
-                        className="w-full bg-emerald-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-600/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full bg-emerald-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-emerald-600/20 hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {isSaving ? 'Recording Ledger Update...' : 'Save Recorded Payment'}
                         <CheckCircle2 className="w-5 h-5" />
@@ -792,7 +792,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                                 key={cycle}
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, cycle })}
-                                                className={`px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-[1.01] ${
+                                                className={`px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${
                                                     isActive 
                                                         ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 shadow-sm'
                                                         : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900'

@@ -268,7 +268,7 @@ export const FinanceOverview = () => {
             {/* KEY METRICS GRID - SIMPLIFIED TERMINOLOGY */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* 1. Actual Cash Profit */}
-                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Actual Cash Profit</p>
                     <p className={`text-2xl font-black tracking-tight ${netCashPosition >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         ₹{netCashPosition.toLocaleString()}
@@ -277,7 +277,7 @@ export const FinanceOverview = () => {
                 </div>
 
                 {/* 2. Money Collected */}
-                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Money Collected (Cash)</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
                         ₹{cashInflow.toLocaleString()}
@@ -286,7 +286,7 @@ export const FinanceOverview = () => {
                 </div>
 
                 {/* 3. Uncollected Dues */}
-                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Uncollected Dues</p>
                     <p className="text-2xl font-black text-amber-500 tracking-tight">
                         ₹{pendingCollectionsVal.toLocaleString()}
@@ -295,7 +295,7 @@ export const FinanceOverview = () => {
                 </div>
 
                 {/* 4. Bills We Owe */}
-                <div className="p-6 rounded-2xl synos-dept-card flex flex-col gap-1.5">
+                <div className="p-6 rounded-2xl synos-kpi-card flex flex-col gap-1.5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Bills We Owe</p>
                     <p className="text-2xl font-black text-rose-500 tracking-tight">
                         ₹{totalAggregatedLiability.toLocaleString()}
@@ -462,7 +462,7 @@ export const FinanceOverview = () => {
                     </div>
 
                     {/* 2. EXPENSES & BILLS */}
-                    <div onClick={() => navigate('/finance/expenses/overview')} className="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 shadow-sm flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group">
+                    <div onClick={() => navigate('/finance/expenses/overview')} className="p-6 rounded-2xl synos-card-elevated flex flex-col justify-between hover:border-synos-primary/60 transition-all cursor-pointer group">
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="flex items-center gap-2 text-xs font-bold text-zinc-800 dark:text-zinc-200">

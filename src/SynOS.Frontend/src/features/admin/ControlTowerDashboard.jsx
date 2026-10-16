@@ -341,9 +341,9 @@ function DepartmentCard({ title, subtitle, icon: Icon, data, btnText, onAction, 
         <div 
             style={cardStyle}
             className={cn(
-                "rounded-xl flex flex-col transition-[transform,opacity,box-shadow] duration-200 group overflow-hidden", 
+                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden", 
                 cardClasses, 
-                "hover:scale-[1.01] hover:shadow-xl will-change-transform"
+                "hover:-translate-y-0.5 hover:shadow-xl"
             )}
         >
             <div className="p-5 flex-1 space-y-4">
@@ -399,9 +399,8 @@ function MetricBox({ label, value, icon: Icon, isCurrency, highlight, cardStyle,
         <div 
             style={highlight ? undefined : cardStyle} 
             className={cn(
-                "p-4 rounded-xl transition-[transform,opacity] duration-200 will-change-transform", 
-                highlight ? 'bg-synos-primary/10 border border-synos-primary/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : cardClasses, 
-                "hover:scale-[1.02]"
+                "p-4 rounded-xl transition-all duration-200", 
+                highlight ? 'bg-synos-primary/10 border border-synos-primary/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'synos-kpi-card'
             )}
         >
             <div className="flex items-center justify-between mb-3">

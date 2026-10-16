@@ -346,7 +346,7 @@ export function InsuranceTerminal() {
                         {tab === 'overview' && (
                             <div className="space-y-6 w-full">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Claims Submissions</span>
                                             <FileText className="w-4 h-4 text-blue-500" />
@@ -355,7 +355,7 @@ export function InsuranceTerminal() {
                                         <p className="text-[11px] text-zinc-500 mt-1">Cashless visits recorded</p>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Pending Claims Value</span>
                                             <Clock className="w-4 h-4 text-amber-500" />
@@ -364,7 +364,7 @@ export function InsuranceTerminal() {
                                         <p className="text-[11px] text-zinc-500 mt-1">{pendingClaimsCount} claims awaiting reimbursement</p>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Desk Co-Pay Collected</span>
                                             <DollarSign className="w-4 h-4 text-emerald-500" />
@@ -373,7 +373,7 @@ export function InsuranceTerminal() {
                                         <p className="text-[11px] text-zinc-500 mt-1">Directly collected from patients</p>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Empanelled TPAs</span>
                                             <Building2 className="w-4 h-4 text-indigo-500" />
@@ -384,7 +384,7 @@ export function InsuranceTerminal() {
                                 </div>
 
                                 {/* Recent Claims Snapshot */}
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                         <div>
                                             <h3 className="text-sm font-bold tracking-tight dark:text-white">Recent Cashless Claims & Pre-Auths</h3>
@@ -471,7 +471,7 @@ export function InsuranceTerminal() {
                                     </button>
                                 </div>
 
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
                                             <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
@@ -611,7 +611,7 @@ export function InsuranceTerminal() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
                                             <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
@@ -677,7 +677,7 @@ export function InsuranceTerminal() {
                         {/* 4. TPA RECEIVABLES & AGING */}
                         {tab === 'receivables' && (
                             <div className="space-y-6 w-full">
-                                <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
+                                <div className="synos-dept-card rounded-2xl p-6 space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <h3 className="text-base font-bold dark:text-white">Insurance / TPA Receivables Balance Sheet</h3>

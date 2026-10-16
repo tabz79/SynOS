@@ -91,7 +91,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                         <button 
                             disabled={!amount || parseFloat(amount) <= 0}
                             onClick={() => onConfirm(parseFloat(amount), paymentMode)}
-                            className="flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:grayscale disabled:hover:scale-100"
+                            className="flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
                         >
                             Process Settlement
                         </button>

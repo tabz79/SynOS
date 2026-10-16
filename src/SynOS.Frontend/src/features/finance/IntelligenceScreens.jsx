@@ -17,7 +17,7 @@ import { FinanceApi } from '@/api/finance';
 // --- SHARED COMPONENTS ---
 
 const MetricCard = ({ title, value, subtext, icon: Icon, trend, isPositive }) => (
-    <div className="p-6 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
+    <div className="p-6 rounded-2xl synos-kpi-card flex flex-col justify-between space-y-3">
         <div className="flex justify-between items-start">
             <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                 <Icon size={18} />

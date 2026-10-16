@@ -128,7 +128,7 @@ export function AdvanceRequestModal({ isOpen, onClose, staffList, onAdvanceAdded
                         <button 
                             type="submit"
                             disabled={isSubmitting || !formData.employeeId}
-                            className="px-8 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold shadow-xl shadow-amber-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+                            className="px-8 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold shadow-xl shadow-amber-500/20 hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                             {isSubmitting ? 'Recording...' : (
                                 <>

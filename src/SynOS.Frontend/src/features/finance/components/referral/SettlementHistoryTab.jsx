@@ -60,7 +60,7 @@ export const SettlementHistoryTab = () => {
             </div>
 
             {/* HISTORY TABLE */}
-            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-[32px] overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-zinc-50/50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">

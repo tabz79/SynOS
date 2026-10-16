@@ -159,7 +159,7 @@ export function WorkforcePolicyModal({ isOpen, onClose, onSuccess }) {
                     <button 
                         onClick={handleSave}
                         disabled={isSubmitting || loading}
-                        className="flex-[2] py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="flex-[2] py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? 'Saving Policy...' : (
                             <>

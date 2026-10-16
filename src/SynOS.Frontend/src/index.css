@@ -281,13 +281,6 @@
     background-color: #ffffff !important;
     border: 1px solid #CBD5E1 !important;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.04) !important;
-    transition: all 0.2s ease-in-out !important;
-  }
-
-  .synos-dept-card:hover {
-    transform: translateY(-2px) scale(1.01) !important;
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 8px 16px -4px rgba(0, 0, 0, 0.08) !important;
-    border-color: #94A3B8 !important;
   }
 
   .dark .synos-dept-card {
@@ -296,11 +289,41 @@
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
   }
 
+  /* 🎯 SYNOS INTERACTIVE KPI CARDS - Blur-Free Vertical Lift (Zero Scale) */
+  .synos-kpi-card {
+    background-color: #ffffff !important;
+    border: 1px solid #CBD5E1 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.09), 0 4px 10px -2px rgba(0, 0, 0, 0.04) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+
+  .synos-kpi-card:hover {
+    transform: translateY(-2px) translateZ(0) !important;
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.12), 0 6px 12px -3px rgba(0, 0, 0, 0.06) !important;
+    border-color: #94A3B8 !important;
+  }
+
+  .dark .synos-kpi-card {
+    background-color: #18181b !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .dark .synos-kpi-card:hover {
+    transform: translateY(-2px) translateZ(0) !important;
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.7) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+
   .synos-item-card {
     background-color: #ffffff !important;
     border: 1px solid #CBD5E1 !important;
     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 1px 3px -1px rgba(0, 0, 0, 0.03) !important;
-    transition: all 0.15s ease-in-out !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
   }
 
   .synos-item-card:hover {

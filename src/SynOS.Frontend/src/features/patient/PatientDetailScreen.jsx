@@ -639,7 +639,7 @@ export function PatientDetailScreen() {
                     key={dup.patientId}
                     onClick={() => handleSelectDuplicate(dup)}
                     className={cn(
-                      "p-4 rounded-xl border transition-all duration-200 cursor-pointer text-xxs flex flex-col justify-between hover:scale-[1.01] shadow-sm",
+                      "p-4 rounded-xl border transition-all duration-200 cursor-pointer text-xxs flex flex-col justify-between hover:-translate-y-0.5 shadow-sm",
                       selectedDuplicate?.patientId === dup.patientId
                         ? 'bg-synos-primary/10 border-synos-primary/35 shadow-md shadow-synos-primary/5'
                         : 'bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-850/80 hover:border-synos-primary/15'

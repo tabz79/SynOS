@@ -125,7 +125,7 @@ export const PartnerRegistryTab = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="synos-dept-card p-4 rounded-xl flex flex-col justify-between">
+                    <div className="synos-kpi-card p-4 rounded-xl flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-3">
                             <span className="type-label">Total Registered Doctors</span>
                             <Users className="w-4 h-4 text-zinc-500" />
@@ -136,7 +136,7 @@ export const PartnerRegistryTab = () => {
                         <div className="type-meta mt-1 opacity-70">Empanelled Referral Network</div>
                     </div>
 
-                    <div className="synos-dept-card p-4 rounded-xl flex flex-col justify-between">
+                    <div className="synos-kpi-card p-4 rounded-xl flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-3">
                             <span className="type-label">Active Referrers (This Month)</span>
                             <TrendingUp className="w-4 h-4 text-zinc-500" />
@@ -150,7 +150,7 @@ export const PartnerRegistryTab = () => {
                     <div 
                         onClick={() => { setStatusFilter('has_unmapped'); setPage(1); }}
                         className={cn(
-                            "synos-dept-card p-4 rounded-xl flex flex-col justify-between cursor-pointer transition-all",
+                            "synos-kpi-card p-4 rounded-xl flex flex-col justify-between cursor-pointer transition-all",
                             directoryData.doctorsWithUnmappedTestsCount > 0 && "border-amber-300 dark:border-amber-900/50"
                         )}
                     >
@@ -174,7 +174,7 @@ export const PartnerRegistryTab = () => {
                         </div>
                     </div>
 
-                    <div className="synos-dept-card p-4 rounded-xl flex flex-col justify-between">
+                    <div className="synos-kpi-card p-4 rounded-xl flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-3">
                             <span className="type-label">Lifetime Referral Revenue</span>
                             <IndianRupee className="w-4 h-4 text-zinc-500" />
@@ -660,7 +660,7 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
     const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : null;
 
     return (
-        <div className="synos-dept-card rounded-xl flex flex-col justify-between transition-[transform,opacity,box-shadow] duration-200 group overflow-hidden hover:scale-[1.01] hover:shadow-xl will-change-transform">
+        <div className="synos-dept-card rounded-xl flex flex-col justify-between transition-all duration-200 group overflow-hidden hover:-translate-y-0.5 hover:shadow-xl">
             <div className="p-5 flex-1 space-y-4">
                 {/* Header: Icon, Doctor Name, Speciality, Status Dot */}
                 <div className="flex items-start justify-between gap-3">

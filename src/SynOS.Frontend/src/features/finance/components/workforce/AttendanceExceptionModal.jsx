@@ -97,7 +97,7 @@ export function AttendanceExceptionModal({ isOpen, onClose, date, employeeId, cu
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                            className="flex-1 py-3 bg-synos-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50"
                         >
                             {isSubmitting ? "Saving..." : (isFuture ? "Schedule Leave" : "Update Truth")}
                         </button>

@@ -539,7 +539,7 @@ export function CorporateTerminal() {
                         {tab === 'overview' && (
                             <div className="space-y-6 w-full">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Corporate Visits</span>
                                             <FileText className="w-4 h-4 text-indigo-500" />
@@ -548,7 +548,7 @@ export function CorporateTerminal() {
                                         <p className="text-[11px] text-zinc-500 mt-1">Staff & employee registrations</p>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Total Invoiced (B2B)</span>
                                             <DollarSign className="w-4 h-4 text-emerald-500" />
@@ -557,7 +557,7 @@ export function CorporateTerminal() {
                                         <p className="text-[11px] text-zinc-500 mt-1">Total revenue from corporate tie-ups</p>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Corporate Clients</span>
                                             <Building2 className="w-4 h-4 text-blue-500" />
@@ -566,7 +566,7 @@ export function CorporateTerminal() {
                                         <p className="text-[11px] text-zinc-500 mt-1">Contracted organizations</p>
                                     </div>
 
-                                    <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Contracted Packages</span>
                                             <Package className="w-4 h-4 text-amber-500" />
@@ -577,7 +577,7 @@ export function CorporateTerminal() {
                                 </div>
 
                                 {/* Recent Corporate Visits */}
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                                         <div>
                                             <h3 className="text-sm font-bold tracking-tight dark:text-white">Recent Corporate Registrations & Visits</h3>
@@ -661,7 +661,7 @@ export function CorporateTerminal() {
                                     </button>
                                 </div>
 
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
                                             <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
@@ -1008,7 +1008,7 @@ export function CorporateTerminal() {
                                     </div>
 
                                     {/* Pricing Master Table */}
-                                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                    <div className="synos-dept-card rounded-2xl overflow-hidden">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left text-xs">
                                                 <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
@@ -1199,7 +1199,7 @@ export function CorporateTerminal() {
                                     </div>
                                 </div>
 
-                                <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                                <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
                                              <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">

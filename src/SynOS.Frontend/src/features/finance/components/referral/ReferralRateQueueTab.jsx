@@ -385,7 +385,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                 return (
                                     <div 
                                         key={group.referralPartnerId}
-                                        className="bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-900 rounded-2xl shadow-sm overflow-hidden transition-all"
+                                        className="synos-dept-card rounded-2xl overflow-hidden transition-all"
                                     >
                                         {/* DOCTOR HEADER CARD */}
                                         <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-900/30 border-b border-zinc-100 dark:border-zinc-900">
@@ -612,7 +612,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                     </div>
 
                     {/* TABLE */}
-                    <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-900 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="synos-dept-card rounded-2xl overflow-hidden">
                         {loadingRules ? (
                             <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
                                 <Loader2 size={32} className="animate-spin text-synos-primary" />

@@ -115,7 +115,7 @@ export const VendorMasterScreen = () => {
                 </div>
                 <button 
                     onClick={() => openModal()}
-                    className="flex items-center gap-2 bg-synos-primary text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                    className="flex items-center gap-2 bg-synos-primary text-white font-black px-6 py-4 rounded-2xl shadow-xl shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all"
                 >
                     <Plus className="w-5 h-5" />
                     Onboard New Vendor
@@ -123,7 +123,7 @@ export const VendorMasterScreen = () => {
             </div>
 
             {/* Search & Filter Bar */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-3xl p-4 flex items-center gap-4 shadow-sm">
+            <div className="synos-dept-card rounded-2xl p-4 flex items-center gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                     <input 
@@ -140,12 +140,12 @@ export const VendorMasterScreen = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
                     Array(6).fill(0).map((_, i) => (
-                        <div key={i} className="h-64 bg-zinc-100 dark:bg-white/5 rounded-[2.5rem] animate-pulse border border-zinc-200 dark:border-white/5" />
+                        <div key={i} className="h-64 synos-dept-card rounded-2xl animate-pulse" />
                     ))
                 ) : filteredVendors.map(vendor => (
                     <div 
                         key={vendor.supplierId}
-                        className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl hover:shadow-synos-primary/5 hover:border-synos-primary/20 transition-all duration-500 relative overflow-hidden"
+                        className="group synos-dept-card rounded-2xl p-6 transition-all duration-200 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-xl"
                     >
                         <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button 
@@ -301,7 +301,7 @@ export const VendorMasterScreen = () => {
                             <button 
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-synos-primary text-white font-black py-6 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                className="w-full bg-synos-primary text-white font-black py-6 rounded-[1.5rem] shadow-2xl shadow-synos-primary/30 hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                             >
                                 {isSubmitting ? (
                                     <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />

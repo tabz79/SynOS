@@ -117,7 +117,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
         {cards.map((card, idx) => (
           <div 
             key={idx} 
-            className="p-6 bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between space-y-3"
+            className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3"
           >
             <div className="flex justify-between items-start">
               <div className="space-y-1">
@@ -144,7 +144,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* LEFT COLUMN (2 Spans): RECENT COLLECTIONS FEED */}
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-2 synos-dept-card rounded-2xl p-6 flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -220,7 +220,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
         <div className="space-y-6">
           
           {/* Drawer Reconciliation Card */}
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none space-y-4">
+          <div className="synos-dept-card rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">Active Drawer Balance</h2>
               <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
@@ -278,7 +278,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
           </div>
 
           {/* Quick Actions Panel */}
-          <div className="bg-white dark:bg-zinc-950 border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-none space-y-3">
+          <div className="synos-dept-card rounded-2xl p-6 space-y-3">
             <h3 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">Quick Actions</h3>
             
             <button
@@ -788,32 +788,32 @@ export const BillsCollectionsScreen = () => {
 
             {/* KPI METRIC STRIP (Cash vs Online vs Prepaid vs Referral Cut) */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Billed</p>
                     <p className="text-lg font-black text-zinc-900 dark:text-white mt-1">₹{totalBilled.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">{filteredBills.length} Invoices</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collected</p>
                     <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{totalCash.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Physical Drawer</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">Digital / Online</p>
                     <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1">₹{totalOnline.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">UPI / POS / Cards</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Prepaid Wallet</p>
                     <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">₹{totalPrepaid.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Token Redemptions</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Referral Cut</p>
                     <p className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">₹{totalReferralCut.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Partner Commissions</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Pending Dues</p>
                     <p className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalPending.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Receivables Balance</span>
@@ -945,7 +945,7 @@ export const BillsCollectionsScreen = () => {
             </div>
 
             {/* Main Table Surface */}
-            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 {loading ? (
                     <div className="p-20 text-center text-zinc-500 animate-pulse text-xs font-bold uppercase tracking-wider">
                         Synchronizing bill ledger...
@@ -1411,17 +1411,17 @@ export const PendingReceivablesScreen = () => {
 
             {/* KPI Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-5 rounded-2xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Outstanding</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{FinanceUtils.formatCurrency(totals.outstanding)}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">{totals.count} Open Investigation Invoices</span>
                 </div>
-                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-rose-500/20 bg-rose-500/5">
+                <div className="p-5 rounded-2xl synos-kpi-card border-rose-300 dark:border-rose-900/50">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Critical Overdue (&gt;30d)</p>
                     <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{FinanceUtils.formatCurrency(totals.overdue)}</p>
                     <span className="text-[10px] text-rose-500/70 font-medium">Overdue Recovery Liabilities</span>
                 </div>
-                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-5 rounded-2xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Debtors</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{filteredPartnerSummaries.length}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Contracted Clinical Partners</span>
@@ -1864,22 +1864,22 @@ export const CollectionHistoryScreen = () => {
 
             {/* KPI Metric Strip */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Collections</p>
                     <p className="text-xl font-black text-zinc-900 dark:text-white mt-1">₹{totalCollected.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">{filteredHistory.length} Receipts Reconciled</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collections</p>
                     <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{cashTotal.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Physical Intake</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-sky-500">Digital / UPI</p>
                     <p className="text-xl font-black text-sky-600 dark:text-sky-400 mt-1">₹{digitalTotal.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">Instant Settlements</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800">
+                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Bank / Card</p>
                     <p className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">₹{bankTotal.toLocaleString()}</p>
                     <span className="text-[10px] text-zinc-400 font-medium">POS & Direct Transfers</span>
@@ -1904,7 +1904,7 @@ export const CollectionHistoryScreen = () => {
             />
 
             {/* Collection History Table */}
-            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 {loading ? (
                     <div className="p-20 text-center text-zinc-500 animate-pulse">Scanning history facts...</div>
                 ) : (

@@ -387,7 +387,7 @@ export function StaffRegistryScreen() {
             </div>
 
             {/* Staff List Table */}
-            <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm backdrop-blur-md">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between gap-4">
                     <div className="flex-1 relative max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -789,7 +789,7 @@ export function SalaryProcessingScreen() {
                         </button>
                     </div>
 
-                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="synos-dept-card rounded-2xl overflow-hidden">
                         <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-amber-500/5 flex items-center justify-between">
                             <div className="flex items-center gap-2 text-amber-600">
                                 <AlertCircle className="w-4 h-4" />
@@ -830,7 +830,7 @@ export function SalaryProcessingScreen() {
                     </div>
 
                     {draftResults.length > 0 && (
-                        <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm animate-in fade-in duration-300">
+                        <div className="synos-dept-card rounded-2xl overflow-hidden animate-in fade-in duration-300">
                             <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-emerald-500/5 flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-emerald-600">
                                     <CheckCircle2 className="w-4 h-4" />
@@ -1061,7 +1061,7 @@ export function SalaryProcessingScreen() {
                                         } catch (e) { alert(e.message); } finally { setLoading(false); }
                                     }}
                                     disabled={loading}
-                                    className="flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:scale-[1.01] hover:border-synos-primary"
+                                    className="flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:-translate-y-0.5 hover:border-synos-primary"
                                 >
                                     <CreditCard className="w-8 h-8 text-synos-primary" />
                                     <span className="font-bold text-sm dark:text-white">Bulk Bank Settle</span>
@@ -1078,7 +1078,7 @@ export function SalaryProcessingScreen() {
                                         } catch (e) { alert(e.message); } finally { setLoading(false); }
                                     }}
                                     disabled={loading}
-                                    className="flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:scale-[1.01] hover:border-amber-500"
+                                    className="flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:-translate-y-0.5 hover:border-amber-500"
                                 >
                                     <Wallet className="w-8 h-8 text-amber-500" />
                                     <span className="font-bold text-sm dark:text-white">Cash Settle Hub</span>
@@ -1089,7 +1089,7 @@ export function SalaryProcessingScreen() {
                     </div>
 
                     {/* Pay Sheet Table */}
-                    <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-3xl overflow-hidden shadow-sm">
+                    <div className="synos-dept-card rounded-2xl overflow-hidden">
                         <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900 flex items-center justify-between">
                             <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Finalized Employee Pay Roll Worksheet</h3>
                             <span className="text-[10px] font-mono text-zinc-400">Total Employees: {finalPayables.length}</span>
@@ -1210,7 +1210,7 @@ export function PayrollHistoryScreen() {
                 <p className="text-zinc-500">Review finalized payroll registers, statutory filings, and bank advices.</p>
             </div>
 
-            <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 <table className="w-full text-left text-xs">
                     <thead className="dark:bg-zinc-950/50 bg-zinc-50/50 text-[10px] uppercase font-bold text-zinc-500">
                         <tr>
@@ -1659,7 +1659,7 @@ function StatCard({ label, value, icon: Icon, trend, color }) {
     };
 
     return (
-        <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all group">
+        <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between group">
             <div className="flex justify-between items-start mb-4">
                 <div className={`p-2.5 rounded-xl ${colors[color]}`}>
                     <Icon className="w-5 h-5" />
@@ -1776,7 +1776,7 @@ function StepIndicator({ active, number, label }) {
 
 function PeriodCard({ month, status, staffCount, accrual, onSelect, isCurrent }) {
     return (
-        <div className={`p-6 rounded-2xl border transition-all hover:scale-[1.02] cursor-pointer group ${isCurrent ? 'bg-synos-primary/5 border-synos-primary shadow-lg shadow-synos-primary/5' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm'}`} onClick={onSelect}>
+        <div className={`p-6 rounded-2xl border transition-all hover:-translate-y-0.5 cursor-pointer group ${isCurrent ? 'bg-synos-primary/5 border-synos-primary shadow-lg shadow-synos-primary/5' : 'synos-dept-card'}`} onClick={onSelect}>
             <div className="flex justify-between items-start mb-6">
                 <div>
                     <h3 className="text-xl font-black dark:text-white group-hover:text-synos-primary transition-colors">{month}</h3>
@@ -2273,7 +2273,7 @@ export function IdentityProvisioningScreen() {
 
             {/* Flow A: Pending Access Queue (HR Hired) */}
             {pending.length > 0 && (
-                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm">
+                <div className="synos-dept-card rounded-2xl overflow-hidden">
                     <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-amber-500" />
@@ -2322,7 +2322,7 @@ export function IdentityProvisioningScreen() {
             )}
 
             {/* Central System Identities list */}
-            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2">
                     <Fingerprint className="w-4 h-4 text-synos-primary" />
                     <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Managed System Identities</h3>
@@ -2557,7 +2557,7 @@ export function IdentityProvisioningScreen() {
             )}
 
             {/* Operational Laboratory Departments Section */}
-            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm mt-8 animate-in slide-in-from-bottom duration-300">
+            <div className="synos-dept-card rounded-2xl overflow-hidden mt-8 animate-in slide-in-from-bottom duration-300">
                 <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2.5">
                     <Settings className="w-4 h-4 text-synos-primary" />
                     <div>
@@ -2576,7 +2576,7 @@ export function IdentityProvisioningScreen() {
                             {departments && departments.map(d => {
                                 const isEditing = editingDeptCode === d.code;
                                 return (
-                                    <div key={d.code} className="p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:scale-[1.01] transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/dept">
+                                    <div key={d.code} className="p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:-translate-y-0.5 transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/dept">
                                         {isEditing ? (
                                             <div className="space-y-3 w-full">
                                                 <div className="flex justify-between items-center">
@@ -2729,7 +2729,7 @@ export function IdentityProvisioningScreen() {
             </div>
 
             {/* System Workspace Registry Section */}
-            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900/60 border-zinc-100 rounded-2xl overflow-hidden shadow-sm mt-8 animate-in slide-in-from-bottom duration-300">
+            <div className="synos-dept-card rounded-2xl overflow-hidden mt-8 animate-in slide-in-from-bottom duration-300">
                 <div className="px-6 py-4 border-b dark:border-zinc-900/60 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/10 flex items-center gap-2.5">
                     <Fingerprint className="w-4 h-4 text-synos-primary" />
                     <div>
@@ -2747,7 +2747,7 @@ export function IdentityProvisioningScreen() {
                             {workspaces && workspaces.map(ws => {
                                 const isEditing = editingWorkspaceId === ws.workspaceId;
                                 return (
-                                    <div key={ws.workspaceId} className="p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:scale-[1.01] transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/ws">
+                                    <div key={ws.workspaceId} className="p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:-translate-y-0.5 transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/ws">
                                         {isEditing ? (
                                             <div className="space-y-3 w-full">
                                                 <div className="flex justify-between items-center">
@@ -3541,7 +3541,7 @@ export const WorkforceOverviewTab = () => {
         <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {cards.map((card, idx) => (
-                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                    <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between">
                         <div className="flex justify-between items-start mb-4">
                             <div className={`p-3 rounded-2xl ${card.bg} ${card.color}`}>
                                 <card.icon size={20} />
@@ -3556,7 +3556,7 @@ export const WorkforceOverviewTab = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                <div className="lg:col-span-2 synos-dept-card rounded-2xl p-6">
                     <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Staff Distribution</h2>
                     {stats.staff.length === 0 ? (
                         <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
@@ -3596,7 +3596,7 @@ export const WorkforceOverviewTab = () => {
                     )}
                 </div>
 
-                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                <div className="synos-dept-card rounded-2xl p-6">
                     <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Advances</h2>
                     {stats.advances.length === 0 ? (
                         <div className="py-10 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl text-xs font-semibold">

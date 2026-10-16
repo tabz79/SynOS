@@ -66,7 +66,7 @@ const StatusBadge = ({ status }) => {
 };
 
 const SummaryCard = ({ title, value, type = 'neutral', subtitle }) => (
-    <div className="p-4 rounded-xl border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900/40 bg-white shadow-sm flex flex-col gap-1">
+    <div className="p-4 rounded-xl synos-kpi-card flex flex-col gap-1 justify-between">
         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{title}</p>
         <div className="flex items-center justify-between">
             <p className="text-xl font-bold dark:text-zinc-100 text-zinc-900">
@@ -990,7 +990,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                 </>
             )}
 
-            <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="synos-dept-card rounded-2xl overflow-hidden">
                 <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div className="relative">
                         <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -1184,7 +1184,7 @@ const ReferenceLabsView = () => {
                     </div>
                 ) : (
                     labs.map(lab => (
-                        <div key={lab.id} className="bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-[2rem] p-6 shadow-sm hover:shadow-xl transition-all group border-b-4 border-b-synos-primary/20">
+                        <div key={lab.id} className="synos-dept-card rounded-2xl p-6 transition-all group border-b-4 border-b-synos-primary/20">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-synos-primary/10 flex items-center justify-center text-synos-primary group-hover:scale-110 transition-transform">
@@ -1892,7 +1892,7 @@ export const ExpenseOverviewTab = () => {
         <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {cards.map((card, idx) => (
-                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                    <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between">
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
                             {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
@@ -1905,7 +1905,7 @@ export const ExpenseOverviewTab = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                <div className="lg:col-span-2 synos-dept-card rounded-2xl p-6">
                     <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Outflows Feed</h2>
                     {recentExpenses.length === 0 ? (
                         <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
@@ -1941,7 +1941,7 @@ export const ExpenseOverviewTab = () => {
                     )}
                 </div>
 
-                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm flex flex-col justify-between">
+                <div className="synos-dept-card rounded-2xl p-6 flex flex-col justify-between">
                     <div>
                         <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Distribution</h2>
                         <div className="space-y-4">
@@ -2084,7 +2084,7 @@ export const OutsourcingOverviewTab = () => {
         <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {cards.map((card, idx) => (
-                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                    <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between">
                         <div className="flex justify-between items-start mb-4">
                             <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
                             {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
@@ -2097,7 +2097,7 @@ export const OutsourcingOverviewTab = () => {
                 ))}
             </div>
 
-            <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+            <div className="synos-dept-card rounded-2xl p-6">
                 <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Lab Referrals</h2>
                 {stats.recent.length === 0 ? (
                     <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">

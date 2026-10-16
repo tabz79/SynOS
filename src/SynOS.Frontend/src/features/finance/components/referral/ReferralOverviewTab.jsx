@@ -84,7 +84,7 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
             {/* STATS GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, idx) => (
-                    <div key={idx} className="p-6 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl shadow-sm hover:shadow-md transition-all group">
+                    <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between group">
                         <div className="flex justify-between items-start mb-4">
                             <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} transition-all`}>
                                 <stat.icon size={20} />
@@ -99,7 +99,7 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* ACTIVE COMMISSION LIABILITIES */}
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                <div className="lg:col-span-2 synos-dept-card rounded-2xl p-6">
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h2 className="text-lg font-bold dark:text-white text-zinc-900">Pending Payout Obligations</h2>
@@ -145,7 +145,7 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
                 </div>
 
                 {/* RECENT SETTLEMENT LOGS */}
-                <div className="bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-3xl p-8 shadow-sm">
+                <div className="synos-dept-card rounded-2xl p-6">
                     <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Settlements</h2>
                     
                     {loadingData ? (
