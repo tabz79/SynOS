@@ -12,7 +12,8 @@ import {
     Info,
     Sparkles,
     FileText,
-    Building2
+    Building2,
+    Columns
 } from 'lucide-react';
 
 const CanvasContext = createContext({ readOnly: false });
@@ -109,6 +110,19 @@ const EditableField = ({
                 >
                     <X size={12} />
                 </button>
+                {canDelete && onDelete && (
+                    <button 
+                        type="button" 
+                        onClick={() => {
+                            setIsEditing(false);
+                            onDelete();
+                        }} 
+                        className="p-1 text-rose-600 hover:bg-rose-100 rounded cursor-pointer"
+                        title="Delete (Remove)"
+                    >
+                        <Trash2 size={12} />
+                    </button>
+                )}
             </div>
         );
     }
@@ -163,6 +177,7 @@ const ModularBoxWrapper = ({
     boxName, 
     onDeleteBox, 
     onAddCustomLine, 
+    extraToolbarActions,
     children, 
     className = "",
     allowDelete = true,
@@ -200,6 +215,8 @@ const ModularBoxWrapper = ({
                 <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 mr-1">
                     <Layers size={10} /> {boxName}
                 </span>
+
+                {extraToolbarActions}
 
                 <button 
                     type="button"
@@ -276,6 +293,9 @@ export const DynamicInvoiceCanvas = ({
     const { boxes } = schema;
     const isThermal = schema.isThermal || letterheadMode === 'raw_thermal' || schema.paperSize === 'thermal80';
     const effectiveLogo = labSettings?.logoUrl || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : null);
+
+    const [showColumnManager, setShowColumnManager] = useState(false);
+    const [newColName, setNewColName] = useState("");
 
     // Helper to update schema immutably
     const updateSchema = (newSchema) => {
@@ -401,6 +421,51 @@ export const DynamicInvoiceCanvas = ({
                     columns: {
                         ...box.columns,
                         [colId]: { ...box.columns[colId], enabled: false }
+                    }
+                }
+            }
+        };
+        updateSchema(next);
+    };
+
+    // Table Column toggle (enable / disable)
+    const toggleColumn = (boxId, colId, enabled) => {
+        const box = boxes[boxId];
+        if (!box || !box.columns || !box.columns[colId]) return;
+
+        const isEnabled = enabled !== undefined ? enabled : !box.columns[colId].enabled;
+        const next = {
+            ...schema,
+            boxes: {
+                ...boxes,
+                [boxId]: {
+                    ...box,
+                    columns: {
+                        ...box.columns,
+                        [colId]: { ...box.columns[colId], enabled: isEnabled }
+                    }
+                }
+            }
+        };
+        updateSchema(next);
+    };
+
+    // Table Column add
+    const addColumn = (boxId, label) => {
+        const box = boxes[boxId];
+        if (!box) return;
+
+        const newId = `col_${Date.now()}`;
+        const newLabel = label || 'New Column';
+        const next = {
+            ...schema,
+            boxes: {
+                ...boxes,
+                [boxId]: {
+                    ...box,
+                    columns: {
+                        ...(box.columns || {}),
+                        [newId]: { id: newId, label: newLabel, enabled: true }
                     }
                 }
             }
@@ -833,6 +898,93 @@ export const DynamicInvoiceCanvas = ({
                         boxId="itemsTable" 
                         boxName={boxes.itemsTable.name || "Items & Charges Table"}
                         onDeleteBox={() => deleteBox('itemsTable')}
+                        extraToolbarActions={
+                            <div className="relative">
+                                <button 
+                                    type="button"
+                                    onClick={() => setShowColumnManager(prev => !prev)}
+                                    className={`px-1.5 py-0.5 rounded ${showColumnManager ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300' : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-50 text-zinc-700 dark:text-zinc-300 hover:text-indigo-600'} font-bold flex items-center gap-0.5 cursor-pointer`}
+                                    title="Manage table columns"
+                                >
+                                    <Columns size={10} /> Columns ({activeColumns.length})
+                                </button>
+                                {showColumnManager && (
+                                    <div className="absolute right-0 top-full mt-1.5 w-60 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-xl p-2.5 z-40 text-left normal-case tracking-normal">
+                                        <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-zinc-200 dark:border-zinc-800">
+                                            <span className="font-bold text-zinc-800 dark:text-zinc-200 text-xs">Table Columns</span>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setShowColumnManager(false)}
+                                                className="text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer"
+                                            >
+                                                <X size={12} />
+                                            </button>
+                                        </div>
+                                        <p className="text-[10px] text-zinc-500 mb-2">Check or uncheck columns to display on the invoice:</p>
+                                        <div className="max-h-48 overflow-y-auto space-y-1 mb-2">
+                                            {Object.entries(boxes.itemsTable.columns || {}).map(([cKey, colObj]) => {
+                                                const isColActive = colObj.enabled !== false;
+                                                return (
+                                                    <div key={cKey} className="flex items-center justify-between p-1 hover:bg-zinc-50 dark:hover:bg-zinc-800/60 rounded">
+                                                        <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isColActive}
+                                                                onChange={(e) => toggleColumn('itemsTable', cKey, e.target.checked)}
+                                                                className="rounded border-zinc-300 text-indigo-600 focus:ring-0 cursor-pointer"
+                                                            />
+                                                            <span className={`text-[11px] truncate ${isColActive ? 'text-zinc-800 dark:text-zinc-200 font-medium' : 'text-zinc-400 line-through'}`}>
+                                                                {colObj.label || cKey}
+                                                            </span>
+                                                        </label>
+                                                        {isColActive && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => deleteColumn('itemsTable', cKey)}
+                                                                className="text-zinc-400 hover:text-rose-600 p-0.5 cursor-pointer shrink-0 ml-1"
+                                                                title="Delete column"
+                                                            >
+                                                                <Trash2 size={11} />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex gap-1">
+                                            <input
+                                                type="text"
+                                                value={newColName}
+                                                onChange={(e) => setNewColName(e.target.value)}
+                                                placeholder="New Column..."
+                                                className="px-1.5 py-0.5 text-[11px] border border-zinc-200 dark:border-zinc-700 rounded bg-white dark:bg-zinc-800 flex-1 outline-none"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        if (newColName.trim()) {
+                                                            addColumn('itemsTable', newColName.trim());
+                                                            setNewColName("");
+                                                        }
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (newColName.trim()) {
+                                                        addColumn('itemsTable', newColName.trim());
+                                                        setNewColName("");
+                                                    }
+                                                }}
+                                                className="px-2 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-[10px] font-bold cursor-pointer"
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        }
                         onAddCustomLine={(line) => {
                             const newRow = {
                                 id: `row-${Date.now()}`,
@@ -864,14 +1016,30 @@ export const DynamicInvoiceCanvas = ({
                                                 <th 
                                                     key={colKey} 
                                                     style={{ width: isDense ? getDenseColWidth(colKey, colCount) : undefined }}
-                                                    className={`${isDense ? 'px-1.5 py-1' : 'p-2'} border-r last:border-r-0 border-zinc-200 overflow-hidden ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                    className={`${isDense ? 'px-1.5 py-1' : 'px-2 py-1.5'} border-r last:border-r-0 border-zinc-200 group/colhead relative ${isNumeric ? 'text-right' : 'text-left'}`}
                                                 >
-                                                    <EditableField 
-                                                        value={col.label}
-                                                        onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
-                                                        onDelete={() => deleteColumn('itemsTable', colKey)}
-                                                        valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} truncate block`}
-                                                    />
+                                                    <div className={`flex items-center gap-1 ${isNumeric ? 'justify-end' : 'justify-between'}`}>
+                                                        <EditableField 
+                                                            value={col.label}
+                                                            onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
+                                                            onDelete={() => deleteColumn('itemsTable', colKey)}
+                                                            canDelete={!readOnly}
+                                                            valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} truncate block`}
+                                                        />
+                                                        {!readOnly && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    deleteColumn('itemsTable', colKey);
+                                                                }}
+                                                                className="opacity-0 group-hover/colhead:opacity-100 transition-opacity p-0.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded shrink-0 no-print cursor-pointer"
+                                                                title={`Delete column "${col.label || colKey}"`}
+                                                            >
+                                                                <Trash2 size={11} />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </th>
                                             );
                                         })}
@@ -1159,11 +1327,57 @@ export const DynamicInvoiceCanvas = ({
                             onDelete={() => deleteBox('termsAndConditions')}
                             valueClassName="text-[9px] text-zinc-600 leading-relaxed whitespace-pre-line block"
                         />
-                        {boxes.termsAndConditions.systemNote && (
-                            <p className="italic text-[8px] text-zinc-400 pt-1">
-                                {boxes.termsAndConditions.systemNote}
-                            </p>
-                        )}
+                        {boxes.termsAndConditions.systemNote ? (
+                            <div className="pt-1">
+                                <EditableField 
+                                    value={boxes.termsAndConditions.systemNote}
+                                    onSave={(_, val) => {
+                                        const next = {
+                                            ...schema,
+                                            boxes: {
+                                                ...boxes,
+                                                termsAndConditions: { ...boxes.termsAndConditions, systemNote: val }
+                                            }
+                                        };
+                                        updateSchema(next);
+                                    }}
+                                    onDelete={() => {
+                                        const next = {
+                                            ...schema,
+                                            boxes: {
+                                                ...boxes,
+                                                termsAndConditions: { ...boxes.termsAndConditions, systemNote: "" }
+                                            }
+                                        };
+                                        updateSchema(next);
+                                    }}
+                                    canDelete={!readOnly}
+                                    valueClassName="italic text-[8px] text-zinc-400 block"
+                                />
+                            </div>
+                        ) : (!readOnly && (
+                            <div className="pt-1 no-print">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const next = {
+                                            ...schema,
+                                            boxes: {
+                                                ...boxes,
+                                                termsAndConditions: { 
+                                                    ...boxes.termsAndConditions, 
+                                                    systemNote: "This is an authentic computer-generated Tax Invoice generated by SynOS Diagnostic OS." 
+                                                }
+                                            }
+                                        };
+                                        updateSchema(next);
+                                    }}
+                                    className="text-[8px] italic text-zinc-400 hover:text-indigo-600 cursor-pointer border border-dashed border-zinc-300 hover:border-indigo-400 rounded px-1.5 py-0.5"
+                                >
+                                    + Add Watermark / Footer Note
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 </ModularBoxWrapper>
             )}
