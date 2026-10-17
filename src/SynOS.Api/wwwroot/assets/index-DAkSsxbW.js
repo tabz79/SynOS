@@ -82794,16 +82794,16 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
       D.key === "Enter" && !D.shiftKey ? (D.preventDefault(), E()) : D.key === "Escape" && (p(e || ""), B(t || ""), f(false));
     };
     return u ? A.jsx("div", {
-      className: `inline-flex items-center gap-1.5 ${o} ${d ? "flex justify-between w-full" : ""}`,
+      className: `inline-flex items-center gap-1.5 max-w-full min-w-0 ${o} ${d ? "flex justify-between w-full" : ""}`,
       children: A.jsxs("div", {
-        className: "flex items-center gap-1 truncate",
+        className: "flex items-center gap-1 truncate min-w-0 flex-1",
         children: [
           t && A.jsx("span", {
-            className: l,
+            className: `${l} shrink-0`,
             children: t
           }),
           A.jsx("span", {
-            className: c,
+            className: `${c} truncate`,
             children: e
           })
         ]
@@ -82860,17 +82860,17 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
         })
       ]
     }) : A.jsxs("div", {
-      className: `group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 hover:ring-1 hover:ring-indigo-300/60 ${o} ${d ? "flex justify-between w-full" : ""}`,
+      className: `group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 hover:ring-1 hover:ring-indigo-300/60 max-w-full min-w-0 ${o} ${d ? "flex justify-between w-full" : ""}`,
       children: [
         A.jsxs("div", {
-          className: "flex items-center gap-1 truncate",
+          className: "flex items-center gap-1 truncate min-w-0 flex-1",
           children: [
             t && A.jsx("span", {
-              className: l,
+              className: `${l} shrink-0`,
               children: t
             }),
             A.jsx("span", {
-              className: c,
+              className: `${c} truncate`,
               children: e
             })
           ]
@@ -83559,25 +83559,94 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
             })
           }),
           ((_P2 = o.itemsTable) == null ? void 0 : _P2.enabled) && (() => {
-            const z = Object.entries(o.itemsTable.columns || {}).filter(([re, te]) => te.enabled), G = z.length, J = G >= 7, V = (re, te) => te < 7 ? void 0 : {
-              index: "3.5%",
-              billNumber: "14%",
-              date: "12%",
-              patientName: "14%",
-              branchName: "10%",
-              department: "13%",
-              partnerCategory: "9.5%",
-              totalAmount: "8%",
-              paidAmount: "8%",
-              pendingAmount: "8%",
-              status: "7%",
-              occurredAt: "13%",
-              sourceType: "14%",
-              amount: "10%",
-              paymentMode: "10%",
-              sourceReferenceId: "13%",
-              notes: "15%"
-            }[re] || `${Math.floor(100 / te)}%`;
+            const z = Object.entries(o.itemsTable.columns || {}).filter(([re, te]) => te.enabled), G = z.length, J = G >= 8, V = (re) => {
+              const te = {
+                index: 4,
+                description: 34,
+                testDescription: 28,
+                testName: 28,
+                itemDescription: 30,
+                name: 24,
+                serviceDescription: 32,
+                expenseHead: 25,
+                department: 14,
+                patientName: 16,
+                doctorName: 16,
+                corporateName: 18,
+                tpaName: 18,
+                labName: 16,
+                branchName: 12,
+                specialty: 13,
+                employeeId: 11,
+                billNumber: 13,
+                date: 11,
+                occurredAt: 12,
+                period: 12,
+                sacCode: 9,
+                code: 9,
+                itemCode: 10,
+                sampleBarcode: 12,
+                tpaClaimNo: 12,
+                sourceReferenceId: 12,
+                paymentMode: 10,
+                mode: 10,
+                sourceType: 12,
+                status: 8,
+                partnerCategory: 10,
+                uom: 7,
+                quantity: 8,
+                qty: 8,
+                poQty: 8,
+                receivedQty: 8,
+                acceptedQty: 8,
+                rejectedQty: 8,
+                totalReferrals: 8,
+                pendingBills: 8,
+                claimsCount: 8,
+                testsReferred: 8,
+                activeClaims: 8,
+                price: 11,
+                tariff: 11,
+                rate: 10,
+                unitPrice: 11,
+                b2bRate: 11,
+                discount: 9,
+                coPay: 9,
+                commissionRate: 9,
+                taxRate: 8,
+                tdsDeducted: 9,
+                tdsAmount: 9,
+                amount: 12,
+                total: 12,
+                totalAmount: 12,
+                grossAmount: 12,
+                grossCommission: 12,
+                grossClaimed: 12,
+                grossDue: 12,
+                netAmount: 12,
+                netPayout: 12,
+                netDue: 12,
+                netPayable: 12,
+                paidAmount: 11,
+                pendingAmount: 11,
+                dueAmount: 11,
+                received: 11,
+                receivedAmount: 11,
+                settledAmount: 11,
+                billedToCorp: 12,
+                preAuthAmount: 11,
+                approvedAmount: 11,
+                patientShare: 10,
+                claimAmount: 11,
+                claimedAmount: 11,
+                deniedAmount: 11,
+                billedByLab: 11,
+                outstandingBalance: 12,
+                labBilled: 11,
+                notes: 15
+              }, Z = z.reduce((ce, [ue]) => ce + (te[ue] || 10), 0), $ = te[re] || 10, ne = s ? 100 : 96.5;
+              return `${($ / Z * ne).toFixed(1)}%`;
+            };
             return A.jsx(fd, {
               boxId: "itemsTable",
               boxName: o.itemsTable.name || "Items & Charges Table",
@@ -83711,7 +83780,7 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
               children: A.jsx("div", {
                 className: "mb-3 overflow-x-auto print:overflow-visible rounded-lg border border-zinc-300",
                 children: A.jsxs("table", {
-                  className: `w-full text-left border-collapse ${J ? "table-fixed" : "table-auto"}`,
+                  className: "w-full text-left border-collapse table-fixed",
                   children: [
                     A.jsx("thead", {
                       children: A.jsxs("tr", {
@@ -83735,18 +83804,22 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
                             ].includes(re);
                             return A.jsx("th", {
                               style: {
-                                width: J ? V(re, G) : void 0
+                                width: V(re)
                               },
-                              className: `${J ? "px-1.5 py-1" : "px-2 py-1.5"} border-r last:border-r-0 border-zinc-200 group/colhead relative ${Z ? "text-right" : "text-left"}`,
+                              className: `${J ? "px-1.5 py-1" : "px-2 py-1.5"} border-r last:border-r-0 border-zinc-200 group/colhead relative overflow-hidden ${Z ? "text-right" : "text-left"}`,
                               children: A.jsxs("div", {
-                                className: `flex items-center gap-1 ${Z ? "justify-end" : "justify-between"}`,
+                                className: `flex items-center gap-1 w-full min-w-0 ${Z ? "justify-end" : "justify-between"}`,
                                 children: [
-                                  A.jsx(Ci, {
-                                    value: te.label,
-                                    onSave: ($, ne) => M("itemsTable", re, ne),
-                                    onDelete: () => b("itemsTable", re),
-                                    canDelete: !s,
-                                    valueClassName: `font-black text-zinc-800 uppercase ${J ? "text-[8.5px]" : "text-[10px]"} truncate block`
+                                  A.jsx("div", {
+                                    className: "min-w-0 flex-1 overflow-hidden",
+                                    children: A.jsx(Ci, {
+                                      value: te.label,
+                                      onSave: ($, ne) => M("itemsTable", re, ne),
+                                      onDelete: () => b("itemsTable", re),
+                                      canDelete: !s,
+                                      className: "max-w-full",
+                                      valueClassName: `font-black text-zinc-800 uppercase ${J ? "text-[8.5px]" : "text-[10px]"} truncate block`
+                                    })
                                   }),
                                   !s && A.jsx("button", {
                                     type: "button",
@@ -83764,7 +83837,10 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
                             }, re);
                           }),
                           !s && A.jsx("th", {
-                            className: "p-1 w-6 text-center text-zinc-400",
+                            style: {
+                              width: "3.5%"
+                            },
+                            className: "p-1 text-center text-zinc-400 border-zinc-200",
                             children: "\u2715"
                           })
                         ]
@@ -83841,19 +83917,26 @@ Would you like to switch to "${an.childTestName}" now?`) && zh(Ur) : alert(`Chil
                                 ].includes(Z);
                                 return A.jsx("td", {
                                   style: {
-                                    width: J ? V(Z, G) : void 0
+                                    width: V(Z)
                                   },
-                                  className: `${J ? "px-1.5 py-1 text-[9px]" : "p-2"} border-r last:border-r-0 border-zinc-200 overflow-hidden truncate ${ge ? "text-right font-mono font-semibold" : ""}`,
-                                  children: A.jsx(Ci, {
-                                    value: String(ne),
-                                    onSave: (ce, ue) => P("itemsTable", re.id, Z, ue),
-                                    canDelete: false,
-                                    valueClassName: `font-medium text-zinc-800 ${ge ? "font-mono" : ""} truncate block`
+                                  className: `${J ? "px-1.5 py-1 text-[9px]" : "p-2 text-[10px]"} border-r last:border-r-0 border-zinc-200 overflow-hidden ${ge ? "text-right font-mono font-semibold" : ""}`,
+                                  children: A.jsx("div", {
+                                    className: "min-w-0 overflow-hidden",
+                                    children: A.jsx(Ci, {
+                                      value: String(ne),
+                                      onSave: (ce, ue) => P("itemsTable", re.id, Z, ue),
+                                      canDelete: false,
+                                      className: "max-w-full",
+                                      valueClassName: `font-medium text-zinc-800 ${ge ? "font-mono" : ""} truncate block`
+                                    })
                                   })
                                 }, Z);
                               }),
                               !s && A.jsx("td", {
-                                className: "p-1 text-center",
+                                style: {
+                                  width: "3.5%"
+                                },
+                                className: "p-1 text-center border-zinc-200",
                                 children: A.jsx("button", {
                                   type: "button",
                                   onClick: () => F("itemsTable", re.id),

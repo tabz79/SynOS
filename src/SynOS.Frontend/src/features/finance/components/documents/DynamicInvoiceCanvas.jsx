@@ -60,10 +60,10 @@ const EditableField = ({
 
     if (isReadOnly) {
         return (
-            <div className={`inline-flex items-center gap-1.5 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
-                <div className="flex items-center gap-1 truncate">
-                    {label && <span className={labelClassName}>{label}</span>}
-                    <span className={valueClassName}>{value}</span>
+            <div className={`inline-flex items-center gap-1.5 max-w-full min-w-0 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
+                <div className="flex items-center gap-1 truncate min-w-0 flex-1">
+                    {label && <span className={`${labelClassName} shrink-0`}>{label}</span>}
+                    <span className={`${valueClassName} truncate`}>{value}</span>
                 </div>
             </div>
         );
@@ -128,10 +128,10 @@ const EditableField = ({
     }
 
     return (
-        <div className={`group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 hover:ring-1 hover:ring-indigo-300/60 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
-            <div className="flex items-center gap-1 truncate">
-                {label && <span className={labelClassName}>{label}</span>}
-                <span className={valueClassName}>{value}</span>
+        <div className={`group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 hover:ring-1 hover:ring-indigo-300/60 max-w-full min-w-0 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
+            <div className="flex items-center gap-1 truncate min-w-0 flex-1">
+                {label && <span className={`${labelClassName} shrink-0`}>{label}</span>}
+                <span className={`${valueClassName} truncate`}>{value}</span>
             </div>
 
             {/* HOVER ACTIONS */}
@@ -867,30 +867,103 @@ export const DynamicInvoiceCanvas = ({
             {boxes.itemsTable?.enabled && (() => {
                 const activeColumns = Object.entries(boxes.itemsTable.columns || {}).filter(([_, col]) => col.enabled);
                 const colCount = activeColumns.length;
-                const isDense = colCount >= 7;
+                const isDense = colCount >= 8;
 
-                const getDenseColWidth = (key, count) => {
-                    if (count < 7) return undefined;
-                    const denseMap = {
-                        index: '3.5%',
-                        billNumber: '14%',
-                        date: '12%',
-                        patientName: '14%',
-                        branchName: '10%',
-                        department: '13%',
-                        partnerCategory: '9.5%',
-                        totalAmount: '8%',
-                        paidAmount: '8%',
-                        pendingAmount: '8%',
-                        status: '7%',
-                        occurredAt: '13%',
-                        sourceType: '14%',
-                        amount: '10%',
-                        paymentMode: '10%',
-                        sourceReferenceId: '13%',
-                        notes: '15%'
+                const getColumnWidth = (key) => {
+                    const weights = {
+                        index: 4,
+                        description: 34,
+                        testDescription: 28,
+                        testName: 28,
+                        itemDescription: 30,
+                        name: 24,
+                        serviceDescription: 32,
+                        expenseHead: 25,
+                        
+                        department: 14,
+                        patientName: 16,
+                        doctorName: 16,
+                        corporateName: 18,
+                        tpaName: 18,
+                        labName: 16,
+                        branchName: 12,
+                        specialty: 13,
+                        employeeId: 11,
+                        
+                        billNumber: 13,
+                        date: 11,
+                        occurredAt: 12,
+                        period: 12,
+                        sacCode: 9,
+                        code: 9,
+                        itemCode: 10,
+                        sampleBarcode: 12,
+                        tpaClaimNo: 12,
+                        sourceReferenceId: 12,
+                        paymentMode: 10,
+                        mode: 10,
+                        sourceType: 12,
+                        status: 8,
+                        partnerCategory: 10,
+                        uom: 7,
+                        quantity: 8,
+                        qty: 8,
+                        poQty: 8,
+                        receivedQty: 8,
+                        acceptedQty: 8,
+                        rejectedQty: 8,
+                        totalReferrals: 8,
+                        pendingBills: 8,
+                        claimsCount: 8,
+                        testsReferred: 8,
+                        activeClaims: 8,
+                        
+                        price: 11,
+                        tariff: 11,
+                        rate: 10,
+                        unitPrice: 11,
+                        b2bRate: 11,
+                        discount: 9,
+                        coPay: 9,
+                        commissionRate: 9,
+                        taxRate: 8,
+                        tdsDeducted: 9,
+                        tdsAmount: 9,
+                        amount: 12,
+                        total: 12,
+                        totalAmount: 12,
+                        grossAmount: 12,
+                        grossCommission: 12,
+                        grossClaimed: 12,
+                        grossDue: 12,
+                        netAmount: 12,
+                        netPayout: 12,
+                        netDue: 12,
+                        netPayable: 12,
+                        paidAmount: 11,
+                        pendingAmount: 11,
+                        dueAmount: 11,
+                        received: 11,
+                        receivedAmount: 11,
+                        settledAmount: 11,
+                        billedToCorp: 12,
+                        preAuthAmount: 11,
+                        approvedAmount: 11,
+                        patientShare: 10,
+                        claimAmount: 11,
+                        claimedAmount: 11,
+                        deniedAmount: 11,
+                        billedByLab: 11,
+                        outstandingBalance: 12,
+                        labBilled: 11,
+                        notes: 15
                     };
-                    return denseMap[key] || `${Math.floor(100 / count)}%`;
+
+                    const totalWeight = activeColumns.reduce((sum, [cKey]) => sum + (weights[cKey] || 10), 0);
+                    const colWeight = weights[key] || 10;
+                    const availablePercent = !readOnly ? 96.5 : 100;
+                    const pct = ((colWeight / totalWeight) * availablePercent).toFixed(1);
+                    return `${pct}%`;
                 };
 
                 return (
@@ -1007,7 +1080,7 @@ export const DynamicInvoiceCanvas = ({
                         }}
                     >
                         <div className="mb-3 overflow-x-auto print:overflow-visible rounded-lg border border-zinc-300">
-                            <table className={`w-full text-left border-collapse ${isDense ? 'table-fixed' : 'table-auto'}`}>
+                            <table className="w-full text-left border-collapse table-fixed">
                                 <thead>
                                     <tr className={`bg-zinc-100 border-b border-zinc-300 font-black uppercase text-zinc-700 tracking-wider ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}>
                                         {activeColumns.map(([colKey, col]) => {
@@ -1015,17 +1088,20 @@ export const DynamicInvoiceCanvas = ({
                                             return (
                                                 <th 
                                                     key={colKey} 
-                                                    style={{ width: isDense ? getDenseColWidth(colKey, colCount) : undefined }}
-                                                    className={`${isDense ? 'px-1.5 py-1' : 'px-2 py-1.5'} border-r last:border-r-0 border-zinc-200 group/colhead relative ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                    style={{ width: getColumnWidth(colKey) }}
+                                                    className={`${isDense ? 'px-1.5 py-1' : 'px-2 py-1.5'} border-r last:border-r-0 border-zinc-200 group/colhead relative overflow-hidden ${isNumeric ? 'text-right' : 'text-left'}`}
                                                 >
-                                                    <div className={`flex items-center gap-1 ${isNumeric ? 'justify-end' : 'justify-between'}`}>
-                                                        <EditableField 
-                                                            value={col.label}
-                                                            onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
-                                                            onDelete={() => deleteColumn('itemsTable', colKey)}
-                                                            canDelete={!readOnly}
-                                                            valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} truncate block`}
-                                                        />
+                                                    <div className={`flex items-center gap-1 w-full min-w-0 ${isNumeric ? 'justify-end' : 'justify-between'}`}>
+                                                        <div className="min-w-0 flex-1 overflow-hidden">
+                                                            <EditableField 
+                                                                value={col.label}
+                                                                onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
+                                                                onDelete={() => deleteColumn('itemsTable', colKey)}
+                                                                canDelete={!readOnly}
+                                                                className="max-w-full"
+                                                                valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} truncate block`}
+                                                            />
+                                                        </div>
                                                         {!readOnly && (
                                                             <button
                                                                 type="button"
@@ -1043,7 +1119,7 @@ export const DynamicInvoiceCanvas = ({
                                                 </th>
                                             );
                                         })}
-                                        {!readOnly && <th className="p-1 w-6 text-center text-zinc-400">✕</th>}
+                                        {!readOnly && <th style={{ width: '3.5%' }} className="p-1 text-center text-zinc-400 border-zinc-200">✕</th>}
                                     </tr>
                                 </thead>
                                 <tbody className={`divide-y divide-zinc-200 ${isDense ? 'text-[9.5px]' : 'text-[11px]'}`}>
@@ -1079,20 +1155,23 @@ export const DynamicInvoiceCanvas = ({
                                                     return (
                                                         <td 
                                                             key={colKey} 
-                                                            style={{ width: isDense ? getDenseColWidth(colKey, colCount) : undefined }}
-                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2'} border-r last:border-r-0 border-zinc-200 overflow-hidden truncate ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
+                                                            style={{ width: getColumnWidth(colKey) }}
+                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2 text-[10px]'} border-r last:border-r-0 border-zinc-200 overflow-hidden ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
                                                         >
-                                                            <EditableField 
-                                                                value={String(cellVal)}
-                                                                onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
-                                                                canDelete={false}
-                                                                valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : ''} truncate block`}
-                                                            />
+                                                            <div className="min-w-0 overflow-hidden">
+                                                                <EditableField 
+                                                                    value={String(cellVal)}
+                                                                    onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
+                                                                    canDelete={false}
+                                                                    className="max-w-full"
+                                                                    valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : ''} truncate block`}
+                                                                />
+                                                            </div>
                                                         </td>
                                                     );
                                                 })}
                                                 {!readOnly && (
-                                                    <td className="p-1 text-center">
+                                                    <td style={{ width: '3.5%' }} className="p-1 text-center border-zinc-200">
                                                         <button 
                                                             type="button"
                                                             onClick={() => deleteRow('itemsTable', row.id)}
