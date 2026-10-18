@@ -296,6 +296,8 @@ export const DynamicInvoiceCanvas = ({
 
     const [showColumnManager, setShowColumnManager] = useState(false);
     const [newColName, setNewColName] = useState("");
+    const [editingColumn, setEditingColumn] = useState(null); // { boxId, colKey, label }
+    const [editColLabel, setEditColLabel] = useState("");
 
     // Helper to update schema immutably
     const updateSchema = (newSchema) => {
@@ -1089,31 +1091,45 @@ export const DynamicInvoiceCanvas = ({
                                                 <th 
                                                     key={colKey} 
                                                     style={{ width: getColumnWidth(colKey) }}
-                                                    className={`${isDense ? 'px-1.5 py-1' : 'px-2 py-1.5'} border-r last:border-r-0 border-zinc-200 group/colhead relative overflow-hidden ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                    onClick={() => {
+                                                        if (!readOnly) {
+                                                            setEditingColumn({ boxId: 'itemsTable', colKey, label: col.label });
+                                                            setEditColLabel(col.label || "");
+                                                        }
+                                                    }}
+                                                    className={`${isDense ? 'px-1.5 py-1.5' : 'px-2 py-2'} border-r last:border-r-0 border-zinc-200 group/colhead relative align-middle ${!readOnly ? 'cursor-pointer hover:bg-indigo-50/70 transition-colors' : ''} ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                    title={!readOnly ? `Click to edit "${col.label || colKey}" column heading` : undefined}
                                                 >
                                                     <div className={`flex items-center gap-1 w-full min-w-0 ${isNumeric ? 'justify-end' : 'justify-between'}`}>
-                                                        <div className="min-w-0 flex-1 overflow-hidden">
-                                                            <EditableField 
-                                                                value={col.label}
-                                                                onSave={(_, val) => updateColumnLabel('itemsTable', colKey, val)}
-                                                                onDelete={() => deleteColumn('itemsTable', colKey)}
-                                                                canDelete={!readOnly}
-                                                                className="max-w-full"
-                                                                valueClassName={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} truncate block`}
-                                                            />
-                                                        </div>
+                                                        <span className={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[9.5px]'} whitespace-normal break-words leading-tight block flex-1`}>
+                                                            {col.label}
+                                                        </span>
                                                         {!readOnly && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    deleteColumn('itemsTable', colKey);
-                                                                }}
-                                                                className="opacity-0 group-hover/colhead:opacity-100 transition-opacity p-0.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded shrink-0 no-print cursor-pointer"
-                                                                title={`Delete column "${col.label || colKey}"`}
-                                                            >
-                                                                <Trash2 size={11} />
-                                                            </button>
+                                                            <div className="opacity-0 group-hover/colhead:opacity-100 transition-opacity flex items-center gap-0.5 shrink-0 no-print ml-0.5">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setEditingColumn({ boxId: 'itemsTable', colKey, label: col.label });
+                                                                        setEditColLabel(col.label || "");
+                                                                    }}
+                                                                    className="p-1 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 rounded cursor-pointer transition-colors"
+                                                                    title={`Edit "${col.label || colKey}" heading`}
+                                                                >
+                                                                    <Edit2 size={10} />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        deleteColumn('itemsTable', colKey);
+                                                                    }}
+                                                                    className="p-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-colors"
+                                                                    title={`Delete column "${col.label || colKey}"`}
+                                                                >
+                                                                    <Trash2 size={10} />
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </th>
@@ -1156,15 +1172,15 @@ export const DynamicInvoiceCanvas = ({
                                                         <td 
                                                             key={colKey} 
                                                             style={{ width: getColumnWidth(colKey) }}
-                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2 text-[10px]'} border-r last:border-r-0 border-zinc-200 overflow-hidden ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
+                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2 text-[10px]'} border-r last:border-r-0 border-zinc-200 align-top ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
                                                         >
-                                                            <div className="min-w-0 overflow-hidden">
+                                                            <div className="min-w-0">
                                                                 <EditableField 
                                                                     value={String(cellVal)}
                                                                     onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
                                                                     canDelete={false}
-                                                                    className="max-w-full"
-                                                                    valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : ''} truncate block`}
+                                                                    className="w-full"
+                                                                    valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : 'whitespace-normal break-words leading-tight'} block`}
                                                                 />
                                                             </div>
                                                         </td>
@@ -1549,6 +1565,94 @@ export const DynamicInvoiceCanvas = ({
                 );
             })}
 
+            {/* FLOATING COLUMN EDITOR MODAL */}
+            {editingColumn && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs no-print p-4"
+                    onClick={() => setEditingColumn(null)}
+                >
+                    <div 
+                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-2xl shadow-2xl p-5 w-full max-w-md animate-in fade-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-100 dark:border-zinc-800">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                                    <Columns size={18} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100">Edit Column Heading</h4>
+                                    <p className="text-[11px] text-zinc-500">Customize the label as it appears on bills and printouts</p>
+                                </div>
+                            </div>
+                            <button 
+                                type="button" 
+                                onClick={() => setEditingColumn(null)}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                if (editColLabel.trim()) {
+                                    updateColumnLabel(editingColumn.boxId, editingColumn.colKey, editColLabel.trim());
+                                }
+                                setEditingColumn(null);
+                            }}
+                            className="space-y-4"
+                        >
+                            <div>
+                                <label className="block text-xs font-bold text-zinc-700 dark:text-zinc-300 mb-1.5">
+                                    Column Heading Title
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editColLabel}
+                                    onChange={(e) => setEditColLabel(e.target.value)}
+                                    autoFocus
+                                    placeholder="e.g. Investigation / Service Description"
+                                    className="w-full px-3.5 py-2 text-sm font-semibold rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                />
+                                <p className="text-[10px] text-zinc-400 mt-1">
+                                    Long titles wrap naturally onto multiple lines on bills without cutting off.
+                                </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        deleteColumn(editingColumn.boxId, editingColumn.colKey);
+                                        setEditingColumn(null);
+                                    }}
+                                    className="px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                                >
+                                    <Trash2 size={14} /> Delete Column
+                                </button>
+
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditingColumn(null)}
+                                        className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold text-xs cursor-pointer transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                                    >
+                                        <Check size={14} /> Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
             </div>
         </CanvasContext.Provider>
     );
