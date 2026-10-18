@@ -61,9 +61,9 @@ const EditableField = ({
     if (isReadOnly) {
         return (
             <div className={`inline-flex items-center gap-1.5 max-w-full min-w-0 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
-                <div className="flex items-center gap-1 truncate min-w-0 flex-1">
+                <div className={`flex items-center gap-1 min-w-0 ${isBlock ? 'justify-between w-full' : 'flex-1'}`}>
                     {label && <span className={`${labelClassName} shrink-0`}>{label}</span>}
-                    <span className={`${valueClassName} truncate`}>{value}</span>
+                    <span className={`${valueClassName}`}>{value}</span>
                 </div>
             </div>
         );
@@ -71,14 +71,14 @@ const EditableField = ({
 
     if (isEditing) {
         return (
-            <div className={`inline-flex items-center gap-1.5 p-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 rounded shadow-xs text-xs z-20 ${isBlock ? 'w-full' : ''}`}>
+            <div className={`inline-flex items-center gap-1.5 p-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 rounded shadow-xs text-xs z-30 ${isBlock ? 'w-full' : ''} max-w-full`}>
                 {label !== undefined && (
                     <input 
                         type="text" 
                         value={tempLabel}
                         onChange={(e) => setTempLabel(e.target.value)}
                         placeholder="Label"
-                        className="px-1.5 py-0.5 text-[10px] font-bold border border-zinc-300 rounded bg-white w-24 text-zinc-700 outline-none"
+                        className="px-1.5 py-0.5 text-[10px] font-bold border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-800 w-24 shrink-0 text-zinc-700 dark:text-zinc-200 outline-none"
                     />
                 )}
                 <input 
@@ -88,12 +88,12 @@ const EditableField = ({
                     onChange={(e) => setTempValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Value / Text"
-                    className="px-1.5 py-0.5 text-xs font-semibold border border-zinc-300 rounded bg-white flex-1 text-zinc-900 outline-none"
+                    className="px-1.5 py-0.5 text-xs font-semibold border border-zinc-300 dark:border-zinc-600 rounded bg-white dark:bg-zinc-800 flex-1 min-w-0 text-zinc-900 dark:text-zinc-100 outline-none"
                 />
                 <button 
                     type="button" 
                     onClick={handleSave} 
-                    className="p-1 text-emerald-700 hover:bg-emerald-100 rounded cursor-pointer"
+                    className="p-1 text-emerald-700 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:bg-emerald-950/60 rounded cursor-pointer shrink-0"
                     title="Save changes (Enter)"
                 >
                     <Check size={12} />
@@ -105,7 +105,7 @@ const EditableField = ({
                         setTempLabel(label || "");
                         setIsEditing(false);
                     }} 
-                    className="p-1 text-zinc-500 hover:bg-zinc-200 rounded cursor-pointer"
+                    className="p-1 text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 rounded cursor-pointer shrink-0"
                     title="Cancel (Esc)"
                 >
                     <X size={12} />
@@ -117,7 +117,7 @@ const EditableField = ({
                             setIsEditing(false);
                             onDelete();
                         }} 
-                        className="p-1 text-rose-600 hover:bg-rose-100 rounded cursor-pointer"
+                        className="p-1 text-rose-600 hover:bg-rose-100 dark:text-rose-400 dark:hover:bg-rose-950/60 rounded cursor-pointer shrink-0"
                         title="Delete (Remove)"
                     >
                         <Trash2 size={12} />
@@ -128,14 +128,14 @@ const EditableField = ({
     }
 
     return (
-        <div className={`group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 hover:ring-1 hover:ring-indigo-300/60 max-w-full min-w-0 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
-            <div className="flex items-center gap-1 truncate min-w-0 flex-1">
+        <div className={`group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 dark:hover:bg-indigo-950/50 hover:ring-1 hover:ring-indigo-300/60 max-w-full min-w-0 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
+            <div className={`flex items-center gap-1 min-w-0 ${isBlock ? 'justify-between w-full' : 'flex-1'}`}>
                 {label && <span className={`${labelClassName} shrink-0`}>{label}</span>}
-                <span className={`${valueClassName} truncate`}>{value}</span>
+                <span className={`${valueClassName}`}>{value}</span>
             </div>
 
-            {/* HOVER ACTIONS */}
-            <div className="opacity-0 group-hover/field:opacity-100 transition-opacity inline-flex items-center gap-0.5 bg-white/95 shadow-xs border border-zinc-200 rounded px-1 py-0.5 ml-1 shrink-0">
+            {/* HOVER ACTIONS - Absolute overlay positioned to never steal physical layout width */}
+            <div className="opacity-0 pointer-events-none group-hover/field:pointer-events-auto group-hover/field:opacity-100 transition-opacity absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-0.5 bg-white/95 dark:bg-zinc-800/95 shadow-xs border border-zinc-200 dark:border-zinc-700 rounded px-1 py-0.5 z-20">
                 {canEdit && (
                     <button 
                         type="button"
@@ -145,7 +145,7 @@ const EditableField = ({
                             setTempLabel(label || "");
                             setIsEditing(true);
                         }}
-                        className="p-0.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded cursor-pointer"
+                        className="p-0.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/60 rounded cursor-pointer"
                         title="Edit text"
                     >
                         <Edit2 size={11} />
@@ -158,7 +158,7 @@ const EditableField = ({
                             e.stopPropagation();
                             onDelete();
                         }}
-                        className="p-0.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded cursor-pointer"
+                        className="p-0.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded cursor-pointer"
                         title="Delete this text/field"
                     >
                         <Trash2 size={11} />
@@ -742,8 +742,8 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('docBadge')}
                     onAddCustomLine={(line) => addCustomLine('docBadge', line)}
                 >
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-zinc-200">
-                        <div className="flex items-center gap-2">
+                    <div className={`pb-2 mb-2 border-b border-zinc-200 ${isThermal ? 'text-center' : 'flex flex-wrap items-center justify-between gap-2'}`}>
+                        <div className={`flex items-center gap-2 ${isThermal ? 'justify-center mb-1.5' : ''}`}>
                             {boxes.docBadge.fields?.badgeTitle?.enabled && (
                                 <EditableField 
                                     value={boxes.docBadge.fields.badgeTitle.value}
@@ -762,38 +762,32 @@ export const DynamicInvoiceCanvas = ({
                             )}
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-3 text-[10px]">
-                            {boxes.docBadge.fields?.billNumber?.enabled && (
-                                <EditableField 
-                                    label={boxes.docBadge.fields.billNumber.label ? `${boxes.docBadge.fields.billNumber.label}:` : "Invoice No:"}
-                                    value={boxes.docBadge.fields.billNumber.value}
-                                    onSave={(lbl, val) => updateField('docBadge', 'billNumber', lbl, val)}
-                                    onDelete={() => deleteField('docBadge', 'billNumber')}
-                                    valueClassName="font-mono font-black text-zinc-900"
-                                />
-                            )}
-                            {boxes.docBadge.fields?.date?.enabled && (
-                                <EditableField 
-                                    label={boxes.docBadge.fields.date.label ? `${boxes.docBadge.fields.date.label}:` : "Date:"}
-                                    value={boxes.docBadge.fields.date.value}
-                                    onSave={(lbl, val) => updateField('docBadge', 'date', lbl, val)}
-                                    onDelete={() => deleteField('docBadge', 'date')}
-                                    valueClassName="text-zinc-800"
-                                />
-                            )}
-                            {boxes.docBadge.fields?.paymentStatus?.enabled && (
-                                <EditableField 
-                                    value={boxes.docBadge.fields.paymentStatus.value}
-                                    onSave={(_, val) => updateField('docBadge', 'paymentStatus', undefined, val)}
-                                    onDelete={() => deleteField('docBadge', 'paymentStatus')}
-                                    valueClassName="px-2 py-0.5 rounded font-black text-[9px] uppercase border tracking-wider bg-amber-50 text-amber-800 border-amber-300"
-                                />
-                            )}
+                        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] ${isThermal ? 'justify-center' : ''}`}>
+                            {Object.entries(boxes.docBadge.fields || {}).map(([key, field]) => {
+                                if (key === 'badgeTitle' || key === 'subBadge') return null;
+                                if (!field || !field.enabled) return null;
+                                const isStatus = key === 'paymentStatus' || key === 'status';
+                                return (
+                                    <EditableField 
+                                        key={key}
+                                        label={!isStatus && field.label ? `${field.label}:` : ""}
+                                        value={field.value}
+                                        onSave={(lbl, val) => updateField('docBadge', key, lbl, val)}
+                                        onDelete={() => deleteField('docBadge', key)}
+                                        labelClassName="text-zinc-500 font-medium text-[10px]"
+                                        valueClassName={isStatus 
+                                            ? "px-2 py-0.5 rounded font-black text-[9px] uppercase border tracking-wider bg-amber-50 text-amber-800 border-amber-300" 
+                                            : (key.includes('Number') || key.includes('No') || key === 'billNumber' || key === 'receiptNumber' || key === 'tokenNumber'
+                                                ? "font-mono font-black text-zinc-900" 
+                                                : "text-zinc-800 font-medium")}
+                                    />
+                                );
+                            })}
                         </div>
 
                         {/* Custom Lines in Badge */}
                         {boxes.docBadge.customLines?.map(line => (
-                            <div key={line.id} className="w-full text-right">
+                            <div key={line.id} className={`w-full ${isThermal ? 'text-center' : 'text-right'}`}>
                                 <EditableField 
                                     label={line.label ? `${line.label}:` : ""}
                                     value={line.value}
@@ -825,7 +819,7 @@ export const DynamicInvoiceCanvas = ({
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                        <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-1.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1'} text-[11px]`}>
                             {Object.entries(boxes.partyDetails.fields || {}).map(([key, field]) => {
                                 if (!field.enabled) return null;
                                 return (
@@ -845,7 +839,7 @@ export const DynamicInvoiceCanvas = ({
 
                             {/* Custom Lines in Party Box */}
                             {boxes.partyDetails.customLines?.map(line => (
-                                <div key={line.id} className="py-0.5 sm:col-span-2">
+                                <div key={line.id} className={`py-0.5 ${isThermal ? '' : 'sm:col-span-2'}`}>
                                     <EditableField 
                                         label={line.label ? `${line.label}:` : ""}
                                         value={line.value}
@@ -872,6 +866,16 @@ export const DynamicInvoiceCanvas = ({
                 const isDense = colCount >= 8;
 
                 const getColumnWidth = (key) => {
+                    if (isThermal) {
+                        if (key === 'index') return '10%';
+                        if (['price', 'amount', 'total', 'totalAmount', 'netDue', 'paidAmount', 'discount', 'balanceDue'].includes(key)) {
+                            return !readOnly ? '28%' : '30%';
+                        }
+                        const otherCols = activeColumns.filter(([cKey]) => cKey !== 'index' && !['price', 'amount', 'total', 'totalAmount', 'netDue', 'paidAmount', 'discount', 'balanceDue'].includes(cKey));
+                        const remainingPct = !readOnly ? 58.5 : 60;
+                        const perCol = (remainingPct / (otherCols.length || 1)).toFixed(1);
+                        return `${perCol}%`;
+                    }
                     const weights = {
                         index: 4,
                         description: 34,
@@ -1217,7 +1221,7 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('financialSummary')}
                     onAddCustomLine={(line) => addCustomLine('financialSummary', line)}
                 >
-                    <div className="bg-zinc-50 rounded-lg border border-zinc-300 p-3 mb-3 space-y-1.5 text-[11px] max-w-sm ml-auto">
+                    <div className={`bg-zinc-50 rounded-lg border border-zinc-300 p-3 mb-3 space-y-1.5 text-[11px] ${isThermal ? 'w-full' : 'max-w-sm ml-auto'}`}>
                         {Object.entries(boxes.financialSummary.fields || {}).map(([key, field]) => {
                             if (!field.enabled) return null;
                             const isNet = key === 'totalAmount' || key === 'netSalary';
@@ -1321,7 +1325,7 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('bankAndUpi')}
                     onAddCustomLine={(line) => addCustomLine('bankAndUpi', line)}
                 >
-                    <div className="p-3 rounded-lg border border-zinc-200 mb-3 flex gap-3 items-center bg-zinc-50/30">
+                    <div className={`p-3 rounded-lg border border-zinc-200 mb-3 flex ${isThermal ? 'flex-col items-center text-center gap-2' : 'gap-3 items-center'} bg-zinc-50/30`}>
                         {/* Dynamic UPI QR Code */}
                         {boxes.bankAndUpi.fields?.showQr?.enabled && (
                             <div className="w-20 h-20 bg-white p-1 rounded border border-zinc-300 flex flex-col items-center justify-center shrink-0">
@@ -1335,7 +1339,7 @@ export const DynamicInvoiceCanvas = ({
                         )}
 
                         {/* Bank Text */}
-                        <div className="space-y-0.5 text-[10px] text-zinc-600 flex-1">
+                        <div className={`space-y-0.5 text-[10px] text-zinc-600 ${isThermal ? 'w-full text-center' : 'flex-1 min-w-0'}`}>
                             <strong className="text-zinc-900 uppercase block tracking-wider text-[10px]">
                                 {boxes.bankAndUpi.title || "Bank Transfer Details"}
                             </strong>
@@ -1403,7 +1407,7 @@ export const DynamicInvoiceCanvas = ({
                     boxName={boxes.termsAndConditions.name || "Terms & Conditions"}
                     onDeleteBox={() => deleteBox('termsAndConditions')}
                 >
-                    <div className="border-t border-zinc-300 pt-2 mb-3">
+                    <div className={`border-t border-zinc-300 pt-2 mb-3 ${isThermal ? 'text-center' : ''}`}>
                         <span className="text-[10px] font-bold uppercase text-zinc-700 block tracking-wider mb-1">
                             {boxes.termsAndConditions.title || "Terms & Conditions"}
                         </span>

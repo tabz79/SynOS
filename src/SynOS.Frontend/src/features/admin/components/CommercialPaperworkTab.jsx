@@ -1240,9 +1240,9 @@ export const CommercialPaperworkTab = () => {
                         </div>
                     </div>
 
-                    {/* SCALED A4 CANVAS PREVIEW WRAPPER */}
+                    {/* SCALED CANVAS PREVIEW WRAPPER (A4 / 80mm POS Thermal) */}
                     <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 bg-zinc-100 dark:bg-zinc-950 p-3 overflow-hidden shadow-inner max-h-[780px] overflow-y-auto">
-                        <div className="bg-white text-zinc-900 rounded-xl shadow-2xl p-6 border border-zinc-300 transform scale-90 sm:scale-95 origin-top transition-all">
+                        <div className={`bg-white text-zinc-900 rounded-xl shadow-2xl ${activeSchema.isThermal || currentActiveSlot.letterheadMode === 'raw_thermal' || activeSchema.paperSize === 'thermal80' ? 'max-w-[360px] mx-auto p-4' : 'p-6'} border border-zinc-300 transform scale-90 sm:scale-95 origin-top transition-all`}>
                             <DynamicInvoiceCanvas 
                                 schema={activeSchema}
                                 onUpdateSchema={handleUpdateSchema}
