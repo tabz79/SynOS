@@ -333,6 +333,36 @@ export function VisitDetails({
         }
     };
 
+    // COMMAND: Apply Secondary Referral Doctor (RMP)
+    const handleApplySecondaryReferral = async (secondaryPartnerId) => {
+        if (!visitId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.updateSecondaryReferral(visitId, secondaryPartnerId);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to update secondary referral doctor", err);
+            alert("Failed to update secondary referral doctor: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // COMMAND: Remove Secondary Referral Doctor (RMP)
+    const handleRemoveSecondaryReferral = async () => {
+        if (!visitId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.updateSecondaryReferral(visitId, null);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to remove secondary referral doctor", err);
+            alert("Failed to remove secondary referral doctor: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
     // Filter Logic for Search (UI Only)
     // When Corporate mode is active:
     // Strictly restrict to Corporate Packages & Contracted Corporate Rate Rules.
@@ -588,132 +618,279 @@ export function VisitDetails({
 
                 {/* CONTEXTUAL SUB-PANEL: Standard Direct */}
                 {billingMode === 'Standard' && (
-                    <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 space-y-2.5">
-                        <div className="type-label flex justify-between items-center">
-                            <span>Referring Doctor / Clinic (Optional)</span>
-                            <button
-                                type="button"
-                                onClick={() => onOpenModal && onOpenModal('referral')}
-                                disabled={!canEditReferral}
-                                className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
-                            >
-                                <Plus className="w-3.5 h-3.5" /> Add Referral Partner
-                            </button>
-                        </div>
-                        {snapshot?.billing?.referral?.partner ? (
-                            <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
-                                isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]"></div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="truncate tracking-tight text-xs font-bold">
-                                        {snapshot.billing.referral.partner.displayName || "Partner"}
-                                    </div>
-                                    {snapshot.billing.referral.partner.partnerType && (
-                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
-                                            Type: {snapshot.billing.referral.partner.partnerType} • Comm: {snapshot.billing.referral.commissionCutPercentage || 0}%
+                    <div className="pt-2 border-t border-zinc-200/50 dark:border-zinc-800/50 space-y-3">
+                        {/* 1. PRIMARY PRESCRIBING DOCTOR */}
+                        <div className="space-y-1.5">
+                            <div className="type-label flex justify-between items-center">
+                                <span className="flex items-center gap-1.5 font-bold">
+                                    <span>Prescribing Doctor / Consultant</span>
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/20">
+                                        Primary (On Reports & Bills)
+                                    </span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => onOpenModal && onOpenModal('referral')}
+                                    disabled={!canEditReferral}
+                                    className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
+                                >
+                                    <Plus className="w-3.5 h-3.5" /> Add Doctor
+                                </button>
+                            </div>
+                            {snapshot?.billing?.referral?.partner ? (
+                                <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
+                                    isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="truncate tracking-tight text-xs font-bold">
+                                                {snapshot.billing.referral.partner.displayName || "Partner"}
+                                            </span>
+                                            {snapshot?.billing?.referral?.secondaryPartner && (
+                                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
+                                                    Commission Routed to RMP
+                                                </span>
+                                            )}
                                         </div>
+                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
+                                            Type: {snapshot.billing.referral.partner.partnerType || 'Doctor'}
+                                            {!snapshot?.billing?.referral?.secondaryPartner && ` • Comm: ${snapshot.billing.referral.commissionCutPercentage || 0}%`}
+                                        </div>
+                                    </div>
+                                    {canEditReferral && (
+                                        <button
+                                            onClick={handleRemoveReferral}
+                                            disabled={isProcessing}
+                                            className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
+                                            title="Remove Primary Doctor"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
                                     )}
                                 </div>
-                                {canEditReferral && (
-                                    <button
-                                        onClick={handleRemoveReferral}
-                                        disabled={isProcessing}
-                                        className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
-                                        title="Remove Partner"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
+                            ) : (
+                                <div className="space-y-2">
+                                    <ReferralCombinedInput
+                                        initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                                        isReadOnly={!canEditReferral}
+                                        isProcessing={isProcessing}
+                                        partners={referralPartners}
+                                        allowFreeText={true}
+                                        onApplyPartner={handleApplyReferral}
+                                        onUpdateText={async (text) => {
+                                            if (!visitId || !canEditReferral) return;
+                                            if (isCorrectionIntent) {
+                                                setCorrectionState({
+                                                    isOpen: true,
+                                                    type: 'ChangeReferral',
+                                                    payload: { referrerText: text, partnerId: null },
+                                                    reason: ""
+                                                });
+                                                return;
+                                            }
+                                            setIsProcessing(true);
+                                            try {
+                                                await ReceptionApi.updateReferrerText(visitId, text);
+                                                if (onVisitUpdated) onVisitUpdated();
+                                            } catch (err) {
+                                                console.error("Failed to update referrer text", err);
+                                                alert(err.message);
+                                            } finally {
+                                                setIsProcessing(false);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 2. SECONDARY REFERRAL DOCTOR (RMP) */}
+                        <div className="pt-2 border-t border-zinc-200/40 dark:border-zinc-800/40 space-y-1.5">
+                            <div className="type-label flex justify-between items-center">
+                                <span className="flex items-center gap-1.5 font-bold">
+                                    <span>Second Referral Doctor / RMP</span>
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                                        RMP (Commissions Route Here)
+                                    </span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => onOpenModal && onOpenModal('rmp')}
+                                    disabled={!canEditReferral}
+                                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 flex items-center gap-1 cursor-pointer transition-colors"
+                                >
+                                    <Plus className="w-3.5 h-3.5" /> Add RMP
+                                </button>
                             </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <ReferralCombinedInput
-                                    initialValue={snapshot?.billing?.referral?.referrerText || ""}
-                                    isReadOnly={!canEditReferral}
-                                    isProcessing={isProcessing}
-                                    partners={referralPartners}
-                                    allowFreeText={true}
-                                    onApplyPartner={handleApplyReferral}
-                                    onUpdateText={async (text) => {
-                                        if (!visitId || !canEditReferral) return;
-                                        if (isCorrectionIntent) {
-                                            setCorrectionState({
-                                                isOpen: true,
-                                                type: 'ChangeReferral',
-                                                payload: { referrerText: text, partnerId: null },
-                                                reason: ""
-                                            });
-                                            return;
-                                        }
-                                        setIsProcessing(true);
-                                        try {
-                                            await ReceptionApi.updateReferrerText(visitId, text);
-                                            if (onVisitUpdated) onVisitUpdated();
-                                        } catch (err) {
-                                            console.error("Failed to update referrer text", err);
-                                            alert(err.message);
-                                        } finally {
-                                            setIsProcessing(false);
-                                        }
-                                    }}
-                                />
-                            </div>
-                        )}
+                            {snapshot?.billing?.referral?.secondaryPartner ? (
+                                <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
+                                    isDark ? "text-emerald-300 bg-emerald-500/10 border-emerald-500/30" : "text-emerald-950 bg-emerald-50/80 border-emerald-300 shadow-sm")}>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="truncate tracking-tight text-xs font-bold">
+                                                {snapshot.billing.referral.secondaryPartner.displayName}
+                                            </span>
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500 text-white font-black uppercase">
+                                                {snapshot.billing.referral.secondaryPartner.partnerType || 'RMP'}
+                                            </span>
+                                        </div>
+                                        <div className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-normal">
+                                            Commission Cut: {snapshot.billing.referral.secondaryPartner.commissionCutPercentage || 0}% • All referral logic & payouts route exclusively to this doctor
+                                        </div>
+                                    </div>
+                                    {canEditReferral && (
+                                        <button
+                                            onClick={handleRemoveSecondaryReferral}
+                                            disabled={isProcessing}
+                                            className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                            title="Remove Second Referral Doctor"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <ReferralCombinedInput
+                                        initialValue=""
+                                        isReadOnly={!canEditReferral}
+                                        isProcessing={isProcessing}
+                                        partners={referralPartners}
+                                        allowFreeText={false}
+                                        onApplyPartner={handleApplySecondaryReferral}
+                                        onUpdateText={() => {}}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
-                {/* CONTEXTUAL SUB-PANEL: Prepaid Partner */}
+                {/* CONTEXTUAL SUB-PANEL: Corporate B2B (Prepaid Partner) */}
                 {billingMode === 'PrepaidPartner' && (
-                    <div className="pt-2 border-t border-amber-500/20 space-y-2.5">
-                        <div className="type-label flex justify-between items-center">
-                            <span>Prepaid Bill Referral <span className="text-red-500">*</span></span>
-                            <button
-                                type="button"
-                                onClick={() => onOpenModal && onOpenModal('referral')}
-                                disabled={!canEditReferral}
-                                className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
-                            >
-                                <Plus className="w-3.5 h-3.5" /> Add Referral Partner
-                            </button>
-                        </div>
-                        {snapshot?.billing?.referral?.partner ? (
-                            <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
-                                isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="truncate tracking-tight text-xs font-bold">
-                                        {snapshot.billing.referral.partner.displayName || "Partner"}
-                                    </div>
-                                    {snapshot.billing.referral.partner.partnerType && (
-                                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-normal">
-                                            Prepaid Center: {snapshot.billing.referral.partner.partnerType}
+                    <div className="pt-2 border-t border-amber-500/20 space-y-3">
+                        {/* 1. PRIMARY PRESCRIBING DOCTOR */}
+                        <div className="space-y-1.5">
+                            <div className="type-label flex justify-between items-center">
+                                <span className="flex items-center gap-1.5 font-bold">
+                                    <span>Prescribing Doctor (Main Doctor on Reports)</span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => onOpenModal && onOpenModal('referral')}
+                                    disabled={!canEditReferral}
+                                    className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                >
+                                    <Plus className="w-3.5 h-3.5" /> Add Doctor
+                                </button>
+                            </div>
+                            {snapshot?.billing?.referral?.partner ? (
+                                <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
+                                    isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="truncate tracking-tight text-xs font-bold">
+                                            {snapshot.billing.referral.partner.displayName || "Partner"}
                                         </div>
+                                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-normal">
+                                            Primary Consultant • Name retained on all patient documents
+                                        </div>
+                                    </div>
+                                    {canEditReferral && (
+                                        <button
+                                            onClick={handleRemoveReferral}
+                                            disabled={isProcessing}
+                                            className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                            title="Remove Doctor"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
                                     )}
                                 </div>
-                                {canEditReferral && (
-                                    <button
-                                        onClick={handleRemoveReferral}
-                                        disabled={isProcessing}
-                                        className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
-                                        title="Remove Partner"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
+                            ) : (
+                                <div className="space-y-2">
+                                    <ReferralCombinedInput
+                                        initialValue={snapshot?.billing?.referral?.referrerText || ""}
+                                        isReadOnly={!canEditReferral}
+                                        isProcessing={isProcessing}
+                                        partners={referralPartners}
+                                        allowFreeText={true}
+                                        onApplyPartner={handleApplyReferral}
+                                        onUpdateText={async (text) => {
+                                            if (!visitId || !canEditReferral) return;
+                                            setIsProcessing(true);
+                                            try {
+                                                await ReceptionApi.updateReferrerText(visitId, text);
+                                                if (onVisitUpdated) onVisitUpdated();
+                                            } catch (err) {
+                                                console.error("Failed to update referrer text", err);
+                                            } finally {
+                                                setIsProcessing(false);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 2. SECONDARY REFERRAL DOCTOR (RMP) / B2B PARTNER */}
+                        <div className="pt-2 border-t border-amber-500/20 space-y-1.5">
+                            <div className="type-label flex justify-between items-center">
+                                <span className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
+                                    <span>Secondary Referral Doctor / RMP (Receivables Route Here)</span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => onOpenModal && onOpenModal('rmp')}
+                                    disabled={!canEditReferral}
+                                    className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                >
+                                    <Plus className="w-3.5 h-3.5" /> Add RMP
+                                </button>
                             </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <ReferralCombinedInput
-                                    initialValue={snapshot?.billing?.referral?.referrerText || ""}
-                                    isReadOnly={!canEditReferral}
-                                    isProcessing={isProcessing}
-                                    partners={referralPartners}
-                                    allowFreeText={false}
-                                    onApplyPartner={handleApplyReferral}
-                                    onUpdateText={() => {}}
-                                />
-                            </div>
-                        )}
+                            {snapshot?.billing?.referral?.secondaryPartner ? (
+                                <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
+                                    isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="truncate tracking-tight text-xs font-bold">
+                                                {snapshot.billing.referral.secondaryPartner.displayName}
+                                            </span>
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500 text-black font-black uppercase">
+                                                {snapshot.billing.referral.secondaryPartner.partnerType || 'RMP'}
+                                            </span>
+                                        </div>
+                                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-normal">
+                                            B2B Receivable Account • All B2B claims, rate discounts & remittances route to this partner
+                                        </div>
+                                    </div>
+                                    {canEditReferral && (
+                                        <button
+                                            onClick={handleRemoveSecondaryReferral}
+                                            disabled={isProcessing}
+                                            className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                            title="Remove RMP"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <ReferralCombinedInput
+                                        initialValue=""
+                                        isReadOnly={!canEditReferral}
+                                        isProcessing={isProcessing}
+                                        partners={referralPartners}
+                                        allowFreeText={false}
+                                        onApplyPartner={handleApplySecondaryReferral}
+                                        onUpdateText={() => {}}
+                                    />
+                                </div>
+                            )}
+                        </div>
 
                         {/* Provisional Referral Draft */}
                         {referralDraft && (

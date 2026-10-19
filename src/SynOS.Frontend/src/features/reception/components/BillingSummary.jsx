@@ -9,6 +9,23 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
 
+    // Custom Discount State (Percentage vs Flat)
+    const [discountInputMode, setDiscountInputMode] = useState('catalog'); // 'catalog' | 'custom'
+    const [customDiscountType, setCustomDiscountType] = useState('PERCENTAGE'); // 'PERCENTAGE' | 'FLAT'
+    const [customDiscountValue, setCustomDiscountValue] = useState('');
+    const [customDiscountReason, setCustomDiscountReason] = useState('');
+
+    // B2B Prepaid Partner Rate State
+    const initialB2BDiscount = snapshot?.billing?.b2bDiscountAmount ?? snapshot?.visit?.b2bDiscountAmount ?? 0;
+    const [localB2BDiscount, setLocalB2BDiscount] = useState(initialB2BDiscount);
+    const [isB2BEditing, setIsB2BEditing] = useState(false);
+
+    useEffect(() => {
+        if (!isB2BEditing) {
+            setLocalB2BDiscount(snapshot?.billing?.b2bDiscountAmount ?? snapshot?.visit?.b2bDiscountAmount ?? 0);
+        }
+    }, [snapshot?.billing?.b2bDiscountAmount, snapshot?.visit?.b2bDiscountAmount, isB2BEditing]);
+
     // Correction Modal State
     const [correctionState, setCorrectionState] = useState({
         isOpen: false,
@@ -115,6 +132,53 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         } catch (err) {
             console.error("Failed to apply discount", err);
             alert("Failed to apply discount: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // COMMAND: Apply User-Defined Custom Discount (% or Flat)
+    const handleApplyCustomDiscount = async () => {
+        const val = parseFloat(customDiscountValue);
+        if (isNaN(val) || val <= 0) {
+            alert("Please enter a valid discount value greater than 0.");
+            return;
+        }
+        if (customDiscountType === 'PERCENTAGE' && val > 100) {
+            alert("Percentage discount cannot exceed 100%.");
+            return;
+        }
+        if (!canPerformActions || !visitId) return;
+
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.applyDiscountToVisit(visitId, {
+                mode: customDiscountType,
+                customValue: val,
+                reason: customDiscountReason.trim() || 'Custom Reception Concession'
+            });
+            setCustomDiscountValue('');
+            setCustomDiscountReason('');
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to apply custom discount", err);
+            alert("Failed to apply custom discount: " + err.message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // COMMAND: Save B2B Partner Concession Rate (Prepaid)
+    const handleSaveB2BDiscount = async (discountAmount) => {
+        if (!visitId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.updateB2BDiscountRate(visitId, discountAmount);
+            setIsB2BEditing(false);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to update B2B discount rate", err);
+            alert("Failed to update B2B discount rate: " + err.message);
         } finally {
             setIsProcessing(false);
         }
@@ -315,26 +379,202 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     </div>
                 </div>
 
-                {/* B. Discount Selector (Step 5.3) - ALWAYS VISIBLE for Replace Flow */}
-                {canPerformActions && (
-                    <div className="pt-2 animate-in fade-in">
-                        <select
-                            className={cn("w-full h-10 rounded-md px-3 py-2 outline-none transition-colors disabled:opacity-50 type-body focus:ring-2 focus:ring-synos-primary focus:border-synos-primary cursor-pointer", ui.input)}
-                            disabled={isProcessing}
-                            value=""
-                            onChange={(e) => {
-                                if (e.target.value) handleApplyDiscount(e.target.value);
-                            }}
-                        >
-                            <option value="" disabled className="text-zinc-500">
-                                {billing.appliedDiscount ? "Replace Discount..." : "Apply a Discount..."}
-                            </option>
-                            {discountCatalog.map(discount => (
-                                <option key={discount.code} value={discount.code} className={isDark ? "bg-zinc-900" : "bg-white"}>
-                                    {discount.name} ({discount.code})
+                {/* CORPORATE B2B PREPAID PARTNER TARIFF & CONCESSION CARD */}
+                {isPrepaid && (
+                    <div className={cn(
+                        "p-3 rounded-xl border space-y-2.5",
+                        isDark ? "bg-amber-950/20 border-amber-500/30 text-amber-200" : "bg-amber-50/70 border-amber-200 text-amber-900"
+                    )}>
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                                B2B Partner Concession & Rate
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-bold">
+                                Self-Learning Rate
+                            </span>
+                        </div>
+
+                        <div className="text-xs space-y-1.5">
+                            <div className="flex justify-between items-center text-zinc-500 dark:text-zinc-400">
+                                <span>Standard Lab Tariff:</span>
+                                <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                                    ₹{billing.grossAmount?.toLocaleString() ?? 0}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2">
+                                <label className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                                    Partner Discount:
+                                </label>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-bold text-zinc-400">₹</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max={billing.grossAmount || 100000}
+                                        value={localB2BDiscount}
+                                        disabled={!canPerformActions || isProcessing}
+                                        onFocus={() => setIsB2BEditing(true)}
+                                        onChange={(e) => setLocalB2BDiscount(e.target.value)}
+                                        onBlur={() => {
+                                            const num = parseFloat(localB2BDiscount) || 0;
+                                            handleSaveB2BDiscount(num);
+                                        }}
+                                        className={cn(
+                                            "w-24 h-7 px-2 text-right text-xs font-mono font-bold rounded border outline-none",
+                                            isDark ? "bg-zinc-900 border-amber-500/40 text-amber-200 focus:border-amber-400" : "bg-white border-amber-300 text-amber-900 focus:border-amber-500 shadow-xs"
+                                        )}
+                                        placeholder="0"
+                                    />
+                                    {isB2BEditing && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const num = parseFloat(localB2BDiscount) || 0;
+                                                handleSaveB2BDiscount(num);
+                                            }}
+                                            className="px-2 py-1 bg-amber-600 text-white rounded text-[10px] font-bold hover:bg-amber-700 cursor-pointer"
+                                        >
+                                            Save
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center pt-1 border-t border-amber-500/20 font-bold">
+                                <span>Net B2B Partner Claim:</span>
+                                <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm">
+                                    ₹{Math.max(0, (billing.grossAmount || 0) - (Number(localB2BDiscount) || 0)).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+
+                        {snapshot?.visit?.b2bDiscountEnteredBy && (
+                            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-amber-500/10 pt-1">
+                                Recorded by: <span className="font-semibold">{snapshot.visit.b2bDiscountEnteredBy}</span>
+                                {snapshot.visit.b2bDiscountEnteredAt && ` on ${new Date(snapshot.visit.b2bDiscountEnteredAt).toLocaleDateString()}`}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* B. Discount Selector (Step 5.3) - Dual Mode: Catalog Preset vs Custom Concession */}
+                {canPerformActions && !isPrepaid && (
+                    <div className="pt-2 animate-in fade-in space-y-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                        {/* Discount Mode Toggle */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                                Concession / Discount
+                            </span>
+                            <div className="flex items-center rounded-lg p-0.5 bg-zinc-200/70 dark:bg-zinc-800 text-[10px] font-bold">
+                                <button
+                                    type="button"
+                                    onClick={() => setDiscountInputMode('catalog')}
+                                    className={cn(
+                                        "px-2 py-0.5 rounded transition-all cursor-pointer",
+                                        discountInputMode === 'catalog'
+                                            ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                    )}
+                                >
+                                    Preset Code
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setDiscountInputMode('custom')}
+                                    className={cn(
+                                        "px-2 py-0.5 rounded transition-all cursor-pointer",
+                                        discountInputMode === 'custom'
+                                            ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs"
+                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                    )}
+                                >
+                                    Custom % / Flat
+                                </button>
+                            </div>
+                        </div>
+
+                        {discountInputMode === 'catalog' ? (
+                            <select
+                                className={cn("w-full h-9 rounded-lg px-2.5 outline-none transition-colors disabled:opacity-50 text-xs font-medium focus:ring-2 focus:ring-synos-primary focus:border-synos-primary cursor-pointer border", ui.input)}
+                                disabled={isProcessing}
+                                value=""
+                                onChange={(e) => {
+                                    if (e.target.value) handleApplyDiscount(e.target.value);
+                                }}
+                            >
+                                <option value="" disabled className="text-zinc-500">
+                                    {billing.appliedDiscount ? "Replace Discount from Master..." : "Select Master Discount Code..."}
                                 </option>
-                            ))}
-                        </select>
+                                {discountCatalog.map(discount => (
+                                    <option key={discount.code} value={discount.code} className={isDark ? "bg-zinc-900" : "bg-white"}>
+                                        {discount.name} ({discount.code}) — {discount.type === 0 || discount.type === 'Percentage' ? `${discount.value}%` : `₹${discount.value}`}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <div className="space-y-2 p-2.5 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 bg-black/[0.02] dark:bg-white/[0.02]">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex rounded-md p-0.5 bg-zinc-200 dark:bg-zinc-800 text-[10px] font-bold shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCustomDiscountType('PERCENTAGE')}
+                                            className={cn(
+                                                "px-2 py-1 rounded cursor-pointer transition-all",
+                                                customDiscountType === 'PERCENTAGE'
+                                                    ? "bg-synos-primary text-white"
+                                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                            )}
+                                        >
+                                            % Off
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCustomDiscountType('FLAT')}
+                                            className={cn(
+                                                "px-2 py-1 rounded cursor-pointer transition-all",
+                                                customDiscountType === 'FLAT'
+                                                    ? "bg-synos-primary text-white"
+                                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                            )}
+                                        >
+                                            ₹ Flat
+                                        </button>
+                                    </div>
+
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max={customDiscountType === 'PERCENTAGE' ? 100 : (billing.grossAmount || 100000)}
+                                            step={customDiscountType === 'PERCENTAGE' ? '1' : '10'}
+                                            placeholder={customDiscountType === 'PERCENTAGE' ? 'Discount % (e.g. 15)' : 'Flat ₹ (e.g. 200)'}
+                                            value={customDiscountValue}
+                                            onChange={(e) => setCustomDiscountValue(e.target.value)}
+                                            className={cn("w-full h-8 px-2.5 rounded-md text-xs font-mono font-medium outline-none border", ui.input)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Reason / Authorized By (e.g. Senior Citizen, Director Approval)"
+                                        value={customDiscountReason}
+                                        onChange={(e) => setCustomDiscountReason(e.target.value)}
+                                        className={cn("flex-1 h-8 px-2.5 rounded-md text-xs font-medium outline-none border", ui.input)}
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={!customDiscountValue || isProcessing}
+                                        onClick={handleApplyCustomDiscount}
+                                        className="h-8 px-3 rounded-md bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 disabled:opacity-50 transition-all shrink-0 cursor-pointer"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

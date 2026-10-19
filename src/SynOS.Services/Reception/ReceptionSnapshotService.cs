@@ -171,20 +171,20 @@ namespace SynOS.Services.Reception
                         .AsNoTracking()
                         .FirstOrDefaultAsync(dm => dm.DiscountDefinitionId == discountFact.DiscountDefinitionId);
                     
-                    if (master != null)
+                    appliedDiscount = new AppliedDiscountInfo
                     {
-                        appliedDiscount = new AppliedDiscountInfo
-                        {
-                            Id = master.DiscountDefinitionId,
-                            Code = master.Code,
-                            Name = master.Name,
-                            Amount = discountFact.DiscountAmount
-                        };
-                    }
+                        Id = master?.DiscountDefinitionId ?? discountFact.DiscountDefinitionId,
+                        Code = master?.Code ?? "CUSTOM",
+                        Name = master?.Name ?? (discountFact.Type == SynOS.Models.Enums.DiscountType.Percentage ? $"{discountFact.Value}% Custom Discount" : $"₹{discountFact.Value} Custom Concession"),
+                        Amount = discountFact.DiscountAmount,
+                        Type = discountFact.Type.ToString(),
+                        Value = discountFact.Value,
+                        AppliedBy = discountFact.AppliedBy
+                    };
                 }
             }
 
-            // New Referral State Logic
+            // New Referral State Logic (Primary Prescribing Doctor + Secondary RMP Partner)
             IntakeReferralState? referralState = null;
             ReferralPartnerInfo? partnerInfo = null;
 
@@ -199,17 +199,40 @@ namespace SynOS.Services.Reception
                     partnerInfo = new ReferralPartnerInfo
                     {
                         Id = partner.ReferralPartnerId,
-                        DisplayName = partner.Name
+                        DisplayName = partner.Name,
+                        PartnerType = partner.PartnerType.ToString(),
+                        CommissionCutPercentage = partner.DefaultCommissionPercentage
                     };
                 }
             }
 
-            if (partnerInfo != null || !string.IsNullOrEmpty(visit.ReferrerText) || visit.ReferralDraft != null)
+            ReferralPartnerInfo? secondaryPartnerInfo = null;
+            if (visit.SecondaryReferralPartnerId.HasValue)
+            {
+                var secPartner = await _context.ReferralPartners
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.ReferralPartnerId == visit.SecondaryReferralPartnerId.Value);
+
+                if (secPartner != null)
+                {
+                    secondaryPartnerInfo = new ReferralPartnerInfo
+                    {
+                        Id = secPartner.ReferralPartnerId,
+                        DisplayName = secPartner.Name,
+                        PartnerType = secPartner.PartnerType.ToString(),
+                        CommissionCutPercentage = secPartner.DefaultCommissionPercentage
+                    };
+                }
+            }
+
+            if (partnerInfo != null || secondaryPartnerInfo != null || !string.IsNullOrEmpty(visit.ReferrerText) || visit.ReferralDraft != null)
             {
                 referralState = new IntakeReferralState
                 {
                     Partner = partnerInfo,
+                    SecondaryPartner = secondaryPartnerInfo,
                     ReferrerText = visit.ReferrerText,
+                    PrescribingDoctorName = visit.ReferrerText ?? partnerInfo?.DisplayName,
                     Draft = visit.ReferralDraft == null ? null : new ReferralDraftInfo
                     {
                         ReferralDraftId = visit.ReferralDraft.ReferralDraftId,
@@ -247,7 +270,15 @@ namespace SynOS.Services.Reception
                     PartnerId = partnerInfo.Id,
                     Name = partnerInfo.DisplayName
                 } : null,
+                SecondaryReferralPartner = secondaryPartnerInfo != null ? new IntakeReferralPartner
+                {
+                    PartnerId = secondaryPartnerInfo.Id,
+                    Name = secondaryPartnerInfo.DisplayName
+                } : null,
                 PaymentCollectionModel = visit.PaymentCollectionModel ?? "LabCollects",
+                B2BDiscountAmount = visit.B2BDiscountAmount,
+                B2BDiscountEnteredBy = visit.B2BDiscountEnteredBy,
+                B2BDiscountEnteredAt = visit.B2BDiscountEnteredAt,
                 BillingType = visit.BillingType,
                 InsuranceCompanyId = visit.InsuranceCompanyId,
                 InsuranceCompanyName = insuranceName,
@@ -287,6 +318,7 @@ namespace SynOS.Services.Reception
                     NetAmount = invoice.NetAmount,
                     TaxAmount = invoice.TaxAmount,
                     TotalAmount = invoice.Total,
+                    B2BDiscountAmount = visit.B2BDiscountAmount,
                     
                     AppliedDiscount = appliedDiscount,
                     Referral = referralState, // Updated Structure

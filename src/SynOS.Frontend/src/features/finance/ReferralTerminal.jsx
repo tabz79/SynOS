@@ -50,6 +50,7 @@ export const ReferralTerminal = () => {
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'rate-queue', label: 'Rate Queue', icon: Zap, badge: unmappedQueueCount },
         { id: 'registry', label: 'Doctor Registry', icon: Users },
+        { id: 'rmp', label: 'RMP Partners', icon: Users },
         { id: 'payouts', label: 'Pending Payouts', icon: ArrowUpRight },
         { id: 'receivables', label: 'Partner Receivables', icon: ArrowDownLeft },
         { id: 'history', label: 'Settlement History', icon: History },
@@ -499,6 +500,7 @@ export const ReferralTerminal = () => {
                 {tab === 'overview' && <ReferralOverviewTab summary={summary} loading={loading} />}
                 {tab === 'rate-queue' && <ReferralRateQueueTab onUpdateCount={setUnmappedQueueCount} />}
                 {tab === 'registry' && <PartnerRegistryTab />}
+                {tab === 'rmp' && <PartnerRegistryTab isRmpOnly={true} defaultPartnerType="RMP" />}
                 {tab === 'payouts' && <PendingPayoutsTab />}
                 {tab === 'receivables' && <PartnerReceivablesTab />}
                 {tab === 'history' && <SettlementHistoryTab />}

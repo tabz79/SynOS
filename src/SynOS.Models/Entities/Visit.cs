@@ -64,10 +64,23 @@ namespace SynOS.Models.Entities
         public Guid? ReferralPartnerId { get; set; }
         [ForeignKey("ReferralPartnerId")]
         public virtual ReferralPartner? ReferralPartner { get; set; }
+
+        public Guid? SecondaryReferralPartnerId { get; set; }
+        [ForeignKey("SecondaryReferralPartnerId")]
+        public virtual ReferralPartner? SecondaryReferralPartner { get; set; }
+
         public string? PaymentCollectionModel { get; set; }
         
         [StringLength(500)]
-        public string? ReferrerText { get; set; } // Free-text metadata
+        public string? ReferrerText { get; set; } // Free-text metadata (Primary Prescribing Doctor)
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? B2BDiscountAmount { get; set; }
+
+        [StringLength(256)]
+        public string? B2BDiscountEnteredBy { get; set; }
+
+        public DateTimeOffset? B2BDiscountEnteredAt { get; set; }
 
         public virtual ReferralDraft? ReferralDraft { get; set; }
         

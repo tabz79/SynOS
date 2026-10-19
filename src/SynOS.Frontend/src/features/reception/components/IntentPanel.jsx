@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
@@ -7,12 +7,14 @@ import { BillingSummary } from './BillingSummary'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
 import { ReceptionApi } from '@/api/reception'
+import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry } from '@/hooks/useSynOSMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
 import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
+import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer'
 import { 
     MultiPayerSelector, 
     AddInsuranceCompanyModal, 
@@ -415,6 +417,31 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     };
 
+    const [isGeneratingClaimDoc, setIsGeneratingClaimDoc] = useState(false);
+
+    const handlePrintDoctorReceivable = async () => {
+        const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+        if (!visitId) return;
+
+        setIsGeneratingClaimDoc(true);
+        try {
+            const claimData = await FinanceApi.getPartnerClaimStatement({
+                visitIds: [visitId]
+            });
+            setTaxInvoiceModal({
+                isOpen: true,
+                slotId: 'partner_b2b_invoice',
+                data: claimData,
+                title: `Doctor's Receivable Claim - ${claimData?.partner?.name || 'Partner'}`
+            });
+        } catch (err) {
+            console.error("Failed to load doctor receivable claim statement:", err);
+            alert("Could not load Doctor's Receivable Claim Statement: " + (err.message || 'Make sure a referral partner/RMP is selected.'));
+        } finally {
+            setIsGeneratingClaimDoc(false);
+        }
+    };
+
     const handleUnifiedAction = async () => {
         if (!snapshot?.billing || isActionSubmitting) return;
 
@@ -727,22 +754,32 @@ export function IntentPanel({ onVisitUpdated }) {
             {/* Footer / Status Bar - UNIFIED BUTTON */}
             <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
                 {isCorrectionIntent ? (
-                    <div className="flex items-center gap-2.5 w-full max-w-lg mx-auto">
+                    <div className="flex items-center gap-2 w-full max-w-lg mx-auto">
                         <button
                             type="button"
                             onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
-                            className="py-3 px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
                             title="Preview & Print Full A4 Tax Invoice"
                         >
-                            <FileText className="w-4 h-4" /> Print A4 Receipt
+                            <FileText className="w-4 h-4" /> A4 Receipt
                         </button>
                         <button
                             type="button"
                             onClick={() => handlePrintReceipt()}
-                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
                             title="Print Thermal 80mm POS Slip"
                         >
-                            <Printer className="w-4 h-4" /> Thermal Slip
+                            <Printer className="w-4 h-4" /> Thermal
+                        </button>
+                        <button
+                            type="button"
+                            disabled={isGeneratingClaimDoc}
+                            onClick={handlePrintDoctorReceivable}
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-500/40 text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+                            title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
+                        >
+                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                            Doc Claim
                         </button>
                         <button
                             type="button"
@@ -764,18 +801,28 @@ export function IntentPanel({ onVisitUpdated }) {
                                         <button
                                             type="button"
                                             onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
-                                            className="py-3 px-3.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
                                             title="Preview & Print Full A4 Tax Invoice"
                                         >
-                                            <FileText className="w-4 h-4" /> Print A4 Receipt
+                                            <FileText className="w-3.5 h-3.5" /> A4
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handlePrintReceipt}
-                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
                                             title="Print Thermal 80mm POS Slip"
                                         >
-                                            <Printer className="w-4 h-4" /> Thermal Slip
+                                            <Printer className="w-3.5 h-3.5" /> POS
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={isGeneratingClaimDoc}
+                                            onClick={handlePrintDoctorReceivable}
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-amber-500/40 text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+                                            title="Print Doctor's Receivable Claim Statement for Safe Keeping"
+                                        >
+                                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                                            Doc Claim
                                         </button>
                                     </>
                                 )}
@@ -824,6 +871,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 isOpen={activeModal === 'referral'}
                 onClose={() => setActiveModal(null)}
                 initialPaymentModel={billingMode === 'PrepaidPartner' ? 'PartnerCollects' : 'LabCollects'}
+                initialPartnerType="Doctor"
                 isDark={isDark}
                 onSuccess={async (newPartner) => {
                     const partnerId = newPartner.referralPartnerId || newPartner.id;
@@ -833,6 +881,28 @@ export function IntentPanel({ onVisitUpdated }) {
                             await ReceptionApi.applyReferralToVisit(visitId, partnerId);
                         } catch (err) {
                             console.error("Failed to auto-apply referral partner to visit:", err);
+                        }
+                    }
+                    await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
+
+            {/* Dedicated RMP Quick-Add Modal */}
+            <AddReferralPartnerModal
+                isOpen={activeModal === 'rmp'}
+                onClose={() => setActiveModal(null)}
+                initialPaymentModel="PartnerCollects"
+                initialPartnerType="RMP"
+                isDark={isDark}
+                onSuccess={async (newPartner) => {
+                    const partnerId = newPartner.referralPartnerId || newPartner.id;
+                    const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+                    if (visitId && partnerId) {
+                        try {
+                            await ReceptionApi.updateSecondaryReferral(visitId, partnerId);
+                        } catch (err) {
+                            console.error("Failed to auto-apply RMP to visit:", err);
                         }
                     }
                     await loadSnapshot();

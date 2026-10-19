@@ -4,6 +4,7 @@ namespace SynOS.Models.Enums.Referral
     {
         Doctor,
         Clinic,
-        Hospital
+        Hospital,
+        RMP
     }
 }

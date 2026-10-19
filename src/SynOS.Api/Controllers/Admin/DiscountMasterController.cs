@@ -23,7 +23,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance")]
         public async Task<IActionResult> CreateDiscount([FromBody] CreateDiscountDto createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -44,7 +44,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
         public async Task<IActionResult> GetDiscounts([FromQuery] bool? isActive, [FromQuery] bool? isEffective, [FromQuery] string? search)
         {
             var result = await _service.GetDiscountsAsync(isActive, isEffective, search);
@@ -52,7 +52,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
         public async Task<IActionResult> GetDiscount(Guid id)
         {
             try
@@ -67,7 +67,7 @@ namespace SynOS.Api.Controllers.Admin
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance")]
         public async Task<IActionResult> UpdateDiscount(Guid id, [FromBody] UpdateDiscountDto updateDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);

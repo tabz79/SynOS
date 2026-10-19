@@ -44,10 +44,11 @@ namespace SynOS.Services.Referral
             var referredVisits = await _context.Visits
                 .AsNoTracking()
                 .Include(v => v.ReferralPartner)
+                .Include(v => v.SecondaryReferralPartner)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
                         .ThenInclude(t => t.DepartmentMaster)
-                .Where(v => v.IsReferred && v.ReferralPartnerId != null)
+                .Where(v => v.IsReferred && (v.ReferralPartnerId != null || v.SecondaryReferralPartnerId != null))
                 .OrderByDescending(v => v.CreatedAt)
                 .ToListAsync();
 
@@ -55,8 +56,13 @@ namespace SynOS.Services.Referral
 
             foreach (var visit in referredVisits)
             {
-                if (visit.ReferralPartner == null) continue;
-                var partnerId = visit.ReferralPartnerId!.Value;
+                var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+                if (!effectivePartnerId.HasValue) continue;
+
+                var partner = visit.SecondaryReferralPartner ?? visit.ReferralPartner;
+                if (partner == null) continue;
+
+                Guid partnerId = effectivePartnerId.Value;
 
                 foreach (var order in visit.Orders)
                 {
@@ -74,12 +80,12 @@ namespace SynOS.Services.Referral
                         docGroup = new PendingLearningDoctorGroupDto
                         {
                             ReferralPartnerId = partnerId,
-                            DoctorName = visit.ReferralPartner.Name,
-                            ClinicName = visit.ReferralPartner.ClinicName,
-                            Location = visit.ReferralPartner.Location,
-                            ContactInfo = visit.ReferralPartner.ContactInfo,
-                            DefaultCommissionPercentage = visit.ReferralPartner.DefaultCommissionPercentage > 0 
-                                ? visit.ReferralPartner.DefaultCommissionPercentage 
+                            DoctorName = partner.Name,
+                            ClinicName = partner.ClinicName,
+                            Location = partner.Location,
+                            ContactInfo = partner.ContactInfo,
+                            DefaultCommissionPercentage = partner.DefaultCommissionPercentage > 0
+                                ? partner.DefaultCommissionPercentage
                                 : 15m,
                             TotalPendingVisits = 0,
                             UnmappedTests = new List<PendingLearningTestDto>()

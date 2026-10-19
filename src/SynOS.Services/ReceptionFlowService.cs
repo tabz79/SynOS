@@ -279,6 +279,16 @@ namespace SynOS.Services
             await _visitService.SetVisitReferralAsync(visitId, referralPartnerId, actorUserId);
         }
 
+        public async Task SetSecondaryReferralAsync(Guid visitId, Guid? secondaryPartnerId, Guid actorUserId)
+        {
+            await _visitService.SetSecondaryReferralAsync(visitId, secondaryPartnerId, actorUserId);
+        }
+
+        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, Guid actorUserId)
+        {
+            await _visitService.SetB2BPrepaidRateAsync(visitId, b2bDiscountAmount, actorUserId);
+        }
+
         public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)
         {
             await _visitService.RemoveVisitReferralAsync(visitId, actorUserId);
@@ -373,7 +383,8 @@ namespace SynOS.Services
             if (visit == null) throw new InvalidOperationException("Visit not found for Receivable creation");
             
             // RELAXED RULE: Must have Partner OR Draft
-            if (!visit.ReferralPartnerId.HasValue && visit.ReferralDraft == null) 
+            var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+            if (!effectivePartnerId.HasValue && visit.ReferralDraft == null)
                  throw new InvalidOperationException("Prepaid visit must have a Referral Partner or Provisional Draft");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
@@ -395,7 +406,13 @@ namespace SynOS.Services
                  return;
             }
 
-            var partner = await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId.Value);
+            var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
+
+            decimal b2bReceivableAmount = invoice.Total;
+            if (visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+            {
+                b2bReceivableAmount = Math.Max(0m, invoice.Total - visit.B2BDiscountAmount.Value);
+            }
 
             var factId = Guid.NewGuid();
             var fact = new ReceivableFact
@@ -403,11 +420,11 @@ namespace SynOS.Services
                 ReceivableFactId = factId,
                 SourceVisitId = visit.VisitId,
                 DebtorType = DebtorType.Partner,
-                DebtorId = visit.ReferralPartnerId.Value,
+                DebtorId = effectivePartnerId.Value,
                 DebtorName = partner?.Name ?? "Referral Partner",
-                ClaimReference = "Prepaid Partner Bill",
-                ReferralPartnerId = visit.ReferralPartnerId.Value,
-                Amount = invoice.Total, // Total Amount Owed
+                ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
+                ReferralPartnerId = effectivePartnerId.Value,
+                Amount = b2bReceivableAmount, // Net Contracted Tariff Owed
                 Currency = "INR",
                 OccurredAt = DateTimeOffset.UtcNow,
                 RecordedAt = DateTimeOffset.UtcNow
@@ -1377,6 +1394,11 @@ namespace SynOS.Services
             if (master == null) throw new KeyNotFoundException($"Discount code '{discountCode}' is invalid or inactive");
 
             await _visitService.ApplyDiscountToVisitAsync(visitId, master.DiscountDefinitionId, actorUserId);
+        }
+
+        public async Task ApplyCustomDiscountAsync(Guid visitId, string mode, decimal value, string? reason, Guid actorUserId)
+        {
+            await _visitService.ApplyCustomDiscountToVisitAsync(visitId, mode, value, reason, actorUserId);
         }
 
         public async Task RemoveDiscountAsync(Guid visitId, Guid actorUserId)

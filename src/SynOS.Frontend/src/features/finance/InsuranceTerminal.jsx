@@ -31,8 +31,9 @@ import { FinancePrintableSummaryModal } from './components/FinancePrintableSumma
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
-export function InsuranceTerminal() {
-    const { tab = 'overview' } = useParams();
+export function InsuranceTerminal({ forcedTab }) {
+    const { tab: paramTab = 'overview' } = useParams();
+    const tab = forcedTab || paramTab;
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';

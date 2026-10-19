@@ -86,6 +86,26 @@ BEGIN
     ALTER TABLE [Visits] ALTER COLUMN [Token] nvarchar(64) NOT NULL;
 END
 
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'SecondaryReferralPartnerId')
+BEGIN
+    ALTER TABLE [Visits] ADD [SecondaryReferralPartnerId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountAmount')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountAmount] decimal(18,2) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountEnteredBy')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountEnteredBy] nvarchar(256) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountEnteredAt')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountEnteredAt] datetimeoffset NULL;
+END
+
 -- 4. Add columns to DiscountMasters if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
 BEGIN

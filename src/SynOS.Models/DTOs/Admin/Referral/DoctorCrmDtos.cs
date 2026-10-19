@@ -57,6 +57,7 @@ namespace SynOS.Models.DTOs.Admin.Referral
         public string? Query { get; set; }
         public string? Status { get; set; } // "all", "active", "draft", "has_unmapped"
         public string? Speciality { get; set; }
+        public string? PartnerType { get; set; } // "all", "Doctor", "Clinic", "Hospital", "RMP"
         public string? SortBy { get; set; } // "name", "revenue", "patients", "unmapped", "recent"
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 24;

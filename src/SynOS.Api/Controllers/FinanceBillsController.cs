@@ -873,7 +873,7 @@ namespace SynOS.Api.Controllers
             {
                 var inferredPartnerId = await _context.Visits
                     .Where(v => request.VisitIds.Contains(v.VisitId))
-                    .Select(v => v.ReferralPartnerId)
+                    .Select(v => v.SecondaryReferralPartnerId ?? v.ReferralPartnerId)
                     .FirstOrDefaultAsync();
 
                 if (inferredPartnerId.HasValue && inferredPartnerId.Value != Guid.Empty)

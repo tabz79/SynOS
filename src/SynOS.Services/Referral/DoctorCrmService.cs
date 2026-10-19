@@ -66,6 +66,15 @@ namespace SynOS.Services.Referral
                 query = query.Where(p => p.ContactInfo != null && p.ContactInfo.Contains(filter.Speciality));
             }
 
+            // 3b. Partner Type Filter (Doctor, Clinic, Hospital, RMP)
+            if (!string.IsNullOrWhiteSpace(filter.PartnerType) && filter.PartnerType != "all")
+            {
+                if (Enum.TryParse<PartnerType>(filter.PartnerType, true, out var pType))
+                {
+                    query = query.Where(p => p.PartnerType == pType);
+                }
+            }
+
             var totalCount = await query.CountAsync();
 
             // 4. Sorting

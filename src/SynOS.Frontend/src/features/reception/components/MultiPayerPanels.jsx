@@ -13,16 +13,16 @@ export function MultiPayerSelector({
         {
             id: 'Standard',
             title: 'Direct / Standard',
-            subtitle: 'Desk collection & doc cut',
+            subtitle: 'Desk collection & standard tariff',
             icon: IndianRupee,
             badge: 'Retail'
         },
         {
             id: 'PrepaidPartner',
-            title: 'Prepaid Bill',
-            subtitle: 'Collected at referral center',
+            title: 'Corporate B2B (Prepaid)',
+            subtitle: 'B2B partner billed, ₹0 at desk',
             icon: Building2,
-            badge: 'B2B Partner'
+            badge: 'B2B Prepaid'
         },
         {
             id: 'Insurance',
@@ -30,13 +30,6 @@ export function MultiPayerSelector({
             subtitle: 'Cashless pre-auth claim',
             icon: ShieldCheck,
             badge: 'Cashless'
-        },
-        {
-            id: 'Corporate',
-            title: 'Corporate B2B',
-            subtitle: 'Contracted packages & rates',
-            icon: Briefcase,
-            badge: 'Tie-Up'
         }
     ];
 
@@ -48,7 +41,7 @@ export function MultiPayerSelector({
                 </label>
                 <span className="text-[10px] text-zinc-400 font-medium">Select context to configure pricing & settlement</span>
             </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 xl:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 xl:gap-3">
                 {modes.map((m) => {
                     const Icon = m.icon;
                     const isSelected = billingMode === m.id;
@@ -894,10 +887,11 @@ export function AddReferralPartnerModal({
     onClose,
     onSuccess,
     initialPaymentModel = 'LabCollects',
+    initialPartnerType = 'Doctor',
     isDark = false
 }) {
     const [name, setName] = useState('');
-    const [partnerType, setPartnerType] = useState('Doctor'); // Doctor | Clinic | Hospital
+    const [partnerType, setPartnerType] = useState(initialPartnerType); // Doctor | RMP | Clinic | Hospital
     const [contactInfo, setContactInfo] = useState('');
     const [commissionPercentage, setCommissionPercentage] = useState(10);
     const [paymentCollectionModel, setPaymentCollectionModel] = useState(initialPaymentModel);
@@ -907,11 +901,12 @@ export function AddReferralPartnerModal({
     useEffect(() => {
         if (isOpen) {
             setPaymentCollectionModel(initialPaymentModel);
+            setPartnerType(initialPartnerType || 'Doctor');
             setName('');
             setContactInfo('');
             setError(null);
         }
-    }, [isOpen, initialPaymentModel]);
+    }, [isOpen, initialPaymentModel, initialPartnerType]);
 
     if (!isOpen) return null;
 
@@ -1021,6 +1016,7 @@ export function AddReferralPartnerModal({
                                 )}
                             >
                                 <option value="Doctor">Doctor / Physician</option>
+                                <option value="RMP">RMP (Rural Medical Practitioner)</option>
                                 <option value="Clinic">Clinic / Diagnostic Center</option>
                                 <option value="Hospital">Hospital / Nursing Home</option>
                             </select>
