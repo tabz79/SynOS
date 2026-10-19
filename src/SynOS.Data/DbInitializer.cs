@@ -96,6 +96,16 @@ BEGIN
     ALTER TABLE [Visits] ADD [B2BDiscountAmount] decimal(18,2) NULL;
 END
 
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountType')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountType] nvarchar(20) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountValue')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountValue] decimal(18,2) NULL;
+END
+
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountEnteredBy')
 BEGIN
     ALTER TABLE [Visits] ADD [B2BDiscountEnteredBy] nvarchar(256) NULL;

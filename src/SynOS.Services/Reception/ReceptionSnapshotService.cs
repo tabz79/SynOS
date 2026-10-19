@@ -277,6 +277,8 @@ namespace SynOS.Services.Reception
                 } : null,
                 PaymentCollectionModel = visit.PaymentCollectionModel ?? "LabCollects",
                 B2BDiscountAmount = visit.B2BDiscountAmount,
+                B2BDiscountType = visit.B2BDiscountType,
+                B2BDiscountValue = visit.B2BDiscountValue,
                 B2BDiscountEnteredBy = visit.B2BDiscountEnteredBy,
                 B2BDiscountEnteredAt = visit.B2BDiscountEnteredAt,
                 BillingType = visit.BillingType,

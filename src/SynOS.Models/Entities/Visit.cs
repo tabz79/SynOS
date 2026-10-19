@@ -77,6 +77,12 @@ namespace SynOS.Models.Entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal? B2BDiscountAmount { get; set; }
 
+        [StringLength(20)]
+        public string? B2BDiscountType { get; set; } // "Percentage" or "Flat"
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? B2BDiscountValue { get; set; } // The actual number entered: e.g. 50 (for 50%) or 200 (for ₹200)
+
         [StringLength(256)]
         public string? B2BDiscountEnteredBy { get; set; }
 

@@ -769,31 +769,31 @@ export function VisitDetails({
 
                 {/* CONTEXTUAL SUB-PANEL: Corporate B2B (Prepaid Partner) */}
                 {billingMode === 'PrepaidPartner' && (
-                    <div className="pt-2 border-t border-amber-500/20 space-y-3">
+                    <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-3">
                         {/* 1. PRIMARY PRESCRIBING DOCTOR */}
                         <div className="space-y-1.5">
                             <div className="type-label flex justify-between items-center">
-                                <span className="flex items-center gap-1.5 font-bold">
+                                <span className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300">
                                     <span>Prescribing Doctor (Main Doctor on Reports)</span>
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => onOpenModal && onOpenModal('referral')}
                                     disabled={!canEditReferral}
-                                    className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                    className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
                                 >
                                     <Plus className="w-3.5 h-3.5" /> Add Doctor
                                 </button>
                             </div>
                             {snapshot?.billing?.referral?.partner ? (
-                                <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
-                                    isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                                <div className={cn("flex items-center gap-2 font-semibold p-2.5 rounded-lg border",
+                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-slate-50 border-slate-200 text-zinc-900 shadow-xs")}>
+                                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <div className="truncate tracking-tight text-xs font-bold">
                                             {snapshot.billing.referral.partner.displayName || "Partner"}
                                         </div>
-                                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-normal">
+                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
                                             Primary Consultant • Name retained on all patient documents
                                         </div>
                                     </div>
@@ -801,7 +801,7 @@ export function VisitDetails({
                                         <button
                                             onClick={handleRemoveReferral}
                                             disabled={isProcessing}
-                                            className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                            className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
                                             title="Remove Doctor"
                                         >
                                             <X className="w-3.5 h-3.5" />
@@ -835,34 +835,34 @@ export function VisitDetails({
                         </div>
 
                         {/* 2. SECONDARY REFERRAL DOCTOR (RMP) / B2B PARTNER */}
-                        <div className="pt-2 border-t border-amber-500/20 space-y-1.5">
+                        <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-1.5">
                             <div className="type-label flex justify-between items-center">
-                                <span className="flex items-center gap-1.5 font-bold text-amber-600 dark:text-amber-400">
+                                <span className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300">
                                     <span>Secondary Referral Doctor / RMP (Receivables Route Here)</span>
                                 </span>
                                 <button
                                     type="button"
                                     onClick={() => onOpenModal && onOpenModal('rmp')}
                                     disabled={!canEditReferral}
-                                    className="text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1 cursor-pointer transition-colors"
+                                    className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
                                 >
                                     <Plus className="w-3.5 h-3.5" /> Add RMP
                                 </button>
                             </div>
                             {snapshot?.billing?.referral?.secondaryPartner ? (
-                                <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
-                                    isDark ? "text-zinc-200 bg-amber-500/10 border-amber-500/30" : "text-amber-950 bg-amber-50/80 border-amber-300 shadow-sm")}>
+                                <div className={cn("flex items-center gap-2 font-semibold p-2.5 rounded-lg border",
+                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-slate-50 border-slate-200 text-zinc-900 shadow-xs")}>
                                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1.5">
                                             <span className="truncate tracking-tight text-xs font-bold">
                                                 {snapshot.billing.referral.secondaryPartner.displayName}
                                             </span>
-                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500 text-black font-black uppercase">
+                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold uppercase tracking-wider">
                                                 {snapshot.billing.referral.secondaryPartner.partnerType || 'RMP'}
                                             </span>
                                         </div>
-                                        <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 font-normal">
+                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
                                             B2B Receivable Account • All B2B claims, rate discounts & remittances route to this partner
                                         </div>
                                     </div>
@@ -870,7 +870,7 @@ export function VisitDetails({
                                         <button
                                             onClick={handleRemoveSecondaryReferral}
                                             disabled={isProcessing}
-                                            className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                            className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
                                             title="Remove RMP"
                                         >
                                             <X className="w-3.5 h-3.5" />

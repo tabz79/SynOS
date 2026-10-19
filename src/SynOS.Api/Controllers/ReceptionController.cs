@@ -301,15 +301,16 @@ namespace SynOS.Api.Controllers
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
-                await _receptionFlowService.SetB2BPrepaidRateAsync(request.VisitId, request.B2BDiscountAmount, userId);
+                await _receptionFlowService.SetB2BPrepaidRateAsync(request.VisitId, request.B2BDiscountAmount, request.DiscountType, request.DiscountValue, userId);
                 return Ok(new { success = true });
             }
             catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
             catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to update B2B rate for visit {VisitId}", request.VisitId);
-                return StatusCode(500, new { message = ex.Message });
+                var detailedMsg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                _logger.LogError(ex, "Failed to update B2B rate for visit {VisitId}: {Details}", request.VisitId, detailedMsg);
+                return StatusCode(500, new { message = detailedMsg });
             }
         }
 
@@ -490,6 +491,8 @@ namespace SynOS.Api.Controllers
     {
         public Guid VisitId { get; set; }
         public decimal B2BDiscountAmount { get; set; }
+        public string? DiscountType { get; set; } // "Percentage" or "Flat"
+        public decimal? DiscountValue { get; set; }
     }
 
     public class ReceptionUpdateCollectionModelRequest

@@ -284,9 +284,9 @@ namespace SynOS.Services
             await _visitService.SetSecondaryReferralAsync(visitId, secondaryPartnerId, actorUserId);
         }
 
-        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, Guid actorUserId)
+        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId)
         {
-            await _visitService.SetB2BPrepaidRateAsync(visitId, b2bDiscountAmount, actorUserId);
+            await _visitService.SetB2BPrepaidRateAsync(visitId, b2bDiscountAmount, discountType, discountValue, actorUserId);
         }
 
         public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)

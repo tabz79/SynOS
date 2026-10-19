@@ -319,14 +319,18 @@ export const ReceptionApi = {
      * @param {number} b2bDiscountAmount
      * @returns {Promise<any>}
      */
-    updateB2BDiscountRate: async (visitId, b2bDiscountAmount) => {
+    updateB2BDiscountRate: async (visitId, payloadOrAmount) => {
+        const isObj = typeof payloadOrAmount === 'object' && payloadOrAmount !== null;
+        const payload = {
+            VisitId: visitId,
+            B2BDiscountAmount: Number(isObj ? (payloadOrAmount.discountAmount ?? payloadOrAmount.b2bDiscountAmount) : payloadOrAmount) || 0,
+            DiscountType: isObj ? (payloadOrAmount.discountType || 'Flat') : 'Flat',
+            DiscountValue: Number(isObj ? (payloadOrAmount.discountValue ?? payloadOrAmount.discountAmount) : payloadOrAmount) || 0
+        };
         const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/b2b-rate'), {
             method: 'PUT',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({
-                VisitId: visitId,
-                B2BDiscountAmount: Number(b2bDiscountAmount) || 0
-            })
+            body: JSON.stringify(payload)
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));

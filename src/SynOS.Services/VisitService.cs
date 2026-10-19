@@ -857,7 +857,7 @@ namespace SynOS.Services
             );
         }
 
-        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, Guid actorUserId)
+        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId)
         {
             var visit = await _context.Visits
                 .Include(v => v.Patient)
@@ -871,70 +871,85 @@ namespace SynOS.Services
             string actorName = await GetActorNameAsync(actorUserId);
 
             visit.B2BDiscountAmount = b2bDiscountAmount;
+            visit.B2BDiscountType = discountType;
+            visit.B2BDiscountValue = discountValue;
             visit.B2BDiscountEnteredBy = actorName;
             visit.B2BDiscountEnteredAt = DateTimeOffset.UtcNow;
 
             // Self-Learning Rate Engine:
-            // When a receptionist enters a contracted B2B discount for this partner, learn it!
+            // When a receptionist enters a contracted B2B discount for this partner, learn it safely
             var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
             if (effectivePartnerId.HasValue && visit.Orders.Any())
             {
-                decimal totalGross = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).Sum(o => o.Price);
-                if (totalGross > 0)
+                try
                 {
-                    decimal discountRatio = Math.Min(1m, Math.Max(0m, b2bDiscountAmount / totalGross));
-                    decimal discountPercentage = Math.Round(discountRatio * 100m, 2);
-
-                    foreach (var order in visit.Orders.Where(o => o.Status != OrderStatus.Cancelled && o.Test != null))
+                    decimal totalGross = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).Sum(o => o.Price);
+                    if (totalGross > 0)
                     {
-                        var existingRule = await _context.ReferralCommissionRules
-                            .FirstOrDefaultAsync(r => r.ReferralPartnerId == effectivePartnerId.Value && r.TestId == order.TestId && r.IsActive);
+                        decimal discountRatio = Math.Min(1m, Math.Max(0m, b2bDiscountAmount / totalGross));
+                        decimal discountPercentage = Math.Round(discountRatio * 100m, 2);
+                        var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-                        if (existingRule != null)
+                        var testIds = visit.Orders
+                            .Where(o => o.Status != OrderStatus.Cancelled && o.TestId != Guid.Empty)
+                            .Select(o => o.TestId)
+                            .Distinct()
+                            .ToList();
+
+                        foreach (var testId in testIds)
                         {
-                            existingRule.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
-                            existingRule.CommissionValue = discountPercentage;
-                            existingRule.EffectiveFrom = DateOnly.FromDateTime(DateTime.UtcNow);
-                        }
-                        else
-                        {
-                            _context.ReferralCommissionRules.Add(new ReferralCommissionRule
+                            var existingRules = await _context.ReferralCommissionRules
+                                .Where(r => r.ReferralPartnerId == effectivePartnerId.Value && r.TestId == testId)
+                                .ToListAsync();
+
+                            var ruleForToday = existingRules.FirstOrDefault(r => r.EffectiveFrom == today);
+                            if (ruleForToday != null)
                             {
-                                RuleId = Guid.NewGuid(),
-                                ReferralPartnerId = effectivePartnerId.Value,
-                                TestId = order.TestId,
-                                CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage,
-                                CommissionValue = discountPercentage,
-                                EffectiveFrom = DateOnly.FromDateTime(DateTime.UtcNow),
-                                IsActive = true
-                            });
+                                ruleForToday.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
+                                ruleForToday.CommissionValue = discountPercentage;
+                                ruleForToday.IsActive = true;
+                            }
+                            else
+                            {
+                                var activeRule = existingRules.FirstOrDefault(r => r.IsActive);
+                                if (activeRule != null)
+                                {
+                                    activeRule.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
+                                    activeRule.CommissionValue = discountPercentage;
+                                }
+                                else
+                                {
+                                    _context.ReferralCommissionRules.Add(new ReferralCommissionRule
+                                    {
+                                        RuleId = Guid.NewGuid(),
+                                        ReferralPartnerId = effectivePartnerId.Value,
+                                        TestId = testId,
+                                        CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage,
+                                        CommissionValue = discountPercentage,
+                                        EffectiveFrom = today,
+                                        IsActive = true
+                                    });
+                                }
+                            }
                         }
                     }
                 }
+                catch (Exception learnEx)
+                {
+                    _logger.LogWarning(learnEx, "Non-fatal: Failed to auto-learn referral rate rule for partner {PartnerId}", effectivePartnerId);
+                }
             }
 
-            // If a ReceivableFact already exists for this visit, adjust its amount to (Gross - B2BDiscount)
+            // If a ReceivableFact already exists for this visit, adjust its amount in-place (no delete/re-insert to prevent unique key violation)
             var receivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);
             if (receivable != null)
             {
                 var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
                 decimal invoiceTotal = invoice?.Total ?? 0m;
-                var updatedFact = new ReceivableFact
-                {
-                    ReceivableFactId = Guid.NewGuid(),
-                    SourceVisitId = visit.VisitId,
-                    DebtorType = DebtorType.Partner,
-                    DebtorId = effectivePartnerId ?? receivable.DebtorId,
-                    DebtorName = receivable.DebtorName,
-                    ClaimReference = receivable.ClaimReference,
-                    ReferralPartnerId = effectivePartnerId ?? receivable.ReferralPartnerId,
-                    Amount = Math.Max(0m, invoiceTotal - b2bDiscountAmount),
-                    Currency = receivable.Currency,
-                    OccurredAt = receivable.OccurredAt,
-                    RecordedAt = DateTimeOffset.UtcNow
-                };
-                _context.ReceivableFacts.Remove(receivable);
-                _context.ReceivableFacts.Add(updatedFact);
+                receivable.DebtorId = effectivePartnerId ?? receivable.DebtorId;
+                receivable.ReferralPartnerId = effectivePartnerId ?? receivable.ReferralPartnerId;
+                receivable.Amount = Math.Max(0m, invoiceTotal - b2bDiscountAmount);
+                receivable.RecordedAt = DateTimeOffset.UtcNow;
             }
 
             await _context.SaveChangesAsync();

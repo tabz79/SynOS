@@ -14,7 +14,7 @@ namespace SynOS.Services
         Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
         Task SetSecondaryReferralAsync(Guid visitId, Guid? secondaryPartnerId, Guid actorUserId);
-        Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, Guid actorUserId);
+        Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId);
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
         Task UpdateReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
         Task SetVisitCollectionModelAsync(Guid visitId, string model, Guid actorUserId);

@@ -12,40 +12,40 @@ namespace SynOS.Models.Entities.AR
     public sealed class ReceivableFact
     {
         [Key]
-        public Guid ReceivableFactId { get; init; }
+        public Guid ReceivableFactId { get; set; }
 
         [Required]
-        public Guid SourceVisitId { get; init; }
+        public Guid SourceVisitId { get; set; }
 
-        public DebtorType DebtorType { get; init; } = DebtorType.Partner;
+        public DebtorType DebtorType { get; set; } = DebtorType.Partner;
 
-        public Guid DebtorId { get; init; }
+        public Guid DebtorId { get; set; }
 
         [StringLength(200)]
-        public string DebtorName { get; init; } = string.Empty;
+        public string DebtorName { get; set; } = string.Empty;
 
         [StringLength(150)]
-        public string? ClaimReference { get; init; }
+        public string? ClaimReference { get; set; }
 
-        public Guid? ReferralPartnerId { get; init; }
+        public Guid? ReferralPartnerId { get; set; }
 
         [ForeignKey("ReferralPartnerId")]
-        public SynOS.Models.Entities.Referral.ReferralPartner? ReferralPartner { get; init; }
+        public SynOS.Models.Entities.Referral.ReferralPartner? ReferralPartner { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,4)")]
-        public decimal Amount { get; init; }
+        public decimal Amount { get; set; }
 
         [Column(TypeName = "decimal(18, 4)")]
         public decimal AmountReceived { get; set; } = 0;
 
         [Required]
         [StringLength(3)]
-        public string Currency { get; init; } = "INR";
+        public string Currency { get; set; } = "INR";
 
-        public DateTimeOffset OccurredAt { get; init; }
+        public DateTimeOffset OccurredAt { get; set; }
 
-        public DateTimeOffset RecordedAt { get; init; }
+        public DateTimeOffset RecordedAt { get; set; }
 
         public DateTimeOffset? SettledAt { get; set; } // Mutable settlement status
     }

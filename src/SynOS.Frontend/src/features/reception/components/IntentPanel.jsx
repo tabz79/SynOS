@@ -775,7 +775,7 @@ export function IntentPanel({ onVisitUpdated }) {
                             type="button"
                             disabled={isGeneratingClaimDoc}
                             onClick={handlePrintDoctorReceivable}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-amber-500/40 text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                             title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
                         >
                             {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
@@ -818,7 +818,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             type="button"
                                             disabled={isGeneratingClaimDoc}
                                             onClick={handlePrintDoctorReceivable}
-                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-amber-500/40 text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                                             title="Print Doctor's Receivable Claim Statement for Safe Keeping"
                                         >
                                             {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}

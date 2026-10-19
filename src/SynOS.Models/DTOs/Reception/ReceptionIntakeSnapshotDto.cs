@@ -45,6 +45,8 @@ namespace SynOS.Models.DTOs.Reception
         public IntakeReferralPartner? SecondaryReferralPartner { get; set; }
         public string PaymentCollectionModel { get; set; } = "LabCollects";
         public decimal? B2BDiscountAmount { get; set; }
+        public string? B2BDiscountType { get; set; }
+        public decimal? B2BDiscountValue { get; set; }
         public string? B2BDiscountEnteredBy { get; set; }
         public DateTimeOffset? B2BDiscountEnteredAt { get; set; }
         public List<IntakeTestItem> Tests { get; set; } = new();
