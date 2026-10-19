@@ -919,20 +919,17 @@ export function AddReferralPartnerModal({
     const [name, setName] = useState('');
     const [partnerType, setPartnerType] = useState(initialPartnerType); // Doctor | RMP | Clinic | Hospital
     const [contactInfo, setContactInfo] = useState('');
-    const [commissionPercentage, setCommissionPercentage] = useState(10);
-    const [paymentCollectionModel, setPaymentCollectionModel] = useState(initialPaymentModel);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         if (isOpen) {
-            setPaymentCollectionModel(initialPaymentModel);
             setPartnerType(initialPartnerType || 'Doctor');
             setName('');
             setContactInfo('');
             setError(null);
         }
-    }, [isOpen, initialPaymentModel, initialPartnerType]);
+    }, [isOpen, initialPartnerType]);
 
     if (!isOpen) return null;
 
@@ -950,9 +947,9 @@ export function AddReferralPartnerModal({
                 name: name.trim(),
                 partnerType: partnerType,
                 contactInfo: contactInfo.trim() || null,
-                defaultCommissionPercentage: parseFloat(commissionPercentage) || 0,
+                defaultCommissionPercentage: 0,
                 calculationBase: 'AfterDiscounts',
-                paymentCollectionModel: paymentCollectionModel,
+                paymentCollectionModel: initialPaymentModel || 'LabCollects',
                 isActive: true
             });
             clearReceptionMasterCaches();
@@ -985,7 +982,7 @@ export function AddReferralPartnerModal({
                         </div>
                         <div>
                             <h3 className="text-sm font-bold tracking-tight">Add Referral Partner</h3>
-                            <p className="text-[10px] text-zinc-500 font-medium">Persists directly to database (ReferralPartners table)</p>
+                            <p className="text-[10px] text-zinc-500 font-medium">Quickly register doctor or referral partner</p>
                         </div>
                     </div>
                     <button
@@ -1026,7 +1023,7 @@ export function AddReferralPartnerModal({
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Partner Type
@@ -1049,15 +1046,13 @@ export function AddReferralPartnerModal({
                         </div>
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
-                                Default Cut %
+                                Contact Info / Phone / Address
                             </label>
                             <input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.5"
-                                value={commissionPercentage}
-                                onChange={(e) => setCommissionPercentage(e.target.value)}
+                                type="text"
+                                placeholder="e.g. +91 98765 43210, Civil Lines"
+                                value={contactInfo}
+                                onChange={(e) => setContactInfo(e.target.value)}
                                 className={cn(
                                     "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
                                     isDark
@@ -1066,43 +1061,6 @@ export function AddReferralPartnerModal({
                                 )}
                             />
                         </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
-                            Contact Info / Phone / Address
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="e.g. +91 98765 43210, Civil Lines"
-                            value={contactInfo}
-                            onChange={(e) => setContactInfo(e.target.value)}
-                            className={cn(
-                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
-                                isDark
-                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                            )}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
-                            Default Collection Model
-                        </label>
-                        <select
-                            value={paymentCollectionModel}
-                            onChange={(e) => setPaymentCollectionModel(e.target.value)}
-                            className={cn(
-                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all",
-                                isDark
-                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
-                            )}
-                        >
-                            <option value="LabCollects">Lab Collects at Desk (Direct / Commission)</option>
-                            <option value="PartnerCollects">Partner Collects Outside (Prepaid B2B Bill)</option>
-                        </select>
                     </div>
 
                     <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
