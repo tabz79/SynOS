@@ -401,6 +401,15 @@ namespace SynOS.Services
             if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
 
+            // GUARD: Institutional / Insurance Packages can NEVER be added to Direct / Standard or B2B visits
+            if (visit.BillingType != SynOS.Models.Enums.BillingType.Insurance && visit.BillingType != SynOS.Models.Enums.BillingType.Corporate)
+            {
+                if (testCode.StartsWith("PKG-", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException($"Package '{testCode}' is an institutional package and can only be ordered under Insurance mode.");
+                }
+            }
+
             var currentOrders = visit.Orders.ToList();
             await ExpandAndAddOrdersInternalAsync(visitId, testCode, currentOrders, false);
 

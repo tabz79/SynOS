@@ -187,9 +187,10 @@ export function VisitDetails({
         return () => { isMounted = false; };
     }, []);
 
-    // Load corporate rate rules whenever corporate account changes
-    const activeCorporateAccountId = snapshot?.visit?.corporateAccountId;
-    const activeCorporateAccount = corporateAccounts.find(a => (a.corporateAccountId || a.id) === activeCorporateAccountId);
+    // Load corporate / insurance rate rules whenever institution changes
+    const activeCorporateAccountId = snapshot?.visit?.corporateAccountId || snapshot?.visit?.insuranceCompanyId;
+    const activeCorporateAccount = corporateAccounts.find(a => (a.corporateAccountId || a.id) === activeCorporateAccountId) ||
+                                  insuranceCompanies.find(c => (c.insuranceCompanyId || c.id) === activeCorporateAccountId);
     const corporatePackagesList = corporateRateRules.filter(r => r.isPackage || r.isProfile);
     useEffect(() => {
         if (!activeCorporateAccountId) {
@@ -201,7 +202,10 @@ export function VisitDetails({
             .then(rules => {
                 if (isMounted) setCorporateRateRules(rules || []);
             })
-            .catch(err => console.warn("Failed to load corporate rate rules", err));
+            .catch(err => {
+                console.warn("Failed to load corporate rate rules", err);
+                if (isMounted) setCorporateRateRules([]);
+            });
         return () => { isMounted = false; };
     }, [activeCorporateAccountId]);
 
@@ -253,7 +257,7 @@ export function VisitDetails({
     const getTestPricing = (test) => {
         const code = (test.testCode || test.code || '').toLowerCase();
         const testId = test.id || test.testId;
-        if (billingMode === 'Corporate' && corporateRateRules.length > 0) {
+        if ((billingMode === 'Corporate' || billingMode === 'Insurance') && corporateRateRules.length > 0) {
             const rule = corporateRateRules.find(r => 
                 (r.testCode && r.testCode.toLowerCase() === code) ||
                 (r.packageCode && r.packageCode.toLowerCase() === code) ||
@@ -364,13 +368,16 @@ export function VisitDetails({
     };
 
     // Filter Logic for Search (UI Only)
-    // When Corporate mode is active:
-    // Strictly restrict to Corporate Packages & Contracted Corporate Rate Rules.
-    // Omit all regular retail tests.
+    // When Insurance / Corporate mode is active:
+    // Strictly restrict to Institutional Packages & Contracted Rate Rules for the selected Insurer / Corporate Client.
+    // When Standard or Prepaid mode is active:
+    // Strictly exclude any institutional / insurance packages (e.g. PKG-LIC-*, CorporatePackage, etc.)
     let suggestions = [];
-    if (billingMode === 'Corporate') {
+    const isInstitutionalMode = billingMode === 'Corporate' || billingMode === 'Insurance';
+
+    if (isInstitutionalMode) {
         if (activeCorporateAccountId) {
-            // 1. Build list from corporate contracted rate rules & packages
+            // 1. Build list from contracted rate rules & packages for this account
             const corpRulesList = corporateRateRules.map(r => {
                 const code = r.testCode || r.packageCode;
                 const name = r.packageName || r.testName;
@@ -391,7 +398,7 @@ export function VisitDetails({
                 };
             });
 
-            // 2. Also check if catalog has tests mapped to corporate rules or with explicit corporate pricing
+            // 2. Also check if catalog has tests mapped to these rules or with explicit corporate pricing
             const ruleCodeSet = new Set(corporateRateRules.map(r => (r.testCode || r.packageCode || '').toLowerCase()).filter(Boolean));
             const catalogCorpTests = catalog.filter(t => {
                 const c = (t.testCode || t.code || '').toLowerCase();
@@ -436,13 +443,28 @@ export function VisitDetails({
             suggestions = [];
         }
     } else {
+        // Retail / Standard or Partner Prepaid mode:
+        // Helper to detect and BLOCK institutional packages (e.g. PKG-LIC-*, CorporatePackage, Wellness bundles)
+        const isInstitutionalPackage = (t) => {
+            const code = (t.testCode || t.code || '').toUpperCase();
+            const name = (t.testName || t.name || '').toLowerCase();
+            const cat = (t.category || t.Category || '').toLowerCase();
+            return t.isPackage === true ||
+                t.isCorporateRate === true ||
+                code.startsWith('PKG-') ||
+                cat.includes('corporate') ||
+                name.includes('employee wellness');
+        };
+
         const internalSuggestions = filter.length < 2 ? [] : catalog.filter(t =>
+            !isInstitutionalPackage(t) &&
             ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
                 (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
-            !tests.some(existing => existing.code === (t.testCode || t.code)) // Don't suggest already added
+            !tests.some(existing => existing.code === (t.testCode || t.code))
         );
 
         const outsourcedSuggestions = filter.length < 2 ? [] : outsourcedCatalog.filter(t =>
+            !isInstitutionalPackage(t) &&
             ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
                 (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
             !tests.some(existing => existing.code === (t.testCode || t.code))
@@ -926,7 +948,8 @@ export function VisitDetails({
                 {billingMode === 'Insurance' && (
                     <InsuranceContextPanel
                         insuranceCompanies={insuranceCompanies}
-                        selectedCompanyId={snapshot?.visit?.insuranceCompanyId}
+                        corporateAccounts={corporateAccounts}
+                        selectedCompanyId={snapshot?.visit?.insuranceCompanyId || snapshot?.visit?.corporateAccountId}
                         policyNumber={snapshot?.visit?.policyNumber}
                         preAuthNumber={snapshot?.visit?.preAuthApprovalNumber}
                         coPayAmount={snapshot?.visit?.insuranceCoPayAmount}
@@ -937,7 +960,7 @@ export function VisitDetails({
                     />
                 )}
 
-                {/* CONTEXTUAL SUB-PANEL: Corporate B2B */}
+                {/* CONTEXTUAL SUB-PANEL: Corporate B2B (Legacy compatibility) */}
                 {billingMode === 'Corporate' && (
                     <CorporateContextPanel
                         corporateAccounts={corporateAccounts}
@@ -955,17 +978,17 @@ export function VisitDetails({
             <div className={cn("p-2.5 xl:p-4 rounded-xl space-y-1.5 xl:space-y-2", ui.section)}>
                 <div className="flex items-center justify-between">
                     <h4 className={ui.sectionTitle}>Test Selection</h4>
-                    {billingMode === 'Corporate' && (
-                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">
-                            Corporate Mode: Contracted Only
+                    {isInstitutionalMode && (
+                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
+                            Insurance Mode: Contracted & Empanelled Tests Only
                         </span>
                     )}
                 </div>
 
-                {billingMode === 'Corporate' && !activeCorporateAccountId && (
-                    <div className="p-2.5 rounded-lg border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/70 dark:bg-indigo-950/30 text-indigo-800 dark:text-indigo-300 flex items-center gap-2 text-xs font-medium">
-                        <AlertCircle className="w-4 h-4 shrink-0 text-indigo-500" />
-                        <span>Select a Contracted Corporate Account above to load corporate packages & rates</span>
+                {isInstitutionalMode && !activeCorporateAccountId && (
+                    <div className="p-2.5 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-800 dark:text-blue-300 flex items-center gap-2 text-xs font-medium">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-blue-500" />
+                        <span>Select an Empanelled Insurance / TPA Provider above to load contracted packages & rates</span>
                     </div>
                 )}
 
@@ -974,8 +997,8 @@ export function VisitDetails({
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
                         <input
                             type="text"
-                            placeholder={billingMode === 'Corporate' 
-                                ? (activeCorporateAccountId ? "Search Corporate Packages & Contracted Tests..." : "Select Corporate Account above first...") 
+                            placeholder={isInstitutionalMode 
+                                ? (activeCorporateAccountId ? "Search Empanelled Packages & Contracted Tests..." : "Select Insurance Partner above first...") 
                                 : "Add Test Code or Name..."}
                             value={filter}
                             onFocus={() => setIsSearchFocused(true)}
@@ -1004,7 +1027,7 @@ export function VisitDetails({
                                     }
                                 }
                             }}
-                            disabled={isProcessing || (billingMode === 'Corporate' && !activeCorporateAccountId)}
+                            disabled={isProcessing || (isInstitutionalMode && !activeCorporateAccountId)}
                             className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none transition-colors disabled:opacity-50 type-code", ui.input)}
                         />
 
@@ -1114,23 +1137,23 @@ export function VisitDetails({
                 </div>
             </div>
 
-            {/* SECTION 3B: Dedicated Contracted Corporate Packages Box */}
-            {billingMode === 'Corporate' && activeCorporateAccountId && (
+            {/* SECTION 3B: Dedicated Contracted Institutional Packages Box */}
+            {isInstitutionalMode && activeCorporateAccountId && (
                 <div className={cn(
                     "p-3 xl:p-4 rounded-xl space-y-2.5 border transition-all animate-in fade-in duration-300",
                     isDark 
-                        ? "bg-zinc-900/90 border-indigo-900/40 shadow-xs" 
-                        : "bg-indigo-50/40 border-indigo-200/70 shadow-xs"
+                        ? "bg-zinc-900/90 border-blue-900/40 shadow-xs" 
+                        : "bg-blue-50/40 border-blue-200/70 shadow-xs"
                 )}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400">
+                            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400">
                                 <Package size={16} />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
                                     <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-                                        Contracted Corporate Packages
+                                        Contracted Institutional Packages
                                     </h4>
                                     <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
                                         {corporatePackagesList.length} Available

@@ -492,9 +492,27 @@ namespace SynOS.Services
             {
                 visit.PaymentCollectionModel = "LabCollects";
             }
+            // If switching away from Insurance / Corporate to Standard or Prepaid, automatically remove any institutional packages
+            bool hadPackages = false;
+            if (billingType != BillingType.Insurance && billingType != BillingType.Corporate)
+            {
+                var packageOrders = await _context.Orders
+                    .Where(o => o.VisitId == visitId && o.TestCode.StartsWith("PKG-") && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                    .ToListAsync();
+                if (packageOrders.Any())
+                {
+                    hadPackages = true;
+                    _context.Orders.RemoveRange(packageOrders);
+                }
+            }
 
             visit.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+
+            if (hadPackages)
+            {
+                await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+            }
 
             _logger.LogInformation("Updated BillingContext for Visit {VisitId} to {BillingType}", visitId, billingType);
         }

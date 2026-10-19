@@ -41,6 +41,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
     // Lifted State for Multi-Payer Billing Mode: 'Standard' | 'PrepaidPartner' | 'Insurance' | 'Corporate'
     const [billingMode, setBillingMode] = useState('Standard');
+    const modeSwitchVersionRef = useRef(0);
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
     // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate'
@@ -117,6 +118,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
     const loadSnapshot = async () => {
         if (!snapshot) setIsLoading(true);
+        const snapshotVersion = modeSwitchVersionRef.current;
         try {
             // In Resume/Correct Mode, we primarily query by VisitId
             // In Create Mode, we query by PatientId first (after selection)
@@ -143,20 +145,19 @@ export function IntentPanel({ onVisitUpdated }) {
             if (data?.visit?.visitId && data.visit.visitId !== currentVisitId) setCurrentVisitId(data.visit.visitId);
             if (data?.patient?.patientId && data.patient.patientId !== currentPatientId) setCurrentPatientId(data.patient.patientId);
 
-            // Sync multi-payer billing mode from snapshot
-            const bt = data?.visit?.billingType;
-            if (bt === 1 || bt === 'PrepaidPartner' || data?.visit?.paymentCollectionModel === 'PartnerCollects') {
-                setBillingMode('PrepaidPartner');
-                setIsPrepaidIntent(true);
-            } else if (bt === 2 || bt === 'Insurance') {
-                setBillingMode('Insurance');
-                setIsPrepaidIntent(false);
-            } else if (bt === 3 || bt === 'Corporate') {
-                setBillingMode('Corporate');
-                setIsPrepaidIntent(false);
-            } else if (bt === 0 || bt === 'Standard') {
-                setBillingMode('Standard');
-                setIsPrepaidIntent(false);
+            // Sync multi-payer billing mode from snapshot ONLY if a mode switch hasn't occurred in the meantime
+            if (snapshotVersion === modeSwitchVersionRef.current) {
+                const bt = data?.visit?.billingType;
+                if (bt === 1 || bt === 'PrepaidPartner' || data?.visit?.paymentCollectionModel === 'PartnerCollects') {
+                    setBillingMode('PrepaidPartner');
+                    setIsPrepaidIntent(true);
+                } else if (bt === 2 || bt === 'Insurance' || bt === 3 || bt === 'Corporate') {
+                    setBillingMode('Insurance');
+                    setIsPrepaidIntent(false);
+                } else if (bt === 0 || bt === 'Standard') {
+                    setBillingMode('Standard');
+                    setIsPrepaidIntent(false);
+                }
             }
         } catch (err) {
             console.error("Failed to load intake snapshot:", err);
@@ -259,21 +260,40 @@ export function IntentPanel({ onVisitUpdated }) {
     };
 
     const handleBillingModeChange = async (newMode) => {
+        if (billingMode === newMode) return;
+        const thisVersion = ++modeSwitchVersionRef.current;
         setBillingMode(newMode);
         setIsPrepaidIntent(newMode === 'PrepaidPartner');
+
         const vId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
-        if (vId && !snapshot?.billing?.isLocked) {
+        if (vId && (!snapshot?.billing?.isLocked || isCorrectionIntent)) {
             try {
+                // If switching to Direct / Standard or Prepaid, strip any institutional packages from basket
+                if (newMode !== 'Insurance' && newMode !== 'Corporate') {
+                    const existingTests = snapshot?.visit?.tests || [];
+                    const institutionalPkgs = existingTests.filter(t => {
+                        const c = (t.code || t.testCode || '').toUpperCase();
+                        return c.startsWith('PKG-') || t.isPackage === true;
+                    });
+                    for (const pkg of institutionalPkgs) {
+                        try {
+                            await ReceptionApi.removeTestFromVisit(vId, pkg.code || pkg.testCode);
+                        } catch (e) {
+                            console.warn("Failed to strip package from visit on mode change:", e);
+                        }
+                    }
+                }
+
+                // Single unified API call (SetBillingContextAsync atomically updates PaymentCollectionModel too)
                 await ReceptionApi.updateBillingContext({
                     visitId: vId,
                     billingType: newMode
                 });
-                if (newMode === 'PrepaidPartner') {
-                    await ReceptionApi.updatePaymentCollectionModel(vId, 'PartnerCollects');
-                } else {
-                    await ReceptionApi.updatePaymentCollectionModel(vId, 'LabCollects');
-                }
-                loadSnapshot();
+
+                // Drop stale responses if user clicked another mode while this request was flying
+                if (thisVersion !== modeSwitchVersionRef.current) return;
+
+                await loadSnapshot();
             } catch (err) {
                 console.error("Failed to switch billing mode:", err);
             }

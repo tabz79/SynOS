@@ -50,7 +50,9 @@ export function MultiPayerSelector({
                             key={m.id}
                             type="button"
                             disabled={disabled}
-                            onClick={() => onChangeMode(m.id)}
+                            onClick={() => {
+                                if (!disabled && billingMode !== m.id) onChangeMode(m.id);
+                            }}
                             className={cn(
                                 "relative flex items-start gap-2.5 p-2.5 rounded-xl border text-left transition-all active:scale-[0.98] cursor-pointer",
                                 isSelected
@@ -99,6 +101,7 @@ export function MultiPayerSelector({
 
 export function InsuranceContextPanel({
     insuranceCompanies = [],
+    corporateAccounts = [],
     selectedCompanyId,
     policyNumber,
     preAuthNumber,
@@ -119,6 +122,24 @@ export function InsuranceContextPanel({
     const policyTimerRef = useRef(null);
     const preAuthTimerRef = useRef(null);
     const coPayTimerRef = useRef(null);
+
+    // Combine standard insurance companies & institutional accounts (e.g. LIC, SBI)
+    const allProviders = [
+        ...insuranceCompanies.map(c => ({
+            id: c.insuranceCompanyId || c.id,
+            name: c.name,
+            code: c.code,
+            tpaName: c.tpaName,
+            isCorporate: false
+        })),
+        ...corporateAccounts.map(c => ({
+            id: c.corporateAccountId || c.id,
+            name: c.companyName || c.name,
+            code: c.corporateCode || c.code,
+            tpaName: c.contactPerson || 'Empanelled Institution',
+            isCorporate: true
+        }))
+    ];
 
     useEffect(() => {
         if (!isPolicyFocusedRef.current) setLocalPolicy(policyNumber || '');
@@ -224,7 +245,15 @@ export function InsuranceContextPanel({
                     <select
                         value={selectedCompanyId || ''}
                         disabled={disabled}
-                        onChange={(e) => onChange({ insuranceCompanyId: e.target.value || null }, { persist: true, silent: false, refreshSnapshot: true })}
+                        onChange={(e) => {
+                            const val = e.target.value || null;
+                            const prov = allProviders.find(p => p.id === val);
+                            if (prov?.isCorporate) {
+                                onChange({ corporateAccountId: val, insuranceCompanyId: val }, { persist: true, silent: false, refreshSnapshot: true });
+                            } else {
+                                onChange({ insuranceCompanyId: val, corporateAccountId: null }, { persist: true, silent: false, refreshSnapshot: true });
+                            }
+                        }}
                         className={cn(
                             "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
                             isDark
@@ -232,15 +261,12 @@ export function InsuranceContextPanel({
                                 : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
                         )}
                     >
-                        <option value="">-- Select Empanelled Insurance Company --</option>
-                        {insuranceCompanies.map(c => {
-                            const compId = c.insuranceCompanyId || c.id;
-                            return (
-                                <option key={compId} value={compId}>
-                                    {c.name} {c.code ? `[${c.code}]` : ''} {c.tpaName ? `(TPA: ${c.tpaName})` : ''}
-                                </option>
-                            );
-                        })}
+                        <option value="">-- Select Empanelled Insurance Company / Institutional Account --</option>
+                        {allProviders.map(c => (
+                            <option key={c.id} value={c.id}>
+                                {c.name} {c.code ? `[${c.code}]` : ''} {c.tpaName ? `(${c.tpaName})` : ''}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
