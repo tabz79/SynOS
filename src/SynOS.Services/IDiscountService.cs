@@ -11,5 +11,6 @@ namespace SynOS.Services
         Task<IEnumerable<DiscountDto>> GetDiscountsAsync(bool? isActive, bool? isEffective, string? search);
         Task<DiscountDto> GetDiscountByIdAsync(Guid id);
         Task<DiscountDto> UpdateDiscountAsync(Guid id, UpdateDiscountDto updateDto, Guid userId);
+        Task<IEnumerable<DiscountHistoryItemDto>> GetDiscountHistoryAsync(string? source, DateTime? fromDate, DateTime? toDate, string? search);
     }
 }

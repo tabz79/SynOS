@@ -95,7 +95,12 @@ export function FinanceLayout() {
         {
             name: "Discount Master",
             path: "/finance/discounts",
-            icon: Tag
+            icon: Tag,
+            subItems: [
+                { name: "Discount Codes", path: "/finance/discounts/codes" },
+                { name: "Discount History", path: "/finance/discounts/history" },
+                { name: "Staff Summary", path: "/finance/discounts/staff" }
+            ]
         },
         {
             name: "Workforce & Payroll",

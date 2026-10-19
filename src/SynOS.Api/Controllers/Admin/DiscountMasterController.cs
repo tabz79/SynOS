@@ -86,5 +86,17 @@ namespace SynOS.Api.Controllers.Admin
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpGet("history")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
+        public async Task<IActionResult> GetDiscountHistory(
+            [FromQuery] string? source,
+            [FromQuery] DateTime? fromDate,
+            [FromQuery] DateTime? toDate,
+            [FromQuery] string? search)
+        {
+            var result = await _service.GetDiscountHistoryAsync(source, fromDate, toDate, search);
+            return Ok(result);
+        }
     }
 }

@@ -106,5 +106,147 @@ namespace SynOS.Services
 
             return _mapper.Map<DiscountDto>(discount);
         }
+
+        public async Task<IEnumerable<DiscountHistoryItemDto>> GetDiscountHistoryAsync(string? source, DateTime? fromDate, DateTime? toDate, string? search)
+        {
+            var results = new List<DiscountHistoryItemDto>();
+
+            // 1. Patient / Counter Discounts from DiscountFacts (Default)
+            if (string.IsNullOrEmpty(source) || source.Equals("All", StringComparison.OrdinalIgnoreCase) || source.Equals("Patient", StringComparison.OrdinalIgnoreCase))
+            {
+                var query = from df in _context.DiscountFacts.AsNoTracking()
+                            join inv in _context.Invoices.AsNoTracking() on df.InvoiceId equals inv.InvoiceId
+                            join v in _context.Visits.AsNoTracking() on inv.VisitId equals v.VisitId into vGroup
+                            from visit in vGroup.DefaultIfEmpty()
+                            join p in _context.Patients.AsNoTracking() on (visit != null ? visit.PatientId : Guid.Empty) equals p.PatientId into pGroup
+                            from patient in pGroup.DefaultIfEmpty()
+                            join dm in _context.DiscountMasters.AsNoTracking() on df.DiscountDefinitionId equals dm.DiscountDefinitionId into dmGroup
+                            from master in dmGroup.DefaultIfEmpty()
+                            where df.IsActive && df.DiscountAmount > 0
+                            select new
+                            {
+                                df.DiscountFactId,
+                                df.AppliedAt,
+                                df.Type,
+                                df.Value,
+                                df.GrossAmount,
+                                df.DiscountAmount,
+                                df.NetAmountAfterDiscount,
+                                df.AppliedBy,
+                                Token = visit != null ? visit.Token : "",
+                                PatientName = patient != null ? (patient.FirstName + " " + patient.LastName).Trim() : "",
+                                PatientMrn = patient != null ? patient.MRN : "",
+                                MasterName = master != null ? master.Name : "Counter Concession",
+                                MasterCode = master != null ? master.Code : ""
+                            };
+
+                if (fromDate.HasValue)
+                    query = query.Where(x => x.AppliedAt >= fromDate.Value);
+                if (toDate.HasValue)
+                    query = query.Where(x => x.AppliedAt <= toDate.Value);
+
+                var facts = await query.OrderByDescending(x => x.AppliedAt).Take(500).ToListAsync();
+
+                foreach (var f in facts)
+                {
+                    string staff = f.AppliedBy ?? "Reception";
+                    string reason = "";
+                    if (staff.Contains(" - "))
+                    {
+                        var parts = staff.Split(new[] { " - " }, 2, StringSplitOptions.None);
+                        staff = parts[0];
+                        reason = parts[1];
+                    }
+
+                    results.Add(new DiscountHistoryItemDto
+                    {
+                        Id = f.DiscountFactId,
+                        OccurredAt = f.AppliedAt,
+                        Source = "Patient",
+                        VisitToken = f.Token,
+                        PatientName = string.IsNullOrWhiteSpace(f.PatientName) ? "Patient" : f.PatientName,
+                        PatientMrn = f.PatientMrn,
+                        DiscountName = !string.IsNullOrEmpty(f.MasterCode) ? $"{f.MasterName} ({f.MasterCode})" : f.MasterName,
+                        DiscountType = f.Type == DiscountType.Percentage ? "Percentage" : "Flat",
+                        DiscountValue = f.Value,
+                        GrossAmount = f.GrossAmount > 0 ? f.GrossAmount : (f.DiscountAmount + f.NetAmountAfterDiscount),
+                        DiscountAmount = f.DiscountAmount,
+                        NetAmount = f.NetAmountAfterDiscount,
+                        AppliedBy = staff,
+                        Reason = reason
+                    });
+                }
+            }
+
+            // 2. Partner B2B Discounts from Visits (Shown on filter toggle / selection)
+            if (source != null && (source.Equals("All", StringComparison.OrdinalIgnoreCase) || source.Equals("Partner", StringComparison.OrdinalIgnoreCase) || source.Equals("B2B", StringComparison.OrdinalIgnoreCase)))
+            {
+                var b2bQuery = from v in _context.Visits.AsNoTracking()
+                               join p in _context.Patients.AsNoTracking() on v.PatientId equals p.PatientId into pGroup
+                               from patient in pGroup.DefaultIfEmpty()
+                               join rp in _context.ReferralPartners.AsNoTracking() on v.ReferralPartnerId equals rp.ReferralPartnerId into rpGroup
+                               from partner in rpGroup.DefaultIfEmpty()
+                               join inv in _context.Invoices.AsNoTracking() on v.VisitId equals inv.VisitId into invGroup
+                               from invoice in invGroup.DefaultIfEmpty()
+                               where v.B2BDiscountAmount != null && v.B2BDiscountAmount > 0
+                               select new
+                               {
+                                   v.VisitId,
+                                   OccurredAt = v.B2BDiscountEnteredAt ?? v.CreatedAt,
+                                   v.Token,
+                                   PatientName = patient != null ? (patient.FirstName + " " + patient.LastName).Trim() : "",
+                                   PatientMrn = patient != null ? patient.MRN : "",
+                                   PartnerName = partner != null ? partner.Name : "Referral Partner",
+                                   v.B2BDiscountType,
+                                   B2BValue = v.B2BDiscountValue ?? 0,
+                                   GrossAmount = invoice != null ? invoice.GrossAmount : (v.B2BDiscountAmount ?? 0),
+                                   DiscountAmount = v.B2BDiscountAmount ?? 0,
+                                   EnteredBy = v.B2BDiscountEnteredBy ?? "Reception"
+                               };
+
+                if (fromDate.HasValue)
+                    b2bQuery = b2bQuery.Where(x => x.OccurredAt >= fromDate.Value);
+                if (toDate.HasValue)
+                    b2bQuery = b2bQuery.Where(x => x.OccurredAt <= toDate.Value);
+
+                var b2bList = await b2bQuery.OrderByDescending(x => x.OccurredAt).Take(500).ToListAsync();
+
+                foreach (var b in b2bList)
+                {
+                    results.Add(new DiscountHistoryItemDto
+                    {
+                        Id = b.VisitId,
+                        OccurredAt = b.OccurredAt.DateTime,
+                        Source = "Partner B2B",
+                        VisitToken = b.Token,
+                        PatientName = string.IsNullOrWhiteSpace(b.PatientName) ? "Patient" : b.PatientName,
+                        PatientMrn = b.PatientMrn,
+                        PartnerName = b.PartnerName,
+                        DiscountName = $"Partner Rate: {b.PartnerName}",
+                        DiscountType = b.B2BDiscountType ?? "Flat",
+                        DiscountValue = b.B2BValue,
+                        GrossAmount = b.GrossAmount,
+                        DiscountAmount = b.DiscountAmount,
+                        NetAmount = Math.Max(0, b.GrossAmount - b.DiscountAmount),
+                        AppliedBy = b.EnteredBy,
+                        Reason = $"B2B Discount for {b.PartnerName}"
+                    });
+                }
+            }
+
+            var finalQuery = results.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim();
+                finalQuery = finalQuery.Where(x =>
+                    x.VisitToken.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                    x.PatientName.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                    x.AppliedBy.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                    (x.PartnerName != null && x.PartnerName.Contains(s, StringComparison.OrdinalIgnoreCase)) ||
+                    x.DiscountName.Contains(s, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return finalQuery.OrderByDescending(x => x.OccurredAt).ToList();
+        }
     }
 }

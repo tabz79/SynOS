@@ -1196,5 +1196,20 @@ export const FinanceApi = {
             throw new Error(err.message || "Failed to update discount definition");
         }
         return response.json();
+    },
+
+    getDiscountHistory: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.source) queryParams.append('source', params.source);
+        if (params.fromDate) queryParams.append('fromDate', params.fromDate);
+        if (params.toDate) queryParams.append('toDate', params.toDate);
+        if (params.search) queryParams.append('search', params.search);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/history${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount history");
+        return response.json();
     }
 };
