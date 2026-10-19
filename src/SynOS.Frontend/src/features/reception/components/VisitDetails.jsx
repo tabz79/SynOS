@@ -430,8 +430,8 @@ export function VisitDetails({
                 !tests.some(existing => (existing.code || '').toLowerCase() === (t.testCode || t.code || '').toLowerCase())
             );
 
-            if (filter.trim().length > 0) {
-                const q = filter.trim().toLowerCase();
+            const q = filter.replace(/^[\/\\#\s]+/, '').trim().toLowerCase();
+            if (q.length > 0) {
                 suggestions = availableCorp.filter(t =>
                     ((t.testName || t.name || "").toLowerCase().includes(q) ||
                      (t.testCode || t.code || "").toLowerCase().includes(q))
@@ -456,17 +456,18 @@ export function VisitDetails({
                 name.includes('employee wellness');
         };
 
-        const internalSuggestions = filter.length < 2 ? [] : catalog.filter(t =>
+        const cleanQuery = filter.replace(/^[\/\\#\s]+/, '').trim().toLowerCase();
+        const internalSuggestions = cleanQuery.length < 2 ? [] : catalog.filter(t =>
             !isInstitutionalPackage(t) &&
-            ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
-                (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
+            ((t.testName || t.name || "").toLowerCase().includes(cleanQuery) ||
+                (t.testCode || t.code || "").toLowerCase().includes(cleanQuery)) &&
             !tests.some(existing => existing.code === (t.testCode || t.code))
         );
 
-        const outsourcedSuggestions = filter.length < 2 ? [] : outsourcedCatalog.filter(t =>
+        const outsourcedSuggestions = cleanQuery.length < 2 ? [] : outsourcedCatalog.filter(t =>
             !isInstitutionalPackage(t) &&
-            ((t.testName || t.name || "").toLowerCase().includes(filter.toLowerCase()) ||
-                (t.testCode || t.code || "").toLowerCase().includes(filter.toLowerCase())) &&
+            ((t.testName || t.name || "").toLowerCase().includes(cleanQuery) ||
+                (t.testCode || t.code || "").toLowerCase().includes(cleanQuery)) &&
             !tests.some(existing => existing.code === (t.testCode || t.code))
         );
 

@@ -22,7 +22,8 @@ import {
     Clock,
     AlertCircle,
     Printer,
-    Download
+    Download,
+    Package
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,7 @@ import { ReceptionApi } from '@/api/reception';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
+import { CorporateTerminal } from './CorporateTerminal';
 
 export function InsuranceTerminal({ forcedTab }) {
     const { tab: paramTab = 'overview' } = useParams();
@@ -52,6 +54,7 @@ export function InsuranceTerminal({ forcedTab }) {
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'empanelment', label: 'Empanelment Master', icon: Building2 },
+        { id: 'packages', label: 'Packages & Rate Contracts', icon: Package },
         { id: 'claims', label: 'Claims & Pre-Auths', icon: FileText },
         { id: 'receivables', label: 'TPA Receivables', icon: ArrowDownLeft },
         { id: 'settlements', label: 'Remittance & Settlements', icon: History }
@@ -601,6 +604,13 @@ export function InsuranceTerminal({ forcedTab }) {
                                         </table>
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* 2.5. PACKAGES & CONTRACTED RATE MASTER */}
+                        {tab === 'packages' && (
+                            <div className="w-full">
+                                <CorporateTerminal forcedTab="packages" hideHeader={true} />
                             </div>
                         )}
 

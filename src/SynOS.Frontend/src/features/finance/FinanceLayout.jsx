@@ -87,6 +87,7 @@ export function FinanceLayout() {
             subItems: [
                 { name: "Overview", path: "/finance/insurance/overview" },
                 { name: "Empanelment Master", path: "/finance/insurance/empanelment" },
+                { name: "Packages & Rate Contracts", path: "/finance/insurance/packages" },
                 { name: "Cashless Claims", path: "/finance/insurance/claims" },
                 { name: "Receivables & Aging", path: "/finance/insurance/receivables" },
                 { name: "Settlements", path: "/finance/insurance/settlements" }

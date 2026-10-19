@@ -314,7 +314,7 @@ namespace SynOS.Api.Controllers.Admin
                 .FirstOrDefaultAsync(t => t.TestCode == code);
 
             Test packageTest;
-            if (existingTest != null)
+            if (existingTest != null && existingTest.Category == "CorporatePackage")
             {
                 packageTest = existingTest;
                 packageTest.TestName = dto.PackageName.Trim();
@@ -404,7 +404,8 @@ namespace SynOS.Api.Controllers.Admin
             if (!string.IsNullOrWhiteSpace(dto.PackageName))
             {
                 rule.PackageName = dto.PackageName.Trim();
-                if (rule.Test != null)
+                // Strictly only update TestName if this is an explicitly created CorporatePackage test, NEVER touch standard test catalog!
+                if (rule.Test != null && rule.Test.Category == "CorporatePackage")
                 {
                     rule.Test.TestName = dto.PackageName.Trim();
                 }
@@ -413,7 +414,8 @@ namespace SynOS.Api.Controllers.Admin
             if (!string.IsNullOrWhiteSpace(dto.PackageCode))
             {
                 rule.PackageCode = dto.PackageCode.Trim().ToUpperInvariant();
-                if (rule.Test != null)
+                // Strictly only update TestCode if this is an explicitly created CorporatePackage test, NEVER touch standard test catalog!
+                if (rule.Test != null && rule.Test.Category == "CorporatePackage")
                 {
                     rule.Test.TestCode = rule.PackageCode;
                 }
@@ -424,7 +426,7 @@ namespace SynOS.Api.Controllers.Admin
                 rule.ContractedPrice = dto.ContractedPrice.Value;
             }
 
-            if (dto.IncludedTestIds != null && rule.Test != null)
+            if (dto.IncludedTestIds != null && rule.Test != null && rule.Test.Category == "CorporatePackage")
             {
                 var existingMaps = await _context.ProfileMaps
                     .Where(m => m.ParentTestId == rule.Test.TestId)

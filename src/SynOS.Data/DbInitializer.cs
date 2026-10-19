@@ -736,40 +736,53 @@ END
 
                 context.CorporateAccounts.AddRange(corporateAccounts);
                 context.SaveChanges();
+            }
 
-                var tests = context.Tests.ToList();
-                if (tests.Any())
+            RepairAccidentalCorporatePackageTests(context);
+        }
+
+        private static void RepairAccidentalCorporatePackageTests(SynOSDbContext context)
+        {
+            try
+            {
+                // Auto-repair any tests whose TestCode was prefixed with PKG-LIC- or PKG-SBI- or whose TestName was wrapped in Employee Wellness / Corporate Health Bundle
+                var corruptTests = context.Tests
+                    .Where(t => t.TestCode.StartsWith("PKG-LIC-") || t.TestCode.StartsWith("PKG-SBI-") ||
+                                t.TestName.StartsWith("LIC Employee Wellness (") || t.TestName.StartsWith("SBI Corporate Health Bundle ("))
+                    .ToList();
+
+                foreach (var ct in corruptTests)
                 {
-                    var rateRules = new List<CorporateRateRule>();
-                    foreach (var t in tests)
-                    {
-                        rateRules.Add(new CorporateRateRule
-                        {
-                            CorporateRateRuleId = Guid.NewGuid(),
-                            CorporateAccountId = sbiId,
-                            TestId = t.TestId,
-                            ContractedPrice = 350.00m,
-                            IsPackage = t.IsProfile,
-                            PackageCode = t.IsProfile ? $"PKG-SBI-{t.TestCode}" : null,
-                            PackageName = t.IsProfile ? $"SBI Corporate Health Bundle ({t.TestName})" : null,
-                            IsActive = true
-                        });
+                    if (ct.TestCode.StartsWith("PKG-LIC-"))
+                        ct.TestCode = ct.TestCode.Substring("PKG-LIC-".Length);
+                    else if (ct.TestCode.StartsWith("PKG-SBI-"))
+                        ct.TestCode = ct.TestCode.Substring("PKG-SBI-".Length);
 
-                        rateRules.Add(new CorporateRateRule
-                        {
-                            CorporateRateRuleId = Guid.NewGuid(),
-                            CorporateAccountId = licId,
-                            TestId = t.TestId,
-                            ContractedPrice = 300.00m,
-                            IsPackage = t.IsProfile,
-                            PackageCode = t.IsProfile ? $"PKG-LIC-{t.TestCode}" : null,
-                            PackageName = t.IsProfile ? $"LIC Employee Wellness ({t.TestName})" : null,
-                            IsActive = true
-                        });
+                    if (ct.TestName.StartsWith("LIC Employee Wellness (") && ct.TestName.EndsWith(")"))
+                    {
+                        ct.TestName = ct.TestName.Substring("LIC Employee Wellness (".Length, ct.TestName.Length - "LIC Employee Wellness (".Length - 1);
                     }
-                    context.CorporateRateRules.AddRange(rateRules);
-                    context.SaveChanges();
+                    else if (ct.TestName.StartsWith("SBI Corporate Health Bundle (") && ct.TestName.EndsWith(")"))
+                    {
+                        ct.TestName = ct.TestName.Substring("SBI Corporate Health Bundle (".Length, ct.TestName.Length - "SBI Corporate Health Bundle (".Length - 1);
+                    }
+
+                    // Reset Category if it was marked as CorporatePackage
+                    if (ct.Category == "CorporatePackage")
+                    {
+                        ct.Category = "Biochemistry";
+                    }
                 }
+
+                if (corruptTests.Any())
+                {
+                    context.SaveChanges();
+                    Console.WriteLine($"[DbInitializer] Repaired {corruptTests.Count} tests corrupted by legacy corporate package mutation.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during test repair: {ex.Message}");
             }
         }
 
