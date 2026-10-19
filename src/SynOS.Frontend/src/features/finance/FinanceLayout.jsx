@@ -81,17 +81,15 @@ export function FinanceLayout() {
             ]
         },
         {
-            name: "Corporate & Insurance",
-            path: "/finance/institutional",
+            name: "Insurance",
+            path: "/finance/insurance",
             icon: ShieldCheck,
             subItems: [
-                { name: "Overview", path: "/finance/institutional/overview" },
-                { name: "Insurance Empanelment", path: "/finance/institutional/empanelment" },
-                { name: "Cashless Claims", path: "/finance/institutional/claims" },
-                { name: "Corporate Clients", path: "/finance/institutional/clients" },
-                { name: "Corporate Packages", path: "/finance/institutional/packages" },
-                { name: "Receivables & Aging", path: "/finance/institutional/receivables" },
-                { name: "Settlements", path: "/finance/institutional/settlements" }
+                { name: "Overview", path: "/finance/insurance/overview" },
+                { name: "Empanelment Master", path: "/finance/insurance/empanelment" },
+                { name: "Cashless Claims", path: "/finance/insurance/claims" },
+                { name: "Receivables & Aging", path: "/finance/insurance/receivables" },
+                { name: "Settlements", path: "/finance/insurance/settlements" }
             ]
         },
         {

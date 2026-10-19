@@ -269,12 +269,13 @@ function App() {
                 <Route path="/finance/corporate" element={<CorporateTerminal />} />
                 <Route path="/finance/corporate/:tab" element={<CorporateTerminal />} />
 
-                {/* Corporate & Insurance Consolidated Department */}
-                <Route path="/finance/institutional" element={<InstitutionalTerminal />} />
-                <Route path="/finance/institutional/:tab" element={<InstitutionalTerminal />} />
+                {/* Legacy Institutional Alias */}
+                <Route path="/finance/institutional" element={<InsuranceTerminal />} />
+                <Route path="/finance/institutional/:tab" element={<InsuranceTerminal />} />
 
                 {/* Discount Master */}
                 <Route path="/finance/discounts" element={<DiscountMasterScreen />} />
+                <Route path="/finance/discounts/:tab" element={<DiscountMasterScreen />} />
 
                 {/* Workforce & Payroll Department */}
                 <Route path="/finance/workforce" element={<WorkforceTerminal />} />

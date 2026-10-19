@@ -71,22 +71,20 @@ export function DiscountMasterScreen() {
     };
 
     return (
-        <div className="flex flex-col h-full overflow-hidden">
-            {/* Header / Command Strip */}
-            <div className="px-8 py-5 border-b border-slate-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-synos-primary/10 border border-synos-primary/20 flex items-center justify-center text-synos-primary">
-                            <Tag className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">
-                                Discount Master
-                            </h1>
-                            <p className="text-xs text-zinc-500 font-medium">
-                                Enterprise Concession Master, Promotional Schemes, and Patient Rate Modifiers
-                            </p>
-                        </div>
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
+            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
+            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-synos-primary/10 text-synos-primary rounded-xl">
+                        <Tag size={24} />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
+                            Discount Master
+                        </h1>
+                        <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                            Enterprise Concession Schemes, Promotional Codes, and Rate Modifiers
+                        </p>
                     </div>
                 </div>
 
@@ -102,28 +100,67 @@ export function DiscountMasterScreen() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto px-8 py-6 space-y-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-8 py-4 space-y-6 custom-scrollbar">
                 {/* KPI Metrics */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400">Total Definitions</div>
-                        <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1">{totalCount}</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Configured Master Rules</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Definitions</span>
+                                <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{totalCount}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                <Tag size={17} />
+                            </div>
+                        </div>
+                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                            Configured Master Schemes
+                        </p>
                     </div>
-                    <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Active Schemes</div>
-                        <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{activeCount}</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Available at Reception Desk</div>
+
+                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Active Schemes</span>
+                                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{activeCount}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                <CheckCircle2 size={17} />
+                            </div>
+                        </div>
+                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                            Available at Reception Desk
+                        </p>
                     </div>
-                    <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-blue-500">Percentage Rules</div>
-                        <div className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{percentageCount}</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">% Tariff Reductions</div>
+
+                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Percentage Rules</span>
+                                <p className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{percentageCount}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <Percent size={17} />
+                            </div>
+                        </div>
+                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                            % Tariff Reductions
+                        </p>
                     </div>
-                    <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-indigo-500">Flat Concessions</div>
-                        <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{flatCount}</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Fixed Rupee Deductions</div>
+
+                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Flat Concessions</span>
+                                <p className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{flatCount}</p>
+                            </div>
+                            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                <IndianRupee size={17} />
+                            </div>
+                        </div>
+                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                            Fixed Rupee Deductions
+                        </p>
                     </div>
                 </div>
 
