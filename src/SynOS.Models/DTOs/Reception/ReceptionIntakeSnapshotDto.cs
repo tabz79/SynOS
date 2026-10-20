@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using SynOS.Models.Enums;
 
 namespace SynOS.Models.DTOs.Reception
@@ -44,11 +45,22 @@ namespace SynOS.Models.DTOs.Reception
         public IntakeReferralPartner? ReferralPartner { get; set; }
         public IntakeReferralPartner? SecondaryReferralPartner { get; set; }
         public string PaymentCollectionModel { get; set; } = "LabCollects";
+
+        [JsonPropertyName("b2bDiscountAmount")]
         public decimal? B2BDiscountAmount { get; set; }
+
+        [JsonPropertyName("b2bDiscountType")]
         public string? B2BDiscountType { get; set; }
+
+        [JsonPropertyName("b2bDiscountValue")]
         public decimal? B2BDiscountValue { get; set; }
+
+        [JsonPropertyName("b2bDiscountEnteredBy")]
         public string? B2BDiscountEnteredBy { get; set; }
+
+        [JsonPropertyName("b2bDiscountEnteredAt")]
         public DateTimeOffset? B2BDiscountEnteredAt { get; set; }
+
         public List<IntakeTestItem> Tests { get; set; } = new();
 
         // Multi-Payer Billing Engine (Insurance & Corporate)
@@ -93,6 +105,8 @@ namespace SynOS.Models.DTOs.Reception
         public decimal TaxAmount { get; set; }
         public decimal TotalAmount { get; set; } // Net + Tax
         public decimal TotalPaid { get; set; } // For Settlement Calculation
+
+        [JsonPropertyName("b2bDiscountAmount")]
         public decimal? B2BDiscountAmount { get; set; }
         
         public AppliedDiscountInfo? AppliedDiscount { get; set; }

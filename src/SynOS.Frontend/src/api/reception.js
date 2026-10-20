@@ -321,11 +321,19 @@ export const ReceptionApi = {
      */
     updateB2BDiscountRate: async (visitId, payloadOrAmount) => {
         const isObj = typeof payloadOrAmount === 'object' && payloadOrAmount !== null;
+        const discountAmount = Number(isObj ? (payloadOrAmount.discountAmount ?? payloadOrAmount.b2bDiscountAmount ?? payloadOrAmount.b2BDiscountAmount) : payloadOrAmount) || 0;
+        const discountType = isObj ? (payloadOrAmount.discountType || 'Flat') : 'Flat';
+        const discountValue = Number(isObj ? (payloadOrAmount.discountValue ?? payloadOrAmount.discountAmount) : payloadOrAmount) || 0;
         const payload = {
             VisitId: visitId,
-            B2BDiscountAmount: Number(isObj ? (payloadOrAmount.discountAmount ?? payloadOrAmount.b2bDiscountAmount) : payloadOrAmount) || 0,
-            DiscountType: isObj ? (payloadOrAmount.discountType || 'Flat') : 'Flat',
-            DiscountValue: Number(isObj ? (payloadOrAmount.discountValue ?? payloadOrAmount.discountAmount) : payloadOrAmount) || 0
+            visitId: visitId,
+            B2BDiscountAmount: discountAmount,
+            b2BDiscountAmount: discountAmount,
+            b2bDiscountAmount: discountAmount,
+            DiscountType: discountType,
+            discountType: discountType,
+            DiscountValue: discountValue,
+            discountValue: discountValue
         };
         const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/b2b-rate'), {
             method: 'PUT',

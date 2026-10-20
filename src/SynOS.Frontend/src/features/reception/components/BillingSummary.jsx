@@ -4,6 +4,18 @@ import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
 
+// Safe extractor for B2B discount state handling case variations (b2b, b2B, B2B)
+const extractB2BInfo = (snap) => {
+    const v = snap?.visit || {};
+    const b = snap?.billing || {};
+    const rawVal = v.b2bDiscountValue ?? v.b2BDiscountValue ?? v.B2BDiscountValue ?? b.b2bDiscountAmount ?? b.b2BDiscountAmount ?? b.B2BDiscountAmount ?? 0;
+    const rawType = (v.b2bDiscountType ?? v.b2BDiscountType ?? v.B2BDiscountType ?? 'Flat') === 'Percentage' ? 'PERCENTAGE' : 'FLAT';
+    const rawAmount = v.b2bDiscountAmount ?? v.b2BDiscountAmount ?? v.B2BDiscountAmount ?? b.b2bDiscountAmount ?? b.b2BDiscountAmount ?? b.B2BDiscountAmount ?? 0;
+    const enteredBy = v.b2bDiscountEnteredBy ?? v.b2BDiscountEnteredBy ?? v.B2BDiscountEnteredBy;
+    const enteredAt = v.b2bDiscountEnteredAt ?? v.b2BDiscountEnteredAt ?? v.B2BDiscountEnteredAt;
+    return { rawVal: Number(rawVal) || 0, rawType, rawAmount: Number(rawAmount) || 0, enteredBy, enteredAt };
+};
+
 export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, billingMode = 'Standard', paymentMethod, setPaymentMethod }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
@@ -16,21 +28,24 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const [customDiscountReason, setCustomDiscountReason] = useState('');
 
     // B2B Prepaid Partner Rate State (Dual Mode: Flat vs Percentage)
-    const initialB2BDiscount = snapshot?.billing?.b2bDiscountAmount ?? snapshot?.visit?.b2bDiscountAmount ?? 0;
-    const initialB2BType = snapshot?.visit?.b2bDiscountType === 'Percentage' ? 'PERCENTAGE' : 'FLAT';
-    const initialB2BVal = snapshot?.visit?.b2bDiscountValue != null ? snapshot.visit.b2bDiscountValue : initialB2BDiscount;
-    const [b2bDiscountType, setB2BDiscountType] = useState(initialB2BType);
-    const [localB2BInput, setLocalB2BInput] = useState(initialB2BVal && initialB2BVal > 0 ? String(initialB2BVal) : '');
+    const initialB2B = extractB2BInfo(snapshot);
+    const [b2bDiscountType, setB2BDiscountType] = useState(initialB2B.rawType);
+    const [localB2BInput, setLocalB2BInput] = useState(initialB2B.rawVal && initialB2B.rawVal > 0 ? String(initialB2B.rawVal) : '');
     const [isB2BEditing, setIsB2BEditing] = useState(false);
 
     useEffect(() => {
         if (!isB2BEditing) {
-            const rawType = snapshot?.visit?.b2bDiscountType === 'Percentage' ? 'PERCENTAGE' : 'FLAT';
-            const rawVal = snapshot?.visit?.b2bDiscountValue != null ? snapshot.visit.b2bDiscountValue : (snapshot?.billing?.b2bDiscountAmount ?? snapshot?.visit?.b2bDiscountAmount ?? 0);
-            setB2BDiscountType(rawType);
-            setLocalB2BInput(rawVal && rawVal > 0 ? String(rawVal) : '');
+            const current = extractB2BInfo(snapshot);
+            setB2BDiscountType(current.rawType);
+            setLocalB2BInput(current.rawVal && current.rawVal > 0 ? String(current.rawVal) : '');
         }
-    }, [snapshot?.billing?.b2bDiscountAmount, snapshot?.visit?.b2bDiscountAmount, snapshot?.visit?.b2bDiscountType, snapshot?.visit?.b2bDiscountValue, isB2BEditing]);
+    }, [
+        snapshot?.visit?.b2bDiscountValue, snapshot?.visit?.b2BDiscountValue,
+        snapshot?.visit?.b2bDiscountAmount, snapshot?.visit?.b2BDiscountAmount,
+        snapshot?.visit?.b2bDiscountType, snapshot?.visit?.b2BDiscountType,
+        snapshot?.billing?.b2bDiscountAmount, snapshot?.billing?.b2BDiscountAmount,
+        isB2BEditing
+    ]);
 
     // Correction Modal State
     const [correctionState, setCorrectionState] = useState({
@@ -403,7 +418,9 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {/* CORPORATE B2B PREPAID PARTNER TARIFF & CONCESSION CARD */}
                 {isPrepaid && (() => {
                     const grossTariff = billing?.grossAmount || 0;
-                    const rawVal = Number(localB2BInput) || 0;
+                    const b2bInfo = extractB2BInfo(snapshot);
+                    const effectiveVal = isB2BEditing ? (Number(localB2BInput) || 0) : (Number(localB2BInput) || b2bInfo.rawVal || 0);
+                    const rawVal = effectiveVal;
                     let computedDiscountAmt = 0;
                     if (b2bDiscountType === 'PERCENTAGE') {
                         const pct = Math.min(100, Math.max(0, rawVal));
@@ -539,10 +556,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 </div>
                             </div>
 
-                            {snapshot?.visit?.b2bDiscountEnteredBy && (
+                            {b2bInfo.enteredBy && (
                                 <div className="text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-slate-200 dark:border-zinc-800 pt-1">
-                                    Recorded by: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{snapshot.visit.b2bDiscountEnteredBy}</span>
-                                    {snapshot.visit.b2bDiscountEnteredAt && ` on ${new Date(snapshot.visit.b2bDiscountEnteredAt).toLocaleDateString()}`}
+                                    Recorded by: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{b2bInfo.enteredBy}</span>
+                                    {b2bInfo.enteredAt && ` on ${new Date(b2bInfo.enteredAt).toLocaleDateString()}`}
                                 </div>
                             )}
                         </div>
