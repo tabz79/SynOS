@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker, ShieldCheck, Package, CheckCircle2, Sparkles } from 'lucide-react'
+import { Search, X, Plus, Loader2, Lock, AlertCircle, Beaker, ShieldCheck, Package, CheckCircle2, Sparkles, Check } from 'lucide-react'
 import { ReceptionApi, fetchTestCatalogCached, fetchReferralPartnersCached, fetchReferenceLabsCached, fetchOutsourcedCatalogCached } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -981,7 +981,7 @@ export function VisitDetails({
                     <h4 className={ui.sectionTitle}>Test Selection</h4>
                     {isInstitutionalMode && (
                         <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
-                            Insurance Mode: Contracted & Empanelled Tests Only
+                            Insurance Rates Active
                         </span>
                     )}
                 </div>
@@ -989,7 +989,7 @@ export function VisitDetails({
                 {isInstitutionalMode && !activeCorporateAccountId && (
                     <div className="p-2.5 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/30 text-blue-800 dark:text-blue-300 flex items-center gap-2 text-xs font-medium">
                         <AlertCircle className="w-4 h-4 shrink-0 text-blue-500" />
-                        <span>Select an Empanelled Insurance / TPA Provider above to load contracted packages & rates</span>
+                        <span>Select an insurance company above to view available packages and rates</span>
                     </div>
                 )}
 
@@ -999,7 +999,7 @@ export function VisitDetails({
                         <input
                             type="text"
                             placeholder={isInstitutionalMode 
-                                ? (activeCorporateAccountId ? "Search Empanelled Packages & Contracted Tests..." : "Select Insurance Partner above first...") 
+                                ? (activeCorporateAccountId ? "Search insurance packages & tests..." : "Select insurance company above first...") 
                                 : "Add Test Code or Name..."}
                             value={filter}
                             onFocus={() => setIsSearchFocused(true)}
@@ -1064,8 +1064,8 @@ export function VisitDetails({
                                                             </span>
                                                         )}
                                                         {pricing.isCorporateRate && (
-                                                            <span className="text-[9px] px-1 py-0.2 rounded bg-indigo-500/15 text-indigo-400 font-bold border border-indigo-500/30">
-                                                                Corporate Rate
+                                                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 font-bold border border-indigo-500/30">
+                                                                {isInstitutionalMode ? "Insurance Rate" : "Special Rate"}
                                                             </span>
                                                         )}
                                                     </div>
@@ -1138,82 +1138,89 @@ export function VisitDetails({
                 </div>
             </div>
 
-            {/* SECTION 3B: Dedicated Contracted Institutional Packages Box */}
+            {/* SECTION 3B: Available Packages (SynOS Card Design) */}
             {isInstitutionalMode && activeCorporateAccountId && (
-                <div className={cn(
-                    "p-3 xl:p-4 rounded-xl space-y-2.5 border transition-all animate-in fade-in duration-300",
-                    isDark 
-                        ? "bg-zinc-900/90 border-blue-900/40 shadow-xs" 
-                        : "bg-blue-50/40 border-blue-200/70 shadow-xs"
-                )}>
+                <div className={cn("p-3.5 xl:p-4 rounded-xl space-y-3 transition-all animate-in fade-in duration-200 border", ui.section)}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-500 dark:text-blue-400">
-                                <Package size={16} />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-                                        Contracted Institutional Packages
-                                    </h4>
-                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30">
-                                        {corporatePackagesList.length} Available
-                                    </span>
-                                </div>
-                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                                    Pre-bundled wellness profiles for {activeCorporateAccount?.companyName || 'this corporate client'}.
-                                </p>
+                            <Package className="w-4 h-4 text-synos-primary opacity-80" />
+                            <div className="flex items-center gap-2">
+                                <h4 className={ui.sectionTitle}>
+                                    Available Packages
+                                </h4>
+                                <span className={cn("px-2 py-0.5 rounded text-[10px] font-mono font-bold border", ui.testCode)}>
+                                    {corporatePackagesList.length} Available
+                                </span>
                             </div>
                         </div>
+                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-normal">
+                            {activeCorporateAccount?.companyName ? `Special rates for ${activeCorporateAccount.companyName}` : "Pre-configured packages"}
+                        </span>
                     </div>
 
                     {corporatePackagesList.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
                             {corporatePackagesList.map(pkg => {
                                 const pkgCode = pkg.testCode || pkg.packageCode || pkg.code;
                                 const pkgName = pkg.packageName || pkg.testName || pkg.name;
                                 const pkgPrice = pkg.contractedPrice ?? pkg.corporatePrice ?? pkg.price ?? 0;
-                                const isAlreadyAdded = tests.some(t => (t.code || '').toLowerCase() === (pkgCode || '').toLowerCase());
+                                const matchedTest = tests.find(t => (t.code || '').toLowerCase() === (pkgCode || '').toLowerCase());
+                                const isAlreadyAdded = Boolean(matchedTest);
 
                                 return (
                                     <div
                                         key={pkg.corporateRateRuleId || pkg.id || pkgCode}
+                                        onClick={() => {
+                                            if (isProcessing || (isReadOnly && !isCorrectionIntent)) return;
+                                            if (isAlreadyAdded && matchedTest) {
+                                                handleRemoveTest(matchedTest.code || pkgCode, matchedTest.orderId || matchedTest.OrderId || matchedTest.TestId || matchedTest.testId);
+                                            } else {
+                                                handleAddTest({ testCode: pkgCode, name: pkgName, price: pkgPrice, isPackage: true });
+                                            }
+                                        }}
                                         className={cn(
-                                            "p-3 rounded-xl border flex flex-col justify-between transition-all",
+                                            "group relative p-3 rounded-lg border transition-all duration-150 flex flex-col justify-between space-y-2.5 cursor-pointer select-none",
                                             isAlreadyAdded
-                                                ? (isDark 
-                                                    ? "bg-emerald-950/20 border-emerald-800/40 shadow-xs" 
-                                                    : "bg-emerald-50/70 border-emerald-300 shadow-xs")
-                                                : (isDark 
-                                                    ? "bg-zinc-950 border-zinc-800 hover:border-indigo-500/50 hover:bg-zinc-900" 
-                                                    : "bg-white border-zinc-200 hover:border-indigo-400 hover:shadow-xs")
+                                                ? isDark
+                                                    ? "bg-emerald-950/25 border-emerald-500/50 ring-1 ring-emerald-500/40 shadow-xs"
+                                                    : "bg-emerald-50/70 border-emerald-400 ring-1 ring-emerald-400/80 shadow-xs"
+                                                : isDark
+                                                    ? "bg-zinc-900/60 border-synos-border hover:border-zinc-600 hover:bg-zinc-800/60 hover:shadow-xs active:scale-[0.99]"
+                                                    : "bg-white/80 border-black/5 shadow-xs hover:bg-white hover:border-black/15 hover:shadow-sm active:scale-[0.99]"
                                         )}
                                     >
                                         <div className="space-y-1.5">
                                             <div className="flex items-start justify-between gap-2">
-                                                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                                                    {pkgCode}
-                                                </span>
-                                                <div className="text-right">
-                                                    {pkg.standardPrice > 0 && (
-                                                        <span className="text-[10px] text-zinc-400 line-through font-mono block">
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <div className={cn("px-2 py-0.5 rounded flex items-center justify-center type-code border shrink-0 font-mono text-[10px] font-bold truncate", ui.testCode)}>
+                                                        {pkgCode}
+                                                    </div>
+                                                    {isAlreadyAdded && (
+                                                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
+                                                            <Check size={10} className="stroke-[3]" /> Added
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    {pkg.standardPrice > pkgPrice && (
+                                                        <span className="text-[10px] text-zinc-400 line-through font-mono block leading-tight">
                                                             ₹{pkg.standardPrice?.toLocaleString()}
                                                         </span>
                                                     )}
-                                                    <span className="font-mono font-black text-sm text-emerald-600 dark:text-emerald-400">
+                                                    <span className="type-code text-sm font-bold">
                                                         ₹{pkgPrice.toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>
 
-                                            <h5 className="font-bold text-xs text-zinc-900 dark:text-zinc-100 line-clamp-1">
+                                            <div className="type-value leading-snug line-clamp-1 group-hover:text-synos-primary transition-colors">
                                                 {pkgName}
-                                            </h5>
+                                            </div>
 
                                             {pkg.includedTests && pkg.includedTests.length > 0 && (
-                                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1 flex-wrap">
-                                                    <span className="font-medium text-zinc-400">Tests ({pkg.includedTests.length}):</span>
-                                                    <span>
+                                                <div className="type-label flex items-center gap-1 flex-wrap text-[11px] opacity-75">
+                                                    <span className="font-semibold">Tests ({pkg.includedTests.length}):</span>
+                                                    <span className="truncate">
                                                         {pkg.includedTests.slice(0, 3).map(t => t.testName || t.testCode).join(', ')}
                                                         {pkg.includedTests.length > 3 && ` +${pkg.includedTests.length - 3} more`}
                                                     </span>
@@ -1221,27 +1228,45 @@ export function VisitDetails({
                                             )}
                                         </div>
 
-                                        <div className="pt-2.5 mt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                                        <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
                                             {isAlreadyAdded ? (
                                                 <div className="flex items-center justify-between w-full">
-                                                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                                                        <CheckCircle2 size={14} className="text-emerald-500" />
+                                                    <span className="type-label text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                                                        <CheckCircle2 size={13} className="text-emerald-500" />
                                                         Included in Bill
                                                     </span>
-                                                    <span className="text-[10px] text-zinc-400 font-mono">
-                                                        Constituent tests active
-                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (matchedTest) {
+                                                                handleRemoveTest(matchedTest.code || pkgCode, matchedTest.orderId || matchedTest.OrderId || matchedTest.TestId || matchedTest.testId);
+                                                            }
+                                                        }}
+                                                        disabled={isProcessing || (isReadOnly && !isCorrectionIntent)}
+                                                        className="text-[11px] font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                                    >
+                                                        <X size={11} /> Remove
+                                                    </button>
                                                 </div>
                                             ) : (
-                                                <button
-                                                    type="button"
-                                                    disabled={isProcessing || isReadOnly}
-                                                    onClick={() => handleAddTest({ testCode: pkgCode, name: pkgName, price: pkgPrice, isPackage: true })}
-                                                    className="w-full py-1.5 px-3 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-98 cursor-pointer disabled:opacity-50"
-                                                >
-                                                    <Plus size={13} />
-                                                    <span>Add Package to Bill</span>
-                                                </button>
+                                                <div className="flex items-center justify-between w-full">
+                                                    <span className="type-label text-[11px] text-zinc-400">
+                                                        Click card to add
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        disabled={isProcessing || isReadOnly}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleAddTest({ testCode: pkgCode, name: pkgName, price: pkgPrice, isPackage: true });
+                                                        }}
+                                                        className="px-2.5 py-1 rounded text-xs font-semibold bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 flex items-center gap-1 shadow-2xs transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                                                    >
+                                                        <Plus size={12} />
+                                                        <span>Add</span>
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -1250,7 +1275,7 @@ export function VisitDetails({
                         </div>
                     ) : (
                         <div className="p-4 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-800 text-center text-zinc-400 text-xs">
-                            No corporate packages configured for this client. Contracted individual test rates can be selected via the Test Selection search above.
+                            No packages configured for this company. Individual rates can be searched above.
                         </div>
                     )}
                 </div>
