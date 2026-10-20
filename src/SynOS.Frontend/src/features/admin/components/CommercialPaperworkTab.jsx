@@ -230,6 +230,50 @@ export const CommercialPaperworkTab = () => {
             ...prev,
             [field]: value
         }));
+
+        // Two-way synchronization: reflect updated stationery branding into all template schemas
+        const fieldMapping = {
+            labLegalName: { box: 'header', field: 'legalName' },
+            labTradeName: { box: 'header', field: 'tagline' },
+            address: { box: 'header', field: 'address' },
+            phone: { box: 'header', field: 'phone' },
+            email: { box: 'header', field: 'email' },
+            gstin: { box: 'header', field: 'gstin' },
+            pan: { box: 'header', field: 'pan' },
+            bankName: { box: 'bankAndUpi', field: 'bankName' },
+            accountNumber: { box: 'bankAndUpi', field: 'accountNumber' },
+            ifscCode: { box: 'bankAndUpi', field: 'ifsc' },
+            upiId: { box: 'bankAndUpi', field: 'upiId' }
+        };
+
+        const target = fieldMapping[field];
+        if (target) {
+            setSchemas(prev => {
+                const next = { ...prev };
+                Object.keys(next).forEach(slotId => {
+                    const s = next[slotId];
+                    if (s?.boxes?.[target.box]?.fields?.[target.field]) {
+                        next[slotId] = {
+                            ...s,
+                            boxes: {
+                                ...s.boxes,
+                                [target.box]: {
+                                    ...s.boxes[target.box],
+                                    fields: {
+                                        ...s.boxes[target.box].fields,
+                                        [target.field]: {
+                                            ...s.boxes[target.box].fields[target.field],
+                                            value: value
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }
+                });
+                return next;
+            });
+        }
     };
 
     const handleMappingChange = (slotId, field, value) => {
@@ -1268,6 +1312,7 @@ export const CommercialPaperworkTab = () => {
                                 letterheadMode={currentActiveSlot.letterheadMode}
                                 topMarginMm={currentActiveSlot.topMarginMm}
                                 labSettings={settings}
+                                onUpdateLabSetting={handleSettingChange}
                                 onToggleBox={handleToggleBox}
                             />
                         </div>

@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { 
     Trash2, 
     Edit2, 
@@ -39,6 +39,14 @@ const EditableField = ({
     const [isEditing, setIsEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value || "");
     const [tempLabel, setTempLabel] = useState(label || "");
+
+    useEffect(() => {
+        setTempValue(value || "");
+    }, [value]);
+
+    useEffect(() => {
+        setTempLabel(label || "");
+    }, [label]);
 
     const handleSave = () => {
         if (onSave) {
@@ -283,6 +291,7 @@ export const DynamicInvoiceCanvas = ({
     letterheadMode = "digital",
     topMarginMm = 40,
     labSettings = {},
+    onUpdateLabSetting,
     onToggleBox,
     readOnly = false
 }) => {
@@ -324,6 +333,24 @@ export const DynamicInvoiceCanvas = ({
     const updateField = (boxId, fieldId, newLabel, newValue) => {
         const box = boxes[boxId];
         if (!box || !box.fields || !box.fields[fieldId]) return;
+
+        // Bi-directional sync with facility stationery settings
+        if (onUpdateLabSetting && newValue !== undefined) {
+            if (boxId === 'header') {
+                if (fieldId === 'legalName') onUpdateLabSetting('labLegalName', newValue);
+                else if (fieldId === 'tagline') onUpdateLabSetting('labTradeName', newValue);
+                else if (fieldId === 'address') onUpdateLabSetting('address', newValue);
+                else if (fieldId === 'phone') onUpdateLabSetting('phone', newValue);
+                else if (fieldId === 'email') onUpdateLabSetting('email', newValue);
+                else if (fieldId === 'gstin') onUpdateLabSetting('gstin', newValue);
+                else if (fieldId === 'pan') onUpdateLabSetting('pan', newValue);
+            } else if (boxId === 'bankAndUpi') {
+                if (fieldId === 'bankName') onUpdateLabSetting('bankName', newValue);
+                else if (fieldId === 'accountNumber') onUpdateLabSetting('accountNumber', newValue);
+                else if (fieldId === 'ifsc') onUpdateLabSetting('ifscCode', newValue);
+                else if (fieldId === 'upiId') onUpdateLabSetting('upiId', newValue);
+            }
+        }
 
         const next = {
             ...schema,
@@ -569,7 +596,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.header.fields?.legalName?.enabled && (
                                 <div className="block">
                                     <EditableField 
-                                        value={labSettings.labLegalName || boxes.header.fields.legalName.value}
+                                        value={boxes.header.fields.legalName.value || labSettings.labLegalName}
                                         onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
                                         onDelete={() => deleteField('header', 'legalName')}
                                         valueClassName="text-sm font-black text-zinc-900 tracking-tight uppercase"
@@ -579,7 +606,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.header.fields?.tagline?.enabled && (
                                 <div className="block">
                                     <EditableField 
-                                        value={labSettings.labTradeName || boxes.header.fields.tagline.value}
+                                        value={boxes.header.fields.tagline.value || labSettings.labTradeName}
                                         onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
                                         onDelete={() => deleteField('header', 'tagline')}
                                         valueClassName="text-[9px] font-bold text-zinc-600 uppercase block"
@@ -589,7 +616,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.header.fields?.address?.enabled && (
                                 <div className="block">
                                     <EditableField 
-                                        value={labSettings.address || boxes.header.fields.address.value}
+                                        value={boxes.header.fields.address.value || labSettings.address}
                                         onSave={(_, val) => updateField('header', 'address', undefined, val)}
                                         onDelete={() => deleteField('header', 'address')}
                                         valueClassName="text-[8.5px] text-zinc-500 block leading-tight mt-0.5"
@@ -600,7 +627,7 @@ export const DynamicInvoiceCanvas = ({
                                 {boxes.header.fields?.gstin?.enabled && (
                                     <EditableField 
                                         label="GSTIN:"
-                                        value={labSettings.gstin || boxes.header.fields.gstin.value}
+                                        value={boxes.header.fields.gstin.value || labSettings.gstin}
                                         onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
                                         onDelete={() => deleteField('header', 'gstin')}
                                         valueClassName="font-mono font-bold text-zinc-900"
@@ -609,7 +636,7 @@ export const DynamicInvoiceCanvas = ({
                                 {boxes.header.fields?.phone?.enabled && (
                                     <EditableField 
                                         label="Ph:"
-                                        value={labSettings.phone || boxes.header.fields.phone.value}
+                                        value={boxes.header.fields.phone.value || labSettings.phone}
                                         onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
                                         onDelete={() => deleteField('header', 'phone')}
                                         valueClassName="font-mono text-zinc-800"
@@ -646,7 +673,7 @@ export const DynamicInvoiceCanvas = ({
                                     {boxes.header.fields?.legalName?.enabled && (
                                         <div className="block">
                                             <EditableField 
-                                                value={labSettings.labLegalName || boxes.header.fields.legalName.value}
+                                                value={boxes.header.fields.legalName.value || labSettings.labLegalName}
                                                 onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
                                                 onDelete={() => deleteField('header', 'legalName')}
                                                 valueClassName="text-lg font-black text-zinc-900 tracking-tight uppercase"
@@ -656,7 +683,7 @@ export const DynamicInvoiceCanvas = ({
                                     {boxes.header.fields?.tagline?.enabled && (
                                         <div className="block">
                                             <EditableField 
-                                                value={labSettings.labTradeName || boxes.header.fields.tagline.value}
+                                                value={boxes.header.fields.tagline.value || labSettings.labTradeName}
                                                 onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
                                                 onDelete={() => deleteField('header', 'tagline')}
                                                 valueClassName="text-[11px] font-bold text-zinc-600 block"
@@ -666,7 +693,7 @@ export const DynamicInvoiceCanvas = ({
                                     {boxes.header.fields?.address?.enabled && (
                                         <div className="block">
                                             <EditableField 
-                                                value={labSettings.address || boxes.header.fields.address.value}
+                                                value={boxes.header.fields.address.value || labSettings.address}
                                                 onSave={(_, val) => updateField('header', 'address', undefined, val)}
                                                 onDelete={() => deleteField('header', 'address')}
                                                 valueClassName="text-[10px] text-zinc-500 leading-relaxed block"
@@ -677,7 +704,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.phone?.enabled && (
                                             <EditableField 
                                                 label="Phone:"
-                                                value={labSettings.phone || boxes.header.fields.phone.value}
+                                                value={boxes.header.fields.phone.value || labSettings.phone}
                                                 onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
                                                 onDelete={() => deleteField('header', 'phone')}
                                                 valueClassName="font-mono text-zinc-800"
@@ -686,7 +713,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.email?.enabled && (
                                             <EditableField 
                                                 label="Email:"
-                                                value={labSettings.email || boxes.header.fields.email.value}
+                                                value={boxes.header.fields.email.value || labSettings.email}
                                                 onSave={(lbl, val) => updateField('header', 'email', lbl, val)}
                                                 onDelete={() => deleteField('header', 'email')}
                                                 valueClassName="text-zinc-800"
@@ -695,7 +722,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.gstin?.enabled && (
                                             <EditableField 
                                                 label="GSTIN:"
-                                                value={labSettings.gstin || boxes.header.fields.gstin.value}
+                                                value={boxes.header.fields.gstin.value || labSettings.gstin}
                                                 onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
                                                 onDelete={() => deleteField('header', 'gstin')}
                                                 valueClassName="font-mono font-bold text-zinc-900"
@@ -704,7 +731,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.pan?.enabled && (
                                             <EditableField 
                                                 label="PAN:"
-                                                value={labSettings.pan || boxes.header.fields.pan.value}
+                                                value={boxes.header.fields.pan.value || labSettings.pan}
                                                 onSave={(lbl, val) => updateField('header', 'pan', lbl, val)}
                                                 onDelete={() => deleteField('header', 'pan')}
                                                 valueClassName="font-mono font-bold text-zinc-900"
@@ -1346,7 +1373,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.bankName?.enabled && (
                                 <EditableField 
                                     label="Bank:"
-                                    value={labSettings.bankName || boxes.bankAndUpi.fields.bankName.value}
+                                    value={boxes.bankAndUpi.fields.bankName.value || labSettings.bankName}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'bankName', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'bankName')}
                                     valueClassName="font-bold text-zinc-800"
@@ -1355,7 +1382,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.accountNumber?.enabled && (
                                 <EditableField 
                                     label="A/C No:"
-                                    value={labSettings.accountNumber || boxes.bankAndUpi.fields.accountNumber.value}
+                                    value={boxes.bankAndUpi.fields.accountNumber.value || labSettings.accountNumber}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'accountNumber', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'accountNumber')}
                                     valueClassName="font-mono font-bold text-zinc-900"
@@ -1364,7 +1391,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.ifsc?.enabled && (
                                 <EditableField 
                                     label="IFSC:"
-                                    value={labSettings.ifscCode || boxes.bankAndUpi.fields.ifsc.value}
+                                    value={boxes.bankAndUpi.fields.ifsc.value || labSettings.ifscCode}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'ifsc', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'ifsc')}
                                     valueClassName="font-mono font-bold text-zinc-900"
@@ -1373,7 +1400,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.upiId?.enabled && (
                                 <EditableField 
                                     label="UPI ID:"
-                                    value={labSettings.upiId || boxes.bankAndUpi.fields.upiId.value}
+                                    value={boxes.bankAndUpi.fields.upiId.value || labSettings.upiId}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'upiId', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'upiId')}
                                     valueClassName="font-mono font-bold text-indigo-700"
@@ -1493,8 +1520,11 @@ export const DynamicInvoiceCanvas = ({
                         <div className="h-6" />
                         <div className="border-t border-zinc-400 pt-1 inline-block text-center min-w-[160px]">
                             <EditableField 
-                                value={labSettings.signatoryTitle || boxes.signatory.title}
+                                value={boxes.signatory?.title || labSettings.signatoryTitle || "Authorised Signatory"}
                                 onSave={(_, val) => {
+                                    if (onUpdateLabSetting) {
+                                        onUpdateLabSetting('signatoryTitle', val);
+                                    }
                                     const next = {
                                         ...schema,
                                         boxes: {

@@ -301,38 +301,55 @@ namespace SynOS.Api.Controllers
         public async Task<IActionResult> GetStationerySettings()
         {
             var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var defaultSettings = new Dictionary<string, object>
+            {
+                ["labLegalName"] = lab?.Name ?? "SynOS Diagnostic Centre & Laboratory",
+                ["labTradeName"] = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
+                ["address"] = lab?.Address ?? "Central Diagnostic Facility, Hyderabad, Telangana",
+                ["phone"] = lab?.Phone ?? "+91 98765 43210",
+                ["email"] = lab?.Email ?? "billing@synoslab.in",
+                ["website"] = lab?.Website ?? "www.synoslab.in",
+                ["gstin"] = "36AAAAA0000A1Z5",
+                ["pan"] = "AAAAA0000A",
+                ["bankName"] = "HDFC Bank",
+                ["accountNumber"] = "50200012345678",
+                ["ifscCode"] = "HDFC0001234",
+                ["branch"] = "Main Branch, Khammam",
+                ["accountHolderName"] = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
+                ["upiId"] = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
+                ["enableUpiQr"] = true,
+                ["defaultLetterheadMode"] = "digital", // "digital" | "preprinted"
+                ["topMarginMm"] = 40,
+                ["bottomMarginMm"] = 15,
+                ["termsAndConditions"] = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.\n3. In case of online payment, please mention invoice or statement reference number.\n4. Cheques are subject to realization.",
+                ["signatoryTitle"] = "Authorised Signatory / Accounts Desk"
+            };
+
             if (!System.IO.File.Exists(path))
             {
-                var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
-                var defaultSettings = new
-                {
-                    labLegalName = lab?.Name ?? "SynOS Diagnostic Centre & Laboratory",
-                    labTradeName = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
-                    address = lab?.Address ?? "Central Diagnostic Facility, Hyderabad, Telangana",
-                    phone = lab?.Phone ?? "+91 98765 43210",
-                    email = lab?.Email ?? "billing@synoslab.in",
-                    website = lab?.Website ?? "www.synoslab.in",
-                    gstin = "36AAAAA0000A1Z5",
-                    pan = "AAAAA0000A",
-                    bankName = "HDFC Bank",
-                    accountNumber = "50200012345678",
-                    ifscCode = "HDFC0001234",
-                    branch = "Main Branch, Khammam",
-                    accountHolderName = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
-                    upiId = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
-                    enableUpiQr = true,
-                    defaultLetterheadMode = "digital", // "digital" | "preprinted"
-                    topMarginMm = 40,
-                    bottomMarginMm = 15,
-                    termsAndConditions = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.\n3. In case of online payment, please mention invoice or statement reference number.\n4. Cheques are subject to realization.",
-                    signatoryTitle = "Authorised Signatory / Accounts Desk"
-                };
                 var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 await System.IO.File.WriteAllTextAsync(path, json);
                 return Content(json, "application/json");
             }
 
             var existing = await System.IO.File.ReadAllTextAsync(path);
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(existing);
+                if (!doc.RootElement.TryGetProperty("labLegalName", out _))
+                {
+                    // If file exists but is corrupted or dummy test json, merge with defaults
+                    foreach (var prop in doc.RootElement.EnumerateObject())
+                    {
+                        defaultSettings[prop.Name] = prop.Value.ToString();
+                    }
+                    var mergedJson = System.Text.Json.JsonSerializer.Serialize(defaultSettings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                    return Content(mergedJson, "application/json");
+                }
+            }
+            catch {}
+
             return Content(existing, "application/json");
         }
 
@@ -342,6 +359,32 @@ namespace SynOS.Api.Controllers
             var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
             var json = settings.ToString();
             await System.IO.File.WriteAllTextAsync(path, json);
+
+            try
+            {
+                var lab = await _context.LabProfiles.FirstOrDefaultAsync();
+                if (lab != null)
+                {
+                    if (settings.TryGetProperty("labLegalName", out var lName) && !string.IsNullOrWhiteSpace(lName.GetString()))
+                        lab.Name = lName.GetString()!;
+                    if (settings.TryGetProperty("labTradeName", out var tName) && !string.IsNullOrWhiteSpace(tName.GetString()))
+                        lab.Tagline = tName.GetString()!;
+                    if (settings.TryGetProperty("address", out var addr) && !string.IsNullOrWhiteSpace(addr.GetString()))
+                        lab.Address = addr.GetString()!;
+                    if (settings.TryGetProperty("phone", out var ph) && !string.IsNullOrWhiteSpace(ph.GetString()))
+                        lab.Phone = ph.GetString()!;
+                    if (settings.TryGetProperty("email", out var em) && !string.IsNullOrWhiteSpace(em.GetString()))
+                        lab.Email = em.GetString()!;
+                    if (settings.TryGetProperty("upiId", out var upi) && !string.IsNullOrWhiteSpace(upi.GetString()))
+                        lab.UpiId = upi.GetString()!;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Failed to sync LabProfiles table during SaveStationerySettings");
+            }
+
             return Ok(new { message = "Billing stationery settings successfully saved." });
         }
 
