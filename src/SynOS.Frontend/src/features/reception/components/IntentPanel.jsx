@@ -493,7 +493,7 @@ export function IntentPanel({ onVisitUpdated }) {
         // 2. AUTHORIZE INSURANCE CASHLESS CLAIM
         if (billingMode === 'Insurance' && !snapshot.billing.isLocked) {
             const v = snapshot.visit;
-            if (!v?.insuranceCompanyId) {
+            if (!v?.insuranceCompanyId && !v?.corporateAccountId) {
                 setError("Please select an Insurance or Corporate Company.");
                 return;
             }
@@ -506,8 +506,10 @@ export function IntentPanel({ onVisitUpdated }) {
                 await ReceptionApi.updateBillingContext({
                     visitId: snapshot.visit.visitId,
                     billingType: 'Insurance',
-                    insuranceCompanyId: v.insuranceCompanyId,
+                    insuranceCompanyId: v?.insuranceCompanyId || null,
+                    corporateAccountId: v?.corporateAccountId || null,
                     policyNumber: policyNum,
+                    employeeId: v?.employeeId || policyNum,
                     preAuthApprovalNumber: v?.preAuthApprovalNumber?.trim() || null,
                     insuranceCoPayAmount: v?.insuranceCoPayAmount || 0
                 });

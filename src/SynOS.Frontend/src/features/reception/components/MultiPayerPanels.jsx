@@ -188,7 +188,7 @@ export function InsuranceContextPanel({
 
     const handleSelectProvider = (prov) => {
         if (prov.isCorporate) {
-            onChange({ corporateAccountId: prov.id, insuranceCompanyId: prov.id }, { persist: true, silent: false, refreshSnapshot: true });
+            onChange({ corporateAccountId: prov.id, insuranceCompanyId: null }, { persist: true, silent: false, refreshSnapshot: true });
         } else {
             onChange({ insuranceCompanyId: prov.id, corporateAccountId: null }, { persist: true, silent: false, refreshSnapshot: true });
         }

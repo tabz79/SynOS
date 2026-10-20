@@ -117,20 +117,20 @@
       enqueueSetState: function() {
       }
     }, p = Object.assign, C = {};
-    function x(ae, ge, Ie) {
-      this.props = ae, this.context = ge, this.refs = C, this.updater = Ie || I;
+    function x(ae, ue, Ie) {
+      this.props = ae, this.context = ue, this.refs = C, this.updater = Ie || I;
     }
-    x.prototype.isReactComponent = {}, x.prototype.setState = function(ae, ge) {
+    x.prototype.isReactComponent = {}, x.prototype.setState = function(ae, ue) {
       if (typeof ae != "object" && typeof ae != "function" && ae != null) throw Error("takes an object of state variables to update or a function which returns an object of state variables.");
-      this.updater.enqueueSetState(this, ae, ge, "setState");
+      this.updater.enqueueSetState(this, ae, ue, "setState");
     }, x.prototype.forceUpdate = function(ae) {
       this.updater.enqueueForceUpdate(this, ae, "forceUpdate");
     };
     function B() {
     }
     B.prototype = x.prototype;
-    function E(ae, ge, Ie) {
-      this.props = ae, this.context = ge, this.refs = C, this.updater = Ie || I;
+    function E(ae, ue, Ie) {
+      this.props = ae, this.context = ue, this.refs = C, this.updater = Ie || I;
     }
     var b = E.prototype = new B();
     b.constructor = E, p(b, x.prototype), b.isPureReactComponent = true;
@@ -143,34 +143,34 @@
       T: null,
       S: null
     }, F = Object.prototype.hasOwnProperty;
-    function O(ae, ge, Ie) {
+    function O(ae, ue, Ie) {
       var Me = Ie.ref;
       return {
         $$typeof: t,
         type: ae,
-        key: ge,
+        key: ue,
         ref: Me !== void 0 ? Me : null,
         props: Ie
       };
     }
-    function Y(ae, ge) {
-      return O(ae.type, ge, ae.props);
+    function Y(ae, ue) {
+      return O(ae.type, ue, ae.props);
     }
     function P(ae) {
       return typeof ae == "object" && ae !== null && ae.$$typeof === t;
     }
     function U(ae) {
-      var ge = {
+      var ue = {
         "=": "=0",
         ":": "=2"
       };
       return "$" + ae.replace(/[=:]/g, function(Ie) {
-        return ge[Ie];
+        return ue[Ie];
       });
     }
     var V = /\/+/g;
-    function K(ae, ge) {
-      return typeof ae == "object" && ae !== null && ae.key != null ? U("" + ae.key) : ge.toString(36);
+    function K(ae, ue) {
+      return typeof ae == "object" && ae !== null && ae.key != null ? U("" + ae.key) : ue.toString(36);
     }
     function ne(ae) {
       switch (ae.status) {
@@ -179,10 +179,10 @@
         case "rejected":
           throw ae.reason;
         default:
-          switch (typeof ae.status == "string" ? ae.then(v, v) : (ae.status = "pending", ae.then(function(ge) {
-            ae.status === "pending" && (ae.status = "fulfilled", ae.value = ge);
-          }, function(ge) {
-            ae.status === "pending" && (ae.status = "rejected", ae.reason = ge);
+          switch (typeof ae.status == "string" ? ae.then(v, v) : (ae.status = "pending", ae.then(function(ue) {
+            ae.status === "pending" && (ae.status = "fulfilled", ae.value = ue);
+          }, function(ue) {
+            ae.status === "pending" && (ae.status = "rejected", ae.reason = ue);
           })), ae.status) {
             case "fulfilled":
               return ae.value;
@@ -192,7 +192,7 @@
       }
       throw ae;
     }
-    function Z(ae, ge, Ie, Me, Qe) {
+    function Z(ae, ue, Ie, Me, Qe) {
       var Re = typeof ae;
       (Re === "undefined" || Re === "boolean") && (ae = null);
       var Fe = false;
@@ -210,50 +210,50 @@
               Fe = true;
               break;
             case g:
-              return Fe = ae._init, Z(Fe(ae._payload), ge, Ie, Me, Qe);
+              return Fe = ae._init, Z(Fe(ae._payload), ue, Ie, Me, Qe);
           }
       }
-      if (Fe) return Qe = Qe(ae), Fe = Me === "" ? "." + K(ae, 0) : Me, D(Qe) ? (Ie = "", Fe != null && (Ie = Fe.replace(V, "$&/") + "/"), Z(Qe, ge, Ie, "", function(Ce) {
+      if (Fe) return Qe = Qe(ae), Fe = Me === "" ? "." + K(ae, 0) : Me, D(Qe) ? (Ie = "", Fe != null && (Ie = Fe.replace(V, "$&/") + "/"), Z(Qe, ue, Ie, "", function(Ce) {
         return Ce;
-      })) : Qe != null && (P(Qe) && (Qe = Y(Qe, Ie + (Qe.key == null || ae && ae.key === Qe.key ? "" : ("" + Qe.key).replace(V, "$&/") + "/") + Fe)), ge.push(Qe)), 1;
+      })) : Qe != null && (P(Qe) && (Qe = Y(Qe, Ie + (Qe.key == null || ae && ae.key === Qe.key ? "" : ("" + Qe.key).replace(V, "$&/") + "/") + Fe)), ue.push(Qe)), 1;
       Fe = 0;
       var rt = Me === "" ? "." : Me + ":";
-      if (D(ae)) for (var tt = 0; tt < ae.length; tt++) Me = ae[tt], Re = rt + K(Me, tt), Fe += Z(Me, ge, Ie, Re, Qe);
-      else if (tt = h(ae), typeof tt == "function") for (ae = tt.call(ae), tt = 0; !(Me = ae.next()).done; ) Me = Me.value, Re = rt + K(Me, tt++), Fe += Z(Me, ge, Ie, Re, Qe);
+      if (D(ae)) for (var tt = 0; tt < ae.length; tt++) Me = ae[tt], Re = rt + K(Me, tt), Fe += Z(Me, ue, Ie, Re, Qe);
+      else if (tt = h(ae), typeof tt == "function") for (ae = tt.call(ae), tt = 0; !(Me = ae.next()).done; ) Me = Me.value, Re = rt + K(Me, tt++), Fe += Z(Me, ue, Ie, Re, Qe);
       else if (Re === "object") {
-        if (typeof ae.then == "function") return Z(ne(ae), ge, Ie, Me, Qe);
-        throw ge = String(ae), Error("Objects are not valid as a React child (found: " + (ge === "[object Object]" ? "object with keys {" + Object.keys(ae).join(", ") + "}" : ge) + "). If you meant to render a collection of children, use an array instead.");
+        if (typeof ae.then == "function") return Z(ne(ae), ue, Ie, Me, Qe);
+        throw ue = String(ae), Error("Objects are not valid as a React child (found: " + (ue === "[object Object]" ? "object with keys {" + Object.keys(ae).join(", ") + "}" : ue) + "). If you meant to render a collection of children, use an array instead.");
       }
       return Fe;
     }
-    function re(ae, ge, Ie) {
+    function re(ae, ue, Ie) {
       if (ae == null) return ae;
       var Me = [], Qe = 0;
       return Z(ae, Me, "", "", function(Re) {
-        return ge.call(Ie, Re, Qe++);
+        return ue.call(Ie, Re, Qe++);
       }), Me;
     }
     function $(ae) {
       if (ae._status === -1) {
-        var ge = ae._result;
-        ge = ge(), ge.then(function(Ie) {
+        var ue = ae._result;
+        ue = ue(), ue.then(function(Ie) {
           (ae._status === 0 || ae._status === -1) && (ae._status = 1, ae._result = Ie);
         }, function(Ie) {
           (ae._status === 0 || ae._status === -1) && (ae._status = 2, ae._result = Ie);
-        }), ae._status === -1 && (ae._status = 0, ae._result = ge);
+        }), ae._status === -1 && (ae._status = 0, ae._result = ue);
       }
       if (ae._status === 1) return ae._result.default;
       throw ae._result;
     }
     var q = typeof reportError == "function" ? reportError : function(ae) {
       if (typeof window == "object" && typeof window.ErrorEvent == "function") {
-        var ge = new window.ErrorEvent("error", {
+        var ue = new window.ErrorEvent("error", {
           bubbles: true,
           cancelable: true,
           message: typeof ae == "object" && ae !== null && typeof ae.message == "string" ? String(ae.message) : String(ae),
           error: ae
         });
-        if (!window.dispatchEvent(ge)) return;
+        if (!window.dispatchEvent(ue)) return;
       } else if (typeof process == "object" && typeof process.emit == "function") {
         process.emit("uncaughtException", ae);
         return;
@@ -261,20 +261,20 @@
       console.error(ae);
     }, se = {
       map: re,
-      forEach: function(ae, ge, Ie) {
+      forEach: function(ae, ue, Ie) {
         re(ae, function() {
-          ge.apply(this, arguments);
+          ue.apply(this, arguments);
         }, Ie);
       },
       count: function(ae) {
-        var ge = 0;
+        var ue = 0;
         return re(ae, function() {
-          ge++;
-        }), ge;
+          ue++;
+        }), ue;
       },
       toArray: function(ae) {
-        return re(ae, function(ge) {
-          return ge;
+        return re(ae, function(ue) {
+          return ue;
         }) || [];
       },
       only: function(ae) {
@@ -293,10 +293,10 @@
       };
     }, Ei.cacheSignal = function() {
       return null;
-    }, Ei.cloneElement = function(ae, ge, Ie) {
+    }, Ei.cloneElement = function(ae, ue, Ie) {
       if (ae == null) throw Error("The argument must be a React element, but you passed " + ae + ".");
       var Me = p({}, ae.props), Qe = ae.key;
-      if (ge != null) for (Re in ge.key !== void 0 && (Qe = "" + ge.key), ge) !F.call(ge, Re) || Re === "key" || Re === "__self" || Re === "__source" || Re === "ref" && ge.ref === void 0 || (Me[Re] = ge[Re]);
+      if (ue != null) for (Re in ue.key !== void 0 && (Qe = "" + ue.key), ue) !F.call(ue, Re) || Re === "key" || Re === "__self" || Re === "__source" || Re === "ref" && ue.ref === void 0 || (Me[Re] = ue[Re]);
       var Re = arguments.length - 2;
       if (Re === 1) Me.children = Ie;
       else if (1 < Re) {
@@ -316,9 +316,9 @@
         $$typeof: a,
         _context: ae
       }, ae;
-    }, Ei.createElement = function(ae, ge, Ie) {
+    }, Ei.createElement = function(ae, ue, Ie) {
       var Me, Qe = {}, Re = null;
-      if (ge != null) for (Me in ge.key !== void 0 && (Re = "" + ge.key), ge) F.call(ge, Me) && Me !== "key" && Me !== "__self" && Me !== "__source" && (Qe[Me] = ge[Me]);
+      if (ue != null) for (Me in ue.key !== void 0 && (Re = "" + ue.key), ue) F.call(ue, Me) && Me !== "key" && Me !== "__self" && Me !== "__source" && (Qe[Me] = ue[Me]);
       var Fe = arguments.length - 2;
       if (Fe === 1) Qe.children = Ie;
       else if (1 < Fe) {
@@ -345,14 +345,14 @@
         },
         _init: $
       };
-    }, Ei.memo = function(ae, ge) {
+    }, Ei.memo = function(ae, ue) {
       return {
         $$typeof: c,
         type: ae,
-        compare: ge === void 0 ? null : ge
+        compare: ue === void 0 ? null : ue
       };
     }, Ei.startTransition = function(ae) {
-      var ge = M.T, Ie = {};
+      var ue = M.T, Ie = {};
       M.T = Ie;
       try {
         var Me = ae(), Qe = M.S;
@@ -360,45 +360,45 @@
       } catch (Re) {
         q(Re);
       } finally {
-        ge !== null && Ie.types !== null && (ge.types = Ie.types), M.T = ge;
+        ue !== null && Ie.types !== null && (ue.types = Ie.types), M.T = ue;
       }
     }, Ei.unstable_useCacheRefresh = function() {
       return M.H.useCacheRefresh();
     }, Ei.use = function(ae) {
       return M.H.use(ae);
-    }, Ei.useActionState = function(ae, ge, Ie) {
-      return M.H.useActionState(ae, ge, Ie);
-    }, Ei.useCallback = function(ae, ge) {
-      return M.H.useCallback(ae, ge);
+    }, Ei.useActionState = function(ae, ue, Ie) {
+      return M.H.useActionState(ae, ue, Ie);
+    }, Ei.useCallback = function(ae, ue) {
+      return M.H.useCallback(ae, ue);
     }, Ei.useContext = function(ae) {
       return M.H.useContext(ae);
     }, Ei.useDebugValue = function() {
-    }, Ei.useDeferredValue = function(ae, ge) {
-      return M.H.useDeferredValue(ae, ge);
-    }, Ei.useEffect = function(ae, ge) {
-      return M.H.useEffect(ae, ge);
+    }, Ei.useDeferredValue = function(ae, ue) {
+      return M.H.useDeferredValue(ae, ue);
+    }, Ei.useEffect = function(ae, ue) {
+      return M.H.useEffect(ae, ue);
     }, Ei.useEffectEvent = function(ae) {
       return M.H.useEffectEvent(ae);
     }, Ei.useId = function() {
       return M.H.useId();
-    }, Ei.useImperativeHandle = function(ae, ge, Ie) {
-      return M.H.useImperativeHandle(ae, ge, Ie);
-    }, Ei.useInsertionEffect = function(ae, ge) {
-      return M.H.useInsertionEffect(ae, ge);
-    }, Ei.useLayoutEffect = function(ae, ge) {
-      return M.H.useLayoutEffect(ae, ge);
-    }, Ei.useMemo = function(ae, ge) {
-      return M.H.useMemo(ae, ge);
-    }, Ei.useOptimistic = function(ae, ge) {
-      return M.H.useOptimistic(ae, ge);
-    }, Ei.useReducer = function(ae, ge, Ie) {
-      return M.H.useReducer(ae, ge, Ie);
+    }, Ei.useImperativeHandle = function(ae, ue, Ie) {
+      return M.H.useImperativeHandle(ae, ue, Ie);
+    }, Ei.useInsertionEffect = function(ae, ue) {
+      return M.H.useInsertionEffect(ae, ue);
+    }, Ei.useLayoutEffect = function(ae, ue) {
+      return M.H.useLayoutEffect(ae, ue);
+    }, Ei.useMemo = function(ae, ue) {
+      return M.H.useMemo(ae, ue);
+    }, Ei.useOptimistic = function(ae, ue) {
+      return M.H.useOptimistic(ae, ue);
+    }, Ei.useReducer = function(ae, ue, Ie) {
+      return M.H.useReducer(ae, ue, Ie);
     }, Ei.useRef = function(ae) {
       return M.H.useRef(ae);
     }, Ei.useState = function(ae) {
       return M.H.useState(ae);
-    }, Ei.useSyncExternalStore = function(ae, ge, Ie) {
-      return M.H.useSyncExternalStore(ae, ge, Ie);
+    }, Ei.useSyncExternalStore = function(ae, ue, Ie) {
+      return M.H.useSyncExternalStore(ae, ue, Ie);
     }, Ei.useTransition = function() {
       return M.H.useTransition();
     }, Ei.version = "19.2.3", Ei;
@@ -435,8 +435,8 @@
         if ($ !== re) {
           Z[0] = $;
           e: for (var q = 0, se = Z.length, ae = se >>> 1; q < ae; ) {
-            var ge = 2 * (q + 1) - 1, Ie = Z[ge], Me = ge + 1, Qe = Z[Me];
-            if (0 > A(Ie, $)) Me < se && 0 > A(Qe, Ie) ? (Z[q] = Qe, Z[Me] = $, q = Me) : (Z[q] = Ie, Z[ge] = $, q = ge);
+            var ue = 2 * (q + 1) - 1, Ie = Z[ue], Me = ue + 1, Qe = Z[Me];
+            if (0 > A(Ie, $)) Me < se && 0 > A(Qe, Ie) ? (Z[q] = Qe, Z[Me] = $, q = Me) : (Z[q] = Ie, Z[ue] = $, q = ue);
             else if (Me < se && 0 > A(Qe, $)) Z[q] = Qe, Z[Me] = $, q = Me;
             else break e;
           }
@@ -926,7 +926,7 @@
         current: Q
       };
     }
-    function ge(Q) {
+    function ue(Q) {
       0 > se || (Q.current = q[se], q[se] = null, se--);
     }
     function Ie(Q, N) {
@@ -952,10 +952,10 @@
               Q = 0;
           }
       }
-      ge(Me), Ie(Me, Q);
+      ue(Me), Ie(Me, Q);
     }
     function tt() {
-      ge(Me), ge(Qe), ge(Re);
+      ue(Me), ue(Qe), ue(Re);
     }
     function Ce(Q) {
       Q.memoizedState !== null && Ie(Fe, Q);
@@ -963,7 +963,7 @@
       N !== j && (Ie(Qe, Q), Ie(Me, j));
     }
     function te(Q) {
-      Qe.current === Q && (ge(Me), ge(Qe)), Fe.current === Q && (ge(Fe), hg._currentValue = $);
+      Qe.current === Q && (ue(Me), ue(Qe)), Fe.current === Q && (ue(Fe), hg._currentValue = $);
     }
     var Be, le;
     function Ne(Q) {
@@ -1098,7 +1098,7 @@ Error generating stack: ` + _.message + `
 ` + _.stack;
       }
     }
-    var nt = Object.prototype.hasOwnProperty, Ee = t.unstable_scheduleCallback, ue = t.unstable_cancelCallback, De = t.unstable_shouldYield, Ue = t.unstable_requestPaint, fe = t.unstable_now, Ye = t.unstable_getCurrentPriorityLevel, Ze = t.unstable_ImmediatePriority, ve = t.unstable_UserBlockingPriority, bt = t.unstable_NormalPriority, It = t.unstable_LowPriority, Bt = t.unstable_IdlePriority, dt = t.log, _e = t.unstable_setDisableYieldValue, Je = null, Oe = null;
+    var nt = Object.prototype.hasOwnProperty, Ee = t.unstable_scheduleCallback, ge = t.unstable_cancelCallback, De = t.unstable_shouldYield, Ue = t.unstable_requestPaint, fe = t.unstable_now, Ye = t.unstable_getCurrentPriorityLevel, Ze = t.unstable_ImmediatePriority, ve = t.unstable_UserBlockingPriority, bt = t.unstable_NormalPriority, It = t.unstable_LowPriority, Bt = t.unstable_IdlePriority, dt = t.log, _e = t.unstable_setDisableYieldValue, Je = null, Oe = null;
     function st(Q) {
       if (typeof dt == "function" && _e(Q), Oe && typeof Oe.setStrictMode == "function") try {
         Oe.setStrictMode(Je, Q);
@@ -2692,7 +2692,7 @@ Error generating stack: ` + _.message + `
       Ie(iQ, N._currentValue), N._currentValue = j;
     }
     function Wd(Q) {
-      Q._currentValue = iQ.current, ge(iQ);
+      Q._currentValue = iQ.current, ue(iQ);
     }
     function AQ(Q, N, j) {
       for (; Q !== null; ) {
@@ -3313,7 +3313,7 @@ Error generating stack: ` + _.message + `
       Ie(rp, sg), Ie(Af, Af.current);
     }
     function _m() {
-      sg = rp.current, ge(Af), ge(rp);
+      sg = rp.current, ue(Af), ue(rp);
     }
     var Bl = ae(null), Vl = null;
     function cu(Q) {
@@ -3330,7 +3330,7 @@ Error generating stack: ` + _.message + `
       Ie(qa, qa.current), Ie(Bl, Bl.current);
     }
     function El(Q) {
-      ge(Bl), Vl === Q && (Vl = null), ge(qa);
+      ue(Bl), Vl === Q && (Vl = null), ue(qa);
     }
     var qa = ae(0);
     function Hm(Q) {
@@ -5097,7 +5097,7 @@ Error generating stack: ` + _.message + `
         case 10:
           return Wd(N.type), oa(N), null;
         case 19:
-          if (ge(qa), _ = N.memoizedState, _ === null) return oa(N), null;
+          if (ue(qa), _ = N.memoizedState, _ === null) return oa(N), null;
           if (oe = (N.flags & 128) !== 0, he = _.rendering, he === null) if (oe) uf(_, false);
           else {
             if (Fa !== 0 || Q !== null && (Q.flags & 128) !== 0) for (Q = N.child; Q !== null; ) {
@@ -5118,7 +5118,7 @@ Error generating stack: ` + _.message + `
           return _.tail !== null ? (Q = _.tail, _.rendering = Q, _.tail = Q.sibling, _.renderingStartTime = fe(), Q.sibling = null, j = qa.current, Ie(qa, oe ? j & 1 | 2 : j & 1), Pi && Zo(N, _.treeForkCount), Q) : (oa(N), null);
         case 22:
         case 23:
-          return El(N), _m(), _ = N.memoizedState !== null, Q !== null ? Q.memoizedState !== null !== _ && (N.flags |= 8192) : _ && (N.flags |= 8192), _ ? (j & 536870912) !== 0 && (N.flags & 128) === 0 && (oa(N), N.subtreeFlags & 6 && (N.flags |= 8192)) : oa(N), j = N.updateQueue, j !== null && M0(N, j.retryQueue), j = null, Q !== null && Q.memoizedState !== null && Q.memoizedState.cachePool !== null && (j = Q.memoizedState.cachePool.pool), _ = null, N.memoizedState !== null && N.memoizedState.cachePool !== null && (_ = N.memoizedState.cachePool.pool), _ !== j && (N.flags |= 2048), Q !== null && ge(au), null;
+          return El(N), _m(), _ = N.memoizedState !== null, Q !== null ? Q.memoizedState !== null !== _ && (N.flags |= 8192) : _ && (N.flags |= 8192), _ ? (j & 536870912) !== 0 && (N.flags & 128) === 0 && (oa(N), N.subtreeFlags & 6 && (N.flags |= 8192)) : oa(N), j = N.updateQueue, j !== null && M0(N, j.retryQueue), j = null, Q !== null && Q.memoizedState !== null && Q.memoizedState.cachePool !== null && (j = Q.memoizedState.cachePool.pool), _ = null, N.memoizedState !== null && N.memoizedState.cachePool !== null && (_ = N.memoizedState.cachePool.pool), _ !== j && (N.flags |= 2048), Q !== null && ue(au), null;
         case 24:
           return j = null, Q !== null && (j = Q.memoizedState.cache), N.memoizedState.cache !== j && (N.flags |= 2048), Wd(Wa), oa(N), null;
         case 25:
@@ -5151,14 +5151,14 @@ Error generating stack: ` + _.message + `
           }
           return Q = N.flags, Q & 65536 ? (N.flags = Q & -65537 | 128, N) : null;
         case 19:
-          return ge(qa), null;
+          return ue(qa), null;
         case 4:
           return tt(), null;
         case 10:
           return Wd(N.type), null;
         case 22:
         case 23:
-          return El(N), _m(), Q !== null && ge(au), Q = N.flags, Q & 65536 ? (N.flags = Q & -65537 | 128, N) : null;
+          return El(N), _m(), Q !== null && ue(au), Q = N.flags, Q & 65536 ? (N.flags = Q & -65537 | 128, N) : null;
         case 24:
           return Wd(Wa), null;
         case 25:
@@ -5187,14 +5187,14 @@ Error generating stack: ` + _.message + `
           El(N);
           break;
         case 19:
-          ge(qa);
+          ue(qa);
           break;
         case 10:
           Wd(N.type);
           break;
         case 22:
         case 23:
-          El(N), _m(), Q !== null && ge(au);
+          El(N), _m(), Q !== null && ue(au);
           break;
         case 24:
           Wd(Wa);
@@ -6775,10 +6775,10 @@ Error generating stack: ` + _.message + `
         var Pe = 31 - ft(he), ot = 1 << Pe, St = oe[Pe];
         St === -1 ? ((ot & j) === 0 || (ot & _) !== 0) && (oe[Pe] = xt(ot, N)) : St <= N && (Q.expiredLanes |= ot), he &= ~ot;
       }
-      if (N = XA, j = Fi, j = nn(Q, Q === N ? j : 0, Q.cancelPendingCommit !== null || Q.timeoutHandle !== -1), _ = Q.callbackNode, j === 0 || Q === N && (Wn === 2 || Wn === 9) || Q.cancelPendingCommit !== null) return _ !== null && _ !== null && ue(_), Q.callbackNode = null, Q.callbackPriority = 0;
+      if (N = XA, j = Fi, j = nn(Q, Q === N ? j : 0, Q.cancelPendingCommit !== null || Q.timeoutHandle !== -1), _ = Q.callbackNode, j === 0 || Q === N && (Wn === 2 || Wn === 9) || Q.cancelPendingCommit !== null) return _ !== null && _ !== null && ge(_), Q.callbackNode = null, Q.callbackPriority = 0;
       if ((j & 3) === 0 || ce(Q, j)) {
         if (N = j & -j, N === Q.callbackPriority) return N;
-        switch (_ !== null && ue(_), Or(j)) {
+        switch (_ !== null && ge(_), Or(j)) {
           case 2:
           case 8:
             j = ve;
@@ -6794,7 +6794,7 @@ Error generating stack: ` + _.message + `
         }
         return _ = xf.bind(null, Q), j = Ee(j, _), Q.callbackPriority = N, Q.callbackNode = j, N;
       }
-      return _ !== null && _ !== null && ue(_), Q.callbackPriority = 2, Q.callbackNode = null, 2;
+      return _ !== null && _ !== null && ge(_), Q.callbackPriority = 2, Q.callbackNode = null, 2;
     }
     function xf(Q, N) {
       if (Xa !== 0 && Xa !== 5) return Q.callbackNode = null, Q.callbackPriority = 0, null;
@@ -15990,7 +15990,7 @@ Compensation details are strictly confidential between employee and SynOS Health
           Ir
         ]
       }
-    ], ge = () => [
+    ], ue = () => [
       tM,
       Zy,
       iC
@@ -17151,17 +17151,17 @@ Compensation details are strictly confidential between employee and SynOS Health
         ],
         "gradient-from-pos": [
           {
-            from: ge()
+            from: ue()
           }
         ],
         "gradient-via-pos": [
           {
-            via: ge()
+            via: ue()
           }
         ],
         "gradient-to-pos": [
           {
-            to: ge()
+            to: ue()
           }
         ],
         "gradient-from": [
@@ -24569,8 +24569,8 @@ Compensation details are strictly confidential between employee and SynOS Health
     MK(K, t), IS(K, t, e);
     const ne = () => {
       if (n) return n;
-      const ge = window.location.pathname.toLowerCase();
-      return ge.includes("reception") ? "Reception" : ge.includes("phlebotomy") ? "Phlebotomy" : ge.includes("radiology") || ge.includes("xray") || ge.includes("mri") || ge.includes("ct") ? "Radiology" : ge.includes("lab") || ge.includes("workbench") || ge.includes("processing") ? "Lab Workbench" : ge.includes("pathology") ? "Pathology Desk" : ge.includes("typing") || ge.includes("typist") ? "Report Typing" : ge.includes("delivery") || ge.includes("dispatch") ? "Dispatch & Logistics" : "Operations Screen";
+      const ue = window.location.pathname.toLowerCase();
+      return ue.includes("reception") ? "Reception" : ue.includes("phlebotomy") ? "Phlebotomy" : ue.includes("radiology") || ue.includes("xray") || ue.includes("mri") || ue.includes("ct") ? "Radiology" : ue.includes("lab") || ue.includes("workbench") || ue.includes("processing") ? "Lab Workbench" : ue.includes("pathology") ? "Pathology Desk" : ue.includes("typing") || ue.includes("typist") ? "Report Typing" : ue.includes("delivery") || ue.includes("dispatch") ? "Dispatch & Logistics" : "Operations Screen";
     };
     G.useEffect(() => {
       t ? Z() : (x(""), E(null), D(1), M("units"), O(false), P(null), V(false), p("role"));
@@ -24584,18 +24584,18 @@ Compensation details are strictly confidential between employee and SynOS Health
     const Z = async () => {
       o(true), P(null);
       try {
-        const [ge, Ie] = await Promise.all([
+        const [ue, Ie] = await Promise.all([
           ri.getAllowedItems(),
           ri.getAllActiveItems()
         ]);
-        d(ge || []), h(Ie || []), (ge || []).length > 0 ? p("role") : p("catalog");
-      } catch (ge) {
-        console.error("Failed to load inventory items", ge), P("Could not load inventory items. Please try again.");
+        d(ue || []), h(Ie || []), (ue || []).length > 0 ? p("role") : p("catalog");
+      } catch (ue) {
+        console.error("Failed to load inventory items", ue), P("Could not load inventory items. Please try again.");
       } finally {
         o(false);
       }
-    }, re = B && g.some((ge) => ge.consumableId === B.consumableId), $ = async (ge) => {
-      if (ge && ge.preventDefault(), !B) return;
+    }, re = B && g.some((ue) => ue.consumableId === B.consumableId), $ = async (ue) => {
+      if (ue && ue.preventDefault(), !B) return;
       c(true), P(null);
       const Ie = B.unitOfMeasure || "units", Me = KE(b, v, Ie), Qe = ne(), Re = (r == null ? void 0 : r.role) || (r == null ? void 0 : r.designation) || "Admin";
       try {
@@ -24607,7 +24607,7 @@ Compensation details are strictly confidential between employee and SynOS Health
       } finally {
         c(false);
       }
-    }, se = (I === "role" ? g : u).filter((ge) => ge.name.toLowerCase().includes(C.toLowerCase()) || ge.code.toLowerCase().includes(C.toLowerCase())), ae = a ? {
+    }, se = (I === "role" ? g : u).filter((ue) => ue.name.toLowerCase().includes(C.toLowerCase()) || ue.code.toLowerCase().includes(C.toLowerCase())), ae = a ? {
       panel: "bg-zinc-900 border-l border-white/10 shadow-2xl relative z-20",
       header: "bg-zinc-900 border-b border-white/5",
       title: "text-white",
@@ -24754,7 +24754,7 @@ Compensation details are strictly confidential between employee and SynOS Health
                     type: "text",
                     placeholder: I === "role" ? `Search ${g.length} assigned ${(r == null ? void 0 : r.role) || "role"} items...` : `Search entire ${u.length} inventory catalog...`,
                     value: C,
-                    onChange: (ge) => x(ge.target.value),
+                    onChange: (ue) => x(ue.target.value),
                     className: Le("w-full rounded-xl border py-2.5 pl-10 pr-4 text-xs font-medium outline-none transition-all", ae.input)
                   })
                 ]
@@ -24788,17 +24788,17 @@ Compensation details are strictly confidential between employee and SynOS Health
                       children: "Browse Entire 38-Item Central Catalog \u2794"
                     })
                   ]
-                }) : se.map((ge) => {
-                  const Ie = g.some((Me) => Me.consumableId === ge.consumableId);
+                }) : se.map((ue) => {
+                  const Ie = g.some((Me) => Me.consumableId === ue.consumableId);
                   return i.jsxs("button", {
-                    onClick: () => E(ge),
-                    className: Le("flex w-full items-center justify-between rounded-xl p-3 text-left transition-all border mb-1.5", (B == null ? void 0 : B.consumableId) === ge.consumableId ? ae.itemCard.selected : ae.itemCard.hover),
+                    onClick: () => E(ue),
+                    className: Le("flex w-full items-center justify-between rounded-xl p-3 text-left transition-all border mb-1.5", (B == null ? void 0 : B.consumableId) === ue.consumableId ? ae.itemCard.selected : ae.itemCard.hover),
                     children: [
                       i.jsxs("div", {
                         className: "flex items-center gap-3",
                         children: [
                           i.jsx("div", {
-                            className: Le("rounded-lg p-2 shrink-0", (B == null ? void 0 : B.consumableId) === ge.consumableId ? "bg-emerald-500/20 text-emerald-500" : a ? "bg-black/20 text-zinc-400" : "bg-zinc-100 text-zinc-500"),
+                            className: Le("rounded-lg p-2 shrink-0", (B == null ? void 0 : B.consumableId) === ue.consumableId ? "bg-emerald-500/20 text-emerald-500" : a ? "bg-black/20 text-zinc-400" : "bg-zinc-100 text-zinc-500"),
                             children: i.jsx(GA, {
                               className: "h-4 w-4"
                             })
@@ -24809,7 +24809,7 @@ Compensation details are strictly confidential between employee and SynOS Health
                                 className: "text-xs font-bold flex items-center gap-2",
                                 children: [
                                   i.jsx("span", {
-                                    children: ge.name
+                                    children: ue.name
                                   }),
                                   Ie && i.jsx("span", {
                                     className: "text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500",
@@ -24820,23 +24820,23 @@ Compensation details are strictly confidential between employee and SynOS Health
                               i.jsxs("div", {
                                 className: "text-[10px] opacity-60 font-mono mt-0.5",
                                 children: [
-                                  ge.code,
+                                  ue.code,
                                   " \u2022 Stock Unit: ",
-                                  ge.unitOfMeasure
+                                  ue.unitOfMeasure
                                 ]
                               })
                             ]
                           })
                         ]
                       }),
-                      (B == null ? void 0 : B.consumableId) === ge.consumableId && i.jsx("div", {
+                      (B == null ? void 0 : B.consumableId) === ue.consumableId && i.jsx("div", {
                         className: "bg-emerald-500 text-white rounded-full p-1",
                         children: i.jsx(RA, {
                           className: "h-3.5 w-3.5"
                         })
                       })
                     ]
-                  }, ge.consumableId);
+                  }, ue.consumableId);
                 })
               }),
               B && i.jsxs("div", {
@@ -24863,17 +24863,17 @@ Compensation details are strictly confidential between employee and SynOS Health
                         step: "any",
                         min: "0.0001",
                         value: b,
-                        onChange: (ge) => D(ge.target.value),
+                        onChange: (ue) => D(ue.target.value),
                         className: Le("w-28 rounded-xl border py-2.5 px-3 text-center text-lg font-bold outline-none transition-all", ae.input)
                       }),
                       i.jsx("select", {
                         value: v,
-                        onChange: (ge) => M(ge.target.value),
+                        onChange: (ue) => M(ue.target.value),
                         className: "flex-1 rounded-xl border border-zinc-200 dark:border-zinc-800 py-3 px-3 text-xs font-bold bg-white dark:bg-zinc-900 text-synos-primary outline-none",
-                        children: cx(B.unitOfMeasure).map((ge) => i.jsx("option", {
-                          value: ge.value,
-                          children: ge.label
-                        }, ge.value))
+                        children: cx(B.unitOfMeasure).map((ue) => i.jsx("option", {
+                          value: ue.value,
+                          children: ue.label
+                        }, ue.value))
                       })
                     ]
                   }),
@@ -24940,7 +24940,7 @@ Compensation details are strictly confidential between employee and SynOS Health
                       i.jsx("input", {
                         type: "checkbox",
                         checked: F,
-                        onChange: (ge) => O(ge.target.checked),
+                        onChange: (ue) => O(ue.target.checked),
                         className: "rounded border-amber-500 text-amber-600 focus:ring-amber-500"
                       }),
                       i.jsxs("span", {
@@ -27353,21 +27353,21 @@ Details: ${s.inner}`);
     });
   }, Vpe = ({ visitId: t, referenceLabs: e, outsourcedCatalog: n = [], onSuccess: r, onCancel: A, isDark: a, uiStyles: s }) => {
     var _a2, _b2;
-    const [o, l] = G.useState(false), [c, g] = G.useState(""), [d, u] = G.useState(""), [h, I] = G.useState(""), [p, C] = G.useState(""), [x, B] = G.useState(false), [E, b] = G.useState(""), [D, v] = G.useState(""), [M, F] = G.useState(null), [O, Y] = G.useState(""), [P, U] = G.useState(false), [V, K] = G.useState(false), [ne, Z] = G.useState(null), re = O.length < 2 ? [] : n.filter((ge) => (ge.testName || "").toLowerCase().includes(O.toLowerCase()) || (ge.testCode || "").toLowerCase().includes(O.toLowerCase())), $ = (ge) => {
-      l(ge), ge && (F(null), Y(""), g(""), u(""), I(""), C(""), B(false));
-    }, q = (ge) => {
-      if (l(false), F(ge), g(ge.testName), u(ge.basePrice || ""), Y(ge.testName), U(false), ge.labRates && ge.labRates.length > 0) {
-        const Ie = ge.labRates[0];
+    const [o, l] = G.useState(false), [c, g] = G.useState(""), [d, u] = G.useState(""), [h, I] = G.useState(""), [p, C] = G.useState(""), [x, B] = G.useState(false), [E, b] = G.useState(""), [D, v] = G.useState(""), [M, F] = G.useState(null), [O, Y] = G.useState(""), [P, U] = G.useState(false), [V, K] = G.useState(false), [ne, Z] = G.useState(null), re = O.length < 2 ? [] : n.filter((ue) => (ue.testName || "").toLowerCase().includes(O.toLowerCase()) || (ue.testCode || "").toLowerCase().includes(O.toLowerCase())), $ = (ue) => {
+      l(ue), ue && (F(null), Y(""), g(""), u(""), I(""), C(""), B(false));
+    }, q = (ue) => {
+      if (l(false), F(ue), g(ue.testName), u(ue.basePrice || ""), Y(ue.testName), U(false), ue.labRates && ue.labRates.length > 0) {
+        const Ie = ue.labRates[0];
         C(Ie.labId), I(Ie.cost), B(false);
       } else I(""), C("");
-    }, se = (ge) => {
-      if (ge === "NEW") B(true), C("");
-      else if (B(false), C(ge), M && M.labRates) {
-        const Ie = M.labRates.find((Me) => Me.labId === ge);
+    }, se = (ue) => {
+      if (ue === "NEW") B(true), C("");
+      else if (B(false), C(ue), M && M.labRates) {
+        const Ie = M.labRates.find((Me) => Me.labId === ue);
         Ie && I(Ie.cost);
       }
-    }, ae = async (ge) => {
-      if (ge.preventDefault(), !c.trim()) {
+    }, ae = async (ue) => {
+      if (ue.preventDefault(), !c.trim()) {
         Z("Test Name is required.");
         return;
       }
@@ -27430,7 +27430,7 @@ Details: ${s.inner}`);
                 i.jsx("input", {
                   type: "checkbox",
                   checked: o,
-                  onChange: (ge) => $(ge.target.checked),
+                  onChange: (ue) => $(ue.target.checked),
                   className: "w-4 h-4 rounded border-zinc-300 text-synos-primary focus:ring-synos-primary"
                 }),
                 i.jsx("span", {
@@ -27460,8 +27460,8 @@ Details: ${s.inner}`);
             i.jsx("input", {
               type: "text",
               value: O,
-              onChange: (ge) => {
-                Y(ge.target.value), U(true);
+              onChange: (ue) => {
+                Y(ue.target.value), U(true);
               },
               onFocus: () => U(true),
               className: Le("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors border-amber-500/20", s.input),
@@ -27470,20 +27470,20 @@ Details: ${s.inner}`);
             }),
             P && re.length > 0 && i.jsx("div", {
               className: Le("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border shadow-xl max-h-48", a ? "bg-zinc-900 border-zinc-800" : "bg-white border-zinc-200"),
-              children: re.map((ge) => i.jsxs("button", {
+              children: re.map((ue) => i.jsxs("button", {
                 type: "button",
-                onClick: () => q(ge),
+                onClick: () => q(ue),
                 className: Le("w-full text-left px-3 py-2 transition-colors border-b last:border-0 flex items-center justify-between group", a ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100"),
                 children: [
                   i.jsxs("div", {
                     children: [
                       i.jsx("div", {
                         className: "text-sm font-medium",
-                        children: ge.testName
+                        children: ue.testName
                       }),
                       i.jsx("div", {
                         className: "text-[10px] opacity-50 font-mono",
-                        children: ge.testCode
+                        children: ue.testCode
                       })
                     ]
                   }),
@@ -27491,11 +27491,11 @@ Details: ${s.inner}`);
                     className: "text-xs font-bold text-amber-500 group-hover:scale-110 transition-transform",
                     children: [
                       "\u20B9",
-                      ge.basePrice
+                      ue.basePrice
                     ]
                   })
                 ]
-              }, ge.testId || ge.testCode))
+              }, ue.testId || ue.testCode))
             })
           ]
         }),
@@ -27525,7 +27525,7 @@ Details: ${s.inner}`);
                     i.jsx("input", {
                       type: "text",
                       value: c,
-                      onChange: (ge) => g(ge.target.value),
+                      onChange: (ue) => g(ue.target.value),
                       className: Le("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50", s.input),
                       placeholder: "e.g. Rare Genetic Panel",
                       disabled: V || !o && M,
@@ -27548,7 +27548,7 @@ Details: ${s.inner}`);
                     i.jsx("input", {
                       type: "number",
                       value: d,
-                      onChange: (ge) => u(ge.target.value),
+                      onChange: (ue) => u(ue.target.value),
                       className: Le("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50 font-bold", s.input),
                       placeholder: "0.00",
                       disabled: V || !o && M
@@ -27564,7 +27564,7 @@ Details: ${s.inner}`);
                     i.jsx("input", {
                       type: "number",
                       value: h,
-                      onChange: (ge) => I(ge.target.value),
+                      onChange: (ue) => I(ue.target.value),
                       className: Le("w-full h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50", s.input),
                       placeholder: "0.00",
                       disabled: V
@@ -27589,7 +27589,7 @@ Details: ${s.inner}`);
                   className: "flex gap-2",
                   children: i.jsxs("select", {
                     value: x ? "NEW" : p,
-                    onChange: (ge) => se(ge.target.value),
+                    onChange: (ue) => se(ue.target.value),
                     className: Le("flex-1 h-10 rounded-lg px-3 py-2 text-sm focus:outline-none transition-colors disabled:opacity-50", s.input, !o && M && ((_a2 = M.labRates) == null ? void 0 : _a2.length) === 1 && "bg-zinc-100 dark:bg-zinc-800 cursor-not-allowed"),
                     disabled: V || !o && M && ((_b2 = M.labRates) == null ? void 0 : _b2.length) === 1,
                     children: [
@@ -27597,10 +27597,10 @@ Details: ${s.inner}`);
                         value: "",
                         children: "Select Lab..."
                       }),
-                      e.filter((ge) => o || !M || !M.labRates || M.labRates.length === 0 ? true : M.labRates.some((Ie) => Ie.labId === ge.id)).map((ge) => i.jsx("option", {
-                        value: ge.id,
-                        children: ge.name
-                      }, ge.id)),
+                      e.filter((ue) => o || !M || !M.labRates || M.labRates.length === 0 ? true : M.labRates.some((Ie) => Ie.labId === ue.id)).map((ue) => i.jsx("option", {
+                        value: ue.id,
+                        children: ue.name
+                      }, ue.id)),
                       i.jsx("option", {
                         value: "NEW",
                         className: "text-amber-500 font-bold",
@@ -27636,7 +27636,7 @@ Details: ${s.inner}`);
                         i.jsx("input", {
                           type: "text",
                           value: E,
-                          onChange: (ge) => b(ge.target.value),
+                          onChange: (ue) => b(ue.target.value),
                           className: Le("w-full h-9 rounded-lg px-3 text-sm focus:outline-none transition-colors", s.input),
                           placeholder: "Enter lab name..."
                         })
@@ -27651,7 +27651,7 @@ Details: ${s.inner}`);
                         i.jsx("input", {
                           type: "text",
                           value: D,
-                          onChange: (ge) => v(ge.target.value),
+                          onChange: (ue) => v(ue.target.value),
                           className: Le("w-full h-9 rounded-lg px-3 text-sm focus:outline-none transition-colors", s.input),
                           placeholder: "City/Area..."
                         })
@@ -27819,7 +27819,7 @@ Details: ${s.inner}`);
     const ae = (tt) => {
       tt.isCorporate ? s({
         corporateAccountId: tt.id,
-        insuranceCompanyId: tt.id
+        insuranceCompanyId: null
       }, {
         persist: true,
         silent: false,
@@ -27832,7 +27832,7 @@ Details: ${s.inner}`);
         silent: false,
         refreshSnapshot: true
       }), M(false), E(false), D("");
-    }, ge = (tt) => {
+    }, ue = (tt) => {
       if (!v || se.length === 0) {
         (tt.key === "ArrowDown" || tt.key === "Enter") && M(true);
         return;
@@ -28043,7 +28043,7 @@ Details: ${s.inner}`);
                           onChange: (tt) => {
                             D(tt.target.value), M(true), O(0);
                           },
-                          onKeyDown: ge,
+                          onKeyDown: ue,
                           className: Le("w-full h-9 pl-9 pr-8 rounded-lg text-xs font-medium border outline-none transition-all", l ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500 placeholder:text-zinc-500" : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm placeholder:text-zinc-400")
                         }),
                         q && B && i.jsx("button", {
@@ -29021,7 +29021,7 @@ Details: ${s.inner}`);
           K(false);
         }
       }
-    }, [Z, re] = G.useState(false), [$, q] = G.useState(false), se = t == null ? void 0 : t.visit, ae = (se == null ? void 0 : se.tests) || [], ge = ae.filter((_e2) => !_e2.isOutsourced && !_e2.parentOrderId && !(_e2.price === 0 && !_e2.isProfile && ae.some((Je) => Je.isProfile))), Ie = ae.filter((_e2) => _e2.isOutsourced && !_e2.parentOrderId && !(_e2.price === 0 && !_e2.isProfile && ae.some((Je) => Je.isProfile))), Me = [
+    }, [Z, re] = G.useState(false), [$, q] = G.useState(false), se = t == null ? void 0 : t.visit, ae = (se == null ? void 0 : se.tests) || [], ue = ae.filter((_e2) => !_e2.isOutsourced && !_e2.parentOrderId && !(_e2.price === 0 && !_e2.isProfile && ae.some((Je) => Je.isProfile))), Ie = ae.filter((_e2) => _e2.isOutsourced && !_e2.parentOrderId && !(_e2.price === 0 && !_e2.isProfile && ae.some((Je) => Je.isProfile))), Me = [
       "Paid",
       "Cancelled"
     ].includes((se == null ? void 0 : se.status) || ""), Qe = ((_a2 = t == null ? void 0 : t.billing) == null ? void 0 : _a2.isLocked) || false, Re = ((_b2 = t == null ? void 0 : t.uiHints) == null ? void 0 : _b2.isReadOnly) || false, Fe = Me || Qe || Re, rt = ((se == null ? void 0 : se.samples) || []).some((_e2) => _e2.status !== "Pending"), tt = !!((_d = (_c2 = t == null ? void 0 : t.billing) == null ? void 0 : _c2.referral) == null ? void 0 : _d.partner), Ce = (_f2 = (_e = t == null ? void 0 : t.billing) == null ? void 0 : _e.referral) == null ? void 0 : _f2.draft, te = !Fe && (!rt || !tt);
@@ -29140,7 +29140,7 @@ Details: ${s.inner}`);
         price: _e2.basePrice || _e2.price || _e2.Price || 0,
         isCorporateRate: false
       };
-    }, ue = async (_e2) => {
+    }, ge = async (_e2) => {
       if (!(!te || !e)) {
         if (A) {
           bt({
@@ -29492,7 +29492,7 @@ Details: ${s.inner}`);
                         isProcessing: V,
                         partners: x,
                         allowFreeText: true,
-                        onApplyPartner: ue,
+                        onApplyPartner: ge,
                         onUpdateText: async (_e2) => {
                           if (!(!e || !te)) {
                             if (A) {
@@ -29678,7 +29678,7 @@ Details: ${s.inner}`);
                         isProcessing: V,
                         partners: x,
                         allowFreeText: true,
-                        onApplyPartner: ue,
+                        onApplyPartner: ge,
                         onUpdateText: async (_e2) => {
                           if (!(!e || !te)) {
                             K(true);
@@ -29963,11 +29963,11 @@ Details: ${s.inner}`);
             i.jsxs("div", {
               className: "space-y-2",
               children: [
-                ge.length === 0 && !Fe && i.jsx("div", {
+                ue.length === 0 && !Fe && i.jsx("div", {
                   className: "text-center py-4 border border-dashed border-zinc-800 rounded-lg type-label",
                   children: "No internal tests added"
                 }),
-                ge.map((_e2) => i.jsxs("div", {
+                ue.map((_e2) => i.jsxs("div", {
                   className: Le("rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border", Ne.testCard),
                   children: [
                     i.jsxs("div", {
@@ -30566,7 +30566,7 @@ Details: ${s.inner}`);
     const Me = async (ye) => {
       if (!(!ye || !Ie || !Z)) {
         if (n) {
-          const nt = c.find((ue) => ue.code === ye), Ee = (nt == null ? void 0 : nt.discountDefinitionId) || (nt == null ? void 0 : nt.id);
+          const nt = c.find((ge) => ge.code === ye), Ee = (nt == null ? void 0 : nt.discountDefinitionId) || (nt == null ? void 0 : nt.id);
           if (console.log("DEBUG: Selected Discount:", nt, "MasterID:", Ee), !Ee) {
             console.error("Critical: Discount ID not found on object", nt), alert("System Error: Cannot identify selected discount. Please report this to IT.");
             return;
@@ -30617,18 +30617,18 @@ Details: ${s.inner}`);
       }
     }, Re = async (ye, nt) => {
       if (!Z) return;
-      const Ee = nt || v, ue = ye !== void 0 ? Number(ye) : Number(F) || 0, De = (K == null ? void 0 : K.grossAmount) || 0;
+      const Ee = nt || v, ge = ye !== void 0 ? Number(ye) : Number(F) || 0, De = (K == null ? void 0 : K.grossAmount) || 0;
       let Ue = 0;
       if (Ee === "PERCENTAGE") {
-        const fe = Math.min(100, Math.max(0, ue));
+        const fe = Math.min(100, Math.max(0, ge));
         Ue = Math.round(De * (fe / 100) * 100) / 100;
-      } else Ue = Math.min(De, Math.max(0, ue));
+      } else Ue = Math.min(De, Math.max(0, ge));
       l(true);
       try {
         await Kt.updateB2BDiscountRate(Z, {
           discountAmount: Ue,
           discountType: Ee === "PERCENTAGE" ? "Percentage" : "Flat",
-          discountValue: ue
+          discountValue: ge
         }), P(false), e && e();
       } catch (fe) {
         console.error("Failed to update B2B discount rate", fe), alert("Failed to update B2B discount rate: " + fe.message);
@@ -30867,7 +30867,7 @@ Details: ${s.inner}`);
                 const De = Math.min(100, Math.max(0, nt));
                 Ee = Math.round(ye * (De / 100) * 100) / 100;
               } else Ee = Math.min(ye, Math.max(0, nt));
-              const ue = Math.max(0, ye - Ee);
+              const ge = Math.max(0, ye - Ee);
               return i.jsxs("div", {
                 className: Le("p-3 rounded-xl border space-y-2.5", $ ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-slate-50 border-slate-200 text-zinc-900 shadow-xs"),
                 children: [
@@ -31007,7 +31007,7 @@ Details: ${s.inner}`);
                             className: "font-mono text-emerald-600 dark:text-emerald-400 text-sm",
                             children: [
                               "\u20B9",
-                              ue.toLocaleString()
+                              ge.toLocaleString()
                             ]
                           })
                         ]
@@ -33413,8 +33413,8 @@ Details: ${s.inner}`);
                 outstandingBalance: 12,
                 labBilled: 11,
                 notes: 15
-              }, ae = ne.reduce((Qe, [Re]) => Qe + (se[Re] || 10), 0), ge = se[q] || 10, Ie = s ? 100 : 96.5;
-              return `${(ge / ae * Ie).toFixed(1)}%`;
+              }, ae = ne.reduce((Qe, [Re]) => Qe + (se[Re] || 10), 0), ue = se[q] || 10, Ie = s ? 100 : 96.5;
+              return `${(ue / ae * Ie).toFixed(1)}%`;
             };
             return i.jsx(pg, {
               boxId: "itemsTable",
@@ -33474,7 +33474,7 @@ Details: ${s.inner}`);
                                   i.jsx("input", {
                                     type: "checkbox",
                                     checked: ae,
-                                    onChange: (ge) => O("itemsTable", q, ge.target.checked),
+                                    onChange: (ue) => O("itemsTable", q, ue.target.checked),
                                     className: "rounded border-zinc-300 text-indigo-600 focus:ring-0 cursor-pointer"
                                   }),
                                   i.jsx("span", {
@@ -33596,8 +33596,8 @@ Details: ${s.inner}`);
                                     children: [
                                       i.jsx("button", {
                                         type: "button",
-                                        onClick: (ge) => {
-                                          ge.stopPropagation(), p({
+                                        onClick: (ue) => {
+                                          ue.stopPropagation(), p({
                                             boxId: "itemsTable",
                                             colKey: q,
                                             label: se.label
@@ -33611,8 +33611,8 @@ Details: ${s.inner}`);
                                       }),
                                       i.jsx("button", {
                                         type: "button",
-                                        onClick: (ge) => {
-                                          ge.stopPropagation(), F("itemsTable", q);
+                                        onClick: (ue) => {
+                                          ue.stopPropagation(), F("itemsTable", q);
                                         },
                                         className: "p-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-colors",
                                         title: `Delete column "${se.label || q}"`,
@@ -33689,8 +33689,8 @@ Details: ${s.inner}`);
                           i.jsxs("tr", {
                             className: "hover:bg-zinc-50 group/row break-inside-avoid print:break-inside-avoid",
                             children: [
-                              ne.map(([ae, ge]) => {
-                                const Ie = q[ae] !== void 0 ? q[ae] : q[ge.id] ?? "", Me = [
+                              ne.map(([ae, ue]) => {
+                                const Ie = q[ae] !== void 0 ? q[ae] : q[ue.id] ?? "", Me = [
                                   "price",
                                   "amount",
                                   "grossAmount",
@@ -34146,11 +34146,11 @@ Details: ${s.inner}`);
                       label: $.label ? `${$.label}:` : "",
                       value: $.value,
                       onSave: (q, se) => {
-                        const ae = Z.customLines.map((ge) => ge.id === $.id ? {
-                          ...ge,
+                        const ae = Z.customLines.map((ue) => ue.id === $.id ? {
+                          ...ue,
                           label: q,
                           value: se
-                        } : ge);
+                        } : ue);
                         B({
                           ...t,
                           boxes: {
@@ -34368,7 +34368,7 @@ Details: ${s.inner}`);
     const K = async () => {
       var _a3, _b3, _c3, _d2, _e2;
       x || b(true);
-      const ue = u.current;
+      const ge = u.current;
       try {
         const De = await Kt.getIntakeSnapshot(M, O);
         if (B((Ue) => {
@@ -34390,7 +34390,7 @@ Details: ${s.inner}`);
               canRegisterPatient: true
             }
           };
-        }), ((_a3 = De == null ? void 0 : De.visit) == null ? void 0 : _a3.id) && De.visit.id !== O && Y(De.visit.id), ((_b3 = De == null ? void 0 : De.visit) == null ? void 0 : _b3.visitId) && De.visit.visitId !== O && Y(De.visit.visitId), ((_c3 = De == null ? void 0 : De.patient) == null ? void 0 : _c3.patientId) && De.patient.patientId !== M && F(De.patient.patientId), ue === u.current) {
+        }), ((_a3 = De == null ? void 0 : De.visit) == null ? void 0 : _a3.id) && De.visit.id !== O && Y(De.visit.id), ((_b3 = De == null ? void 0 : De.visit) == null ? void 0 : _b3.visitId) && De.visit.visitId !== O && Y(De.visit.visitId), ((_c3 = De == null ? void 0 : De.patient) == null ? void 0 : _c3.patientId) && De.patient.patientId !== M && F(De.patient.patientId), ge === u.current) {
           const Ue = (_d2 = De == null ? void 0 : De.visit) == null ? void 0 : _d2.billingType;
           Ue === 1 || Ue === "PrepaidPartner" || ((_e2 = De == null ? void 0 : De.visit) == null ? void 0 : _e2.paymentCollectionModel) === "PartnerCollects" ? (d("PrepaidPartner"), c(true)) : Ue === 2 || Ue === "Insurance" || Ue === 3 || Ue === "Corporate" ? (d("Insurance"), c(false)) : (Ue === 0 || Ue === "Standard") && (d("Standard"), c(false));
         }
@@ -34403,7 +34403,7 @@ Details: ${s.inner}`);
     G.useEffect(() => {
       if (!e) return;
       K();
-      const ue = (De) => {
+      const ge = (De) => {
         var _a3, _b3;
         if (!De) return;
         const Ue = ((_a3 = De == null ? void 0 : De.visit) == null ? void 0 : _a3.visitId) || ((_b3 = De == null ? void 0 : De.visit) == null ? void 0 : _b3.id);
@@ -34416,23 +34416,23 @@ Details: ${s.inner}`);
         }
         B(De), Ue && !O && Y(Ue);
       };
-      return hA.onIntakeSnapshotUpdated(ue), () => {
+      return hA.onIntakeSnapshotUpdated(ge), () => {
       };
     }, [
       e,
       M,
       O
     ]);
-    const ne = async (ue) => {
-      if (!(ue == null ? void 0 : ue.id)) return;
-      const De = ue.fullName || ue.name || `${ue.firstName || ""} ${ue.lastName || ""}`.trim(), Ue = {
-        patientId: ue.id,
-        mrn: ue.mrn || ue.MRN || ue.patientId,
+    const ne = async (ge) => {
+      if (!(ge == null ? void 0 : ge.id)) return;
+      const De = ge.fullName || ge.name || `${ge.firstName || ""} ${ge.lastName || ""}`.trim(), Ue = {
+        patientId: ge.id,
+        mrn: ge.mrn || ge.MRN || ge.patientId,
         fullName: De || "Patient",
-        gender: ue.gender || "M",
-        age: ue.age,
-        mobile: ue.phone || ue.mobile || ue.currentPhoneNumber,
-        dateOfBirth: ue.dateOfBirth
+        gender: ge.gender || "M",
+        age: ge.age,
+        mobile: ge.phone || ge.mobile || ge.currentPhoneNumber,
+        dateOfBirth: ge.dateOfBirth
       };
       B((fe) => ({
         ...fe,
@@ -34445,10 +34445,10 @@ Details: ${s.inner}`);
         uiState: {
           canRegisterPatient: true
         }
-      })), F(ue.id);
+      })), F(ge.id);
       try {
         const fe = {
-          patientId: ue.id,
+          patientId: ge.id,
           dept: "Pathology",
           testCodes: [],
           paymentCollectionModel: null,
@@ -34460,14 +34460,14 @@ Details: ${s.inner}`);
       }
     }, Z = () => {
       F(null), Y(null), c(false), d("Standard"), I("Cash");
-    }, re = async (ue) => {
+    }, re = async (ge) => {
       var _a3, _b3, _c3, _d2;
-      if (g === ue) return;
+      if (g === ge) return;
       const De = ++u.current;
-      d(ue), c(ue === "PrepaidPartner");
+      d(ge), c(ge === "PrepaidPartner");
       const Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
       if (Ue && (!((_c3 = x == null ? void 0 : x.billing) == null ? void 0 : _c3.isLocked) || s)) try {
-        if (ue !== "Insurance" && ue !== "Corporate") {
+        if (ge !== "Insurance" && ge !== "Corporate") {
           const Ye = (((_d2 = x == null ? void 0 : x.visit) == null ? void 0 : _d2.tests) || []).filter((Ze) => (Ze.code || Ze.testCode || "").toUpperCase().startsWith("PKG-") || Ze.isPackage === true);
           for (const Ze of Ye) try {
             await Kt.removeTestFromVisit(Ue, Ze.code || Ze.testCode);
@@ -34477,7 +34477,7 @@ Details: ${s.inner}`);
         }
         if (await Kt.updateBillingContext({
           visitId: Ue,
-          billingType: ue
+          billingType: ge
         }), De !== u.current) return;
         await K();
       } catch (fe) {
@@ -34485,18 +34485,18 @@ Details: ${s.inner}`);
       }
     }, $ = () => {
       v(null), B(null), Z(), n(), t && t();
-    }, [q, se] = G.useState(false), [ae, ge] = G.useState({
+    }, [q, se] = G.useState(false), [ae, ue] = G.useState({
       isOpen: false,
       data: null
     }), Ie = () => {
       var _a3, _b3, _c3, _d2, _e3, _f3, _g3, _h2, _i2, _j3;
-      const ue = x == null ? void 0 : x.visit, De = x == null ? void 0 : x.patient, Ue = x == null ? void 0 : x.billing, fe = le !== void 0 ? le : Math.max(0, ((Ue == null ? void 0 : Ue.netAmount) || 0) - ((Ue == null ? void 0 : Ue.totalPaid) || 0)), Ye = g === "Corporate" || (ue == null ? void 0 : ue.billingType) === "Corporate" || !!(ue == null ? void 0 : ue.corporateAccountId), Ze = g === "Insurance" || (ue == null ? void 0 : ue.billingType) === "Insurance" || !!(ue == null ? void 0 : ue.insuranceCompanyId), ve = g === "PrepaidPartner" || (ue == null ? void 0 : ue.paymentCollectionModel) === "PartnerCollects" || !!(ue == null ? void 0 : ue.referralPartnerId), bt = ((_a3 = ue == null ? void 0 : ue.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b3 = ue == null ? void 0 : ue.corporateAccount) == null ? void 0 : _b3.name) || (Ye ? "Corporate Client" : ""), It = ((_c3 = ue == null ? void 0 : ue.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", Bt = (ue == null ? void 0 : ue.employeeId) || "", dt = ((_d2 = ue == null ? void 0 : ue.insuranceCompany) == null ? void 0 : _d2.name) || (Ze ? "Insurance Provider" : ""), _e2 = ((_e3 = ue == null ? void 0 : ue.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", Je = (ue == null ? void 0 : ue.policyNumber) || "", Oe = (ue == null ? void 0 : ue.preAuthApprovalNumber) || "", st = (ue == null ? void 0 : ue.insuranceCoPayAmount) || 0, ft = ((_f3 = ue == null ? void 0 : ue.referralPartner) == null ? void 0 : _f3.name) || ((_h2 = (_g3 = Ue == null ? void 0 : Ue.referral) == null ? void 0 : _g3.partner) == null ? void 0 : _h2.displayName) || (ve ? "Referral Partner" : "Self / Direct"), We = ((_i2 = ue == null ? void 0 : ue.referralPartner) == null ? void 0 : _i2.clinicName) || "", wt = ((_j3 = ue == null ? void 0 : ue.referralPartner) == null ? void 0 : _j3.code) || "", Ot = (ue == null ? void 0 : ue.tests) || [], dn = Ot.some((Qn) => Qn.isOutsourced || !!Qn.referenceLabName), Pn = Ot.filter((Qn) => Qn.isOutsourced && Qn.referenceLabName).map((Qn) => Qn.referenceLabName);
+      const ge = x == null ? void 0 : x.visit, De = x == null ? void 0 : x.patient, Ue = x == null ? void 0 : x.billing, fe = le !== void 0 ? le : Math.max(0, ((Ue == null ? void 0 : Ue.netAmount) || 0) - ((Ue == null ? void 0 : Ue.totalPaid) || 0)), Ye = g === "Corporate" || (ge == null ? void 0 : ge.billingType) === "Corporate" || !!(ge == null ? void 0 : ge.corporateAccountId), Ze = g === "Insurance" || (ge == null ? void 0 : ge.billingType) === "Insurance" || !!(ge == null ? void 0 : ge.insuranceCompanyId), ve = g === "PrepaidPartner" || (ge == null ? void 0 : ge.paymentCollectionModel) === "PartnerCollects" || !!(ge == null ? void 0 : ge.referralPartnerId), bt = ((_a3 = ge == null ? void 0 : ge.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b3 = ge == null ? void 0 : ge.corporateAccount) == null ? void 0 : _b3.name) || (Ye ? "Corporate Client" : ""), It = ((_c3 = ge == null ? void 0 : ge.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", Bt = (ge == null ? void 0 : ge.employeeId) || "", dt = ((_d2 = ge == null ? void 0 : ge.insuranceCompany) == null ? void 0 : _d2.name) || (Ze ? "Insurance Provider" : ""), _e2 = ((_e3 = ge == null ? void 0 : ge.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", Je = (ge == null ? void 0 : ge.policyNumber) || "", Oe = (ge == null ? void 0 : ge.preAuthApprovalNumber) || "", st = (ge == null ? void 0 : ge.insuranceCoPayAmount) || 0, ft = ((_f3 = ge == null ? void 0 : ge.referralPartner) == null ? void 0 : _f3.name) || ((_h2 = (_g3 = Ue == null ? void 0 : Ue.referral) == null ? void 0 : _g3.partner) == null ? void 0 : _h2.displayName) || (ve ? "Referral Partner" : "Self / Direct"), We = ((_i2 = ge == null ? void 0 : ge.referralPartner) == null ? void 0 : _i2.clinicName) || "", wt = ((_j3 = ge == null ? void 0 : ge.referralPartner) == null ? void 0 : _j3.code) || "", Ot = (ge == null ? void 0 : ge.tests) || [], dn = Ot.some((Qn) => Qn.isOutsourced || !!Qn.referenceLabName), Pn = Ot.filter((Qn) => Qn.isOutsourced && Qn.referenceLabName).map((Qn) => Qn.referenceLabName);
       return {
-        billNumber: (ue == null ? void 0 : ue.visitToken) || (ue == null ? void 0 : ue.token) || "INV-REC-001",
+        billNumber: (ge == null ? void 0 : ge.visitToken) || (ge == null ? void 0 : ge.token) || "INV-REC-001",
         date: (/* @__PURE__ */ new Date()).toISOString(),
         status: (Ue == null ? void 0 : Ue.paymentStatus) || (fe <= 0 ? "Paid" : "PendingPayment"),
         billingContext: {
-          billingType: g || (ue == null ? void 0 : ue.billingType) || "Standard",
+          billingType: g || (ge == null ? void 0 : ge.billingType) || "Standard",
           isCorporate: Ye,
           corporateName: bt,
           corporateCode: It,
@@ -34527,7 +34527,7 @@ Details: ${s.inner}`);
           insuranceTpaName: _e2,
           policyNumber: Je,
           preAuthNumber: Oe,
-          billingMode: g || (ue == null ? void 0 : ue.billingType) || "Standard"
+          billingMode: g || (ge == null ? void 0 : ge.billingType) || "Standard"
         },
         items: Ot.map((Qn, Ae) => ({
           index: Ae + 1,
@@ -34548,11 +34548,11 @@ Details: ${s.inner}`);
           balanceDue: fe
         }
       };
-    }, Me = async (ue) => {
+    }, Me = async (ge) => {
       var _a3, _b3, _c3, _d2, _e2, _f3, _g3, _h2, _i2, _j3, _k3, _l3;
       const De = x == null ? void 0 : x.visit;
       if (De) try {
-        const Ue = ue || (De == null ? void 0 : De.visitToken) || (De == null ? void 0 : De.token) || "WAIT", fe = {
+        const Ue = ge || (De == null ? void 0 : De.visitToken) || (De == null ? void 0 : De.token) || "WAIT", fe = {
           visitId: (De == null ? void 0 : De.visitId) || O,
           token: Ue,
           patient: {
@@ -34586,16 +34586,16 @@ Details: ${s.inner}`);
       }
     }, [Qe, Re] = G.useState(false), Fe = async () => {
       var _a3, _b3, _c3;
-      const ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
-      if (ue) {
+      const ge = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
+      if (ge) {
         Re(true);
         try {
           const De = await Ct.getPartnerClaimStatement({
             visitIds: [
-              ue
+              ge
             ]
           });
-          ge({
+          ue({
             isOpen: true,
             slotId: "partner_b2b_invoice",
             data: De,
@@ -34627,23 +34627,25 @@ Details: ${s.inner}`);
           return;
         }
         if (g === "Insurance" && !x.billing.isLocked) {
-          const ue = x.visit;
-          if (!(ue == null ? void 0 : ue.insuranceCompanyId)) {
+          const ge = x.visit;
+          if (!(ge == null ? void 0 : ge.insuranceCompanyId) && !(ge == null ? void 0 : ge.corporateAccountId)) {
             v("Please select an Insurance or Corporate Company.");
             return;
           }
-          const De = ((ue == null ? void 0 : ue.policyNumber) || "").trim() || null;
+          const De = ((ge == null ? void 0 : ge.policyNumber) || "").trim() || null;
           b(true), se(true);
           try {
             await Kt.updateBillingContext({
               visitId: x.visit.visitId,
               billingType: "Insurance",
-              insuranceCompanyId: ue.insuranceCompanyId,
+              insuranceCompanyId: (ge == null ? void 0 : ge.insuranceCompanyId) || null,
+              corporateAccountId: (ge == null ? void 0 : ge.corporateAccountId) || null,
               policyNumber: De,
-              preAuthApprovalNumber: ((_d2 = ue == null ? void 0 : ue.preAuthApprovalNumber) == null ? void 0 : _d2.trim()) || null,
-              insuranceCoPayAmount: (ue == null ? void 0 : ue.insuranceCoPayAmount) || 0
+              employeeId: (ge == null ? void 0 : ge.employeeId) || De,
+              preAuthApprovalNumber: ((_d2 = ge == null ? void 0 : ge.preAuthApprovalNumber) == null ? void 0 : _d2.trim()) || null,
+              insuranceCoPayAmount: (ge == null ? void 0 : ge.insuranceCoPayAmount) || 0
             });
-            const Ue = await Kt.markVisitAsInsurance(x.visit.visitId), fe = (ue == null ? void 0 : ue.insuranceCoPayAmount) || 0;
+            const Ue = await Kt.markVisitAsInsurance(x.visit.visitId), fe = (ge == null ? void 0 : ge.insuranceCoPayAmount) || 0;
             fe > 0 && await Kt.collectPayment(x.visit.visitId, fe, h).catch((Ye) => console.warn("Co-Pay collection:", Ye)), Me(Ue == null ? void 0 : Ue.token).catch((Ye) => console.error("Thermal print error:", Ye)), $();
           } catch (Ue) {
             v(Ue.message), b(false);
@@ -34653,12 +34655,12 @@ Details: ${s.inner}`);
           return;
         }
         if (g === "Corporate" && !x.billing.isLocked) {
-          const ue = x.visit;
-          if (!(ue == null ? void 0 : ue.corporateAccountId)) {
+          const ge = x.visit;
+          if (!(ge == null ? void 0 : ge.corporateAccountId)) {
             v("Please select a Corporate Client / Organization.");
             return;
           }
-          const De = ((ue == null ? void 0 : ue.employeeId) || "").trim();
+          const De = ((ge == null ? void 0 : ge.employeeId) || "").trim();
           if (!De) {
             v("Please specify the Employee ID / Staff Number for this corporate visit.");
             return;
@@ -34668,7 +34670,7 @@ Details: ${s.inner}`);
             await Kt.updateBillingContext({
               visitId: x.visit.visitId,
               billingType: "Corporate",
-              corporateAccountId: ue.corporateAccountId,
+              corporateAccountId: ge.corporateAccountId,
               employeeId: De
             });
             const Ue = await Kt.markVisitAsCorporate(x.visit.visitId);
@@ -34683,10 +34685,10 @@ Details: ${s.inner}`);
         if (Ne && !x.billing.isLocked) {
           b(true), se(true), v(null);
           try {
-            const ue = await Kt.collectPayment(x.visit.visitId, le, h);
-            Me(ue == null ? void 0 : ue.token).catch((De) => console.error("Thermal print error:", De)), $();
-          } catch (ue) {
-            ue.message && ue.message.toLowerCase().includes("paid") ? (Me().catch((De) => console.error("Thermal print error:", De)), $()) : v(ue.message), b(false);
+            const ge = await Kt.collectPayment(x.visit.visitId, le, h);
+            Me(ge == null ? void 0 : ge.token).catch((De) => console.error("Thermal print error:", De)), $();
+          } catch (ge) {
+            ge.message && ge.message.toLowerCase().includes("paid") ? (Me().catch((De) => console.error("Thermal print error:", De)), $()) : v(ge.message), b(false);
           } finally {
             se(false);
           }
@@ -34701,8 +34703,8 @@ Details: ${s.inner}`);
     if (!Ce && tt) ye = "Add Tests to Proceed", nt = false;
     else if (Ce) if (be && !s) ye = "Visit Complete (Close)", nt = true;
     else if (g === "Insurance") {
-      const ue = ((_l2 = x == null ? void 0 : x.visit) == null ? void 0 : _l2.insuranceCoPayAmount) || 0;
-      ye = ue > 0 ? `Collect Co-Pay (\u20B9${ue}) & Authorize Claim` : "Authorize Cashless Claim (\u20B90)", nt = et;
+      const ge = ((_l2 = x == null ? void 0 : x.visit) == null ? void 0 : _l2.insuranceCoPayAmount) || 0;
+      ye = ge > 0 ? `Collect Co-Pay (\u20B9${ge}) & Authorize Claim` : "Authorize Cashless Claim (\u20B90)", nt = et;
     } else g === "Corporate" ? (ye = "Authorize Corporate B2B Bill (\u20B90)", nt = et) : Ge ? (ye = "Prepaid Checkout (\u20B90)", nt = et) : Ne ? (ye = `Accept Payment (\u20B9${le})`, nt = true) : (ye = "Add Tests to Proceed", nt = false);
     let Ee = "Registration";
     return o && (Ee = "Resume Visit"), s && (Ee = "Visit Correction"), i.jsxs("div", {
@@ -34821,7 +34823,7 @@ Details: ${s.inner}`);
             children: [
               i.jsxs("button", {
                 type: "button",
-                onClick: () => ge({
+                onClick: () => ue({
                   isOpen: true,
                   slotId: "patient_tax_invoice",
                   data: Ie(),
@@ -34885,7 +34887,7 @@ Details: ${s.inner}`);
                     children: [
                       i.jsxs("button", {
                         type: "button",
-                        onClick: () => ge({
+                        onClick: () => ue({
                           isOpen: true,
                           slotId: "patient_tax_invoice",
                           data: Ie(),
@@ -34956,7 +34958,7 @@ Details: ${s.inner}`);
         }),
         ae.isOpen && ae.data && i.jsx(pc, {
           isOpen: ae.isOpen,
-          onClose: () => ge({
+          onClose: () => ue({
             isOpen: false,
             data: null
           }),
@@ -34974,9 +34976,9 @@ Details: ${s.inner}`);
           initialPaymentModel: g === "PrepaidPartner" ? "PartnerCollects" : "LabCollects",
           initialPartnerType: "Doctor",
           isDark: U,
-          onSuccess: async (ue) => {
+          onSuccess: async (ge) => {
             var _a3, _b3;
-            const De = ue.referralPartnerId || ue.id, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
+            const De = ge.referralPartnerId || ge.id, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
             if (Ue && De) try {
               await Kt.applyReferralToVisit(Ue, De);
             } catch (fe) {
@@ -34991,9 +34993,9 @@ Details: ${s.inner}`);
           initialPaymentModel: "PartnerCollects",
           initialPartnerType: "RMP",
           isDark: U,
-          onSuccess: async (ue) => {
+          onSuccess: async (ge) => {
             var _a3, _b3;
-            const De = ue.referralPartnerId || ue.id, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
+            const De = ge.referralPartnerId || ge.id, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
             if (Ue && De) try {
               await Kt.updateSecondaryReferral(Ue, De);
             } catch (fe) {
@@ -35006,9 +35008,9 @@ Details: ${s.inner}`);
           isOpen: p === "insurance",
           onClose: () => C(null),
           isDark: U,
-          onSuccess: async (ue) => {
+          onSuccess: async (ge) => {
             var _a3, _b3;
-            const De = ue.id || ue.insuranceCompanyId, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
+            const De = ge.id || ge.insuranceCompanyId, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
             if (Ue && De) try {
               await Kt.updateBillingContext(Ue, {
                 insuranceCompanyId: De
@@ -35023,9 +35025,9 @@ Details: ${s.inner}`);
           isOpen: p === "corporate",
           onClose: () => C(null),
           isDark: U,
-          onSuccess: async (ue) => {
+          onSuccess: async (ge) => {
             var _a3, _b3;
-            const De = ue.id || ue.corporateAccountId, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
+            const De = ge.id || ge.corporateAccountId, Ue = O || ((_a3 = x == null ? void 0 : x.visit) == null ? void 0 : _a3.visitId) || ((_b3 = x == null ? void 0 : x.visit) == null ? void 0 : _b3.id);
             if (Ue && De) try {
               await Kt.updateBillingContext(Ue, {
                 corporateAccountId: De
@@ -35075,8 +35077,8 @@ Details: ${s.inner}`);
             status: $.operationalStatus,
             isFinalized: $.isFinalized
           }), d((q) => {
-            const se = q.some((ge) => ge.visitId === $.visitId), ae = !$.isFinalized || $.dateGroup === "Today";
-            return se ? !ae && !B.current ? q.filter((ge) => ge.visitId !== $.visitId) : q.map((ge) => ge.visitId === $.visitId ? $ : ge) : ae || B.current ? [
+            const se = q.some((ue) => ue.visitId === $.visitId), ae = !$.isFinalized || $.dateGroup === "Today";
+            return se ? !ae && !B.current ? q.filter((ue) => ue.visitId !== $.visitId) : q.map((ue) => ue.visitId === $.visitId ? $ : ue) : ae || B.current ? [
               $,
               ...q
             ] : q;
@@ -38346,8 +38348,8 @@ Details: ${s.inner}`);
           if (typeof $ == "string" && (r || A) && !Z && t.manuallyAnimateOnMount && t.parent) {
             const { parent: se } = t, ae = JC(se, $);
             if (se.enteringChildren && ae) {
-              const { delayChildren: ge } = ae.transition || {};
-              q.delay = JV(se.enteringChildren, t, ge);
+              const { delayChildren: ue } = ae.transition || {};
+              q.delay = JV(se.enteringChildren, t, ue);
             }
           }
           return {
@@ -41325,7 +41327,7 @@ Details: ${s.inner}`);
           row: Fe
         })
       }
-    ], ge = (Fe, rt) => {
+    ], ue = (Fe, rt) => {
       l((tt) => tt.map((Ce) => Ce.visitId === Fe ? {
         ...Ce,
         ...rt
@@ -41467,7 +41469,7 @@ Details: ${s.inner}`);
                       closePanel: () => {
                         n(false), D(null);
                       },
-                      onUpdateLocalState: ge
+                      onUpdateLocalState: ue
                     }),
                     i.jsx(Ux, {
                       isOpen: a,
@@ -42721,7 +42723,7 @@ Details: ${s.inner}`);
     });
   }
   function gQe() {
-    const { isConfigured: t, setIsConfigured: e } = oA(), n = Ja(), [r, A] = G.useState(1), [a, s] = G.useState(true), [o, l] = G.useState(""), [c, g] = G.useState("admin"), [d, u] = G.useState("Administrator"), [h, I] = G.useState(""), [p, C] = G.useState(""), [x, B] = G.useState(""), [E, b] = G.useState("localhost"), [D, v] = G.useState("SynOSDb-1"), [M, F] = G.useState("sa"), [O, Y] = G.useState(""), [P, U] = G.useState(true), [V, K] = G.useState(false), [ne, Z] = G.useState(0), [re, $] = G.useState(""), [q, se] = G.useState(false), [ae, ge] = G.useState("C:\\SynOS_Files\\PACS"), [Ie, Me] = G.useState("C:\\SynOS_Files"), [Qe, Re] = G.useState("C:\\SynOS_Working"), [Fe, rt] = G.useState(null), [tt, Ce] = G.useState(null), [te, Be] = G.useState(false), [le, Ne] = G.useState(false), [Ge, be] = G.useState(false), [et, ye] = G.useState(false), [nt, Ee] = G.useState(""), [ue, De] = G.useState(false), [Ue, fe] = G.useState({
+    const { isConfigured: t, setIsConfigured: e } = oA(), n = Ja(), [r, A] = G.useState(1), [a, s] = G.useState(true), [o, l] = G.useState(""), [c, g] = G.useState("admin"), [d, u] = G.useState("Administrator"), [h, I] = G.useState(""), [p, C] = G.useState(""), [x, B] = G.useState(""), [E, b] = G.useState("localhost"), [D, v] = G.useState("SynOSDb-1"), [M, F] = G.useState("sa"), [O, Y] = G.useState(""), [P, U] = G.useState(true), [V, K] = G.useState(false), [ne, Z] = G.useState(0), [re, $] = G.useState(""), [q, se] = G.useState(false), [ae, ue] = G.useState("C:\\SynOS_Files\\PACS"), [Ie, Me] = G.useState("C:\\SynOS_Files"), [Qe, Re] = G.useState("C:\\SynOS_Working"), [Fe, rt] = G.useState(null), [tt, Ce] = G.useState(null), [te, Be] = G.useState(false), [le, Ne] = G.useState(false), [Ge, be] = G.useState(false), [et, ye] = G.useState(false), [nt, Ee] = G.useState(""), [ge, De] = G.useState(false), [Ue, fe] = G.useState({
       statusUrl: "",
       loginUrl: ""
     }), [Ye, Ze] = G.useState([
@@ -42764,7 +42766,7 @@ Details: ${s.inner}`);
           const Oe = await fetch("/api/v1/setup/defaults");
           if (Oe.ok) {
             const ft = await Oe.json();
-            b(ft.databaseServer || "localhost"), v(ft.databaseName || "SynOSDb-1"), F(ft.databaseUser || "sa"), Y(ft.databasePassword || ""), ge(ft.pacsStorageFolder || "C:\\SynOS_Files\\PACS"), Me(ft.documentStorageFolder || "C:\\SynOS_Files"), Re(ft.workingDirectory || "C:\\SynOS_Working"), ft.detectedLicenseKey && l(ft.detectedLicenseKey), ft.hasExistingUsers ? (K(true), Z(ft.userCount || 0), $(ft.labName || ""), se(true)) : (K(false), se(false));
+            b(ft.databaseServer || "localhost"), v(ft.databaseName || "SynOSDb-1"), F(ft.databaseUser || "sa"), Y(ft.databasePassword || ""), ue(ft.pacsStorageFolder || "C:\\SynOS_Files\\PACS"), Me(ft.documentStorageFolder || "C:\\SynOS_Files"), Re(ft.workingDirectory || "C:\\SynOS_Working"), ft.detectedLicenseKey && l(ft.detectedLicenseKey), ft.hasExistingUsers ? (K(true), Z(ft.userCount || 0), $(ft.labName || ""), se(true)) : (K(false), se(false));
           }
           const st = await fetch("/api/v1/setup/progress");
           if (st.ok) {
@@ -43088,7 +43090,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
             })
           ]
         }),
-        ue && i.jsx("div", {
+        ge && i.jsx("div", {
           className: "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4",
           children: i.jsxs("div", {
             className: "w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4",
@@ -45128,8 +45130,8 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
             method: "POST",
             body: x,
             duplex: "half"
-          }), ge;
-          if (en.isFormData(x) && (ge = ae.headers.get("content-type")) && F.setContentType(ge), ae.body) {
+          }), ue;
+          if (en.isFormData(x) && (ue = ae.headers.get("content-type")) && F.setContentType(ue), ae.body) {
             const [Ie, Me] = fP(ne, wS(IP(v)));
             x = CP(ae.body, mP, Ie, Me);
           }
@@ -45156,15 +45158,15 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           ].forEach((Qe) => {
             ae[Qe] = $[Qe];
           });
-          const ge = en.toFiniteNumber($.headers.get("content-length")), [Ie, Me] = D && fP(ge, wS(IP(D), true)) || [];
+          const ue = en.toFiniteNumber($.headers.get("content-length")), [Ie, Me] = D && fP(ue, wS(IP(D), true)) || [];
           $ = new r(CP($.body, mP, Ie, () => {
             Me && Me(), K && K();
           }), ae);
         }
         M = M || "text";
         let se = await d[en.findKey(d, M) || "text"]($, I);
-        return !q && K && K(), await new Promise((ae, ge) => {
-          lq(ae, ge, {
+        return !q && K && K(), await new Promise((ae, ue) => {
+          lq(ae, ue, {
             data: se,
             headers: uc.from($.headers),
             status: $.status,
@@ -45916,15 +45918,15 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           type: "html",
           content: $
         });
-        let q = 0, se = -1, ae = false, ge = false;
+        let q = 0, se = -1, ae = false, ue = false;
         for (let Ie = re; Ie < Z.length; Ie++) {
           const Me = Z[Ie];
-          if (ge) {
-            ge = false;
+          if (ue) {
+            ue = false;
             continue;
           }
           if (Me === "\\") {
-            ge = true;
+            ue = true;
             continue;
           }
           if (Me === '"') {
@@ -64678,16 +64680,16 @@ ${n}
     console.log("[RichMedicalEditor.jsx] Initializing lastValueRef.current to:", D.current);
     const v = G.useRef(null), [M, F] = G.useState(null), [O, Y] = G.useState([]), [P, U] = G.useState([]), V = async () => {
       try {
-        const ge = await Mb.getMacros(), Ie = ge.filter((Qe) => {
+        const ue = await Mb.getMacros(), Ie = ue.filter((Qe) => {
           var _a2;
           return ((_a2 = Qe.scope) == null ? void 0 : _a2.toUpperCase()) === "PERSONAL" || !Qe.isSystem;
-        }), Me = ge.filter((Qe) => {
+        }), Me = ue.filter((Qe) => {
           var _a2;
           return ((_a2 = Qe.scope) == null ? void 0 : _a2.toUpperCase()) === "SYSTEM" || Qe.isSystem;
         });
         Y(Ie), U(Me), localStorage.setItem("synos_personal_snippets_cache", JSON.stringify(Ie)), localStorage.setItem("synos_system_snippets_cache", JSON.stringify(Me));
-      } catch (ge) {
-        console.error("Failed to fetch macros from backend database", ge);
+      } catch (ue) {
+        console.error("Failed to fetch macros from backend database", ue);
         try {
           const Ie = localStorage.getItem("synos_personal_snippets_cache");
           Ie && Y(JSON.parse(Ie));
@@ -64699,29 +64701,29 @@ ${n}
     };
     G.useEffect(() => {
       try {
-        const ge = localStorage.getItem("synos_personal_snippets_cache");
-        ge && Y(JSON.parse(ge));
+        const ue = localStorage.getItem("synos_personal_snippets_cache");
+        ue && Y(JSON.parse(ue));
         const Ie = localStorage.getItem("synos_system_snippets_cache");
         Ie && U(JSON.parse(Ie));
       } catch {
       }
       V();
     }, []), G.useEffect(() => {
-      const ge = () => {
+      const ue = () => {
         V();
       };
-      return window.addEventListener("synos_snippets_updated", ge), () => {
-        window.removeEventListener("synos_snippets_updated", ge);
+      return window.addEventListener("synos_snippets_updated", ue), () => {
+        window.removeEventListener("synos_snippets_updated", ue);
       };
     }, []);
-    const K = (ge) => {
-      if (!ge) return "";
-      let Ie = ge;
+    const K = (ue) => {
+      if (!ue) return "";
+      let Ie = ue;
       return A && (Ie = Ie.replace(/\{\{patientName\}\}/gi, A.patientName || "Patient").replace(/\{\{age\}\}/gi, String(A.age || "")).replace(/\{\{gender\}\}/gi, A.sex || A.gender || "").replace(/\{\{token\}\}/gi, A.token || "")), Ie;
     }, Z = [
       ...P,
       ...O
-    ].filter((ge) => ge.shortcut.toLowerCase().includes(C.toLowerCase()) || ge.label.toLowerCase().includes(C.toLowerCase())), re = G.useMemo(() => [
+    ].filter((ue) => ue.shortcut.toLowerCase().includes(C.toLowerCase()) || ue.label.toLowerCase().includes(C.toLowerCase())), re = G.useMemo(() => [
       ike.configure({
         codeBlock: false,
         dropcursor: false
@@ -64748,24 +64750,24 @@ ${n}
       content: "",
       editable: !r,
       editorProps: {
-        handleKeyDown(ge, Ie) {
+        handleKeyDown(ue, Ie) {
           if (Ie.key === "Backspace" || Ie.key === "Delete") {
-            const { state: Me } = ge, { selection: Qe } = Me, Re = !!(Qe.$anchorCell && Qe.$headCell), Fe = Qe.node && Qe.node.type.name === "table";
+            const { state: Me } = ue, { selection: Qe } = Me, Re = !!(Qe.$anchorCell && Qe.$headCell), Fe = Qe.node && Qe.node.type.name === "table";
             if (Re || Fe) return $.commands.deleteTable(), true;
           }
           return false;
         }
       },
-      onUpdate: ({ editor: ge }) => {
-        const Ie = JSON.stringify(ge.getJSON()), Me = ge.getText();
+      onUpdate: ({ editor: ue }) => {
+        const Ie = JSON.stringify(ue.getJSON()), Me = ue.getText();
         c(Me.trim() ? Me.trim().split(/\s+/).length : 0), Ie !== D.current && (D.current = Ie, e == null ? void 0 : e(Ie));
-        const Re = ge.state.selection.$from.pos, rt = ge.state.doc.textBetween(Math.max(0, Re - 20), Re, null, `
+        const Re = ue.state.selection.$from.pos, rt = ue.state.doc.textBetween(Math.max(0, Re - 20), Re, null, `
 `).match(/\/([a-zA-Z0-9-]*)$/);
         if (rt) {
           const tt = rt[1];
           x(tt), h(true), b.current = Re - rt[0].length;
           try {
-            const Ce = ge.view.coordsAtPos(Re);
+            const Ce = ue.view.coordsAtPos(Re);
             if (v.current) {
               const te = v.current.getBoundingClientRect(), Be = 288;
               let le = Ce.left - te.left;
@@ -64779,8 +64781,8 @@ ${n}
           }
         } else h(false);
       },
-      onSelectionUpdate: ({ editor: ge }) => {
-        const Ie = ge.state.selection, Me = [];
+      onSelectionUpdate: ({ editor: ue }) => {
+        const Ie = ue.state.selection, Me = [];
         let Qe = Ie.$from.parent;
         for (; Qe && Qe.type.name !== "doc"; ) Me.unshift(Qe.type.name), Qe = Qe.type.parent;
         d(Me.join(" > ") || "p");
@@ -64803,12 +64805,12 @@ ${n}
           }
           if (t.startsWith('{"type":"doc"')) JSON.stringify($.getJSON()) !== t ? (console.log("  5. calling setContent() with parsed JSON value"), $.commands.setContent(JSON.parse(t))) : console.log("  5. editor content matches value, setContent() skipped");
           else {
-            const ge = t.split(`
+            const ue = t.split(`
 `).map((Ie) => `<p>${Ie}</p>`).join("");
-            console.log("  5. calling setContent() with cleanHTML"), $.commands.setContent(ge);
+            console.log("  5. calling setContent() with cleanHTML"), $.commands.setContent(ue);
           }
-        } catch (ge) {
-          console.error("Content sync failed", ge);
+        } catch (ue) {
+          console.error("Content sync failed", ue);
         }
       }
     }, [
@@ -64821,40 +64823,40 @@ ${n}
       $
     ]), G.useEffect(() => {
       if (!u || Z.length === 0) return;
-      const ge = (Ie) => {
+      const ue = (Ie) => {
         Ie.key === "ArrowDown" ? (Ie.preventDefault(), E((Me) => (Me + 1) % Z.length)) : Ie.key === "ArrowUp" ? (Ie.preventDefault(), E((Me) => (Me - 1 + Z.length) % Z.length)) : Ie.key === "Enter" ? (Ie.preventDefault(), q(Z[B])) : Ie.key === "Escape" && (Ie.preventDefault(), h(false), $ == null ? void 0 : $.commands.focus());
       };
-      return window.addEventListener("keydown", ge), () => window.removeEventListener("keydown", ge);
+      return window.addEventListener("keydown", ue), () => window.removeEventListener("keydown", ue);
     }, [
       u,
       Z,
       B,
       $
     ]), G.useEffect(() => {
-      const ge = () => {
+      const ue = () => {
         F(null), h(false);
       };
-      return window.addEventListener("click", ge), () => window.removeEventListener("click", ge);
+      return window.addEventListener("click", ue), () => window.removeEventListener("click", ue);
     }, []);
-    const q = (ge) => {
+    const q = (ue) => {
       if (!$ || b.current === -1) return;
-      const Ie = K(ge.text);
+      const Ie = K(ue.text);
       $.chain().focus().deleteRange({
         from: b.current,
         to: $.state.selection.$from.pos
       }).insertContent(Ie).run(), h(false), x(""), E(0);
-    }, se = (ge) => {
+    }, se = (ue) => {
       if (r) return;
-      ge.preventDefault();
+      ue.preventDefault();
       const Ie = 256, Me = 220;
-      let Qe = ge.clientX, Re = ge.clientY;
+      let Qe = ue.clientX, Re = ue.clientY;
       Qe + Ie > window.innerWidth && (Qe = window.innerWidth - Ie - 8), Re + Me > window.innerHeight && (Re = window.innerHeight - Me - 8), F({
         x: Qe,
         y: Re
       });
-    }, ae = (ge) => {
+    }, ae = (ue) => {
       if (!$) return;
-      const Ie = K(ge);
+      const Ie = K(ue);
       $.chain().focus().insertContent(Ie).run(), F(null);
     };
     return $ ? i.jsxs("div", {
@@ -64905,8 +64907,8 @@ ${n}
                 }) ? "h2" : $.isActive("heading", {
                   level: 3
                 }) ? "h3" : "p",
-                onChange: (ge) => {
-                  const Ie = ge.target.value;
+                onChange: (ue) => {
+                  const Ie = ue.target.value;
                   Ie === "h1" ? $.chain().focus().toggleHeading({
                     level: 1
                   }).run() : Ie === "h2" ? $.chain().focus().toggleHeading({
@@ -64944,8 +64946,8 @@ ${n}
               i.jsxs("select", {
                 className: "bg-transparent text-xs font-bold text-zinc-655 dark:text-zinc-400 outline-none border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 cursor-pointer hover:bg-zinc-500/5 transition-colors focus:ring-1 focus:ring-synos-primary",
                 value: $.getAttributes("fontFamily").font || "default",
-                onChange: (ge) => {
-                  const Ie = ge.target.value;
+                onChange: (ue) => {
+                  const Ie = ue.target.value;
                   Ie === "default" ? $.chain().focus().unsetFontFamily().run() : $.chain().focus().setFontFamily(Ie).run();
                 },
                 title: "Font Family",
@@ -65003,8 +65005,8 @@ ${n}
               i.jsxs("select", {
                 className: "bg-transparent text-xs font-bold text-zinc-655 dark:text-zinc-400 outline-none border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 cursor-pointer hover:bg-zinc-500/5 transition-colors focus:ring-1 focus:ring-synos-primary w-16",
                 value: $.getAttributes("fontSize").size || "default",
-                onChange: (ge) => {
-                  const Ie = ge.target.value;
+                onChange: (ue) => {
+                  const Ie = ue.target.value;
                   Ie === "default" ? $.chain().focus().unsetFontSize().run() : $.chain().focus().setFontSize(Ie).run();
                 },
                 title: "Font Size",
@@ -65029,11 +65031,11 @@ ${n}
                     "28px",
                     "32px",
                     "36px"
-                  ].map((ge) => i.jsx("option", {
-                    value: ge,
+                  ].map((ue) => i.jsx("option", {
+                    value: ue,
                     className: "dark:bg-zinc-955 bg-white text-zinc-900 dark:text-zinc-200",
-                    children: ge.replace("px", "")
-                  }, ge))
+                    children: ue.replace("px", "")
+                  }, ue))
                 ]
               }),
               i.jsx("div", {
@@ -65149,28 +65151,28 @@ ${n}
             }),
             i.jsx("div", {
               className: "max-h-48 overflow-y-auto custom-scrollbar flex flex-col gap-0.5",
-              children: Z.map((ge, Ie) => i.jsxs("button", {
-                onClick: () => q(ge),
+              children: Z.map((ue, Ie) => i.jsxs("button", {
+                onClick: () => q(ue),
                 className: Le("w-full text-left px-2 py-1.5 rounded-lg flex flex-col gap-0.5 transition-all text-xs font-semibold", Ie === B ? "bg-synos-primary text-white" : "dark:text-zinc-300 text-zinc-700 hover:dark:bg-white/5 hover:bg-zinc-100"),
                 children: [
                   i.jsxs("span", {
                     className: "flex items-center justify-between",
                     children: [
                       i.jsx("span", {
-                        children: ge.label
+                        children: ue.label
                       }),
                       i.jsx("span", {
                         className: Le("text-[9px] font-bold px-1 rounded font-mono uppercase tracking-wider", Ie === B ? "bg-white/20 text-white" : "dark:bg-zinc-800 bg-zinc-100 text-zinc-500"),
-                        children: ge.shortcut
+                        children: ue.shortcut
                       })
                     ]
                   }),
                   i.jsx("span", {
                     className: Le("text-[9px] line-clamp-1", Ie === B ? "text-white/60" : "text-zinc-400 dark:text-zinc-500"),
-                    children: ge.description
+                    children: ue.description
                   })
                 ]
-              }, ge.shortcut))
+              }, ue.shortcut))
             })
           ]
         }),
@@ -65190,18 +65192,18 @@ ${n}
                 "Quick Insert Templates"
               ]
             }),
-            P.map((ge) => i.jsxs("button", {
-              onClick: () => ae(ge.text),
+            P.map((ue) => i.jsxs("button", {
+              onClick: () => ae(ue.text),
               className: "w-full text-left px-2 py-1.5 rounded-lg hover:dark:bg-white/5 hover:bg-zinc-100 flex items-center justify-between text-xs font-semibold dark:text-zinc-300 text-zinc-700 transition-colors",
               children: [
                 i.jsx("span", {
-                  children: ge.label
+                  children: ue.label
                 }),
                 i.jsx(ho, {
                   className: "w-3 h-3 text-synos-primary opacity-60"
                 })
               ]
-            }, ge.shortcut)),
+            }, ue.shortcut)),
             i.jsx("div", {
               className: "w-full h-px bg-zinc-200 dark:bg-white/10 my-0.5"
             }),
@@ -65701,8 +65703,8 @@ ${n}
       peerRole: "",
       studyId: "",
       patientName: ""
-    }), K = G.useRef(null), ne = G.useRef(null), Z = G.useRef(null), re = G.useRef(null), $ = G.useRef(null), q = G.useRef(null), se = G.useRef([]), ae = (ue, De, Ue = "sine", fe = 0, Ye = 0) => {
-      ge();
+    }), K = G.useRef(null), ne = G.useRef(null), Z = G.useRef(null), re = G.useRef(null), $ = G.useRef(null), q = G.useRef(null), se = G.useRef([]), ae = (ge, De, Ue = "sine", fe = 0, Ye = 0) => {
+      ue();
       try {
         const Ze = window.AudioContext || window.webkitAudioContext;
         if (!Ze) return;
@@ -65710,7 +65712,7 @@ ${n}
         q.current = ve;
         const bt = () => {
           const It = ve.createOscillator(), Bt = ve.createOscillator(), dt = ve.createGain();
-          It.type = Ue, It.frequency.setValueAtTime(ue, ve.currentTime), Bt.type = Ue, Bt.frequency.setValueAtTime(De, ve.currentTime), dt.gain.setValueAtTime(0.04, ve.currentTime), It.connect(dt), Bt.connect(dt), dt.connect(ve.destination), It.start(), Bt.start(), se.current.push(It, Bt, dt), fe > 0 && setTimeout(() => {
+          It.type = Ue, It.frequency.setValueAtTime(ge, ve.currentTime), Bt.type = Ue, Bt.frequency.setValueAtTime(De, ve.currentTime), dt.gain.setValueAtTime(0.04, ve.currentTime), It.connect(dt), Bt.connect(dt), dt.connect(ve.destination), It.start(), Bt.start(), se.current.push(It, Bt, dt), fe > 0 && setTimeout(() => {
             try {
               It.stop(), Bt.stop(), dt.disconnect();
             } catch {
@@ -65729,16 +65731,16 @@ ${n}
       } catch (Ze) {
         console.error("Failed to generate procedural audio tone:", Ze);
       }
-    }, ge = () => {
-      if (se.current.length > 0 && (se.current.forEach((ue) => {
-        if (ue.intervalId) clearInterval(ue.intervalId);
+    }, ue = () => {
+      if (se.current.length > 0 && (se.current.forEach((ge) => {
+        if (ge.intervalId) clearInterval(ge.intervalId);
         else {
           try {
-            ue.stop();
+            ge.stop();
           } catch {
           }
           try {
-            ue.disconnect();
+            ge.disconnect();
           } catch {
           }
         }
@@ -65759,7 +65761,7 @@ ${n}
       }
       if (ne.current) {
         try {
-          ne.current.getTracks().forEach((ue) => ue.stop());
+          ne.current.getTracks().forEach((ge) => ge.stop());
         } catch {
         }
         ne.current = null;
@@ -65768,10 +65770,10 @@ ${n}
         re.current.srcObject = null;
       } catch {
       }
-      Z.current = null, ge();
+      Z.current = null, ue();
     }, Fe = () => {
       $.current && (clearInterval($.current), $.current = null), E(0), M(false), Re();
-    }, rt = async (ue, De) => {
+    }, rt = async (ge, De) => {
       Re();
       try {
         const Ue = await navigator.mediaDevices.getUserMedia({
@@ -65801,7 +65803,7 @@ ${n}
             type: "candidate",
             candidate: Ze.candidate
           })).catch((ve) => console.error("Error sending WebRTC candidate:", ve));
-        }, ue) {
+        }, ge) {
           const Ze = await fe.createOffer();
           await fe.setLocalDescription(Ze), t && t.state === "Connected" && await t.invoke("SendDirectWebRtcSignal", De, JSON.stringify({
             type: "offer",
@@ -65811,16 +65813,16 @@ ${n}
       } catch (Ue) {
         console.error("Microphone access or WebRTC setup failed:", Ue), P("Microphone access denied or audio device not found."), Ne();
       }
-    }, tt = async (ue, De) => {
+    }, tt = async (ge, De) => {
       if (F.current !== "idle") try {
         const Ue = JSON.parse(De), fe = K.current;
         if (Ue.type === "offer") {
-          fe || await rt(false, ue);
+          fe || await rt(false, ge);
           const Ye = K.current;
           if (Ye) {
             await Ye.setRemoteDescription(new RTCSessionDescription(Ue.sdp));
             const Ze = await Ye.createAnswer();
-            await Ye.setLocalDescription(Ze), t && t.state === "Connected" && await t.invoke("SendDirectWebRtcSignal", ue, JSON.stringify({
+            await Ye.setLocalDescription(Ze), t && t.state === "Connected" && await t.invoke("SendDirectWebRtcSignal", ge, JSON.stringify({
               type: "answer",
               sdp: Ye.localDescription
             }));
@@ -65834,7 +65836,7 @@ ${n}
     };
     G.useEffect(() => {
       if (!t) return;
-      const ue = (bt) => {
+      const ge = (bt) => {
         const It = bt.filter((Bt) => Bt.userId !== (a == null ? void 0 : a.id));
         c(It);
       }, De = (bt) => {
@@ -65852,7 +65854,7 @@ ${n}
           patientName: bt.patientName
         }), o("ringing"), D(true), Me();
       }, Ue = (bt) => {
-        ge(), o("connected"), V((It) => ({
+        ue(), o("connected"), V((It) => ({
           ...It,
           peerUserId: bt.receiverUserId,
           peerName: bt.receiverName
@@ -65860,16 +65862,16 @@ ${n}
           E((It) => It + 1);
         }, 1e3), rt(true, bt.receiverUserId);
       }, fe = (bt) => {
-        ge(), Fe(), o("idle"), P("Call rejected by recipient.");
+        ue(), Fe(), o("idle"), P("Call rejected by recipient.");
       }, Ye = (bt) => {
-        ge(), Fe(), o("idle"), P("Call cancelled by caller.");
+        ue(), Fe(), o("idle"), P("Call cancelled by caller.");
       }, Ze = (bt) => {
         Fe(), o("idle"), P("Call ended.");
       }, ve = (bt, It) => {
-        ge(), Fe(), o("idle"), It === "Busy" ? (P("User is currently busy on another call."), Qe(), setTimeout(() => ge(), 3e3)) : P(It === "Offline" ? "User is offline." : "Call failed.");
+        ue(), Fe(), o("idle"), It === "Busy" ? (P("User is currently busy on another call."), Qe(), setTimeout(() => ue(), 3e3)) : P(It === "Offline" ? "User is offline." : "Call failed.");
       };
-      return t.on("OnlineUsersChanged", ue), t.on("ReceiveCallInvitation", De), t.on("CallAccepted", Ue), t.on("CallRejected", fe), t.on("CallCancelled", Ye), t.on("CallEnded", Ze), t.on("CallFailed", ve), t.on("ReceiveDirectWebRtcSignal", tt), t.state === "Connected" && t.invoke("GetOnlineUsers").then(ue).catch((bt) => console.error("Error fetching online list:", bt)), () => {
-        t.off("OnlineUsersChanged", ue), t.off("ReceiveCallInvitation", De), t.off("CallAccepted", Ue), t.off("CallRejected", fe), t.off("CallCancelled", Ye), t.off("CallEnded", Ze), t.off("CallFailed", ve), t.off("ReceiveDirectWebRtcSignal", tt);
+      return t.on("OnlineUsersChanged", ge), t.on("ReceiveCallInvitation", De), t.on("CallAccepted", Ue), t.on("CallRejected", fe), t.on("CallCancelled", Ye), t.on("CallEnded", Ze), t.on("CallFailed", ve), t.on("ReceiveDirectWebRtcSignal", tt), t.state === "Connected" && t.invoke("GetOnlineUsers").then(ge).catch((bt) => console.error("Error fetching online list:", bt)), () => {
+        t.off("OnlineUsersChanged", ge), t.off("ReceiveCallInvitation", De), t.off("CallAccepted", Ue), t.off("CallRejected", fe), t.off("CallCancelled", Ye), t.off("CallEnded", Ze), t.off("CallFailed", ve), t.off("ReceiveDirectWebRtcSignal", tt);
       };
     }, [
       t
@@ -65877,8 +65879,8 @@ ${n}
       Fe();
     }, []), G.useEffect(() => {
       if (Y) {
-        const ue = setTimeout(() => P(null), 5e3);
-        return () => clearTimeout(ue);
+        const ge = setTimeout(() => P(null), 5e3);
+        return () => clearTimeout(ge);
       }
     }, [
       Y
@@ -65892,55 +65894,55 @@ ${n}
         P("Please select an online operator to call.");
         return;
       }
-      const ue = l.find((fe) => fe.userId === g);
-      if (!ue) return;
+      const ge = l.find((fe) => fe.userId === g);
+      if (!ge) return;
       const De = e.studyId || e.radiologyStudyId || e.reportId, Ue = e.patientName;
       V({
-        peerUserId: ue.userId,
-        peerName: ue.name,
-        peerRole: ue.role,
+        peerUserId: ge.userId,
+        peerName: ge.name,
+        peerRole: ge.role,
         studyId: De,
         patientName: Ue
       }), o("calling"), Ie();
       try {
-        t && t.state === "Connected" ? await t.invoke("SendCallInvitation", ue.userId, De.toString(), Ue) : (P("Operational Network disconnected. Reconnecting..."), Ne());
+        t && t.state === "Connected" ? await t.invoke("SendCallInvitation", ge.userId, De.toString(), Ue) : (P("Operational Network disconnected. Reconnecting..."), Ne());
       } catch (fe) {
         console.error("Failed to place call:", fe), P("Could not initiate call signal."), Ne();
       }
     }, te = async () => {
-      if (ge(), t && t.state === "Connected") try {
+      if (ue(), t && t.state === "Connected") try {
         U.studyId && n && await n(U.studyId, U.peerRole), await t.invoke("AcceptCall", U.peerUserId), o("connected"), E(0), $.current = setInterval(() => {
-          E((ue) => ue + 1);
+          E((ge) => ge + 1);
         }, 1e3), await rt(false, U.peerUserId);
-      } catch (ue) {
-        console.error("Failed to accept call:", ue), Ne();
+      } catch (ge) {
+        console.error("Failed to accept call:", ge), Ne();
       }
       else P("Signal connection lost."), Ne();
     }, Be = async () => {
-      ge(), t && t.state === "Connected" && await t.invoke("RejectCall", U.peerUserId).catch((ue) => console.error(ue)), Fe(), o("idle");
+      ue(), t && t.state === "Connected" && await t.invoke("RejectCall", U.peerUserId).catch((ge) => console.error(ge)), Fe(), o("idle");
     }, le = async () => {
-      ge(), t && t.state === "Connected" && await t.invoke("CancelCall", U.peerUserId).catch((ue) => console.error(ue)), Fe(), o("idle");
+      ue(), t && t.state === "Connected" && await t.invoke("CancelCall", U.peerUserId).catch((ge) => console.error(ge)), Fe(), o("idle");
     }, Ne = async () => {
-      t && t.state === "Connected" && U.peerUserId && await t.invoke("EndCall", U.peerUserId).catch((ue) => console.error(ue)), Fe(), o("idle");
+      t && t.state === "Connected" && U.peerUserId && await t.invoke("EndCall", U.peerUserId).catch((ge) => console.error(ge)), Fe(), o("idle");
     }, Ge = () => {
-      h((ue) => {
-        const De = !ue;
+      h((ge) => {
+        const De = !ge;
         return ne.current && ne.current.getAudioTracks().forEach((Ue) => {
           Ue.enabled = !De;
         }), De;
       });
     }, be = () => {
-      x((ue) => {
-        const De = !ue;
+      x((ge) => {
+        const De = !ge;
         return re.current && (re.current.muted = De), De;
       });
-    }, et = (ue) => {
-      const De = parseFloat(ue.target.value);
+    }, et = (ge) => {
+      const De = parseFloat(ge.target.value);
       p(De), x(false), re.current && (re.current.volume = De, re.current.muted = false);
-    }, ye = (ue) => {
-      const De = Math.floor(ue / 60), Ue = ue % 60;
+    }, ye = (ge) => {
+      const De = Math.floor(ge / 60), Ue = ge % 60;
       return `${De.toString().padStart(2, "0")}:${Ue.toString().padStart(2, "0")}`;
-    }, nt = A || (r === "Radiologist" ? "Typist" : "Radiologist"), Ee = l.filter((ue) => ue.role === nt);
+    }, nt = A || (r === "Radiologist" ? "Typist" : "Radiologist"), Ee = l.filter((ge) => ge.role === nt);
     return i.jsxs("div", {
       className: "fixed bottom-6 right-6 z-[99] pointer-events-auto flex flex-col items-end gap-3 font-sans select-none",
       children: [
@@ -66273,21 +66275,21 @@ ${n}
                       ]
                     }) : i.jsxs("select", {
                       value: g,
-                      onChange: (ue) => d(ue.target.value),
+                      onChange: (ge) => d(ge.target.value),
                       className: "w-full text-xs dark:bg-zinc-950 bg-zinc-50 border dark:border-zinc-800 border-zinc-200 focus:border-synos-primary rounded-xl p-2.5 dark:text-zinc-200 text-zinc-800 focus:outline-none transition-all",
                       children: [
                         i.jsx("option", {
                           value: "",
                           children: "Select a Colleague..."
                         }),
-                        Ee.map((ue) => i.jsxs("option", {
-                          value: ue.userId,
+                        Ee.map((ge) => i.jsxs("option", {
+                          value: ge.userId,
                           children: [
-                            ue.name,
+                            ge.name,
                             " ",
-                            ue.currentCallState !== "Idle" ? `(${ue.currentCallState})` : ""
+                            ge.currentCallState !== "Idle" ? `(${ge.currentCallState})` : ""
                           ]
-                        }, ue.userId))
+                        }, ge.userId))
                       ]
                     })
                   ]
@@ -66323,7 +66325,7 @@ ${n}
               ]
             }),
             i.jsx("button", {
-              onClick: () => D((ue) => !ue),
+              onClick: () => D((ge) => !ge),
               className: `w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 active:scale-90 border hover:scale-105 ${b ? "bg-synos-primary border-synos-primary text-white" : "dark:bg-zinc-900 bg-white dark:border-zinc-850 border-zinc-200 text-synos-primary hover:text-synos-primary-light"}`,
               title: "Collaboration Audio Link",
               children: i.jsx(Uu, {
@@ -66368,7 +66370,7 @@ ${n}
     const { user: t } = oA(), { theme: e } = ra(), n = e === "dark", [r, A] = G.useState([]), [a, s] = G.useState(false), [o, l] = G.useState(null), [c, g] = G.useState(null), [d, u] = G.useState(false), [h, I] = G.useState(false), [p, C] = G.useState({
       interpretation: "",
       comments: ""
-    }), [x, B] = G.useState(null), [E, b] = G.useState(false), [D, v] = G.useState(null), [M, F] = G.useState(false), [O, Y] = G.useState(""), [P, U] = G.useState({}), [V, K] = G.useState(null), [ne, Z] = G.useState(false), [re, $] = G.useState(false), [q, se] = G.useState(false), [ae, ge] = G.useState(false), [Ie, Me] = G.useState({
+    }), [x, B] = G.useState(null), [E, b] = G.useState(false), [D, v] = G.useState(null), [M, F] = G.useState(false), [O, Y] = G.useState(""), [P, U] = G.useState({}), [V, K] = G.useState(null), [ne, Z] = G.useState(false), [re, $] = G.useState(false), [q, se] = G.useState(false), [ae, ue] = G.useState(false), [Ie, Me] = G.useState({
       name: "",
       designation: ""
     }), [Qe, Re] = G.useState(false), [Fe, rt] = G.useState(false), [tt, Ce] = G.useState(0.6), [te, Be] = G.useState({
@@ -66377,7 +66379,7 @@ ${n}
     }), [le, Ne] = G.useState(false), Ge = G.useRef({
       x: 0,
       y: 0
-    }), be = G.useRef(null), [et, ye] = G.useState(550), nt = G.useRef(false), Ee = G.useRef(null), { template: ue, loading: De } = Yx(x), Ue = G.useRef(0), [fe, Ye] = G.useState("Disconnected"), [Ze, ve] = G.useState(false), [bt, It] = G.useState(false), Bt = G.useRef(null), dt = G.useRef(null), _e = G.useRef(false), Je = G.useMemo(() => {
+    }), be = G.useRef(null), [et, ye] = G.useState(550), nt = G.useRef(false), Ee = G.useRef(null), { template: ge, loading: De } = Yx(x), Ue = G.useRef(0), [fe, Ye] = G.useState("Disconnected"), [Ze, ve] = G.useState(false), [bt, It] = G.useState(false), Bt = G.useRef(null), dt = G.useRef(null), _e = G.useRef(false), Je = G.useMemo(() => {
       if (o) {
         const yt = r.find((_t) => _t.reportId === o);
         return {
@@ -66544,7 +66546,7 @@ ${n}
       }
     }, wt = (yt, _t) => {
       var _a3;
-      console.error(`${_t}:`, yt), ((_a3 = yt.response) == null ? void 0 : _a3.status) === 401 && ge(true);
+      console.error(`${_t}:`, yt), ((_a3 = yt.response) == null ? void 0 : _a3.status) === 401 && ue(true);
     };
     G.useEffect(() => {
       o ? (nn(o), Re(true), Ce(0.6), Be({
@@ -66728,7 +66730,7 @@ ${n}
       }
     }, PA = r.find((yt) => yt.reportId === o), Xi = PA ? r.filter((yt) => yt.visitId === PA.visitId) : [], Ci = PA ? Xi.findIndex((yt) => yt.reportId === o) : -1, bi = Xi.filter((yt) => yt.status !== "Signed" && yt.status !== "ManualVerified").length, BA = (c == null ? void 0 : c.patientName) || ((_a2 = c == null ? void 0 : c.patient) == null ? void 0 : _a2.name), TA = (c == null ? void 0 : c.patientAgeGender) || (((_b2 = c == null ? void 0 : c.patient) == null ? void 0 : _b2.age) ? `${c.patient.age} / ${c.patient.gender}` : ""), ZA = (c == null ? void 0 : c.token) || ((_c2 = c == null ? void 0 : c.patient) == null ? void 0 : _c2.mrn) || "---", qr = G.useMemo(() => {
       var _a3;
-      if (!x || !ue) return null;
+      if (!x || !ge) return null;
       const yt = {
         ...x,
         results: (_a3 = x.results) == null ? void 0 : _a3.map((_t) => {
@@ -66752,12 +66754,12 @@ ${n}
       };
       return i.jsx(ym, {
         reportData: yt,
-        template: ue,
+        template: ge,
         forcePreprinted: Hr
       });
     }, [
       x,
-      ue,
+      ge,
       p,
       P,
       Hr
@@ -67487,7 +67489,7 @@ ${n}
                             children: "Assembling Preview..."
                           })
                         ]
-                      }) : !x || !ue ? i.jsxs("div", {
+                      }) : !x || !ge ? i.jsxs("div", {
                         className: "h-full flex flex-col items-center justify-center text-center opacity-20 p-8 no-print",
                         children: [
                           i.jsx(qA, {
@@ -67889,7 +67891,7 @@ ${n}
     const { user: A } = oA(), [a, s] = G.useState([]), [o, l] = G.useState(false), [c, g] = G.useState("available"), [d, u] = G.useState(true), [h, I] = G.useState(false), [p, C] = G.useState(""), [x, B] = G.useState(""), [E, b] = G.useState(""), [D, v] = G.useState(null), [M, F] = G.useState(false), [O, Y] = G.useState(false), [P, U] = G.useState(null), { template: V, loading: K } = Yx(P), [ne, Z] = G.useState(false), [re, $] = G.useState(0.55), [q, se] = G.useState({
       x: 0,
       y: 0
-    }), [ae, ge] = G.useState(false), Ie = G.useRef({
+    }), [ae, ue] = G.useState(false), Ie = G.useRef({
       x: 0,
       y: 0
     }), Me = G.useRef(null);
@@ -67922,7 +67924,7 @@ ${n}
       P
     ]);
     const Qe = (fe) => {
-      fe.button === 0 && (ge(true), Ie.current = {
+      fe.button === 0 && (ue(true), Ie.current = {
         x: fe.clientX - q.x,
         y: fe.clientY - q.y
       });
@@ -67932,7 +67934,7 @@ ${n}
         y: fe.clientY - Ie.current.y
       });
     }, Fe = () => {
-      ge(false);
+      ue(false);
     }, [rt, tt] = G.useState(false);
     t && (t.studyStatus === "DraftReady" || t.status === "DraftReady" || t.studyStatus === "AwaitingSignature" || t.status === "AwaitingSignature" || t.studyStatus === "Signed" || t.status);
     const [Ce, te] = G.useState(false), Be = n, le = G.useRef(null), Ne = async () => {
@@ -68155,7 +68157,7 @@ ${n}
       } finally {
         I(false);
       }
-    }, [ue, De] = G.useState(false), Ue = t ? {
+    }, [ge, De] = G.useState(false), Ue = t ? {
       patientName: t.patientName || ((_a2 = t.patient) == null ? void 0 : _a2.name) || "",
       age: t.patientAge || t.age || ((_b2 = t.patient) == null ? void 0 : _b2.age) || "",
       gender: t.patientGender || t.gender || t.sex || ((_c2 = t.patient) == null ? void 0 : _c2.gender) || "",
@@ -68406,7 +68408,7 @@ ${n}
                                     children: [
                                       i.jsx("input", {
                                         type: "checkbox",
-                                        checked: ue,
+                                        checked: ge,
                                         onChange: (fe) => {
                                           De(fe.target.checked), localStorage.setItem("synos_preprinted_mode", fe.target.checked ? "true" : "false");
                                         },
@@ -68475,7 +68477,7 @@ ${n}
                                   children: i.jsx(ym, {
                                     reportData: be,
                                     template: V,
-                                    forcePreprinted: ue
+                                    forcePreprinted: ge
                                   })
                                 })
                               }) : i.jsxs("div", {
@@ -68610,7 +68612,7 @@ ${n}
     const { user: t } = oA(), { theme: e } = ra(), [n, r] = G.useState("pathology"), [A, a] = G.useState([]), [s, o] = G.useState(false), [l, c] = G.useState(null), [g, d] = G.useState(null), [u, h] = G.useState(null), [I, p] = G.useState({}), [C, x] = G.useState(false), [B, E] = G.useState(false), [b, D] = G.useState({
       interpretation: "",
       comments: ""
-    }), [v, M] = G.useState(false), [F, O] = G.useState(null), [Y, P] = G.useState(false), [U, V] = G.useState(false), [K, ne] = G.useState(""), [Z, re] = G.useState(false), [$, q] = G.useState(false), [se, ae] = G.useState(0.6), [ge, Ie] = G.useState({
+    }), [v, M] = G.useState(false), [F, O] = G.useState(null), [Y, P] = G.useState(false), [U, V] = G.useState(false), [K, ne] = G.useState(""), [Z, re] = G.useState(false), [$, q] = G.useState(false), [se, ae] = G.useState(0.6), [ue, Ie] = G.useState({
       x: 0,
       y: 0
     }), [Me, Qe] = G.useState(false), Re = G.useRef({
@@ -68636,7 +68638,7 @@ ${n}
     }, [
       g,
       I
-    ]), le = (Be == null ? void 0 : Be.patientName) || ((_a2 = Be == null ? void 0 : Be.patient) == null ? void 0 : _a2.name), Ne = (Be == null ? void 0 : Be.patientAgeGender) || (((_b2 = Be == null ? void 0 : Be.patient) == null ? void 0 : _b2.age) ? `${Be.patient.age} / ${Be.patient.gender}` : ""), Ge = (Be == null ? void 0 : Be.token) || ((_c2 = Be == null ? void 0 : Be.patient) == null ? void 0 : _c2.mrn) || "---", [be, et] = G.useState(null), [ye, nt] = G.useState("Disconnected"), [Ee, ue] = G.useState(false), De = G.useRef(null), Ue = G.useRef(null);
+    ]), le = (Be == null ? void 0 : Be.patientName) || ((_a2 = Be == null ? void 0 : Be.patient) == null ? void 0 : _a2.name), Ne = (Be == null ? void 0 : Be.patientAgeGender) || (((_b2 = Be == null ? void 0 : Be.patient) == null ? void 0 : _b2.age) ? `${Be.patient.age} / ${Be.patient.gender}` : ""), Ge = (Be == null ? void 0 : Be.token) || ((_c2 = Be == null ? void 0 : Be.patient) == null ? void 0 : _c2.mrn) || "---", [be, et] = G.useState(null), [ye, nt] = G.useState("Disconnected"), [Ee, ge] = G.useState(false), De = G.useRef(null), Ue = G.useRef(null);
     G.useEffect(() => {
       let xn = false, Sn = null;
       const Mn = (lr) => {
@@ -68655,9 +68657,9 @@ ${n}
           console.error("Failed to parse live report draft packet:", Lr);
         }
       }, Or = (lr) => {
-        ue(true);
+        ge(true);
       }, hr = (lr) => {
-        ue(false);
+        ge(false);
       }, ci = () => {
         const lr = Ue.current;
         lr && st(lr);
@@ -68787,8 +68789,8 @@ ${n}
     ]);
     const Bt = (xn) => {
       xn.button === 0 && (Qe(true), Re.current = {
-        x: xn.clientX - ge.x,
-        y: xn.clientY - ge.y
+        x: xn.clientX - ue.x,
+        y: xn.clientY - ue.y
       });
     }, dt = (xn) => {
       Me && Ie({
@@ -69594,7 +69596,7 @@ ${n}
                         children: i.jsx("div", {
                           className: "preview-report-wrapper bg-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-sm overflow-hidden print:shadow-none print:rounded-none origin-top min-w-[210mm] transition-transform duration-75 select-none",
                           style: {
-                            transform: `translate(${ge.x}px, ${ge.y}px) scale(${se})`,
+                            transform: `translate(${ue.x}px, ${ue.y}px) scale(${se})`,
                             pointerEvents: Me ? "none" : "auto"
                           },
                           children: li
@@ -69720,7 +69722,7 @@ ${n}
   }
   function w5e() {
     var _a2, _b2;
-    const { user: t } = oA(), { theme: e } = ra(), n = G.useRef(null), [r, A] = G.useState(0.92), [a, s] = G.useState(() => localStorage.getItem("synos_delivery_department") || "Pathology"), [o, l] = G.useState([]), [c, g] = G.useState(false), [d, u] = G.useState(null), [h, I] = G.useState(null), [p, C] = G.useState(null), [x, B] = G.useState(false), [E, b] = G.useState(false), [D, v] = G.useState(false), [M, F] = G.useState(false), [O, Y] = G.useState(""), [P, U] = G.useState(false), [V, K] = G.useState(null), [ne, Z] = G.useState(false), [re, $] = G.useState(""), [q, se] = G.useState(true), [ae, ge] = G.useState(null), Ie = (nt, Ee = "success") => {
+    const { user: t } = oA(), { theme: e } = ra(), n = G.useRef(null), [r, A] = G.useState(0.92), [a, s] = G.useState(() => localStorage.getItem("synos_delivery_department") || "Pathology"), [o, l] = G.useState([]), [c, g] = G.useState(false), [d, u] = G.useState(null), [h, I] = G.useState(null), [p, C] = G.useState(null), [x, B] = G.useState(false), [E, b] = G.useState(false), [D, v] = G.useState(false), [M, F] = G.useState(false), [O, Y] = G.useState(""), [P, U] = G.useState(false), [V, K] = G.useState(null), [ne, Z] = G.useState(false), [re, $] = G.useState(""), [q, se] = G.useState(true), [ae, ue] = G.useState(null), Ie = (nt, Ee = "success") => {
       K({
         message: nt,
         type: Ee
@@ -69734,7 +69736,7 @@ ${n}
         });
         if (nt.ok) {
           const Ee = await nt.json();
-          ge(Ee);
+          ue(Ee);
         }
       } catch (nt) {
         console.error("Failed to fetch gateway status:", nt);
@@ -69760,7 +69762,7 @@ ${n}
       B(true);
       try {
         const nt = c ? "Signed,ManualVerified,Finalized,Delivered" : "ReadyForVerification,Signed,ManualVerified,Delivered", Ee = await Jr.getReportsByStatus(nt, a, c);
-        l(Ee), Ee.length > 0 && (!d || !Ee.some((ue) => ue.reportId === d)) ? u(Ee[0].reportId) : Ee.length === 0 && u(null);
+        l(Ee), Ee.length > 0 && (!d || !Ee.some((ge) => ge.reportId === d)) ? u(Ee[0].reportId) : Ee.length === 0 && u(null);
       } catch (nt) {
         console.error("Failed to fetch delivery worklist:", nt), Ie("Failed to load worklist", "error");
       } finally {
@@ -69785,9 +69787,9 @@ ${n}
       if (!n.current) return;
       const nt = () => {
         if (!n.current) return;
-        const ue = n.current.clientWidth;
-        if (ue > 0) {
-          const Ue = (ue - 16) / 793.7;
+        const ge = n.current.clientWidth;
+        if (ge > 0) {
+          const Ue = (ge - 16) / 793.7;
           A(Math.min(0.95, Math.max(0.35, Ue)));
         }
       };
@@ -72474,7 +72476,7 @@ ${n}
     "DEXA"
   ];
   function QRe() {
-    const { theme: t } = ra(), [e, n] = G.useState("roles"), [r, A] = G.useState(true), [a, s] = G.useState([]), [o, l] = G.useState([]), [c, g] = G.useState([]), [d, u] = G.useState([]), [h, I] = G.useState(null), [p, C] = G.useState([]), [x, B] = G.useState(false), [E, b] = G.useState(""), [D, v] = G.useState("ALL"), [M, F] = G.useState("ALL"), [O, Y] = G.useState("ALL"), [P, U] = G.useState("ALL"), [V, K] = G.useState(null), [ne, Z] = G.useState([]), [re, $] = G.useState([]), [q, se] = G.useState(false), [ae, ge] = G.useState(""), [Ie, Me] = G.useState(""), [Qe, Re] = G.useState(1), [Fe, rt] = G.useState(0);
+    const { theme: t } = ra(), [e, n] = G.useState("roles"), [r, A] = G.useState(true), [a, s] = G.useState([]), [o, l] = G.useState([]), [c, g] = G.useState([]), [d, u] = G.useState([]), [h, I] = G.useState(null), [p, C] = G.useState([]), [x, B] = G.useState(false), [E, b] = G.useState(""), [D, v] = G.useState("ALL"), [M, F] = G.useState("ALL"), [O, Y] = G.useState("ALL"), [P, U] = G.useState("ALL"), [V, K] = G.useState(null), [ne, Z] = G.useState([]), [re, $] = G.useState([]), [q, se] = G.useState(false), [ae, ue] = G.useState(""), [Ie, Me] = G.useState(""), [Qe, Re] = G.useState(1), [Fe, rt] = G.useState(0);
     G.useEffect(() => {
       tt();
     }, []), G.useEffect(() => {
@@ -72566,17 +72568,17 @@ ${n}
       } catch (st) {
         console.error(st);
       }
-    }, [et, ye] = G.useState(null), [nt, Ee] = G.useState(""), [ue, De] = G.useState(""), Ue = (Oe, st, ft) => {
+    }, [et, ye] = G.useState(null), [nt, Ee] = G.useState(""), [ge, De] = G.useState(""), Ue = (Oe, st, ft) => {
       ye(Oe), Ee(st.toString()), De(ft);
     }, fe = async (Oe, st) => {
       const ft = parseFloat(nt);
       if (!ft || ft <= 0) return;
-      const We = KE(ft, ue, st);
+      const We = KE(ft, ge, st);
       try {
         await ri.updateTestConsumable(V, Oe, {
           quantityPerTest: We,
           displayQuantity: ft,
-          displayUnit: ue
+          displayUnit: ge
         }), ye(null), await te(V);
       } catch (wt) {
         console.error(wt);
@@ -72970,7 +72972,7 @@ ${n}
                             type: "text",
                             placeholder: "Search diagnostic test...",
                             value: ae,
-                            onChange: (Oe) => ge(Oe.target.value),
+                            onChange: (Oe) => ue(Oe.target.value),
                             className: "w-full border border-zinc-200 dark:border-zinc-800 rounded-lg py-1.5 pl-8 pr-2.5 text-xs outline-none focus:ring-1 focus:ring-synos-primary transition-all",
                             style: {
                               backgroundColor: t === "dark" ? "#09090b" : "#ffffff",
@@ -73236,7 +73238,7 @@ ${n}
                                       autoFocus: true
                                     }),
                                     i.jsx("select", {
-                                      value: ue,
+                                      value: ge,
                                       onChange: (wt) => De(wt.target.value),
                                       className: "px-2 py-0.5 text-xs font-bold bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg outline-none text-synos-primary",
                                       children: cx(st).map((wt) => i.jsx("option", {
@@ -74732,7 +74734,7 @@ ${n}
         document.removeEventListener("mousedown", qe);
       };
     }, []);
-    const ne = (qe) => t ? qe === "All" ? t.length : t.filter((Dt) => (Dt.department || "").toLowerCase() === qe.toLowerCase()).length : 0, [Z, re] = G.useState(() => DH || []), [$, q] = G.useState(() => SH || []), [se, ae] = G.useState(false), [ge, Ie] = G.useState(false), [Me, Qe] = G.useState(""), [Re, Fe] = G.useState(""), [rt, tt] = G.useState("Radiology"), [Ce, te] = G.useState(false), [Be, le] = G.useState(""), [Ne, Ge] = G.useState(""), [be, et] = G.useState(false), [ye, nt] = G.useState(false), [Ee, ue] = G.useState(null), [De, Ue] = G.useState(false), [fe, Ye] = G.useState(null), [Ze, ve] = G.useState(false), [bt, It] = G.useState(null), [Bt, dt] = G.useState(false), [_e, Je] = G.useState(null), Oe = (qe, Dt = "success") => {
+    const ne = (qe) => t ? qe === "All" ? t.length : t.filter((Dt) => (Dt.department || "").toLowerCase() === qe.toLowerCase()).length : 0, [Z, re] = G.useState(() => DH || []), [$, q] = G.useState(() => SH || []), [se, ae] = G.useState(false), [ue, Ie] = G.useState(false), [Me, Qe] = G.useState(""), [Re, Fe] = G.useState(""), [rt, tt] = G.useState("Radiology"), [Ce, te] = G.useState(false), [Be, le] = G.useState(""), [Ne, Ge] = G.useState(""), [be, et] = G.useState(false), [ye, nt] = G.useState(false), [Ee, ge] = G.useState(null), [De, Ue] = G.useState(false), [fe, Ye] = G.useState(null), [Ze, ve] = G.useState(false), [bt, It] = G.useState(null), [Bt, dt] = G.useState(false), [_e, Je] = G.useState(null), Oe = (qe, Dt = "success") => {
       Je({
         message: qe,
         type: Dt
@@ -74770,7 +74772,7 @@ ${n}
           alert("Please select an Excel (.xlsx) file only.");
           return;
         }
-        ue(Dt), Ye(null), It(null);
+        ge(Dt), Ye(null), It(null);
       }
     }, wt = async () => {
       I(true);
@@ -79341,7 +79343,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
             ]
           })
         }),
-        ge && i.jsx("div", {
+        ue && i.jsx("div", {
           className: "fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-xs p-4",
           children: i.jsxs("div", {
             className: "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-150",
@@ -79454,7 +79456,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                   }),
                   i.jsx("button", {
                     onClick: () => {
-                      nt(false), ue(null), Ye(null), It(null);
+                      nt(false), ge(null), Ye(null), It(null);
                     },
                     className: "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-semibold p-1",
                     children: i.jsx(rr, {
@@ -79522,7 +79524,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                       }),
                       Ee && i.jsx("button", {
                         type: "button",
-                        onClick: () => ue(null),
+                        onClick: () => ge(null),
                         className: "text-xs font-bold text-red-500 hover:underline mt-1 z-10 relative",
                         children: "Clear selection"
                       })
@@ -79705,7 +79707,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                 children: i.jsx("button", {
                   type: "button",
                   onClick: () => {
-                    nt(false), ue(null), Ye(null), It(null);
+                    nt(false), ge(null), Ye(null), It(null);
                   },
                   className: "px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs rounded-xl font-bold transition-all",
                   children: "Close"
@@ -79927,11 +79929,11 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
     }, [
       e
     ]);
-    const [o, l] = G.useState("columns"), [c, g] = G.useState("digital"), [d, u] = G.useState(false), [h, I] = G.useState(0), [p, C] = G.useState(true), [x, B] = G.useState(1), E = G.useRef(null), b = (ye, nt, Ee, ue, De, Ue = false) => {
+    const [o, l] = G.useState("columns"), [c, g] = G.useState("digital"), [d, u] = G.useState(false), [h, I] = G.useState(0), [p, C] = G.useState(true), [x, B] = G.useState(1), E = G.useRef(null), b = (ye, nt, Ee, ge, De, Ue = false) => {
       ye.preventDefault(), ye.stopPropagation();
       const fe = ye.clientX, Ye = ye.clientY, ve = 1 / ((x || 1) * 3.78095), bt = (Bt) => {
         const dt = Bt.clientX - fe, _e = Bt.clientY - Ye, Je = dt * ve, Oe = _e * ve;
-        let st = ue + Je, ft = Ue ? De - Oe : De + Oe;
+        let st = ge + Je, ft = Ue ? De - Oe : De + Oe;
         st = Math.max(0, Math.min(210, st)), ft = Math.max(0, Math.min(297, ft)), s((We) => {
           const wt = {
             ...We,
@@ -79947,8 +79949,8 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
     };
     G.useEffect(() => {
       if (!E.current) return;
-      const ye = (ue) => {
-        for (let De of ue) {
+      const ye = (ge) => {
+        for (let De of ge) {
           const { width: Ue } = De.contentRect, Ye = Math.min(1, Ue / 794);
           B(Ye);
         }
@@ -79957,7 +79959,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
       const Ee = E.current.getBoundingClientRect();
       return Ee.width > 0 && B(Math.min(1, Ee.width / 794)), () => nt.disconnect();
     }, []);
-    const [D, v] = G.useState(""), [M, F] = G.useState(""), [O, Y] = G.useState("2"), [P, U] = G.useState("Left"), [V, K] = G.useState(false), [ne, Z] = G.useState(false), [re, $] = G.useState("Additional Pathologist"), [q, se] = G.useState(""), [ae, ge] = G.useState(""), [Ie, Me] = G.useState(""), Qe = (ye) => {
+    const [D, v] = G.useState(""), [M, F] = G.useState(""), [O, Y] = G.useState("2"), [P, U] = G.useState("Left"), [V, K] = G.useState(false), [ne, Z] = G.useState(false), [re, $] = G.useState("Additional Pathologist"), [q, se] = G.useState(""), [ae, ue] = G.useState(""), [Ie, Me] = G.useState(""), Qe = (ye) => {
       const nt = e.find((Ee) => Ee.id === ye.id) || ye;
       s(nt), u(false), I(0);
     }, Re = async () => {
@@ -79968,8 +79970,8 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
         modality: ye,
         title: q.trim(),
         brandNameText: q.trim(),
-        columns: nt.columns ? nt.columns.map((ue) => ({
-          ...ue
+        columns: nt.columns ? nt.columns.map((ge) => ({
+          ...ge
         })) : [
           {
             code: "Parameter",
@@ -80000,8 +80002,8 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
             bold: false
           }
         ],
-        signatureSlots: nt.signatureSlots ? nt.signatureSlots.map((ue) => ({
-          ...ue
+        signatureSlots: nt.signatureSlots ? nt.signatureSlots.map((ge) => ({
+          ...ge
         })) : [
           {
             slotId: 0,
@@ -80011,29 +80013,29 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
         ]
       };
       try {
-        const ue = oF(Ee), De = {
+        const ge = oF(Ee), De = {
           modality: ye,
           name: q.trim(),
           description: `Template configuration for ${ye}.`,
-          templateJson: ue,
+          templateJson: ge,
           createdBy: (t == null ? void 0 : t.id) || "00000000-0000-0000-0000-000000000000"
         }, Ue = await Jr.createTemplate(De);
-        se(""), ge(""), Me(""), await A();
+        se(""), ue(""), Me(""), await A();
         const fe = Ue.templateDsl || JSON.parse(Ue.templateJson), Ye = w5(fe, Ue.templateId, Ue.isDefault, Ue.isPublished);
         s(Ye);
-      } catch (ue) {
-        console.error("Failed to create template", ue), alert(ue.message || "Failed to create template");
+      } catch (ge) {
+        console.error("Failed to create template", ge), alert(ge.message || "Failed to create template");
       }
     }, Fe = (ye, nt) => {
       const Ee = ye + nt;
       if (Ee < 0 || Ee >= a.columns.length) return;
-      const ue = [
+      const ge = [
         ...a.columns
-      ], De = ue[ye];
-      ue[ye] = ue[Ee], ue[Ee] = De;
+      ], De = ge[ye];
+      ge[ye] = ge[Ee], ge[Ee] = De;
       const Ue = {
         ...a,
-        columns: ue
+        columns: ge
       };
       s(Ue), n(e.map((fe) => fe.id === a.id ? Ue : fe));
     }, rt = (ye, nt) => {
@@ -80041,7 +80043,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
         ...a,
         [ye]: nt
       };
-      s(Ee), n(e.map((ue) => ue.id === a.id ? Ee : ue));
+      s(Ee), n(e.map((ge) => ge.id === a.id ? Ee : ge));
     }, tt = (ye) => {
       const nt = ye.target.files[0];
       if (nt) {
@@ -80059,26 +80061,26 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
         }
         const Ee = new FileReader();
         Ee.onloadend = () => {
-          const ue = {
+          const ge = {
             ...a,
             bgType: "image",
             backgroundPath: Ee.result,
             bgImageOpacity: 1
           };
-          s(ue), n(e.map((De) => De.id === a.id ? ue : De));
+          s(ge), n(e.map((De) => De.id === a.id ? ge : De));
         }, Ee.readAsDataURL(nt);
       }
     }, te = (ye, nt, Ee) => {
-      const ue = [
+      const ge = [
         ...a.columns
       ];
-      ue[ye] = {
-        ...ue[ye],
+      ge[ye] = {
+        ...ge[ye],
         [nt]: Ee
       };
       const De = {
         ...a,
-        columns: ue
+        columns: ge
       };
       s(De), n(e.map((Ue) => Ue.id === a.id ? De : Ue));
     }, Be = (ye) => {
@@ -80096,13 +80098,13 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
           nt
         ]
       };
-      s(Ee), n(e.map((ue) => ue.id === a.id ? Ee : ue)), v(""), F(""), Y("2"), U("Left"), K(false);
+      s(Ee), n(e.map((ge) => ge.id === a.id ? Ee : ge)), v(""), F(""), Y("2"), U("Left"), K(false);
     }, le = (ye) => {
-      const nt = a.columns.filter((ue, De) => De !== ye), Ee = {
+      const nt = a.columns.filter((ge, De) => De !== ye), Ee = {
         ...a,
         columns: nt
       };
-      s(Ee), n(e.map((ue) => ue.id === a.id ? Ee : ue));
+      s(Ee), n(e.map((ge) => ge.id === a.id ? Ee : ge));
     }, Ne = (ye) => {
       ye.preventDefault();
       const nt = re;
@@ -80115,23 +80117,23 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
         slotId: a.signatureSlots.length,
         title: nt,
         required: ne
-      }, ue = {
+      }, ge = {
         ...a,
         signatureSlots: [
           ...a.signatureSlots,
           Ee
         ]
       };
-      s(ue), n(e.map((De) => De.id === a.id ? ue : De)), Z(false);
+      s(ge), n(e.map((De) => De.id === a.id ? ge : De)), Z(false);
     }, Ge = (ye) => {
-      const nt = a.signatureSlots.filter((ue) => ue.slotId !== ye).map((ue, De) => ({
-        ...ue,
+      const nt = a.signatureSlots.filter((ge) => ge.slotId !== ye).map((ge, De) => ({
+        ...ge,
         slotId: De
       })), Ee = {
         ...a,
         signatureSlots: nt
       };
-      s(Ee), n(e.map((ue) => ue.id === a.id ? Ee : ue));
+      s(Ee), n(e.map((ge) => ge.id === a.id ? Ee : ge));
     }, be = async () => {
       if (a) try {
         const ye = oF(a), nt = {
@@ -80297,7 +80299,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                               id: "new-template-modality",
                               className: "w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-medium",
                               value: ae,
-                              onChange: (ye) => ge(ye.target.value),
+                              onChange: (ye) => ue(ye.target.value),
                               children: [
                                 i.jsx("option", {
                                   value: "",
@@ -80397,7 +80399,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                   className: "space-y-6",
                   children: [
                     o === "columns" && (() => {
-                      const ye = a.columns.findIndex((Ee, ue) => ue === h) >= 0 ? h : 0, nt = a.columns[ye] || null;
+                      const ye = a.columns.findIndex((Ee, ge) => ge === h) >= 0 ? h : 0, nt = a.columns[ye] || null;
                       return i.jsxs("div", {
                         className: "space-y-6 animate-in fade-in duration-300",
                         children: [
@@ -80419,10 +80421,10 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                             children: [
                               i.jsx("div", {
                                 className: "flex w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-750 rounded-xl overflow-hidden divide-x divide-zinc-200 dark:divide-zinc-800 shadow-sm",
-                                children: a.columns.map((Ee, ue) => {
-                                  const De = a.columns.reduce((Ye, Ze) => Ye + Ze.weight, 0), Ue = Math.round(Ee.weight / De * 100), fe = ue === ye;
+                                children: a.columns.map((Ee, ge) => {
+                                  const De = a.columns.reduce((Ye, Ze) => Ye + Ze.weight, 0), Ue = Math.round(Ee.weight / De * 100), fe = ge === ye;
                                   return i.jsxs("div", {
-                                    onClick: () => I(ue),
+                                    onClick: () => I(ge),
                                     className: Le("p-4 cursor-pointer transition-all relative select-none flex flex-col justify-between min-h-[90px] min-w-[80px]", fe ? "bg-synos-primary/10 text-synos-primary ring-2 ring-synos-primary/30 ring-inset font-bold" : "hover:bg-zinc-100 dark:hover:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400"),
                                     style: {
                                       flex: `${Ee.weight} 1 0%`
@@ -80466,20 +80468,20 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                         ]
                                       })
                                     ]
-                                  }, ue);
+                                  }, ge);
                                 })
                               }),
                               i.jsx("div", {
                                 className: "flex w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 rounded-xl divide-x divide-zinc-200 dark:divide-zinc-800 overflow-hidden text-xs",
-                                children: a.columns.map((Ee, ue) => {
+                                children: a.columns.map((Ee, ge) => {
                                   let De = "Glucose Fasting";
                                   return Ee.code === "Value" ? De = "104.5" : Ee.code === "Unit" ? De = "mg/dL" : Ee.code === "ReferenceRange" ? De = "70.0 - 110.0" : Ee.code === "Methodology" && (De = "Hexokinase"), i.jsx("div", {
-                                    className: Le("p-3 truncate text-zinc-700 dark:text-zinc-300 transition-colors", Ee.alignment === "Left" ? "text-left" : Ee.alignment === "Center" ? "text-center" : "text-right", Ee.bold ? "font-bold text-zinc-950 dark:text-white" : "font-normal", ue === ye ? "bg-synos-primary/5" : ""),
+                                    className: Le("p-3 truncate text-zinc-700 dark:text-zinc-300 transition-colors", Ee.alignment === "Left" ? "text-left" : Ee.alignment === "Center" ? "text-center" : "text-right", Ee.bold ? "font-bold text-zinc-950 dark:text-white" : "font-normal", ge === ye ? "bg-synos-primary/5" : ""),
                                     style: {
                                       flex: `${Ee.weight} 1 0%`
                                     },
                                     children: De
-                                  }, ue);
+                                  }, ge);
                                 })
                               })
                             ]
@@ -80865,13 +80867,13 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                           className: "rounded border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-synos-primary focus:ring-0 w-3.5 h-3.5 disabled:opacity-50",
                                           checked: ye.required,
                                           disabled: Ee,
-                                          onChange: (ue) => {
+                                          onChange: (ge) => {
                                             const De = [
                                               ...a.signatureSlots
                                             ];
                                             De[nt] = {
                                               ...De[nt],
-                                              required: ue.target.checked
+                                              required: ge.target.checked
                                             };
                                             const Ue = {
                                               ...a,
@@ -82546,7 +82548,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                 (c === "digital" || c === "physical" && !a.usePreprinted) && a.includeBranding && (() => {
                                   const ye = (a.includeLogo ?? true) && !!a.logoUrl, nt = a.includeHeaderName ?? true, Ee = a.includeHeaderSubtitle ?? true;
                                   if (!ye && !nt && !Ee) return null;
-                                  const ue = ye ? i.jsx("img", {
+                                  const ge = ye ? i.jsx("img", {
                                     src: a.logoUrl,
                                     alt: "Logo",
                                     style: {
@@ -82596,7 +82598,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                     children: i.jsxs("div", {
                                       className: "flex flex-col items-center text-center gap-1.5",
                                       children: [
-                                        ue,
+                                        ge,
                                         De
                                       ]
                                     })
@@ -82611,7 +82613,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                         className: "flex items-center gap-2.5 text-right",
                                         children: [
                                           De,
-                                          ue
+                                          ge
                                         ]
                                       })
                                     ]
@@ -82621,7 +82623,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                     children: i.jsxs("div", {
                                       className: "flex items-center gap-2.5",
                                       children: [
-                                        ue,
+                                        ge,
                                         De
                                       ]
                                     })
@@ -82843,7 +82845,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                             children: a.columns.map((ye, nt) => i.jsx("th", {
                                               className: Le("py-1.5 px-2", ye.alignment === "Left" ? "text-left" : ye.alignment === "Center" ? "text-center" : "text-right"),
                                               style: {
-                                                width: `${ye.weight / a.columns.reduce((Ee, ue) => Ee + ue.weight, 0) * 100}%`
+                                                width: `${ye.weight / a.columns.reduce((Ee, ge) => Ee + ge.weight, 0) * 100}%`
                                               },
                                               children: ye.title
                                             }, nt))
@@ -82868,12 +82870,12 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                                             }
                                           ].map((ye, nt) => i.jsx("tr", {
                                             className: Le("border-b border-zinc-100", a.density === "Compact" ? "leading-tight" : a.density === "Large-print" ? "py-3 text-xs" : "py-1.5"),
-                                            children: a.columns.map((Ee, ue) => {
+                                            children: a.columns.map((Ee, ge) => {
                                               let De = "";
                                               return Ee.code === "Parameter" ? De = ye.name : Ee.code === "Value" ? De = ye.val : Ee.code === "Unit" ? De = ye.unit : Ee.code === "ReferenceRange" ? De = ye.ref : Ee.code === "Methodology" && (De = ye.meth), i.jsx("td", {
                                                 className: Le(Ee.bold && "font-bold text-zinc-950", Ee.alignment === "Left" ? "text-left" : Ee.alignment === "Center" ? "text-center" : "text-right", a.density === "Compact" ? "py-1 px-2" : a.density === "Large-print" ? "py-3 px-2 text-xs" : "py-2 px-2"),
                                                 children: De
-                                              }, ue);
+                                              }, ge);
                                             })
                                           }, nt))
                                         })
@@ -83017,7 +83019,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
       port: 104,
       aeTitle: "",
       name: ""
-    }), [ne, Z] = G.useState(false), [re, $] = G.useState(null), [q, se] = G.useState("192.168.1.126"), [ae, ge] = G.useState(104), [Ie, Me] = G.useState(null), [Qe, Re] = G.useState(false), [Fe, rt] = G.useState([
+    }), [ne, Z] = G.useState(false), [re, $] = G.useState(null), [q, se] = G.useState("192.168.1.126"), [ae, ue] = G.useState(104), [Ie, Me] = G.useState(null), [Qe, Re] = G.useState(false), [Fe, rt] = G.useState([
       {
         id: 1,
         time: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
@@ -83036,9 +83038,9 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
         type: "MWL",
         msg: "DICOM Modality Worklist C-FIND SCP Active on Port 10511"
       }
-    ]), tt = async (Ee, ue, De = "SYNOS_PACS", Ue = "Scanner Console") => {
+    ]), tt = async (Ee, ge, De = "SYNOS_PACS", Ue = "Scanner Console") => {
       var _a3, _b2;
-      const fe = (Ee || q || "127.0.0.1").trim(), Ye = parseInt(ue || ae) || 104;
+      const fe = (Ee || q || "127.0.0.1").trim(), Ye = parseInt(ge || ae) || 104;
       K({
         host: fe,
         port: Ye,
@@ -83189,46 +83191,46 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
       } catch {
         B((De) => De.filter((Ue) => Ue.modalityId !== Ee));
       }
-    }, be = (Ee, ue) => {
+    }, be = (Ee, ge) => {
       rt((De) => [
         {
           id: Date.now(),
           time: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
           type: Ee,
-          msg: ue
+          msg: ge
         },
         ...De.slice(0, 50)
       ]);
     }, et = async () => {
       try {
-        const Ee = await cn.post("/api/v1/lab/analyzers/simulate?protocol=ASTM"), ue = (Ee == null ? void 0 : Ee.data) || Ee;
-        Me(ue), be("ASTM", `\u25C4 INCOMING ASTM PACKET [Sysmex XN-550]: Sample Barcode ${ue.sampleId} -> Ingested (WBC: 7.8, HGB: 14.5, RBC: 4.9, PLT: 265)`), be("ASTM", `\u25BA OUTGOING ACK: \\x06 (Enqueued to Pathology Lab Inbox ID: ${ue.inboxId})`);
+        const Ee = await cn.post("/api/v1/lab/analyzers/simulate?protocol=ASTM"), ge = (Ee == null ? void 0 : Ee.data) || Ee;
+        Me(ge), be("ASTM", `\u25C4 INCOMING ASTM PACKET [Sysmex XN-550]: Sample Barcode ${ge.sampleId} -> Ingested (WBC: 7.8, HGB: 14.5, RBC: 4.9, PLT: 265)`), be("ASTM", `\u25BA OUTGOING ACK: \\x06 (Enqueued to Pathology Lab Inbox ID: ${ge.inboxId})`);
       } catch {
-        const ue = `BAR-${Math.floor(1e4 + Math.random() * 9e4)}`, De = `1H|\\^&|||Sysmex^XN-550||||||P|1|20260806\rP|1||${ue}||Patient^Test||M\rO|1|${ue}||^^^WBC\\^^^RBC\\^^^HGB\\^^^PLT|R\rR|1|^^^WBC|7.8|10^3/uL|4.0-10.0|N||F\rR|2|^^^HGB|14.5|g/dL|12.0-16.0|N||F\rR|3|^^^RBC|4.9|10^6/uL|4.5-5.5|N||F\rL|1|N\r`;
+        const ge = `BAR-${Math.floor(1e4 + Math.random() * 9e4)}`, De = `1H|\\^&|||Sysmex^XN-550||||||P|1|20260806\rP|1||${ge}||Patient^Test||M\rO|1|${ge}||^^^WBC\\^^^RBC\\^^^HGB\\^^^PLT|R\rR|1|^^^WBC|7.8|10^3/uL|4.0-10.0|N||F\rR|2|^^^HGB|14.5|g/dL|12.0-16.0|N||F\rR|3|^^^RBC|4.9|10^6/uL|4.5-5.5|N||F\rL|1|N\r`;
         Me({
           success: true,
           message: "Simulated Blood Analyzer ASTM E1394 packet from Sysmex XN-550 ingested successfully!",
-          sampleId: ue,
+          sampleId: ge,
           rawPacket: De
-        }), be("ASTM", `\u25C4 INCOMING ASTM PACKET [Sysmex XN-550]: Sample ${ue} -> Ingested WBC: 7.8, HGB: 14.5`), be("ASTM", "\u25BA OUTGOING ACK: \\x06 (Parsed and verified successfully)");
+        }), be("ASTM", `\u25C4 INCOMING ASTM PACKET [Sysmex XN-550]: Sample ${ge} -> Ingested WBC: 7.8, HGB: 14.5`), be("ASTM", "\u25BA OUTGOING ACK: \\x06 (Parsed and verified successfully)");
       }
     }, ye = async () => {
       try {
-        const Ee = await cn.post("/api/v1/radiology/modalities/simulate-cstore?modalityType=MR"), ue = (Ee == null ? void 0 : Ee.data) || Ee;
-        Me(ue), be("PACS", `\u25C4 INCOMING DICOM C-STORE PUSH [GE_MRI_01]: SOPInstanceUID ${ue.sopInstanceUid}`), be("PACS", `\u2713 Saved DICOM file to ${ue.filePath} (C-STORE Status: 0x0000 Success)`);
+        const Ee = await cn.post("/api/v1/radiology/modalities/simulate-cstore?modalityType=MR"), ge = (Ee == null ? void 0 : Ee.data) || Ee;
+        Me(ge), be("PACS", `\u25C4 INCOMING DICOM C-STORE PUSH [GE_MRI_01]: SOPInstanceUID ${ge.sopInstanceUid}`), be("PACS", `\u2713 Saved DICOM file to ${ge.filePath} (C-STORE Status: 0x0000 Success)`);
       } catch {
-        const ue = `1.2.840.113619.2.55.3.${Date.now()}`;
+        const ge = `1.2.840.113619.2.55.3.${Date.now()}`;
         Me({
           success: true,
           message: "Simulated DICOM C-STORE Push from GE Signa MRI Scanner Console successful!",
-          sopInstanceUid: ue,
-          filePath: `C:\\SynOS_Files\\PACS\\IncomingScans\\${ue}.dcm`
-        }), be("PACS", `\u25C4 INCOMING DICOM C-STORE PUSH [GE_MRI_01]: SOPInstanceUID ${ue}`), be("PACS", `\u2713 Saved DICOM file to C:\\SynOS_Files\\PACS\\IncomingScans\\${ue}.dcm (C-STORE Status: 0x0000 Success)`);
+          sopInstanceUid: ge,
+          filePath: `C:\\SynOS_Files\\PACS\\IncomingScans\\${ge}.dcm`
+        }), be("PACS", `\u25C4 INCOMING DICOM C-STORE PUSH [GE_MRI_01]: SOPInstanceUID ${ge}`), be("PACS", `\u2713 Saved DICOM file to C:\\SynOS_Files\\PACS\\IncomingScans\\${ge}.dcm (C-STORE Status: 0x0000 Success)`);
       }
     }, nt = async () => {
       try {
-        const Ee = await cn.get("/api/v1/radiology/modalities/simulate-mwl"), ue = (Ee == null ? void 0 : Ee.data) || Ee;
-        Me(ue), be("MWL", "\u25C4 INCOMING DICOM C-FIND (Modality Worklist Query) from AE 'GE_MRI_01'..."), be("MWL", `\u25BA OUTGOING C-FIND RESPONSE: Returned ${ue.totalScheduledScansFound || 3} scheduled patient worklist entries to scanner console.`);
+        const Ee = await cn.get("/api/v1/radiology/modalities/simulate-mwl"), ge = (Ee == null ? void 0 : Ee.data) || Ee;
+        Me(ge), be("MWL", "\u25C4 INCOMING DICOM C-FIND (Modality Worklist Query) from AE 'GE_MRI_01'..."), be("MWL", `\u25BA OUTGOING C-FIND RESPONSE: Returned ${ge.totalScheduledScansFound || 3} scheduled patient worklist entries to scanner console.`);
       } catch {
         Me({
           success: true,
@@ -83418,7 +83420,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                       className: "text-amber-400 font-bold",
                       children: "Returned Worklist Items:"
                     }),
-                    Ie.scheduledWorklist.map((Ee, ue) => i.jsxs("div", {
+                    Ie.scheduledWorklist.map((Ee, ge) => i.jsxs("div", {
                       className: "pl-2 border-l border-zinc-700",
                       children: [
                         "Patient: ",
@@ -83433,7 +83435,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                         Ee.modality,
                         ")"
                       ]
-                    }, ue))
+                    }, ge))
                   ]
                 })
               ]
@@ -84408,7 +84410,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                       type: "number",
                       placeholder: "Port",
                       value: ae,
-                      onChange: (Ee) => ge(parseInt(Ee.target.value) || 104),
+                      onChange: (Ee) => ue(parseInt(Ee.target.value) || 104),
                       className: "px-2.5 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xxs font-mono font-bold w-18 text-center"
                     }),
                     i.jsxs("button", {
@@ -84467,13 +84469,13 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                       var _a3, _b2;
                       Re(true);
                       try {
-                        const Ee = await cn.post("/api/v1/radiology/modalities/simulate-cstore?modalityType=MR"), ue = Ee.data || Ee;
-                        Me(ue), rt((De) => [
+                        const Ee = await cn.post("/api/v1/radiology/modalities/simulate-cstore?modalityType=MR"), ge = Ee.data || Ee;
+                        Me(ge), rt((De) => [
                           {
                             id: Date.now(),
                             time: (/* @__PURE__ */ new Date()).toLocaleTimeString(),
                             type: "C-STORE",
-                            msg: `\u2713 Ingested 5 MRI slices for ${ue.patientName || "Vasudeva Rao"} into PACS Storage!`
+                            msg: `\u2713 Ingested 5 MRI slices for ${ge.patientName || "Vasudeva Rao"} into PACS Storage!`
                           },
                           ...De
                         ]);
@@ -85435,7 +85437,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                       }),
                       i.jsx("div", {
                         className: "space-y-1.5 bg-zinc-950 p-3 rounded-xl border border-zinc-800 font-mono text-xxs",
-                        children: (_a2 = re.steps) == null ? void 0 : _a2.map((Ee, ue) => i.jsxs("div", {
+                        children: (_a2 = re.steps) == null ? void 0 : _a2.map((Ee, ge) => i.jsxs("div", {
                           className: "flex items-start gap-2 py-1 border-b border-zinc-900 last:border-0",
                           children: [
                             i.jsx("span", {
@@ -85459,7 +85461,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                               ]
                             })
                           ]
-                        }, ue))
+                        }, ge))
                       })
                     ]
                   }),
@@ -85879,7 +85881,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
           label: "Outsource Summary (A4)"
         }
       ]
-    }, ge = v.filter((Ie) => l === "all" ? true : Ie.moduleCode === l);
+    }, ue = v.filter((Ie) => l === "all" ? true : Ie.moduleCode === l);
     return i.jsxs("div", {
       className: "space-y-6 animate-fadeIn text-xs",
       children: [
@@ -86334,13 +86336,13 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
                           className: "text-xs font-black uppercase tracking-wider text-zinc-500",
                           children: [
                             "All Bill Formats (",
-                            ge.length,
+                            ue.length,
                             ")"
                           ]
                         }),
                         i.jsx("div", {
                           className: "space-y-3",
-                          children: ge.map((Ie) => {
+                          children: ue.map((Ie) => {
                             const Me = g === Ie.slotId, Qe = ae[Ie.slotId] || [
                               {
                                 id: Ie.assignedTemplateId,
@@ -86998,7 +87000,7 @@ Would you like to switch to "${sn.childTestName}" now?`) && Ph(zr) : alert(`Chil
   }
   function jRe() {
     var _a2;
-    const { theme: t, fontSize: e, setFontSize: n } = ra(), [r, A] = uK(), a = r.get("tab") || "settings", [s, o] = G.useState(a), [l, c] = G.useState(true), [g, d] = G.useState(false), [u, h] = G.useState(false), [I, p] = G.useState(null), [C, x] = G.useState(null), [B, E] = G.useState([]), [b, D] = G.useState(false), [v, M] = G.useState(null), [F, O] = G.useState(false), [Y, P] = G.useState(false), [U, V] = G.useState("operational"), [K, ne] = G.useState(""), [Z, re] = G.useState(""), [$, q] = G.useState(false), [se, ae] = G.useState(""), [ge, Ie] = G.useState(""), [Me, Qe] = G.useState(false), [Re, Fe] = G.useState([]), [rt, tt] = G.useState(false), [Ce, te] = G.useState(""), [Be, le] = G.useState(""), [Ne, Ge] = G.useState("Medium"), [be, et] = G.useState("General"), [ye, nt] = G.useState(null), [Ee, ue] = G.useState(false), [De, Ue] = G.useState(false), [fe, Ye] = G.useState(null), [Ze, ve] = G.useState(null), [bt, It] = G.useState(false), [Bt, dt] = G.useState(JSON.stringify({
+    const { theme: t, fontSize: e, setFontSize: n } = ra(), [r, A] = uK(), a = r.get("tab") || "settings", [s, o] = G.useState(a), [l, c] = G.useState(true), [g, d] = G.useState(false), [u, h] = G.useState(false), [I, p] = G.useState(null), [C, x] = G.useState(null), [B, E] = G.useState([]), [b, D] = G.useState(false), [v, M] = G.useState(null), [F, O] = G.useState(false), [Y, P] = G.useState(false), [U, V] = G.useState("operational"), [K, ne] = G.useState(""), [Z, re] = G.useState(""), [$, q] = G.useState(false), [se, ae] = G.useState(""), [ue, Ie] = G.useState(""), [Me, Qe] = G.useState(false), [Re, Fe] = G.useState([]), [rt, tt] = G.useState(false), [Ce, te] = G.useState(""), [Be, le] = G.useState(""), [Ne, Ge] = G.useState("Medium"), [be, et] = G.useState("General"), [ye, nt] = G.useState(null), [Ee, ge] = G.useState(false), [De, Ue] = G.useState(false), [fe, Ye] = G.useState(null), [Ze, ve] = G.useState(null), [bt, It] = G.useState(false), [Bt, dt] = G.useState(JSON.stringify({
       TargetArchitecture: "x64",
       RequiredDiskSpaceGB: 10,
       DatabaseVersion: "LocalDB v15.0"
@@ -87360,7 +87362,7 @@ Backup ID: ${Bi == null ? void 0 : Bi.backupId}`);
         h(false);
       }
     }, l0 = async () => {
-      ue(true), p(null), x(null), Ye(null);
+      ge(true), p(null), x(null), Ye(null);
       try {
         const Se = await cn.post("/api/v1/admin/operations/updates/check");
         if ((Se == null ? void 0 : Se.updateAvailable) || (Se == null ? void 0 : Se.UpdateAvailable)) {
@@ -87381,7 +87383,7 @@ Backup ID: ${Bi == null ? void 0 : Bi.backupId}`);
       } catch (Se) {
         x(Se.message || "Failed to check for updates.");
       } finally {
-        ue(false);
+        ge(false);
       }
     }, Wo = async (Se) => {
       It(true), p(null), x(null), ve(null);
@@ -94064,13 +94066,13 @@ Please verify or update your License Key in System Settings.`);
       const q = D.split(`
 `).filter((se) => se.trim()).map((se) => {
         var _a2, _b2, _c2;
-        const ae = se.split("	"), ge = r.find((Ie) => {
+        const ae = se.split("	"), ue = r.find((Ie) => {
           var _a3, _b3, _c3;
           return Ie.name.toLowerCase() === ((_a3 = ae[0]) == null ? void 0 : _a3.trim().toLowerCase()) || ((_b3 = Ie.itemCode) == null ? void 0 : _b3.toLowerCase()) === ((_c3 = ae[0]) == null ? void 0 : _c3.trim().toLowerCase());
         });
         return {
           id: Math.random(),
-          consumableId: (ge == null ? void 0 : ge.itemId) || "",
+          consumableId: (ue == null ? void 0 : ue.itemId) || "",
           quantity: ((_a2 = ae[1]) == null ? void 0 : _a2.trim()) || "",
           batchNumber: ((_b2 = ae[2]) == null ? void 0 : _b2.trim()) || "",
           expiryDate: ((_c2 = ae[3]) == null ? void 0 : _c2.trim()) || ""
@@ -95916,7 +95918,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     ], ne = async () => {
       try {
         d(true);
-        const ae = e && s ? null : r, ge = e && s, Ie = await ri.getStockLedger(ae, ge);
+        const ae = e && s ? null : r, ue = e && s, Ie = await ri.getStockLedger(ae, ue);
         c(Ie || []);
       } catch (ae) {
         console.error("Failed to load stock", ae);
@@ -95938,16 +95940,16 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
       }
       p(ae), E(true);
       try {
-        const ge = await ri.getItemLots(ae.itemId, ae.branchId);
-        x(ge);
-      } catch (ge) {
-        console.error(ge);
+        const ue = await ri.getItemLots(ae.itemId, ae.branchId);
+        x(ue);
+      } catch (ue) {
+        console.error(ue);
       } finally {
         E(false);
       }
     }, re = l.filter((ae) => {
-      const ge = ae.itemName.toLowerCase().includes(u.toLowerCase()) || ae.itemCode.toLowerCase().includes(u.toLowerCase()), Ie = F === "Radiology" || v === "All" || (ae.category || "General") === v, Me = F === "All" || (ae.serviceArea || "Laboratory") === F, Qe = Y === "All" || (ae.modality || "") === Y;
-      return ge && Ie && Me && Qe;
+      const ue = ae.itemName.toLowerCase().includes(u.toLowerCase()) || ae.itemCode.toLowerCase().includes(u.toLowerCase()), Ie = F === "Radiology" || v === "All" || (ae.category || "General") === v, Me = F === "All" || (ae.serviceArea || "Laboratory") === F, Qe = Y === "All" || (ae.modality || "") === Y;
+      return ue && Ie && Me && Qe;
     }), [$, q] = G.useState(false), se = async () => {
       if (window.confirm("Purge all legacy dummy inventory items and initialize the clean master catalog for all 1,151 tests?")) {
         q(true);
@@ -96148,7 +96150,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   }),
                   i.jsx("tbody", {
                     className: "divide-y divide-slate-200/80 dark:divide-white/5",
-                    children: re.map((ae, ge) => i.jsxs("tr", {
+                    children: re.map((ae, ue) => i.jsxs("tr", {
                       onClick: () => Z(ae),
                       className: Le("group cursor-pointer transition-all duration-200", (I == null ? void 0 : I.itemId) === ae.itemId && (I == null ? void 0 : I.branchId) === ae.branchId ? "bg-synos-primary/5 border-l-2 border-synos-primary" : "hover:bg-zinc-50 dark:hover:bg-white/[0.02]"),
                       children: [
@@ -96222,7 +96224,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           })
                         })
                       ]
-                    }, ge))
+                    }, ue))
                   })
                 ]
               })
@@ -97737,7 +97739,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     });
   }
   const ZRe = () => {
-    const t = Ja(), [e, n] = G.useState(true), { user: r, activeOversightBranchId: A } = oA(), a = (r == null ? void 0 : r.role) === "Admin" || (r == null ? void 0 : r.role) === "SystemAdmin", [s, o] = G.useState(true), [l, c] = G.useState("month"), [g, d] = G.useState([]), [u, h] = G.useState(null), [I, p] = G.useState([]), [C, x] = G.useState([]), [B, E] = G.useState([]), [b, D] = G.useState([]), [v, M] = G.useState(null), [F, O] = G.useState([]), [Y, P] = G.useState([]), [U, V] = G.useState([]), [K, ne] = G.useState([]), [Z, re] = G.useState([]), [$, q] = G.useState([]), [se, ae] = G.useState([]), [ge, Ie] = G.useState([]);
+    const t = Ja(), [e, n] = G.useState(true), { user: r, activeOversightBranchId: A } = oA(), a = (r == null ? void 0 : r.role) === "Admin" || (r == null ? void 0 : r.role) === "SystemAdmin", [s, o] = G.useState(true), [l, c] = G.useState("month"), [g, d] = G.useState([]), [u, h] = G.useState(null), [I, p] = G.useState([]), [C, x] = G.useState([]), [B, E] = G.useState([]), [b, D] = G.useState([]), [v, M] = G.useState(null), [F, O] = G.useState([]), [Y, P] = G.useState([]), [U, V] = G.useState([]), [K, ne] = G.useState([]), [Z, re] = G.useState([]), [$, q] = G.useState([]), [se, ae] = G.useState([]), [ue, Ie] = G.useState([]);
     G.useEffect(() => {
       a && Me();
     }, [
@@ -97808,7 +97810,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
         })
       ]
     });
-    const Re = (It) => Math.round(Number(It) || 0).toLocaleString("en-IN"), Fe = Number((u == null ? void 0 : u.netCashPosition) || (u == null ? void 0 : u.operationalNetPosition)) || 0, rt = Number(u == null ? void 0 : u.pendingCollections) || 0, tt = Number((u == null ? void 0 : u.cashInflow) || (u == null ? void 0 : u.totalRevenueCash)) || 0, Ce = Number(u == null ? void 0 : u.totalRevenueAccrual) || tt, te = C.filter((It) => It.status !== "Settled" && It.status !== 2).reduce((It, Bt) => It + (Number(Bt.amount || 0) - Number(Bt.amountPaid || 0)), 0), Be = B.filter((It) => It.status !== "Settled" && It.status !== 2).reduce((It, Bt) => It + (Number(Bt.amountDue || 0) - Number(Bt.amountPaid || 0)), 0), le = Number(v == null ? void 0 : v.totalPendingPayouts) || 0, Ne = K.find((It) => It.status === "Draft" || It.status === "Calculated"), Ge = Number(Ne == null ? void 0 : Ne.totalGrossSalary) || 0, be = te + Be + le + Ge, et = $.filter((It) => It.status !== "Paid" && It.status !== "Settled"), ye = et.reduce((It, Bt) => It + Number(Bt.claimAmount || 0), 0), nt = ge.filter((It) => It.status !== "Settled"), Ee = nt.reduce((It, Bt) => It + (Number(Bt.totalAmount || Bt.billAmount || 0) - Number(Bt.paidAmount || 0)), 0), ue = (u == null ? void 0 : u.departmentProfitability) || [], De = [
+    const Re = (It) => Math.round(Number(It) || 0).toLocaleString("en-IN"), Fe = Number((u == null ? void 0 : u.netCashPosition) || (u == null ? void 0 : u.operationalNetPosition)) || 0, rt = Number(u == null ? void 0 : u.pendingCollections) || 0, tt = Number((u == null ? void 0 : u.cashInflow) || (u == null ? void 0 : u.totalRevenueCash)) || 0, Ce = Number(u == null ? void 0 : u.totalRevenueAccrual) || tt, te = C.filter((It) => It.status !== "Settled" && It.status !== 2).reduce((It, Bt) => It + (Number(Bt.amount || 0) - Number(Bt.amountPaid || 0)), 0), Be = B.filter((It) => It.status !== "Settled" && It.status !== 2).reduce((It, Bt) => It + (Number(Bt.amountDue || 0) - Number(Bt.amountPaid || 0)), 0), le = Number(v == null ? void 0 : v.totalPendingPayouts) || 0, Ne = K.find((It) => It.status === "Draft" || It.status === "Calculated"), Ge = Number(Ne == null ? void 0 : Ne.totalGrossSalary) || 0, be = te + Be + le + Ge, et = $.filter((It) => It.status !== "Paid" && It.status !== "Settled"), ye = et.reduce((It, Bt) => It + Number(Bt.claimAmount || 0), 0), nt = ue.filter((It) => It.status !== "Settled"), Ee = nt.reduce((It, Bt) => It + (Number(Bt.totalAmount || Bt.billAmount || 0) - Number(Bt.paidAmount || 0)), 0), ge = (u == null ? void 0 : u.departmentProfitability) || [], De = [
       {
         departmentName: "Biochemistry",
         category: "Pathology",
@@ -97898,12 +97900,12 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
         profitMultiplier: 3.1,
         totalTestsCompleted: 12
       }
-    ], fe = ue.filter((It) => (It.category || "").toLowerCase() === "pathology" || [
+    ], fe = ge.filter((It) => (It.category || "").toLowerCase() === "pathology" || [
       "biochemistry",
       "hematology",
       "microbiology",
       "histopathology"
-    ].includes((It.departmentName || "").toLowerCase())), Ye = fe.length ? fe : De, Ze = ue.filter((It) => (It.category || "").toLowerCase() === "radiology" || [
+    ].includes((It.departmentName || "").toLowerCase())), Ye = fe.length ? fe : De, Ze = ge.filter((It) => (It.category || "").toLowerCase() === "radiology" || [
       "x-ray",
       "ct scan",
       "ultrasound",
@@ -100291,18 +100293,18 @@ Inventory Dept.`, M = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
       "This Quarter": "quarter",
       "This Year": "year",
       "All Time": "all"
-    }), []), [P, U] = G.useState("All"), [V, K] = G.useState("All"), [ne, Z] = G.useState(A), [re, $] = G.useState(a), [q, se] = G.useState(s), [ae, ge] = G.useState(() => O[t] || "This Month"), [Ie, Me] = G.useState({
+    }), []), [P, U] = G.useState("All"), [V, K] = G.useState("All"), [ne, Z] = G.useState(A), [re, $] = G.useState(a), [q, se] = G.useState(s), [ae, ue] = G.useState(() => O[t] || "This Month"), [Ie, Me] = G.useState({
       start: "",
       end: ""
     }), [Qe, Re] = G.useState("");
     G.useEffect(() => {
-      t && O[t] && ae !== O[t] && ge(O[t]);
+      t && O[t] && ae !== O[t] && ue(O[t]);
     }, [
       t,
       O
     ]);
     const Fe = (fe) => {
-      ge(fe), e && Y[fe] && e(Y[fe]);
+      ue(fe), e && Y[fe] && e(Y[fe]);
     };
     G.useEffect(() => {
       rt();
@@ -100430,7 +100432,7 @@ Thank you!`;
       return true;
     }), be = Ge.reduce((fe, Ye) => fe + (Number(Ye.totalAmount) || 0), 0);
     Ge.reduce((fe, Ye) => fe + (Number(Ye.collectedAmount) || 0), 0);
-    const et = Ge.reduce((fe, Ye) => fe + (Number(Ye.cashAmount) || 0), 0), ye = Ge.reduce((fe, Ye) => fe + (Number(Ye.onlineAmount) || 0), 0), nt = Ge.reduce((fe, Ye) => fe + (Number(Ye.prepaidAmount) || 0), 0), Ee = Ge.reduce((fe, Ye) => fe + (Number(Ye.pendingAmount) || 0), 0), ue = Ge.reduce((fe, Ye) => fe + (Number(Ye.referralCommissionCut) || 0), 0), De = () => {
+    const et = Ge.reduce((fe, Ye) => fe + (Number(Ye.cashAmount) || 0), 0), ye = Ge.reduce((fe, Ye) => fe + (Number(Ye.onlineAmount) || 0), 0), nt = Ge.reduce((fe, Ye) => fe + (Number(Ye.prepaidAmount) || 0), 0), Ee = Ge.reduce((fe, Ye) => fe + (Number(Ye.pendingAmount) || 0), 0), ge = Ge.reduce((fe, Ye) => fe + (Number(Ye.referralCommissionCut) || 0), 0), De = () => {
       const fe = [
         "Bill Number",
         "Date",
@@ -100647,7 +100649,7 @@ Thank you!`;
                   className: "text-lg font-black text-amber-600 dark:text-amber-400 mt-1",
                   children: [
                     "\u20B9",
-                    ue.toLocaleString()
+                    ge.toLocaleString()
                   ]
                 }),
                 i.jsx("span", {
@@ -101256,7 +101258,7 @@ Thank you!`;
             },
             {
               label: "Partner Commissions",
-              value: `\u20B9${ue.toLocaleString()}`,
+              value: `\u20B9${ge.toLocaleString()}`,
               color: "text-purple-600",
               subtext: "Referral Liability"
             }
@@ -101333,7 +101335,7 @@ Thank you!`;
     const { user: n } = oA(), [r, A] = G.useState([]), [a, s] = G.useState([]), [o, l] = G.useState([]), [c, g] = G.useState(true), [d, u] = G.useState(null), [h, I] = G.useState([]), [p, C] = G.useState(false), [x, B] = G.useState(null), [E, b] = G.useState(null), [D, v] = G.useState(false), [M, F] = G.useState(false), [O, Y] = G.useState(/* @__PURE__ */ new Set()), [P, U] = G.useState(""), [V, K] = G.useState("All"), [ne, Z] = G.useState("All"), [re, $] = G.useState("All Time"), [q, se] = G.useState({
       start: "",
       end: ""
-    }), [ae, ge] = G.useState("All"), [Ie, Me] = G.useState(false);
+    }), [ae, ue] = G.useState("All"), [Ie, Me] = G.useState(false);
     G.useEffect(() => {
       Qe(), zn.getBranches().then((be) => l(be || [])).catch(() => {
       });
@@ -101355,7 +101357,7 @@ Thank you!`;
       var _a3, _b3;
       try {
         F(true);
-        const ye = a.filter((ue) => ue.partnerName === be.partnerName && !ue.settledAt), nt = et && et.length > 0 ? et : ye.map((ue) => ue.receivableFactId), Ee = await Ct.getPartnerClaimStatement({
+        const ye = a.filter((ge) => ge.partnerName === be.partnerName && !ge.settledAt), nt = et && et.length > 0 ? et : ye.map((ge) => ge.receivableFactId), Ee = await Ct.getPartnerClaimStatement({
           partnerId: be.partnerId,
           receivableFactIds: nt
         });
@@ -101473,8 +101475,8 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
         be.join(","),
         ...nt.map((Ue) => Ue.join(","))
       ].join(`
-`), ue = encodeURI(Ee), De = document.createElement("a");
-      De.setAttribute("href", ue), De.setAttribute("download", `synos_partner_receivables_with_tests_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`), document.body.appendChild(De), De.click(), document.body.removeChild(De);
+`), ge = encodeURI(Ee), De = document.createElement("a");
+      De.setAttribute("href", ge), De.setAttribute("download", `synos_partner_receivables_with_tests_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.csv`), document.body.appendChild(De), De.click(), document.body.removeChild(De);
     };
     return i.jsxs("div", {
       className: "p-8 w-full space-y-6 animate-in fade-in duration-500",
@@ -101607,7 +101609,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           onDoctorChange: Z,
           doctorOptions: te,
           branchFilter: ae,
-          onBranchChange: ge,
+          onBranchChange: ue,
           branches: o,
           dateRange: re,
           onDateRangeChange: $,
@@ -101775,7 +101777,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                       ]
                     }),
                     x === be.partnerId && (() => {
-                      const et = a.filter((Ue) => Ue.partnerName === be.partnerName && !Ue.settledAt), ye = et.map((Ue) => Ue.receivableFactId), nt = et.filter((Ue) => O.has(Ue.receivableFactId)), Ee = nt.length, ue = nt.reduce((Ue, fe) => Ue + (fe.amount - fe.amountReceived), 0), De = et.length > 0 && Ee === et.length;
+                      const et = a.filter((Ue) => Ue.partnerName === be.partnerName && !Ue.settledAt), ye = et.map((Ue) => Ue.receivableFactId), nt = et.filter((Ue) => O.has(Ue.receivableFactId)), Ee = nt.length, ge = nt.reduce((Ue, fe) => Ue + (fe.amount - fe.amountReceived), 0), De = et.length > 0 && Ee === et.length;
                       return i.jsx("tr", {
                         children: i.jsx("td", {
                           colSpan: "6",
@@ -101812,7 +101814,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                                 className: "text-indigo-600 dark:text-indigo-400 font-mono",
                                                 children: [
                                                   "\u20B9",
-                                                  ue.toLocaleString()
+                                                  ge.toLocaleString()
                                                 ]
                                               })
                                             ]
@@ -111197,31 +111199,31 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       return se === "1" || se === "partner" ? "partner" : se === "2" || se === "insurance" ? "insurance" : se === "3" || se === "corporate" ? "corporate" : se;
     }, Y = (q, se = t) => {
       const ae = {};
-      return Array.isArray(q) ? (q.forEach((ge) => {
-        if (!ge) return;
-        const Ie = O(ge.debtorType);
+      return Array.isArray(q) ? (q.forEach((ue) => {
+        if (!ue) return;
+        const Ie = O(ue.debtorType);
         if (se === "partner" && Ie !== "partner" || se === "insurance" && Ie !== "insurance" || se === "corporate" && Ie !== "corporate") return;
-        const Me = ge.debtorId || ge.referralPartnerId || ge.partnerId || ge.debtorName || "Unknown";
+        const Me = ue.debtorId || ue.referralPartnerId || ue.partnerId || ue.debtorName || "Unknown";
         ae[Me] || (ae[Me] = {
           partnerId: Me,
           debtorType: Ie,
-          partnerName: ge.debtorName || ge.partnerName || (se === "insurance" ? "Empanelled Insurer" : se === "corporate" ? "Corporate Account" : "Unknown Partner"),
+          partnerName: ue.debtorName || ue.partnerName || (se === "insurance" ? "Empanelled Insurer" : se === "corporate" ? "Corporate Account" : "Unknown Partner"),
           totalAmount: 0,
           billCount: 0,
-          oldestDate: ge.occurredAt || ge.date || (/* @__PURE__ */ new Date()).toISOString(),
+          oldestDate: ue.occurredAt || ue.date || (/* @__PURE__ */ new Date()).toISOString(),
           items: []
         });
-        const Qe = Number(ge.totalAmount || ge.amount || 0), Re = Number(ge.paidAmount || ge.amountReceived || 0), Fe = ge.balanceDue !== void 0 && !isNaN(ge.balanceDue) ? Number(ge.balanceDue) : Qe - Re, rt = isNaN(Fe) ? 0 : Fe;
+        const Qe = Number(ue.totalAmount || ue.amount || 0), Re = Number(ue.paidAmount || ue.amountReceived || 0), Fe = ue.balanceDue !== void 0 && !isNaN(ue.balanceDue) ? Number(ue.balanceDue) : Qe - Re, rt = isNaN(Fe) ? 0 : Fe;
         ae[Me].totalAmount += rt, ae[Me].billCount += 1;
-        const tt = ge.occurredAt || ge.date;
+        const tt = ue.occurredAt || ue.date;
         tt && new Date(tt) < new Date(ae[Me].oldestDate) && (ae[Me].oldestDate = tt), ae[Me].items.push({
-          ...ge,
+          ...ue,
           totalAmount: Qe,
           paidAmount: Re,
           balanceDue: rt,
-          token: ge.token || ge.visitToken || "-"
+          token: ue.token || ue.visitToken || "-"
         });
-      }), Object.values(ae).filter((ge) => ge.totalAmount > 0)) : [];
+      }), Object.values(ae).filter((ue) => ue.totalAmount > 0)) : [];
     }, P = (q) => {
       e(q), a(Y(n, q)), d(null), p(null), M(/* @__PURE__ */ new Set());
     }, U = n.filter((q) => O(q.debtorType) === "partner").reduce((q, se) => {
@@ -111236,17 +111238,17 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
     }, 0), ne = async (q, se, ae) => {
       try {
         h(true);
-        const ge = q.items.map((Me) => Me.receivableFactId), Ie = {
+        const ue = q.items.map((Me) => Me.receivableFactId), Ie = {
           partnerId: q.partnerId,
           debtorId: q.partnerId,
           debtorType: t === "insurance" ? 2 : t === "corporate" ? 3 : 1,
-          factIds: ge,
+          factIds: ue,
           totalAmount: se,
           paymentMethod: ae
         };
         console.log("Settling Multi-Payer Recovery:", Ie), await Ct.settleReferralRecovery(Ie), d(null), F();
-      } catch (ge) {
-        alert("Settlement failed: " + ge.message);
+      } catch (ue) {
+        alert("Settlement failed: " + ue.message);
       } finally {
         h(false);
       }
@@ -111254,11 +111256,11 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       var _a3, _b3;
       try {
         D(true);
-        const ae = se && se.length > 0 ? se : q.items.map((Ie) => Ie.receivableFactId), ge = await Ct.getPartnerClaimStatement({
+        const ae = se && se.length > 0 ? se : q.items.map((Ie) => Ie.receivableFactId), ue = await Ct.getPartnerClaimStatement({
           partnerId: q.partnerId,
           receivableFactIds: ae
         });
-        x(ge), E(true);
+        x(ue), E(true);
       } catch (ae) {
         console.error("Failed to generate claim statement:", ae), alert("Could not load claim statement: " + (((_b3 = (_a3 = ae.response) == null ? void 0 : _a3.data) == null ? void 0 : _b3.message) || ae.message));
       } finally {
@@ -111267,10 +111269,10 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
     }, re = () => {
       var _a3, _b3, _c3, _d, _e;
       if (!C) return;
-      const se = (((_a3 = C == null ? void 0 : C.partner) == null ? void 0 : _a3.phone) || "").replace(/[^0-9]/g, ""), ae = ((_b3 = C == null ? void 0 : C.summary) == null ? void 0 : _b3.netClaimDue) || 0, ge = ((_c3 = C == null ? void 0 : C.items) == null ? void 0 : _c3.length) || 0, Ie = t === "insurance" ? "TPA Desk" : t === "corporate" ? "HR / Corporate Desk" : "Doctor", Me = `Dear ${((_d = C == null ? void 0 : C.partner) == null ? void 0 : _d.name) || Ie},
+      const se = (((_a3 = C == null ? void 0 : C.partner) == null ? void 0 : _a3.phone) || "").replace(/[^0-9]/g, ""), ae = ((_b3 = C == null ? void 0 : C.summary) == null ? void 0 : _b3.netClaimDue) || 0, ue = ((_c3 = C == null ? void 0 : C.items) == null ? void 0 : _c3.length) || 0, Ie = t === "insurance" ? "TPA Desk" : t === "corporate" ? "HR / Corporate Desk" : "Doctor", Me = `Dear ${((_d = C == null ? void 0 : C.partner) == null ? void 0 : _d.name) || Ie},
 
 Diagnostic claim statement from ${((_e = C == null ? void 0 : C.lab) == null ? void 0 : _e.labLegalName) || "SynOS Healthcare"}:
-\u2022 Selected Patient Visits: ${ge}
+\u2022 Selected Patient Visits: ${ue}
 \u2022 Total Diagnostic Charges: \u20B9${ae.toLocaleString()}
 \u2022 Net Amount Payable: \u20B9${ae.toLocaleString()}
 
@@ -111511,7 +111513,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ]
                       }),
                       I === q.partnerId && (() => {
-                        const se = q.items.map((Qe) => Qe.receivableFactId), ae = q.items.filter((Qe) => v.has(Qe.receivableFactId)), ge = ae.length, Ie = ae.reduce((Qe, Re) => Qe + (Re.amount - Re.amountReceived), 0), Me = q.items.length > 0 && ge === q.items.length;
+                        const se = q.items.map((Qe) => Qe.receivableFactId), ae = q.items.filter((Qe) => v.has(Qe.receivableFactId)), ue = ae.length, Ie = ae.reduce((Qe, Re) => Qe + (Re.amount - Re.amountReceived), 0), Me = q.items.length > 0 && ue === q.items.length;
                         return i.jsx("tr", {
                           children: i.jsx("td", {
                             colSpan: "6",
@@ -111519,7 +111521,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                             children: i.jsxs("div", {
                               className: "p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner",
                               children: [
-                                ge > 0 && i.jsxs("div", {
+                                ue > 0 && i.jsxs("div", {
                                   className: "flex items-center justify-between p-3.5 mb-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 animate-in fade-in duration-200",
                                   children: [
                                     i.jsxs("div", {
@@ -111527,14 +111529,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       children: [
                                         i.jsx("div", {
                                           className: "w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-xs",
-                                          children: ge
+                                          children: ue
                                         }),
                                         i.jsxs("div", {
                                           children: [
                                             i.jsxs("p", {
                                               className: "text-xs font-bold text-indigo-950 dark:text-indigo-200",
                                               children: [
-                                                ge,
+                                                ue,
                                                 " of ",
                                                 q.items.length,
                                                 " Invoices Selected"
@@ -111579,7 +111581,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                             i.jsxs("span", {
                                               children: [
                                                 "Generate B2B Invoice (",
-                                                ge,
+                                                ue,
                                                 ")"
                                               ]
                                             })
@@ -112862,18 +112864,18 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         s(true);
         const $ = await Ct.getPendingLearningQueue() || [];
         A($);
-        const q = $.reduce((ae, ge) => {
+        const q = $.reduce((ae, ue) => {
           var _a2;
-          return ae + (((_a2 = ge.unmappedTests) == null ? void 0 : _a2.length) || 0);
+          return ae + (((_a2 = ue.unmappedTests) == null ? void 0 : _a2.length) || 0);
         }, 0);
         t && t(q);
         const se = {};
         $.forEach((ae) => {
-          (ae.unmappedTests || []).forEach((ge) => {
-            const Ie = `${ae.referralPartnerId}_${ge.testId}`;
+          (ae.unmappedTests || []).forEach((ue) => {
+            const Ie = `${ae.referralPartnerId}_${ue.testId}`;
             se[Ie] = {
               type: "Percentage",
-              value: ge.suggestedPercentage > 0 ? ge.suggestedPercentage : ""
+              value: ue.suggestedPercentage > 0 ? ue.suggestedPercentage : ""
             };
           });
         }), C((ae) => ({
@@ -112897,10 +112899,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       }
     }, O = (re, $, q, se) => {
       const ae = `${re}_${$}`;
-      C((ge) => ({
-        ...ge,
+      C((ue) => ({
+        ...ue,
         [ae]: {
-          ...ge[ae] || {
+          ...ue[ae] || {
             type: "Percentage",
             value: ""
           },
@@ -112920,7 +112922,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       }
       try {
         b(q);
-        const ge = {
+        const ue = {
           rules: [
             {
               referralPartnerId: re,
@@ -112929,22 +112931,22 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               commissionValue: ae
             }
           ]
-        }, Ie = await Ct.commitLearningRates(ge);
+        }, Ie = await Ct.commitLearningRates(ue);
         v(Ie), await M();
-      } catch (ge) {
-        alert(`Failed to save rate: ${ge.message}`);
+      } catch (ue) {
+        alert(`Failed to save rate: ${ue.message}`);
       } finally {
         b(null);
       }
     }, U = async (re) => {
       const $ = [];
       for (const q of re.unmappedTests || []) {
-        const se = `${re.referralPartnerId}_${q.testId}`, ae = p[se], ge = parseFloat(ae == null ? void 0 : ae.value);
-        !isNaN(ge) && ge > 0 && $.push({
+        const se = `${re.referralPartnerId}_${q.testId}`, ae = p[se], ue = parseFloat(ae == null ? void 0 : ae.value);
+        !isNaN(ue) && ue > 0 && $.push({
           referralPartnerId: re.referralPartnerId,
           testId: q.testId,
           commissionType: ae.type,
-          commissionValue: ge
+          commissionValue: ue
         });
       }
       if ($.length === 0) {
@@ -112965,12 +112967,12 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     }, V = async () => {
       const re = [];
       for (const $ of r) for (const q of $.unmappedTests || []) {
-        const se = `${$.referralPartnerId}_${q.testId}`, ae = p[se], ge = parseFloat(ae == null ? void 0 : ae.value);
-        !isNaN(ge) && ge > 0 && re.push({
+        const se = `${$.referralPartnerId}_${q.testId}`, ae = p[se], ue = parseFloat(ae == null ? void 0 : ae.value);
+        !isNaN(ue) && ue > 0 && re.push({
           referralPartnerId: $.referralPartnerId,
           testId: q.testId,
           commissionType: ae.type,
-          commissionValue: ge
+          commissionValue: ue
         });
       }
       if (re.length === 0) {
@@ -113359,10 +113361,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           i.jsx("tbody", {
                             className: "divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium",
                             children: re.unmappedTests.map((ae) => {
-                              const ge = `${re.referralPartnerId}_${ae.testId}`, Ie = p[ge] || {
+                              const ue = `${re.referralPartnerId}_${ae.testId}`, Ie = p[ue] || {
                                 type: "Percentage",
                                 value: ""
-                              }, Me = E === ge, Qe = parseFloat(Ie.value);
+                              }, Me = E === ue, Qe = parseFloat(Ie.value);
                               let Re = 0;
                               return !isNaN(Qe) && Qe > 0 && (Ie.type === "Percentage" ? Re = ae.price * Qe / 100 : Re = Qe), i.jsxs("tr", {
                                 className: "hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30 transition-colors",
@@ -114573,7 +114575,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     });
   };
   function KF({ forcedTab: t, hideHeader: e = false }) {
-    const { tab: n = "overview" } = Kg(), r = t || n, A = Ja(), { theme: a } = ra(), s = a === "dark", [o, l] = G.useState([]), [c, g] = G.useState([]), [d, u] = G.useState([]), [h, I] = G.useState(true), [p, C] = G.useState(""), [x, B] = G.useState(""), [E, b] = G.useState([]), [D, v] = G.useState(false), [M, F] = G.useState(null), [O, Y] = G.useState(false), [P, U] = G.useState(null), [V, K] = G.useState(false), [ne, Z] = G.useState(false), [re, $] = G.useState(false), [q, se] = G.useState(null), [ae, ge] = G.useState(""), [Ie, Me] = G.useState("ALL"), [Qe, Re] = G.useState("ALL"), [Fe, rt] = G.useState("ALL"), [tt, Ce] = G.useState(1), [te, Be] = G.useState(15), [le, Ne] = G.useState(null), [Ge, be] = G.useState(""), [et, ye] = G.useState(false), nt = [
+    const { tab: n = "overview" } = Kg(), r = t || n, A = Ja(), { theme: a } = ra(), s = a === "dark", [o, l] = G.useState([]), [c, g] = G.useState([]), [d, u] = G.useState([]), [h, I] = G.useState(true), [p, C] = G.useState(""), [x, B] = G.useState(""), [E, b] = G.useState([]), [D, v] = G.useState(false), [M, F] = G.useState(null), [O, Y] = G.useState(false), [P, U] = G.useState(null), [V, K] = G.useState(false), [ne, Z] = G.useState(false), [re, $] = G.useState(false), [q, se] = G.useState(null), [ae, ue] = G.useState(""), [Ie, Me] = G.useState("ALL"), [Qe, Re] = G.useState("ALL"), [Fe, rt] = G.useState("ALL"), [tt, Ce] = G.useState(1), [te, Be] = G.useState(15), [le, Ne] = G.useState(null), [Ge, be] = G.useState(""), [et, ye] = G.useState(false), nt = [
       {
         id: "overview",
         label: "Overview",
@@ -114635,7 +114637,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     }, [
       x
     ]);
-    const ue = c.reduce((We, wt) => We + (wt.grossAmount || 0), 0), De = E.filter((We) => We.isPackage), Ue = E.filter((We) => !We.isPackage), fe = o.filter((We) => (We.companyName || "").toLowerCase().includes(p.toLowerCase()) || (We.corporateCode || "").toLowerCase().includes(p.toLowerCase()) || (We.contactPerson || "").toLowerCase().includes(p.toLowerCase())), Ye = c.filter((We) => {
+    const ge = c.reduce((We, wt) => We + (wt.grossAmount || 0), 0), De = E.filter((We) => We.isPackage), Ue = E.filter((We) => !We.isPackage), fe = o.filter((We) => (We.companyName || "").toLowerCase().includes(p.toLowerCase()) || (We.corporateCode || "").toLowerCase().includes(p.toLowerCase()) || (We.contactPerson || "").toLowerCase().includes(p.toLowerCase())), Ye = c.filter((We) => {
       const wt = (We.patientName || "").toLowerCase().includes(p.toLowerCase()) || (We.patientMrn || "").toLowerCase().includes(p.toLowerCase()) || (We.employeeId || "").toLowerCase().includes(p.toLowerCase()) || (We.companyName || "").toLowerCase().includes(p.toLowerCase()), Ot = !x || We.corporateAccountId === x;
       return wt && Ot;
     }), Ze = o.find((We) => (We.corporateAccountId || We.id) === x), ve = () => {
@@ -114912,7 +114914,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         kpis: [
           {
             label: "Total Invoiced (B2B)",
-            value: `\u20B9${ue.toLocaleString()}`,
+            value: `\u20B9${ge.toLocaleString()}`,
             color: "text-indigo-600",
             subtext: "Gross Billing Liability"
           },
@@ -114968,7 +114970,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         ],
         data: Ye,
         summaryTotals: {
-          grossAmount: `\u20B9${ue.toLocaleString()}`
+          grossAmount: `\u20B9${ge.toLocaleString()}`
         }
       };
     }, It = G.useMemo(() => {
@@ -115117,7 +115119,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                               className: "text-xs font-black text-indigo-600 dark:text-indigo-400",
                               children: [
                                 "\u20B9",
-                                ue.toLocaleString()
+                                ge.toLocaleString()
                               ]
                             })
                           ]
@@ -115277,7 +115279,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                             className: "text-2xl font-black tracking-tight text-emerald-500",
                             children: [
                               "\u20B9",
-                              ue.toLocaleString()
+                              ge.toLocaleString()
                             ]
                           }),
                           i.jsx("p", {
@@ -115959,7 +115961,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     type: "text",
                                     placeholder: "Search test by name or code (e.g. CBC, Lipid, CBP)...",
                                     value: ae,
-                                    onChange: (We) => ge(We.target.value),
+                                    onChange: (We) => ue(We.target.value),
                                     className: "w-full pl-8 pr-3 py-1.5 rounded-xl text-xs border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
                                   })
                                 ]
@@ -117533,11 +117535,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         Qe.coPayAmount || 0,
         `"${Qe.status || "Pending"}"`
       ]));
-      const ge = "data:text/csv;charset=utf-8," + [
+      const ue = "data:text/csv;charset=utf-8," + [
         q.join(","),
         ...se.map((Qe) => Qe.join(","))
       ].join(`
-`), Ie = encodeURI(ge), Me = document.createElement("a");
+`), Ie = encodeURI(ue), Me = document.createElement("a");
       Me.setAttribute("href", Ie), Me.setAttribute("download", ae), document.body.appendChild(Me), Me.click(), document.body.removeChild(Me);
     }, $ = () => {
       if (n === "empanelment") return {
@@ -117605,7 +117607,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         summaryTotals: {}
       };
       if (n === "claims" || n === "receivables") {
-        const q = U.reduce((ae, ge) => ae + (Number(ge.claimAmount) || 0), 0), se = U.reduce((ae, ge) => ae + (Number(ge.coPayAmount) || 0), 0);
+        const q = U.reduce((ae, ue) => ae + (Number(ue.claimAmount) || 0), 0), se = U.reduce((ae, ue) => ae + (Number(ue.coPayAmount) || 0), 0);
         return {
           title: n === "receivables" ? "TPA Cashless Receivables Ledger" : "Insurance Cashless Claims & Pre-Auths Ledger",
           subtitle: "Cashless diagnostic claims, patient desk co-pay & insurance settlement balances",
@@ -117634,12 +117636,12 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             {
               key: "visitToken",
               label: "Token / Claim Ref",
-              render: (ae, ge) => ae || ge.token || "-"
+              render: (ae, ue) => ae || ue.token || "-"
             },
             {
               key: "occurredAt",
               label: "Date",
-              render: (ae, ge) => new Date(ae || ge.date || Date.now()).toLocaleDateString()
+              render: (ae, ue) => new Date(ae || ue.date || Date.now()).toLocaleDateString()
             },
             {
               key: "patientName",
@@ -117648,7 +117650,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             {
               key: "insuranceCompanyName",
               label: "Insurer / TPA",
-              render: (ae, ge) => ge.tpaName ? `${ae} (${ge.tpaName})` : ae
+              render: (ae, ue) => ue.tpaName ? `${ae} (${ue.tpaName})` : ae
             },
             {
               key: "policyNumber",
@@ -118716,7 +118718,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           i.jsx("tbody", {
                             className: "divide-y divide-zinc-200 dark:divide-zinc-800",
                             children: s.map((q) => {
-                              const se = l.filter((ge) => ge.insuranceCompanyId === (q.insuranceCompanyId || q.id)), ae = se.reduce((ge, Ie) => ge + (Ie.claimAmount || 0), 0);
+                              const se = l.filter((ue) => ue.insuranceCompanyId === (q.insuranceCompanyId || q.id)), ae = se.reduce((ue, Ie) => ue + (Ie.claimAmount || 0), 0);
                               return i.jsxs("tr", {
                                 className: "hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40",
                                 children: [
@@ -119244,7 +119246,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       P,
       U
     ]);
-    const V = A.length, K = A.filter((Re) => Re.isActive).length, ne = A.filter((Re) => Re.type === 0 || Re.type === "Percentage").length, Z = A.filter((Re) => Re.type === 1 || Re.type === "Flat").length, re = C.reduce((Re, Fe) => Re + (Number(Fe.discountAmount) || 0), 0), $ = C.length, q = $ > 0 ? Math.round(re / $) : 0, se = C.filter((Re) => Re.source === "Patient").length, ae = C.filter((Re) => Re.source !== "Patient").length, ge = G.useMemo(() => {
+    const V = A.length, K = A.filter((Re) => Re.isActive).length, ne = A.filter((Re) => Re.type === 0 || Re.type === "Percentage").length, Z = A.filter((Re) => Re.type === 1 || Re.type === "Flat").length, re = C.reduce((Re, Fe) => Re + (Number(Fe.discountAmount) || 0), 0), $ = C.length, q = $ > 0 ? Math.round(re / $) : 0, se = C.filter((Re) => Re.source === "Patient").length, ae = C.filter((Re) => Re.source !== "Patient").length, ue = G.useMemo(() => {
       const Re = {};
       return C.forEach((Fe) => {
         const rt = Fe.appliedBy || "Reception";
@@ -119289,7 +119291,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         "Average Discount (INR)",
         "Percentage Count",
         "Flat Count"
-      ], Fe = ge.map((Be) => [
+      ], Fe = ue.map((Be) => [
         `"${(Be.name || "").replace(/"/g, '""')}"`,
         Be.count,
         Be.totalDiscount,
@@ -119902,7 +119904,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 }),
                                 i.jsx("p", {
                                   className: "text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight",
-                                  children: ge.length
+                                  children: ue.length
                                 })
                               ]
                             }),
@@ -120162,7 +120164,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 }),
                                 i.jsx("p", {
                                   className: "text-2xl font-black text-zinc-900 dark:text-white tracking-tight",
-                                  children: ge.length
+                                  children: ue.length
                                 })
                               ]
                             }),
@@ -120231,7 +120233,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 }),
                                 i.jsx("p", {
                                   className: "text-xl font-black text-zinc-900 dark:text-white tracking-tight truncate max-w-[170px]",
-                                  children: ((_a2 = ge[0]) == null ? void 0 : _a2.name) || "None"
+                                  children: ((_a2 = ue[0]) == null ? void 0 : _a2.name) || "None"
                                 })
                               ]
                             }),
@@ -120245,7 +120247,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         i.jsx("p", {
                           className: "text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5",
-                          children: ge[0] ? `\u20B9${ge[0].totalDiscount.toLocaleString()} given` : "No records yet"
+                          children: ue[0] ? `\u20B9${ue[0].totalDiscount.toLocaleString()} given` : "No records yet"
                         })
                       ]
                     }),
@@ -120311,7 +120313,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           children: "Calculating staff totals..."
                         })
                       ]
-                    }) : ge.length === 0 ? i.jsxs("div", {
+                    }) : ue.length === 0 ? i.jsxs("div", {
                       className: "flex flex-col items-center justify-center p-16 gap-2 text-zinc-400",
                       children: [
                         i.jsx(Ba, {
@@ -120360,7 +120362,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           }),
                           i.jsx("tbody", {
                             className: "divide-y divide-slate-100 dark:divide-zinc-800/80",
-                            children: ge.map((Re) => {
+                            children: ue.map((Re) => {
                               const Fe = Re.count > 0 ? Math.round(Re.totalDiscount / Re.count) : 0;
                               return i.jsxs("tr", {
                                 className: "hover:bg-slate-50/50 dark:hover:bg-zinc-800/40 transition-colors",
@@ -120462,7 +120464,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             },
             {
               label: "Active Staff",
-              value: ge.length,
+              value: ue.length,
               color: "text-purple-600",
               subtext: "Staff Members"
             }
@@ -120542,7 +120544,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               render: (Re) => Re || "-"
             }
           ],
-          data: r === "staff" ? ge : C,
+          data: r === "staff" ? ue : C,
           summaryTotals: {
             discountAmount: `\u20B9${re.toLocaleString()}`
           },
@@ -123116,7 +123118,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         const Ie = Number(Z.tdsValue) || 0;
         Z.tdsMode === 1 ? ae = Math.round(V * (Ie / 100) * 100) / 100 : ae = Ie;
       }
-      const ge = Math.round(V - q - se - ae - ne);
+      const ue = Math.round(V - q - se - ae - ne);
       return {
         name: `${Z.firstName || ""} ${Z.lastName || ""}`.trim() || "Employee",
         gross: V,
@@ -123124,7 +123126,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         esi: se,
         tds: ae,
         advance: ne,
-        net: ge
+        net: ue
       };
     };
     G.useEffect(() => {
@@ -125400,7 +125402,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     });
   }
   function b$() {
-    const [t, e] = G.useState([]), [n, r] = G.useState([]), [A, a] = G.useState([]), [s, o] = G.useState([]), [l, c] = G.useState([]), [g, d] = G.useState(true), [u, h] = G.useState(false), [I, p] = G.useState(""), [C, x] = G.useState(""), [B, E] = G.useState("Pathology"), [b, D] = G.useState(false), [v, M] = G.useState(null), [F, O] = G.useState(""), [Y, P] = G.useState("Pathology"), [U, V] = G.useState(true), [K, ne] = G.useState([]), [Z, re] = G.useState(""), [$, q] = G.useState(""), [se, ae] = G.useState(false), [ge, Ie] = G.useState(null), [Me, Qe] = G.useState(""), [Re, Fe] = G.useState(""), [rt, tt] = G.useState(true), [Ce, te] = G.useState(null), [Be, le] = G.useState(null), [Ne, Ge] = G.useState(null), be = Array.from(new Set([
+    const [t, e] = G.useState([]), [n, r] = G.useState([]), [A, a] = G.useState([]), [s, o] = G.useState([]), [l, c] = G.useState([]), [g, d] = G.useState(true), [u, h] = G.useState(false), [I, p] = G.useState(""), [C, x] = G.useState(""), [B, E] = G.useState("Pathology"), [b, D] = G.useState(false), [v, M] = G.useState(null), [F, O] = G.useState(""), [Y, P] = G.useState("Pathology"), [U, V] = G.useState(true), [K, ne] = G.useState([]), [Z, re] = G.useState(""), [$, q] = G.useState(""), [se, ae] = G.useState(false), [ue, Ie] = G.useState(null), [Me, Qe] = G.useState(""), [Re, Fe] = G.useState(""), [rt, tt] = G.useState(true), [Ce, te] = G.useState(null), [Be, le] = G.useState(null), [Ne, Ge] = G.useState(null), be = Array.from(new Set([
       "Pathology",
       "Laboratory",
       "General",
@@ -125440,7 +125442,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       } catch (Oe) {
         alert(Oe.message || "Failed to update workspace.");
       }
-    }, ue = async (Je) => {
+    }, ge = async (Je) => {
       if (window.confirm(`Are you sure you want to delete the Workspace '${Je.name}' (${Je.routePath})? This will revoke access for all mapped users.`)) try {
         await zn.deleteWorkspace(Je.workspaceId), alert(`Workspace '${Je.name}' deleted successfully!`), await ye();
       } catch (Oe) {
@@ -126399,7 +126401,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       className: "grid grid-cols-1 md:grid-cols-2 gap-4",
                       children: [
                         K && K.map((Je) => {
-                          const Oe = ge === Je.workspaceId;
+                          const Oe = ue === Je.workspaceId;
                           return i.jsx("div", {
                             className: "p-4 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-white dark:bg-zinc-900/40 hover:-translate-y-0.5 transition-all hover:shadow-md hover:shadow-zinc-100 dark:hover:shadow-none relative group/ws",
                             children: Oe ? i.jsxs("div", {
@@ -126501,7 +126503,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       })
                                     }),
                                     i.jsx("button", {
-                                      onClick: () => ue(Je),
+                                      onClick: () => ge(Je),
                                       className: "p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-400 hover:text-rose-600 rounded transition-colors",
                                       title: "Delete Workspace",
                                       children: i.jsx(Vi, {
@@ -129245,7 +129247,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     ]), [u, h] = G.useState(() => {
       const Ee = /* @__PURE__ */ new Date();
       return Ee.setDate(Ee.getDate() - 7), uE(Ee);
-    }), [I, p] = G.useState(() => uE(/* @__PURE__ */ new Date())), [C, x] = G.useState("last7"), [B, E] = G.useState(1), [b, D] = G.useState(10), [v, M] = G.useState(0), [F, O] = G.useState([]), [Y, P] = G.useState(null), [U, V] = G.useState(null), [K, ne] = G.useState(null), [Z, re] = G.useState(null), [$, q] = G.useState([]), [se, ae] = G.useState([]), [ge, Ie] = G.useState(false), [Me, Qe] = G.useState(false), [Re, Fe] = G.useState(false), { template: rt, loading: tt } = Yx(Z);
+    }), [I, p] = G.useState(() => uE(/* @__PURE__ */ new Date())), [C, x] = G.useState("last7"), [B, E] = G.useState(1), [b, D] = G.useState(10), [v, M] = G.useState(0), [F, O] = G.useState([]), [Y, P] = G.useState(null), [U, V] = G.useState(null), [K, ne] = G.useState(null), [Z, re] = G.useState(null), [$, q] = G.useState([]), [se, ae] = G.useState([]), [ue, Ie] = G.useState(false), [Me, Qe] = G.useState(false), [Re, Fe] = G.useState(false), { template: rt, loading: tt } = Yx(Z);
     G.useEffect(() => {
       if (!e.current) return;
       const Ee = () => {
@@ -129257,10 +129259,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         }
       };
       Ee();
-      const ue = new ResizeObserver(() => {
+      const ge = new ResizeObserver(() => {
         Ee();
       });
-      return ue.observe(e.current), () => ue.disconnect();
+      return ge.observe(e.current), () => ge.disconnect();
     }, [
       K,
       rt
@@ -129287,11 +129289,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     ]);
     const Ce = async () => {
       try {
-        const [Ee, ue] = await Promise.all([
+        const [Ee, ge] = await Promise.all([
           zn.getBranches(),
           zn.getDepartments()
         ]);
-        q(Ee || []), ae(ue || []);
+        q(Ee || []), ae(ge || []);
       } catch (Ee) {
         console.error("Failed to load metadata filters:", Ee);
       }
@@ -129308,8 +129310,8 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           statuses: g,
           startDate: u ? new Date(u).toISOString() : null,
           endDate: I ? (/* @__PURE__ */ new Date(I + "T23:59:59")).toISOString() : null
-        }, ue = await Jr.searchReportsArchive(Ee);
-        O(ue.items || []), M(ue.totalCount || 0), ((_a2 = ue.items) == null ? void 0 : _a2.length) > 0 && !Y && (P(ue.items[0].reportId), V(ue.items[0]));
+        }, ge = await Jr.searchReportsArchive(Ee);
+        O(ge.items || []), M(ge.totalCount || 0), ((_a2 = ge.items) == null ? void 0 : _a2.length) > 0 && !Y && (P(ge.items[0].reportId), V(ge.items[0]));
       } catch (Ee) {
         console.error("Failed to query report archive:", Ee);
       } finally {
@@ -129318,34 +129320,34 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     }, Be = async (Ee) => {
       Qe(true);
       try {
-        const [ue, De] = await Promise.all([
+        const [ge, De] = await Promise.all([
           Jr.getFullReport(Ee),
           Jr.getReportData(Ee, true)
         ]);
-        ne(ue.report), re(De);
-      } catch (ue) {
-        console.error("Failed to load report details:", ue);
+        ne(ge.report), re(De);
+      } catch (ge) {
+        console.error("Failed to load report details:", ge);
       } finally {
         Qe(false);
       }
     }, le = (Ee) => {
       x(Ee);
-      const ue = /* @__PURE__ */ new Date();
-      let De = "", Ue = uE(ue);
-      if (Ee === "today") De = uE(ue);
+      const ge = /* @__PURE__ */ new Date();
+      let De = "", Ue = uE(ge);
+      if (Ee === "today") De = uE(ge);
       else if (Ee === "last7") {
         const fe = /* @__PURE__ */ new Date();
-        fe.setDate(ue.getDate() - 7), De = uE(fe);
+        fe.setDate(ge.getDate() - 7), De = uE(fe);
       } else if (Ee === "last30") {
         const fe = /* @__PURE__ */ new Date();
-        fe.setDate(ue.getDate() - 30), De = uE(fe);
-      } else Ee === "year" ? De = `${ue.getFullYear()}-01-01` : Ee === "all" && (De = "", Ue = "");
+        fe.setDate(ge.getDate() - 30), De = uE(fe);
+      } else Ee === "year" ? De = `${ge.getFullYear()}-01-01` : Ee === "all" && (De = "", Ue = "");
       h(De), p(Ue), E(1);
     }, Ne = (Ee) => {
-      d((ue) => ue.indexOf(Ee) === -1 ? [
-        ...ue,
+      d((ge) => ge.indexOf(Ee) === -1 ? [
+        ...ge,
         Ee
-      ] : ue.filter((Ue) => Ue !== Ee)), E(1);
+      ] : ge.filter((Ue) => Ue !== Ee)), E(1);
     }, [Ge, be] = G.useState(() => localStorage.getItem("synos_preprinted_mode") === "true"), et = async () => {
       if (Y) try {
         await Jr.deliverViaPrint(Y);
@@ -129360,7 +129362,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         return;
       }
       try {
-        const ue = await (await fetch(U.pdfUrl)).blob(), De = window.URL.createObjectURL(ue), Ue = document.createElement("a");
+        const ge = await (await fetch(U.pdfUrl)).blob(), De = window.URL.createObjectURL(ge), Ue = document.createElement("a");
         Ue.href = De;
         const fe = U.patientName.replace(/\s+/g, "_");
         Ue.download = `${U.token || "N_A"}_${U.mrn || "N_A"}_${fe}_${U.testName.replace(/\s+/g, "_")}.pdf`, document.body.appendChild(Ue), Ue.click(), document.body.removeChild(Ue), window.URL.revokeObjectURL(De);
@@ -129568,13 +129570,13 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                               label: "Manual Sig"
                             }
                           ].map((Ee) => {
-                            const ue = g.includes(Ee.id);
+                            const ge = g.includes(Ee.id);
                             return i.jsxs("label", {
                               className: "flex items-center gap-2 cursor-pointer select-none text-[10px] font-bold text-zinc-600 dark:text-zinc-400",
                               children: [
                                 i.jsx("input", {
                                   type: "checkbox",
-                                  checked: ue,
+                                  checked: ge,
                                   onChange: () => Ne(Ee.id),
                                   className: "rounded border-zinc-300 text-synos-primary focus:ring-synos-primary/20 dark:bg-zinc-950 dark:border-white/5 w-3.5 h-3.5"
                                 }),
@@ -129630,7 +129632,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             }),
             i.jsx("div", {
               className: "flex-1 overflow-y-auto p-4 pt-0 space-y-2 custom-scrollbar",
-              children: ge ? i.jsx("div", {
+              children: ue ? i.jsx("div", {
                 className: "flex items-center justify-center py-20 opacity-30",
                 children: i.jsx(On, {
                   className: "w-8 h-8 animate-spin"
@@ -129639,7 +129641,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 className: "text-center py-20 opacity-20 font-black uppercase text-xs tracking-widest",
                 children: "No reports match query"
               }) : F.map((Ee) => {
-                const ue = Y === Ee.reportId;
+                const ge = Y === Ee.reportId;
                 return new Date(Ee.createdAt).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -129648,7 +129650,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   onClick: () => {
                     P(Ee.reportId), V(Ee);
                   },
-                  className: Le("w-full text-left p-4 rounded-2xl transition-all duration-200 border flex flex-col gap-2 relative group", ue ? "bg-synos-primary/10 dark:bg-synos-primary/5 border-synos-primary/30 dark:border-synos-primary/20 shadow-md shadow-synos-primary/5" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"),
+                  className: Le("w-full text-left p-4 rounded-2xl transition-all duration-200 border flex flex-col gap-2 relative group", ge ? "bg-synos-primary/10 dark:bg-synos-primary/5 border-synos-primary/30 dark:border-synos-primary/20 shadow-md shadow-synos-primary/5" : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"),
                   children: [
                     i.jsxs("div", {
                       className: "flex items-start justify-between",
@@ -129657,7 +129659,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           className: "space-y-0.5 max-w-[70%]",
                           children: [
                             i.jsx("h4", {
-                              className: Le("text-xs font-bold truncate transition-colors", ue ? "text-synos-primary dark:text-white" : "text-zinc-800 dark:text-zinc-200"),
+                              className: Le("text-xs font-bold truncate transition-colors", ge ? "text-synos-primary dark:text-white" : "text-zinc-800 dark:text-zinc-200"),
                               children: Ee.patientName
                             }),
                             i.jsxs("p", {
@@ -129708,7 +129710,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 }, Ee.reportId);
               })
             }),
-            !ge && F.length > 0 && i.jsxs("div", {
+            !ue && F.length > 0 && i.jsxs("div", {
               className: "p-4 border-t dark:border-white/5 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-950/20 shrink-0",
               children: [
                 i.jsxs("div", {
@@ -130420,7 +130422,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       } finally {
         s(false);
       }
-    }, ge = async (Qe) => {
+    }, ue = async (Qe) => {
       s(true), l(null);
       try {
         const Re = await xg.getPatientById(Qe.patientId);
@@ -131225,7 +131227,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           children: "Potential Duplicates"
                         }),
                         O.map((Qe) => i.jsx("div", {
-                          onClick: () => ge(Qe),
+                          onClick: () => ue(Qe),
                           className: Le("p-4 rounded-xl border transition-all duration-200 cursor-pointer text-xxs flex flex-col justify-between hover:-translate-y-0.5 shadow-sm", (P == null ? void 0 : P.patientId) === Qe.patientId ? "bg-synos-primary/10 border-synos-primary/35 shadow-md shadow-synos-primary/5" : "bg-zinc-50/50 dark:bg-zinc-900/20 border-zinc-200 dark:border-zinc-850/80 hover:border-synos-primary/15"),
                           children: i.jsxs("div", {
                             children: [
@@ -132076,9 +132078,9 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       };
     }
     function g(Z, re, $, q) {
-      var se = re && re.prototype instanceof x ? re : x, ae = Object.create(se.prototype), ge = new K(q || []);
+      var se = re && re.prototype instanceof x ? re : x, ae = Object.create(se.prototype), ue = new K(q || []);
       return A(ae, "_invoke", {
-        value: Y(Z, $, ge)
+        value: Y(Z, $, ue)
       }), ae;
     }
     function d(Z, re, $) {
@@ -132121,28 +132123,28 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       });
     }
     function O(Z, re) {
-      function $(se, ae, ge, Ie) {
+      function $(se, ae, ue, Ie) {
         var Me = d(Z[se], Z, ae);
         if (Me.type !== "throw") {
           var Qe = Me.arg, Re = Qe.value;
           return Re && hm(Re) == "object" && r.call(Re, "__await") ? re.resolve(Re.__await).then(function(Fe) {
-            $("next", Fe, ge, Ie);
+            $("next", Fe, ue, Ie);
           }, function(Fe) {
-            $("throw", Fe, ge, Ie);
+            $("throw", Fe, ue, Ie);
           }) : re.resolve(Re).then(function(Fe) {
-            Qe.value = Fe, ge(Qe);
+            Qe.value = Fe, ue(Qe);
           }, function(Fe) {
-            return $("throw", Fe, ge, Ie);
+            return $("throw", Fe, ue, Ie);
           });
         }
         Ie(Me.arg);
       }
       var q;
       A(this, "_invoke", {
-        value: function(ae, ge) {
+        value: function(ae, ue) {
           function Ie() {
             return new re(function(Me, Qe) {
-              $(ae, ge, Me, Qe);
+              $(ae, ue, Me, Qe);
             });
           }
           return q = q ? q.then(Ie, Ie) : Ie();
@@ -132161,9 +132163,9 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           };
         }
         for ($.method = se, $.arg = ae; ; ) {
-          var ge = $.delegate;
-          if (ge) {
-            var Ie = P(ge, $);
+          var ue = $.delegate;
+          if (ue) {
+            var Ie = P(ue, $);
             if (Ie) {
               if (Ie === C) continue;
               return Ie;
@@ -132247,8 +132249,8 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     }), e.AsyncIterator = O, e.async = function(Z, re, $, q, se) {
       se === void 0 && (se = Promise);
       var ae = new O(g(Z, re, $, q), se);
-      return e.isGeneratorFunction(re) ? ae : ae.next().then(function(ge) {
-        return ge.done ? ge.value : ae.next();
+      return e.isGeneratorFunction(re) ? ae : ae.next().then(function(ue) {
+        return ue.done ? ue.value : ae.next();
       });
     }, F(M), c(M, l, "Generator"), c(M, s, function() {
       return this;
@@ -132279,10 +132281,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         if (this.done) throw re;
         var $ = this;
         function q(Qe, Re) {
-          return ge.type = "throw", ge.arg = re, $.next = Qe, Re && ($.method = "next", $.arg = t), !!Re;
+          return ue.type = "throw", ue.arg = re, $.next = Qe, Re && ($.method = "next", $.arg = t), !!Re;
         }
         for (var se = this.tryEntries.length - 1; se >= 0; --se) {
-          var ae = this.tryEntries[se], ge = ae.completion;
+          var ae = this.tryEntries[se], ue = ae.completion;
           if (ae.tryLoc === "root") return q("end");
           if (ae.tryLoc <= this.prev) {
             var Ie = r.call(ae, "catchLoc"), Me = r.call(ae, "finallyLoc");
@@ -132307,8 +132309,8 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           }
         }
         ae && (re === "break" || re === "continue") && ae.tryLoc <= $ && $ <= ae.finallyLoc && (ae = null);
-        var ge = ae ? ae.completion : {};
-        return ge.type = re, ge.arg = $, ae ? (this.method = "next", this.next = ae.finallyLoc, C) : this.complete(ge);
+        var ue = ae ? ae.completion : {};
+        return ue.type = re, ue.arg = $, ae ? (this.method = "next", this.next = ae.finallyLoc, C) : this.complete(ue);
       },
       complete: function(re, $) {
         if (re.type === "throw") throw re.arg;
@@ -133257,9 +133259,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       };
     }
     function g(Z, re, $, q) {
-      var se = re && re.prototype instanceof x ? re : x, ae = Object.create(se.prototype), ge = new K(q || []);
+      var se = re && re.prototype instanceof x ? re : x, ae = Object.create(se.prototype), ue = new K(q || []);
       return A(ae, "_invoke", {
-        value: Y(Z, $, ge)
+        value: Y(Z, $, ue)
       }), ae;
     }
     function d(Z, re, $) {
@@ -133302,28 +133304,28 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       });
     }
     function O(Z, re) {
-      function $(se, ae, ge, Ie) {
+      function $(se, ae, ue, Ie) {
         var Me = d(Z[se], Z, ae);
         if (Me.type !== "throw") {
           var Qe = Me.arg, Re = Qe.value;
           return Re && fm(Re) == "object" && r.call(Re, "__await") ? re.resolve(Re.__await).then(function(Fe) {
-            $("next", Fe, ge, Ie);
+            $("next", Fe, ue, Ie);
           }, function(Fe) {
-            $("throw", Fe, ge, Ie);
+            $("throw", Fe, ue, Ie);
           }) : re.resolve(Re).then(function(Fe) {
-            Qe.value = Fe, ge(Qe);
+            Qe.value = Fe, ue(Qe);
           }, function(Fe) {
-            return $("throw", Fe, ge, Ie);
+            return $("throw", Fe, ue, Ie);
           });
         }
         Ie(Me.arg);
       }
       var q;
       A(this, "_invoke", {
-        value: function(ae, ge) {
+        value: function(ae, ue) {
           function Ie() {
             return new re(function(Me, Qe) {
-              $(ae, ge, Me, Qe);
+              $(ae, ue, Me, Qe);
             });
           }
           return q = q ? q.then(Ie, Ie) : Ie();
@@ -133342,9 +133344,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           };
         }
         for ($.method = se, $.arg = ae; ; ) {
-          var ge = $.delegate;
-          if (ge) {
-            var Ie = P(ge, $);
+          var ue = $.delegate;
+          if (ue) {
+            var Ie = P(ue, $);
             if (Ie) {
               if (Ie === C) continue;
               return Ie;
@@ -133428,8 +133430,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }), e.AsyncIterator = O, e.async = function(Z, re, $, q, se) {
       se === void 0 && (se = Promise);
       var ae = new O(g(Z, re, $, q), se);
-      return e.isGeneratorFunction(re) ? ae : ae.next().then(function(ge) {
-        return ge.done ? ge.value : ae.next();
+      return e.isGeneratorFunction(re) ? ae : ae.next().then(function(ue) {
+        return ue.done ? ue.value : ae.next();
       });
     }, F(M), c(M, l, "Generator"), c(M, s, function() {
       return this;
@@ -133460,10 +133462,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         if (this.done) throw re;
         var $ = this;
         function q(Qe, Re) {
-          return ge.type = "throw", ge.arg = re, $.next = Qe, Re && ($.method = "next", $.arg = t), !!Re;
+          return ue.type = "throw", ue.arg = re, $.next = Qe, Re && ($.method = "next", $.arg = t), !!Re;
         }
         for (var se = this.tryEntries.length - 1; se >= 0; --se) {
-          var ae = this.tryEntries[se], ge = ae.completion;
+          var ae = this.tryEntries[se], ue = ae.completion;
           if (ae.tryLoc === "root") return q("end");
           if (ae.tryLoc <= this.prev) {
             var Ie = r.call(ae, "catchLoc"), Me = r.call(ae, "finallyLoc");
@@ -133488,8 +133490,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           }
         }
         ae && (re === "break" || re === "continue") && ae.tryLoc <= $ && $ <= ae.finallyLoc && (ae = null);
-        var ge = ae ? ae.completion : {};
-        return ge.type = re, ge.arg = $, ae ? (this.method = "next", this.next = ae.finallyLoc, C) : this.complete(ge);
+        var ue = ae ? ae.completion : {};
+        return ue.type = re, ue.arg = $, ae ? (this.method = "next", this.next = ae.finallyLoc, C) : this.complete(ue);
       },
       complete: function(re, $) {
         if (re.type === "throw") throw re.arg;
@@ -134087,7 +134089,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           "ManualVerified",
           "Finalized"
         ], Ce = (await jg.getTechnicianQueue(rt, false)).find((te) => te.radiologyStudyId === Fe);
-        Ce && u(Ce), ge();
+        Ce && u(Ce), ue();
       } catch (rt) {
         alert(rt.message);
       } finally {
@@ -134116,7 +134118,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }, [
       d == null ? void 0 : d.radiologyStudyId
     ]);
-    const ge = async () => {
+    const ue = async () => {
       g(true);
       try {
         const Fe = [
@@ -134143,7 +134145,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
     };
     G.useEffect(() => {
-      ge();
+      ue();
     }, [
       t,
       a
@@ -134169,12 +134171,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
         const tt = await rt.json().catch(() => ({}));
         if (!tt.instancesCreated || tt.instancesCreated === 0) {
-          b(0), alert("No new DICOM scans were found in scanner staging (C:\\SynOS_Files\\PACS\\IncomingScans). If the scanner sends via DICOM C-STORE, ensure the transfer is finished, or upload DICOM files manually."), await ae(Fe.radiologyStudyId), ge();
+          b(0), alert("No new DICOM scans were found in scanner staging (C:\\SynOS_Files\\PACS\\IncomingScans). If the scanner sends via DICOM C-STORE, ensure the transfer is finished, or upload DICOM files manually."), await ae(Fe.radiologyStudyId), ue();
           return;
         }
         b(2), setTimeout(() => b(3), 800), setTimeout(() => {
           b(4), F(`/viewer/${tt.studyInstanceUid || Fe.radiologyStudyId}`), I(false);
-        }, 1600), v(tt.accessionNumber || Fe.accessionNumber || `ACC-${Fe.modality}`), b(4), await ae(Fe.radiologyStudyId), ge();
+        }, 1600), v(tt.accessionNumber || Fe.accessionNumber || `ACC-${Fe.modality}`), b(4), await ae(Fe.radiologyStudyId), ue();
       } catch (rt) {
         console.error("Scanner import query failed:", rt), b(0), alert("Failed to connect to scanner DICOM node: " + (rt.message || "No scanner network response."));
       } finally {
@@ -134194,7 +134196,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           } catch {
           }
           setTimeout(() => {
-            ge(), Y(null), U(0), K(""), I(false);
+            ue(), Y(null), U(0), K(""), I(false);
           }, 1e3);
         },
         onError: (tt) => {
@@ -134208,7 +134210,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       I(true);
       try {
-        await jg.markImagingCompleted(Fe), u(null), b(0), v(""), F(""), Z(false), $(0), ge();
+        await jg.markImagingCompleted(Fe), u(null), b(0), v(""), F(""), Z(false), $(0), ue();
       } catch (rt) {
         alert(rt.message);
       } finally {
@@ -134274,7 +134276,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                         ]
                       }),
                       i.jsx("button", {
-                        onClick: ge,
+                        onClick: ue,
                         className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition text-zinc-500 hover:text-zinc-800 dark:text-zinc-400",
                         title: "Refresh Worklist",
                         children: i.jsx(Vs, {
@@ -146338,13 +146340,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             else if (e.colorSpace === Qg.HSV) {
               const se = [], ae = [];
               GE(C, se), GE(x, ae), e.hSVWrap && (se[0] - ae[0] > 0.5 || ae[0] - se[0] > 0.5) && (se[0] > ae[0] ? se[0] -= 1 : ae[0] -= 1);
-              const ge = [];
-              ge[0] = (1 - P) * se[0] + P * ae[0], ge[0] < 0 && (ge[0] += 1), ge[1] = (1 - P) * se[1] + P * ae[1], ge[2] = (1 - P) * se[2] + P * ae[2], rI(ge, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
+              const ue = [];
+              ue[0] = (1 - P) * se[0] + P * ae[0], ue[0] < 0 && (ue[0] += 1), ue[1] = (1 - P) * se[1] + P * ae[1], ue[2] = (1 - P) * se[2] + P * ae[2], rI(ue, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
             } else if (e.colorSpace === Qg.LAB) {
               const se = [], ae = [];
               dI(C, se), dI(x, ae);
-              const ge = [];
-              ge[0] = (1 - P) * se[0] + P * ae[0], ge[1] = (1 - P) * se[1] + P * ae[1], ge[2] = (1 - P) * se[2] + P * ae[2], n1(ge, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
+              const ue = [];
+              ue[0] = (1 - P) * se[0] + P * ae[0], ue[1] = (1 - P) * se[1] + P * ae[1], ue[2] = (1 - P) * se[2] + P * ae[2], n1(ue, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
             } else e.colorSpace === Qg.DIVERGING ? (Z7(P, C, x, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2]) : ih("ColorSpace set to invalid value.", e.colorSpace);
             continue;
           }
@@ -146355,15 +146357,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           else if (e.colorSpace === Qg.HSV) {
             const se = [], ae = [];
             GE(C, se), GE(x, ae), e.hSVWrap && (se[0] - ae[0] > 0.5 || ae[0] - se[0] > 0.5) && (se[0] > ae[0] ? se[0] -= 1 : ae[0] -= 1);
-            const ge = [];
-            for (let Ie = 0; Ie < 3; Ie++) $ = ae[Ie] - se[Ie], q = (1 - E) * $, ge[Ie] = K * se[Ie] + ne * ae[Ie] + Z * q + re * q, Ie === 0 && ge[Ie] < 0 && (ge[Ie] += 1);
-            rI(ge, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
+            const ue = [];
+            for (let Ie = 0; Ie < 3; Ie++) $ = ae[Ie] - se[Ie], q = (1 - E) * $, ue[Ie] = K * se[Ie] + ne * ae[Ie] + Z * q + re * q, Ie === 0 && ue[Ie] < 0 && (ue[Ie] += 1);
+            rI(ue, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
           } else if (e.colorSpace === Qg.LAB) {
             const se = [], ae = [];
             dI(C, se), dI(x, ae);
-            const ge = [];
-            for (let Ie = 0; Ie < 3; Ie++) $ = ae[Ie] - se[Ie], q = (1 - E) * $, ge[Ie] = K * se[Ie] + ne * ae[Ie] + Z * q + re * q;
-            n1(ge, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
+            const ue = [];
+            for (let Ie = 0; Ie < 3; Ie++) $ = ae[Ie] - se[Ie], q = (1 - E) * $, ue[Ie] = K * se[Ie] + ne * ae[Ie] + Z * q + re * q;
+            n1(ue, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2];
           } else e.colorSpace === Qg.DIVERGING ? (Z7(P, C, x, b), a[Y] = b[0], a[Y + 1] = b[1], a[Y + 2] = b[2]) : ih("ColorSpace set to invalid value.");
           for (let se = 0; se < 3; se++) a[Y + se] = a[Y + se] < 0 ? 0 : a[Y + se], a[Y + se] = a[Y + se] > 1 ? 1 : a[Y + se];
         }
@@ -147139,12 +147141,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           Fe < $ && ($ = Fe, ne = Ie);
         }
         if (!ne) return;
-        const [, , ae, ge] = ne;
+        const [, , ae, ue] = ne;
         return [
           $,
           ae,
           Z,
-          ge
+          ue
         ];
       }));
     })))).filter(e8e).sort((([D = Number.MAX_VALUE, v], [M = Number.MAX_VALUE, F]) => D === M ? v - F : D - M));
@@ -150105,18 +150107,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         const se = new Float32Array(B * I);
         e.volumeInfo.offset = D.offset, e.volumeInfo.scale = D.scale;
         let ae = 0;
-        const ge = D.scale.map((Ie) => 1 / Ie);
-        for (let Ie = 0; Ie < B; Ie++) for (let Me = 0; Me < I; Me++) se[ae] = (C[ae] - D.offset[Me]) * ge[Me], ae++;
+        const ue = D.scale.map((Ie) => 1 / Ie);
+        for (let Ie = 0; Ie < B; Ie++) for (let Me = 0; Me < I; Me++) se[ae] = (C[ae] - D.offset[Me]) * ue[Me], ae++;
         return t.create3DFromRaw(c, g, d, I, bA.FLOAT, se);
       }
-      let v = (se, ae, ge, Ie, Me) => {
-        se[ae] = ge;
+      let v = (se, ae, ue, Ie, Me) => {
+        se[ae] = ue;
       }, M = bA.UNSIGNED_CHAR;
       if (p === bA.UNSIGNED_CHAR) for (let se = 0; se < I; ++se) D.offset[se] = 0, D.scale[se] = 255;
-      else e.context.getExtension("OES_texture_float") && e.context.getExtension("OES_texture_float_linear") ? (M = bA.FLOAT, v = (se, ae, ge, Ie, Me) => {
-        se[ae] = (ge - Ie) / Me;
-      }) : (M = bA.UNSIGNED_CHAR, v = (se, ae, ge, Ie, Me) => {
-        se[ae] = 255 * (ge - Ie) / Me;
+      else e.context.getExtension("OES_texture_float") && e.context.getExtension("OES_texture_float_linear") ? (M = bA.FLOAT, v = (se, ae, ue, Ie, Me) => {
+        se[ae] = (ue - Ie) / Me;
+      }) : (M = bA.UNSIGNED_CHAR, v = (se, ae, ue, Ie, Me) => {
+        se[ae] = 255 * (ue - Ie) / Me;
       });
       if (t.getOpenGLDataType(M), t.getInternalFormat(M, I), t.getFormat(M, I), !e.internalFormat || !e.format || !e.openGLDataType) return fE("Failed to determine texture parameters."), false;
       e.target = e.context.TEXTURE_2D, e.components = I, e.depth = 1, e.numberOfDimensions = 2;
@@ -150134,13 +150136,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       let re = 0;
       const $ = Math.floor(c / O), q = Math.floor(g / Y);
       for (let se = 0; se < V; se++) {
-        const ae = Math.min(U, d - se * U), ge = I * (e.width - ae * Math.floor(c / O));
+        const ae = Math.min(U, d - se * U), ue = I * (e.width - ae * Math.floor(c / O));
         for (let Ie = 0; Ie < q; Ie++) {
           for (let Me = 0; Me < ae; Me++) {
             const Qe = I * ((se * U + Me) * c * g + Y * Ie * c);
             for (let Re = 0; Re < $; Re++) for (let Fe = 0; Fe < I; Fe++) v(ne, re, C[Qe + O * Re * I + Fe], D.offset[Fe], D.scale[Fe]), re++;
           }
-          re += ge;
+          re += ue;
         }
       }
       return e.context.pixelStorei(e.context.UNPACK_ALIGNMENT, 1), A(M) ? (e.context.texStorage2D(e.target, 1, e.internalFormat, e.width, e.height), ne != null && e.context.texSubImage2D(e.target, 0, 0, 0, e.width, e.height, e.format, e.openGLDataType, ne)) : e.context.texImage2D(e.target, 0, e.internalFormat, e.width, e.height, 0, e.format, e.openGLDataType, ne), t.deactivate(), true;
@@ -150478,25 +150480,25 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       let h = 0, I = 0, p = 0, C = 0, x = 0, B = 0, E;
       const b = {
         anythingToPoints(q, se, ae) {
-          for (let ge = 0; ge < q; ++ge) E(se[ae + ge]);
+          for (let ue = 0; ue < q; ++ue) E(se[ae + ue]);
         },
         linesToWireframe(q, se, ae) {
-          for (let ge = 0; ge < q - 1; ++ge) E(se[ae + ge]), E(se[ae + ge + 1]);
+          for (let ue = 0; ue < q - 1; ++ue) E(se[ae + ue]), E(se[ae + ue + 1]);
         },
         polysToWireframe(q, se, ae) {
-          if (q > 2) for (let ge = 0; ge < q; ++ge) E(se[ae + ge]), E(se[ae + (ge + 1) % q]);
+          if (q > 2) for (let ue = 0; ue < q; ++ue) E(se[ae + ue]), E(se[ae + (ue + 1) % q]);
         },
         stripsToWireframe(q, se, ae) {
           if (q > 2) {
-            for (let ge = 0; ge < q - 1; ++ge) E(se[ae + ge]), E(se[ae + ge + 1]);
-            for (let ge = 0; ge < q - 2; ge++) E(se[ae + ge]), E(se[ae + ge + 2]);
+            for (let ue = 0; ue < q - 1; ++ue) E(se[ae + ue]), E(se[ae + ue + 1]);
+            for (let ue = 0; ue < q - 2; ue++) E(se[ae + ue]), E(se[ae + ue + 2]);
           }
         },
         polysToSurface(q, se, ae) {
-          for (let ge = 0; ge < q - 2; ge++) E(se[ae + 0]), E(se[ae + ge + 1]), E(se[ae + ge + 2]);
+          for (let ue = 0; ue < q - 2; ue++) E(se[ae + 0]), E(se[ae + ue + 1]), E(se[ae + ue + 2]);
         },
         stripsToSurface(q, se, ae) {
-          for (let ge = 0; ge < q - 2; ge++) E(se[ae + ge]), E(se[ae + ge + 1 + ge % 2]), E(se[ae + ge + 1 + (ge + 1) % 2]);
+          for (let ue = 0; ue < q - 2; ue++) E(se[ae + ue]), E(se[ae + ue + 1 + ue % 2]), E(se[ae + ue + 1 + (ue + 1) % 2]);
         }
       }, D = {
         anythingToPoints(q, se) {
@@ -150530,14 +150532,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       for (let q = 0; q < 3; ++q) {
         const se = a.points.getRange(q), ae = se[1] - se[0];
         ne += ae * ae;
-        const ge = 0.5 * (se[1] + se[0]);
-        Z += ge * ge;
+        const ue = 0.5 * (se[1] + se[0]);
+        Z += ue * ue;
       }
       if (ne > 0 && (Math.abs(Z) / ne > 1e6 || Math.abs(Math.log10(ne)) > 3 || ne === 0 && Z > 1e6)) {
         const q = new Float64Array(3), se = new Float64Array(3);
         for (let ae = 0; ae < 3; ++ae) {
-          const ge = a.points.getRange(ae), Ie = ge[1] - ge[0];
-          q[ae] = 0.5 * (ge[1] + ge[0]), se[ae] = Ie > 0 ? 1 / Ie : 1;
+          const ue = a.points.getRange(ae), Ie = ue[1] - ue[0];
+          q[ae] = 0.5 * (ue[1] + ue[0]), se[ae] = Ie > 0 ? 1 / Ie : 1;
         }
         t.setCoordShiftAndScale(q, se);
       } else e.coordShiftAndScaleEnabled === true && t.setCoordShiftAndScale(null, null);
@@ -150552,7 +150554,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       E = function(se) {
         if (s && (s.points[$] = se, s.cells[$] = B + a.cellOffset), ++$, h = se * 3, e.coordShiftAndScaleEnabled ? (U[V++] = (o[h++] - e.coordShift[0]) * e.coordScale[0], U[V++] = (o[h++] - e.coordShift[1]) * e.coordScale[1], U[V++] = (o[h++] - e.coordShift[2]) * e.coordScale[2]) : (U[V++] = o[h++], U[V++] = o[h++], U[V++] = o[h++]), l !== null && (a.haveCellNormals ? I = (B + a.cellOffset) * 3 : I = se * 3, U[V++] = l[I++], U[V++] = l[I++], U[V++] = l[I++]), e.customData.forEach((ae) => {
           x = se * ae.components;
-          for (let ge = 0; ge < ae.components; ++ge) U[V++] = ae.data[x++];
+          for (let ue = 0; ue < ae.components; ++ue) U[V++] = ae.data[x++];
         }), c !== null) {
           p = se * u;
           for (let ae = 0; ae < u; ++ae) U[V++] = c[p++];
@@ -155479,11 +155481,11 @@ void main()
           values: K
         });
         ae.setName("tcoords");
-        const ge = new Uint16Array(8);
-        ge[0] = 3, ge[1] = 0, ge[2] = 1, ge[3] = 3, ge[4] = 3, ge[5] = 0, ge[6] = 3, ge[7] = 2;
+        const ue = new Uint16Array(8);
+        ue[0] = 3, ue[1] = 0, ue[2] = 1, ue[3] = 3, ue[4] = 3, ue[5] = 0, ue[6] = 3, ue[7] = 2;
         const Ie = wr.newInstance({
           numberOfComponents: 1,
-          values: ge
+          values: ue
         });
         e.tris.getCABO().createVBO(Ie, "polys", Ho.SURFACE, {
           points: se,
@@ -158449,10 +158451,10 @@ void main()
         re.setClippingRange(se, se + 0.1);
         const ae = e.openGLCamera.getKeyMatrices(A);
         Fs(e.projectionToWorld, ae.wcpc), re.setClippingRange($, q), e.openGLCamera.getKeyMatrices(A), l.setUniformMatrix("PCWCMatrix", e.projectionToWorld);
-        const ge = t.getRenderTargetSize();
-        l.setUniformf("vpWidth", ge[0]), l.setUniformf("vpHeight", ge[1]);
+        const ue = t.getRenderTargetSize();
+        l.setUniformf("vpWidth", ue[0]), l.setUniformf("vpHeight", ue[1]);
         const Ie = t.getRenderTargetOffset();
-        l.setUniformf("vpOffsetX", Ie[0] / ge[0]), l.setUniformf("vpOffsetY", Ie[1] / ge[1]);
+        l.setUniformf("vpOffsetX", Ie[0] / ue[0]), l.setUniformf("vpOffsetY", Ie[1] / ue[1]);
       }
       if (Fs(e.projectionToView, s.vcpc), l.setUniformMatrix("PCVCMatrix", e.projectionToView), e.lightComplexity === 0) return;
       let P = 0;
@@ -158469,8 +158471,8 @@ void main()
         const ne = [], Z = [], re = [], $ = [], q = [];
         A.getLights().forEach((se) => {
           if (se.getSwitch() > 0) {
-            const ge = se.getAttenuationValues();
-            Z[0 + P * 3] = ge[0], Z[1 + P * 3] = ge[1], Z[2 + P * 3] = ge[2], $[P] = se.getExponent(), re[P] = se.getConeAngle(), q[P] = se.getPositional();
+            const ue = se.getAttenuationValues();
+            Z[0 + P * 3] = ue[0], Z[1 + P * 3] = ue[1], Z[2 + P * 3] = ue[2], $[P] = se.getExponent(), re[P] = se.getConeAngle(), q[P] = se.getPositional();
             const Ie = se.getTransformedPosition();
             Ki(Ie, Ie, e.modelToView), ne[0 + P * 3] = Ie[0], ne[1 + P * 3] = Ie[1], ne[2 + P * 3] = Ie[2], P += 1;
           }
@@ -165601,12 +165603,12 @@ void main()
             numberOfComponents: 4,
             values: q,
             name: "centerlineTopOrientation"
-          }), ge = wr.newInstance({
+          }), ue = wr.newInstance({
             numberOfComponents: 4,
             values: se,
             name: "centerlineBotOrientation"
           });
-          re.push(ae, ge);
+          re.push(ae, ue);
         }
         e.tris.getCABO().createVBO(O, "polys", Ho.SURFACE, {
           points: M,
@@ -168352,7 +168354,7 @@ fn main(
     return qY || (qY = 1, (function(t, e) {
       var n = 200, r = "__lodash_hash_undefined__", A = 9007199254740991, a = "[object Arguments]", s = "[object Array]", o = "[object Boolean]", l = "[object Date]", c = "[object Error]", g = "[object Function]", d = "[object GeneratorFunction]", u = "[object Map]", h = "[object Number]", I = "[object Object]", p = "[object Promise]", C = "[object RegExp]", x = "[object Set]", B = "[object String]", E = "[object Symbol]", b = "[object WeakMap]", D = "[object ArrayBuffer]", v = "[object DataView]", M = "[object Float32Array]", F = "[object Float64Array]", O = "[object Int8Array]", Y = "[object Int16Array]", P = "[object Int32Array]", U = "[object Uint8Array]", V = "[object Uint8ClampedArray]", K = "[object Uint16Array]", ne = "[object Uint32Array]", Z = /[\\^$.*+?()[\]{}|]/g, re = /\w*$/, $ = /^\[object .+?Constructor\]$/, q = /^(?:0|[1-9]\d*)$/, se = {};
       se[a] = se[s] = se[D] = se[v] = se[o] = se[l] = se[M] = se[F] = se[O] = se[Y] = se[P] = se[u] = se[h] = se[I] = se[C] = se[x] = se[B] = se[E] = se[U] = se[V] = se[K] = se[ne] = true, se[c] = se[g] = se[b] = false;
-      var ae = typeof Mg == "object" && Mg && Mg.Object === Object && Mg, ge = typeof self == "object" && self && self.Object === Object && self, Ie = ae || ge || Function("return this")(), Me = e && !e.nodeType && e, Qe = Me && true && t && !t.nodeType && t, Re = Qe && Qe.exports === Me;
+      var ae = typeof Mg == "object" && Mg && Mg.Object === Object && Mg, ue = typeof self == "object" && self && self.Object === Object && self, Ie = ae || ue || Function("return this")(), Me = e && !e.nodeType && e, Qe = Me && true && t && !t.nodeType && t, Re = Qe && Qe.exports === Me;
       function Fe(at, Qt) {
         return at.set(Qt[0], Qt[1]), at;
       }
@@ -168406,8 +168408,8 @@ fn main(
           Zt[++Qt] = hn;
         }), Zt;
       }
-      var ye = Array.prototype, nt = Function.prototype, Ee = Object.prototype, ue = Ie["__core-js_shared__"], De = (function() {
-        var at = /[^.]+$/.exec(ue && ue.keys && ue.keys.IE_PROTO || "");
+      var ye = Array.prototype, nt = Function.prototype, Ee = Object.prototype, ge = Ie["__core-js_shared__"], De = (function() {
+        var at = /[^.]+$/.exec(ge && ge.keys && ge.keys.IE_PROTO || "");
         return at ? "Symbol(src)_1." + at : "";
       })(), Ue = nt.toString, fe = Ee.hasOwnProperty, Ye = Ee.toString, Ze = RegExp("^" + Ue.call(fe).replace(Z, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), ve = Re ? Ie.Buffer : void 0, bt = Ie.Symbol, It = Ie.Uint8Array, Bt = be(Object.getPrototypeOf, Object), dt = Object.create, _e = Ee.propertyIsEnumerable, Je = ye.splice, Oe = Object.getOwnPropertySymbols, st = ve ? ve.isBuffer : void 0, ft = be(Object.keys, Object), We = xA(Ie, "DataView"), wt = xA(Ie, "Map"), Ot = xA(Ie, "Promise"), dn = xA(Ie, "Set"), Pn = xA(Ie, "WeakMap"), Qn = xA(Object, "create"), Ae = OA(We), nn = OA(wt), ce = OA(Ot), xt = OA(dn), Ft = OA(Pn), Cn = bt ? bt.prototype : void 0, we = Cn ? Cn.valueOf : void 0;
       function Hr(at) {
@@ -196943,7 +196945,7 @@ fn main(
               } instanceof Array && function(se, ae) {
                 se.__proto__ = ae;
               } || function(se, ae) {
-                for (var ge in ae) ae.hasOwnProperty(ge) && (se[ge] = ae[ge]);
+                for (var ue in ae) ae.hasOwnProperty(ue) && (se[ue] = ae[ue]);
               })($, q);
             }, function($, q) {
               function se() {
@@ -196957,8 +196959,8 @@ fn main(
             var o = (function($) {
               function q(se, ae) {
                 ae === void 0 && (ae = "");
-                var ge = $.call(this, ae) || this;
-                return ge.name = se, ge;
+                var ue = $.call(this, ae) || this;
+                return ue.name = se, ue;
               }
               return s(q, $), q;
             })(Error);
@@ -197730,8 +197732,8 @@ fn main(
               return Y.TreeWalkerImpl._create(K, ne);
             }, r.create_nodeFilter = function() {
               return P.NodeFilterImpl._create();
-            }, r.create_mutationRecord = function(K, ne, Z, re, $, q, se, ae, ge) {
-              return U.MutationRecordImpl._create(K, ne, Z, re, $, q, se, ae, ge);
+            }, r.create_mutationRecord = function(K, ne, Z, re, $, q, se, ae, ue) {
+              return U.MutationRecordImpl._create(K, ne, Z, re, $, q, se, ae, ue);
             }, r.create_domTokenList = function(K, ne) {
               return V.DOMTokenListImpl._create(K, ne);
             };
@@ -197814,7 +197816,7 @@ fn main(
             };
           },
           function(n, r, A) {
-            var a = A(4), s = A(11), o = A(46), l = A(44), c = A(16), g = A(86), d = A(124), u = A(8), h = A(14), I = A(59), p = A(13), C = A(18), x = A(27), B = A(24), E = A(56), b = A(40), D = A(60), v = A(61), M = A(82), F = A(190), O = A(85), Y = A(55), P = A(15), U = A(79), V = A(21), K = A(25), ne = A(81), Z = A(57), re = A(45), $ = A(58), q = A(5), se = A(125), ae = A(126), ge = A(62), Ie = A(43), Me = A(36).forEach, Qe = Z("hidden"), Re = q("toPrimitive"), Fe = Ie.set, rt = Ie.getterFor("Symbol"), tt = Object.prototype, Ce = s.Symbol, te = o("JSON", "stringify"), Be = Y.f, le = P.f, Ne = F.f, Ge = U.f, be = ne("symbols"), et = ne("op-symbols"), ye = ne("string-to-symbol-registry"), nt = ne("symbol-to-string-registry"), Ee = ne("wks"), ue = s.QObject, De = !ue || !ue.prototype || !ue.prototype.findChild, Ue = c && u((function() {
+            var a = A(4), s = A(11), o = A(46), l = A(44), c = A(16), g = A(86), d = A(124), u = A(8), h = A(14), I = A(59), p = A(13), C = A(18), x = A(27), B = A(24), E = A(56), b = A(40), D = A(60), v = A(61), M = A(82), F = A(190), O = A(85), Y = A(55), P = A(15), U = A(79), V = A(21), K = A(25), ne = A(81), Z = A(57), re = A(45), $ = A(58), q = A(5), se = A(125), ae = A(126), ue = A(62), Ie = A(43), Me = A(36).forEach, Qe = Z("hidden"), Re = q("toPrimitive"), Fe = Ie.set, rt = Ie.getterFor("Symbol"), tt = Object.prototype, Ce = s.Symbol, te = o("JSON", "stringify"), Be = Y.f, le = P.f, Ne = F.f, Ge = U.f, be = ne("symbols"), et = ne("op-symbols"), ye = ne("string-to-symbol-registry"), nt = ne("symbol-to-string-registry"), Ee = ne("wks"), ge = s.QObject, De = !ge || !ge.prototype || !ge.prototype.findChild, Ue = c && u((function() {
               return D(le({}, "a", {
                 get: function() {
                   return le(this, "a", {
@@ -197969,7 +197971,7 @@ fn main(
                   if (typeof st == "function" && (Ot = st.call(this, wt, Ot)), !Ye(Ot)) return Ot;
                 }), ft[1] = Je, te.apply(null, ft);
               }
-            }), Ce.prototype[Re] || V(Ce.prototype, Re, Ce.prototype.valueOf), ge(Ce, "Symbol"), re[Qe] = true;
+            }), Ce.prototype[Re] || V(Ce.prototype, Re, Ce.prototype.valueOf), ue(Ce, "Symbol"), re[Qe] = true;
           },
           function(n, r, A) {
             var a = A(4), s = A(16), o = A(11), l = A(14), c = A(13), g = A(15).f, d = A(119), u = o.Symbol;
@@ -198183,8 +198185,8 @@ fn main(
                         var $ = re, q = h.tree_index($);
                         try {
                           for (var se = (D = void 0, o(l.dom.rangeList)), ae = se.next(); !ae.done; ae = se.next()) {
-                            var ge = ae.value;
-                            ge._start[0] === $ && (ge._start[0] = Y, ge._start[1] += P), ge._end[0] === $ && (ge._end[0] = Y, ge._end[1] += P), ge._start[0] === $._parent && ge._start[1] === q && (ge._start[0] = Y, ge._start[1] = P), ge._end[0] === $._parent && ge._end[1] === q && (ge._end[0] = Y, ge._end[1] = P);
+                            var ue = ae.value;
+                            ue._start[0] === $ && (ue._start[0] = Y, ue._start[1] += P), ue._end[0] === $ && (ue._end[0] = Y, ue._end[1] += P), ue._start[0] === $._parent && ue._start[1] === q && (ue._start[0] = Y, ue._start[1] = P), ue._end[0] === $._parent && ue._end[1] === q && (ue._end[0] = Y, ue._end[1] = P);
                           }
                         } catch (Me) {
                           D = {
@@ -198318,7 +198320,7 @@ fn main(
             });
             var l = A(6), c = A(9), g = A(2), d = A(3), u = A(1), h = A(7), I = A(73), p = A(17), C = A(172), x = A(72), B = A(51), E = A(30), b = A(106);
             function D(O, Y, P) {
-              var U, V, K, ne, Z, re, $, q, se = Y._nodeType, ae = O._nodeType, ge = P ? P._nodeType : null;
+              var U, V, K, ne, Z, re, $, q, se = Y._nodeType, ae = O._nodeType, ue = P ? P._nodeType : null;
               if (se !== g.NodeType.Document && se !== g.NodeType.DocumentFragment && se !== g.NodeType.Element) throw new c.HierarchyRequestError("Only document, document fragment and element nodes can contain child nodes. Parent node is " + Y.nodeName + ".");
               if (p.tree_isHostIncludingAncestorOf(Y, O, true)) throw new c.HierarchyRequestError("The node to be inserted cannot be an inclusive ancestor of parent node. Node is " + O.nodeName + ", parent node is " + Y.nodeName + ".");
               if (P !== null && P._parent !== Y) throw new c.NotFoundError("The reference child node cannot be found under parent node. Child node is " + P.nodeName + ", parent node is " + Y.nodeName + ".");
@@ -198361,7 +198363,7 @@ fn main(
                       }
                     }
                     if (P) {
-                      if (ge === g.NodeType.DocumentType) throw new c.HierarchyRequestError("Cannot insert an element node before a document type node.");
+                      if (ue === g.NodeType.DocumentType) throw new c.HierarchyRequestError("Cannot insert an element node before a document type node.");
                       for (var tt = P._nextSibling; tt; ) {
                         if (tt._nodeType === g.NodeType.DocumentType) throw new c.HierarchyRequestError("Cannot insert an element node before a document type node.");
                         tt = tt._nextSibling;
@@ -198383,7 +198385,7 @@ fn main(
                     }
                   }
                   if (P) {
-                    if (ge === g.NodeType.DocumentType) throw new c.HierarchyRequestError("Cannot insert an element node before a document type node. Node is " + O.nodeName + ".");
+                    if (ue === g.NodeType.DocumentType) throw new c.HierarchyRequestError("Cannot insert an element node before a document type node. Node is " + O.nodeName + ".");
                     for (tt = P._nextSibling; tt; ) {
                       if (tt._nodeType === g.NodeType.DocumentType) throw new c.HierarchyRequestError("Cannot insert an element node before a document type node. Node is " + O.nodeName + ".");
                       tt = tt._nextSibling;
@@ -198449,9 +198451,9 @@ fn main(
                 ];
                 if (O._nodeType === g.NodeType.DocumentFragment) for (; O._firstChild; ) F(O._firstChild, O, true);
                 l.dom.features.mutationObservers && O._nodeType === g.NodeType.DocumentFragment && B.observer_queueTreeMutationRecord(O, [], se, null, null);
-                for (var ae = P ? P._previousSibling : Y._lastChild, ge = P === null ? -1 : p.tree_index(P), Ie = 0; Ie < se.length; Ie++) {
+                for (var ae = P ? P._previousSibling : Y._lastChild, ue = P === null ? -1 : p.tree_index(P), Ie = 0; Ie < se.length; Ie++) {
                   var Me = se[Ie];
-                  if (d.Guard.isElementNode(Me) && (d.Guard.isDocumentNode(Y) && (Y._documentElement = Me), Me._nodeDocument._hasNamespaces || Me._namespace === null && Me._namespacePrefix === null || (Me._nodeDocument._hasNamespaces = true)), Me._parent = Y, P === null ? h.set.append(Y._children, Me) : (h.set.insert(Y._children, Me, ge), ge++), Y._firstChild === null) Me._previousSibling = null, Me._nextSibling = null, Y._firstChild = Me, Y._lastChild = Me;
+                  if (d.Guard.isElementNode(Me) && (d.Guard.isDocumentNode(Y) && (Y._documentElement = Me), Me._nodeDocument._hasNamespaces || Me._namespace === null && Me._namespacePrefix === null || (Me._nodeDocument._hasNamespaces = true)), Me._parent = Y, P === null ? h.set.append(Y._children, Me) : (h.set.insert(Y._children, Me, ue), ue++), Y._firstChild === null) Me._previousSibling = null, Me._nextSibling = null, Y._firstChild = Me, Y._lastChild = Me;
                   else {
                     var Qe = P ? P._previousSibling : Y._lastChild, Re = P || null;
                     Me._previousSibling = Qe, Me._nextSibling = Re, Qe && (Qe._nextSibling = Me), Re && (Re._previousSibling = Me), Qe || (Y._firstChild = Me), Re || (Y._lastChild = Me);
@@ -198477,8 +198479,8 @@ fn main(
               if (l.dom.rangeList.size !== 0) {
                 var se = p.tree_index(O);
                 try {
-                  for (var ae = a(l.dom.rangeList), ge = ae.next(); !ge.done; ge = ae.next()) {
-                    var Ie = ge.value;
+                  for (var ae = a(l.dom.rangeList), ue = ae.next(); !ue.done; ue = ae.next()) {
+                    var Ie = ue.value;
                     p.tree_isDescendantOf(O, Ie._start[0], true) && (Ie._start = [
                       Y,
                       se
@@ -198493,7 +198495,7 @@ fn main(
                   };
                 } finally {
                   try {
-                    ge && !ge.done && (V = ae.return) && V.call(ae);
+                    ue && !ue.done && (V = ae.return) && V.call(ae);
                   } finally {
                     if (U) throw U.error;
                   }
@@ -198576,8 +198578,8 @@ fn main(
                 if (Y._nodeType === g.NodeType.DocumentFragment) {
                   var se = 0;
                   try {
-                    for (var ae = a(Y._children), ge = ae.next(); !ge.done; ge = ae.next()) {
-                      var Ie = ge.value;
+                    for (var ae = a(Y._children), ue = ae.next(); !ue.done; ue = ae.next()) {
+                      var Ie = ue.value;
                       if (Ie._nodeType === g.NodeType.Element) se++;
                       else if (Ie._nodeType === g.NodeType.Text) throw new c.HierarchyRequestError("Cannot insert text a node as a child of a document node. Node is " + Ie.nodeName + ".");
                     }
@@ -198587,7 +198589,7 @@ fn main(
                     };
                   } finally {
                     try {
-                      ge && !ge.done && (V = ae.return) && V.call(ae);
+                      ue && !ue.done && (V = ae.return) && V.call(ae);
                     } finally {
                       if (U) throw U.error;
                     }
@@ -199399,8 +199401,8 @@ fn main(
               }
               try {
                 for (var re = a(P), $ = re.next(); !$.done; $ = re.next()) {
-                  var q = s($.value, 2), se = q[0], ae = q[1], ge = g.create_mutationRecord(C, x, g.create_nodeListStatic(x, D), g.create_nodeListStatic(x, v), M, F, B, E, ae);
-                  se._recordQueue.push(ge);
+                  var q = s($.value, 2), se = q[0], ae = q[1], ue = g.create_mutationRecord(C, x, g.create_nodeListStatic(x, D), g.create_nodeListStatic(x, v), M, F, B, E, ae);
+                  se._recordQueue.push(ue);
                 }
               } catch (Ie) {
                 O = {
@@ -199787,8 +199789,8 @@ fn main(
                       break;
                     default:
                       if ((Be = V)[tt].length !== 0 && l.isArray(Be[tt][0])) {
-                        for (var ge = [], Ie = Be[tt], Me = 0; Me < Ie.length; Me++) ge.push(this._process(Ie[Me], I));
-                        ae.push(((E = {})[tt] = ge, E));
+                        for (var ue = [], Ie = Be[tt], Me = 0; Me < Ie.length; Me++) ue.push(this._process(Ie[Me], I));
+                        ae.push(((E = {})[tt] = ue, E));
                       } else I.verbose ? ae.push(((b = {})[tt] = [
                         this._process(Be[tt], I)
                       ], b)) : ae.push(((D = {})[tt] = this._process(Be[tt], I), D));
@@ -199820,9 +199822,9 @@ fn main(
                     default:
                       var Be;
                       if ((Be = V)[tt].length !== 0 && l.isArray(Be[tt][0])) {
-                        ge = [], Ie = Be[tt];
-                        for (var le = 0; le < Ie.length; le++) ge.push(this._process(Ie[le], I));
-                        q[tt] = ge;
+                        ue = [], Ie = Be[tt];
+                        for (var le = 0; le < Ie.length; le++) ue.push(this._process(Ie[le], I));
+                        q[tt] = ue;
                       } else I.verbose ? q[tt] = [
                         this._process(Be[tt], I)
                       ] : q[tt] = this._process(Be[tt], I);
@@ -200756,7 +200758,7 @@ fn main(
                     if (q === null || ($.push(q), !Z)) break;
                     String(q[0]) === "" && (V.lastIndex = d(K, l(V.lastIndex), re));
                   }
-                  for (var se, ae = "", ge = 0, Ie = 0; Ie < $.length; Ie++) {
+                  for (var se, ae = "", ue = 0, Ie = 0; Ie < $.length; Ie++) {
                     q = $[Ie];
                     for (var Me = String(q[0]), Qe = h(I(c(q.index), K.length), 0), Re = [], Fe = 1; Fe < q.length; Fe++) Re.push((se = q[Fe]) === void 0 ? se : String(se));
                     var rt = q.groups;
@@ -200767,9 +200769,9 @@ fn main(
                       rt !== void 0 && tt.push(rt);
                       var Ce = String(P.apply(void 0, tt));
                     } else Ce = O(Me, K, Qe, Re, rt, P);
-                    Qe >= ge && (ae += K.slice(ge, Qe) + Ce, ge = Qe + Me.length);
+                    Qe >= ue && (ae += K.slice(ue, Qe) + Ce, ue = Qe + Me.length);
                   }
-                  return ae + K.slice(ge);
+                  return ae + K.slice(ue);
                 }
               ];
               function O(Y, P, U, V, K, ne) {
@@ -200789,13 +200791,13 @@ fn main(
                       ae = K[se.slice(1, -1)];
                       break;
                     default:
-                      var ge = +se;
-                      if (ge === 0) return q;
-                      if (ge > re) {
-                        var Ie = p(ge / 10);
+                      var ue = +se;
+                      if (ue === 0) return q;
+                      if (ue > re) {
+                        var Ie = p(ue / 10);
                         return Ie === 0 ? q : Ie <= re ? V[Ie - 1] === void 0 ? se.charAt(1) : V[Ie - 1] + se.charAt(1) : q;
                       }
-                      ae = V[ge - 1];
+                      ae = V[ue - 1];
                   }
                   return ae === void 0 ? "" : ae;
                 }));
@@ -200900,7 +200902,7 @@ fn main(
                 var ae = U._associatedDocument;
                 g.Guard.isDocumentNode(ae) && (se = ae);
               }
-              var ge = null, Ie = I.tree_retarget(P._relatedTarget, U);
+              var ue = null, Ie = I.tree_retarget(P._relatedTarget, U);
               if (U !== Ie || U === P._relatedTarget) {
                 var Me = [];
                 try {
@@ -200921,7 +200923,7 @@ fn main(
                 }
                 b(P, U, se, Ie, Me, false);
                 var rt = g.Guard.isMouseEvent(P) && P._type === "click";
-                rt && U._activationBehavior !== void 0 && (ge = U);
+                rt && U._activationBehavior !== void 0 && (ue = U);
                 for (var tt = g.Guard.isSlotable(U) && p.shadowTree_isAssigned(U) ? U : null, Ce = false, te = U._getTheParent(P); te !== null && g.Guard.isNode(te); ) {
                   if (tt !== null) {
                     if (!g.Guard.isSlot(te)) throw new Error("Parent node of a slotable should be a slot.");
@@ -200943,7 +200945,7 @@ fn main(
                       if (re) throw re.error;
                     }
                   }
-                  g.Guard.isWindow(te) || g.Guard.isNode(te) && g.Guard.isNode(U) && I.tree_isAncestorOf(I.tree_rootNode(U, true), te, true, true) ? (rt && P._bubbles && ge === null && te._activationBehavior && (ge = te), b(P, te, null, Ie, Me, Ce)) : te === Ie ? te = null : (U = te, rt && ge === null && U._activationBehavior && (ge = U), b(P, te, U, Ie, Me, Ce)), te !== null && (te = te._getTheParent(P)), Ce = false;
+                  g.Guard.isWindow(te) || g.Guard.isNode(te) && g.Guard.isNode(U) && I.tree_isAncestorOf(I.tree_rootNode(U, true), te, true, true) ? (rt && P._bubbles && ue === null && te._activationBehavior && (ue = te), b(P, te, null, Ie, Me, Ce)) : te === Ie ? te = null : (U = te, rt && ue === null && U._activationBehavior && (ue = U), b(P, te, U, Ie, Me, Ce)), te !== null && (te = te._getTheParent(P)), Ce = false;
                 }
                 for (var Ge = null, be = P._path, et = be.length - 1; et >= 0; et--) if ((nt = be[et]).shadowAdjustedTarget !== null) {
                   Ge = nt;
@@ -200958,7 +200960,7 @@ fn main(
                     break;
                   }
                 }
-                for (ge !== null && ge._legacyPreActivationBehavior !== void 0 && ge._legacyPreActivationBehavior(P), et = be.length - 1; et >= 0; et--) (nt = be[et]).shadowAdjustedTarget !== null ? P._eventPhase = c.EventPhase.AtTarget : P._eventPhase = c.EventPhase.Capturing, D(nt, P, "capturing", K);
+                for (ue !== null && ue._legacyPreActivationBehavior !== void 0 && ue._legacyPreActivationBehavior(P), et = be.length - 1; et >= 0; et--) (nt = be[et]).shadowAdjustedTarget !== null ? P._eventPhase = c.EventPhase.AtTarget : P._eventPhase = c.EventPhase.Capturing, D(nt, P, "capturing", K);
                 for (et = 0; et < be.length; et++) {
                   if ((nt = be[et]).shadowAdjustedTarget !== null) P._eventPhase = c.EventPhase.AtTarget;
                   else {
@@ -200968,7 +200970,7 @@ fn main(
                   D(nt, P, "bubbling", K);
                 }
               }
-              return P._eventPhase = c.EventPhase.None, P._currentTarget = null, P._path = [], P._dispatchFlag = false, P._stopPropagationFlag = false, P._stopImmediatePropagationFlag = false, q && (P._target = null, P._relatedTarget = null, P._touchTargetList = []), ge !== null && (P._canceledFlag || ge._activationBehavior === void 0 ? ge._legacyCanceledActivationBehavior !== void 0 && ge._legacyCanceledActivationBehavior(P) : ge._activationBehavior(P)), !P._canceledFlag;
+              return P._eventPhase = c.EventPhase.None, P._currentTarget = null, P._path = [], P._dispatchFlag = false, P._stopPropagationFlag = false, P._stopImmediatePropagationFlag = false, q && (P._target = null, P._relatedTarget = null, P._touchTargetList = []), ue !== null && (P._canceledFlag || ue._activationBehavior === void 0 ? ue._legacyCanceledActivationBehavior !== void 0 && ue._legacyCanceledActivationBehavior(P) : ue._activationBehavior(P)), !P._canceledFlag;
             }
             function b(P, U, V, K, ne, Z) {
               var re = false;
@@ -201022,14 +201024,14 @@ fn main(
                     }
                     se !== -1 && q._eventListenerList.splice(se, 1);
                   }
-                  var ge = void 0, Ie = void 0;
-                  g.Guard.isWindow(ge) && (Ie = ge._currentEvent, K.invocationTargetInShadowTree === false && (ge._currentEvent = P)), $.passive && (P._inPassiveListenerFlag = true);
+                  var ue = void 0, Ie = void 0;
+                  g.Guard.isWindow(ue) && (Ie = ue._currentEvent, K.invocationTargetInShadowTree === false && (ue._currentEvent = P)), $.passive && (P._inPassiveListenerFlag = true);
                   try {
                     $.callback.handleEvent.call(P._currentTarget, P);
                   } catch {
                     ne.value = true;
                   }
-                  if ($.passive && (P._inPassiveListenerFlag = false), g.Guard.isWindow(ge) && (ge._currentEvent = Ie), P._stopImmediatePropagationFlag) return Z;
+                  if ($.passive && (P._inPassiveListenerFlag = false), g.Guard.isWindow(ue) && (ue._currentEvent = Ie), P._stopImmediatePropagationFlag) return Z;
                 }
               }
               return Z;
@@ -202334,8 +202336,8 @@ fn main(
             r.NodeListStatic = re.NodeListStaticImpl;
             var $ = A(266), q = A(267), se = A(268), ae = A(160);
             r.ProcessingInstruction = ae.ProcessingInstructionImpl;
-            var ge = A(165);
-            r.Range = ge.RangeImpl;
+            var ue = A(165);
+            r.Range = ue.RangeImpl;
             var Ie = A(156);
             r.ShadowRoot = Ie.ShadowRootImpl;
             var Me = A(269), Qe = A(270);
@@ -203004,11 +203006,11 @@ fn main(
                     if (Ee === -1 && (Ee = Ge), Ge - Ee + 1 === ye) return Ee * be;
                   } else Ee !== -1 && (Ge -= Ge - Ee), Ee = -1;
                 } else for (Be + ye > et && (Be = et - ye), Ge = Be; Ge >= 0; Ge--) {
-                  for (var ue = true, De = 0; De < ye; De++) if (nt(Ce, Ge + De) !== nt(te, De)) {
-                    ue = false;
+                  for (var ge = true, De = 0; De < ye; De++) if (nt(Ce, Ge + De) !== nt(te, De)) {
+                    ge = false;
                     break;
                   }
-                  if (ue) return Ge;
+                  if (ge) return Ge;
                 }
                 return -1;
               }
@@ -203053,8 +203055,8 @@ fn main(
               function V(Ce, te, Be) {
                 Be = Math.min(Ce.length, Be);
                 for (var le = [], Ne = te; Ne < Be; ) {
-                  var Ge, be, et, ye, nt = Ce[Ne], Ee = null, ue = nt > 239 ? 4 : nt > 223 ? 3 : nt > 191 ? 2 : 1;
-                  if (Ne + ue <= Be) switch (ue) {
+                  var Ge, be, et, ye, nt = Ce[Ne], Ee = null, ge = nt > 239 ? 4 : nt > 223 ? 3 : nt > 191 ? 2 : 1;
+                  if (Ne + ge <= Be) switch (ge) {
                     case 1:
                       nt < 128 && (Ee = nt);
                       break;
@@ -203067,7 +203069,7 @@ fn main(
                     case 4:
                       Ge = Ce[Ne + 1], be = Ce[Ne + 2], et = Ce[Ne + 3], (192 & Ge) == 128 && (192 & be) == 128 && (192 & et) == 128 && (ye = (15 & nt) << 18 | (63 & Ge) << 12 | (63 & be) << 6 | 63 & et) > 65535 && ye < 1114112 && (Ee = ye);
                   }
-                  Ee === null ? (Ee = 65533, ue = 1) : Ee > 65535 && (Ee -= 65536, le.push(Ee >>> 10 & 1023 | 55296), Ee = 56320 | 1023 & Ee), le.push(Ee), Ne += ue;
+                  Ee === null ? (Ee = 65533, ge = 1) : Ee > 65535 && (Ee -= 65536, le.push(Ee >>> 10 & 1023 | 55296), Ee = 56320 | 1023 & Ee), le.push(Ee), Ne += ge;
                 }
                 return (function(De) {
                   var Ue = De.length;
@@ -203263,15 +203265,15 @@ fn main(
                 te < 0 && (te = 4294967295 + te + 1);
                 for (var Ne = 0, Ge = Math.min(Ce.length - Be, 4); Ne < Ge; ++Ne) Ce[Be + Ne] = te >>> 8 * (le ? Ne : 3 - Ne) & 255;
               }
-              function ge(Ce, te, Be, le, Ne, Ge) {
+              function ue(Ce, te, Be, le, Ne, Ge) {
                 if (Be + le > Ce.length) throw new RangeError("Index out of range");
                 if (Be < 0) throw new RangeError("Index out of range");
               }
               function Ie(Ce, te, Be, le, Ne) {
-                return Ne || ge(Ce, 0, Be, 4), o.write(Ce, te, Be, le, 23, 4), Be + 4;
+                return Ne || ue(Ce, 0, Be, 4), o.write(Ce, te, Be, le, 23, 4), Be + 4;
               }
               function Me(Ce, te, Be, le, Ne) {
-                return Ne || ge(Ce, 0, Be, 8), o.write(Ce, te, Be, le, 52, 8), Be + 8;
+                return Ne || ue(Ce, 0, Be, 8), o.write(Ce, te, Be, le, 52, 8), Be + 8;
               }
               d.prototype.slice = function(Ce, te) {
                 var Be, le = this.length;
@@ -203808,11 +203810,11 @@ fn main(
                 et > ye && (ye = et, be = nt);
               }
               ye > 1 && (Ge = be);
-              for (var ue = false, De = 0; De < 8; De++) ue && le[De] === 0 || (ue && (ue = false), Ge !== De ? (Ne += le[De].toString(16), De !== 7 && (Ne += ":")) : (Ne += De === 0 ? "::" : ":", ue = true));
+              for (var ge = false, De = 0; De < 8; De++) ge && le[De] === 0 || (ge && (ge = false), Ge !== De ? (Ne += le[De].toString(16), De !== 7 && (Ne += ":")) : (Ne += De === 0 ? "::" : ":", ge = true));
               return Ne;
             }
             function V(le, Ne, Ge, be, et) {
-              var ye, nt, Ee, ue;
+              var ye, nt, Ee, ge;
               if (be === void 0) {
                 be = {
                   scheme: "",
@@ -204029,7 +204031,7 @@ fn main(
                         };
                       } finally {
                         try {
-                          Pn && !Pn.done && (ue = dn.return) && ue.call(dn);
+                          Pn && !Pn.done && (ge = dn.return) && ge.call(dn);
                         } finally {
                           if (Ee) throw Ee.error;
                         }
@@ -204069,7 +204071,7 @@ fn main(
               if (Ne) return Me(le);
               var Ge = Be(l.utf8Decode(rt(le)));
               if (Ge === null || B.test(Ge)) return E("Invalid domain."), null;
-              var be = ge(Ge);
+              var be = ue(Ge);
               return be === null || l.isNumber(be) ? be : Ge;
             }
             function ae(le, Ne) {
@@ -204079,14 +204081,14 @@ fn main(
               var Ge = 10;
               return le.startsWith("0x") || le.startsWith("0X") ? (Ne.value = true, le = le.substr(2), Ge = 16) : le.length >= 2 && le[0] === "0" && (Ne.value = true, le = le.substr(1), Ge = 8), le === "" ? 0 : (Ge === 10 ? /^[0-9]+$/ : Ge === 16 ? /^[0-9A-Fa-f]+$/ : /^[0-7]+$/).test(le) ? parseInt(le, Ge) : null;
             }
-            function ge(le) {
+            function ue(le) {
               var Ne, Ge, be, et, ye = {
                 value: false
               }, nt = le.split(".");
               if (nt[nt.length - 1] === "" && (ye.value = true, nt.length > 1 && nt.pop()), nt.length > 4) return le;
               var Ee = [];
               try {
-                for (var ue = a(nt), De = ue.next(); !De.done; De = ue.next()) {
+                for (var ge = a(nt), De = ge.next(); !De.done; De = ge.next()) {
                   var Ue = De.value;
                   if (Ue === "" || (It = ae(Ue, ye)) === null) return le;
                   Ee.push(It);
@@ -204097,7 +204099,7 @@ fn main(
                 };
               } finally {
                 try {
-                  De && !De.done && (Ge = ue.return) && Ge.call(ue);
+                  De && !De.done && (Ge = ge.return) && Ge.call(ge);
                 } finally {
                   if (Ne) throw Ne.error;
                 }
@@ -204147,10 +204149,10 @@ fn main(
                   for (var nt = 0, Ee = 0; Ee < 4 && g.codePoint.ASCIIHexDigit.test(ye.c()); ) nt = 16 * nt + parseInt(ye.c(), 16), ye.pointer++, Ee++;
                   if (ye.c() === ".") {
                     if (Ee === 0 || (ye.pointer -= Ee, be > 6)) return E("Invalid IP v6 address."), null;
-                    for (var ue = 0; ye.c() !== ""; ) {
+                    for (var ge = 0; ye.c() !== ""; ) {
                       var De = null;
-                      if (ue > 0) {
-                        if (!(ye.c() === "." && ue < 4)) return E("Invalid IP v6 address."), null;
+                      if (ge > 0) {
+                        if (!(ye.c() === "." && ge < 4)) return E("Invalid IP v6 address."), null;
                         ye.pointer++;
                       }
                       if (!g.codePoint.ASCIIDigit.test(ye.c())) return E("Invalid IP v6 address."), null;
@@ -204165,9 +204167,9 @@ fn main(
                         ye.pointer++;
                       }
                       if (De === null) return E("Invalid IP v6 address."), null;
-                      Ge[be] = 256 * Ge[be] + De, ++ue !== 2 && ue !== 4 || be++;
+                      Ge[be] = 256 * Ge[be] + De, ++ge !== 2 && ge !== 4 || be++;
                     }
-                    if (ue !== 4) return E("Invalid IP v6 address."), null;
+                    if (ge !== 4) return E("Invalid IP v6 address."), null;
                     break;
                   }
                   if (ye.c() === ":") {
@@ -204236,9 +204238,9 @@ fn main(
               var et = l.utf8Encode(le), ye = "";
               try {
                 for (var nt = a(et), Ee = nt.next(); !Ee.done; Ee = nt.next()) ye += Re(Ee.value);
-              } catch (ue) {
+              } catch (ge) {
                 Ge = {
-                  error: ue
+                  error: ge
                 };
               } finally {
                 try {
@@ -204252,8 +204254,8 @@ fn main(
             function Ce(le) {
               var Ne, Ge, be, et, ye = [], nt = [];
               try {
-                for (var Ee = a(le), ue = Ee.next(); !ue.done; ue = Ee.next()) {
-                  var De = ue.value;
+                for (var Ee = a(le), ge = Ee.next(); !ge.done; ge = Ee.next()) {
+                  var De = ge.value;
                   De === 38 ? (ye.push(Uint8Array.from(nt)), nt = []) : nt.push(De);
                 }
               } catch (Je) {
@@ -204262,7 +204264,7 @@ fn main(
                 };
               } finally {
                 try {
-                  ue && !ue.done && (Ge = Ee.return) && Ge.call(Ee);
+                  ge && !ge.done && (Ge = Ee.return) && Ge.call(Ee);
                 } finally {
                   if (Ne) throw Ne.error;
                 }
@@ -204358,7 +204360,7 @@ fn main(
                 }
               }
               le.password = et;
-            }, r.isSingleDotPathSegment = K, r.isDoubleDotPathSegment = ne, r.shorten = Z, r.isNormalizedWindowsDriveLetter = re, r.isWindowsDriveLetter = $, r.startsWithAWindowsDriveLetter = q, r.hostParser = se, r.iPv4NumberParser = ae, r.iPv4Parser = ge, r.iPv6Parser = Ie, r.opaqueHostParser = Me, r.resolveABlobURL = Qe, r.percentEncode = Re, r.percentDecode = Fe, r.stringPercentDecode = rt, r.utf8PercentEncode = tt, r.hostEquals = function(le, Ne) {
+            }, r.isSingleDotPathSegment = K, r.isDoubleDotPathSegment = ne, r.shorten = Z, r.isNormalizedWindowsDriveLetter = re, r.isWindowsDriveLetter = $, r.startsWithAWindowsDriveLetter = q, r.hostParser = se, r.iPv4NumberParser = ae, r.iPv4Parser = ue, r.iPv6Parser = Ie, r.opaqueHostParser = Me, r.resolveABlobURL = Qe, r.percentEncode = Re, r.percentDecode = Fe, r.stringPercentDecode = rt, r.utf8PercentEncode = tt, r.hostEquals = function(le, Ne) {
               return le === Ne;
             }, r.urlEquals = function(le, Ne, Ge) {
               return Ge === void 0 && (Ge = false), O(le, Ge) === O(Ne, Ge);
@@ -204370,8 +204372,8 @@ fn main(
               var et = "";
               try {
                 for (var ye = a(le), nt = ye.next(); !nt.done; nt = ye.next()) {
-                  var Ee = nt.value, ue = te(l.utf8Encode(Ee[0])), De = Ee[1];
-                  De = te(l.utf8Encode(De)), et !== "" && (et += "&"), et += ue + "=" + De;
+                  var Ee = nt.value, ge = te(l.utf8Encode(Ee[0])), De = Ee[1];
+                  De = te(l.utf8Encode(De)), et !== "" && (et += "&"), et += ge + "=" + De;
                 }
               } catch (Ue) {
                 Ge = {
@@ -206847,7 +206849,7 @@ Input: ` + this.err.str);
                     for (var q = s(M.childNodes), se = q.next(); !se.done; se = q.next()) {
                       var ae = se.value.cloneNode(true);
                       if (P.appendChild(ae), d.Guard.isElementNode(ae)) {
-                        var ge = a(u.namespace_extractQName(ae.prefix ? ae.prefix + ":" + ae.localName : ae.localName), 1)[0], Ie = P.lookupNamespaceURI(ge);
+                        var ue = a(u.namespace_extractQName(ae.prefix ? ae.prefix + ":" + ae.localName : ae.localName), 1)[0], Ie = P.lookupNamespaceURI(ue);
                         new x(ae)._updateNamespace(Ie);
                       }
                     }
@@ -209389,8 +209391,8 @@ Input: ` + this.err.str);
                   (ae = U.indexOf(h[se])) !== -1 && (q === -1 || ae < q) && (q = ae);
                 }
                 q === -1 && (q = U.length), this.host = U.slice(0, q), U = U.slice(q), this.parseHost(), this.hostname = this.hostname || "";
-                var ge = this.hostname[0] === "[" && this.hostname[this.hostname.length - 1] === "]";
-                if (!ge) for (var Ie = this.hostname.split(/\./), Me = (se = 0, Ie.length); se < Me; se++) {
+                var ue = this.hostname[0] === "[" && this.hostname[this.hostname.length - 1] === "]";
+                if (!ue) for (var Ie = this.hostname.split(/\./), Me = (se = 0, Ie.length); se < Me; se++) {
                   var Qe = Ie[se];
                   if (Qe && !Qe.match(p)) {
                     for (var Re = "", Fe = 0, rt = Qe.length; Fe < rt; Fe++) Qe.charCodeAt(Fe) > 127 ? Re += "x" : Re += Qe[Fe];
@@ -209401,9 +209403,9 @@ Input: ` + this.err.str);
                     }
                   }
                 }
-                this.hostname.length > 255 ? this.hostname = "" : this.hostname = this.hostname.toLowerCase(), ge || (this.hostname = a.toASCII(this.hostname));
+                this.hostname.length > 255 ? this.hostname = "" : this.hostname = this.hostname.toLowerCase(), ue || (this.hostname = a.toASCII(this.hostname));
                 var Be = this.port ? ":" + this.port : "", le = this.hostname || "";
-                this.host = le + Be, this.href += this.host, ge && (this.hostname = this.hostname.substr(1, this.hostname.length - 2), U[0] !== "/" && (U = "/" + U));
+                this.host = le + Be, this.href += this.host, ue && (this.hostname = this.hostname.substr(1, this.hostname.length - 2), U[0] !== "/" && (U = "/" + U));
               }
               if (!x[ne]) for (se = 0, Me = u.length; se < Me; se++) {
                 var Ne = u[se];
@@ -209468,8 +209470,8 @@ Input: ` + this.err.str);
                 }
                 return F.slashes = F.slashes || v.slashes, F.href = F.format(), F;
               }
-              var ae = F.pathname && F.pathname.charAt(0) === "/", ge = v.host || v.pathname && v.pathname.charAt(0) === "/", Ie = ge || ae || F.host && v.pathname, Me = Ie, Qe = F.pathname && F.pathname.split("/") || [], Re = ($ = v.pathname && v.pathname.split("/") || [], F.protocol && !E[F.protocol]);
-              if (Re && (F.hostname = "", F.port = null, F.host && (Qe[0] === "" ? Qe[0] = F.host : Qe.unshift(F.host)), F.host = "", v.protocol && (v.hostname = null, v.port = null, v.host && ($[0] === "" ? $[0] = v.host : $.unshift(v.host)), v.host = null), Ie = Ie && ($[0] === "" || Qe[0] === "")), ge) F.host = v.host || v.host === "" ? v.host : F.host, F.hostname = v.hostname || v.hostname === "" ? v.hostname : F.hostname, F.search = v.search, F.query = v.query, Qe = $;
+              var ae = F.pathname && F.pathname.charAt(0) === "/", ue = v.host || v.pathname && v.pathname.charAt(0) === "/", Ie = ue || ae || F.host && v.pathname, Me = Ie, Qe = F.pathname && F.pathname.split("/") || [], Re = ($ = v.pathname && v.pathname.split("/") || [], F.protocol && !E[F.protocol]);
+              if (Re && (F.hostname = "", F.port = null, F.host && (Qe[0] === "" ? Qe[0] = F.host : Qe.unshift(F.host)), F.host = "", v.protocol && (v.hostname = null, v.port = null, v.host && ($[0] === "" ? $[0] = v.host : $.unshift(v.host)), v.host = null), Ie = Ie && ($[0] === "" || Qe[0] === "")), ue) F.host = v.host || v.host === "" ? v.host : F.host, F.hostname = v.hostname || v.hostname === "" ? v.hostname : F.hostname, F.search = v.search, F.query = v.query, Qe = $;
               else if ($.length) Qe || (Qe = []), Qe.pop(), Qe = Qe.concat($), F.search = v.search, F.query = v.query;
               else if (!s.isNullOrUndefined(v.search)) return Re && (F.hostname = F.host = Qe.shift(), (te = !!(F.host && F.host.indexOf("@") > 0) && F.host.split("@")) && (F.auth = te.shift(), F.host = F.hostname = te.shift())), F.search = v.search, F.query = v.query, s.isNull(F.pathname) && s.isNull(F.search) || (F.path = (F.pathname ? F.pathname : "") + (F.search ? F.search : "")), F.href = F.format(), F;
               if (!Qe.length) return F.pathname = null, F.search ? F.path = "/" + F.search : F.path = null, F.href = F.format(), F;
@@ -209525,20 +209527,20 @@ Input: ` + this.err.str);
                   return C(K + 36 * P / (P + 38));
                 }
                 function O(P) {
-                  var U, V, K, ne, Z, re, $, q, se, ae, ge, Ie = [], Me = P.length, Qe = 0, Re = 128, Fe = 72;
+                  var U, V, K, ne, Z, re, $, q, se, ae, ue, Ie = [], Me = P.length, Qe = 0, Re = 128, Fe = 72;
                   for ((V = P.lastIndexOf("-")) < 0 && (V = 0), K = 0; K < V; ++K) P.charCodeAt(K) >= 128 && B("not-basic"), Ie.push(P.charCodeAt(K));
                   for (ne = V > 0 ? V + 1 : 0; ne < Me; ) {
-                    for (Z = Qe, re = 1, $ = 36; ne >= Me && B("invalid-input"), ((q = (ge = P.charCodeAt(ne++)) - 48 < 10 ? ge - 22 : ge - 65 < 26 ? ge - 65 : ge - 97 < 26 ? ge - 97 : 36) >= 36 || q > C((d - Qe) / re)) && B("overflow"), Qe += q * re, !(q < (se = $ <= Fe ? 1 : $ >= Fe + 26 ? 26 : $ - Fe)); $ += 36) re > C(d / (ae = 36 - se)) && B("overflow"), re *= ae;
+                    for (Z = Qe, re = 1, $ = 36; ne >= Me && B("invalid-input"), ((q = (ue = P.charCodeAt(ne++)) - 48 < 10 ? ue - 22 : ue - 65 < 26 ? ue - 65 : ue - 97 < 26 ? ue - 97 : 36) >= 36 || q > C((d - Qe) / re)) && B("overflow"), Qe += q * re, !(q < (se = $ <= Fe ? 1 : $ >= Fe + 26 ? 26 : $ - Fe)); $ += 36) re > C(d / (ae = 36 - se)) && B("overflow"), re *= ae;
                     Fe = F(Qe - Z, U = Ie.length + 1, Z == 0), C(Qe / U) > d - Re && B("overflow"), Re += C(Qe / U), Qe %= U, Ie.splice(Qe++, 0, Re);
                   }
                   return v(Ie);
                 }
                 function Y(P) {
-                  var U, V, K, ne, Z, re, $, q, se, ae, ge, Ie, Me, Qe, Re, Fe = [];
-                  for (Ie = (P = D(P)).length, U = 128, V = 0, Z = 72, re = 0; re < Ie; ++re) (ge = P[re]) < 128 && Fe.push(x(ge));
+                  var U, V, K, ne, Z, re, $, q, se, ae, ue, Ie, Me, Qe, Re, Fe = [];
+                  for (Ie = (P = D(P)).length, U = 128, V = 0, Z = 72, re = 0; re < Ie; ++re) (ue = P[re]) < 128 && Fe.push(x(ue));
                   for (K = ne = Fe.length, ne && Fe.push("-"); K < Ie; ) {
-                    for ($ = d, re = 0; re < Ie; ++re) (ge = P[re]) >= U && ge < $ && ($ = ge);
-                    for ($ - U > C((d - V) / (Me = K + 1)) && B("overflow"), V += ($ - U) * Me, U = $, re = 0; re < Ie; ++re) if ((ge = P[re]) < U && ++V > d && B("overflow"), ge == U) {
+                    for ($ = d, re = 0; re < Ie; ++re) (ue = P[re]) >= U && ue < $ && ($ = ue);
+                    for ($ - U > C((d - V) / (Me = K + 1)) && B("overflow"), V += ($ - U) * Me, U = $, re = 0; re < Ie; ++re) if ((ue = P[re]) < U && ++V > d && B("overflow"), ue == U) {
                       for (q = V, se = 36; !(q < (ae = se <= Z ? 1 : se >= Z + 26 ? 26 : se - Z)); se += 36) Re = q - ae, Qe = 36 - ae, Fe.push(x(M(ae + Re % Qe, 0))), q = C(Re / Qe);
                       Fe.push(x(M(q, 0))), Z = F(V, Me, K == ne), V = 0, ++K;
                     }
@@ -209861,7 +209863,7 @@ Input: ` + this.err.str);
               }
               var se = null;
               if (!u.tree_isAncestorOf(re, ne, true)) try {
-                for (var ae = a(q._children), ge = ae.next(); !ge.done; ge = ae.next()) if (D(Re = ge.value, M)) {
+                for (var ae = a(q._children), ue = ae.next(); !ue.done; ue = ae.next()) if (D(Re = ue.value, M)) {
                   se = Re;
                   break;
                 }
@@ -209871,7 +209873,7 @@ Input: ` + this.err.str);
                 };
               } finally {
                 try {
-                  ge && !ge.done && (O = ae.return) && O.call(ae);
+                  ue && !ue.done && (O = ae.return) && O.call(ae);
                 } finally {
                   if (F) throw F.error;
                 }
@@ -209988,7 +209990,7 @@ Input: ` + this.err.str);
               }
               var ae = null;
               if (!u.tree_isAncestorOf($, Z, true)) try {
-                for (var ge = a(se._children), Ie = ge.next(); !Ie.done; Ie = ge.next()) if (D(Fe = Ie.value, F)) {
+                for (var ue = a(se._children), Ie = ue.next(); !Ie.done; Ie = ue.next()) if (D(Fe = Ie.value, F)) {
                   ae = Fe;
                   break;
                 }
@@ -209998,7 +210000,7 @@ Input: ` + this.err.str);
                 };
               } finally {
                 try {
-                  Ie && !Ie.done && (Y = ge.return) && Y.call(ge);
+                  Ie && !Ie.done && (Y = ue.return) && Y.call(ue);
                 } finally {
                   if (O) throw O.error;
                 }
@@ -210990,10 +210992,10 @@ Input: ` + this.err.str);
                       var re = D.lookupNamespaceURI(ne), $ = {};
                       try {
                         for (var q = (p = void 0, s(V.attributes)), se = q.next(); !se.done; se = q.next()) {
-                          var ae = a(se.value, 2), ge = ae[0], Ie = ae[1];
-                          if (ge === "xmlns") re = Ie;
+                          var ae = a(se.value, 2), ue = ae[0], Ie = ae[1];
+                          if (ue === "xmlns") re = Ie;
                           else {
-                            var Me = a(g.namespace_extractQName(ge), 2), Qe = Me[0], Re = Me[1];
+                            var Me = a(g.namespace_extractQName(ue), 2), Qe = Me[0], Re = Me[1];
                             Qe === "xmlns" && (Re === ne && (re = Ie), $[Re] = Ie);
                           }
                         }
@@ -211013,12 +211015,12 @@ Input: ` + this.err.str);
                       var rt = new d.LocalNameSet();
                       try {
                         for (var tt = (x = void 0, s(V.attributes)), Ce = tt.next(); !Ce.done; Ce = tt.next()) {
-                          var te = a(Ce.value, 2), Be = (ge = te[0], Ie = te[1], a(g.namespace_extractQName(ge), 2)), le = (Qe = Be[0], Re = Be[1], null);
+                          var te = a(Ce.value, 2), Be = (ue = te[0], Ie = te[1], a(g.namespace_extractQName(ue), 2)), le = (Qe = Be[0], Re = Be[1], null);
                           if (Qe === "xmlns" || Qe === null && Re === "xmlns" ? le = c.namespace.XMLNS : (le = Fe.lookupNamespaceURI(Qe)) !== null && Fe.isDefaultNamespace(le) ? le = null : le === null && Qe !== null && (le = $[Qe] || null), rt.has(le, Re)) throw new Error("Element contains duplicate attributes.");
                           if (rt.set(le, Re), le === c.namespace.XMLNS && Ie === c.namespace.XMLNS) throw new Error("XMLNS namespace is reserved.");
                           if (Re.indexOf(":") !== -1 || !g.xml_isName(Re)) throw new Error("Attribute local name contains invalid characters.");
                           if (Qe === "xmlns" && Ie === "") throw new Error("Empty XML namespace is not allowed.");
-                          le !== null ? Fe.setAttributeNS(le, ge, this._decodeAttributeValue(Ie)) : Fe.setAttribute(ge, this._decodeAttributeValue(Ie));
+                          le !== null ? Fe.setAttributeNS(le, ue, this._decodeAttributeValue(Ie)) : Fe.setAttribute(ue, this._decodeAttributeValue(Ie));
                         }
                       } catch (Ne) {
                         x = {
@@ -211505,14 +211507,14 @@ Input: ` + this.err.str);
                       F = this.text(F, this._decodeText(this.sanitize(re.data))) || F;
                       break;
                     case g.TokenType.Element:
-                      var $ = O, q = this.sanitize($.name), se = o(u.namespace_extractQName(q), 1)[0], ae = F.node.lookupNamespaceURI(se), ge = {};
+                      var $ = O, q = this.sanitize($.name), se = o(u.namespace_extractQName(q), 1)[0], ae = F.node.lookupNamespaceURI(se), ue = {};
                       try {
                         for (var Ie = (B = void 0, l($.attributes)), Me = Ie.next(); !Me.done; Me = Ie.next()) {
                           var Qe = o(Me.value, 2), Re = Qe[0], Fe = Qe[1];
                           if (Re = this.sanitize(Re), Fe = this.sanitize(Fe), Re === "xmlns") ae = Fe;
                           else {
                             var rt = o(u.namespace_extractQName(Re), 2), tt = rt[0], Ce = rt[1];
-                            tt === "xmlns" && (Ce === se && (ae = Fe), ge[Ce] = Fe);
+                            tt === "xmlns" && (Ce === se && (ae = Fe), ue[Ce] = Fe);
                           }
                         }
                       } catch (et) {
@@ -211534,7 +211536,7 @@ Input: ` + this.err.str);
                           var Ne = o(le.value, 2);
                           Re = Ne[0], Fe = Ne[1], Re = this.sanitize(Re), Fe = this.sanitize(Fe);
                           var Ge = o(u.namespace_extractQName(Re), 2), be = (tt = Ge[0], Ce = Ge[1], null);
-                          tt === "xmlns" || tt === null && Ce === "xmlns" ? be = d.namespace.XMLNS : (be = te.node.lookupNamespaceURI(tt)) !== null && te.node.isDefaultNamespace(be) ? be = null : be === null && tt !== null && (be = ge[tt] || null), be !== null ? this.attribute(te, be, Re, this._decodeAttributeValue(Fe)) : this.attribute(te, void 0, Re, this._decodeAttributeValue(Fe));
+                          tt === "xmlns" || tt === null && Ce === "xmlns" ? be = d.namespace.XMLNS : (be = te.node.lookupNamespaceURI(tt)) !== null && te.node.isDefaultNamespace(be) ? be = null : be === null && tt !== null && (be = ue[tt] || null), be !== null ? this.attribute(te, be, Re, this._decodeAttributeValue(Fe)) : this.attribute(te, void 0, Re, this._decodeAttributeValue(Fe));
                         }
                       } catch (et) {
                         b = {
@@ -211755,7 +211757,7 @@ Input: ` + this.err.str);
               var Be, le = te.position;
               return !((Be = te.input.charCodeAt(le)) !== 45 && Be !== 46 || Be !== te.input.charCodeAt(le + 1) || Be !== te.input.charCodeAt(le + 2) || (le += 3, (Be = te.input.charCodeAt(le)) !== 0 && !E(Be)));
             }
-            function ge(te, Be) {
+            function ue(te, Be) {
               Be === 1 ? te.result += " " : Be > 1 && (te.result += a.repeat(`
 `, Be - 1));
             }
@@ -211787,7 +211789,7 @@ Input: ` + this.err.str);
               return te.position === Be && V(te, "name of an anchor node must contain at least one character"), te.anchor = te.input.slice(Be, te.position), true;
             }
             function Re(te, Be, le, Ne, Ge) {
-              var be, et, ye, nt, Ee, ue, De, Ue, fe = 1, Ye = false, Ze = false;
+              var be, et, ye, nt, Ee, ge, De, Ue, fe = 1, Ye = false, Ze = false;
               if (te.listener !== null && te.listener("open", te), te.tag = null, te.anchor = null, te.kind = null, te.result = null, be = et = ye = le === 4 || le === 3, Ne && se(te, true, -1) && (Ye = true, te.lineIndent > Be ? fe = 1 : te.lineIndent === Be ? fe = 0 : te.lineIndent < Be && (fe = -1)), fe === 1) for (; Me(te) || Qe(te); ) se(te, true, -1) ? (Ye = true, ye = be, te.lineIndent > Be ? fe = 1 : te.lineIndent === Be ? fe = 0 : te.lineIndent < Be && (fe = -1)) : ye = false;
               if (ye && (ye = Ye || Ge), fe !== 1 && le !== 4 || (De = le === 1 || le === 2 ? Be : Be + 1, Ue = te.position - te.lineStart, fe === 1 ? ye && (Ie(te, Ue) || (function(ve, bt, It) {
                 var Bt, dt, _e, Je, Oe, st = ve.tag, ft = ve.anchor, We = {}, wt = {}, Ot = null, dn = null, Pn = null, Qn = false, Ae = false;
@@ -211867,7 +211869,7 @@ Input: ` + this.err.str);
                 for (ve.kind = "scalar", ve.result = "", ve.position++, Bt = dt = ve.position; (It = ve.input.charCodeAt(ve.position)) !== 0; ) if (It === 39) {
                   if (Z(ve, Bt, ve.position, true), (It = ve.input.charCodeAt(++ve.position)) !== 39) return true;
                   Bt = ve.position, ve.position++, dt = ve.position;
-                } else x(It) ? (Z(ve, Bt, dt, true), ge(ve, se(ve, false, bt)), Bt = dt = ve.position) : ve.position === ve.lineStart && ae(ve) ? V(ve, "unexpected end of the document within a single quoted scalar") : (ve.position++, dt = ve.position);
+                } else x(It) ? (Z(ve, Bt, dt, true), ue(ve, se(ve, false, bt)), Bt = dt = ve.position) : ve.position === ve.lineStart && ae(ve) ? V(ve, "unexpected end of the document within a single quoted scalar") : (ve.position++, dt = ve.position);
                 V(ve, "unexpected end of the stream within a single quoted scalar");
               })(te, De) || (function(ve, bt) {
                 var It, Bt, dt, _e, Je, Oe, st;
@@ -211882,7 +211884,7 @@ Input: ` + this.err.str);
                       ve.result += M(_e), ve.position++;
                     } else V(ve, "unknown escape sequence");
                     It = Bt = ve.position;
-                  } else x(Oe) ? (Z(ve, It, Bt, true), ge(ve, se(ve, false, bt)), It = Bt = ve.position) : ve.position === ve.lineStart && ae(ve) ? V(ve, "unexpected end of the document within a double quoted scalar") : (ve.position++, Bt = ve.position);
+                  } else x(Oe) ? (Z(ve, It, Bt, true), ue(ve, se(ve, false, bt)), It = Bt = ve.position) : ve.position === ve.lineStart && ae(ve) ? V(ve, "unexpected end of the document within a double quoted scalar") : (ve.position++, Bt = ve.position);
                 }
                 V(ve, "unexpected end of the stream within a double quoted scalar");
               })(te, De) ? Ze = true : (function(ve) {
@@ -211909,15 +211911,15 @@ Input: ` + this.err.str);
                       break;
                     }
                   }
-                  Je && (Z(ve, dt, _e, false), ge(ve, ve.line - Oe), dt = _e = ve.position, Je = false), B(We) || (_e = ve.position + 1), We = ve.input.charCodeAt(++ve.position);
+                  Je && (Z(ve, dt, _e, false), ue(ve, ve.line - Oe), dt = _e = ve.position, Je = false), B(We) || (_e = ve.position + 1), We = ve.input.charCodeAt(++ve.position);
                 }
                 return Z(ve, dt, _e, false), !!ve.result || (ve.kind = wt, ve.result = Ot, false);
               })(te, De, le === 1) && (Ze = true, te.tag === null && (te.tag = "?")), te.anchor !== null && (te.anchorMap[te.anchor] = te.result)) : fe === 0 && (Ze = ye && Ie(te, Ue))), te.tag !== null && te.tag !== "!") if (te.tag === "?") {
-                for (te.result !== null && te.kind !== "scalar" && V(te, 'unacceptable node kind for !<?> tag; it should be "scalar", not "' + te.kind + '"'), nt = 0, Ee = te.implicitTypes.length; nt < Ee; nt += 1) if ((ue = te.implicitTypes[nt]).resolve(te.result)) {
-                  te.result = ue.construct(te.result), te.tag = ue.tag, te.anchor !== null && (te.anchorMap[te.anchor] = te.result);
+                for (te.result !== null && te.kind !== "scalar" && V(te, 'unacceptable node kind for !<?> tag; it should be "scalar", not "' + te.kind + '"'), nt = 0, Ee = te.implicitTypes.length; nt < Ee; nt += 1) if ((ge = te.implicitTypes[nt]).resolve(te.result)) {
+                  te.result = ge.construct(te.result), te.tag = ge.tag, te.anchor !== null && (te.anchorMap[te.anchor] = te.result);
                   break;
                 }
-              } else g.call(te.typeMap[te.kind || "fallback"], te.tag) ? (ue = te.typeMap[te.kind || "fallback"][te.tag], te.result !== null && ue.kind !== te.kind && V(te, "unacceptable node kind for !<" + te.tag + '> tag; it should be "' + ue.kind + '", not "' + te.kind + '"'), ue.resolve(te.result) ? (te.result = ue.construct(te.result), te.anchor !== null && (te.anchorMap[te.anchor] = te.result)) : V(te, "cannot resolve a node with !<" + te.tag + "> explicit tag")) : V(te, "unknown tag !<" + te.tag + ">");
+              } else g.call(te.typeMap[te.kind || "fallback"], te.tag) ? (ge = te.typeMap[te.kind || "fallback"][te.tag], te.result !== null && ge.kind !== te.kind && V(te, "unacceptable node kind for !<" + te.tag + '> tag; it should be "' + ge.kind + '", not "' + te.kind + '"'), ge.resolve(te.result) ? (te.result = ge.construct(te.result), te.anchor !== null && (te.anchorMap[te.anchor] = te.result)) : V(te, "cannot resolve a node with !<" + te.tag + "> explicit tag")) : V(te, "unknown tag !<" + te.tag + ">");
               return te.listener !== null && te.listener("close", te), te.tag !== null || te.anchor !== null || Ze;
             }
             function Fe(te) {
@@ -213177,10 +213179,10 @@ Input: ` + this.err.str);
                     this.type = c.Syntax.ExportSpecifier, this.exported = Ft, this.local = xt;
                   };
                   o.ExportSpecifier = ae;
-                  var ge = function(xt) {
+                  var ue = function(xt) {
                     this.type = c.Syntax.ExpressionStatement, this.expression = xt;
                   };
-                  o.ExpressionStatement = ge;
+                  o.ExpressionStatement = ue;
                   var Ie = function(xt, Ft, Cn) {
                     this.type = c.Syntax.ForInStatement, this.left = xt, this.right = Ft, this.body = Cn, this.each = false;
                   };
@@ -213253,10 +213255,10 @@ Input: ` + this.err.str);
                     this.type = c.Syntax.ObjectExpression, this.properties = xt;
                   };
                   o.ObjectExpression = Ee;
-                  var ue = function(xt) {
+                  var ge = function(xt) {
                     this.type = c.Syntax.ObjectPattern, this.properties = xt;
                   };
-                  o.ObjectPattern = ue;
+                  o.ObjectPattern = ge;
                   var De = function(xt, Ft, Cn, we, Hr, li) {
                     this.type = c.Syntax.Property, this.key = Ft, this.computed = Cn, this.value = we, this.kind = xt, this.method = Hr, this.shorthand = li;
                   };
@@ -215812,9 +215814,9 @@ Input: ` + this.err.str);
             }
             function I(K) {
               this.schema = K.schema || o, this.indent = Math.max(1, K.indent || 2), this.noArrayIndent = K.noArrayIndent || false, this.skipInvalid = K.skipInvalid || false, this.flowLevel = a.isNothing(K.flowLevel) ? -1 : K.flowLevel, this.styleMap = (function(ne, Z) {
-                var re, $, q, se, ae, ge, Ie;
+                var re, $, q, se, ae, ue, Ie;
                 if (Z === null) return {};
-                for (re = {}, q = 0, se = ($ = Object.keys(Z)).length; q < se; q += 1) ae = $[q], ge = String(Z[ae]), ae.slice(0, 2) === "!!" && (ae = "tag:yaml.org,2002:" + ae.slice(2)), (Ie = ne.compiledTypeMap.fallback[ae]) && g.call(Ie.styleAliases, ge) && (ge = Ie.styleAliases[ge]), re[ae] = ge;
+                for (re = {}, q = 0, se = ($ = Object.keys(Z)).length; q < se; q += 1) ae = $[q], ue = String(Z[ae]), ae.slice(0, 2) === "!!" && (ae = "tag:yaml.org,2002:" + ae.slice(2)), (Ie = ne.compiledTypeMap.fallback[ae]) && g.call(Ie.styleAliases, ue) && (ue = Ie.styleAliases[ue]), re[ae] = ue;
                 return re;
               })(this.schema, K.styles || null), this.sortKeys = K.sortKeys || false, this.lineWidth = K.lineWidth || 80, this.noRefs = K.noRefs || false, this.noCompatMode = K.noCompatMode || false, this.condenseFlow = K.condenseFlow || false, this.implicitTypes = this.schema.compiledImplicit, this.explicitTypes = this.schema.compiledExplicit, this.tag = null, this.result = "", this.duplicates = [], this.usedDuplicates = null;
             }
@@ -215843,7 +215845,7 @@ Input: ` + this.err.str);
               return /^\n* /.test(K);
             }
             function D(K, ne, Z, re, $) {
-              var q, se, ae, ge, Ie = false, Me = false, Qe = re !== -1, Re = -1, Fe = B(ge = K.charCodeAt(0)) && ge !== 65279 && !x(ge) && ge !== 45 && ge !== 63 && ge !== 58 && ge !== 44 && ge !== 91 && ge !== 93 && ge !== 123 && ge !== 125 && ge !== 35 && ge !== 38 && ge !== 42 && ge !== 33 && ge !== 124 && ge !== 61 && ge !== 62 && ge !== 39 && ge !== 34 && ge !== 37 && ge !== 64 && ge !== 96 && !x(K.charCodeAt(K.length - 1));
+              var q, se, ae, ue, Ie = false, Me = false, Qe = re !== -1, Re = -1, Fe = B(ue = K.charCodeAt(0)) && ue !== 65279 && !x(ue) && ue !== 45 && ue !== 63 && ue !== 58 && ue !== 44 && ue !== 91 && ue !== 93 && ue !== 123 && ue !== 125 && ue !== 35 && ue !== 38 && ue !== 42 && ue !== 33 && ue !== 124 && ue !== 61 && ue !== 62 && ue !== 39 && ue !== 34 && ue !== 37 && ue !== 64 && ue !== 96 && !x(K.charCodeAt(K.length - 1));
               if (ne) for (q = 0; q < K.length; q++) {
                 if (!B(se = K.charCodeAt(q))) return 5;
                 ae = q > 0 ? K.charCodeAt(q - 1) : null, Fe = Fe && E(se, ae);
@@ -215864,9 +215866,9 @@ Input: ` + this.err.str);
                 if (!K.noCompatMode && u.indexOf(ne) !== -1) return "'" + ne + "'";
                 var $ = K.indent * Math.max(1, Z), q = K.lineWidth === -1 ? -1 : Math.max(Math.min(K.lineWidth, 40), K.lineWidth - $), se = re || K.flowLevel > -1 && Z >= K.flowLevel;
                 switch (D(ne, se, K.indent, q, (function(ae) {
-                  return (function(ge, Ie) {
+                  return (function(ue, Ie) {
                     var Me, Qe;
-                    for (Me = 0, Qe = ge.implicitTypes.length; Me < Qe; Me += 1) if (ge.implicitTypes[Me].resolve(Ie)) return true;
+                    for (Me = 0, Qe = ue.implicitTypes.length; Me < Qe; Me += 1) if (ue.implicitTypes[Me].resolve(Ie)) return true;
                     return false;
                   })(K, ae);
                 }))) {
@@ -215877,19 +215879,19 @@ Input: ` + this.err.str);
                   case 3:
                     return "|" + M(ne, K.indent) + F(p(ne, $));
                   case 4:
-                    return ">" + M(ne, K.indent) + F(p((function(ae, ge) {
+                    return ">" + M(ne, K.indent) + F(p((function(ae, ue) {
                       for (var Ie, Me, Qe = /(\n+)([^\n]*)/g, Re = (rt = ae.indexOf(`
-`), rt = rt !== -1 ? rt : ae.length, Qe.lastIndex = rt, O(ae.slice(0, rt), ge)), Fe = ae[0] === `
+`), rt = rt !== -1 ? rt : ae.length, Qe.lastIndex = rt, O(ae.slice(0, rt), ue)), Fe = ae[0] === `
 ` || ae[0] === " ", rt; Me = Qe.exec(ae); ) {
                         var tt = Me[1], Ce = Me[2];
                         Ie = Ce[0] === " ", Re += tt + (Fe || Ie || Ce === "" ? "" : `
-`) + O(Ce, ge), Fe = Ie;
+`) + O(Ce, ue), Fe = Ie;
                       }
                       return Re;
                     })(ne, q), $));
                   case 5:
                     return '"' + (function(ae) {
-                      for (var ge, Ie, Me, Qe = "", Re = 0; Re < ae.length; Re++) (ge = ae.charCodeAt(Re)) >= 55296 && ge <= 56319 && (Ie = ae.charCodeAt(Re + 1)) >= 56320 && Ie <= 57343 ? (Qe += h(1024 * (ge - 55296) + Ie - 56320 + 65536), Re++) : (Me = d[ge], Qe += !Me && B(ge) ? ae[Re] : Me || h(ge));
+                      for (var ue, Ie, Me, Qe = "", Re = 0; Re < ae.length; Re++) (ue = ae.charCodeAt(Re)) >= 55296 && ue <= 56319 && (Ie = ae.charCodeAt(Re + 1)) >= 56320 && Ie <= 57343 ? (Qe += h(1024 * (ue - 55296) + Ie - 56320 + 65536), Re++) : (Me = d[ue], Qe += !Me && B(ue) ? ae[Re] : Me || h(ue));
                       return Qe;
                     })(ne) + '"';
                   default:
@@ -215911,20 +215913,20 @@ Input: ` + this.err.str);
             }
             function O(K, ne) {
               if (K === "" || K[0] === " ") return K;
-              for (var Z, re, $ = / [^ ]/g, q = 0, se = 0, ae = 0, ge = ""; Z = $.exec(K); ) (ae = Z.index) - q > ne && (re = se > q ? se : ae, ge += `
+              for (var Z, re, $ = / [^ ]/g, q = 0, se = 0, ae = 0, ue = ""; Z = $.exec(K); ) (ae = Z.index) - q > ne && (re = se > q ? se : ae, ue += `
 ` + K.slice(q, re), q = re + 1), se = ae;
-              return ge += `
-`, K.length - q > ne && se > q ? ge += K.slice(q, se) + `
-` + K.slice(se + 1) : ge += K.slice(q), ge.slice(1);
+              return ue += `
+`, K.length - q > ne && se > q ? ue += K.slice(q, se) + `
+` + K.slice(se + 1) : ue += K.slice(q), ue.slice(1);
             }
             function Y(K, ne, Z) {
-              var re, $, q, se, ae, ge;
+              var re, $, q, se, ae, ue;
               for (q = 0, se = ($ = Z ? K.explicitTypes : K.implicitTypes).length; q < se; q += 1) if (((ae = $[q]).instanceOf || ae.predicate) && (!ae.instanceOf || typeof ne == "object" && ne instanceof ae.instanceOf) && (!ae.predicate || ae.predicate(ne))) {
                 if (K.tag = Z ? ae.tag : "?", ae.represent) {
-                  if (ge = K.styleMap[ae.tag] || ae.defaultStyle, c.call(ae.represent) === "[object Function]") re = ae.represent(ne, ge);
+                  if (ue = K.styleMap[ae.tag] || ae.defaultStyle, c.call(ae.represent) === "[object Function]") re = ae.represent(ne, ue);
                   else {
-                    if (!g.call(ae.represent, ge)) throw new s("!<" + ae.tag + '> tag resolver accepts not "' + ge + '" style');
-                    re = ae.represent[ge](ne, ge);
+                    if (!g.call(ae.represent, ue)) throw new s("!<" + ae.tag + '> tag resolver accepts not "' + ue + '" style');
+                    re = ae.represent[ue](ne, ue);
                   }
                   K.dump = re;
                 }
@@ -215936,32 +215938,32 @@ Input: ` + this.err.str);
               K.tag = null, K.dump = Z, Y(K, Z, false) || Y(K, Z, true);
               var se = c.call(K.dump);
               re && (re = K.flowLevel < 0 || K.flowLevel > ne);
-              var ae, ge, Ie = se === "[object Object]" || se === "[object Array]";
-              if (Ie && (ge = (ae = K.duplicates.indexOf(Z)) !== -1), (K.tag !== null && K.tag !== "?" || ge || K.indent !== 2 && ne > 0) && ($ = false), ge && K.usedDuplicates[ae]) K.dump = "*ref_" + ae;
+              var ae, ue, Ie = se === "[object Object]" || se === "[object Array]";
+              if (Ie && (ue = (ae = K.duplicates.indexOf(Z)) !== -1), (K.tag !== null && K.tag !== "?" || ue || K.indent !== 2 && ne > 0) && ($ = false), ue && K.usedDuplicates[ae]) K.dump = "*ref_" + ae;
               else {
-                if (Ie && ge && !K.usedDuplicates[ae] && (K.usedDuplicates[ae] = true), se === "[object Object]") re && Object.keys(K.dump).length !== 0 ? ((function(Qe, Re, Fe, rt) {
+                if (Ie && ue && !K.usedDuplicates[ae] && (K.usedDuplicates[ae] = true), se === "[object Object]") re && Object.keys(K.dump).length !== 0 ? ((function(Qe, Re, Fe, rt) {
                   var tt, Ce, te, Be, le, Ne, Ge = "", be = Qe.tag, et = Object.keys(Fe);
                   if (Qe.sortKeys === true) et.sort();
                   else if (typeof Qe.sortKeys == "function") et.sort(Qe.sortKeys);
                   else if (Qe.sortKeys) throw new s("sortKeys must be a boolean or a function");
                   for (tt = 0, Ce = et.length; tt < Ce; tt += 1) Ne = "", rt && tt === 0 || (Ne += C(Qe, Re)), Be = Fe[te = et[tt]], P(Qe, Re + 1, te, true, true, true) && ((le = Qe.tag !== null && Qe.tag !== "?" || Qe.dump && Qe.dump.length > 1024) && (Qe.dump && Qe.dump.charCodeAt(0) === 10 ? Ne += "?" : Ne += "? "), Ne += Qe.dump, le && (Ne += C(Qe, Re)), P(Qe, Re + 1, Be, true, le) && (Qe.dump && Qe.dump.charCodeAt(0) === 10 ? Ne += ":" : Ne += ": ", Ge += Ne += Qe.dump));
                   Qe.tag = be, Qe.dump = Ge || "{}";
-                })(K, ne, K.dump, $), ge && (K.dump = "&ref_" + ae + K.dump)) : ((function(Qe, Re, Fe) {
+                })(K, ne, K.dump, $), ue && (K.dump = "&ref_" + ae + K.dump)) : ((function(Qe, Re, Fe) {
                   var rt, tt, Ce, te, Be, le = "", Ne = Qe.tag, Ge = Object.keys(Fe);
                   for (rt = 0, tt = Ge.length; rt < tt; rt += 1) Be = "", rt !== 0 && (Be += ", "), Qe.condenseFlow && (Be += '"'), te = Fe[Ce = Ge[rt]], P(Qe, Re, Ce, false, false) && (Qe.dump.length > 1024 && (Be += "? "), Be += Qe.dump + (Qe.condenseFlow ? '"' : "") + ":" + (Qe.condenseFlow ? "" : " "), P(Qe, Re, te, false, false) && (le += Be += Qe.dump));
                   Qe.tag = Ne, Qe.dump = "{" + le + "}";
-                })(K, ne, K.dump), ge && (K.dump = "&ref_" + ae + " " + K.dump));
+                })(K, ne, K.dump), ue && (K.dump = "&ref_" + ae + " " + K.dump));
                 else if (se === "[object Array]") {
                   var Me = K.noArrayIndent && ne > 0 ? ne - 1 : ne;
                   re && K.dump.length !== 0 ? ((function(Qe, Re, Fe, rt) {
                     var tt, Ce, te = "", Be = Qe.tag;
                     for (tt = 0, Ce = Fe.length; tt < Ce; tt += 1) P(Qe, Re + 1, Fe[tt], true, true) && (rt && tt === 0 || (te += C(Qe, Re)), Qe.dump && Qe.dump.charCodeAt(0) === 10 ? te += "-" : te += "- ", te += Qe.dump);
                     Qe.tag = Be, Qe.dump = te || "[]";
-                  })(K, Me, K.dump, $), ge && (K.dump = "&ref_" + ae + K.dump)) : ((function(Qe, Re, Fe) {
+                  })(K, Me, K.dump, $), ue && (K.dump = "&ref_" + ae + K.dump)) : ((function(Qe, Re, Fe) {
                     var rt, tt, Ce = "", te = Qe.tag;
                     for (rt = 0, tt = Fe.length; rt < tt; rt += 1) P(Qe, Re, Fe[rt], false, false) && (rt !== 0 && (Ce += "," + (Qe.condenseFlow ? "" : " ")), Ce += Qe.dump);
                     Qe.tag = te, Qe.dump = "[" + Ce + "]";
-                  })(K, Me, K.dump), ge && (K.dump = "&ref_" + ae + " " + K.dump));
+                  })(K, Me, K.dump), ue && (K.dump = "&ref_" + ae + " " + K.dump));
                 } else {
                   if (se !== "[object String]") {
                     if (K.skipInvalid) return false;
@@ -215975,11 +215977,11 @@ Input: ` + this.err.str);
             }
             function U(K, ne) {
               var Z, re, $ = [], q = [];
-              for ((function se(ae, ge, Ie) {
+              for ((function se(ae, ue, Ie) {
                 var Me, Qe, Re;
-                if (ae !== null && typeof ae == "object") if ((Qe = ge.indexOf(ae)) !== -1) Ie.indexOf(Qe) === -1 && Ie.push(Qe);
-                else if (ge.push(ae), Array.isArray(ae)) for (Qe = 0, Re = ae.length; Qe < Re; Qe += 1) se(ae[Qe], ge, Ie);
-                else for (Me = Object.keys(ae), Qe = 0, Re = Me.length; Qe < Re; Qe += 1) se(ae[Me[Qe]], ge, Ie);
+                if (ae !== null && typeof ae == "object") if ((Qe = ue.indexOf(ae)) !== -1) Ie.indexOf(Qe) === -1 && Ie.push(Qe);
+                else if (ue.push(ae), Array.isArray(ae)) for (Qe = 0, Re = ae.length; Qe < Re; Qe += 1) se(ae[Qe], ue, Ie);
+                else for (Me = Object.keys(ae), Qe = 0, Re = Me.length; Qe < Re; Qe += 1) se(ae[Me[Qe]], ue, Ie);
               })(K, $, q), Z = 0, re = q.length; Z < re; Z += 1) ne.duplicates.push($[q[Z]]);
               ne.usedDuplicates = new Array(re);
             }
@@ -216941,15 +216943,15 @@ Input: ` + this.err.str);
         } else {
           var ae = se - 254;
           if (se > 264) {
-            var F = se - 257, ge = ioe[F];
-            ae = Bg(t, l, (1 << ge) - 1) + ooe[F], l += ge;
+            var F = se - 257, ue = ioe[F];
+            ae = Bg(t, l, (1 << ue) - 1) + ooe[F], l += ue;
           }
           var Ie = d[CT(t, l) & $], Me = Ie >>> 4;
           Ie || kg(3), l += Ie & 15;
           var Z = att[Me];
           if (Me > 3) {
-            var ge = Aoe[Me];
-            Z += CT(t, l) & (1 << ge) - 1, l += ge;
+            var ue = Aoe[Me];
+            Z += CT(t, l) & (1 << ue) - 1, l += ue;
           }
           if (l > I) {
             a && kg(0);
@@ -217596,8 +217598,8 @@ Input: ` + this.err.str);
         var b = {
           907: (F, O, Y) => {
             F = Y.nmd(F);
-            var P = "__lodash_hash_undefined__", U = 9007199254740991, V = "[object Arguments]", K = "[object Boolean]", ne = "[object Date]", Z = "[object Function]", re = "[object GeneratorFunction]", $ = "[object Map]", q = "[object Number]", se = "[object Object]", ae = "[object Promise]", ge = "[object RegExp]", Ie = "[object Set]", Me = "[object String]", Qe = "[object Symbol]", Re = "[object WeakMap]", Fe = "[object ArrayBuffer]", rt = "[object DataView]", tt = "[object Float32Array]", Ce = "[object Float64Array]", te = "[object Int8Array]", Be = "[object Int16Array]", le = "[object Int32Array]", Ne = "[object Uint8Array]", Ge = "[object Uint8ClampedArray]", be = "[object Uint16Array]", et = "[object Uint32Array]", ye = /\w*$/, nt = /^\[object .+?Constructor\]$/, Ee = /^(?:0|[1-9]\d*)$/, ue = {};
-            ue[V] = ue["[object Array]"] = ue[Fe] = ue[rt] = ue[K] = ue[ne] = ue[tt] = ue[Ce] = ue[te] = ue[Be] = ue[le] = ue[$] = ue[q] = ue[se] = ue[ge] = ue[Ie] = ue[Me] = ue[Qe] = ue[Ne] = ue[Ge] = ue[be] = ue[et] = true, ue["[object Error]"] = ue[Z] = ue[Re] = false;
+            var P = "__lodash_hash_undefined__", U = 9007199254740991, V = "[object Arguments]", K = "[object Boolean]", ne = "[object Date]", Z = "[object Function]", re = "[object GeneratorFunction]", $ = "[object Map]", q = "[object Number]", se = "[object Object]", ae = "[object Promise]", ue = "[object RegExp]", Ie = "[object Set]", Me = "[object String]", Qe = "[object Symbol]", Re = "[object WeakMap]", Fe = "[object ArrayBuffer]", rt = "[object DataView]", tt = "[object Float32Array]", Ce = "[object Float64Array]", te = "[object Int8Array]", Be = "[object Int16Array]", le = "[object Int32Array]", Ne = "[object Uint8Array]", Ge = "[object Uint8ClampedArray]", be = "[object Uint16Array]", et = "[object Uint32Array]", ye = /\w*$/, nt = /^\[object .+?Constructor\]$/, Ee = /^(?:0|[1-9]\d*)$/, ge = {};
+            ge[V] = ge["[object Array]"] = ge[Fe] = ge[rt] = ge[K] = ge[ne] = ge[tt] = ge[Ce] = ge[te] = ge[Be] = ge[le] = ge[$] = ge[q] = ge[se] = ge[ue] = ge[Ie] = ge[Me] = ge[Qe] = ge[Ne] = ge[Ge] = ge[be] = ge[et] = true, ge["[object Error]"] = ge[Z] = ge[Re] = false;
             var De = typeof Y.g == "object" && Y.g && Y.g.Object === Object && Y.g, Ue = typeof self == "object" && self && self.Object === Object && self, fe = De || Ue || Function("return this")(), Ye = O && !O.nodeType && O, Ze = Ye && F && !F.nodeType && F, ve = Ze && Ze.exports === Ye;
             function bt(Rt, An) {
               return Rt.set(An[0], An[1]), Rt;
@@ -217703,7 +217705,7 @@ Input: ` + this.err.str);
                     return Qr && Bn(di, Aa(di), Qr);
                   })(ai, Rt));
                 } else {
-                  if (!ue[cA]) return vr ? Rt : {};
+                  if (!ge[cA]) return vr ? Rt : {};
                   ai = (function(Qr, di, fi, OA) {
                     var Te, Ve = Qr.constructor;
                     switch (di) {
@@ -217737,7 +217739,7 @@ Input: ` + this.err.str);
                       case q:
                       case Me:
                         return new Ve(Qr);
-                      case ge:
+                      case ue:
                         return (function(it) {
                           var At = new it.constructor(it.source, ye.exec(it));
                           return At.lastIndex = it.lastIndex, At;
@@ -217948,7 +217950,7 @@ Input: ` + this.err.str);
             };
           },
           485: (F, O, Y) => {
-            var P, U = "__lodash_hash_undefined__", V = "[object Function]", K = "[object GeneratorFunction]", ne = "[object Symbol]", Z = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/, re = /^\w*$/, $ = /^\./, q = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g, se = /\\(\\)?/g, ae = /^\[object .+?Constructor\]$/, ge = typeof Y.g == "object" && Y.g && Y.g.Object === Object && Y.g, Ie = typeof self == "object" && self && self.Object === Object && self, Me = ge || Ie || Function("return this")(), Qe = Array.prototype, Re = Function.prototype, Fe = Object.prototype, rt = Me["__core-js_shared__"], tt = (P = /[^.]+$/.exec(rt && rt.keys && rt.keys.IE_PROTO || "")) ? "Symbol(src)_1." + P : "", Ce = Re.toString, te = Fe.hasOwnProperty, Be = Fe.toString, le = RegExp("^" + Ce.call(te).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), Ne = Me.Symbol, Ge = Qe.splice, be = Ye(Me, "Map"), et = Ye(Object, "create"), ye = Ne ? Ne.prototype : void 0, nt = ye ? ye.toString : void 0;
+            var P, U = "__lodash_hash_undefined__", V = "[object Function]", K = "[object GeneratorFunction]", ne = "[object Symbol]", Z = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/, re = /^\w*$/, $ = /^\./, q = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g, se = /\\(\\)?/g, ae = /^\[object .+?Constructor\]$/, ue = typeof Y.g == "object" && Y.g && Y.g.Object === Object && Y.g, Ie = typeof self == "object" && self && self.Object === Object && self, Me = ue || Ie || Function("return this")(), Qe = Array.prototype, Re = Function.prototype, Fe = Object.prototype, rt = Me["__core-js_shared__"], tt = (P = /[^.]+$/.exec(rt && rt.keys && rt.keys.IE_PROTO || "")) ? "Symbol(src)_1." + P : "", Ce = Re.toString, te = Fe.hasOwnProperty, Be = Fe.toString, le = RegExp("^" + Ce.call(te).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), Ne = Me.Symbol, Ge = Qe.splice, be = Ye(Me, "Map"), et = Ye(Object, "create"), ye = Ne ? Ne.prototype : void 0, nt = ye ? ye.toString : void 0;
             function Ee(_e) {
               var Je = -1, Oe = _e ? _e.length : 0;
               for (this.clear(); ++Je < Oe; ) {
@@ -217956,7 +217958,7 @@ Input: ` + this.err.str);
                 this.set(st[0], st[1]);
               }
             }
-            function ue(_e) {
+            function ge(_e) {
               var Je = -1, Oe = _e ? _e.length : 0;
               for (this.clear(); ++Je < Oe; ) {
                 var st = _e[Je];
@@ -218026,17 +218028,17 @@ Input: ` + this.err.str);
               return et ? Je[_e] !== void 0 : te.call(Je, _e);
             }, Ee.prototype.set = function(_e, Je) {
               return this.__data__[_e] = et && Je === void 0 ? U : Je, this;
-            }, ue.prototype.clear = function() {
+            }, ge.prototype.clear = function() {
               this.__data__ = [];
-            }, ue.prototype.delete = function(_e) {
+            }, ge.prototype.delete = function(_e) {
               var Je = this.__data__, Oe = Ue(Je, _e);
               return !(Oe < 0 || (Oe == Je.length - 1 ? Je.pop() : Ge.call(Je, Oe, 1), 0));
-            }, ue.prototype.get = function(_e) {
+            }, ge.prototype.get = function(_e) {
               var Je = this.__data__, Oe = Ue(Je, _e);
               return Oe < 0 ? void 0 : Je[Oe][1];
-            }, ue.prototype.has = function(_e) {
+            }, ge.prototype.has = function(_e) {
               return Ue(this.__data__, _e) > -1;
-            }, ue.prototype.set = function(_e, Je) {
+            }, ge.prototype.set = function(_e, Je) {
               var Oe = this.__data__, st = Ue(Oe, _e);
               return st < 0 ? Oe.push([
                 _e,
@@ -218045,7 +218047,7 @@ Input: ` + this.err.str);
             }, De.prototype.clear = function() {
               this.__data__ = {
                 hash: new Ee(),
-                map: new (be || ue)(),
+                map: new (be || ge)(),
                 string: new Ee()
               };
             }, De.prototype.delete = function(_e) {
@@ -218435,8 +218437,8 @@ Input: ` + this.err.str);
             isSegmentIndexLocked: () => Fa,
             setSegmentIndexLocked: () => Iu
           });
-          var ge = {};
-          v.r(ge), v.d(ge, {
+          var ue = {};
+          v.r(ue), v.d(ue, {
             getActiveSegmentIndex: () => vl,
             setActiveSegmentIndex: () => $o
           });
@@ -218594,8 +218596,8 @@ Input: ` + this.err.str);
             getBoundsIJKFromRectangleAnnotations: () => Gv,
             isAxisAlignedRectangle: () => Zv
           });
-          var ue = {};
-          v.r(ue), v.d(ue, {
+          var ge = {};
+          v.r(ge), v.d(ge, {
             isViewportPreScaled: () => Id,
             jumpToSlice: () => ap,
             jumpToWorld: () => Ny
@@ -218682,7 +218684,7 @@ Input: ` + this.err.str);
             triggerAnnotationRenderForToolGroupIds: () => EQ,
             triggerAnnotationRenderForViewportIds: () => Yt,
             triggerEvent: () => Ae.triggerEvent,
-            viewport: () => ue,
+            viewport: () => ge,
             viewportFilters: () => Ge,
             voi: () => ve
           });
@@ -218802,7 +218804,7 @@ Input: ` + this.err.str);
             convertVolumeToStackSegmentation: () => gQ,
             polySeg: () => dn,
             removeSegmentationsFromToolGroup: () => BU,
-            segmentIndex: () => ge,
+            segmentIndex: () => ue,
             segmentLocking: () => ae,
             state: () => V,
             triggerSegmentationEvents: () => U
@@ -244253,7 +244255,7 @@ Input: ` + this.err.str);
             }), l.d(o, "createJPEGBasicOffsetTable", function() {
               return b;
             }), l.d(o, "parseDicomDataSetExplicit", function() {
-              return ge;
+              return ue;
             }), l.d(o, "parseDicomDataSetImplicit", function() {
               return Ie;
             }), l.d(o, "readFixedString", function() {
@@ -244331,24 +244333,24 @@ Input: ` + this.err.str);
               UR: true,
               US: false,
               UT: true
-            }, g = function(ue) {
-              return c[ue];
-            }, d = function(ue) {
-              if (ue = parseInt(ue[4], 16), isNaN(ue)) throw "dicomParser.isPrivateTag: cannot parse last character of group";
-              return ue % 2 == 1;
-            }, u = function(ue) {
-              if (ue !== void 0) return ue = ue.split("^"), {
-                familyName: ue[0],
-                givenName: ue[1],
-                middleName: ue[2],
-                prefix: ue[3],
-                suffix: ue[4]
+            }, g = function(ge) {
+              return c[ge];
+            }, d = function(ge) {
+              if (ge = parseInt(ge[4], 16), isNaN(ge)) throw "dicomParser.isPrivateTag: cannot parse last character of group";
+              return ge % 2 == 1;
+            }, u = function(ge) {
+              if (ge !== void 0) return ge = ge.split("^"), {
+                familyName: ge[0],
+                givenName: ge[1],
+                middleName: ge[2],
+                prefix: ge[3],
+                suffix: ge[4]
               };
             };
-            function h(ue, De) {
-              if (2 <= ue.length) {
-                var Ue = parseInt(ue.substring(0, 2), 10), fe = 4 <= ue.length ? parseInt(ue.substring(2, 4), 10) : void 0, Ye = 6 <= ue.length ? parseInt(ue.substring(4, 6), 10) : void 0, Ze = 8 <= ue.length ? ue.substring(7, 13) : void 0, Ze = Ze ? parseInt(Ze, 10) * Math.pow(10, 6 - Ze.length) : void 0;
-                if (De && (isNaN(Ue) || fe !== void 0 && isNaN(fe) || Ye !== void 0 && isNaN(Ye) || Ze !== void 0 && isNaN(Ze) || Ue < 0 || 23 < Ue || fe && (fe < 0 || 59 < fe) || Ye && (Ye < 0 || 59 < Ye) || Ze && (Ze < 0 || 999999 < Ze))) throw "invalid TM '".concat(ue, "'");
+            function h(ge, De) {
+              if (2 <= ge.length) {
+                var Ue = parseInt(ge.substring(0, 2), 10), fe = 4 <= ge.length ? parseInt(ge.substring(2, 4), 10) : void 0, Ye = 6 <= ge.length ? parseInt(ge.substring(4, 6), 10) : void 0, Ze = 8 <= ge.length ? ge.substring(7, 13) : void 0, Ze = Ze ? parseInt(Ze, 10) * Math.pow(10, 6 - Ze.length) : void 0;
+                if (De && (isNaN(Ue) || fe !== void 0 && isNaN(fe) || Ye !== void 0 && isNaN(Ye) || Ze !== void 0 && isNaN(Ze) || Ue < 0 || 23 < Ue || fe && (fe < 0 || 59 < fe) || Ye && (Ye < 0 || 59 < Ye) || Ze && (Ze < 0 || 999999 < Ze))) throw "invalid TM '".concat(ge, "'");
                 return {
                   hours: Ue,
                   minutes: fe,
@@ -244356,10 +244358,10 @@ Input: ` + this.err.str);
                   fractionalSeconds: Ze
                 };
               }
-              if (De) throw "invalid TM '".concat(ue, "'");
+              if (De) throw "invalid TM '".concat(ge, "'");
             }
-            function I(ue, De, Ue) {
-              return !isNaN(Ue) && 0 < De && De <= 12 && 0 < ue && ue <= (function(fe, Ye) {
+            function I(ge, De, Ue) {
+              return !isNaN(Ue) && 0 < De && De <= 12 && 0 < ge && ge <= (function(fe, Ye) {
                 switch (fe) {
                   case 2:
                     return Ye % 4 == 0 && Ye % 100 || Ye % 400 == 0 ? 29 : 28;
@@ -244373,51 +244375,51 @@ Input: ` + this.err.str);
                 }
               })(De, Ue);
             }
-            function p(ue, De) {
-              if (ue && ue.length === 8) {
-                var Ue = parseInt(ue.substring(0, 4), 10), fe = parseInt(ue.substring(4, 6), 10), Ye = parseInt(ue.substring(6, 8), 10);
-                if (De && I(Ye, fe, Ue) !== true) throw "invalid DA '".concat(ue, "'");
+            function p(ge, De) {
+              if (ge && ge.length === 8) {
+                var Ue = parseInt(ge.substring(0, 4), 10), fe = parseInt(ge.substring(4, 6), 10), Ye = parseInt(ge.substring(6, 8), 10);
+                if (De && I(Ye, fe, Ue) !== true) throw "invalid DA '".concat(ge, "'");
                 return {
                   year: Ue,
                   month: fe,
                   day: Ye
                 };
               }
-              if (De) throw "invalid DA '".concat(ue, "'");
+              if (De) throw "invalid DA '".concat(ge, "'");
             }
-            function C(ue, De) {
-              if (ue === void 0 || De === void 0) throw "dicomParser.explicitElementToString: missing required parameters";
+            function C(ge, De) {
+              if (ge === void 0 || De === void 0) throw "dicomParser.explicitElementToString: missing required parameters";
               if (De.vr === void 0) throw "dicomParser.explicitElementToString: cannot convert implicit element to string";
               var Ue, fe = De.vr, Ye = De.tag;
               function Ze(bt, It) {
-                for (var Bt = "", dt = 0; dt < bt; dt++) dt !== 0 && (Bt += "/"), Bt += It.call(ue, Ye, dt).toString();
+                for (var Bt = "", dt = 0; dt < bt; dt++) dt !== 0 && (Bt += "/"), Bt += It.call(ge, Ye, dt).toString();
                 return Bt;
               }
-              if (g(fe) === true) Ue = ue.string(Ye);
+              if (g(fe) === true) Ue = ge.string(Ye);
               else {
                 if (fe === "AT") {
-                  var ve = ue.uint32(Ye);
+                  var ve = ge.uint32(Ye);
                   return ve === void 0 ? void 0 : "x".concat((ve = ve < 0 ? 4294967295 + ve + 1 : ve).toString(16).toUpperCase());
                 }
-                fe === "US" ? Ue = Ze(De.length / 2, ue.uint16) : fe === "SS" ? Ue = Ze(De.length / 2, ue.int16) : fe === "UL" ? Ue = Ze(De.length / 4, ue.uint32) : fe === "SL" ? Ue = Ze(De.length / 4, ue.int32) : fe === "FD" ? Ue = Ze(De.length / 8, ue.double) : fe === "FL" && (Ue = Ze(De.length / 4, ue.float));
+                fe === "US" ? Ue = Ze(De.length / 2, ge.uint16) : fe === "SS" ? Ue = Ze(De.length / 2, ge.int16) : fe === "UL" ? Ue = Ze(De.length / 4, ge.uint32) : fe === "SL" ? Ue = Ze(De.length / 4, ge.int32) : fe === "FD" ? Ue = Ze(De.length / 8, ge.double) : fe === "FL" && (Ue = Ze(De.length / 4, ge.float));
               }
               return Ue;
             }
-            function x(ue, De) {
-              if (ue === void 0) throw "dicomParser.explicitDataSetToJS: missing required parameter dataSet";
+            function x(ge, De) {
+              if (ge === void 0) throw "dicomParser.explicitDataSetToJS: missing required parameter dataSet";
               De = De || {
                 omitPrivateAttibutes: true,
                 maxElementLength: 128
               };
               var Ue, fe = {};
-              for (Ue in ue.elements) {
-                var Ye = ue.elements[Ue];
+              for (Ue in ge.elements) {
+                var Ye = ge.elements[Ue];
                 if (De.omitPrivateAttibutes !== true || !d(Ue)) if (Ye.items) {
                   for (var Ze = [], ve = 0; ve < Ye.items.length; ve++) Ze.push(x(Ye.items[ve].dataSet, De));
                   fe[Ue] = Ze;
                 } else {
                   var bt = void 0;
-                  Ye.length < De.maxElementLength && (bt = C(ue, Ye)), fe[Ue] = bt !== void 0 ? bt : {
+                  Ye.length < De.maxElementLength && (bt = C(ge, Ye)), fe[Ue] = bt !== void 0 ? bt : {
                     dataOffset: Ye.dataOffset,
                     length: Ye.length
                   };
@@ -244425,14 +244427,14 @@ Input: ` + this.err.str);
               }
               return fe;
             }
-            function B(ue, De) {
-              return ue.byteArray[De] === 255 && ue.byteArray[De + 1] === 217;
+            function B(ge, De) {
+              return ge.byteArray[De] === 255 && ge.byteArray[De + 1] === 217;
             }
-            function E(ue, De, Ue) {
-              for (var fe, Ye, Ze = Ue; Ze < De.fragments.length; Ze++) if (fe = ue, Ye = Ze, Ye = De.fragments[Ye], !(!B(fe, Ye.position + Ye.length - 2) && !B(fe, Ye.position + Ye.length - 3))) return Ze;
+            function E(ge, De, Ue) {
+              for (var fe, Ye, Ze = Ue; Ze < De.fragments.length; Ze++) if (fe = ge, Ye = Ze, Ye = De.fragments[Ye], !(!B(fe, Ye.position + Ye.length - 2) && !B(fe, Ye.position + Ye.length - 3))) return Ze;
             }
-            function b(ue, De, Ue) {
-              if (ue === void 0) throw "dicomParser.createJPEGBasicOffsetTable: missing required parameter dataSet";
+            function b(ge, De, Ue) {
+              if (ge === void 0) throw "dicomParser.createJPEGBasicOffsetTable: missing required parameter dataSet";
               if (De === void 0) throw "dicomParser.createJPEGBasicOffsetTable: missing required parameter pixelDataElement";
               if (De.tag !== "x7fe00010") throw "dicomParser.createJPEGBasicOffsetTable: parameter 'pixelDataElement' refers to non pixel data tag (expected tag = x7fe00010'";
               if (De.encapsulatedPixelData !== true || De.hadUndefinedLength !== true || De.basicOffsetTable === void 0 || De.fragments === void 0 || De.fragments.length <= 0) throw "dicomParser.createJPEGBasicOffsetTable: parameter 'pixelDataElement' refers to pixel data element that does not have encapsulated pixel data";
@@ -244440,7 +244442,7 @@ Input: ` + this.err.str);
               Ue = Ue || De.fragments;
               for (var fe = [], Ye = 0; ; ) {
                 fe.push(De.fragments[Ye].offset);
-                var Ze = E(ue, De, Ye);
+                var Ze = E(ge, De, Ye);
                 if (Ze === void 0 || Ze === De.fragments.length - 1) return fe;
                 Ye = Ze + 1;
               }
@@ -244450,64 +244452,64 @@ Input: ` + this.err.str);
               var De = 256 * Ue.readUint16() * 256, Ue = Ue.readUint16();
               return "x".concat("00000000".concat((De + Ue).toString(16)).substr(-8));
             }
-            function v(ue, De, Ue) {
-              if (ue === void 0) throw "dicomParser.findEndOfEncapsulatedElement: missing required parameter 'byteStream'";
+            function v(ge, De, Ue) {
+              if (ge === void 0) throw "dicomParser.findEndOfEncapsulatedElement: missing required parameter 'byteStream'";
               if (De === void 0) throw "dicomParser.findEndOfEncapsulatedElement: missing required parameter 'element'";
-              if (De.encapsulatedPixelData = true, De.basicOffsetTable = [], De.fragments = [], D(ue) !== "xfffee000") throw "dicomParser.findEndOfEncapsulatedElement: basic offset table not found";
-              for (var fe = ue.readUint32() / 4, Ye = 0; Ye < fe; Ye++) {
-                var Ze = ue.readUint32();
+              if (De.encapsulatedPixelData = true, De.basicOffsetTable = [], De.fragments = [], D(ge) !== "xfffee000") throw "dicomParser.findEndOfEncapsulatedElement: basic offset table not found";
+              for (var fe = ge.readUint32() / 4, Ye = 0; Ye < fe; Ye++) {
+                var Ze = ge.readUint32();
                 De.basicOffsetTable.push(Ze);
               }
-              for (var ve = ue.position; ue.position < ue.byteArray.length; ) {
-                var bt = D(ue), It = ue.readUint32();
-                if (bt === "xfffee0dd") return ue.seek(It), void (De.length = ue.position - De.dataOffset);
-                if (bt !== "xfffee000") return Ue && Ue.push("unexpected tag ".concat(bt, " while searching for end of pixel data element with undefined length")), It > ue.byteArray.length - ue.position && (It = ue.byteArray.length - ue.position), De.fragments.push({
-                  offset: ue.position - ve - 8,
-                  position: ue.position,
+              for (var ve = ge.position; ge.position < ge.byteArray.length; ) {
+                var bt = D(ge), It = ge.readUint32();
+                if (bt === "xfffee0dd") return ge.seek(It), void (De.length = ge.position - De.dataOffset);
+                if (bt !== "xfffee000") return Ue && Ue.push("unexpected tag ".concat(bt, " while searching for end of pixel data element with undefined length")), It > ge.byteArray.length - ge.position && (It = ge.byteArray.length - ge.position), De.fragments.push({
+                  offset: ge.position - ve - 8,
+                  position: ge.position,
                   length: It
-                }), ue.seek(It), void (De.length = ue.position - De.dataOffset);
+                }), ge.seek(It), void (De.length = ge.position - De.dataOffset);
                 De.fragments.push({
-                  offset: ue.position - ve - 8,
-                  position: ue.position,
+                  offset: ge.position - ve - 8,
+                  position: ge.position,
                   length: It
-                }), ue.seek(It);
+                }), ge.seek(It);
               }
               Ue && Ue.push("pixel data element ".concat(De.tag, " missing sequence delimiter tag xfffee0dd"));
             }
-            function M(ue, De) {
-              if (ue === void 0) throw "dicomParser.findAndSetUNElementLength: missing required parameter 'byteStream'";
-              for (var Ue = ue.byteArray.length - 8; ue.position <= Ue; ) if (ue.readUint16() === 65534) {
-                var fe = ue.readUint16();
-                if (fe === 57565) return ue.readUint32() !== 0 && ue.warnings("encountered non zero length following item delimiter at position ".concat(ue.position - 4, " while reading element of undefined length with tag ").concat(De.tag)), void (De.length = ue.position - De.dataOffset);
+            function M(ge, De) {
+              if (ge === void 0) throw "dicomParser.findAndSetUNElementLength: missing required parameter 'byteStream'";
+              for (var Ue = ge.byteArray.length - 8; ge.position <= Ue; ) if (ge.readUint16() === 65534) {
+                var fe = ge.readUint16();
+                if (fe === 57565) return ge.readUint32() !== 0 && ge.warnings("encountered non zero length following item delimiter at position ".concat(ge.position - 4, " while reading element of undefined length with tag ").concat(De.tag)), void (De.length = ge.position - De.dataOffset);
               }
-              De.length = ue.byteArray.length - De.dataOffset, ue.seek(ue.byteArray.length - ue.position);
+              De.length = ge.byteArray.length - De.dataOffset, ge.seek(ge.byteArray.length - ge.position);
             }
-            function F(ue, De, Ue) {
+            function F(ge, De, Ue) {
               if (Ue < 0) throw "dicomParser.readFixedString - length cannot be less than 0";
-              if (De + Ue > ue.length) throw "dicomParser.readFixedString: attempt to read past end of buffer";
+              if (De + Ue > ge.length) throw "dicomParser.readFixedString: attempt to read past end of buffer";
               for (var fe, Ye = "", Ze = 0; Ze < Ue; Ze++) {
-                if ((fe = ue[De + Ze]) === 0) return De += Ue, Ye;
+                if ((fe = ge[De + Ze]) === 0) return De += Ue, Ye;
                 Ye += String.fromCharCode(fe);
               }
               return Ye;
             }
-            function O(ue, De) {
+            function O(ge, De) {
               for (var Ue = 0; Ue < De.length; Ue++) {
                 var fe = De[Ue];
-                fe.enumerable = fe.enumerable || false, fe.configurable = true, "value" in fe && (fe.writable = true), Object.defineProperty(ue, fe.key, fe);
+                fe.enumerable = fe.enumerable || false, fe.configurable = true, "value" in fe && (fe.writable = true), Object.defineProperty(ge, fe.key, fe);
               }
             }
-            function Y(ue, De) {
-              return ue.parser !== void 0 ? ue.parser : De;
+            function Y(ge, De) {
+              return ge.parser !== void 0 ? ge.parser : De;
             }
             var P = (function() {
-              function ue(fe, Ye, Ze) {
+              function ge(fe, Ye, Ze) {
                 (function(ve, bt) {
                   if (!(ve instanceof bt)) throw new TypeError("Cannot call a class as a function");
-                })(this, ue), this.byteArrayParser = fe, this.byteArray = Ye, this.elements = Ze;
+                })(this, ge), this.byteArrayParser = fe, this.byteArray = Ye, this.elements = Ze;
               }
               var De, Ue;
-              return De = ue, (Ue = [
+              return De = ge, (Ue = [
                 {
                   key: "uint16",
                   value: function(fe, Ye) {
@@ -244589,53 +244591,53 @@ Input: ` + this.err.str);
                 }
               ]) && O(De.prototype, Ue), Object.defineProperty(De, "prototype", {
                 writable: false
-              }), ue;
+              }), ge;
             })();
-            function U(ue, De) {
-              if (ue === void 0) throw "dicomParser.readDicomElementImplicit: missing required parameter 'byteStream'";
-              for (var Ue = ue.byteArray.length - 8; ue.position <= Ue; ) if (ue.readUint16() === 65534) {
-                var fe = ue.readUint16();
-                if (fe === 57357) return ue.readUint32() !== 0 && ue.warnings("encountered non zero length following item delimiter at position ".concat(ue.position - 4, " while reading element of undefined length with tag ").concat(De.tag)), void (De.length = ue.position - De.dataOffset);
+            function U(ge, De) {
+              if (ge === void 0) throw "dicomParser.readDicomElementImplicit: missing required parameter 'byteStream'";
+              for (var Ue = ge.byteArray.length - 8; ge.position <= Ue; ) if (ge.readUint16() === 65534) {
+                var fe = ge.readUint16();
+                if (fe === 57357) return ge.readUint32() !== 0 && ge.warnings("encountered non zero length following item delimiter at position ".concat(ge.position - 4, " while reading element of undefined length with tag ").concat(De.tag)), void (De.length = ge.position - De.dataOffset);
               }
-              De.length = ue.byteArray.length - De.dataOffset, ue.seek(ue.byteArray.length - ue.position);
+              De.length = ge.byteArray.length - De.dataOffset, ge.seek(ge.byteArray.length - ge.position);
             }
-            var V = function(ue, De) {
-              return ue.vr !== void 0 ? ue.vr === "SQ" : De.position + 4 <= De.byteArray.length ? (ue = D(De), De.seek(-4), ue === "xfffee000" || ue === "xfffee0dd") : (De.warnings.push("eof encountered before finding sequence item tag or sequence delimiter tag in peeking to determine VR"), false);
+            var V = function(ge, De) {
+              return ge.vr !== void 0 ? ge.vr === "SQ" : De.position + 4 <= De.byteArray.length ? (ge = D(De), De.seek(-4), ge === "xfffee000" || ge === "xfffee0dd") : (De.warnings.push("eof encountered before finding sequence item tag or sequence delimiter tag in peeking to determine VR"), false);
             };
-            function K(ue, De, Ue) {
-              if (ue === void 0) throw "dicomParser.readDicomElementImplicit: missing required parameter 'byteStream'";
-              var fe = D(ue), fe = {
+            function K(ge, De, Ue) {
+              if (ge === void 0) throw "dicomParser.readDicomElementImplicit: missing required parameter 'byteStream'";
+              var fe = D(ge), fe = {
                 tag: fe,
                 vr: Ue !== void 0 ? Ue(fe) : void 0,
-                length: ue.readUint32(),
-                dataOffset: ue.position
+                length: ge.readUint32(),
+                dataOffset: ge.position
               };
-              return fe.length === 4294967295 && (fe.hadUndefinedLength = true), fe.tag === De || (!V(fe, ue) || d(fe.tag) && !fe.hadUndefinedLength ? fe.hadUndefinedLength ? U(ue, fe) : ue.seek(fe.length) : (re(ue, fe, Ue), d(fe.tag) && (fe.items = void 0))), fe;
+              return fe.length === 4294967295 && (fe.hadUndefinedLength = true), fe.tag === De || (!V(fe, ge) || d(fe.tag) && !fe.hadUndefinedLength ? fe.hadUndefinedLength ? U(ge, fe) : ge.seek(fe.length) : (re(ge, fe, Ue), d(fe.tag) && (fe.items = void 0))), fe;
             }
-            function ne(ue) {
-              if (ue === void 0) throw "dicomParser.readSequenceItem: missing required parameter 'byteStream'";
+            function ne(ge) {
+              if (ge === void 0) throw "dicomParser.readSequenceItem: missing required parameter 'byteStream'";
               var De = {
-                tag: D(ue),
-                length: ue.readUint32(),
-                dataOffset: ue.position
+                tag: D(ge),
+                length: ge.readUint32(),
+                dataOffset: ge.position
               };
-              if (De.tag !== "xfffee000") throw "dicomParser.readSequenceItem: item tag (FFFE,E000) not found at offset ".concat(ue.position);
+              if (De.tag !== "xfffee000") throw "dicomParser.readSequenceItem: item tag (FFFE,E000) not found at offset ".concat(ge.position);
               return De;
             }
-            function Z(ue, De) {
-              var Ue = ne(ue);
+            function Z(ge, De) {
+              var Ue = ne(ge);
               return Ue.length === 4294967295 ? (Ue.hadUndefinedLength = true, Ue.dataSet = (function(fe, Ye) {
                 for (var Ze = {}; fe.position < fe.byteArray.length; ) {
                   var ve = K(fe, void 0, Ye);
                   if ((Ze[ve.tag] = ve).tag === "xfffee00d") return new P(fe.byteArrayParser, fe.byteArray, Ze);
                 }
                 return fe.warnings.push("eof encountered before finding sequence item delimiter in sequence item of undefined length"), new P(fe.byteArrayParser, fe.byteArray, Ze);
-              })(ue, De), Ue.length = ue.position - Ue.dataOffset) : (Ue.dataSet = new P(ue.byteArrayParser, ue.byteArray, {}), Ie(Ue.dataSet, ue, ue.position + Ue.length, {
+              })(ge, De), Ue.length = ge.position - Ue.dataOffset) : (Ue.dataSet = new P(ge.byteArrayParser, ge.byteArray, {}), Ie(Ue.dataSet, ge, ge.position + Ue.length, {
                 vrCallback: De
               })), Ue;
             }
-            function re(ue, De, Ue) {
-              if (ue === void 0) throw "dicomParser.readSequenceItemsImplicit: missing required parameter 'byteStream'";
+            function re(ge, De, Ue) {
+              if (ge === void 0) throw "dicomParser.readSequenceItemsImplicit: missing required parameter 'byteStream'";
               if (De === void 0) throw "dicomParser.readSequenceItemsImplicit: missing required parameter 'element'";
               De.items = [], (De.length === 4294967295 ? function(fe, Ye, Ze) {
                 for (; fe.position + 4 <= fe.byteArray.length; ) {
@@ -244649,20 +244651,20 @@ Input: ` + this.err.str);
                   var bt = Z(fe, Ze);
                   Ye.items.push(bt);
                 }
-              })(ue, De, Ue);
+              })(ge, De, Ue);
             }
-            function $(ue, De) {
-              var Ue = ne(ue);
+            function $(ge, De) {
+              var Ue = ne(ge);
               return Ue.length === 4294967295 ? (Ue.hadUndefinedLength = true, Ue.dataSet = (function(fe, Ye) {
                 for (var Ze = {}; fe.position < fe.byteArray.length; ) {
                   var ve = ae(fe, Ye);
                   if ((Ze[ve.tag] = ve).tag === "xfffee00d") return new P(fe.byteArrayParser, fe.byteArray, Ze);
                 }
                 return Ye.push("eof encountered before finding item delimiter tag while reading sequence item of undefined length"), new P(fe.byteArrayParser, fe.byteArray, Ze);
-              })(ue, De), Ue.length = ue.position - Ue.dataOffset) : (Ue.dataSet = new P(ue.byteArrayParser, ue.byteArray, {}), ge(Ue.dataSet, ue, ue.position + Ue.length)), Ue;
+              })(ge, De), Ue.length = ge.position - Ue.dataOffset) : (Ue.dataSet = new P(ge.byteArrayParser, ge.byteArray, {}), ue(Ue.dataSet, ge, ge.position + Ue.length)), Ue;
             }
-            function q(ue, De, Ue) {
-              if (ue === void 0) throw "dicomParser.readSequenceItemsExplicit: missing required parameter 'byteStream'";
+            function q(ge, De, Ue) {
+              if (ge === void 0) throw "dicomParser.readSequenceItemsExplicit: missing required parameter 'byteStream'";
               if (De === void 0) throw "dicomParser.readSequenceItemsExplicit: missing required parameter 'element'";
               De.items = [], (De.length === 4294967295 ? function(fe, Ye, Ze) {
                 for (; fe.position + 4 <= fe.byteArray.length; ) {
@@ -244676,93 +244678,93 @@ Input: ` + this.err.str);
                   var bt = $(fe, Ze);
                   Ye.items.push(bt);
                 }
-              })(ue, De, Ue);
+              })(ge, De, Ue);
             }
-            var se = function(ue) {
-              return ue === "OB" || ue === "OD" || ue === "OL" || ue === "OW" || ue === "SQ" || ue === "OF" || ue === "UC" || ue === "UR" || ue === "UT" || ue === "UN" ? 4 : 2;
+            var se = function(ge) {
+              return ge === "OB" || ge === "OD" || ge === "OL" || ge === "OW" || ge === "SQ" || ge === "OF" || ge === "UC" || ge === "UR" || ge === "UT" || ge === "UN" ? 4 : 2;
             };
-            function ae(ue, De, Ue) {
-              if (ue === void 0) throw "dicomParser.readDicomElementExplicit: missing required parameter 'byteStream'";
+            function ae(ge, De, Ue) {
+              if (ge === void 0) throw "dicomParser.readDicomElementExplicit: missing required parameter 'byteStream'";
               var fe = {
-                tag: D(ue),
-                vr: ue.readFixedString(2)
+                tag: D(ge),
+                vr: ge.readFixedString(2)
               };
-              return se(fe.vr) === 2 ? fe.length = ue.readUint16() : (ue.seek(2), fe.length = ue.readUint32()), fe.dataOffset = ue.position, fe.length === 4294967295 && (fe.hadUndefinedLength = true), fe.tag === Ue || (fe.vr === "SQ" ? q(ue, fe, De) : fe.length === 4294967295 ? fe.tag === "x7fe00010" ? v(ue, fe, De) : (fe.vr === "UN" ? re : U)(ue, fe) : ue.seek(fe.length)), fe;
+              return se(fe.vr) === 2 ? fe.length = ge.readUint16() : (ge.seek(2), fe.length = ge.readUint32()), fe.dataOffset = ge.position, fe.length === 4294967295 && (fe.hadUndefinedLength = true), fe.tag === Ue || (fe.vr === "SQ" ? q(ge, fe, De) : fe.length === 4294967295 ? fe.tag === "x7fe00010" ? v(ge, fe, De) : (fe.vr === "UN" ? re : U)(ge, fe) : ge.seek(fe.length)), fe;
             }
-            function ge(ue, De, Ue) {
+            function ue(ge, De, Ue) {
               var fe = 3 < arguments.length && arguments[3] !== void 0 ? arguments[3] : {};
               if (Ue = Ue === void 0 ? De.byteArray.length : Ue, De === void 0) throw "dicomParser.parseDicomDataSetExplicit: missing required parameter 'byteStream'";
               if (Ue < De.position || Ue > De.byteArray.length) throw "dicomParser.parseDicomDataSetExplicit: invalid value for parameter 'maxP osition'";
-              for (var Ye = ue.elements; De.position < Ue; ) {
-                var Ze = ae(De, ue.warnings, fe.untilTag);
+              for (var Ye = ge.elements; De.position < Ue; ) {
+                var Ze = ae(De, ge.warnings, fe.untilTag);
                 if ((Ye[Ze.tag] = Ze).tag === fe.untilTag) return;
               }
               if (De.position > Ue) throw "dicomParser:parseDicomDataSetExplicit: buffer overrun";
             }
-            function Ie(ue, De, Ue) {
+            function Ie(ge, De, Ue) {
               var fe = 3 < arguments.length && arguments[3] !== void 0 ? arguments[3] : {};
-              if (Ue = Ue === void 0 ? ue.byteArray.length : Ue, De === void 0) throw "dicomParser.parseDicomDataSetImplicit: missing required parameter 'byteStream'";
+              if (Ue = Ue === void 0 ? ge.byteArray.length : Ue, De === void 0) throw "dicomParser.parseDicomDataSetImplicit: missing required parameter 'byteStream'";
               if (Ue < De.position || Ue > De.byteArray.length) throw "dicomParser.parseDicomDataSetImplicit: invalid value for parameter 'maxPosition'";
-              for (var Ye = ue.elements; De.position < Ue; ) {
+              for (var Ye = ge.elements; De.position < Ue; ) {
                 var Ze = K(De, fe.untilTag, fe.vrCallback);
                 if ((Ye[Ze.tag] = Ze).tag === fe.untilTag) return;
               }
             }
-            function Me(ue, De) {
-              if (typeof Buffer < "u" && ue instanceof Buffer) return Buffer.alloc(De);
-              if (ue instanceof Uint8Array) return new Uint8Array(De);
+            function Me(ge, De) {
+              if (typeof Buffer < "u" && ge instanceof Buffer) return Buffer.alloc(De);
+              if (ge instanceof Uint8Array) return new Uint8Array(De);
               throw "dicomParser.alloc: unknown type for byteArray";
             }
             var Qe = "1.8.12", Re = {
-              readUint16: function(ue, De) {
+              readUint16: function(ge, De) {
                 if (De < 0) throw "bigEndianByteArrayParser.readUint16: position cannot be less than 0";
-                if (De + 2 > ue.length) throw "bigEndianByteArrayParser.readUint16: attempt to read past end of buffer";
-                return (ue[De] << 8) + ue[De + 1];
+                if (De + 2 > ge.length) throw "bigEndianByteArrayParser.readUint16: attempt to read past end of buffer";
+                return (ge[De] << 8) + ge[De + 1];
               },
-              readInt16: function(ue, De) {
+              readInt16: function(ge, De) {
                 if (De < 0) throw "bigEndianByteArrayParser.readInt16: position cannot be less than 0";
-                if (De + 2 > ue.length) throw "bigEndianByteArrayParser.readInt16: attempt to read past end of buffer";
-                return De = (ue[De] << 8) + ue[De + 1], De = 32768 & De ? De - 65535 - 1 : De;
+                if (De + 2 > ge.length) throw "bigEndianByteArrayParser.readInt16: attempt to read past end of buffer";
+                return De = (ge[De] << 8) + ge[De + 1], De = 32768 & De ? De - 65535 - 1 : De;
               },
-              readUint32: function(ue, De) {
+              readUint32: function(ge, De) {
                 if (De < 0) throw "bigEndianByteArrayParser.readUint32: position cannot be less than 0";
-                if (De + 4 > ue.length) throw "bigEndianByteArrayParser.readUint32: attempt to read past end of buffer";
-                return 256 * (256 * (256 * ue[De] + ue[De + 1]) + ue[De + 2]) + ue[De + 3];
+                if (De + 4 > ge.length) throw "bigEndianByteArrayParser.readUint32: attempt to read past end of buffer";
+                return 256 * (256 * (256 * ge[De] + ge[De + 1]) + ge[De + 2]) + ge[De + 3];
               },
-              readInt32: function(ue, De) {
+              readInt32: function(ge, De) {
                 if (De < 0) throw "bigEndianByteArrayParser.readInt32: position cannot be less than 0";
-                if (De + 4 > ue.length) throw "bigEndianByteArrayParser.readInt32: attempt to read past end of buffer";
-                return (ue[De] << 24) + (ue[De + 1] << 16) + (ue[De + 2] << 8) + ue[De + 3];
+                if (De + 4 > ge.length) throw "bigEndianByteArrayParser.readInt32: attempt to read past end of buffer";
+                return (ge[De] << 24) + (ge[De + 1] << 16) + (ge[De + 2] << 8) + ge[De + 3];
               },
-              readFloat: function(ue, De) {
+              readFloat: function(ge, De) {
                 if (De < 0) throw "bigEndianByteArrayParser.readFloat: position cannot be less than 0";
-                if (De + 4 > ue.length) throw "bigEndianByteArrayParser.readFloat: attempt to read past end of buffer";
+                if (De + 4 > ge.length) throw "bigEndianByteArrayParser.readFloat: attempt to read past end of buffer";
                 var Ue = new Uint8Array(4);
-                return Ue[3] = ue[De], Ue[2] = ue[De + 1], Ue[1] = ue[De + 2], Ue[0] = ue[De + 3], new Float32Array(Ue.buffer)[0];
+                return Ue[3] = ge[De], Ue[2] = ge[De + 1], Ue[1] = ge[De + 2], Ue[0] = ge[De + 3], new Float32Array(Ue.buffer)[0];
               },
-              readDouble: function(ue, De) {
+              readDouble: function(ge, De) {
                 if (De < 0) throw "bigEndianByteArrayParser.readDouble: position cannot be less than 0";
-                if (De + 8 > ue.length) throw "bigEndianByteArrayParser.readDouble: attempt to read past end of buffer";
+                if (De + 8 > ge.length) throw "bigEndianByteArrayParser.readDouble: attempt to read past end of buffer";
                 var Ue = new Uint8Array(8);
-                return Ue[7] = ue[De], Ue[6] = ue[De + 1], Ue[5] = ue[De + 2], Ue[4] = ue[De + 3], Ue[3] = ue[De + 4], Ue[2] = ue[De + 5], Ue[1] = ue[De + 6], Ue[0] = ue[De + 7], new Float64Array(Ue.buffer)[0];
+                return Ue[7] = ge[De], Ue[6] = ge[De + 1], Ue[5] = ge[De + 2], Ue[4] = ge[De + 3], Ue[3] = ge[De + 4], Ue[2] = ge[De + 5], Ue[1] = ge[De + 6], Ue[0] = ge[De + 7], new Float64Array(Ue.buffer)[0];
               }
             };
-            function Fe(ue, De, Ue) {
-              if (typeof Buffer < "u" && ue instanceof Buffer) return ue.slice(De, De + Ue);
-              if (ue instanceof Uint8Array) return new Uint8Array(ue.buffer, ue.byteOffset + De, Ue);
+            function Fe(ge, De, Ue) {
+              if (typeof Buffer < "u" && ge instanceof Buffer) return ge.slice(De, De + Ue);
+              if (ge instanceof Uint8Array) return new Uint8Array(ge.buffer, ge.byteOffset + De, Ue);
               throw "dicomParser.from: unknown type for byteArray";
             }
-            function rt(ue, De) {
+            function rt(ge, De) {
               for (var Ue = 0; Ue < De.length; Ue++) {
                 var fe = De[Ue];
-                fe.enumerable = fe.enumerable || false, fe.configurable = true, "value" in fe && (fe.writable = true), Object.defineProperty(ue, fe.key, fe);
+                fe.enumerable = fe.enumerable || false, fe.configurable = true, "value" in fe && (fe.writable = true), Object.defineProperty(ge, fe.key, fe);
               }
             }
             var tt = (function() {
-              function ue(fe, Ye, Ze) {
+              function ge(fe, Ye, Ze) {
                 if ((function(ve, bt) {
                   if (!(ve instanceof bt)) throw new TypeError("Cannot call a class as a function");
-                })(this, ue), fe === void 0) throw "dicomParser.ByteStream: missing required parameter 'byteArrayParser'";
+                })(this, ge), fe === void 0) throw "dicomParser.ByteStream: missing required parameter 'byteArrayParser'";
                 if (Ye === void 0) throw "dicomParser.ByteStream: missing required parameter 'byteArray'";
                 if (!(Ye instanceof Uint8Array) && (typeof Buffer > "u" || !(Ye instanceof Buffer))) throw "dicomParser.ByteStream: parameter byteArray is not of type Uint8Array or Buffer";
                 if (Ze < 0) throw "dicomParser.ByteStream: parameter 'position' cannot be less than 0";
@@ -244770,7 +244772,7 @@ Input: ` + this.err.str);
                 this.byteArrayParser = fe, this.byteArray = Ye, this.position = Ze || 0, this.warnings = [];
               }
               var De, Ue;
-              return De = ue, (Ue = [
+              return De = ge, (Ue = [
                 {
                   key: "seek",
                   value: function(fe) {
@@ -244783,7 +244785,7 @@ Input: ` + this.err.str);
                   value: function(fe) {
                     if (this.position + fe > this.byteArray.length) throw "dicomParser.ByteStream.prototype.readByteStream: readByteStream - buffer overread";
                     var Ye = Fe(this.byteArray, this.position, fe);
-                    return this.position += fe, new ue(this.byteArrayParser, Ye);
+                    return this.position += fe, new ge(this.byteArrayParser, Ye);
                   }
                 },
                 {
@@ -244815,45 +244817,45 @@ Input: ` + this.err.str);
                 }
               ]) && rt(De.prototype, Ue), Object.defineProperty(De, "prototype", {
                 writable: false
-              }), ue;
+              }), ge;
             })(), Ce = {
-              readUint16: function(ue, De) {
+              readUint16: function(ge, De) {
                 if (De < 0) throw "littleEndianByteArrayParser.readUint16: position cannot be less than 0";
-                if (De + 2 > ue.length) throw "littleEndianByteArrayParser.readUint16: attempt to read past end of buffer";
-                return ue[De] + 256 * ue[De + 1];
+                if (De + 2 > ge.length) throw "littleEndianByteArrayParser.readUint16: attempt to read past end of buffer";
+                return ge[De] + 256 * ge[De + 1];
               },
-              readInt16: function(ue, De) {
+              readInt16: function(ge, De) {
                 if (De < 0) throw "littleEndianByteArrayParser.readInt16: position cannot be less than 0";
-                if (De + 2 > ue.length) throw "littleEndianByteArrayParser.readInt16: attempt to read past end of buffer";
-                return De = ue[De] + (ue[De + 1] << 8), De = 32768 & De ? De - 65535 - 1 : De;
+                if (De + 2 > ge.length) throw "littleEndianByteArrayParser.readInt16: attempt to read past end of buffer";
+                return De = ge[De] + (ge[De + 1] << 8), De = 32768 & De ? De - 65535 - 1 : De;
               },
-              readUint32: function(ue, De) {
+              readUint32: function(ge, De) {
                 if (De < 0) throw "littleEndianByteArrayParser.readUint32: position cannot be less than 0";
-                if (De + 4 > ue.length) throw "littleEndianByteArrayParser.readUint32: attempt to read past end of buffer";
-                return ue[De] + 256 * ue[De + 1] + 256 * ue[De + 2] * 256 + 256 * ue[De + 3] * 256 * 256;
+                if (De + 4 > ge.length) throw "littleEndianByteArrayParser.readUint32: attempt to read past end of buffer";
+                return ge[De] + 256 * ge[De + 1] + 256 * ge[De + 2] * 256 + 256 * ge[De + 3] * 256 * 256;
               },
-              readInt32: function(ue, De) {
+              readInt32: function(ge, De) {
                 if (De < 0) throw "littleEndianByteArrayParser.readInt32: position cannot be less than 0";
-                if (De + 4 > ue.length) throw "littleEndianByteArrayParser.readInt32: attempt to read past end of buffer";
-                return ue[De] + (ue[De + 1] << 8) + (ue[De + 2] << 16) + (ue[De + 3] << 24);
+                if (De + 4 > ge.length) throw "littleEndianByteArrayParser.readInt32: attempt to read past end of buffer";
+                return ge[De] + (ge[De + 1] << 8) + (ge[De + 2] << 16) + (ge[De + 3] << 24);
               },
-              readFloat: function(ue, De) {
+              readFloat: function(ge, De) {
                 if (De < 0) throw "littleEndianByteArrayParser.readFloat: position cannot be less than 0";
-                if (De + 4 > ue.length) throw "littleEndianByteArrayParser.readFloat: attempt to read past end of buffer";
+                if (De + 4 > ge.length) throw "littleEndianByteArrayParser.readFloat: attempt to read past end of buffer";
                 var Ue = new Uint8Array(4);
-                return Ue[0] = ue[De], Ue[1] = ue[De + 1], Ue[2] = ue[De + 2], Ue[3] = ue[De + 3], new Float32Array(Ue.buffer)[0];
+                return Ue[0] = ge[De], Ue[1] = ge[De + 1], Ue[2] = ge[De + 2], Ue[3] = ge[De + 3], new Float32Array(Ue.buffer)[0];
               },
-              readDouble: function(ue, De) {
+              readDouble: function(ge, De) {
                 if (De < 0) throw "littleEndianByteArrayParser.readDouble: position cannot be less than 0";
-                if (De + 8 > ue.length) throw "littleEndianByteArrayParser.readDouble: attempt to read past end of buffer";
+                if (De + 8 > ge.length) throw "littleEndianByteArrayParser.readDouble: attempt to read past end of buffer";
                 var Ue = new Uint8Array(8);
-                return Ue[0] = ue[De], Ue[1] = ue[De + 1], Ue[2] = ue[De + 2], Ue[3] = ue[De + 3], Ue[4] = ue[De + 4], Ue[5] = ue[De + 5], Ue[6] = ue[De + 6], Ue[7] = ue[De + 7], new Float64Array(Ue.buffer)[0];
+                return Ue[0] = ge[De], Ue[1] = ge[De + 1], Ue[2] = ge[De + 2], Ue[3] = ge[De + 3], Ue[4] = ge[De + 4], Ue[5] = ge[De + 5], Ue[6] = ge[De + 6], Ue[7] = ge[De + 7], new Float64Array(Ue.buffer)[0];
               }
             };
-            function te(ue) {
+            function te(ge) {
               var De = 1 < arguments.length && arguments[1] !== void 0 ? arguments[1] : {};
-              if (ue === void 0) throw "dicomParser.readPart10Header: missing required parameter 'byteArray'";
-              var Ue = De.TransferSyntaxUID, fe = new tt(Ce, ue);
+              if (ge === void 0) throw "dicomParser.readPart10Header: missing required parameter 'byteArray'";
+              var Ue = De.TransferSyntaxUID, fe = new tt(Ce, ge);
               return (function() {
                 var Ye = (function() {
                   if (fe.getSize() <= 132 && Ue) return false;
@@ -244883,28 +244885,28 @@ Input: ` + this.err.str);
               })();
             }
             var Be = "1.2.840.10008.1.2.2";
-            function le(ue) {
+            function le(ge) {
               var De = 1 < arguments.length && arguments[1] !== void 0 ? arguments[1] : {};
-              if (ue === void 0) throw new Error("dicomParser.parseDicom: missing required parameter 'byteArray'");
+              if (ge === void 0) throw new Error("dicomParser.parseDicom: missing required parameter 'byteArray'");
               var Ue, fe = function(Ze) {
                 if (Ze.elements.x00020010 === void 0) throw new Error("dicomParser.parseDicom: missing required meta header attribute 0002,0010");
-                return Ze = Ze.elements.x00020010, Ze && Ze.Value || F(ue, Ze.dataOffset, Ze.length);
+                return Ze = Ze.elements.x00020010, Ze && Ze.Value || F(ge, Ze.dataOffset, Ze.length);
               };
               function Ye(It) {
                 var bt = fe(It), ve = bt !== "1.2.840.10008.1.2", bt = (function(Bt, dt) {
                   var _e = Object.prototype.toString.call(typeof process < "u" ? process : 0) === "[object process]";
-                  if (Bt !== "1.2.840.10008.1.2.1.99") return new tt(Bt === Be ? Re : Ce, ue, dt);
-                  if (De && De.inflater) return Bt = De.inflater(ue, dt), new tt(Ce, Bt, 0);
+                  if (Bt !== "1.2.840.10008.1.2.1.99") return new tt(Bt === Be ? Re : Ce, ge, dt);
+                  if (De && De.inflater) return Bt = De.inflater(ge, dt), new tt(Ce, Bt, 0);
                   if (_e == true) {
-                    var Je = l(0), Oe = Fe(ue, dt, ue.length - dt), Je = Je.inflateRawSync(Oe), Oe = Me(ue, Je.length + dt);
-                    return ue.copy(Oe, 0, 0, dt), Je.copy(Oe, dt), new tt(Ce, Oe, 0);
+                    var Je = l(0), Oe = Fe(ge, dt, ge.length - dt), Je = Je.inflateRawSync(Oe), Oe = Me(ge, Je.length + dt);
+                    return ge.copy(Oe, 0, 0, dt), Je.copy(Oe, dt), new tt(Ce, Oe, 0);
                   }
                   if (typeof pako > "u") throw "dicomParser.parseDicom: no inflater available to handle deflate transfer syntax";
-                  return Je = ue.slice(dt), Oe = pako.inflateRaw(Je), (Je = Me(ue, Oe.length + dt)).set(ue.slice(0, dt), 0), Je.set(Oe, dt), new tt(Ce, Je, 0);
+                  return Je = ge.slice(dt), Oe = pako.inflateRaw(Je), (Je = Me(ge, Oe.length + dt)).set(ge.slice(0, dt), 0), Je.set(Oe, dt), new tt(Ce, Je, 0);
                 })(bt, It.position), It = new P(bt.byteArrayParser, bt.byteArray, {});
                 It.warnings = bt.warnings;
                 try {
-                  (ve ? ge : Ie)(It, bt, bt.byteArray.length, De);
+                  (ve ? ue : Ie)(It, bt, bt.byteArray.length, De);
                 } catch (Bt) {
                   throw {
                     exception: Bt,
@@ -244916,14 +244918,14 @@ Input: ` + this.err.str);
               return (function(Ze, ve) {
                 for (var bt in Ze.elements) Ze.elements.hasOwnProperty(bt) && (ve.elements[bt] = Ze.elements[bt]);
                 return Ze.warnings !== void 0 && (ve.warnings = Ze.warnings.concat(ve.warnings)), ve;
-              })(Ue = te(ue, De), Ye(Ue));
+              })(Ue = te(ge, De), Ye(Ue));
             }
-            var Ne = function(ue, De, Ue) {
-              for (var fe = 0, Ye = De; Ye < De + Ue; Ye++) fe += ue[Ye].length;
+            var Ne = function(ge, De, Ue) {
+              for (var fe = 0, Ye = De; Ye < De + Ue; Ye++) fe += ge[Ye].length;
               return fe;
             };
-            function Ge(ue, ve, Ue, fe, Ye) {
-              if (Ye = Ye || ve.fragments, ue === void 0) throw "dicomParser.readEncapsulatedPixelDataFromFragments: missing required parameter 'dataSet'";
+            function Ge(ge, ve, Ue, fe, Ye) {
+              if (Ye = Ye || ve.fragments, ge === void 0) throw "dicomParser.readEncapsulatedPixelDataFromFragments: missing required parameter 'dataSet'";
               if (ve === void 0) throw "dicomParser.readEncapsulatedPixelDataFromFragments: missing required parameter 'pixelDataElement'";
               if (Ue === void 0) throw "dicomParser.readEncapsulatedPixelDataFromFragments: missing required parameter 'startFragmentIndex'";
               if ((fe = fe || 1) === void 0) throw "dicomParser.readEncapsulatedPixelDataFromFragments: missing required parameter 'numFragments'";
@@ -244933,7 +244935,7 @@ Input: ` + this.err.str);
               if (Ue >= ve.fragments.length) throw "dicomParser.readEncapsulatedPixelDataFromFragments: parameter 'startFragmentIndex' must be < number of fragments";
               if (fe < 1) throw "dicomParser.readEncapsulatedPixelDataFromFragments: parameter 'numFragments' must be > 0";
               if (Ue + fe > ve.fragments.length) throw "dicomParser.readEncapsulatedPixelDataFromFragments: parameter 'startFragment' + 'numFragments' < number of fragments";
-              var Ze = new tt(ue.byteArrayParser, ue.byteArray, ve.dataOffset), ve = ne(Ze);
+              var Ze = new tt(ge.byteArrayParser, ge.byteArray, ve.dataOffset), ve = ne(Ze);
               if (ve.tag !== "xfffee000") throw "dicomParser.readEncapsulatedPixelData: missing basic offset table xfffee000";
               Ze.seek(ve.length);
               var bt = Ze.position;
@@ -244941,15 +244943,15 @@ Input: ` + this.err.str);
               for (var ve = Ne(Ye, Ue, fe), It = Me(Ze.byteArray, ve), Bt = 0, dt = Ue; dt < Ue + fe; dt++) for (var _e = bt + Ye[dt].offset + 8, Je = 0; Je < Ye[dt].length; Je++) It[Bt++] = Ze.byteArray[_e++];
               return It;
             }
-            var be = function(ue, De) {
-              for (var Ue = 0; Ue < ue.length; Ue++) if (ue[Ue].offset === De) return Ue;
-            }, et = function(ue, De, Ue, fe) {
-              if (ue === De.length - 1) return Ue.length - fe;
-              for (var Ye = De[ue + 1], Ze = fe + 1; Ze < Ue.length; Ze++) if (Ue[Ze].offset === Ye) return Ze - fe;
+            var be = function(ge, De) {
+              for (var Ue = 0; Ue < ge.length; Ue++) if (ge[Ue].offset === De) return Ue;
+            }, et = function(ge, De, Ue, fe) {
+              if (ge === De.length - 1) return Ue.length - fe;
+              for (var Ye = De[ge + 1], Ze = fe + 1; Ze < Ue.length; Ze++) if (Ue[Ze].offset === Ye) return Ze - fe;
               throw "dicomParser.calculateNumberOfFragmentsForFrame: could not find fragment with offset matching basic offset table";
             };
-            function ye(ue, De, Ue, fe, Ye) {
-              if (fe = fe || De.basicOffsetTable, Ye = Ye || De.fragments, ue === void 0) throw "dicomParser.readEncapsulatedImageFrame: missing required parameter 'dataSet'";
+            function ye(ge, De, Ue, fe, Ye) {
+              if (fe = fe || De.basicOffsetTable, Ye = Ye || De.fragments, ge === void 0) throw "dicomParser.readEncapsulatedImageFrame: missing required parameter 'dataSet'";
               if (De === void 0) throw "dicomParser.readEncapsulatedImageFrame: missing required parameter 'pixelDataElement'";
               if (Ue === void 0) throw "dicomParser.readEncapsulatedImageFrame: missing required parameter 'frameIndex'";
               if (fe === void 0) throw "dicomParser.readEncapsulatedImageFrame: parameter 'pixelDataElement' does not have basicOffsetTable";
@@ -244962,17 +244964,17 @@ Input: ` + this.err.str);
               if (Ue >= fe.length) throw "dicomParser.readEncapsulatedImageFrame: parameter 'frameIndex' must be < basicOffsetTable.length";
               var Ze = fe[Ue], Ze = be(Ye, Ze);
               if (Ze === void 0) throw "dicomParser.readEncapsulatedImageFrame: unable to find fragment that matches basic offset table entry";
-              return Ge(ue, De, Ze, et(Ue, fe, Ye, Ze), Ye);
+              return Ge(ge, De, Ze, et(Ue, fe, Ye, Ze), Ye);
             }
             var nt = false;
-            function Ee(ue, De, Ue) {
-              if (nt || (nt = true, console && console.log && console.log("WARNING: dicomParser.readEncapsulatedPixelData() has been deprecated")), ue === void 0) throw "dicomParser.readEncapsulatedPixelData: missing required parameter 'dataSet'";
+            function Ee(ge, De, Ue) {
+              if (nt || (nt = true, console && console.log && console.log("WARNING: dicomParser.readEncapsulatedPixelData() has been deprecated")), ge === void 0) throw "dicomParser.readEncapsulatedPixelData: missing required parameter 'dataSet'";
               if (De === void 0) throw "dicomParser.readEncapsulatedPixelData: missing required parameter 'element'";
               if (Ue === void 0) throw "dicomParser.readEncapsulatedPixelData: missing required parameter 'frame'";
               if (De.tag !== "x7fe00010") throw "dicomParser.readEncapsulatedPixelData: parameter 'element' refers to non pixel data tag (expected tag = x7fe00010)";
               if (De.encapsulatedPixelData !== true || De.hadUndefinedLength !== true || De.basicOffsetTable === void 0 || De.fragments === void 0) throw "dicomParser.readEncapsulatedPixelData: parameter 'element' refers to pixel data element that does not have encapsulated pixel data";
               if (Ue < 0) throw "dicomParser.readEncapsulatedPixelData: parameter 'frame' must be >= 0";
-              return De.basicOffsetTable.length !== 0 ? ye(ue, De, Ue) : Ge(ue, De, 0, De.fragments.length);
+              return De.basicOffsetTable.length !== 0 ? ye(ge, De, Ue) : Ge(ge, De, 0, De.fragments.length);
             }
             o.default = {
               isStringVr: g,
@@ -244983,7 +244985,7 @@ Input: ` + this.err.str);
               explicitElementToString: C,
               explicitDataSetToJS: x,
               createJPEGBasicOffsetTable: b,
-              parseDicomDataSetExplicit: ge,
+              parseDicomDataSetExplicit: ue,
               parseDicomDataSetImplicit: Ie,
               readFixedString: F,
               alloc: Me,
@@ -245343,14 +245345,14 @@ Input: ` + this.err.str);
               if (!te) return 1;
               const Be = te.state;
               return !Be || Be.strm !== te || Be.mode < O || Be.mode > 16211 ? 1 : 0;
-            }, ge = (te) => {
+            }, ue = (te) => {
               if (ae(te)) return b;
               const Be = te.state;
               return te.total_in = te.total_out = Be.total = 0, te.msg = "", Be.wrap && (te.adler = 1 & Be.wrap), Be.mode = O, Be.last = 0, Be.havedict = 0, Be.flags = -1, Be.dmax = 32768, Be.head = null, Be.hold = 0, Be.bits = 0, Be.lencode = Be.lendyn = new Int32Array(852), Be.distcode = Be.distdyn = new Int32Array(592), Be.sane = 1, Be.back = -1, x;
             }, Ie = (te) => {
               if (ae(te)) return b;
               const Be = te.state;
-              return Be.wsize = 0, Be.whave = 0, Be.wnext = 0, ge(te);
+              return Be.wsize = 0, Be.whave = 0, Be.wnext = 0, ue(te);
             }, Me = (te, Be) => {
               let le;
               if (ae(te)) return b;
@@ -245385,8 +245387,8 @@ Input: ` + this.err.str);
               const be = te.state;
               return be.window === null && (be.wsize = 1 << be.wbits, be.wnext = 0, be.whave = 0, be.window = new Uint8Array(be.wsize)), Ne >= be.wsize ? (be.window.set(Be.subarray(le - be.wsize, le), 0), be.wnext = 0, be.whave = be.wsize) : (Ge = be.wsize - be.wnext, Ge > Ne && (Ge = Ne), be.window.set(Be.subarray(le - Ne, le - Ne + Ge), be.wnext), (Ne -= Ge) ? (be.window.set(Be.subarray(le - Ne, le), 0), be.wnext = Ne, be.whave = be.wsize) : (be.wnext += Ge, be.wnext === be.wsize && (be.wnext = 0), be.whave < be.wsize && (be.whave += Ge))), 0;
             };
-            o.exports.inflateReset = Ie, o.exports.inflateReset2 = Me, o.exports.inflateResetKeep = ge, o.exports.inflateInit = (te) => Qe(te, 15), o.exports.inflateInit2 = Qe, o.exports.inflate = (te, Be) => {
-              let le, Ne, Ge, be, et, ye, nt, Ee, ue, De, Ue, fe, Ye, Ze, ve, bt, It, Bt, dt, _e, Je, Oe, st = 0;
+            o.exports.inflateReset = Ie, o.exports.inflateReset2 = Me, o.exports.inflateResetKeep = ue, o.exports.inflateInit = (te) => Qe(te, 15), o.exports.inflateInit2 = Qe, o.exports.inflate = (te, Be) => {
+              let le, Ne, Ge, be, et, ye, nt, Ee, ge, De, Ue, fe, Ye, Ze, ve, bt, It, Bt, dt, _e, Je, Oe, st = 0;
               const ft = new Uint8Array(4);
               let We, wt;
               const Ot = new Uint8Array([
@@ -245411,19 +245413,19 @@ Input: ` + this.err.str);
                 15
               ]);
               if (ae(te) || !te.output || !te.input && te.avail_in !== 0) return b;
-              le = te.state, le.mode === P && (le.mode = U), et = te.next_out, Ge = te.output, nt = te.avail_out, be = te.next_in, Ne = te.input, ye = te.avail_in, Ee = le.hold, ue = le.bits, De = ye, Ue = nt, Oe = x;
+              le = te.state, le.mode === P && (le.mode = U), et = te.next_out, Ge = te.output, nt = te.avail_out, be = te.next_in, Ne = te.input, ye = te.avail_in, Ee = le.hold, ge = le.bits, De = ye, Ue = nt, Oe = x;
               e: for (; ; ) switch (le.mode) {
                 case O:
                   if (le.wrap === 0) {
                     le.mode = U;
                     break;
                   }
-                  for (; ue < 16; ) {
+                  for (; ge < 16; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
                   if (2 & le.wrap && Ee === 35615) {
-                    le.wbits === 0 && (le.wbits = 15), le.check = 0, ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0), Ee = 0, ue = 0, le.mode = 16181;
+                    le.wbits === 0 && (le.wbits = 15), le.check = 0, ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0), Ee = 0, ge = 0, le.mode = 16181;
                     break;
                   }
                   if (le.head && (le.head.done = false), !(1 & le.wrap) || (((255 & Ee) << 8) + (Ee >> 8)) % 31) {
@@ -245434,16 +245436,16 @@ Input: ` + this.err.str);
                     te.msg = "unknown compression method", le.mode = re;
                     break;
                   }
-                  if (Ee >>>= 4, ue -= 4, Je = 8 + (15 & Ee), le.wbits === 0 && (le.wbits = Je), Je > 15 || Je > le.wbits) {
+                  if (Ee >>>= 4, ge -= 4, Je = 8 + (15 & Ee), le.wbits === 0 && (le.wbits = Je), Je > 15 || Je > le.wbits) {
                     te.msg = "invalid window size", le.mode = re;
                     break;
                   }
-                  le.dmax = 1 << le.wbits, le.flags = 0, te.adler = le.check = 1, le.mode = 512 & Ee ? 16189 : P, Ee = 0, ue = 0;
+                  le.dmax = 1 << le.wbits, le.flags = 0, te.adler = le.check = 1, le.mode = 512 & Ee ? 16189 : P, Ee = 0, ge = 0;
                   break;
                 case 16181:
-                  for (; ue < 16; ) {
+                  for (; ge < 16; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
                   if (le.flags = Ee, (255 & le.flags) !== F) {
                     te.msg = "unknown compression method", le.mode = re;
@@ -245453,26 +245455,26 @@ Input: ` + this.err.str);
                     te.msg = "unknown header flags set", le.mode = re;
                     break;
                   }
-                  le.head && (le.head.text = Ee >> 8 & 1), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0)), Ee = 0, ue = 0, le.mode = 16182;
+                  le.head && (le.head.text = Ee >> 8 & 1), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0)), Ee = 0, ge = 0, le.mode = 16182;
                 case 16182:
-                  for (; ue < 32; ) {
+                  for (; ge < 32; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
-                  le.head && (le.head.time = Ee), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, ft[2] = Ee >>> 16 & 255, ft[3] = Ee >>> 24 & 255, le.check = d(le.check, ft, 4, 0)), Ee = 0, ue = 0, le.mode = 16183;
+                  le.head && (le.head.time = Ee), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, ft[2] = Ee >>> 16 & 255, ft[3] = Ee >>> 24 & 255, le.check = d(le.check, ft, 4, 0)), Ee = 0, ge = 0, le.mode = 16183;
                 case 16183:
-                  for (; ue < 16; ) {
+                  for (; ge < 16; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
-                  le.head && (le.head.xflags = 255 & Ee, le.head.os = Ee >> 8), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0)), Ee = 0, ue = 0, le.mode = 16184;
+                  le.head && (le.head.xflags = 255 & Ee, le.head.os = Ee >> 8), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0)), Ee = 0, ge = 0, le.mode = 16184;
                 case 16184:
                   if (1024 & le.flags) {
-                    for (; ue < 16; ) {
+                    for (; ge < 16; ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    le.length = Ee, le.head && (le.head.extra_len = Ee), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0)), Ee = 0, ue = 0;
+                    le.length = Ee, le.head && (le.head.extra_len = Ee), 512 & le.flags && 4 & le.wrap && (ft[0] = 255 & Ee, ft[1] = Ee >>> 8 & 255, le.check = d(le.check, ft, 2, 0)), Ee = 0, ge = 0;
                   } else le.head && (le.head.extra = null);
                   le.mode = 16185;
                 case 16185:
@@ -245500,45 +245502,45 @@ Input: ` + this.err.str);
                   le.mode = 16188;
                 case 16188:
                   if (512 & le.flags) {
-                    for (; ue < 16; ) {
+                    for (; ge < 16; ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
                     if (4 & le.wrap && Ee !== (65535 & le.check)) {
                       te.msg = "header crc mismatch", le.mode = re;
                       break;
                     }
-                    Ee = 0, ue = 0;
+                    Ee = 0, ge = 0;
                   }
                   le.head && (le.head.hcrc = le.flags >> 9 & 1, le.head.done = true), te.adler = le.check = 0, le.mode = P;
                   break;
                 case 16189:
-                  for (; ue < 32; ) {
+                  for (; ge < 32; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
-                  te.adler = le.check = q(Ee), Ee = 0, ue = 0, le.mode = Y;
+                  te.adler = le.check = q(Ee), Ee = 0, ge = 0, le.mode = Y;
                 case Y:
-                  if (le.havedict === 0) return te.next_out = et, te.avail_out = nt, te.next_in = be, te.avail_in = ye, le.hold = Ee, le.bits = ue, E;
+                  if (le.havedict === 0) return te.next_out = et, te.avail_out = nt, te.next_in = be, te.avail_in = ye, le.hold = Ee, le.bits = ge, E;
                   te.adler = le.check = 1, le.mode = P;
                 case P:
                   if (Be === p || Be === C) break e;
                 case U:
                   if (le.last) {
-                    Ee >>>= 7 & ue, ue -= 7 & ue, le.mode = Z;
+                    Ee >>>= 7 & ge, ge -= 7 & ge, le.mode = Z;
                     break;
                   }
-                  for (; ue < 3; ) {
+                  for (; ge < 3; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
-                  switch (le.last = 1 & Ee, Ee >>>= 1, ue -= 1, 3 & Ee) {
+                  switch (le.last = 1 & Ee, Ee >>>= 1, ge -= 1, 3 & Ee) {
                     case 0:
                       le.mode = 16193;
                       break;
                     case 1:
                       if (tt(le), le.mode = K, Be === C) {
-                        Ee >>>= 2, ue -= 2;
+                        Ee >>>= 2, ge -= 2;
                         break e;
                       }
                       break;
@@ -245548,18 +245550,18 @@ Input: ` + this.err.str);
                     case 3:
                       te.msg = "invalid block type", le.mode = re;
                   }
-                  Ee >>>= 2, ue -= 2;
+                  Ee >>>= 2, ge -= 2;
                   break;
                 case 16193:
-                  for (Ee >>>= 7 & ue, ue -= 7 & ue; ue < 32; ) {
+                  for (Ee >>>= 7 & ge, ge -= 7 & ge; ge < 32; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
                   if ((65535 & Ee) != (Ee >>> 16 ^ 65535)) {
                     te.msg = "invalid stored block lengths", le.mode = re;
                     break;
                   }
-                  if (le.length = 65535 & Ee, Ee = 0, ue = 0, le.mode = V, Be === C) break e;
+                  if (le.length = 65535 & Ee, Ee = 0, ge = 0, le.mode = V, Be === C) break e;
                 case V:
                   le.mode = 16195;
                 case 16195:
@@ -245571,22 +245573,22 @@ Input: ` + this.err.str);
                   le.mode = P;
                   break;
                 case 16196:
-                  for (; ue < 14; ) {
+                  for (; ge < 14; ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
-                  if (le.nlen = 257 + (31 & Ee), Ee >>>= 5, ue -= 5, le.ndist = 1 + (31 & Ee), Ee >>>= 5, ue -= 5, le.ncode = 4 + (15 & Ee), Ee >>>= 4, ue -= 4, le.nlen > 286 || le.ndist > 30) {
+                  if (le.nlen = 257 + (31 & Ee), Ee >>>= 5, ge -= 5, le.ndist = 1 + (31 & Ee), Ee >>>= 5, ge -= 5, le.ncode = 4 + (15 & Ee), Ee >>>= 4, ge -= 4, le.nlen > 286 || le.ndist > 30) {
                     te.msg = "too many length or distance symbols", le.mode = re;
                     break;
                   }
                   le.have = 0, le.mode = 16197;
                 case 16197:
                   for (; le.have < le.ncode; ) {
-                    for (; ue < 3; ) {
+                    for (; ge < 3; ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    le.lens[Ot[le.have++]] = 7 & Ee, Ee >>>= 3, ue -= 3;
+                    le.lens[Ot[le.have++]] = 7 & Ee, Ee >>>= 3, ge -= 3;
                   }
                   for (; le.have < 19; ) le.lens[Ot[le.have++]] = 0;
                   if (le.lencode = le.lendyn, le.lenbits = 7, We = {
@@ -245598,34 +245600,34 @@ Input: ` + this.err.str);
                   le.have = 0, le.mode = 16198;
                 case 16198:
                   for (; le.have < le.nlen + le.ndist; ) {
-                    for (; st = le.lencode[Ee & (1 << le.lenbits) - 1], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(ve <= ue); ) {
+                    for (; st = le.lencode[Ee & (1 << le.lenbits) - 1], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(ve <= ge); ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    if (It < 16) Ee >>>= ve, ue -= ve, le.lens[le.have++] = It;
+                    if (It < 16) Ee >>>= ve, ge -= ve, le.lens[le.have++] = It;
                     else {
                       if (It === 16) {
-                        for (wt = ve + 2; ue < wt; ) {
+                        for (wt = ve + 2; ge < wt; ) {
                           if (ye === 0) break e;
-                          ye--, Ee += Ne[be++] << ue, ue += 8;
+                          ye--, Ee += Ne[be++] << ge, ge += 8;
                         }
-                        if (Ee >>>= ve, ue -= ve, le.have === 0) {
+                        if (Ee >>>= ve, ge -= ve, le.have === 0) {
                           te.msg = "invalid bit length repeat", le.mode = re;
                           break;
                         }
-                        Je = le.lens[le.have - 1], fe = 3 + (3 & Ee), Ee >>>= 2, ue -= 2;
+                        Je = le.lens[le.have - 1], fe = 3 + (3 & Ee), Ee >>>= 2, ge -= 2;
                       } else if (It === 17) {
-                        for (wt = ve + 3; ue < wt; ) {
+                        for (wt = ve + 3; ge < wt; ) {
                           if (ye === 0) break e;
-                          ye--, Ee += Ne[be++] << ue, ue += 8;
+                          ye--, Ee += Ne[be++] << ge, ge += 8;
                         }
-                        Ee >>>= ve, ue -= ve, Je = 0, fe = 3 + (7 & Ee), Ee >>>= 3, ue -= 3;
+                        Ee >>>= ve, ge -= ve, Je = 0, fe = 3 + (7 & Ee), Ee >>>= 3, ge -= 3;
                       } else {
-                        for (wt = ve + 7; ue < wt; ) {
+                        for (wt = ve + 7; ge < wt; ) {
                           if (ye === 0) break e;
-                          ye--, Ee += Ne[be++] << ue, ue += 8;
+                          ye--, Ee += Ne[be++] << ge, ge += 8;
                         }
-                        Ee >>>= ve, ue -= ve, Je = 0, fe = 11 + (127 & Ee), Ee >>>= 7, ue -= 7;
+                        Ee >>>= ve, ge -= ve, Je = 0, fe = 11 + (127 & Ee), Ee >>>= 7, ge -= 7;
                       }
                       if (le.have + fe > le.nlen + le.ndist) {
                         te.msg = "invalid bit length repeat", le.mode = re;
@@ -245656,21 +245658,21 @@ Input: ` + this.err.str);
                   le.mode = ne;
                 case ne:
                   if (ye >= 6 && nt >= 258) {
-                    te.next_out = et, te.avail_out = nt, te.next_in = be, te.avail_in = ye, le.hold = Ee, le.bits = ue, u(te, Ue), et = te.next_out, Ge = te.output, nt = te.avail_out, be = te.next_in, Ne = te.input, ye = te.avail_in, Ee = le.hold, ue = le.bits, le.mode === P && (le.back = -1);
+                    te.next_out = et, te.avail_out = nt, te.next_in = be, te.avail_in = ye, le.hold = Ee, le.bits = ge, u(te, Ue), et = te.next_out, Ge = te.output, nt = te.avail_out, be = te.next_in, Ne = te.input, ye = te.avail_in, Ee = le.hold, ge = le.bits, le.mode === P && (le.back = -1);
                     break;
                   }
-                  for (le.back = 0; st = le.lencode[Ee & (1 << le.lenbits) - 1], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(ve <= ue); ) {
+                  for (le.back = 0; st = le.lencode[Ee & (1 << le.lenbits) - 1], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(ve <= ge); ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
                   if (bt && !(240 & bt)) {
-                    for (Bt = ve, dt = bt, _e = It; st = le.lencode[_e + ((Ee & (1 << Bt + dt) - 1) >> Bt)], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(Bt + ve <= ue); ) {
+                    for (Bt = ve, dt = bt, _e = It; st = le.lencode[_e + ((Ee & (1 << Bt + dt) - 1) >> Bt)], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(Bt + ve <= ge); ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    Ee >>>= Bt, ue -= Bt, le.back += Bt;
+                    Ee >>>= Bt, ge -= Bt, le.back += Bt;
                   }
-                  if (Ee >>>= ve, ue -= ve, le.back += ve, le.length = It, bt === 0) {
+                  if (Ee >>>= ve, ge -= ve, le.back += ve, le.length = It, bt === 0) {
                     le.mode = 16205;
                     break;
                   }
@@ -245685,37 +245687,37 @@ Input: ` + this.err.str);
                   le.extra = 15 & bt, le.mode = 16201;
                 case 16201:
                   if (le.extra) {
-                    for (wt = le.extra; ue < wt; ) {
+                    for (wt = le.extra; ge < wt; ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    le.length += Ee & (1 << le.extra) - 1, Ee >>>= le.extra, ue -= le.extra, le.back += le.extra;
+                    le.length += Ee & (1 << le.extra) - 1, Ee >>>= le.extra, ge -= le.extra, le.back += le.extra;
                   }
                   le.was = le.length, le.mode = 16202;
                 case 16202:
-                  for (; st = le.distcode[Ee & (1 << le.distbits) - 1], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(ve <= ue); ) {
+                  for (; st = le.distcode[Ee & (1 << le.distbits) - 1], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(ve <= ge); ) {
                     if (ye === 0) break e;
-                    ye--, Ee += Ne[be++] << ue, ue += 8;
+                    ye--, Ee += Ne[be++] << ge, ge += 8;
                   }
                   if (!(240 & bt)) {
-                    for (Bt = ve, dt = bt, _e = It; st = le.distcode[_e + ((Ee & (1 << Bt + dt) - 1) >> Bt)], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(Bt + ve <= ue); ) {
+                    for (Bt = ve, dt = bt, _e = It; st = le.distcode[_e + ((Ee & (1 << Bt + dt) - 1) >> Bt)], ve = st >>> 24, bt = st >>> 16 & 255, It = 65535 & st, !(Bt + ve <= ge); ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    Ee >>>= Bt, ue -= Bt, le.back += Bt;
+                    Ee >>>= Bt, ge -= Bt, le.back += Bt;
                   }
-                  if (Ee >>>= ve, ue -= ve, le.back += ve, 64 & bt) {
+                  if (Ee >>>= ve, ge -= ve, le.back += ve, 64 & bt) {
                     te.msg = "invalid distance code", le.mode = re;
                     break;
                   }
                   le.offset = It, le.extra = 15 & bt, le.mode = 16203;
                 case 16203:
                   if (le.extra) {
-                    for (wt = le.extra; ue < wt; ) {
+                    for (wt = le.extra; ge < wt; ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
-                    le.offset += Ee & (1 << le.extra) - 1, Ee >>>= le.extra, ue -= le.extra, le.back += le.extra;
+                    le.offset += Ee & (1 << le.extra) - 1, Ee >>>= le.extra, ge -= le.extra, le.back += le.extra;
                   }
                   if (le.offset > le.dmax) {
                     te.msg = "invalid distance too far back", le.mode = re;
@@ -245743,28 +245745,28 @@ Input: ` + this.err.str);
                   break;
                 case Z:
                   if (le.wrap) {
-                    for (; ue < 32; ) {
+                    for (; ge < 32; ) {
                       if (ye === 0) break e;
-                      ye--, Ee |= Ne[be++] << ue, ue += 8;
+                      ye--, Ee |= Ne[be++] << ge, ge += 8;
                     }
                     if (Ue -= nt, te.total_out += Ue, le.total += Ue, 4 & le.wrap && Ue && (te.adler = le.check = le.flags ? d(le.check, Ge, Ue, et - Ue) : g(le.check, Ge, Ue, et - Ue)), Ue = nt, 4 & le.wrap && (le.flags ? Ee : q(Ee)) !== le.check) {
                       te.msg = "incorrect data check", le.mode = re;
                       break;
                     }
-                    Ee = 0, ue = 0;
+                    Ee = 0, ge = 0;
                   }
                   le.mode = 16207;
                 case 16207:
                   if (le.wrap && le.flags) {
-                    for (; ue < 32; ) {
+                    for (; ge < 32; ) {
                       if (ye === 0) break e;
-                      ye--, Ee += Ne[be++] << ue, ue += 8;
+                      ye--, Ee += Ne[be++] << ge, ge += 8;
                     }
                     if (4 & le.wrap && Ee !== (4294967295 & le.total)) {
                       te.msg = "incorrect length check", le.mode = re;
                       break;
                     }
-                    Ee = 0, ue = 0;
+                    Ee = 0, ge = 0;
                   }
                   le.mode = 16208;
                 case 16208:
@@ -245778,7 +245780,7 @@ Input: ` + this.err.str);
                 default:
                   return b;
               }
-              return te.next_out = et, te.avail_out = nt, te.next_in = be, te.avail_in = ye, le.hold = Ee, le.bits = ue, (le.wsize || Ue !== te.avail_out && le.mode < re && (le.mode < Z || Be !== I)) && Ce(te, te.output, te.next_out, Ue - te.avail_out) ? (le.mode = $, v) : (De -= te.avail_in, Ue -= te.avail_out, te.total_in += De, te.total_out += Ue, le.total += Ue, 4 & le.wrap && Ue && (te.adler = le.check = le.flags ? d(le.check, Ge, Ue, te.next_out - Ue) : g(le.check, Ge, Ue, te.next_out - Ue)), te.data_type = le.bits + (le.last ? 64 : 0) + (le.mode === P ? 128 : 0) + (le.mode === K || le.mode === V ? 256 : 0), (De === 0 && Ue === 0 || Be === I) && Oe === x && (Oe = M), Oe);
+              return te.next_out = et, te.avail_out = nt, te.next_in = be, te.avail_in = ye, le.hold = Ee, le.bits = ge, (le.wsize || Ue !== te.avail_out && le.mode < re && (le.mode < Z || Be !== I)) && Ce(te, te.output, te.next_out, Ue - te.avail_out) ? (le.mode = $, v) : (De -= te.avail_in, Ue -= te.avail_out, te.total_in += De, te.total_out += Ue, le.total += Ue, 4 & le.wrap && Ue && (te.adler = le.check = le.flags ? d(le.check, Ge, Ue, te.next_out - Ue) : g(le.check, Ge, Ue, te.next_out - Ue)), te.data_type = le.bits + (le.last ? 64 : 0) + (le.mode === P ? 128 : 0) + (le.mode === K || le.mode === V ? 256 : 0), (De === 0 && Ue === 0 || Be === I) && Oe === x && (Oe = M), Oe);
             }, o.exports.inflateEnd = (te) => {
               if (ae(te)) return b;
               let Be = te.state;
@@ -245927,7 +245929,7 @@ Input: ` + this.err.str);
             ]);
             o.exports = (h, I, p, C, x, B, E, b) => {
               const D = b.bits;
-              let v, M, F, O, Y, P, U = 0, V = 0, K = 0, ne = 0, Z = 0, re = 0, $ = 0, q = 0, se = 0, ae = 0, ge = null;
+              let v, M, F, O, Y, P, U = 0, V = 0, K = 0, ne = 0, Z = 0, re = 0, $ = 0, q = 0, se = 0, ae = 0, ue = null;
               const Ie = new Uint16Array(16), Me = new Uint16Array(16);
               let Qe, Re, Fe, rt = null;
               for (U = 0; U <= 15; U++) Ie[U] = 0;
@@ -245939,9 +245941,9 @@ Input: ` + this.err.str);
               if (q > 0 && (h === 0 || ne !== 1)) return -1;
               for (Me[1] = 0, U = 1; U < 15; U++) Me[U + 1] = Me[U] + Ie[U];
               for (V = 0; V < C; V++) I[p + V] !== 0 && (E[Me[I[p + V]]++] = V);
-              if (h === 0 ? (ge = rt = E, P = 20) : h === 1 ? (ge = c, rt = g, P = 257) : (ge = d, rt = u, P = 0), ae = 0, V = 0, U = K, Y = B, re = Z, $ = 0, F = -1, se = 1 << Z, O = se - 1, h === 1 && se > 852 || h === 2 && se > 592) return 1;
+              if (h === 0 ? (ue = rt = E, P = 20) : h === 1 ? (ue = c, rt = g, P = 257) : (ue = d, rt = u, P = 0), ae = 0, V = 0, U = K, Y = B, re = Z, $ = 0, F = -1, se = 1 << Z, O = se - 1, h === 1 && se > 852 || h === 2 && se > 592) return 1;
               for (; ; ) {
-                Qe = U - $, E[V] + 1 < P ? (Re = 0, Fe = E[V]) : E[V] >= P ? (Re = rt[E[V] - P], Fe = ge[E[V] - P]) : (Re = 96, Fe = 0), v = 1 << U - $, M = 1 << re, K = M;
+                Qe = U - $, E[V] + 1 < P ? (Re = 0, Fe = E[V]) : E[V] >= P ? (Re = rt[E[V] - P], Fe = ue[E[V] - P]) : (Re = 96, Fe = 0), v = 1 << U - $, M = 1 << re, K = M;
                 do
                   M -= v, x[Y + (ae >> $) + M] = Qe << 24 | Re << 16 | Fe;
                 while (M !== 0);
@@ -246064,7 +246066,7 @@ Input: ` + this.err.str);
             external: () => iA,
             getImageFrame: () => ce,
             getMinMax: () => De,
-            getPixelData: () => ue,
+            getPixelData: () => ge,
             internal: () => tt,
             isColorImage: () => xt,
             isJPEGBaseline8BitColor: () => fi,
@@ -246328,7 +246330,7 @@ Input: ` + this.err.str);
               transferSyntaxUID: h(Ve["00020010"]) || h(Ve["00083002"])
             };
           }
-          const ge = function Te(Ve, it) {
+          const ue = function Te(Ve, it) {
             const { MetadataModules: At } = iA.cornerstone.Enums, { dicomParser: pt } = iA;
             if (Ve === At.MULTIFRAME) {
               const { metadata: Pt, frame: Nt } = v.retrieveMultiframeMetadata(it);
@@ -246850,7 +246852,7 @@ Input: ` + this.err.str);
               }
             }));
           }
-          const ue = function(Te, Ve, it = "application/octet-stream", At) {
+          const ge = function(Te, Ve, it = "application/octet-stream", At) {
             const { streamingData: pt, retrieveOptions: ht = {} } = At || {}, Pt = {
               Accept: it
             };
@@ -247313,7 +247315,7 @@ Input: ` + this.err.str);
             return it.addRequest((async function(In, Rn, pn) {
               pt.generate((async (yn) => {
                 var _a2;
-                const at = Hr.as(ue(In, Rn, pn, Ve));
+                const at = Hr.as(ge(In, Rn, pn, Ve));
                 let Qt = 10;
                 for await (const Zt of at) {
                   const { pixelData: hn, imageQualityStatus: Yn = li.FULL_RESOLUTION, percentComplete: ir, done: AA = true, extractDone: vi = true } = Zt, ti = Sn(Zt.contentType);
@@ -247340,14 +247342,14 @@ Input: ` + this.err.str);
               getNumberValue: p,
               getNumberValues: C,
               getValue: h,
-              metaDataProvider: ge
+              metaDataProvider: ue
             },
             findIndexOfString: Me,
-            getPixelData: ue,
+            getPixelData: ge,
             loadImage: Or,
             metaDataManager: O,
             register: function(Te) {
-              Te.registerImageLoader("wadors", Or), Te.metaData.addProvider(ge);
+              Te.registerImageLoader("wadors", Or), Te.metaData.addProvider(ue);
             }
           };
           function ci(Te, Ve) {
@@ -248109,7 +248111,7 @@ Input: ` + this.err.str);
             decodeImageFrame: nn,
             decodeJPEGBaseline8BitColor: Ze,
             getImageFrame: ce,
-            getPixelData: ue,
+            getPixelData: ge,
             getMinMax: De,
             isColorImage: xt,
             isJPEGBaseline8BitColor: fi,
@@ -248996,7 +248998,7 @@ Input: ` + this.err.str);
   }
   function Ez({ urls: t = [], imageIds: e = [], modality: n = "CT", studyMetadata: r = null, seriesList: A = [], height: a = "100%", className: s = "", showToolbar: o = true, mode: l = "internal", onSeriesSelect: c = null, leftAction: g = null }) {
     var _a2, _b2;
-    const d = G.useRef(null), u = G.useRef(null), [h, I] = G.useState("WindowLevel"), [p, C] = G.useState("1x1"), [x, B] = G.useState(100), [E, b] = G.useState(100), [D, v] = G.useState(0), [M, F] = G.useState(0), [O, Y] = G.useState(false), [P, U] = G.useState(true), [V, K] = G.useState(0), [ne, Z] = G.useState(true), [re, $] = G.useState(false), [q, se] = G.useState(false), [ae, ge] = G.useState(false), [Ie, Me] = G.useState(false), [Qe, Re] = G.useState(10), [Fe, rt] = G.useState(false), [tt, Ce] = G.useState(/* @__PURE__ */ new Set()), [te, Be] = G.useState(0), [le, Ne] = G.useState(100), [Ge, be] = G.useState(false), [et, ye] = G.useState(0.1), [nt, Ee] = G.useState("MIP"), [ue, De] = G.useState(false), Ue = G.useRef(false), fe = G.useRef(0), Ye = G.useRef(100), Ze = G.useMemo(() => t && t.length > 0 ? t : e && e.length > 0 ? e : [], [
+    const d = G.useRef(null), u = G.useRef(null), [h, I] = G.useState("WindowLevel"), [p, C] = G.useState("1x1"), [x, B] = G.useState(100), [E, b] = G.useState(100), [D, v] = G.useState(0), [M, F] = G.useState(0), [O, Y] = G.useState(false), [P, U] = G.useState(true), [V, K] = G.useState(0), [ne, Z] = G.useState(true), [re, $] = G.useState(false), [q, se] = G.useState(false), [ae, ue] = G.useState(false), [Ie, Me] = G.useState(false), [Qe, Re] = G.useState(10), [Fe, rt] = G.useState(false), [tt, Ce] = G.useState(/* @__PURE__ */ new Set()), [te, Be] = G.useState(0), [le, Ne] = G.useState(100), [Ge, be] = G.useState(false), [et, ye] = G.useState(0.1), [nt, Ee] = G.useState("MIP"), [ge, De] = G.useState(false), Ue = G.useRef(false), fe = G.useRef(0), Ye = G.useRef(100), Ze = G.useMemo(() => t && t.length > 0 ? t : e && e.length > 0 ? e : [], [
       t,
       e
     ]), ve = G.useMemo(() => A && A.length > 0 ? A : [
@@ -249151,7 +249153,7 @@ Input: ` + this.err.str);
         }
       }
     }, ft = (ce) => {
-      u.current && u.current.cleanupViewports(), C(ce), ge(false), be(ce === "MPR");
+      u.current && u.current.cleanupViewports(), C(ce), ue(false), be(ce === "MPR");
     }, We = (ce, xt, Ft) => {
       B(xt), b(Ft), se(false), u.current && u.current.setFilters(xt, Ft);
     }, wt = () => {
@@ -249255,7 +249257,7 @@ Input: ` + this.err.str);
                       className: "relative",
                       children: [
                         i.jsxs("button", {
-                          onClick: () => De(!ue),
+                          onClick: () => De(!ge),
                           className: "flex flex-col items-center justify-center px-2.5 py-1 rounded-lg border text-xxs font-bold bg-cyan-950 text-cyan-300 border-cyan-700/60 hover:bg-cyan-900 transition",
                           title: "Projection Mode (MIP / MinIP / AvgIP)",
                           children: [
@@ -249275,7 +249277,7 @@ Input: ` + this.err.str);
                             })
                           ]
                         }),
-                        ue && i.jsxs("div", {
+                        ge && i.jsxs("div", {
                           className: "absolute left-0 top-full mt-1.5 w-36 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[999] p-1 space-y-1 text-xs",
                           children: [
                             i.jsx("button", {
@@ -249567,7 +249569,7 @@ Input: ` + this.err.str);
                   className: "relative",
                   children: [
                     i.jsxs("button", {
-                      onClick: () => ge(!ae),
+                      onClick: () => ue(!ae),
                       className: "flex flex-col items-center justify-center px-3 py-1 rounded-lg border text-xxs font-bold bg-indigo-600/20 text-indigo-300 border-indigo-500/40 hover:bg-indigo-600/30 transition",
                       title: "Multi-Viewport Grid Layout",
                       children: [
@@ -250134,7 +250136,7 @@ Input: ` + this.err.str);
     });
   }
   function sS() {
-    const [t, e] = G.useState([]), [n, r] = G.useState(true), [A, a] = G.useState(true), [s, o] = G.useState(""), [l, c] = G.useState(""), [g, d] = G.useState(""), [u, h] = G.useState("ALL"), [I, p] = G.useState("ALL"), [C, x] = G.useState("ALL"), [B, E] = G.useState(""), [b, D] = G.useState(""), [v, M] = G.useState(null), [F, O] = G.useState(null), [Y, P] = G.useState(null), [U, V] = G.useState(false), [K, ne] = G.useState(null), [Z, re] = G.useState(false), [$, q] = G.useState(false), [se, ae] = G.useState([]), [ge, Ie] = G.useState(0), [Me, Qe] = G.useState(""), [Re, Fe] = G.useState(null), [rt, tt] = G.useState(null), [Ce, te] = G.useState(false), Be = async () => {
+    const [t, e] = G.useState([]), [n, r] = G.useState(true), [A, a] = G.useState(true), [s, o] = G.useState(""), [l, c] = G.useState(""), [g, d] = G.useState(""), [u, h] = G.useState("ALL"), [I, p] = G.useState("ALL"), [C, x] = G.useState("ALL"), [B, E] = G.useState(""), [b, D] = G.useState(""), [v, M] = G.useState(null), [F, O] = G.useState(null), [Y, P] = G.useState(null), [U, V] = G.useState(false), [K, ne] = G.useState(null), [Z, re] = G.useState(false), [$, q] = G.useState(false), [se, ae] = G.useState([]), [ue, Ie] = G.useState(0), [Me, Qe] = G.useState(""), [Re, Fe] = G.useState(null), [rt, tt] = G.useState(null), [Ce, te] = G.useState(false), Be = async () => {
       r(true);
       try {
         const Ze = await jg.getRadiologistWorklist();
@@ -250210,7 +250212,7 @@ Input: ` + this.err.str);
       } finally {
         te(false);
       }
-    }, ue = async (Ze) => {
+    }, ge = async (Ze) => {
       try {
         const ve = localStorage.getItem("synos_jwt"), bt = await fetch(`/api/v1/radiology/pacs/studies/${Ze.radiologyStudyId}/download-zip`, {
           headers: ve ? {
@@ -250746,7 +250748,7 @@ Input: ` + this.err.str);
                                   }),
                                   i.jsx("button", {
                                     onClick: (Bt) => {
-                                      Bt.stopPropagation(), ue(Ze);
+                                      Bt.stopPropagation(), ge(Ze);
                                     },
                                     className: "p-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition",
                                     title: "Download Study (.ZIP Archive)",
@@ -251360,7 +251362,7 @@ Input: ` + this.err.str);
                       i.jsxs("span", {
                         className: "text-indigo-600 dark:text-indigo-400 font-mono shrink-0 ml-1",
                         children: [
-                          ge,
+                          ue,
                           "%"
                         ]
                       })
@@ -251371,7 +251373,7 @@ Input: ` + this.err.str);
                     children: i.jsx("div", {
                       className: "bg-indigo-600 h-full transition-all duration-300 rounded-full",
                       style: {
-                        width: `${ge}%`
+                        width: `${ue}%`
                       }
                     })
                   })
@@ -251434,7 +251436,7 @@ Input: ` + this.err.str);
       }
     }, [C, x] = G.useState(300), [B, E] = G.useState(450), b = G.useRef(null), D = G.useRef(false), v = G.useRef(false), [M, F] = G.useState(false), [O, Y] = G.useState(false), [P, U] = G.useState(false), [V, K] = G.useState(false), [ne, Z] = G.useState("Disconnected"), [re, $] = G.useState(false), q = G.useRef(null), se = G.useRef(null);
     G.useRef(null);
-    const ae = G.useRef(null), [ge, Ie] = G.useState(100), [Me, Qe] = G.useState(100), [Re, Fe] = G.useState(0), [rt, tt] = G.useState("Wwwc"), [Ce, te] = G.useState("1x1"), [Be, le] = G.useState("viewport-0"), [Ne, Ge] = G.useState({}), [be, et] = G.useState(""), [ye, nt] = G.useState(""), [Ee, ue] = G.useState(""), [De, Ue] = G.useState(null), [fe, Ye] = G.useState(null), { template: Ze, loading: ve } = Yx(fe), [bt, It] = G.useState(false), [Bt, dt] = G.useState("preview"), [_e, Je] = G.useState(0.55), [Oe, st] = G.useState({
+    const ae = G.useRef(null), [ue, Ie] = G.useState(100), [Me, Qe] = G.useState(100), [Re, Fe] = G.useState(0), [rt, tt] = G.useState("Wwwc"), [Ce, te] = G.useState("1x1"), [Be, le] = G.useState("viewport-0"), [Ne, Ge] = G.useState({}), [be, et] = G.useState(""), [ye, nt] = G.useState(""), [Ee, ge] = G.useState(""), [De, Ue] = G.useState(null), [fe, Ye] = G.useState(null), { template: Ze, loading: ve } = Yx(fe), [bt, It] = G.useState(false), [Bt, dt] = G.useState("preview"), [_e, Je] = G.useState(0.55), [Oe, st] = G.useState({
       x: 0,
       y: 0
     }), [ft, We] = G.useState(false), wt = G.useRef({
@@ -251640,7 +251642,7 @@ Input: ` + this.err.str);
         try {
           const Yr = JSON.parse(Un);
           if (!se.current) return;
-          Yr.findings !== void 0 && et(Yr.findings), Yr.impression !== void 0 && nt(Yr.impression), Yr.additionalNotes !== void 0 && ue(Yr.additionalNotes);
+          Yr.findings !== void 0 && et(Yr.findings), Yr.impression !== void 0 && nt(Yr.impression), Yr.additionalNotes !== void 0 && ge(Yr.additionalNotes);
         } catch (Yr) {
           console.error("Failed to parse live draft packet:", Yr);
         }
@@ -251736,7 +251738,7 @@ Input: ` + this.err.str);
         });
         if (_t.ok) {
           const Bn = await _t.json();
-          Bn.report && (et(Bn.report.findings || ""), nt(Bn.report.impression || ""), ue(Bn.report.additionalNotes || ""));
+          Bn.report && (et(Bn.report.findings || ""), nt(Bn.report.impression || ""), ge(Bn.report.additionalNotes || ""));
         }
         const Jt = await fetch(`/api/v1/reports/source/RadiologyStudy/${yt}`, {
           headers: {

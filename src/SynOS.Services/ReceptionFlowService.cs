@@ -477,7 +477,9 @@ namespace SynOS.Services
             {
                 visit.PaymentCollectionModel = "InsuranceClaim";
                 visit.InsuranceCompanyId = insuranceCompanyId;
+                visit.CorporateAccountId = corporateAccountId;
                 visit.PolicyNumber = policyNumber?.Trim();
+                visit.EmployeeId = employeeId?.Trim() ?? policyNumber?.Trim();
                 visit.PreAuthApprovalNumber = preAuthApprovalNumber?.Trim();
                 visit.InsuranceCoPayAmount = coPayAmount ?? 0;
             }
@@ -524,12 +526,13 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Invoices)
                 .Include(v => v.InsuranceCompany)
+                .Include(v => v.CorporateAccount)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new InvalidOperationException("Visit not found for Insurance Receivable creation");
 
-            if (!visit.InsuranceCompanyId.HasValue)
-                throw new InvalidOperationException("Insurance visit must have an Insurance Company / TPA selected.");
+            if (!visit.InsuranceCompanyId.HasValue && !visit.CorporateAccountId.HasValue)
+                throw new InvalidOperationException("Insurance visit must have an Insurance Company or Corporate Tie-up selected.");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice found for Insurance Receivable creation");
@@ -541,8 +544,26 @@ namespace SynOS.Services
                 return;
             }
 
-            var insurer = visit.InsuranceCompany ?? await _context.InsuranceCompanies.FindAsync(visit.InsuranceCompanyId.Value);
-            var claimRef = $"{visit.PolicyNumber} / {visit.PreAuthApprovalNumber}".Trim(' ', '/');
+            Guid debtorId;
+            string debtorName;
+            DebtorType debtorType;
+
+            if (visit.InsuranceCompanyId.HasValue)
+            {
+                var insurer = visit.InsuranceCompany ?? await _context.InsuranceCompanies.FindAsync(visit.InsuranceCompanyId.Value);
+                debtorId = visit.InsuranceCompanyId.Value;
+                debtorName = insurer?.Name ?? "Insurance Payer";
+                debtorType = DebtorType.Insurance;
+            }
+            else
+            {
+                var corp = visit.CorporateAccount ?? await _context.CorporateAccounts.FindAsync(visit.CorporateAccountId!.Value);
+                debtorId = visit.CorporateAccountId.Value;
+                debtorName = corp?.CompanyName ?? "Corporate Payer";
+                debtorType = DebtorType.Corporate;
+            }
+
+            var claimRef = $"{visit.PolicyNumber ?? visit.EmployeeId} / {visit.PreAuthApprovalNumber}".Trim(' ', '/');
             var claimAmount = Math.Max(0, invoice.Total - visit.InsuranceCoPayAmount);
 
             var factId = Guid.NewGuid();
@@ -550,9 +571,9 @@ namespace SynOS.Services
             {
                 ReceivableFactId = factId,
                 SourceVisitId = visit.VisitId,
-                DebtorType = DebtorType.Insurance,
-                DebtorId = visit.InsuranceCompanyId.Value,
-                DebtorName = insurer?.Name ?? "Insurance Payer",
+                DebtorType = debtorType,
+                DebtorId = debtorId,
+                DebtorName = debtorName,
                 ClaimReference = claimRef,
                 Amount = claimAmount,
                 Currency = "INR",
