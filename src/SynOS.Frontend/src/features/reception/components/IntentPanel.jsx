@@ -666,7 +666,7 @@ export function IntentPanel({ onVisitUpdated }) {
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", 
-                hasPatient ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[75vw] max-w-[1520px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
+                hasPatient ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[84vw] max-w-[1780px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
                 ui.panel
             )}
         >
@@ -732,12 +732,12 @@ export function IntentPanel({ onVisitUpdated }) {
                                     />
                                 </div>
 
-                                {/* 2-Column Grid for Visit Details & Billing Summary */}
+                                {/* 2-Column Grid for Visit Details & Billing Summary (67% / 33% Ratio) */}
                                 <div className={cn(
-                                    hasPatient ? "grid grid-cols-2 gap-4 xl:gap-6 items-start" : "flex flex-col gap-4",
+                                    hasPatient ? "grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-start" : "flex flex-col gap-4",
                                     (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
                                 )}>
-                                    <div className={hasPatient ? "flex flex-col gap-6" : ""}>
+                                    <div className={hasPatient ? "lg:col-span-8 flex flex-col gap-5" : ""}>
                                         <VisitDetails
                                             snapshot={snapshot}
                                             visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
@@ -749,7 +749,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         />
                                     </div>
 
-                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "flex flex-col gap-6" : "")}>
+                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "lg:col-span-4 flex flex-col gap-5 sticky top-2" : "")}>
                                         <BillingSummary
                                             snapshot={snapshot}
                                             onVisitUpdated={loadSnapshot}

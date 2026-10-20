@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, Building2, Briefcase, IndianRupee, Plus, X, Loader2, Sparkles, Check, Building, ChevronDown, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Building2, Briefcase, IndianRupee, Plus, X, Loader2, Sparkles, Check, Building, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import { ReceptionApi, clearReceptionMasterCaches } from '@/api/reception';
 import { cn } from '@/lib/utils';
 
@@ -116,6 +116,14 @@ export function InsuranceContextPanel({
     const [localCoPay, setLocalCoPay] = useState(coPayAmount === undefined || coPayAmount === null ? '' : coPayAmount);
     const [showAdvanced, setShowAdvanced] = useState(Boolean(preAuthNumber || (coPayAmount && Number(coPayAmount) > 0)));
 
+    // Searchable Combobox State
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(0);
+    const comboboxRef = useRef(null);
+    const dropdownListRef = useRef(null);
+
     const isPolicyFocusedRef = useRef(false);
     const isPreAuthFocusedRef = useRef(false);
     const isCoPayFocusedRef = useRef(false);
@@ -137,10 +145,81 @@ export function InsuranceContextPanel({
             id: c.corporateAccountId || c.id,
             name: c.companyName || c.name,
             code: c.corporateCode || c.code,
-            tpaName: c.contactPerson || 'Empanelled Institution',
+            tpaName: c.contactPerson || 'Corporate Tie-up',
             isCorporate: true
         }))
     ];
+
+    const selectedProvider = allProviders.find(p => p.id === selectedCompanyId);
+
+    const filteredProviders = allProviders.filter(p => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase().trim();
+        return (
+            (p.name || '').toLowerCase().includes(q) ||
+            (p.code || '').toLowerCase().includes(q) ||
+            (p.tpaName || '').toLowerCase().includes(q)
+        );
+    });
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (comboboxRef.current && !comboboxRef.current.contains(e.target)) {
+                setIsDropdownOpen(false);
+                if (selectedProvider) {
+                    setIsSearching(false);
+                }
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [selectedProvider]);
+
+    // Keep highlighted index in view
+    useEffect(() => {
+        if (isDropdownOpen && highlightedIndex >= 0 && dropdownListRef.current) {
+            const el = dropdownListRef.current.children[highlightedIndex];
+            if (el) {
+                el.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [highlightedIndex, isDropdownOpen]);
+
+    const handleSelectProvider = (prov) => {
+        if (prov.isCorporate) {
+            onChange({ corporateAccountId: prov.id, insuranceCompanyId: prov.id }, { persist: true, silent: false, refreshSnapshot: true });
+        } else {
+            onChange({ insuranceCompanyId: prov.id, corporateAccountId: null }, { persist: true, silent: false, refreshSnapshot: true });
+        }
+        setIsDropdownOpen(false);
+        setIsSearching(false);
+        setSearchQuery('');
+    };
+
+    const handleComboboxKeyDown = (e) => {
+        if (!isDropdownOpen || filteredProviders.length === 0) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                setIsDropdownOpen(true);
+            }
+            return;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setHighlightedIndex(prev => (prev < filteredProviders.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHighlightedIndex(prev => (prev > 0 ? prev - 1 : filteredProviders.length - 1));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (highlightedIndex >= 0 && highlightedIndex < filteredProviders.length) {
+                handleSelectProvider(filteredProviders[highlightedIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            setIsDropdownOpen(false);
+            if (selectedProvider) setIsSearching(false);
+        }
+    };
 
     useEffect(() => {
         if (!isPolicyFocusedRef.current) setLocalPolicy(policyNumber || '');
@@ -224,7 +303,7 @@ export function InsuranceContextPanel({
                 <div className="flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-blue-500" />
                     <span className="text-xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
-                        Insurance & Corporate Tie-up Details
+                        Insurance & Corporate Details
                     </span>
                 </div>
                 <button
@@ -237,65 +316,204 @@ export function InsuranceContextPanel({
                 </button>
             </div>
 
-            <div className="space-y-2.5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {/* Company Dropdown (Only Mandatory Field) */}
-                    <div>
-                        <label className="block text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
-                            Insurance / Corporate Company <span className="text-rose-500">*</span>
-                        </label>
-                        <select
-                            value={selectedCompanyId || ''}
-                            disabled={disabled}
-                            onChange={(e) => {
-                                const val = e.target.value || null;
-                                const prov = allProviders.find(p => p.id === val);
-                                if (prov?.isCorporate) {
-                                    onChange({ corporateAccountId: val, insuranceCompanyId: val }, { persist: true, silent: false, refreshSnapshot: true });
-                                } else {
-                                    onChange({ insuranceCompanyId: val, corporateAccountId: null }, { persist: true, silent: false, refreshSnapshot: true });
-                                }
-                            }}
-                            className={cn(
-                                "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
-                                isDark
-                                    ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
-                                    : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
-                            )}
-                        >
-                            <option value="">-- Select Company or Insurer --</option>
-                            {allProviders.map(c => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name} {c.code ? `[${c.code}]` : ''} {c.tpaName ? `(${c.tpaName})` : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+            <div className="space-y-3">
+                {/* 1. ENTERPRISE SEARCHABLE COMBOBOX OR SELECTED TILE */}
+                <div>
+                    <label className="block text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
+                        Insurance / Corporate Company <span className="text-rose-500">*</span>
+                    </label>
 
-                    {/* Employee / Member ID (Completely Optional) */}
-                    <div>
-                        <label className="block text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
-                            Employee ID / Member No. <span className="text-zinc-400 font-normal">(Optional)</span>
-                        </label>
-                        <input
-                            type="text"
-                            placeholder="e.g. EMP-10492 or Member ID"
-                            value={localPolicy}
-                            disabled={disabled}
-                            onFocus={() => { isPolicyFocusedRef.current = true; }}
-                            onBlur={handlePolicyBlur}
-                            onChange={(e) => handlePolicyChange(e.target.value)}
-                            className={cn(
-                                "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
-                                isDark
-                                    ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
-                                    : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
+                    {selectedProvider && !isSearching ? (
+                        /* Selected Company Tile */
+                        <div className={cn(
+                            "flex items-center justify-between p-2.5 rounded-xl border transition-all",
+                            isDark 
+                                ? "bg-zinc-950/80 border-blue-500/30 text-white" 
+                                : "bg-blue-50/40 border-blue-200 text-zinc-900"
+                        )}>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={cn(
+                                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border",
+                                    selectedProvider.isCorporate
+                                        ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
+                                        : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                    )}>
+                                    {selectedProvider.isCorporate ? <Briefcase size={16} /> : <ShieldCheck size={16} />}
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-bold text-xs truncate">
+                                            {selectedProvider.name}
+                                        </span>
+                                        {selectedProvider.code && (
+                                            <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-zinc-200/60 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300/40 dark:border-zinc-700/50">
+                                                {selectedProvider.code}
+                                            </span>
+                                        )}
+                                        <span className={cn(
+                                            "text-[9px] font-bold px-1.5 py-0.2 rounded border",
+                                            selectedProvider.isCorporate 
+                                                ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
+                                                : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                                        )}>
+                                            {selectedProvider.isCorporate ? "Corporate" : "Insurance"}
+                                        </span>
+                                    </div>
+                                    {selectedProvider.tpaName && (
+                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                            {selectedProvider.tpaName}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {!disabled && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsSearching(true);
+                                        setSearchQuery('');
+                                        setIsDropdownOpen(true);
+                                    }}
+                                    className="ml-2 px-2.5 py-1 rounded-lg text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 border border-blue-500/20 transition-colors shrink-0 cursor-pointer"
+                                >
+                                    Change
+                                </button>
                             )}
-                        />
-                    </div>
+                        </div>
+                    ) : (
+                        /* Searchable Combobox Input with Anchored Dropdown */
+                        <div className="relative" ref={comboboxRef}>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    disabled={disabled}
+                                    autoFocus={isSearching}
+                                    placeholder={selectedProvider ? `Currently: ${selectedProvider.name}` : "Search from 50+ companies & insurers (e.g. LIC, Star, SBI)..."}
+                                    onFocus={() => setIsDropdownOpen(true)}
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        setIsDropdownOpen(true);
+                                        setHighlightedIndex(0);
+                                    }}
+                                    onKeyDown={handleComboboxKeyDown}
+                                    className={cn(
+                                        "w-full h-9 pl-9 pr-8 rounded-lg text-xs font-medium border outline-none transition-all",
+                                        isDark
+                                            ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500 placeholder:text-zinc-500"
+                                            : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm placeholder:text-zinc-400"
+                                    )}
+                                />
+                                {selectedProvider && isSearching && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsSearching(false);
+                                            setIsDropdownOpen(false);
+                                        }}
+                                        className="absolute right-2.5 top-2 text-[10px] font-bold text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 px-1.5 py-0.5 rounded"
+                                    >
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Anchored Dropdown List */}
+                            {isDropdownOpen && (
+                                <div className={cn(
+                                    "absolute top-full left-0 right-0 mt-1 rounded-xl border shadow-xl z-50 overflow-hidden max-h-60 flex flex-col",
+                                    isDark ? "bg-zinc-900 border-zinc-700" : "bg-white border-zinc-200"
+                                )}>
+                                    <div className="px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[10px] text-zinc-400 font-medium bg-zinc-50/50 dark:bg-zinc-950/50">
+                                        <span>{filteredProviders.length} companies available</span>
+                                        <span>Use ↑↓ keys + Enter</span>
+                                    </div>
+                                    
+                                    <div className="overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60" ref={dropdownListRef}>
+                                        {filteredProviders.length > 0 ? (
+                                            filteredProviders.map((p, idx) => (
+                                                <div
+                                                    key={p.id}
+                                                    onMouseEnter={() => setHighlightedIndex(idx)}
+                                                    onClick={() => handleSelectProvider(p)}
+                                                    className={cn(
+                                                        "p-2.5 flex items-center justify-between cursor-pointer transition-colors text-left",
+                                                        highlightedIndex === idx
+                                                            ? isDark ? "bg-zinc-800 text-white" : "bg-blue-50/80 text-blue-950 font-medium"
+                                                            : isDark ? "text-zinc-200 hover:bg-zinc-800/50" : "text-zinc-800 hover:bg-zinc-50"
+                                                    )}
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <div className={cn(
+                                                            "w-6 h-6 rounded-md flex items-center justify-center shrink-0",
+                                                            p.isCorporate ? "bg-indigo-500/10 text-indigo-500" : "bg-blue-500/10 text-blue-500"
+                                                        )}>
+                                                            {p.isCorporate ? <Briefcase size={13} /> : <ShieldCheck size={13} />}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                <span className="text-xs font-bold leading-tight truncate">
+                                                                    {p.name}
+                                                                </span>
+                                                                {p.code && (
+                                                                    <span className="px-1 py-0.2 rounded text-[9px] font-mono font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                                                                        {p.code}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {p.tpaName && (
+                                                                <span className="text-[10px] text-zinc-400 truncate block mt-0.5">
+                                                                    {p.tpaName}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <span className={cn(
+                                                        "text-[9px] font-bold px-1.5 py-0.5 rounded border shrink-0 ml-2",
+                                                        p.isCorporate 
+                                                            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
+                                                            : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                                                    )}>
+                                                        {p.isCorporate ? "Corporate" : "Insurance"}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="p-4 text-center text-xs text-zinc-400">
+                                                No company found matching "{searchQuery}"
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                {/* Advanced Settings Toggle Button */}
+                {/* 2. EMPLOYEE ID / MEMBER NO (OPTIONAL) */}
+                <div>
+                    <label className="block text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
+                        Employee ID / Member No. <span className="text-zinc-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="e.g. EMP-10492 or Member ID"
+                        value={localPolicy}
+                        disabled={disabled}
+                        onFocus={() => { isPolicyFocusedRef.current = true; }}
+                        onBlur={handlePolicyBlur}
+                        onChange={(e) => handlePolicyChange(e.target.value)}
+                        className={cn(
+                            "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
+                            isDark
+                                ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
+                                : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
+                        )}
+                    />
+                </div>
+
+                {/* 3. ADVANCED CLAIM SETTINGS TOGGLE */}
                 <div className="pt-0.5">
                     <button
                         type="button"
@@ -310,7 +528,7 @@ export function InsuranceContextPanel({
                     </button>
                 </div>
 
-                {/* Collapsible Advanced Claim Fields */}
+                {/* 4. COLLAPSIBLE ADVANCED CLAIM FIELDS */}
                 {showAdvanced && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-dashed border-zinc-200 dark:border-zinc-800 animate-in fade-in duration-200">
                         {/* Pre-Auth Approval No */}
