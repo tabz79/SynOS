@@ -156,10 +156,8 @@ export const CommercialPaperworkTab = () => {
                 customLayout: schemas[m.slotId] || null
             }));
 
-            await Promise.all([
-                FinanceApi.saveStationerySettings(settings),
-                FinanceApi.saveDocumentMappings(mappingsToSave)
-            ]);
+            await FinanceApi.saveStationerySettings(settings);
+            await FinanceApi.saveDocumentMappings(mappingsToSave);
 
             // Immediately invalidate all document template caches across the system
             clearDocumentCache();
@@ -183,7 +181,12 @@ export const CommercialPaperworkTab = () => {
             setTimeout(() => setSaveSuccess(false), 4000);
         } catch (err) {
             console.error("Failed to save paperwork settings:", err);
-            alert("Error saving: " + (err.response?.data?.message || err.message));
+            const rawMsg = err.response?.data?.message || err.message || "";
+            const isNetworkLoss = rawMsg.toLowerCase().includes("load failed") || rawMsg.toLowerCase().includes("network") || rawMsg.toLowerCase().includes("failed to fetch");
+            const userMsg = isNetworkLoss
+                ? "The connection was briefly interrupted (e.g. server redeployment). Please click 'Save All Changes' once more."
+                : ("Error saving: " + rawMsg);
+            alert(userMsg);
         } finally {
             setSaving(false);
         }

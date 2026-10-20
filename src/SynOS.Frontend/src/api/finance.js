@@ -141,11 +141,25 @@ export const FinanceApi = {
         return response.json();
     },
 
+    fetchWithRetry: async (url, options, maxRetries = 1) => {
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return await fetch(url, options);
+            } catch (err) {
+                if (attempt < maxRetries && (err.name === 'TypeError' || err.message?.includes('network') || err.message?.includes('failed') || err.message?.includes('Load failed'))) {
+                    await new Promise(r => setTimeout(r, 1200));
+                    continue;
+                }
+                throw err;
+            }
+        }
+    },
+
     /**
      * Saves billing stationery and letterhead settings.
      */
     saveStationerySettings: async (settings) => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
+        const response = await FinanceApi.fetchWithRetry(FinanceApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify(settings)
@@ -173,7 +187,7 @@ export const FinanceApi = {
      * Saves system document slots and paperwork mapping registry.
      */
     saveDocumentMappings: async (mappings) => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/document-mappings'), {
+        const response = await FinanceApi.fetchWithRetry(FinanceApi.withBranchId('/api/v1/finance/bills/document-mappings'), {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify(mappings)
