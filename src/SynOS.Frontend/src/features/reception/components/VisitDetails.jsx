@@ -625,7 +625,7 @@ export function VisitDetails({
                     <h4 className="type-section-header">
                         {billingMode === 'Standard' && "Referring Doctor / Clinic"}
                         {billingMode === 'PrepaidPartner' && "Prepaid Partner Referral"}
-                        {billingMode === 'Insurance' && "Insurance / TPA Cashless Context"}
+                        {billingMode === 'Insurance' && "Insurance Details"}
                         {billingMode === 'Corporate' && "Corporate B2B Account"}
                     </h4>
                     <span className={cn(

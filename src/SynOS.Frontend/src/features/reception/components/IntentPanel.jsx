@@ -494,14 +494,10 @@ export function IntentPanel({ onVisitUpdated }) {
         if (billingMode === 'Insurance' && !snapshot.billing.isLocked) {
             const v = snapshot.visit;
             if (!v?.insuranceCompanyId) {
-                setError("Please select an Insurance Company / TPA Provider.");
+                setError("Please select an Insurance or Corporate Company.");
                 return;
             }
-            const policyNum = (v?.policyNumber || '').trim();
-            if (!policyNum) {
-                setError("Please specify the Policy / Member ID for this cashless insurance claim.");
-                return;
-            }
+            const policyNum = (v?.policyNumber || '').trim() || null;
 
             setIsLoading(true);
             setIsActionSubmitting(true);

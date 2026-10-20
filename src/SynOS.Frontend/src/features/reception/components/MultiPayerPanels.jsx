@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldCheck, Building2, Briefcase, IndianRupee, Plus, X, Loader2, Sparkles, Check, Building } from 'lucide-react';
+import { ShieldCheck, Building2, Briefcase, IndianRupee, Plus, X, Loader2, Sparkles, Check, Building, ChevronDown, ChevronRight } from 'lucide-react';
 import { ReceptionApi, clearReceptionMasterCaches } from '@/api/reception';
 import { cn } from '@/lib/utils';
 
@@ -114,6 +114,7 @@ export function InsuranceContextPanel({
     const [localPolicy, setLocalPolicy] = useState(policyNumber || '');
     const [localPreAuth, setLocalPreAuth] = useState(preAuthNumber || '');
     const [localCoPay, setLocalCoPay] = useState(coPayAmount === undefined || coPayAmount === null ? '' : coPayAmount);
+    const [showAdvanced, setShowAdvanced] = useState(Boolean(preAuthNumber || (coPayAmount && Number(coPayAmount) > 0)));
 
     const isPolicyFocusedRef = useRef(false);
     const isPreAuthFocusedRef = useRef(false);
@@ -217,13 +218,13 @@ export function InsuranceContextPanel({
     return (
         <div className={cn(
             "p-3 rounded-xl border space-y-3 animate-in fade-in duration-200",
-            isDark ? "bg-zinc-900/80 border-blue-900/40" : "bg-blue-50/50 border-blue-200/80"
+            isDark ? "bg-zinc-900/60 border-zinc-800" : "bg-white border-zinc-200/90 shadow-2xs"
         )}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-blue-500" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
-                        Cashless Insurance / TPA Details
+                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+                        Insurance & Corporate Tie-up Details
                     </span>
                 </div>
                 <button
@@ -232,106 +233,60 @@ export function InsuranceContextPanel({
                     disabled={disabled}
                     className="flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                 >
-                    <Plus className="w-3 h-3" /> Add Insurer
+                    <Plus className="w-3 h-3" /> Add Company
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {/* Insurer Dropdown */}
-                <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
-                        Insurance Company / TPA Provider <span className="text-rose-500">*</span>
-                    </label>
-                    <select
-                        value={selectedCompanyId || ''}
-                        disabled={disabled}
-                        onChange={(e) => {
-                            const val = e.target.value || null;
-                            const prov = allProviders.find(p => p.id === val);
-                            if (prov?.isCorporate) {
-                                onChange({ corporateAccountId: val, insuranceCompanyId: val }, { persist: true, silent: false, refreshSnapshot: true });
-                            } else {
-                                onChange({ insuranceCompanyId: val, corporateAccountId: null }, { persist: true, silent: false, refreshSnapshot: true });
-                            }
-                        }}
-                        className={cn(
-                            "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
-                            isDark
-                                ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
-                                : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
-                        )}
-                    >
-                        <option value="">-- Select Empanelled Insurance Company / Institutional Account --</option>
-                        {allProviders.map(c => (
-                            <option key={c.id} value={c.id}>
-                                {c.name} {c.code ? `[${c.code}]` : ''} {c.tpaName ? `(${c.tpaName})` : ''}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Policy / Card No */}
-                <div>
-                    <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
-                        Policy / Member ID <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                        type="text"
-                        placeholder="e.g. POL-84920491"
-                        value={localPolicy}
-                        disabled={disabled}
-                        onFocus={() => { isPolicyFocusedRef.current = true; }}
-                        onBlur={handlePolicyBlur}
-                        onChange={(e) => handlePolicyChange(e.target.value)}
-                        className={cn(
-                            "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
-                            isDark
-                                ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
-                                : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
-                        )}
-                    />
-                </div>
-
-                {/* Pre-Auth Approval No */}
-                <div>
-                    <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
-                        Pre-Auth / Approval No.
-                    </label>
-                    <input
-                        type="text"
-                        placeholder="e.g. AUTH-2026-X89"
-                        value={localPreAuth}
-                        disabled={disabled}
-                        onFocus={() => { isPreAuthFocusedRef.current = true; }}
-                        onBlur={handlePreAuthBlur}
-                        onChange={(e) => handlePreAuthChange(e.target.value)}
-                        className={cn(
-                            "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
-                            isDark
-                                ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
-                                : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
-                        )}
-                    />
-                </div>
-
-                {/* Co-Pay Amount */}
-                <div className="sm:col-span-2">
-                    <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
-                        Patient Co-Pay Amount (₹) <span className="text-zinc-400 font-normal">(Leave 0 for 100% cashless)</span>
-                    </label>
-                    <div className="relative">
-                        <span className="absolute left-2.5 top-1.5 text-xs text-zinc-400 font-mono">₹</span>
-                        <input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={localCoPay}
+            <div className="space-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {/* Company Dropdown (Only Mandatory Field) */}
+                    <div>
+                        <label className="block text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
+                            Insurance / Corporate Company <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                            value={selectedCompanyId || ''}
                             disabled={disabled}
-                            onFocus={() => { isCoPayFocusedRef.current = true; }}
-                            onBlur={handleCoPayBlur}
-                            onChange={(e) => handleCoPayChange(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value || null;
+                                const prov = allProviders.find(p => p.id === val);
+                                if (prov?.isCorporate) {
+                                    onChange({ corporateAccountId: val, insuranceCompanyId: val }, { persist: true, silent: false, refreshSnapshot: true });
+                                } else {
+                                    onChange({ insuranceCompanyId: val, corporateAccountId: null }, { persist: true, silent: false, refreshSnapshot: true });
+                                }
+                            }}
                             className={cn(
-                                "w-full h-8 pl-6 pr-2.5 rounded-lg text-xs font-bold border outline-none transition-all font-mono",
+                                "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
+                                    : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
+                            )}
+                        >
+                            <option value="">-- Select Company or Insurer --</option>
+                            {allProviders.map(c => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name} {c.code ? `[${c.code}]` : ''} {c.tpaName ? `(${c.tpaName})` : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Employee / Member ID (Completely Optional) */}
+                    <div>
+                        <label className="block text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
+                            Employee ID / Member No. <span className="text-zinc-400 font-normal">(Optional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            placeholder="e.g. EMP-10492 or Member ID"
+                            value={localPolicy}
+                            disabled={disabled}
+                            onFocus={() => { isPolicyFocusedRef.current = true; }}
+                            onBlur={handlePolicyBlur}
+                            onChange={(e) => handlePolicyChange(e.target.value)}
+                            className={cn(
+                                "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
                                 isDark
                                     ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
                                     : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
@@ -339,6 +294,74 @@ export function InsuranceContextPanel({
                         />
                     </div>
                 </div>
+
+                {/* Advanced Settings Toggle Button */}
+                <div className="pt-0.5">
+                    <button
+                        type="button"
+                        onClick={() => setShowAdvanced(prev => !prev)}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer py-0.5 select-none"
+                    >
+                        {showAdvanced ? <ChevronDown size={13} className="text-zinc-400" /> : <ChevronRight size={13} className="text-zinc-400" />}
+                        <span>{showAdvanced ? "Hide Advanced Claim Details" : "Show Advanced Claim Details (Pre-Auth, Co-Pay)"}</span>
+                        {(localPreAuth || (localCoPay && Number(localCoPay) > 0)) && !showAdvanced && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" title="Has pre-auth or co-pay values" />
+                        )}
+                    </button>
+                </div>
+
+                {/* Collapsible Advanced Claim Fields */}
+                {showAdvanced && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-dashed border-zinc-200 dark:border-zinc-800 animate-in fade-in duration-200">
+                        {/* Pre-Auth Approval No */}
+                        <div>
+                            <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                                Pre-Auth / Approval No. <span className="text-zinc-400 font-normal">(Optional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                placeholder="e.g. AUTH-2026-X89"
+                                value={localPreAuth}
+                                disabled={disabled}
+                                onFocus={() => { isPreAuthFocusedRef.current = true; }}
+                                onBlur={handlePreAuthBlur}
+                                onChange={(e) => handlePreAuthChange(e.target.value)}
+                                className={cn(
+                                    "w-full h-8 px-2.5 rounded-lg text-xs font-medium border outline-none transition-all font-mono",
+                                    isDark
+                                        ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
+                                        : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
+                                )}
+                            />
+                        </div>
+
+                        {/* Co-Pay Amount */}
+                        <div>
+                            <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+                                Patient Co-Pay Amount (₹) <span className="text-zinc-400 font-normal">(Leave 0 for 100% cashless)</span>
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-2.5 top-1.5 text-xs text-zinc-400 font-mono">₹</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    placeholder="0"
+                                    value={localCoPay}
+                                    disabled={disabled}
+                                    onFocus={() => { isCoPayFocusedRef.current = true; }}
+                                    onBlur={handleCoPayBlur}
+                                    onChange={(e) => handleCoPayChange(e.target.value)}
+                                    className={cn(
+                                        "w-full h-8 pl-6 pr-2.5 rounded-lg text-xs font-bold border outline-none transition-all font-mono",
+                                        isDark
+                                            ? "bg-zinc-950 border-zinc-700 text-zinc-100 focus:border-blue-500"
+                                            : "bg-white border-zinc-300 text-zinc-900 focus:border-blue-500 shadow-sm"
+                                    )}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
