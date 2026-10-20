@@ -1233,14 +1233,26 @@ export const CommercialPaperworkTab = () => {
                             ))}
                         </div>
 
-                        {/* STATUS */}
-                        <div className="flex items-center justify-between text-[10px] text-zinc-500 font-medium pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
-                            <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
-                                <Sparkles size={11} /> Click text to edit
-                            </span>
-                            <span className="font-mono text-zinc-400 capitalize">
-                                {currentActiveSlot.letterheadMode || 'digital'}
-                            </span>
+                        {/* STATUS & RECEPTION TRIGGER CONTEXT */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-500 font-medium pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80">
+                            <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-zinc-900 dark:text-zinc-100">{currentActiveSlot.slotName || 'Template'}:</span>
+                                <span className="px-2 py-0.5 rounded-md font-bold text-[9.5px] bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                    {previewSlotId === 'partner_b2b_invoice' 
+                                        ? 'Triggered by [Doc Claim] button' 
+                                        : (previewSlotId === 'patient_tax_invoice' 
+                                            ? 'Triggered by [A4 Receipt] button' 
+                                            : (previewSlotId === 'patient_thermal_receipt' ? 'Triggered by [Thermal] button' : 'Finance & Billing Matrix'))}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                                    <Sparkles size={11} /> Click text to edit
+                                </span>
+                                <span className="font-mono text-zinc-400 capitalize">
+                                    {currentActiveSlot.letterheadMode || 'digital'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
