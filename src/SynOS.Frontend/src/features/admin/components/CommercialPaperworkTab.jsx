@@ -36,6 +36,7 @@ import {
 import { FinanceApi } from '@/api/finance';
 import { DEFAULT_DOCUMENT_SCHEMAS } from '@/features/finance/components/documents/documentLayoutSchemas';
 import { DynamicInvoiceCanvas } from '@/features/finance/components/documents/DynamicInvoiceCanvas';
+import { clearDocumentCache } from '@/features/finance/components/documents/DynamicDocumentRenderer';
 
 export const CommercialPaperworkTab = () => {
     const [studioTab, setStudioTab] = useState('matrix'); // 'matrix' | 'profile'
@@ -159,6 +160,9 @@ export const CommercialPaperworkTab = () => {
                 FinanceApi.saveStationerySettings(settings),
                 FinanceApi.saveDocumentMappings(mappingsToSave)
             ]);
+
+            // Immediately invalidate all document template caches across the system
+            clearDocumentCache();
 
             try {
                 if (typeof window !== 'undefined' && window.localStorage) {

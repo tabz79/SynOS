@@ -151,7 +151,11 @@ export const FinanceApi = {
             body: JSON.stringify(settings)
         });
         if (!response.ok) throw new Error("Failed to save stationery settings");
-        return response.json();
+        const res = await response.json();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('synos_document_settings_updated'));
+        }
+        return res;
     },
 
     /**
@@ -175,7 +179,11 @@ export const FinanceApi = {
             body: JSON.stringify(mappings)
         });
         if (!response.ok) throw new Error("Failed to save document mappings registry");
-        return response.json();
+        const res = await response.json();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('synos_document_settings_updated'));
+        }
+        return res;
     },
 
     /**

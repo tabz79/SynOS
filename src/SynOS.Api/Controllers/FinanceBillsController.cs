@@ -931,11 +931,15 @@ namespace SynOS.Api.Controllers
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
                 .Where(v => visitIds.Contains(v.VisitId))
                 .AsNoTracking()
                 .ToDictionaryAsync(v => v.VisitId);
 
             var items = new List<object>();
+            decimal totalStandardTariff = 0;
+            decimal totalDiscount = 0;
             decimal totalBilled = 0;
             decimal totalReceived = 0;
             decimal totalNetDue = 0;
@@ -964,13 +968,26 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
+                var inv = visit?.Invoices?.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                decimal standardTariff = inv != null && inv.GrossAmount > 0
+                    ? inv.GrossAmount
+                    : orders.Sum(o => o.Price);
+
                 var billAmount = fact.Amount;
+                if (standardTariff < billAmount) standardTariff = billAmount;
+                decimal discount = Math.Max(0, standardTariff - billAmount);
                 var rec = fact.AmountReceived;
                 var due = Math.Max(0, fact.Amount - fact.AmountReceived);
 
+                totalStandardTariff += standardTariff;
+                totalDiscount += discount;
                 totalBilled += billAmount;
                 totalReceived += rec;
                 totalNetDue += due;
+
+                string displayToken = !string.IsNullOrEmpty(visit?.Token)
+                    ? visit.Token
+                    : (visit != null ? $"T-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper());
 
                 items.Add(new
                 {
@@ -978,15 +995,25 @@ namespace SynOS.Api.Controllers
                     ReceivableFactId = fact.ReceivableFactId,
                     VisitId = fact.SourceVisitId,
                     BillNumber = visit != null ? $"BILL-{visit.CreatedAt:yyyyMMdd}-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper(),
-                    Token = visit?.Token ?? fact.ReceivableFactId.ToString().Substring(0, 8),
+                    Token = displayToken,
+                    VisitToken = displayToken,
                     Date = fact.OccurredAt.DateTime,
                     PatientName = ptName,
                     AgeGender = ageGen,
                     Investigations = testSummary,
-                    GrossAmount = billAmount,
+                    GrossAmount = standardTariff,
+                    GrossBilled = standardTariff,
+                    LabStandardCharge = standardTariff,
+                    LabBilled = standardTariff,
+                    StandardPrice = standardTariff,
+                    Discount = discount,
                     Rate = billAmount,
                     AmountReceived = rec,
-                    NetPayableToLab = due
+                    Received = rec,
+                    NetPayableToLab = due,
+                    NetClaimDue = due,
+                    OutstandingAmount = due,
+                    NetDue = due
                 });
             }
 
@@ -1024,13 +1051,26 @@ namespace SynOS.Api.Controllers
                     }
 
                     var inv = v.Invoices?.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                    decimal standardTariff = inv != null && inv.GrossAmount > 0 
+                        ? inv.GrossAmount 
+                        : orders.Sum(o => o.Price);
+
                     decimal billAmount = inv?.Total ?? orders.Sum(o => o.Price);
+                    if (standardTariff < billAmount) standardTariff = billAmount;
+                    decimal discount = Math.Max(0, standardTariff - billAmount);
+
                     decimal rec = inv?.Payments?.Sum(p => p.Amount) ?? 0m;
                     decimal due = Math.Max(0, billAmount - rec);
 
+                    totalStandardTariff += standardTariff;
+                    totalDiscount += discount;
                     totalBilled += billAmount;
                     totalReceived += rec;
                     totalNetDue += due;
+
+                    string displayToken = !string.IsNullOrEmpty(v.Token)
+                        ? v.Token
+                        : $"T-{v.VisitId.ToString().Substring(0, 4).ToUpper()}";
 
                     items.Add(new
                     {
@@ -1038,15 +1078,25 @@ namespace SynOS.Api.Controllers
                         ReceivableFactId = Guid.NewGuid(),
                         VisitId = v.VisitId,
                         BillNumber = $"BILL-{v.CreatedAt:yyyyMMdd}-{v.VisitId.ToString().Substring(0, 4).ToUpper()}",
-                        Token = v.Token ?? "COUNTER",
+                        Token = displayToken,
+                        VisitToken = displayToken,
                         Date = v.CreatedAt,
                         PatientName = ptName,
                         AgeGender = ageGen,
                         Investigations = testSummary,
-                        GrossAmount = billAmount,
+                        GrossAmount = standardTariff,
+                        GrossBilled = standardTariff,
+                        LabStandardCharge = standardTariff,
+                        LabBilled = standardTariff,
+                        StandardPrice = standardTariff,
+                        Discount = discount,
                         Rate = billAmount,
                         AmountReceived = rec,
-                        NetPayableToLab = due
+                        Received = rec,
+                        NetPayableToLab = due,
+                        NetClaimDue = due,
+                        OutstandingAmount = due,
+                        NetDue = due
                     });
                 }
             }
@@ -1058,9 +1108,16 @@ namespace SynOS.Api.Controllers
 
             var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={totalNetDue:F2}&cu=INR&tn={statementNo}";
 
+            var rawPartnerId = partner.ReferralPartnerId;
+            var partnerNameClean = System.Text.RegularExpressions.Regex.Replace(partner.Name ?? "PRT", @"[^A-Za-z0-9]+", "-").Trim('-').ToUpper();
+            if (partnerNameClean.Length > 16) partnerNameClean = partnerNameClean.Substring(0, 16);
+            var cleanPartnerId = $"PART-{partnerNameClean}";
+
             return Ok(new
             {
                 StatementNumber = statementNo,
+                StatementNo = statementNo,
+                GeneratedAt = now,
                 Date = now,
                 DueDate = now.AddDays(15),
                 BillingPeriod = request.StartDate.HasValue && request.EndDate.HasValue 
@@ -1071,7 +1128,10 @@ namespace SynOS.Api.Controllers
 
                 Partner = new
                 {
-                    PartnerId = partner.ReferralPartnerId,
+                    PartnerId = cleanPartnerId,
+                    ReferralPartnerId = rawPartnerId,
+                    Code = cleanPartnerId,
+                    PartnerCode = cleanPartnerId,
                     Name = partner.Name,
                     ClinicName = !string.IsNullOrEmpty(partner.ClinicName) ? partner.ClinicName : $"{partner.Name}'s Clinic / Practice",
                     Address = !string.IsNullOrEmpty(partner.Location) ? partner.Location : "Registered Medical Practice",
@@ -1084,13 +1144,18 @@ namespace SynOS.Api.Controllers
 
                 Summary = new
                 {
+                    TotalVisits = items.Count,
                     TotalVisitsCount = items.Count,
-                    TotalGrossBilled = totalBilled,
-                    TotalDiagnosticCharges = totalBilled,
+                    GrossBilled = totalStandardTariff > 0 ? totalStandardTariff : totalBilled,
+                    TotalGrossBilled = totalStandardTariff > 0 ? totalStandardTariff : totalBilled,
+                    TotalDiagnosticCharges = totalStandardTariff > 0 ? totalStandardTariff : totalBilled,
+                    TotalDiscount = totalDiscount,
                     TotalCommissionCut = 0m,
+                    AmountReceived = totalReceived,
                     TotalPaid = totalReceived,
                     TotalReceived = totalReceived,
                     NetClaimDue = totalNetDue,
+                    BalanceDue = totalNetDue,
                     AmountInWords = NumberToIndianWords(totalNetDue)
                 },
 

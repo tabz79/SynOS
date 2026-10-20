@@ -14,7 +14,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
 import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
-import { DynamicDocumentRenderer } from '@/features/finance/components/documents/DynamicDocumentRenderer'
+import { DynamicDocumentRenderer, clearDocumentCache } from '@/features/finance/components/documents/DynamicDocumentRenderer'
 import { 
     MultiPayerSelector, 
     AddInsuranceCompanyModal, 
@@ -445,6 +445,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
         setIsGeneratingClaimDoc(true);
         try {
+            clearDocumentCache();
             const claimData = await FinanceApi.getPartnerClaimStatement({
                 visitIds: [visitId]
             });
@@ -880,7 +881,11 @@ export function IntentPanel({ onVisitUpdated }) {
                     defaultLetterheadMode="digital"
                     paperSize={taxInvoiceModal.paperSize || "a4"}
                 >
-                    <DynamicDocumentRenderer slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} data={taxInvoiceModal.data} />
+                    <DynamicDocumentRenderer 
+                        slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} 
+                        data={taxInvoiceModal.data} 
+                        forceRefresh={true}
+                    />
                 </CommercialDocumentViewer>
             )}
 
