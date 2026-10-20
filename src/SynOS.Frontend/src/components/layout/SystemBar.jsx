@@ -27,24 +27,27 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
   // Determine Role Takeover state for Admins navigating operational screens
   const path = location.pathname;
-  const roleMap = {
-    '/reception': 'Reception',
-    '/phlebotomist': 'Phlebotomy',
-    '/workbench': 'Workbench',
-    '/pathologist': 'Pathologist',
-    '/typist': 'Typist',
-    '/delivery': 'Delivery Desk',
-    '/inventory': 'Inventory',
-    '/finance': 'Finance',
-    '/xraytech': 'X-Ray Tech',
-    '/mritech': 'MRI Tech',
-    '/cttech': 'CT Tech',
-    '/ustech': 'US Tech',
-    '/radiologist': 'Radiologist'
+  const getTakeoverRoleName = (p) => {
+    if (!isAdmin) return null;
+    if (p.startsWith('/reception')) return 'Reception';
+    if (p.startsWith('/phlebotomist')) return 'Phlebotomy';
+    if (p.startsWith('/workbench')) return 'Workbench';
+    if (p.startsWith('/pathologist')) return 'Pathologist';
+    if (p.startsWith('/typist')) return 'Typist';
+    if (p.startsWith('/delivery')) return 'Delivery Desk';
+    if (p.startsWith('/inventory')) return 'Inventory';
+    if (p.startsWith('/finance')) return 'Finance';
+    if (p.startsWith('/xraytech')) return 'X-Ray Tech';
+    if (p.startsWith('/mritech')) return 'MRI Tech';
+    if (p.startsWith('/cttech')) return 'CT Tech';
+    if (p.startsWith('/ustech')) return 'US Tech';
+    if (p.startsWith('/radiologist')) return 'Radiologist';
+    if (p.startsWith('/patient')) return 'Patient Directory';
+    return null;
   };
 
-  const takeoverRoleName = roleMap[path] || (path.startsWith('/patient') ? 'Patient Directory' : null);
-  const isTakeoverActive = isAdmin && Boolean(takeoverRoleName);
+  const takeoverRoleName = getTakeoverRoleName(path);
+  const isTakeoverActive = Boolean(takeoverRoleName);
 
   useEffect(() => {
     if (serverTime) setCurrentTime(new Date(serverTime));
@@ -118,7 +121,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
   return (
     <div
       className={cn(
-        "sticky top-0 z-50 h-12 w-full px-6 flex items-center justify-between select-none transition-all duration-300 isolation-auto",
+        "sticky top-0 z-50 h-12 w-full px-3 sm:px-6 flex items-center justify-between select-none transition-all duration-300 isolation-auto relative",
         ui.bar
       )}
       style={{
@@ -129,53 +132,67 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
              linear-gradient(to bottom, #F5FCFF 0%, #E6F2F5 50%, #D7E1E4 100%)`
       }}
     >
+      {/* Top Ambient Takeover Accent Line */}
+      {isTakeoverActive && (
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)] z-50 pointer-events-none" />
+      )}
 
       {activeDropdown && (
         <div className="fixed inset-0 z-40" onClick={() => setActiveDropdown(null)} />
       )}
 
-      {/* LEFT — Identity (Single Brand Lockup) */}
-      <div 
-        className="flex items-center ml-[36px] cursor-pointer shrink-0"
-        onClick={() => navigate('/')}
-      >
-        <img 
-          src="/assets/synos-lockup.svg" 
-          alt="SynOS" 
-          className="h-8 object-contain dark:invert" 
-        />
+      {/* LEFT — Identity & Role Context */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
+        <div 
+          className="flex items-center cursor-pointer shrink-0"
+          onClick={() => navigate('/')}
+          title="SynOS Diagnostics Home"
+        >
+          <img 
+            src="/assets/synos-lockup.svg" 
+            alt="SynOS" 
+            className="h-7 sm:h-7.5 md:h-8 max-w-[160px] sm:max-w-[220px] lg:max-w-[280px] xl:max-w-none object-contain object-left dark:invert transition-all" 
+          />
+        </div>
+
+        {isTakeoverActive && (
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
+            
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-xs shadow-xs transition-all">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                  <span className="hidden md:inline font-semibold text-zinc-600 dark:text-zinc-400">Takeover: </span>
+                  <span className="text-amber-600 dark:text-amber-400 font-extrabold">{takeoverRoleName}</span>
+                </span>
+              </div>
+              
+              <div className="w-px h-3 bg-amber-500/30 shrink-0" />
+
+              <button 
+                onClick={() => navigate('/admin')}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded-lg text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 hover:bg-amber-500/20 active:scale-95 transition-all cursor-pointer whitespace-nowrap group"
+                title="Exit Role → Return to Admin Control Tower"
+              >
+                <ArrowLeft className="w-3 h-3 text-amber-600 dark:text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
+                <span className="hidden lg:inline">Exit to Control Tower</span>
+                <span className="inline lg:hidden">Exit</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* MIDDLE — Dynamically Centered Role Takeover Notch */}
-      {isTakeoverActive ? (
-        <div className="flex-1 flex justify-center items-center h-full px-2 lg:px-4 min-w-0 pointer-events-none">
-          <div className="h-full flex items-center gap-2 lg:gap-3 px-3 lg:px-4 rounded-b-xl dark:bg-zinc-950/98 bg-white/98 border-x border-b border-amber-500/50 text-xs shadow-md transition-all pointer-events-auto">
-            <div className="flex items-center gap-1.5">
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span className="text-[10px] font-mono uppercase tracking-widest font-extrabold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
-                <span className="hidden xl:inline">Role </span>Takeover: <span className="text-amber-600 dark:text-amber-400 font-black">{takeoverRoleName}</span>
-              </span>
-            </div>
-            
-            <div className="w-px h-3.5 bg-zinc-300 dark:bg-zinc-700 shrink-0" />
-
-            <button 
-              onClick={() => navigate('/admin')}
-              className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-800 dark:text-zinc-200 hover:text-amber-600 dark:hover:text-amber-400 font-extrabold transition-colors group cursor-pointer whitespace-nowrap"
-              title="Exit Role → Back to Control Tower"
-            >
-              <ArrowLeft className="w-3 h-3 text-amber-600 dark:text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="hidden lg:inline">Exit Role <span className="text-zinc-500 dark:text-zinc-400 font-bold">→</span> Back to Control Tower</span>
-              <span className="inline lg:hidden">Exit</span>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1" />
-      )}
+      {/* Flexible Spacer */}
+      <div className="flex-1 min-w-[8px]" />
 
       {/* RIGHT — Controls */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-2.5 xl:gap-3 shrink-0">
 
         {/* Branch (Fake Frost Pill) */}
         <div className="relative">
@@ -186,14 +203,15 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               }
             }}
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
+              "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill,
               !isAdmin && "cursor-default hover:bg-zinc-900"
             )}
+            title={currentBranchName}
           >
-            <Globe className="w-3.5 h-3.5 opacity-70" />
-            {currentBranchName}
-            {isAdmin && <ChevronDown className="w-3 h-3 opacity-50" />}
+            <Globe className="w-3.5 h-3.5 opacity-70 shrink-0" />
+            <span className="max-w-[100px] sm:max-w-[150px] truncate">{currentBranchName}</span>
+            {isAdmin && <ChevronDown className="w-3 h-3 opacity-50 shrink-0" />}
           </button>
 
           {activeDropdown === 'facility' && isAdmin && (
@@ -241,13 +259,13 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         >
           {isDark ? (
             <>
-              <Sun className="w-3.5 h-3.5 text-amber-500 hover:rotate-45 transition-transform" />
-              <span className="hidden sm:inline text-[11px] font-bold text-amber-500">Light</span>
+              <Sun className="w-3.5 h-3.5 text-amber-500 hover:rotate-45 transition-transform shrink-0" />
+              <span className="hidden lg:inline text-[11px] font-bold text-amber-500">Light</span>
             </>
           ) : (
             <>
-              <Moon className="w-3.5 h-3.5 text-zinc-600 hover:-rotate-12 transition-transform" />
-              <span className="hidden sm:inline text-[11px] font-bold text-zinc-600">Dark</span>
+              <Moon className="w-3.5 h-3.5 text-zinc-600 hover:-rotate-12 transition-transform shrink-0" />
+              <span className="hidden lg:inline text-[11px] font-bold text-zinc-600">Dark</span>
             </>
           )}
         </button>
@@ -257,13 +275,14 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           <button
             onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
             className={cn(
-              "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
+              "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill
             )}
+            title={user?.name || "User"}
           >
-            <Shield className="w-3.5 h-3.5 opacity-70" />
-            {user?.name || "User"}
-            <ChevronDown className="w-3 h-3 opacity-50" />
+            <Shield className="w-3.5 h-3.5 opacity-70 shrink-0" />
+            <span className="max-w-[90px] sm:max-w-[140px] truncate">{user?.name || "User"}</span>
+            <ChevronDown className="w-3 h-3 opacity-50 shrink-0" />
           </button>
 
           {activeDropdown === 'role' && (
@@ -331,22 +350,23 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
         {/* Time + Status (Fake Frost Pill) */}
         <div className={cn(
-          "flex items-center gap-4 px-4 py-1.5 rounded-xl",
+          "flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-1.5 rounded-xl",
           ui.timePill
         )}>
-          <span className="font-mono text-xs dark:text-zinc-400 text-zinc-700">
-            {dateDisplay} <span className="dark:text-zinc-200 text-zinc-900">{timeDisplay}</span>
+          <span className="font-mono text-xs dark:text-zinc-400 text-zinc-700 whitespace-nowrap">
+            <span className="hidden xl:inline">{dateDisplay} </span>
+            <span className="dark:text-zinc-200 text-zinc-900">{timeDisplay}</span>
           </span>
 
-          <div className="w-px h-3 dark:bg-white/10 bg-black/10" />
+          <div className="w-px h-3 dark:bg-white/10 bg-black/10 shrink-0" />
 
           {isConnected ? (
-            <span className="flex items-center gap-1 text-emerald-500 text-[10px] font-bold">
-              <Wifi className="w-3.5 h-3.5" /> LIVE
+            <span className="flex items-center gap-1 text-emerald-500 text-[10px] font-bold whitespace-nowrap">
+              <Wifi className="w-3.5 h-3.5 shrink-0" /> LIVE
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-red-500 text-[10px] font-bold">
-              <WifiOff className="w-3.5 h-3.5 animate-pulse" /> OFFLINE
+            <span className="flex items-center gap-1 text-red-500 text-[10px] font-bold whitespace-nowrap">
+              <WifiOff className="w-3.5 h-3.5 animate-pulse shrink-0" /> OFFLINE
             </span>
           )}
         </div>
