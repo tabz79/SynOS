@@ -357,12 +357,12 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                         <span className="font-bold">{snapshot.billing.referral.secondaryPartner.displayName}</span>
                                     </span>
                                     <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider border border-emerald-500/20">
-                                        Financial Target (RMP)
+                                        Secondary Doctor (RMP)
                                     </span>
                                 </div>
                                 {snapshot?.billing?.referral?.partner && (
                                     <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 pl-3 border-l-2 border-zinc-200 dark:border-zinc-800">
-                                        <span>🔗 Referring Doctor:</span>
+                                        <span>Main Doctor:</span>
                                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">{snapshot.billing.referral.partner.displayName}</span>
                                     </div>
                                 )}
