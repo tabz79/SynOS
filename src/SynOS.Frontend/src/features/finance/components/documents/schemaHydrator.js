@@ -312,6 +312,10 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 if (boxes.financialSummary.fields.grossSubtotal) {
                     boxes.financialSummary.fields.grossSubtotal.value = `₹${Number(billed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 }
+                if (boxes.financialSummary.fields.discount) {
+                    const totalDisc = summary.totalDiscount !== undefined ? summary.totalDiscount : Math.max(0, billed - due - rec);
+                    boxes.financialSummary.fields.discount.value = `₹${Number(totalDisc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
                 if (boxes.financialSummary.fields.totalPaid) {
                     boxes.financialSummary.fields.totalPaid.value = `₹${Number(rec).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 }

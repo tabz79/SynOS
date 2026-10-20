@@ -285,6 +285,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     patientName: { id: 'patientName', enabled: true, label: 'Patient Name' },
                     investigations: { id: 'investigations', enabled: true, label: 'Prescribed Investigations' },
                     labBilled: { id: 'labBilled', enabled: true, label: 'Lab Tariff (₹)' },
+                    discount: { id: 'discount', enabled: false, label: 'Concession (₹)' },
                     received: { id: 'received', enabled: false, label: 'Direct Paid (₹)' },
                     netDue: { id: 'netDue', enabled: true, label: 'Claim Due (₹)' }
                 },
@@ -301,6 +302,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 fields: {
                     totalVisits: { id: 'totalVisits', enabled: true, label: 'Total Patient Visits Claimed', value: '3 Visits' },
                     grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Diagnostic Tariff', value: '₹3,000.00' },
+                    discount: { id: 'discount', enabled: false, label: 'Partner Concession / Discount', value: '₹0.00' },
                     totalPaid: { id: 'totalPaid', enabled: true, label: 'Patient Direct Collection', value: '₹0.00' },
                     balanceDue: { id: 'balanceDue', enabled: true, label: 'Net B2B Receivable Amount Due', value: '₹3,000.00' }
                 },
