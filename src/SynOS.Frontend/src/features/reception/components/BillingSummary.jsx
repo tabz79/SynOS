@@ -9,8 +9,8 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
 
-    // Custom Discount State (Percentage vs Flat)
-    const [discountInputMode, setDiscountInputMode] = useState('catalog'); // 'catalog' | 'custom'
+    // Custom Discount State (Percentage vs Flat) - Default to 'custom' as requested
+    const [discountInputMode, setDiscountInputMode] = useState('custom'); // 'custom' | 'catalog'
     const [customDiscountType, setCustomDiscountType] = useState('PERCENTAGE'); // 'PERCENTAGE' | 'FLAT'
     const [customDiscountValue, setCustomDiscountValue] = useState('');
     const [customDiscountReason, setCustomDiscountReason] = useState('');
@@ -20,7 +20,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const initialB2BType = snapshot?.visit?.b2bDiscountType === 'Percentage' ? 'PERCENTAGE' : 'FLAT';
     const initialB2BVal = snapshot?.visit?.b2bDiscountValue != null ? snapshot.visit.b2bDiscountValue : initialB2BDiscount;
     const [b2bDiscountType, setB2BDiscountType] = useState(initialB2BType);
-    const [localB2BInput, setLocalB2BInput] = useState(initialB2BVal);
+    const [localB2BInput, setLocalB2BInput] = useState(initialB2BVal && initialB2BVal > 0 ? String(initialB2BVal) : '');
     const [isB2BEditing, setIsB2BEditing] = useState(false);
 
     useEffect(() => {
@@ -28,7 +28,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             const rawType = snapshot?.visit?.b2bDiscountType === 'Percentage' ? 'PERCENTAGE' : 'FLAT';
             const rawVal = snapshot?.visit?.b2bDiscountValue != null ? snapshot.visit.b2bDiscountValue : (snapshot?.billing?.b2bDiscountAmount ?? snapshot?.visit?.b2bDiscountAmount ?? 0);
             setB2BDiscountType(rawType);
-            setLocalB2BInput(rawVal);
+            setLocalB2BInput(rawVal && rawVal > 0 ? String(rawVal) : '');
         }
     }, [snapshot?.billing?.b2bDiscountAmount, snapshot?.visit?.b2bDiscountAmount, snapshot?.visit?.b2bDiscountType, snapshot?.visit?.b2bDiscountValue, isB2BEditing]);
 
@@ -489,9 +489,14 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                                 max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
                                                 value={localB2BInput}
                                                 disabled={!canPerformActions || isProcessing}
-                                                onFocus={() => setIsB2BEditing(true)}
+                                                onFocus={(e) => {
+                                                    e.target.select();
+                                                    setIsB2BEditing(true);
+                                                }}
                                                 onChange={(e) => {
-                                                    setLocalB2BInput(e.target.value);
+                                                    const raw = e.target.value;
+                                                    const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                    setLocalB2BInput(clean);
                                                     setIsB2BEditing(true);
                                                 }}
                                                 onKeyDown={(e) => {
@@ -636,7 +641,12 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                             step={customDiscountType === 'PERCENTAGE' ? '1' : '10'}
                                             placeholder={customDiscountType === 'PERCENTAGE' ? 'Discount % (e.g. 15)' : 'Flat ₹ (e.g. 200)'}
                                             value={customDiscountValue}
-                                            onChange={(e) => setCustomDiscountValue(e.target.value)}
+                                            onFocus={(e) => e.target.select()}
+                                            onChange={(e) => {
+                                                const raw = e.target.value;
+                                                const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                setCustomDiscountValue(clean);
+                                            }}
                                             className={cn("w-full h-8 px-2.5 rounded-md text-xs font-mono font-medium outline-none border", ui.input)}
                                         />
                                     </div>
