@@ -574,6 +574,28 @@ BEGIN
     );
     CREATE INDEX [IX_CorporateRateRules_Account_Test] ON [CorporateRateRules] ([CorporateAccountId], [TestId]);
 END
+
+-- 24. Synchronize legacy ReceivableFacts and ReferralPayableFacts to Secondary Referral Partner (RMP) if assigned
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'SecondaryReferralPartnerId')
+BEGIN
+    UPDATE rf
+    SET rf.ReferralPartnerId = v.SecondaryReferralPartnerId,
+        rf.DebtorId = v.SecondaryReferralPartnerId,
+        rf.DebtorName = ISNULL(rp.Name, rf.DebtorName)
+    FROM [AR].[ReceivableFacts] rf
+    INNER JOIN [Visits] v ON rf.SourceVisitId = v.VisitId
+    INNER JOIN [ReferralPartners] rp ON v.SecondaryReferralPartnerId = rp.ReferralPartnerId
+    WHERE v.SecondaryReferralPartnerId IS NOT NULL 
+      AND rf.DebtorType = 1 
+      AND rf.ReferralPartnerId <> v.SecondaryReferralPartnerId;
+
+    UPDATE pf
+    SET pf.ReferralPartnerId = v.SecondaryReferralPartnerId
+    FROM [ReferralPayableFacts] pf
+    INNER JOIN [Visits] v ON pf.SourceVisitId = v.VisitId
+    WHERE v.SecondaryReferralPartnerId IS NOT NULL 
+      AND pf.ReferralPartnerId <> v.SecondaryReferralPartnerId;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }

@@ -351,7 +351,7 @@ export const PartnerReceivablesTab = () => {
 
                                         return (
                                             <tr>
-                                                <td colSpan="6" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                <td colSpan="8" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
                                                     <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
                                                         
                                                         {/* BATCH SELECTION ACTION BAR */}
@@ -415,6 +415,7 @@ export const PartnerReceivablesTab = () => {
                                                                     </th>
                                                                     <th className="pb-2">Token / Reference</th>
                                                                     <th className="pb-2">Patient</th>
+                                                                    <th className="pb-2">Referring Chain</th>
                                                                     <th className="pb-2">Tests / Investigations</th>
                                                                     <th className="pb-2">Date</th>
                                                                     <th className="pb-2 text-right">Original</th>
@@ -451,6 +452,15 @@ export const PartnerReceivablesTab = () => {
                                                                                 )}
                                                                             </td>
                                                                             <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px]">
+                                                                                {fact.hasReferralChain || fact.primaryDoctorName ? (
+                                                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold text-[10px] border border-amber-500/20 whitespace-nowrap" title={`Referred via Primary Doctor: ${fact.primaryDoctorName}`}>
+                                                                                        <span>🔗 via {fact.primaryDoctorName}</span>
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    <span className="text-zinc-400 text-[10px]">Direct</span>
+                                                                                )}
+                                                                            </td>
                                                                             <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}>
                                                                                 {fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}
                                                                             </td>

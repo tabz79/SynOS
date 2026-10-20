@@ -827,6 +827,37 @@ namespace SynOS.Services
             {
                 visit.IsReferred = true;
             }
+
+            // Sync financial attribution facts (Receivables and Payables) to Secondary Partner
+            var targetPartnerId = secondaryPartnerId ?? visit.ReferralPartnerId;
+            if (targetPartnerId.HasValue)
+            {
+                var targetPartner = await _context.ReferralPartners.FindAsync(targetPartnerId.Value);
+                if (targetPartner != null)
+                {
+                    var recs = await _context.ReceivableFacts
+                        .Where(r => r.SourceVisitId == visitId && r.DebtorType == DebtorType.Partner)
+                        .ToListAsync();
+
+                    foreach (var r in recs)
+                    {
+                        r.DebtorId = targetPartnerId.Value;
+                        r.ReferralPartnerId = targetPartnerId.Value;
+                        r.DebtorName = targetPartner.Name;
+                        r.ClaimReference = $"Prepaid Partner Bill: {targetPartner.Name}";
+                    }
+
+                    var payables = await _context.ReferralPayableFacts
+                        .Where(f => f.SourceVisitId == visitId)
+                        .ToListAsync();
+
+                    foreach (var p in payables)
+                    {
+                        p.ReferralPartnerId = targetPartnerId.Value;
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);

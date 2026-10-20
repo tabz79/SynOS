@@ -347,9 +347,27 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 {/* REFERRAL SOURCE (Read-Only Visualization) */}
                 <div className="space-y-2">
                     <label className="type-section-header">Referral Source</label>
-                    <div className={cn("type-label font-bold p-2 rounded border flex items-center justify-between",
+                    <div className={cn("type-label font-bold p-2.5 rounded border flex flex-col gap-1.5",
                         isDark ? "text-zinc-300 bg-zinc-900/50 border-zinc-800" : "text-zinc-900 bg-white border-black/[0.05] shadow-sm")}>
-                        {snapshot?.billing?.referral?.partner ? (
+                        {snapshot?.billing?.referral?.secondaryPartner ? (
+                            <>
+                                <div className="flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_emerald]"></div>
+                                        <span className="font-bold">{snapshot.billing.referral.secondaryPartner.displayName}</span>
+                                    </span>
+                                    <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wider border border-emerald-500/20">
+                                        Financial Target (RMP)
+                                    </span>
+                                </div>
+                                {snapshot?.billing?.referral?.partner && (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 pl-3 border-l-2 border-zinc-200 dark:border-zinc-800">
+                                        <span>🔗 Referring Doctor:</span>
+                                        <span className="font-semibold text-zinc-700 dark:text-zinc-300">{snapshot.billing.referral.partner.displayName}</span>
+                                    </div>
+                                )}
+                            </>
+                        ) : snapshot?.billing?.referral?.partner ? (
                             <span className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_indigo]"></div>
                                 {snapshot.billing.referral.partner.displayName}
