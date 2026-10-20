@@ -53,11 +53,11 @@ export function InsuranceTerminal({ forcedTab }) {
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-        { id: 'empanelment', label: 'Empanelment Master', icon: Building2 },
-        { id: 'packages', label: 'Packages & Rate Contracts', icon: Package },
-        { id: 'claims', label: 'Claims & Pre-Auths', icon: FileText },
-        { id: 'receivables', label: 'TPA Receivables', icon: ArrowDownLeft },
-        { id: 'settlements', label: 'Remittance & Settlements', icon: History }
+        { id: 'empanelment', label: 'Insurance Companies', icon: Building2 },
+        { id: 'packages', label: 'Packages & Pricing', icon: Package },
+        { id: 'claims', label: 'Claims', icon: FileText },
+        { id: 'receivables', label: 'Pending Dues', icon: ArrowDownLeft },
+        { id: 'settlements', label: 'Settlements', icon: History }
     ];
 
     useEffect(() => {
@@ -251,10 +251,10 @@ export function InsuranceTerminal({ forcedTab }) {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Insurance & TPA Terminal
+                            Insurance
                         </h1>
                         <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            Empanelment Registry, Cashless Pre-Auth & Claims Infrastructure
+                            Insurance companies, packages, claims, and settlements
                         </p>
                     </div>
                 </div>
@@ -495,7 +495,7 @@ export function InsuranceTerminal({ forcedTab }) {
                                         onClick={() => { setEditingCompany(null); setIsAddModalOpen(true); }}
                                         className="px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
                                     >
-                                        <Plus size={16} /> Add Empanelled Insurer / TPA
+                                        <Plus size={16} /> + Add Insurance Company
                                     </button>
                                 </div>
 
@@ -953,8 +953,8 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                             <ShieldCheck size={20} />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold">{isEdit ? "Configure Insurer / TPA" : "Add Empanelled Insurer / TPA"}</h3>
-                            <p className="text-[10px] text-zinc-500">Persists to InsuranceCompanies master table</p>
+                            <h3 className="text-sm font-bold">{isEdit ? "Edit Insurance Company" : "Add Insurance Company"}</h3>
+                            <p className="text-[10px] text-zinc-500">Register insurance company or TPA network</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer">
@@ -1060,7 +1060,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                             className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                            {isEdit ? "Update Insurer Details" : "Save Insurer Empanelment"}
+                            {isEdit ? "Update Insurance Company" : "Save Insurance Company"}
                         </button>
                     </div>
                 </form>
