@@ -667,6 +667,9 @@ namespace SynOS.Services
 
         public async Task ApplyCustomDiscountToVisitAsync(Guid visitId, string mode, decimal value, string? reason, Guid actorUserId)
         {
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new InvalidOperationException("An authorized discount reason preset is required before applying a discount.");
+
             var visit = await _context.Visits
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)

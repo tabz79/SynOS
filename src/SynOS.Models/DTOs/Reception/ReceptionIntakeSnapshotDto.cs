@@ -127,6 +127,7 @@ namespace SynOS.Models.DTOs.Reception
         public string Type { get; set; } = "Percentage";
         public decimal Value { get; set; }
         public string? AppliedBy { get; set; }
+        public string? Reason { get; set; }
     }
 
     public class IntakeReferralState

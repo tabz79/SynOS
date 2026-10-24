@@ -16,7 +16,7 @@ const extractB2BInfo = (snap) => {
     return { rawVal: Number(rawVal) || 0, rawType, rawAmount: Number(rawAmount) || 0, enteredBy, enteredAt };
 };
 
-export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, billingMode = 'Standard', paymentMethod, setPaymentMethod }) {
+export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, billingMode = 'Standard', paymentMethod, setPaymentMethod, onOpenModal, createdDiscountReason }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
@@ -32,10 +32,6 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const [showReasonDropdown, setShowReasonDropdown] = useState(false);
     const [reasonSelectedIndex, setReasonSelectedIndex] = useState(-1);
     const reasonListRef = useRef(null);
-    const [isAddReasonModalOpen, setIsAddReasonModalOpen] = useState(false);
-    const [newReasonText, setNewReasonText] = useState('');
-    const [newReasonCategory, setNewReasonCategory] = useState('Doctor Recommendation');
-    const [isSavingReason, setIsSavingReason] = useState(false);
 
     // B2B Prepaid Partner Rate State (Dual Mode: Flat vs Percentage)
     const initialB2B = extractB2BInfo(snapshot);
@@ -136,33 +132,17 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         load();
     }, []);
 
-    const handleCreateQuickReason = async () => {
-        if (!newReasonText.trim()) {
-            alert("Please enter a reason text.");
-            return;
-        }
-        setIsSavingReason(true);
-        try {
-            const created = await ReceptionApi.createDiscountReason({
-                reasonText: newReasonText.trim(),
-                category: newReasonCategory,
-                isActive: true
-            });
+    // Reactively receive and select reason created from scoped modal
+    useEffect(() => {
+        if (createdDiscountReason) {
             setDiscountReasons(prev => {
-                const exists = prev.some(r => r.discountReasonId === created.discountReasonId || r.reasonText.toLowerCase() === created.reasonText.toLowerCase());
-                return exists ? prev : [...prev, created];
+                const exists = prev.some(r => r.discountReasonId === createdDiscountReason.discountReasonId || r.reasonText?.toLowerCase() === createdDiscountReason.reasonText?.toLowerCase());
+                return exists ? prev : [...prev, createdDiscountReason];
             });
-            setCustomDiscountReason(created.reasonText);
+            setCustomDiscountReason(createdDiscountReason.reasonText || '');
             setShowReasonDropdown(false);
-            setNewReasonText('');
-            setIsAddReasonModalOpen(false);
-        } catch (err) {
-            console.error("Failed to create discount reason:", err);
-            alert("Failed to save discount reason: " + err.message);
-        } finally {
-            setIsSavingReason(false);
         }
-    };
+    }, [createdDiscountReason]);
 
     // Derived filtered suggestions for Reason Autocomplete
     const filteredReasonSuggestions = useMemo(() => {
@@ -268,6 +248,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             alert("Percentage discount cannot exceed 100%.");
             return;
         }
+        if (!customDiscountReason || !customDiscountReason.trim()) {
+            alert("Please select an authorized reason preset before applying a discount.");
+            return;
+        }
         if (!canPerformActions || !visitId) return;
 
         setIsProcessing(true);
@@ -275,7 +259,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             await ReceptionApi.applyDiscountToVisit(visitId, {
                 mode: customDiscountType,
                 customValue: val,
-                reason: customDiscountReason.trim() || 'Custom Reception Concession'
+                reason: customDiscountReason.trim()
             });
             setCustomDiscountValue('');
             setCustomDiscountReason('');
@@ -492,7 +476,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                             <div className="flex items-center gap-2">
                                 <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
                                     - ₹{billing.discountAmount?.toLocaleString()}
-                                    <span className="text-xs opacity-70">({billing.appliedDiscount.name})</span>
+                                    <span className="text-xs opacity-80 font-semibold">({billing.appliedDiscount.reason || billing.appliedDiscount.name})</span>
                                 </span>
                                 {canPerformActions && (
                                     <button
@@ -793,7 +777,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                         </label>
                                         <button
                                             type="button"
-                                            onClick={() => setIsAddReasonModalOpen(true)}
+                                            onClick={() => {
+                                                setShowReasonDropdown(false);
+                                                if (onOpenModal) onOpenModal('discountReason');
+                                            }}
                                             className="text-[10px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
                                             title="Add new standard preset reason to master"
                                         >
@@ -899,7 +886,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                                         onMouseDown={(e) => {
                                                             e.preventDefault();
                                                             setShowReasonDropdown(false);
-                                                            setIsAddReasonModalOpen(true);
+                                                            if (onOpenModal) onOpenModal('discountReason');
                                                         }}
                                                         className={cn(
                                                             "w-full text-left px-3 py-2 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border-t",
@@ -915,7 +902,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
 
                                         <button
                                             type="button"
-                                            disabled={!customDiscountValue || isProcessing}
+                                            disabled={!customDiscountValue || !customDiscountReason?.trim() || isProcessing}
                                             onClick={handleApplyCustomDiscount}
                                             className="h-8 px-3 rounded-md bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1"
                                         >
@@ -1004,83 +991,6 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 className="px-4 py-2 rounded-lg type-value bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirm Change"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Quick Add Discount Reason Modal */}
-            {isAddReasonModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-                    <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
-                        <div className="px-5 py-3.5 border-b border-slate-100 dark:border-zinc-900 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg bg-synos-primary/10 border border-synos-primary/20 flex items-center justify-center text-synos-primary">
-                                    <Plus className="w-4 h-4" />
-                                </div>
-                                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Add Discount Reason</h3>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsAddReasonModalOpen(false)}
-                                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="p-5 space-y-4 text-xs">
-                            <div className="space-y-1.5">
-                                <label className="font-bold text-zinc-700 dark:text-zinc-300">
-                                    Reason / Authority Name <span className="text-rose-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g. Dr. DVR Recommendation, Lab Owner Approval"
-                                    value={newReasonText}
-                                    onChange={(e) => setNewReasonText(e.target.value)}
-                                    autoFocus
-                                    className={cn("w-full h-8 px-2.5 rounded-lg border outline-none text-xs font-medium", ui.input)}
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="font-bold text-zinc-700 dark:text-zinc-300">
-                                    Category
-                                </label>
-                                <select
-                                    value={newReasonCategory}
-                                    onChange={(e) => setNewReasonCategory(e.target.value)}
-                                    className={cn("w-full h-8 px-2.5 rounded-lg border outline-none text-xs font-medium cursor-pointer", ui.input)}
-                                >
-                                    <option value="Doctor Recommendation">Doctor Recommendation</option>
-                                    <option value="Management Approval">Management Approval</option>
-                                    <option value="Special Concession">Special Concession (Senior Citizen / Student)</option>
-                                    <option value="Internal Courtesy">Internal Staff / Relative</option>
-                                    <option value="Social Support">Social Support / BPL</option>
-                                    <option value="Campaign">Campaign / Outreach Camp</option>
-                                    <option value="General">General</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="px-5 py-3 border-t border-slate-100 dark:border-zinc-900 bg-slate-50/50 dark:bg-zinc-900/40 flex items-center justify-end gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setIsAddReasonModalOpen(false)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-zinc-800 transition-all cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                disabled={!newReasonText.trim() || isSavingReason}
-                                onClick={handleCreateQuickReason}
-                                className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-synos-primary hover:bg-synos-primary/90 disabled:opacity-50 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                            >
-                                {isSavingReason ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                                <span>Save & Select</span>
                             </button>
                         </div>
                     </div>

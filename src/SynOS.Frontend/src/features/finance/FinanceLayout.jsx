@@ -99,6 +99,7 @@ export function FinanceLayout() {
             icon: Tag,
             subItems: [
                 { name: "Discount Codes", path: "/finance/discounts/codes" },
+                { name: "Preset Reasons", path: "/finance/discounts/reasons" },
                 { name: "Discount History", path: "/finance/discounts/history" },
                 { name: "Staff Summary", path: "/finance/discounts/staff" }
             ]

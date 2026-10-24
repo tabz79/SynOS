@@ -19,7 +19,8 @@ import {
     MultiPayerSelector, 
     AddInsuranceCompanyModal, 
     AddCorporateAccountModal, 
-    AddReferralPartnerModal 
+    AddReferralPartnerModal,
+    AddDiscountReasonModal
 } from './MultiPayerPanels'
 
 export function IntentPanel({ onVisitUpdated }) {
@@ -44,8 +45,9 @@ export function IntentPanel({ onVisitUpdated }) {
     const modeSwitchVersionRef = useRef(0);
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
-    // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate'
+    // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate' | 'discountReason'
     const [activeModal, setActiveModal] = useState(null);
+    const [createdDiscountReason, setCreatedDiscountReason] = useState(null);
 
     // RESTORED: Core Internal State
     const [snapshot, setSnapshot] = useState(null);
@@ -761,6 +763,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                             billingMode={billingMode}
                                             paymentMethod={paymentMethod}
                                             setPaymentMethod={setPaymentMethod}
+                                            onOpenModal={setActiveModal}
+                                            createdDiscountReason={createdDiscountReason}
                                         />
                                     </div>
                                 </div>
@@ -967,6 +971,16 @@ export function IntentPanel({ onVisitUpdated }) {
                         }
                     }
                     await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
+
+            <AddDiscountReasonModal
+                isOpen={activeModal === 'discountReason'}
+                onClose={() => setActiveModal(null)}
+                isDark={isDark}
+                onSuccess={(newReason) => {
+                    setCreatedDiscountReason(newReason);
                     setActiveModal(null);
                 }}
             />

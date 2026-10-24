@@ -65,7 +65,7 @@ export function DiscountMasterScreen() {
     // Sub-navigation tabs
     const tabs = [
         { id: 'codes', label: 'Discount Codes', icon: Tag },
-        { id: 'reasons', label: 'Discount Reasons', icon: ShieldCheck },
+        { id: 'reasons', label: 'Preset Reasons', icon: ShieldCheck },
         { id: 'history', label: 'Discount History', icon: History },
         { id: 'staff', label: 'Staff Summary', icon: Users }
     ];

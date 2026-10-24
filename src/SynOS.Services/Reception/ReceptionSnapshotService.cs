@@ -170,12 +170,29 @@ namespace SynOS.Services.Reception
                     var master = await _context.DiscountMasters
                         .AsNoTracking()
                         .FirstOrDefaultAsync(dm => dm.DiscountDefinitionId == discountFact.DiscountDefinitionId);
+
+                    string? extractedReason = null;
+                    if (!string.IsNullOrWhiteSpace(discountFact.AppliedBy))
+                    {
+                        var parts = discountFact.AppliedBy.Split(" - ", 2);
+                        if (parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]))
+                        {
+                            extractedReason = parts[1].Trim();
+                        }
+                    }
+
+                    string displayName = master?.Name ?? (discountFact.Type == SynOS.Models.Enums.DiscountType.Percentage ? $"{discountFact.Value}% Custom Discount" : $"₹{discountFact.Value} Custom Concession");
+                    if (!string.IsNullOrWhiteSpace(extractedReason))
+                    {
+                        displayName = extractedReason;
+                    }
                     
                     appliedDiscount = new AppliedDiscountInfo
                     {
                         Id = master?.DiscountDefinitionId ?? discountFact.DiscountDefinitionId,
                         Code = master?.Code ?? "CUSTOM",
-                        Name = master?.Name ?? (discountFact.Type == SynOS.Models.Enums.DiscountType.Percentage ? $"{discountFact.Value}% Custom Discount" : $"₹{discountFact.Value} Custom Concession"),
+                        Name = displayName,
+                        Reason = extractedReason,
                         Amount = discountFact.DiscountAmount,
                         Type = discountFact.Type.ToString(),
                         Value = discountFact.Value,

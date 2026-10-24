@@ -123,6 +123,10 @@ namespace SynOS.Api.Controllers
 
                 if (request.CustomValue.HasValue && !string.IsNullOrWhiteSpace(request.Mode))
                 {
+                    if (string.IsNullOrWhiteSpace(request.Reason))
+                    {
+                        return BadRequest(new { message = "An authorized discount reason preset is required before applying a discount." });
+                    }
                     await _receptionFlowService.ApplyCustomDiscountAsync(request.VisitId, request.Mode, request.CustomValue.Value, request.Reason, userId);
                 }
                 else if (!string.IsNullOrWhiteSpace(request.DiscountCode))

@@ -1330,3 +1330,168 @@ export function AddReferralPartnerModal({
     );
 }
 
+export function AddDiscountReasonModal({ isOpen, onClose, isDark, onSuccess }) {
+    const [reasonText, setReasonText] = useState('');
+    const [category, setCategory] = useState('Doctor Recommendation');
+    const [description, setDescription] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+        if (!reasonText.trim()) {
+            setError("Please enter a discount reason name");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const created = await ReceptionApi.createDiscountReason({
+                reasonText: reasonText.trim(),
+                category: category.trim(),
+                description: description.trim() || null,
+                isActive: true
+            });
+            if (onSuccess) onSuccess(created);
+            setReasonText('');
+            setDescription('');
+            onClose();
+        } catch (err) {
+            setError(err.message || "Failed to create discount reason");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-xs rounded-2xl animate-in fade-in duration-150">
+            <div className={cn(
+                "w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col",
+                isDark ? "bg-zinc-900 border-white/10 text-white shadow-2xl" : "bg-white border-black/10 text-zinc-900 shadow-2xl"
+            )}>
+                {/* Header */}
+                <div className={cn(
+                    "px-5 py-3.5 flex items-center justify-between border-b shrink-0",
+                    isDark ? "bg-zinc-900 border-white/10" : "bg-gradient-to-r from-zinc-50 to-white border-black/5"
+                )}>
+                    <div className="flex items-center gap-2.5">
+                        <div className={cn(
+                            "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border",
+                            isDark ? "bg-zinc-800 border-zinc-700 text-synos-primary" : "bg-blue-50 border-blue-200 text-synos-primary"
+                        )}>
+                            <Plus className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold tracking-tight">Add Preset Reason</h3>
+                            <p className="text-[10px] text-zinc-500 font-medium">Standardize reasons for receptionist billing to prevent spelling errors</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className={cn(
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
+                            isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"
+                        )}
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {error && (
+                    <div className="m-4 mb-0 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Reason / Authorization Authority *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            placeholder="e.g. Dr. DVR Recommendation, Lab Owner Approval, BPL Concession"
+                            value={reasonText}
+                            onChange={(e) => setReasonText(e.target.value)}
+                            className={cn(
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-synos-primary focus:ring-1 focus:ring-synos-primary"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-synos-primary focus:ring-1 focus:ring-synos-primary"
+                            )}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Category *
+                        </label>
+                        <select
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            className={cn(
+                                "w-full h-9 px-3 rounded-xl text-xs font-medium border outline-none cursor-pointer transition-all",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-synos-primary focus:ring-1 focus:ring-synos-primary"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-synos-primary focus:ring-1 focus:ring-synos-primary"
+                            )}
+                        >
+                            <option value="Doctor Recommendation">Doctor Recommendation</option>
+                            <option value="Management Approval">Management Approval</option>
+                            <option value="Special Concession">Special Concession</option>
+                            <option value="Internal Courtesy">Internal Courtesy</option>
+                            <option value="Social Support">Social Support</option>
+                            <option value="Campaign">Campaign / Camp</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            Description / Policy Notes (Optional)
+                        </label>
+                        <textarea
+                            rows={2}
+                            placeholder="Optional instructions or notes for reception staff..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className={cn(
+                                "w-full p-2.5 rounded-xl text-xs font-medium border outline-none transition-all resize-none",
+                                isDark
+                                    ? "bg-zinc-950 border-zinc-800 text-white focus:border-synos-primary focus:ring-1 focus:ring-synos-primary"
+                                    : "bg-white border-zinc-300 text-zinc-900 shadow-xs focus:border-synos-primary focus:ring-1 focus:ring-synos-primary"
+                            )}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className={cn(
+                                "px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
+                                isDark ? "text-zinc-400 hover:text-white hover:bg-white/5" : "text-zinc-600 hover:text-zinc-900 hover:bg-black/5"
+                            )}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-5 py-2.5 rounded-xl text-xs font-bold bg-synos-primary hover:bg-synos-primary/90 text-white flex items-center gap-2 shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
+                        >
+                            {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                            Save & Select Reason
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
