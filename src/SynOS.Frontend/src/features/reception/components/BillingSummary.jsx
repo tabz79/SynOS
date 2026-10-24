@@ -66,6 +66,38 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const uiHints = snapshot?.uiHints;
     const visitId = snapshot?.visit?.visitId || snapshot?.visit?.id;
 
+    // Retain and sync applied discount details in the input fields so receptionist sees what was applied
+    const prevVisitIdRef = useRef(visitId);
+    const prevAppliedDiscountRef = useRef(billing?.appliedDiscount);
+
+    useEffect(() => {
+        const visitChanged = prevVisitIdRef.current !== visitId;
+        const discountChanged = prevAppliedDiscountRef.current !== billing?.appliedDiscount;
+        prevVisitIdRef.current = visitId;
+        prevAppliedDiscountRef.current = billing?.appliedDiscount;
+
+        if (billing?.appliedDiscount && (billing?.discountAmount > 0)) {
+            const disc = billing.appliedDiscount;
+            const type = (disc.type || disc.Type || '').toUpperCase() === 'PERCENTAGE' ? 'PERCENTAGE' : 'FLAT';
+            setCustomDiscountType(type);
+            const rawVal = disc.value ?? disc.Value;
+            const val = rawVal !== undefined && rawVal !== null && rawVal > 0 
+                ? String(rawVal) 
+                : (billing.discountAmount > 0 ? String(billing.discountAmount) : '');
+            setCustomDiscountValue(val);
+            const reason = disc.reason || disc.Reason || disc.name || disc.Name || '';
+            setCustomDiscountReason(reason);
+        } else if (visitChanged || (discountChanged && !billing?.appliedDiscount)) {
+            // Only clear when visit changes or when discount was explicitly removed
+            setCustomDiscountValue('');
+            setCustomDiscountReason('');
+        }
+    }, [
+        visitId,
+        billing?.appliedDiscount,
+        billing?.discountAmount
+    ]);
+
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
@@ -261,8 +293,6 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 customValue: val,
                 reason: customDiscountReason.trim()
             });
-            setCustomDiscountValue('');
-            setCustomDiscountReason('');
             if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
             console.error("Failed to apply custom discount", err);
