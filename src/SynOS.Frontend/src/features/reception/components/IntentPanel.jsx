@@ -737,12 +737,12 @@ export function IntentPanel({ onVisitUpdated }) {
                                     />
                                 </div>
 
-                                {/* 2-Column Grid for Visit Details & Billing Summary (67% / 33% Ratio) */}
+                                {/* 2-Column Grid for Visit Details & Billing Summary (58% / 42% Ratio) */}
                                 <div className={cn(
                                     hasPatient ? "grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-start" : "flex flex-col gap-4",
                                     (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
                                 )}>
-                                    <div className={hasPatient ? "lg:col-span-8 flex flex-col gap-5" : ""}>
+                                    <div className={hasPatient ? "lg:col-span-7 flex flex-col gap-5" : ""}>
                                         <VisitDetails
                                             snapshot={snapshot}
                                             visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
@@ -754,7 +754,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         />
                                     </div>
 
-                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "lg:col-span-4 flex flex-col gap-5 sticky top-2" : "")}>
+                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "lg:col-span-5 flex flex-col gap-5 sticky top-2" : "")}>
                                         <BillingSummary
                                             snapshot={snapshot}
                                             onVisitUpdated={loadSnapshot}

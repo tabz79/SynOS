@@ -161,7 +161,7 @@ namespace SynOS.Services.Reception
             {
                 var discountFact = await _context.DiscountFacts
                     .AsNoTracking()
-                    .Where(df => df.InvoiceId == invoice.InvoiceId)
+                    .Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive)
                     .OrderByDescending(df => df.AppliedAt)
                     .FirstOrDefaultAsync();
 

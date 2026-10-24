@@ -321,6 +321,8 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
         setIsProcessing(true);
         try {
             await ReceptionApi.removeDiscountFromVisit(visitId);
+            setCustomDiscountReason('');
+            setCustomDiscountValue('');
             // Notify parent to refresh snapshot
             if (onVisitUpdated) onVisitUpdated();
         } catch (err) {
@@ -472,7 +474,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     {/* Discount Applied */}
                     <div className="flex justify-between items-center">
                         <span className={ui.rowLabel}>Discount</span>
-                        {billing.appliedDiscount ? (
+                        {billing.appliedDiscount && (billing.discountAmount > 0) ? (
                             <div className="flex items-center gap-2">
                                 <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
                                     - ₹{billing.discountAmount?.toLocaleString()}
