@@ -301,38 +301,55 @@ namespace SynOS.Api.Controllers
         public async Task<IActionResult> GetStationerySettings()
         {
             var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
+            var defaultSettings = new Dictionary<string, object>
+            {
+                ["labLegalName"] = lab?.Name ?? "SynOS Diagnostic Centre & Laboratory",
+                ["labTradeName"] = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
+                ["address"] = lab?.Address ?? "Central Diagnostic Facility, Hyderabad, Telangana",
+                ["phone"] = lab?.Phone ?? "+91 98765 43210",
+                ["email"] = lab?.Email ?? "billing@synoslab.in",
+                ["website"] = lab?.Website ?? "www.synoslab.in",
+                ["gstin"] = "36AAAAA0000A1Z5",
+                ["pan"] = "AAAAA0000A",
+                ["bankName"] = "HDFC Bank",
+                ["accountNumber"] = "50200012345678",
+                ["ifscCode"] = "HDFC0001234",
+                ["branch"] = "Main Branch, Khammam",
+                ["accountHolderName"] = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
+                ["upiId"] = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
+                ["enableUpiQr"] = true,
+                ["defaultLetterheadMode"] = "digital", // "digital" | "preprinted"
+                ["topMarginMm"] = 40,
+                ["bottomMarginMm"] = 15,
+                ["termsAndConditions"] = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.\n3. In case of online payment, please mention invoice or statement reference number.\n4. Cheques are subject to realization.",
+                ["signatoryTitle"] = "Authorised Signatory / Accounts Desk"
+            };
+
             if (!System.IO.File.Exists(path))
             {
-                var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
-                var defaultSettings = new
-                {
-                    labLegalName = lab?.Name ?? "SynOS Diagnostic Centre & Laboratory",
-                    labTradeName = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
-                    address = lab?.Address ?? "Central Diagnostic Facility, Hyderabad, Telangana",
-                    phone = lab?.Phone ?? "+91 98765 43210",
-                    email = lab?.Email ?? "billing@synoslab.in",
-                    website = lab?.Website ?? "www.synoslab.in",
-                    gstin = "36AAAAA0000A1Z5",
-                    pan = "AAAAA0000A",
-                    bankName = "HDFC Bank",
-                    accountNumber = "50200012345678",
-                    ifscCode = "HDFC0001234",
-                    branch = "Main Branch, Khammam",
-                    accountHolderName = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
-                    upiId = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
-                    enableUpiQr = true,
-                    defaultLetterheadMode = "digital", // "digital" | "preprinted"
-                    topMarginMm = 40,
-                    bottomMarginMm = 15,
-                    termsAndConditions = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.\n3. In case of online payment, please mention invoice or statement reference number.\n4. Cheques are subject to realization.",
-                    signatoryTitle = "Authorised Signatory / Accounts Desk"
-                };
                 var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 await System.IO.File.WriteAllTextAsync(path, json);
                 return Content(json, "application/json");
             }
 
             var existing = await System.IO.File.ReadAllTextAsync(path);
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(existing);
+                if (!doc.RootElement.TryGetProperty("labLegalName", out _))
+                {
+                    // If file exists but is corrupted or dummy test json, merge with defaults
+                    foreach (var prop in doc.RootElement.EnumerateObject())
+                    {
+                        defaultSettings[prop.Name] = prop.Value.ToString();
+                    }
+                    var mergedJson = System.Text.Json.JsonSerializer.Serialize(defaultSettings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                    return Content(mergedJson, "application/json");
+                }
+            }
+            catch {}
+
             return Content(existing, "application/json");
         }
 
@@ -342,6 +359,32 @@ namespace SynOS.Api.Controllers
             var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
             var json = settings.ToString();
             await System.IO.File.WriteAllTextAsync(path, json);
+
+            try
+            {
+                var lab = await _context.LabProfiles.FirstOrDefaultAsync();
+                if (lab != null)
+                {
+                    if (settings.TryGetProperty("labLegalName", out var lName) && !string.IsNullOrWhiteSpace(lName.GetString()))
+                        lab.Name = lName.GetString()!;
+                    if (settings.TryGetProperty("labTradeName", out var tName) && !string.IsNullOrWhiteSpace(tName.GetString()))
+                        lab.Tagline = tName.GetString()!;
+                    if (settings.TryGetProperty("address", out var addr) && !string.IsNullOrWhiteSpace(addr.GetString()))
+                        lab.Address = addr.GetString()!;
+                    if (settings.TryGetProperty("phone", out var ph) && !string.IsNullOrWhiteSpace(ph.GetString()))
+                        lab.Phone = ph.GetString()!;
+                    if (settings.TryGetProperty("email", out var em) && !string.IsNullOrWhiteSpace(em.GetString()))
+                        lab.Email = em.GetString()!;
+                    if (settings.TryGetProperty("upiId", out var upi) && !string.IsNullOrWhiteSpace(upi.GetString()))
+                        lab.UpiId = upi.GetString()!;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Warning(ex, "Failed to sync LabProfiles table during SaveStationerySettings");
+            }
+
             return Ok(new { message = "Billing stationery settings successfully saved." });
         }
 
@@ -873,7 +916,7 @@ namespace SynOS.Api.Controllers
             {
                 var inferredPartnerId = await _context.Visits
                     .Where(v => request.VisitIds.Contains(v.VisitId))
-                    .Select(v => v.ReferralPartnerId)
+                    .Select(v => v.SecondaryReferralPartnerId ?? v.ReferralPartnerId)
                     .FirstOrDefaultAsync();
 
                 if (inferredPartnerId.HasValue && inferredPartnerId.Value != Guid.Empty)
@@ -931,11 +974,15 @@ namespace SynOS.Api.Controllers
                 .Include(v => v.Patient)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
                 .Where(v => visitIds.Contains(v.VisitId))
                 .AsNoTracking()
                 .ToDictionaryAsync(v => v.VisitId);
 
             var items = new List<object>();
+            decimal totalStandardTariff = 0;
+            decimal totalDiscount = 0;
             decimal totalBilled = 0;
             decimal totalReceived = 0;
             decimal totalNetDue = 0;
@@ -964,13 +1011,26 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
+                var inv = visit?.Invoices?.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                decimal standardTariff = inv != null && inv.GrossAmount > 0
+                    ? inv.GrossAmount
+                    : orders.Sum(o => o.Price);
+
                 var billAmount = fact.Amount;
+                if (standardTariff < billAmount) standardTariff = billAmount;
+                decimal discount = Math.Max(0, standardTariff - billAmount);
                 var rec = fact.AmountReceived;
                 var due = Math.Max(0, fact.Amount - fact.AmountReceived);
 
+                totalStandardTariff += standardTariff;
+                totalDiscount += discount;
                 totalBilled += billAmount;
                 totalReceived += rec;
                 totalNetDue += due;
+
+                string displayToken = !string.IsNullOrEmpty(visit?.Token)
+                    ? visit.Token
+                    : (visit != null ? $"T-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper());
 
                 items.Add(new
                 {
@@ -978,15 +1038,25 @@ namespace SynOS.Api.Controllers
                     ReceivableFactId = fact.ReceivableFactId,
                     VisitId = fact.SourceVisitId,
                     BillNumber = visit != null ? $"BILL-{visit.CreatedAt:yyyyMMdd}-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper(),
-                    Token = visit?.Token ?? fact.ReceivableFactId.ToString().Substring(0, 8),
+                    Token = displayToken,
+                    VisitToken = displayToken,
                     Date = fact.OccurredAt.DateTime,
                     PatientName = ptName,
                     AgeGender = ageGen,
                     Investigations = testSummary,
-                    GrossAmount = billAmount,
+                    GrossAmount = standardTariff,
+                    GrossBilled = standardTariff,
+                    LabStandardCharge = standardTariff,
+                    LabBilled = standardTariff,
+                    StandardPrice = standardTariff,
+                    Discount = discount,
                     Rate = billAmount,
                     AmountReceived = rec,
-                    NetPayableToLab = due
+                    Received = rec,
+                    NetPayableToLab = due,
+                    NetClaimDue = due,
+                    OutstandingAmount = due,
+                    NetDue = due
                 });
             }
 
@@ -1024,13 +1094,26 @@ namespace SynOS.Api.Controllers
                     }
 
                     var inv = v.Invoices?.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                    decimal standardTariff = inv != null && inv.GrossAmount > 0 
+                        ? inv.GrossAmount 
+                        : orders.Sum(o => o.Price);
+
                     decimal billAmount = inv?.Total ?? orders.Sum(o => o.Price);
+                    if (standardTariff < billAmount) standardTariff = billAmount;
+                    decimal discount = Math.Max(0, standardTariff - billAmount);
+
                     decimal rec = inv?.Payments?.Sum(p => p.Amount) ?? 0m;
                     decimal due = Math.Max(0, billAmount - rec);
 
+                    totalStandardTariff += standardTariff;
+                    totalDiscount += discount;
                     totalBilled += billAmount;
                     totalReceived += rec;
                     totalNetDue += due;
+
+                    string displayToken = !string.IsNullOrEmpty(v.Token)
+                        ? v.Token
+                        : $"T-{v.VisitId.ToString().Substring(0, 4).ToUpper()}";
 
                     items.Add(new
                     {
@@ -1038,15 +1121,25 @@ namespace SynOS.Api.Controllers
                         ReceivableFactId = Guid.NewGuid(),
                         VisitId = v.VisitId,
                         BillNumber = $"BILL-{v.CreatedAt:yyyyMMdd}-{v.VisitId.ToString().Substring(0, 4).ToUpper()}",
-                        Token = v.Token ?? "COUNTER",
+                        Token = displayToken,
+                        VisitToken = displayToken,
                         Date = v.CreatedAt,
                         PatientName = ptName,
                         AgeGender = ageGen,
                         Investigations = testSummary,
-                        GrossAmount = billAmount,
+                        GrossAmount = standardTariff,
+                        GrossBilled = standardTariff,
+                        LabStandardCharge = standardTariff,
+                        LabBilled = standardTariff,
+                        StandardPrice = standardTariff,
+                        Discount = discount,
                         Rate = billAmount,
                         AmountReceived = rec,
-                        NetPayableToLab = due
+                        Received = rec,
+                        NetPayableToLab = due,
+                        NetClaimDue = due,
+                        OutstandingAmount = due,
+                        NetDue = due
                     });
                 }
             }
@@ -1058,9 +1151,16 @@ namespace SynOS.Api.Controllers
 
             var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={totalNetDue:F2}&cu=INR&tn={statementNo}";
 
+            var rawPartnerId = partner.ReferralPartnerId;
+            var partnerNameClean = System.Text.RegularExpressions.Regex.Replace(partner.Name ?? "PRT", @"[^A-Za-z0-9]+", "-").Trim('-').ToUpper();
+            if (partnerNameClean.Length > 16) partnerNameClean = partnerNameClean.Substring(0, 16);
+            var cleanPartnerId = $"PART-{partnerNameClean}";
+
             return Ok(new
             {
                 StatementNumber = statementNo,
+                StatementNo = statementNo,
+                GeneratedAt = now,
                 Date = now,
                 DueDate = now.AddDays(15),
                 BillingPeriod = request.StartDate.HasValue && request.EndDate.HasValue 
@@ -1071,7 +1171,10 @@ namespace SynOS.Api.Controllers
 
                 Partner = new
                 {
-                    PartnerId = partner.ReferralPartnerId,
+                    PartnerId = cleanPartnerId,
+                    ReferralPartnerId = rawPartnerId,
+                    Code = cleanPartnerId,
+                    PartnerCode = cleanPartnerId,
                     Name = partner.Name,
                     ClinicName = !string.IsNullOrEmpty(partner.ClinicName) ? partner.ClinicName : $"{partner.Name}'s Clinic / Practice",
                     Address = !string.IsNullOrEmpty(partner.Location) ? partner.Location : "Registered Medical Practice",
@@ -1084,13 +1187,18 @@ namespace SynOS.Api.Controllers
 
                 Summary = new
                 {
+                    TotalVisits = items.Count,
                     TotalVisitsCount = items.Count,
-                    TotalGrossBilled = totalBilled,
-                    TotalDiagnosticCharges = totalBilled,
+                    GrossBilled = totalStandardTariff > 0 ? totalStandardTariff : totalBilled,
+                    TotalGrossBilled = totalStandardTariff > 0 ? totalStandardTariff : totalBilled,
+                    TotalDiagnosticCharges = totalStandardTariff > 0 ? totalStandardTariff : totalBilled,
+                    TotalDiscount = totalDiscount,
                     TotalCommissionCut = 0m,
+                    AmountReceived = totalReceived,
                     TotalPaid = totalReceived,
                     TotalReceived = totalReceived,
                     NetClaimDue = totalNetDue,
+                    BalanceDue = totalNetDue,
                     AmountInWords = NumberToIndianWords(totalNetDue)
                 },
 

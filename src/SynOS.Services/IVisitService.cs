@@ -17,8 +17,11 @@ namespace SynOS.Services
         Task<VisitCancellation> CancelVisitAsync(Guid visitId, CancelRequestDto cancelDto);
         Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId);
         Task ApplyDiscountToVisitAsync(Guid visitId, Guid discountMasterId, Guid actorUserId);
+        Task ApplyCustomDiscountToVisitAsync(Guid visitId, string mode, decimal value, string? reason, Guid actorUserId);
         Task RemoveDiscountFromVisitAsync(Guid visitId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
+        Task SetSecondaryReferralAsync(Guid visitId, Guid? secondaryPartnerId, Guid actorUserId);
+        Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId);
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
         Task UpdateVisitReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
         Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId, Guid? intentId = null);

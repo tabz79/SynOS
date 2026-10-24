@@ -216,7 +216,7 @@ export const PendingPayoutsTab = () => {
 
                                         return (
                                             <tr>
-                                                <td colSpan="5" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                <td colSpan="8" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
                                                     <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
                                                         
                                                         {/* BATCH SELECTION ACTION BAR */}
@@ -280,6 +280,7 @@ export const PendingPayoutsTab = () => {
                                                                     </th>
                                                                     <th className="pb-2">Token / Reference</th>
                                                                     <th className="pb-2">Patient</th>
+                                                                    <th className="pb-2">Main Doctor</th>
                                                                     <th className="pb-2">Date</th>
                                                                     <th className="pb-2 text-right">Original Bill</th>
                                                                     <th className="pb-2 text-right">Patient Paid</th>
@@ -309,6 +310,15 @@ export const PendingPayoutsTab = () => {
                                                                             </td>
                                                                             <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || 'N/A'}</td>
                                                                             <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px]">
+                                                                                {fact.primaryDoctorName ? (
+                                                                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-[10px] truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
+                                                                                        {fact.primaryDoctorName}
+                                                                                    </span>
+                                                                                ) : (
+                                                                                    <span className="text-zinc-400 text-[10px]">—</span>
+                                                                                )}
+                                                                            </td>
                                                                             <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.createdAt).toLocaleDateString()}</td>
                                                                             <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.originalAmount?.toLocaleString()}</td>
                                                                             <td className="py-3 text-[10px] font-black text-right text-emerald-500">₹{fact.amountPaid?.toLocaleString()}</td>

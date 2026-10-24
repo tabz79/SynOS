@@ -2581,9 +2581,10 @@ function TestInventoryTab({ selectedTest }) {
 
   // Pricing Tab Edit Handlers
   const handlePricingChange = (key, val) => {
+    const rawVal = val === '' ? '' : (isNaN(val) ? 0 : Number(val));
     const updatedPricing = {
       ...selectedTest.pricing,
-      [key]: Number(val) || 0
+      [key]: rawVal
     };
 
     const updatedTest = {
@@ -4664,10 +4665,12 @@ function TestInventoryTab({ selectedTest }) {
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                       <input
                         type="number"
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
-                        value={selectedTest.basePrice || 0}
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                        value={selectedTest.basePrice ?? ''}
                         onChange={(e) => {
-                          const updatedTest = { ...selectedTest, basePrice: Number(e.target.value) || 0 };
+                          const val = e.target.value;
+                          const rawNum = val === '' ? '' : (isNaN(val) ? 0 : Number(val));
+                          const updatedTest = { ...selectedTest, basePrice: rawNum };
                           setCatalog(catalog.map(t => t.id === selectedTest.id ? updatedTest : t));
                           setSelectedTest(updatedTest);
                         }}
@@ -4682,8 +4685,8 @@ function TestInventoryTab({ selectedTest }) {
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                       <input
                         type="number"
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
-                        value={selectedTest.pricing?.branchA || 0}
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                        value={selectedTest.pricing?.branchA ?? ''}
                         onChange={(e) => handlePricingChange("branchA", e.target.value)}
                       />
                     </div>
@@ -4696,8 +4699,8 @@ function TestInventoryTab({ selectedTest }) {
                       <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                       <input
                         type="number"
-                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
-                        value={selectedTest.pricing?.branchB || 0}
+                        className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                        value={selectedTest.pricing?.branchB ?? ''}
                         onChange={(e) => handlePricingChange("branchB", e.target.value)}
                       />
                     </div>
@@ -4713,17 +4716,44 @@ function TestInventoryTab({ selectedTest }) {
                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-500 dark:text-zinc-400">₹</span>
                         <input
                           type="number"
-                          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
-                          value={selectedTest.pricing?.corporate || 0}
+                          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 font-bold outline-none focus:ring-1 focus:ring-synos-primary"
+                          value={selectedTest.pricing?.corporate ?? ''}
                           onChange={(e) => handlePricingChange("corporate", e.target.value)}
                         />
                       </div>
                       <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-snug">
-                        <span className="font-bold block text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 dark:text-zinc-400">Default Corporate B2B Tier</span>
+                        <span className="font-bold block text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Default Corporate B2B Tier</span>
                         Applied when diagnostic requests are billed directly to diagnostic referral networks.
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* Direct Save Action inside Pricing Tab */}
+                <div className="border-t border-zinc-200 dark:border-zinc-800 pt-5 flex items-center justify-between">
+                  <p className="text-xs text-zinc-500 font-medium">
+                    Updates base price and tiered rates for this test in the master catalog.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleSaveAll}
+                    disabled={isLoadingTests}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-synos-primary hover:bg-synos-primary/90 text-white flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    {isLoadingTests ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...
+                      </>
+                    ) : isSavedSuccessfully ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-white animate-bounce" /> Pricing Saved
+                      </>
+                    ) : (
+                      <>
+                        <IndianRupee className="w-3.5 h-3.5" /> Save Pricing Changes
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             )}

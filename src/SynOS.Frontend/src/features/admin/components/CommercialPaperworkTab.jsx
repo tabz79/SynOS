@@ -36,6 +36,7 @@ import {
 import { FinanceApi } from '@/api/finance';
 import { DEFAULT_DOCUMENT_SCHEMAS } from '@/features/finance/components/documents/documentLayoutSchemas';
 import { DynamicInvoiceCanvas } from '@/features/finance/components/documents/DynamicInvoiceCanvas';
+import { clearDocumentCache } from '@/features/finance/components/documents/DynamicDocumentRenderer';
 
 export const CommercialPaperworkTab = () => {
     const [studioTab, setStudioTab] = useState('matrix'); // 'matrix' | 'profile'
@@ -155,10 +156,11 @@ export const CommercialPaperworkTab = () => {
                 customLayout: schemas[m.slotId] || null
             }));
 
-            await Promise.all([
-                FinanceApi.saveStationerySettings(settings),
-                FinanceApi.saveDocumentMappings(mappingsToSave)
-            ]);
+            await FinanceApi.saveStationerySettings(settings);
+            await FinanceApi.saveDocumentMappings(mappingsToSave);
+
+            // Immediately invalidate all document template caches across the system
+            clearDocumentCache();
 
             try {
                 if (typeof window !== 'undefined' && window.localStorage) {
@@ -179,7 +181,12 @@ export const CommercialPaperworkTab = () => {
             setTimeout(() => setSaveSuccess(false), 4000);
         } catch (err) {
             console.error("Failed to save paperwork settings:", err);
-            alert("Error saving: " + (err.response?.data?.message || err.message));
+            const rawMsg = err.response?.data?.message || err.message || "";
+            const isNetworkLoss = rawMsg.toLowerCase().includes("load failed") || rawMsg.toLowerCase().includes("network") || rawMsg.toLowerCase().includes("failed to fetch");
+            const userMsg = isNetworkLoss
+                ? "The connection was briefly interrupted (e.g. server redeployment). Please click 'Save All Changes' once more."
+                : ("Error saving: " + rawMsg);
+            alert(userMsg);
         } finally {
             setSaving(false);
         }
@@ -223,6 +230,50 @@ export const CommercialPaperworkTab = () => {
             ...prev,
             [field]: value
         }));
+
+        // Two-way synchronization: reflect updated stationery branding into all template schemas
+        const fieldMapping = {
+            labLegalName: { box: 'header', field: 'legalName' },
+            labTradeName: { box: 'header', field: 'tagline' },
+            address: { box: 'header', field: 'address' },
+            phone: { box: 'header', field: 'phone' },
+            email: { box: 'header', field: 'email' },
+            gstin: { box: 'header', field: 'gstin' },
+            pan: { box: 'header', field: 'pan' },
+            bankName: { box: 'bankAndUpi', field: 'bankName' },
+            accountNumber: { box: 'bankAndUpi', field: 'accountNumber' },
+            ifscCode: { box: 'bankAndUpi', field: 'ifsc' },
+            upiId: { box: 'bankAndUpi', field: 'upiId' }
+        };
+
+        const target = fieldMapping[field];
+        if (target) {
+            setSchemas(prev => {
+                const next = { ...prev };
+                Object.keys(next).forEach(slotId => {
+                    const s = next[slotId];
+                    if (s?.boxes?.[target.box]?.fields?.[target.field]) {
+                        next[slotId] = {
+                            ...s,
+                            boxes: {
+                                ...s.boxes,
+                                [target.box]: {
+                                    ...s.boxes[target.box],
+                                    fields: {
+                                        ...s.boxes[target.box].fields,
+                                        [target.field]: {
+                                            ...s.boxes[target.box].fields[target.field],
+                                            value: value
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }
+                });
+                return next;
+            });
+        }
     };
 
     const handleMappingChange = (slotId, field, value) => {
@@ -1229,14 +1280,26 @@ export const CommercialPaperworkTab = () => {
                             ))}
                         </div>
 
-                        {/* STATUS */}
-                        <div className="flex items-center justify-between text-[10px] text-zinc-500 font-medium pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
-                            <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
-                                <Sparkles size={11} /> Click text to edit
-                            </span>
-                            <span className="font-mono text-zinc-400 capitalize">
-                                {currentActiveSlot.letterheadMode || 'digital'}
-                            </span>
+                        {/* STATUS & RECEPTION TRIGGER CONTEXT */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-500 font-medium pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80">
+                            <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-zinc-900 dark:text-zinc-100">{currentActiveSlot.slotName || 'Template'}:</span>
+                                <span className="px-2 py-0.5 rounded-md font-bold text-[9.5px] bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                    {previewSlotId === 'partner_b2b_invoice' 
+                                        ? 'Triggered by [Doc Claim] button' 
+                                        : (previewSlotId === 'patient_tax_invoice' 
+                                            ? 'Triggered by [A4 Receipt] button' 
+                                            : (previewSlotId === 'patient_thermal_receipt' ? 'Triggered by [Thermal] button' : 'Finance & Billing Matrix'))}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
+                                    <Sparkles size={11} /> Click text to edit
+                                </span>
+                                <span className="font-mono text-zinc-400 capitalize">
+                                    {currentActiveSlot.letterheadMode || 'digital'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -1249,6 +1312,7 @@ export const CommercialPaperworkTab = () => {
                                 letterheadMode={currentActiveSlot.letterheadMode}
                                 topMarginMm={currentActiveSlot.topMarginMm}
                                 labSettings={settings}
+                                onUpdateLabSetting={handleSettingChange}
                                 onToggleBox={handleToggleBox}
                             />
                         </div>

@@ -279,6 +279,16 @@ namespace SynOS.Services
             await _visitService.SetVisitReferralAsync(visitId, referralPartnerId, actorUserId);
         }
 
+        public async Task SetSecondaryReferralAsync(Guid visitId, Guid? secondaryPartnerId, Guid actorUserId)
+        {
+            await _visitService.SetSecondaryReferralAsync(visitId, secondaryPartnerId, actorUserId);
+        }
+
+        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId)
+        {
+            await _visitService.SetB2BPrepaidRateAsync(visitId, b2bDiscountAmount, discountType, discountValue, actorUserId);
+        }
+
         public async Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId)
         {
             await _visitService.RemoveVisitReferralAsync(visitId, actorUserId);
@@ -373,7 +383,8 @@ namespace SynOS.Services
             if (visit == null) throw new InvalidOperationException("Visit not found for Receivable creation");
             
             // RELAXED RULE: Must have Partner OR Draft
-            if (!visit.ReferralPartnerId.HasValue && visit.ReferralDraft == null) 
+            var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+            if (!effectivePartnerId.HasValue && visit.ReferralDraft == null)
                  throw new InvalidOperationException("Prepaid visit must have a Referral Partner or Provisional Draft");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
@@ -395,7 +406,13 @@ namespace SynOS.Services
                  return;
             }
 
-            var partner = await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId.Value);
+            var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
+
+            decimal b2bReceivableAmount = invoice.Total;
+            if (visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+            {
+                b2bReceivableAmount = Math.Max(0m, invoice.Total - visit.B2BDiscountAmount.Value);
+            }
 
             var factId = Guid.NewGuid();
             var fact = new ReceivableFact
@@ -403,11 +420,11 @@ namespace SynOS.Services
                 ReceivableFactId = factId,
                 SourceVisitId = visit.VisitId,
                 DebtorType = DebtorType.Partner,
-                DebtorId = visit.ReferralPartnerId.Value,
+                DebtorId = effectivePartnerId.Value,
                 DebtorName = partner?.Name ?? "Referral Partner",
-                ClaimReference = "Prepaid Partner Bill",
-                ReferralPartnerId = visit.ReferralPartnerId.Value,
-                Amount = invoice.Total, // Total Amount Owed
+                ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
+                ReferralPartnerId = effectivePartnerId.Value,
+                Amount = b2bReceivableAmount, // Net Contracted Tariff Owed
                 Currency = "INR",
                 OccurredAt = DateTimeOffset.UtcNow,
                 RecordedAt = DateTimeOffset.UtcNow
@@ -460,7 +477,9 @@ namespace SynOS.Services
             {
                 visit.PaymentCollectionModel = "InsuranceClaim";
                 visit.InsuranceCompanyId = insuranceCompanyId;
+                visit.CorporateAccountId = corporateAccountId;
                 visit.PolicyNumber = policyNumber?.Trim();
+                visit.EmployeeId = employeeId?.Trim() ?? policyNumber?.Trim();
                 visit.PreAuthApprovalNumber = preAuthApprovalNumber?.Trim();
                 visit.InsuranceCoPayAmount = coPayAmount ?? 0;
             }
@@ -475,9 +494,27 @@ namespace SynOS.Services
             {
                 visit.PaymentCollectionModel = "LabCollects";
             }
+            // If switching away from Insurance / Corporate to Standard or Prepaid, automatically remove any institutional packages
+            bool hadPackages = false;
+            if (billingType != BillingType.Insurance && billingType != BillingType.Corporate)
+            {
+                var packageOrders = await _context.Orders
+                    .Where(o => o.VisitId == visitId && o.TestCode.StartsWith("PKG-") && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled)
+                    .ToListAsync();
+                if (packageOrders.Any())
+                {
+                    hadPackages = true;
+                    _context.Orders.RemoveRange(packageOrders);
+                }
+            }
 
             visit.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
+
+            if (hadPackages)
+            {
+                await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+            }
 
             _logger.LogInformation("Updated BillingContext for Visit {VisitId} to {BillingType}", visitId, billingType);
         }
@@ -489,12 +526,13 @@ namespace SynOS.Services
             var visit = await _context.Visits
                 .Include(v => v.Invoices)
                 .Include(v => v.InsuranceCompany)
+                .Include(v => v.CorporateAccount)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new InvalidOperationException("Visit not found for Insurance Receivable creation");
 
-            if (!visit.InsuranceCompanyId.HasValue)
-                throw new InvalidOperationException("Insurance visit must have an Insurance Company / TPA selected.");
+            if (!visit.InsuranceCompanyId.HasValue && !visit.CorporateAccountId.HasValue)
+                throw new InvalidOperationException("Insurance visit must have an Insurance Company or Corporate Tie-up selected.");
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice found for Insurance Receivable creation");
@@ -506,8 +544,26 @@ namespace SynOS.Services
                 return;
             }
 
-            var insurer = visit.InsuranceCompany ?? await _context.InsuranceCompanies.FindAsync(visit.InsuranceCompanyId.Value);
-            var claimRef = $"{visit.PolicyNumber} / {visit.PreAuthApprovalNumber}".Trim(' ', '/');
+            Guid debtorId;
+            string debtorName;
+            DebtorType debtorType;
+
+            if (visit.InsuranceCompanyId.HasValue)
+            {
+                var insurer = visit.InsuranceCompany ?? await _context.InsuranceCompanies.FindAsync(visit.InsuranceCompanyId.Value);
+                debtorId = visit.InsuranceCompanyId.Value;
+                debtorName = insurer?.Name ?? "Insurance Payer";
+                debtorType = DebtorType.Insurance;
+            }
+            else
+            {
+                var corp = visit.CorporateAccount ?? await _context.CorporateAccounts.FindAsync(visit.CorporateAccountId!.Value);
+                debtorId = visit.CorporateAccountId.Value;
+                debtorName = corp?.CompanyName ?? "Corporate Payer";
+                debtorType = DebtorType.Corporate;
+            }
+
+            var claimRef = $"{visit.PolicyNumber ?? visit.EmployeeId} / {visit.PreAuthApprovalNumber}".Trim(' ', '/');
             var claimAmount = Math.Max(0, invoice.Total - visit.InsuranceCoPayAmount);
 
             var factId = Guid.NewGuid();
@@ -515,9 +571,9 @@ namespace SynOS.Services
             {
                 ReceivableFactId = factId,
                 SourceVisitId = visit.VisitId,
-                DebtorType = DebtorType.Insurance,
-                DebtorId = visit.InsuranceCompanyId.Value,
-                DebtorName = insurer?.Name ?? "Insurance Payer",
+                DebtorType = debtorType,
+                DebtorId = debtorId,
+                DebtorName = debtorName,
                 ClaimReference = claimRef,
                 Amount = claimAmount,
                 Currency = "INR",
@@ -1377,6 +1433,11 @@ namespace SynOS.Services
             if (master == null) throw new KeyNotFoundException($"Discount code '{discountCode}' is invalid or inactive");
 
             await _visitService.ApplyDiscountToVisitAsync(visitId, master.DiscountDefinitionId, actorUserId);
+        }
+
+        public async Task ApplyCustomDiscountAsync(Guid visitId, string mode, decimal value, string? reason, Guid actorUserId)
+        {
+            await _visitService.ApplyCustomDiscountToVisitAsync(visitId, mode, value, reason, actorUserId);
         }
 
         public async Task RemoveDiscountAsync(Guid visitId, Guid actorUserId)

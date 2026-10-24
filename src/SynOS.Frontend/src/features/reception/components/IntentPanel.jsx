@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
@@ -7,17 +7,20 @@ import { BillingSummary } from './BillingSummary'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef } from 'react'
 import { ReceptionApi } from '@/api/reception'
+import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry } from '@/hooks/useSynOSMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
 import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
+import { DynamicDocumentRenderer, clearDocumentCache } from '@/features/finance/components/documents/DynamicDocumentRenderer'
 import { 
     MultiPayerSelector, 
     AddInsuranceCompanyModal, 
     AddCorporateAccountModal, 
-    AddReferralPartnerModal 
+    AddReferralPartnerModal,
+    AddDiscountReasonModal
 } from './MultiPayerPanels'
 
 export function IntentPanel({ onVisitUpdated }) {
@@ -39,10 +42,12 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
     // Lifted State for Multi-Payer Billing Mode: 'Standard' | 'PrepaidPartner' | 'Insurance' | 'Corporate'
     const [billingMode, setBillingMode] = useState('Standard');
+    const modeSwitchVersionRef = useRef(0);
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
-    // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate'
+    // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate' | 'discountReason'
     const [activeModal, setActiveModal] = useState(null);
+    const [createdDiscountReason, setCreatedDiscountReason] = useState(null);
 
     // RESTORED: Core Internal State
     const [snapshot, setSnapshot] = useState(null);
@@ -115,6 +120,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
     const loadSnapshot = async () => {
         if (!snapshot) setIsLoading(true);
+        const snapshotVersion = modeSwitchVersionRef.current;
         try {
             // In Resume/Correct Mode, we primarily query by VisitId
             // In Create Mode, we query by PatientId first (after selection)
@@ -141,20 +147,19 @@ export function IntentPanel({ onVisitUpdated }) {
             if (data?.visit?.visitId && data.visit.visitId !== currentVisitId) setCurrentVisitId(data.visit.visitId);
             if (data?.patient?.patientId && data.patient.patientId !== currentPatientId) setCurrentPatientId(data.patient.patientId);
 
-            // Sync multi-payer billing mode from snapshot
-            const bt = data?.visit?.billingType;
-            if (bt === 1 || bt === 'PrepaidPartner' || data?.visit?.paymentCollectionModel === 'PartnerCollects') {
-                setBillingMode('PrepaidPartner');
-                setIsPrepaidIntent(true);
-            } else if (bt === 2 || bt === 'Insurance') {
-                setBillingMode('Insurance');
-                setIsPrepaidIntent(false);
-            } else if (bt === 3 || bt === 'Corporate') {
-                setBillingMode('Corporate');
-                setIsPrepaidIntent(false);
-            } else if (bt === 0 || bt === 'Standard') {
-                setBillingMode('Standard');
-                setIsPrepaidIntent(false);
+            // Sync multi-payer billing mode from snapshot ONLY if a mode switch hasn't occurred in the meantime
+            if (snapshotVersion === modeSwitchVersionRef.current) {
+                const bt = data?.visit?.billingType;
+                if (bt === 1 || bt === 'PrepaidPartner' || data?.visit?.paymentCollectionModel === 'PartnerCollects') {
+                    setBillingMode('PrepaidPartner');
+                    setIsPrepaidIntent(true);
+                } else if (bt === 2 || bt === 'Insurance' || bt === 3 || bt === 'Corporate') {
+                    setBillingMode('Insurance');
+                    setIsPrepaidIntent(false);
+                } else if (bt === 0 || bt === 'Standard') {
+                    setBillingMode('Standard');
+                    setIsPrepaidIntent(false);
+                }
             }
         } catch (err) {
             console.error("Failed to load intake snapshot:", err);
@@ -257,21 +262,40 @@ export function IntentPanel({ onVisitUpdated }) {
     };
 
     const handleBillingModeChange = async (newMode) => {
+        if (billingMode === newMode) return;
+        const thisVersion = ++modeSwitchVersionRef.current;
         setBillingMode(newMode);
         setIsPrepaidIntent(newMode === 'PrepaidPartner');
+
         const vId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
-        if (vId && !snapshot?.billing?.isLocked) {
+        if (vId && (!snapshot?.billing?.isLocked || isCorrectionIntent)) {
             try {
+                // If switching to Direct / Standard or Prepaid, strip any institutional packages from basket
+                if (newMode !== 'Insurance' && newMode !== 'Corporate') {
+                    const existingTests = snapshot?.visit?.tests || [];
+                    const institutionalPkgs = existingTests.filter(t => {
+                        const c = (t.code || t.testCode || '').toUpperCase();
+                        return c.startsWith('PKG-') || t.isPackage === true;
+                    });
+                    for (const pkg of institutionalPkgs) {
+                        try {
+                            await ReceptionApi.removeTestFromVisit(vId, pkg.code || pkg.testCode);
+                        } catch (e) {
+                            console.warn("Failed to strip package from visit on mode change:", e);
+                        }
+                    }
+                }
+
+                // Single unified API call (SetBillingContextAsync atomically updates PaymentCollectionModel too)
                 await ReceptionApi.updateBillingContext({
                     visitId: vId,
                     billingType: newMode
                 });
-                if (newMode === 'PrepaidPartner') {
-                    await ReceptionApi.updatePaymentCollectionModel(vId, 'PartnerCollects');
-                } else {
-                    await ReceptionApi.updatePaymentCollectionModel(vId, 'LabCollects');
-                }
-                loadSnapshot();
+
+                // Drop stale responses if user clicked another mode while this request was flying
+                if (thisVersion !== modeSwitchVersionRef.current) return;
+
+                await loadSnapshot();
             } catch (err) {
                 console.error("Failed to switch billing mode:", err);
             }
@@ -415,6 +439,32 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     };
 
+    const [isGeneratingClaimDoc, setIsGeneratingClaimDoc] = useState(false);
+
+    const handlePrintDoctorReceivable = async () => {
+        const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+        if (!visitId) return;
+
+        setIsGeneratingClaimDoc(true);
+        try {
+            clearDocumentCache();
+            const claimData = await FinanceApi.getPartnerClaimStatement({
+                visitIds: [visitId]
+            });
+            setTaxInvoiceModal({
+                isOpen: true,
+                slotId: 'partner_b2b_invoice',
+                data: claimData,
+                title: `Doctor's Receivable Claim - ${claimData?.partner?.name || 'Partner'}`
+            });
+        } catch (err) {
+            console.error("Failed to load doctor receivable claim statement:", err);
+            alert("Could not load Doctor's Receivable Claim Statement: " + (err.message || 'Make sure a referral partner/RMP is selected.'));
+        } finally {
+            setIsGeneratingClaimDoc(false);
+        }
+    };
+
     const handleUnifiedAction = async () => {
         if (!snapshot?.billing || isActionSubmitting) return;
 
@@ -446,15 +496,11 @@ export function IntentPanel({ onVisitUpdated }) {
         // 2. AUTHORIZE INSURANCE CASHLESS CLAIM
         if (billingMode === 'Insurance' && !snapshot.billing.isLocked) {
             const v = snapshot.visit;
-            if (!v?.insuranceCompanyId) {
-                setError("Please select an Insurance Company / TPA Provider.");
+            if (!v?.insuranceCompanyId && !v?.corporateAccountId) {
+                setError("Please select an Insurance or Corporate Company.");
                 return;
             }
-            const policyNum = (v?.policyNumber || '').trim();
-            if (!policyNum) {
-                setError("Please specify the Policy / Member ID for this cashless insurance claim.");
-                return;
-            }
+            const policyNum = (v?.policyNumber || '').trim() || null;
 
             setIsLoading(true);
             setIsActionSubmitting(true);
@@ -463,8 +509,10 @@ export function IntentPanel({ onVisitUpdated }) {
                 await ReceptionApi.updateBillingContext({
                     visitId: snapshot.visit.visitId,
                     billingType: 'Insurance',
-                    insuranceCompanyId: v.insuranceCompanyId,
+                    insuranceCompanyId: v?.insuranceCompanyId || null,
+                    corporateAccountId: v?.corporateAccountId || null,
                     policyNumber: policyNum,
+                    employeeId: v?.employeeId || policyNum,
                     preAuthApprovalNumber: v?.preAuthApprovalNumber?.trim() || null,
                     insuranceCoPayAmount: v?.insuranceCoPayAmount || 0
                 });
@@ -623,7 +671,7 @@ export function IntentPanel({ onVisitUpdated }) {
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", 
-                hasPatient ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[75vw] max-w-[1520px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
+                hasPatient ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[84vw] max-w-[1780px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
                 ui.panel
             )}
         >
@@ -689,12 +737,12 @@ export function IntentPanel({ onVisitUpdated }) {
                                     />
                                 </div>
 
-                                {/* 2-Column Grid for Visit Details & Billing Summary */}
+                                {/* 2-Column Grid for Visit Details & Billing Summary (58% / 42% Ratio) */}
                                 <div className={cn(
-                                    hasPatient ? "grid grid-cols-2 gap-4 xl:gap-6 items-start" : "flex flex-col gap-4",
+                                    hasPatient ? "grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-start" : "flex flex-col gap-4",
                                     (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
                                 )}>
-                                    <div className={hasPatient ? "flex flex-col gap-6" : ""}>
+                                    <div className={hasPatient ? "lg:col-span-7 flex flex-col gap-5" : ""}>
                                         <VisitDetails
                                             snapshot={snapshot}
                                             visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
@@ -706,7 +754,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         />
                                     </div>
 
-                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "flex flex-col gap-6" : "")}>
+                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "lg:col-span-5 flex flex-col gap-5 sticky top-2" : "")}>
                                         <BillingSummary
                                             snapshot={snapshot}
                                             onVisitUpdated={loadSnapshot}
@@ -715,6 +763,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                             billingMode={billingMode}
                                             paymentMethod={paymentMethod}
                                             setPaymentMethod={setPaymentMethod}
+                                            onOpenModal={setActiveModal}
+                                            createdDiscountReason={createdDiscountReason}
                                         />
                                     </div>
                                 </div>
@@ -727,22 +777,32 @@ export function IntentPanel({ onVisitUpdated }) {
             {/* Footer / Status Bar - UNIFIED BUTTON */}
             <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
                 {isCorrectionIntent ? (
-                    <div className="flex items-center gap-2.5 w-full max-w-lg mx-auto">
+                    <div className="flex items-center gap-2 w-full max-w-lg mx-auto">
                         <button
                             type="button"
                             onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
-                            className="py-3 px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
                             title="Preview & Print Full A4 Tax Invoice"
                         >
-                            <FileText className="w-4 h-4" /> Print A4 Receipt
+                            <FileText className="w-4 h-4" /> A4 Receipt
                         </button>
                         <button
                             type="button"
                             onClick={() => handlePrintReceipt()}
-                            className="py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
                             title="Print Thermal 80mm POS Slip"
                         >
-                            <Printer className="w-4 h-4" /> Thermal Slip
+                            <Printer className="w-4 h-4" /> Thermal
+                        </button>
+                        <button
+                            type="button"
+                            disabled={isGeneratingClaimDoc}
+                            onClick={handlePrintDoctorReceivable}
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                            title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
+                        >
+                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                            Doc Claim
                         </button>
                         <button
                             type="button"
@@ -764,18 +824,28 @@ export function IntentPanel({ onVisitUpdated }) {
                                         <button
                                             type="button"
                                             onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
-                                            className="py-3 px-3.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
                                             title="Preview & Print Full A4 Tax Invoice"
                                         >
-                                            <FileText className="w-4 h-4" /> Print A4 Receipt
+                                            <FileText className="w-3.5 h-3.5" /> A4
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handlePrintReceipt}
-                                            className="py-3 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
                                             title="Print Thermal 80mm POS Slip"
                                         >
-                                            <Printer className="w-4 h-4" /> Thermal Slip
+                                            <Printer className="w-3.5 h-3.5" /> POS
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={isGeneratingClaimDoc}
+                                            onClick={handlePrintDoctorReceivable}
+                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                                            title="Print Doctor's Receivable Claim Statement for Safe Keeping"
+                                        >
+                                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                                            Doc Claim
                                         </button>
                                     </>
                                 )}
@@ -815,7 +885,11 @@ export function IntentPanel({ onVisitUpdated }) {
                     defaultLetterheadMode="digital"
                     paperSize={taxInvoiceModal.paperSize || "a4"}
                 >
-                    <DynamicDocumentRenderer slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} data={taxInvoiceModal.data} />
+                    <DynamicDocumentRenderer 
+                        slotId={taxInvoiceModal.slotId || "patient_tax_invoice"} 
+                        data={taxInvoiceModal.data} 
+                        forceRefresh={true}
+                    />
                 </CommercialDocumentViewer>
             )}
 
@@ -824,6 +898,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 isOpen={activeModal === 'referral'}
                 onClose={() => setActiveModal(null)}
                 initialPaymentModel={billingMode === 'PrepaidPartner' ? 'PartnerCollects' : 'LabCollects'}
+                initialPartnerType="Doctor"
                 isDark={isDark}
                 onSuccess={async (newPartner) => {
                     const partnerId = newPartner.referralPartnerId || newPartner.id;
@@ -833,6 +908,28 @@ export function IntentPanel({ onVisitUpdated }) {
                             await ReceptionApi.applyReferralToVisit(visitId, partnerId);
                         } catch (err) {
                             console.error("Failed to auto-apply referral partner to visit:", err);
+                        }
+                    }
+                    await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
+
+            {/* Dedicated RMP Quick-Add Modal */}
+            <AddReferralPartnerModal
+                isOpen={activeModal === 'rmp'}
+                onClose={() => setActiveModal(null)}
+                initialPaymentModel="PartnerCollects"
+                initialPartnerType="RMP"
+                isDark={isDark}
+                onSuccess={async (newPartner) => {
+                    const partnerId = newPartner.referralPartnerId || newPartner.id;
+                    const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+                    if (visitId && partnerId) {
+                        try {
+                            await ReceptionApi.updateSecondaryReferral(visitId, partnerId);
+                        } catch (err) {
+                            console.error("Failed to auto-apply RMP to visit:", err);
                         }
                     }
                     await loadSnapshot();
@@ -874,6 +971,16 @@ export function IntentPanel({ onVisitUpdated }) {
                         }
                     }
                     await loadSnapshot();
+                    setActiveModal(null);
+                }}
+            />
+
+            <AddDiscountReasonModal
+                isOpen={activeModal === 'discountReason'}
+                onClose={() => setActiveModal(null)}
+                isDark={isDark}
+                onSuccess={(newReason) => {
+                    setCreatedDiscountReason(newReason);
                     setActiveModal(null);
                 }}
             />

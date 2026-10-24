@@ -13,7 +13,8 @@ import {
     ChevronRight,
     LayoutDashboard,
     ShieldCheck,
-    Briefcase
+    Briefcase,
+    Tag
 } from 'lucide-react';
 import { SystemBar } from '@/components/layout/SystemBar';
 
@@ -60,6 +61,7 @@ export function FinanceLayout() {
                 { name: "Overview", path: "/finance/referrals/overview" },
                 { name: "Rate Queue", path: "/finance/referrals/rate-queue" },
                 { name: "Doctor Registry", path: "/finance/referrals/registry" },
+                { name: "RMP Partners", path: "/finance/referrals/rmp" },
                 { name: "Pending Payouts", path: "/finance/referrals/payouts" },
                 { name: "Partner Receivables", path: "/finance/referrals/receivables" },
                 { name: "Settlement History", path: "/finance/referrals/history" },
@@ -79,27 +81,27 @@ export function FinanceLayout() {
             ]
         },
         {
-            name: "Insurance / TPA",
+            name: "Insurance",
             path: "/finance/insurance",
             icon: ShieldCheck,
             subItems: [
                 { name: "Overview", path: "/finance/insurance/overview" },
-                { name: "Empanelment & Config", path: "/finance/insurance/empanelment" },
-                { name: "Cashless Claims", path: "/finance/insurance/claims" },
-                { name: "Receivables", path: "/finance/insurance/receivables" },
+                { name: "Insurance Companies", path: "/finance/insurance/empanelment" },
+                { name: "Packages & Pricing", path: "/finance/insurance/packages" },
+                { name: "Claims", path: "/finance/insurance/claims" },
+                { name: "Pending Dues", path: "/finance/insurance/receivables" },
                 { name: "Settlements", path: "/finance/insurance/settlements" }
             ]
         },
         {
-            name: "Corporate B2B",
-            path: "/finance/corporate",
-            icon: Briefcase,
+            name: "Discount Master",
+            path: "/finance/discounts",
+            icon: Tag,
             subItems: [
-                { name: "Overview", path: "/finance/corporate/overview" },
-                { name: "Client Organizations", path: "/finance/corporate/clients" },
-                { name: "Corporate Packages", path: "/finance/corporate/packages" },
-                { name: "Invoices & Billing", path: "/finance/corporate/invoices" },
-                { name: "Settlements", path: "/finance/corporate/settlements" }
+                { name: "Discount Codes", path: "/finance/discounts/codes" },
+                { name: "Preset Reasons", path: "/finance/discounts/reasons" },
+                { name: "Discount History", path: "/finance/discounts/history" },
+                { name: "Staff Summary", path: "/finance/discounts/staff" }
             ]
         },
         {

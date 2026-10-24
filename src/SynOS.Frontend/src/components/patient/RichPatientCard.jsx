@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
+import { User } from 'lucide-react'
 
 export const calculateDetailedAge = (dobString, fallbackAge) => {
     if (!dobString && fallbackAge && fallbackAge > 0) {
@@ -138,12 +139,12 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, isLocked }) =>
 
                 {/* COL 1: AVATAR (Row Span 3) */}
                 <div className={cn(
-                    "row-span-3 self-center w-12 h-12 rounded-full flex items-center justify-center shrink-0 type-value font-bold text-lg",
+                    "row-span-3 self-center w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                     isLocked
-                        ? "bg-synos-primary text-white shadow-sm"
-                        : "bg-[#8FB8E8] text-[#1E40AF]"
+                        ? (isDark ? "bg-synos-primary/20 text-synos-primary border border-synos-primary/30" : "bg-sky-100 text-sky-600 border border-sky-200")
+                        : (isDark ? "bg-zinc-800 text-zinc-300 border border-zinc-700" : "bg-slate-100 text-slate-600 border border-slate-200")
                 )}>
-                    {genderInitial}
+                    <User className="w-6 h-6" />
                 </div>
 
                 {/* ROW 1: NAME + SELECT */}

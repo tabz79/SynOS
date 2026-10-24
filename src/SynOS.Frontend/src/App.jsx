@@ -29,6 +29,8 @@ import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
 import { InsuranceTerminal } from '@/features/finance/InsuranceTerminal'
 import { CorporateTerminal } from '@/features/finance/CorporateTerminal'
+import { InstitutionalTerminal } from '@/features/finance/InstitutionalTerminal'
+import { DiscountMasterScreen } from '@/features/finance/DiscountMasterScreen'
 import { WorkforceTerminal, IdentityProvisioningScreen } from '@/features/finance/WorkforceScreens'
 import { StaffLayout } from '@/features/employee/StaffLayout'
 import { MyHRDashboard } from '@/features/employee/MyHRDashboard'
@@ -266,6 +268,14 @@ function App() {
                 {/* Corporate B2B Department */}
                 <Route path="/finance/corporate" element={<CorporateTerminal />} />
                 <Route path="/finance/corporate/:tab" element={<CorporateTerminal />} />
+
+                {/* Legacy Institutional Alias */}
+                <Route path="/finance/institutional" element={<InsuranceTerminal />} />
+                <Route path="/finance/institutional/:tab" element={<InsuranceTerminal />} />
+
+                {/* Discount Master */}
+                <Route path="/finance/discounts" element={<DiscountMasterScreen />} />
+                <Route path="/finance/discounts/:tab" element={<DiscountMasterScreen />} />
 
                 {/* Workforce & Payroll Department */}
                 <Route path="/finance/workforce" element={<WorkforceTerminal />} />

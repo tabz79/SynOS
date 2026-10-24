@@ -163,8 +163,13 @@ namespace SynOS.Services.Settlements
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                var validVisitIds = await _context.Visits
+                    .Where(v => v.SecondaryReferralPartnerId == partnerId || v.ReferralPartnerId == partnerId)
+                    .Select(v => v.VisitId)
+                    .ToListAsync();
+
                 var receivables = await _context.ReceivableFacts
-                    .Where(f => factIds.Contains(f.ReceivableFactId) && (f.ReferralPartnerId == partnerId || f.DebtorId == partnerId) && f.SettledAt == null)
+                    .Where(f => factIds.Contains(f.ReceivableFactId) && (f.ReferralPartnerId == partnerId || f.DebtorId == partnerId || validVisitIds.Contains(f.SourceVisitId)) && f.SettledAt == null)
                     .OrderBy(f => f.OccurredAt)
                     .ToListAsync();
 
@@ -178,6 +183,12 @@ namespace SynOS.Services.Settlements
                 foreach (var rec in receivables)
                 {
                     if (remaining <= 0) break;
+
+                    if (rec.DebtorType == DebtorType.Partner && rec.DebtorId != partnerId)
+                    {
+                        rec.DebtorId = partnerId;
+                        rec.ReferralPartnerId = partnerId;
+                    }
 
                     var outstanding = rec.Amount - rec.AmountReceived;
                     var apply = Math.Min(remaining, outstanding);
@@ -203,7 +214,7 @@ namespace SynOS.Services.Settlements
                     SourceReferenceId = $"BULK-{partnerId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
                     PaymentMode = Enum.TryParse<PaymentMode>(paymentMode, out var mode) ? mode : PaymentMode.BankTransfer,
                     DeclaredByUserId = _userContext.CurrentUserId,
-                    Notes = $"Partner: {partner.Name} | Bulk settlement for {receivables.Count} bills."
+                    Notes = $"Partner: {debtorName} | Bulk settlement for {receivables.Count} bills."
                 };
 
                 await _revenueFactWriter.DeclareRevenueFactAsync(command);
@@ -227,8 +238,13 @@ namespace SynOS.Services.Settlements
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                var validVisitIds = await _context.Visits
+                    .Where(v => v.SecondaryReferralPartnerId == partnerId || v.ReferralPartnerId == partnerId)
+                    .Select(v => v.VisitId)
+                    .ToListAsync();
+
                 var payables = await _context.ReferralPayableFacts
-                    .Where(f => factIds.Contains(f.ReferralPayableFactId) && f.ReferralPartnerId == partnerId && f.SettledAt == null)
+                    .Where(f => factIds.Contains(f.ReferralPayableFactId) && (f.ReferralPartnerId == partnerId || validVisitIds.Contains(f.SourceVisitId)) && f.SettledAt == null)
                     .OrderBy(f => f.OccurredAt)
                     .ToListAsync();
 
@@ -241,6 +257,11 @@ namespace SynOS.Services.Settlements
                 foreach (var payable in payables)
                 {
                     if (remaining <= 0) break;
+
+                    if (payable.ReferralPartnerId != partnerId)
+                    {
+                        payable.ReferralPartnerId = partnerId;
+                    }
 
                     var outstanding = payable.Amount - payable.AmountPaid;
                     var apply = Math.Min(remaining, outstanding);

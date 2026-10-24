@@ -615,27 +615,56 @@ namespace SynOS.Services.EconomicsIntelligence
 
         public async Task<IEnumerable<object>> GetReferralPayablesAsync()
         {
-            var query = from f in _context.ReferralPayableFacts
-                        join v in _context.Visits on f.SourceVisitId equals v.VisitId
-                        join p in _context.Patients on v.PatientId equals p.PatientId
-                        where f.SettledAt == null
-                        orderby f.RecordedAt descending
-                        select new
-                        {
-                            factId = f.ReferralPayableFactId,
-                            referralPartnerId = f.ReferralPartnerId,
-                            partnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Partner",
-                            amount = f.Amount - f.AmountPaid,
-                            originalAmount = f.Amount,
-                            amountPaid = f.AmountPaid,
-                            status = f.SettledAt == null ? "Pending" : "Settled",
-                            createdAt = f.RecordedAt,
-                            description = f.Description,
-                            patientName = p.FirstName + " " + p.LastName,
-                            token = v.Token
-                        };
+            var raw = await (from f in _context.ReferralPayableFacts
+                             join v in _context.Visits on f.SourceVisitId equals v.VisitId
+                             join p in _context.Patients on v.PatientId equals p.PatientId
+                             where f.SettledAt == null
+                             orderby f.RecordedAt descending
+                             select new
+                             {
+                                 f.ReferralPayableFactId,
+                                 f.Amount,
+                                 f.AmountPaid,
+                                 f.SettledAt,
+                                 f.RecordedAt,
+                                 f.Description,
+                                 PatientName = (p.FirstName + " " + p.LastName).Trim(),
+                                 Token = v.Token,
+                                 PrimaryPartnerId = v.ReferralPartnerId,
+                                 PrimaryPartnerName = v.ReferralPartner != null ? v.ReferralPartner.Name : null,
+                                 SecondaryPartnerId = v.SecondaryReferralPartnerId,
+                                 SecondaryPartnerName = v.SecondaryReferralPartner != null ? v.SecondaryReferralPartner.Name : null,
+                                 DefaultPartnerId = f.ReferralPartnerId,
+                                 DefaultPartnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Partner"
+                             }).ToListAsync();
 
-            return await query.ToListAsync();
+            return raw.Select(x =>
+            {
+                // Secondary referral partner receives payouts whenever assigned
+                var effectivePartnerId = x.SecondaryPartnerId ?? x.PrimaryPartnerId ?? x.DefaultPartnerId;
+                var effectivePartnerName = x.SecondaryPartnerName ?? x.PrimaryPartnerName ?? x.DefaultPartnerName;
+                var hasReferralChain = x.SecondaryPartnerId.HasValue && x.PrimaryPartnerId.HasValue;
+
+                return new
+                {
+                    factId = x.ReferralPayableFactId,
+                    referralPartnerId = effectivePartnerId,
+                    partnerName = effectivePartnerName,
+                    amount = x.Amount - x.AmountPaid,
+                    originalAmount = x.Amount,
+                    amountPaid = x.AmountPaid,
+                    status = x.SettledAt == null ? "Pending" : "Settled",
+                    createdAt = x.RecordedAt,
+                    description = x.Description,
+                    patientName = x.PatientName,
+                    token = x.Token,
+                    primaryDoctorId = x.PrimaryPartnerId,
+                    primaryDoctorName = x.PrimaryPartnerName,
+                    secondaryDoctorId = x.SecondaryPartnerId,
+                    secondaryDoctorName = x.SecondaryPartnerName,
+                    hasReferralChain = hasReferralChain
+                };
+            }).ToList();
         }
 
         public async Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync()
@@ -644,22 +673,33 @@ namespace SynOS.Services.EconomicsIntelligence
             var day7 = now.AddDays(-7);
             var day30 = now.AddDays(-30);
             
-            var query = await _context.ReceivableFacts
-                .AsNoTracking()
-                .Where(f => f.SettledAt == null && f.ReferralPartnerId != null)
-                .Select(f => new 
-                {
-                    f.ReferralPartnerId,
-                    PartnerName = f.ReferralPartner != null ? f.ReferralPartner.Name : "Unknown Account",
-                    f.Amount,
-                    f.AmountReceived,
-                    f.OccurredAt
-                })
-                .GroupBy(x => new { x.ReferralPartnerId, x.PartnerName })
+            var raw = await (from f in _context.ReceivableFacts.AsNoTracking()
+                             join v in _context.Visits.AsNoTracking() on f.SourceVisitId equals v.VisitId into vj
+                             from v in vj.DefaultIfEmpty()
+                             where f.SettledAt == null && (f.ReferralPartnerId != null || (v != null && (v.SecondaryReferralPartnerId != null || v.ReferralPartnerId != null)))
+                             select new
+                             {
+                                 EffectivePartnerId = (v != null && v.SecondaryReferralPartnerId != null) 
+                                     ? v.SecondaryReferralPartnerId.Value 
+                                     : (v != null && v.ReferralPartnerId != null) 
+                                         ? v.ReferralPartnerId.Value 
+                                         : (f.ReferralPartnerId ?? f.DebtorId),
+                                 EffectivePartnerName = (v != null && v.SecondaryReferralPartner != null)
+                                     ? v.SecondaryReferralPartner.Name
+                                     : (v != null && v.ReferralPartner != null)
+                                         ? v.ReferralPartner.Name
+                                         : (f.ReferralPartner != null ? f.ReferralPartner.Name : (!string.IsNullOrEmpty(f.DebtorName) ? f.DebtorName : "Unknown Account")),
+                                 f.Amount,
+                                 f.AmountReceived,
+                                 f.OccurredAt
+                             }).ToListAsync();
+
+            var query = raw
+                .GroupBy(x => new { x.EffectivePartnerId, x.EffectivePartnerName })
                 .Select(g => new PartnerReceivableSummaryDto
                 {
-                    PartnerId = g.Key.ReferralPartnerId ?? Guid.Empty,
-                    PartnerName = g.Key.PartnerName,
+                    PartnerId = g.Key.EffectivePartnerId,
+                    PartnerName = g.Key.EffectivePartnerName,
                     TotalOutstanding = g.Sum(x => x.Amount - x.AmountReceived),
                     BillCount = g.Count(),
                     OldestDueDate = g.Min(x => x.OccurredAt).DateTime,
@@ -667,7 +707,7 @@ namespace SynOS.Services.EconomicsIntelligence
                     Aging_7_30 = g.Where(x => x.OccurredAt < day7 && x.OccurredAt >= day30).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0,
                     Aging_30_Plus = g.Where(x => x.OccurredAt < day30).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0
                 })
-                .ToListAsync();
+                .ToList();
 
             return query;
         }

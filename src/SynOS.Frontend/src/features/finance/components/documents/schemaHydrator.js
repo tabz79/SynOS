@@ -233,42 +233,95 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             const summary = liveData.summary || {};
 
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.statementNo || boxes.docBadge.fields.billNumber.value;
-                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.generatedAt ? new Date(liveData.generatedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : new Date().toLocaleString();
+                const statementNum = liveData.statementNumber || liveData.statementNo || liveData.billNumber;
+                if (boxes.docBadge.fields.billNumber && statementNum) {
+                    boxes.docBadge.fields.billNumber.value = statementNum;
+                }
+                const dateVal = liveData.generatedAt || liveData.date;
+                if (boxes.docBadge.fields.date && dateVal) {
+                    boxes.docBadge.fields.date.value = new Date(dateVal).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                }
+                if (boxes.docBadge.fields.billingCycle && liveData.billingPeriod) {
+                    boxes.docBadge.fields.billingCycle.value = liveData.billingPeriod;
+                }
             }
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = partner.name || partner.partnerName || "Doctor Partner";
                 if (boxes.partyDetails.fields.clinicName) boxes.partyDetails.fields.clinicName.value = partner.clinicName || "Medical Clinic";
-                if (boxes.partyDetails.fields.partnerId) boxes.partyDetails.fields.partnerId.value = partner.partnerId || "";
+                
+                if (boxes.partyDetails.fields.partnerId) {
+                    let pId = partner.code || partner.partnerCode || partner.partnerId || "";
+                    if (typeof pId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pId)) {
+                        const cleanName = (partner.name || partner.partnerName || "PARTNER")
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9]+/g, '-')
+                            .replace(/^-+|-+$/g, '')
+                            .slice(0, 16);
+                        pId = `PART-${cleanName || pId.slice(0, 8).toUpperCase()}`;
+                    }
+                    boxes.partyDetails.fields.partnerId.value = pId;
+                }
+                
                 if (boxes.partyDetails.fields.phone) boxes.partyDetails.fields.phone.value = partner.phone || "";
                 if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = partner.address || "";
             }
 
             if (boxes.itemsTable && Array.isArray(liveData.items)) {
-                boxes.itemsTable.rows = liveData.items.map((it, idx) => ({
-                    id: `b2b-${idx}`,
-                    index: idx + 1,
-                    token: it.visitToken || it.token || `T-0${idx + 1}`,
-                    date: it.date ? new Date(it.date).toLocaleDateString() : '',
-                    patientName: it.patientName || 'Patient',
-                    investigations: it.investigations || 'Diagnostic Tests',
-                    labBilled: Number(it.grossBilled || it.labStandardCharge || 0),
-                    received: Number(it.amountReceived || 0),
-                    netDue: Number(it.netClaimDue || it.outstandingAmount || 0)
-                }));
+                boxes.itemsTable.rows = liveData.items.map((it, idx) => {
+                    const rowLabBilled = Number(it.labStandardCharge ?? it.grossAmount ?? it.grossBilled ?? it.labBilled ?? it.rate ?? 0);
+                    const rowReceived = Number(it.amountReceived ?? it.received ?? 0);
+                    const rowNetDue = Number(it.netClaimDue ?? it.netPayableToLab ?? it.outstandingAmount ?? it.netDue ?? 0);
+                    const rowToken = it.visitToken || it.token || `T-0${idx + 1}`;
+
+                    return {
+                        id: `b2b-${idx}`,
+                        index: idx + 1,
+                        token: rowToken,
+                        visitToken: rowToken,
+                        date: it.date ? new Date(it.date).toLocaleDateString() : '',
+                        patientName: it.patientName || 'Patient',
+                        investigations: it.investigations || 'Diagnostic Tests',
+                        tests: it.investigations || 'Diagnostic Tests',
+                        labBilled: rowLabBilled,
+                        grossAmount: rowLabBilled,
+                        labStandardCharge: rowLabBilled,
+                        tariff: rowLabBilled,
+                        price: rowLabBilled,
+                        rate: Number(it.rate ?? rowLabBilled),
+                        received: rowReceived,
+                        amountReceived: rowReceived,
+                        netDue: rowNetDue,
+                        netClaimDue: rowNetDue,
+                        netPayableToLab: rowNetDue,
+                        total: rowNetDue,
+                        amount: rowNetDue
+                    };
+                });
             }
 
             if (boxes.financialSummary?.fields) {
-                const count = summary.totalVisits || (liveData.items ? liveData.items.length : 0);
-                const billed = summary.grossBilled || 0;
-                const rec = summary.amountReceived || 0;
-                const due = summary.netClaimDue || (billed - rec);
+                const count = summary.totalVisits ?? summary.totalVisitsCount ?? (liveData.items ? liveData.items.length : 0);
+                const billed = summary.grossBilled ?? summary.totalGrossBilled ?? summary.totalDiagnosticCharges ?? 0;
+                const rec = summary.amountReceived ?? summary.totalReceived ?? summary.totalPaid ?? 0;
+                const due = summary.netClaimDue ?? summary.balanceDue ?? summary.totalNetDue ?? (billed - rec);
 
-                if (boxes.financialSummary.fields.totalVisits) boxes.financialSummary.fields.totalVisits.value = `${count} Visits Claimed`;
-                if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${Number(billed).toLocaleString()}`;
-                if (boxes.financialSummary.fields.totalPaid) boxes.financialSummary.fields.totalPaid.value = `₹${Number(rec).toLocaleString()}`;
-                if (boxes.financialSummary.fields.balanceDue) boxes.financialSummary.fields.balanceDue.value = `₹${Number(due).toLocaleString()}`;
+                if (boxes.financialSummary.fields.totalVisits) {
+                    boxes.financialSummary.fields.totalVisits.value = `${count} ${count === 1 ? 'Visit' : 'Visits'} Claimed`;
+                }
+                if (boxes.financialSummary.fields.grossSubtotal) {
+                    boxes.financialSummary.fields.grossSubtotal.value = `₹${Number(billed).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.discount) {
+                    const totalDisc = summary.totalDiscount !== undefined ? summary.totalDiscount : Math.max(0, billed - due - rec);
+                    boxes.financialSummary.fields.discount.value = `₹${Number(totalDisc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.totalPaid) {
+                    boxes.financialSummary.fields.totalPaid.value = `₹${Number(rec).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.balanceDue) {
+                    boxes.financialSummary.fields.balanceDue.value = `₹${Number(due).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
             }
 
             if (boxes.amountInWords) {

@@ -22,7 +22,8 @@ import {
     Clock,
     AlertCircle,
     Printer,
-    Download
+    Download,
+    Package
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -30,9 +31,11 @@ import { ReceptionApi } from '@/api/reception';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
+import { CorporateTerminal } from './CorporateTerminal';
 
-export function InsuranceTerminal() {
-    const { tab = 'overview' } = useParams();
+export function InsuranceTerminal({ forcedTab }) {
+    const { tab: paramTab = 'overview' } = useParams();
+    const tab = forcedTab || paramTab;
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -50,10 +53,11 @@ export function InsuranceTerminal() {
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-        { id: 'empanelment', label: 'Empanelment Master', icon: Building2 },
-        { id: 'claims', label: 'Claims & Pre-Auths', icon: FileText },
-        { id: 'receivables', label: 'TPA Receivables', icon: ArrowDownLeft },
-        { id: 'settlements', label: 'Remittance & Settlements', icon: History }
+        { id: 'empanelment', label: 'Insurance Companies', icon: Building2 },
+        { id: 'packages', label: 'Packages & Pricing', icon: Package },
+        { id: 'claims', label: 'Claims', icon: FileText },
+        { id: 'receivables', label: 'Pending Dues', icon: ArrowDownLeft },
+        { id: 'settlements', label: 'Settlements', icon: History }
     ];
 
     useEffect(() => {
@@ -247,10 +251,10 @@ export function InsuranceTerminal() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Insurance & TPA Terminal
+                            Insurance
                         </h1>
                         <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            Empanelment Registry, Cashless Pre-Auth & Claims Infrastructure
+                            Insurance companies, packages, claims, and settlements
                         </p>
                     </div>
                 </div>
@@ -345,41 +349,65 @@ export function InsuranceTerminal() {
                         {/* 1. OVERVIEW TAB */}
                         {tab === 'overview' && (
                             <div className="space-y-6 w-full">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Claims Submissions</span>
-                                            <FileText className="w-4 h-4 text-blue-500" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Claims Submissions</span>
+                                                <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{claims.length}</p>
+                                            </div>
+                                            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                                <FileText size={17} />
+                                            </div>
                                         </div>
-                                        <p className="text-2xl font-black tracking-tight dark:text-white">{claims.length}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Cashless visits recorded</p>
+                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                            Cashless diagnostic claims submitted
+                                        </p>
                                     </div>
 
-                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Pending Claims Value</span>
-                                            <Clock className="w-4 h-4 text-amber-500" />
+                                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Pending Claims Value</span>
+                                                <p className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">₹{totalClaimsAmount.toLocaleString()}</p>
+                                            </div>
+                                            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                                <Clock size={17} />
+                                            </div>
                                         </div>
-                                        <p className="text-2xl font-black tracking-tight text-amber-500">₹{totalClaimsAmount.toLocaleString()}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">{pendingClaimsCount} claims awaiting reimbursement</p>
+                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                            {pendingClaimsCount} claims awaiting reimbursement
+                                        </p>
                                     </div>
 
-                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Desk Co-Pay Collected</span>
-                                            <DollarSign className="w-4 h-4 text-emerald-500" />
+                                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Desk Co-Pay Collected</span>
+                                                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">₹{totalCoPayCollected.toLocaleString()}</p>
+                                            </div>
+                                            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                                <DollarSign size={17} />
+                                            </div>
                                         </div>
-                                        <p className="text-2xl font-black tracking-tight text-emerald-500">₹{totalCoPayCollected.toLocaleString()}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Directly collected from patients</p>
+                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                            Directly collected from patients
+                                        </p>
                                     </div>
 
-                                    <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Empanelled TPAs</span>
-                                            <Building2 className="w-4 h-4 text-indigo-500" />
+                                    <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Empanelled TPAs</span>
+                                                <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{companies.length}</p>
+                                            </div>
+                                            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                                <Building2 size={17} />
+                                            </div>
                                         </div>
-                                        <p className="text-2xl font-black tracking-tight dark:text-white">{companies.length}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Insurers with pre-auth desk</p>
+                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                            Insurers with active pre-auth desk
+                                        </p>
                                     </div>
                                 </div>
 
@@ -467,7 +495,7 @@ export function InsuranceTerminal() {
                                         onClick={() => { setEditingCompany(null); setIsAddModalOpen(true); }}
                                         className="px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer shrink-0"
                                     >
-                                        <Plus size={16} /> Add Empanelled Insurer / TPA
+                                        <Plus size={16} /> + Add Insurance Company
                                     </button>
                                 </div>
 
@@ -576,6 +604,13 @@ export function InsuranceTerminal() {
                                         </table>
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* 2.5. PACKAGES & CONTRACTED RATE MASTER */}
+                        {tab === 'packages' && (
+                            <div className="w-full">
+                                <CorporateTerminal forcedTab="packages" hideHeader={true} />
                             </div>
                         )}
 
@@ -918,8 +953,8 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                             <ShieldCheck size={20} />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold">{isEdit ? "Configure Insurer / TPA" : "Add Empanelled Insurer / TPA"}</h3>
-                            <p className="text-[10px] text-zinc-500">Persists to InsuranceCompanies master table</p>
+                            <h3 className="text-sm font-bold">{isEdit ? "Edit Insurance Company" : "Add Insurance Company"}</h3>
+                            <p className="text-[10px] text-zinc-500">Register insurance company or TPA network</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer">
@@ -1025,7 +1060,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                             className="px-5 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                            {isEdit ? "Update Insurer Details" : "Save Insurer Empanelment"}
+                            {isEdit ? "Update Insurance Company" : "Save Insurance Company"}
                         </button>
                     </div>
                 </form>

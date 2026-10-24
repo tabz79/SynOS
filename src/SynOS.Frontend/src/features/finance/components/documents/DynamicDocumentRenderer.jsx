@@ -9,22 +9,32 @@ import { Loader2 } from 'lucide-react';
 let cachedMappings = null;
 let cachedSettings = null;
 
+export const clearDocumentCache = () => {
+    cachedMappings = null;
+    cachedSettings = null;
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('synos_document_settings_updated'));
+    }
+};
+
 export const DynamicDocumentRenderer = ({
     slotId = "patient_tax_invoice",
     data,
     letterheadMode,
     topMarginMm,
-    readOnly = true
+    readOnly = true,
+    forceRefresh = false
 }) => {
-    const [loading, setLoading] = useState(!cachedMappings || !cachedSettings);
-    const [mappings, setMappings] = useState(cachedMappings || []);
-    const [settings, setSettings] = useState(cachedSettings || null);
+    const [loading, setLoading] = useState(forceRefresh || !cachedMappings || !cachedSettings);
+    const [mappings, setMappings] = useState(forceRefresh ? [] : (cachedMappings || []));
+    const [settings, setSettings] = useState(forceRefresh ? null : (cachedSettings || null));
 
     useEffect(() => {
         let isMounted = true;
-        const loadConfig = async () => {
+        const loadConfig = async (skipCache = false) => {
             try {
-                if (!cachedMappings || !cachedSettings) {
+                if (skipCache || forceRefresh || !cachedMappings || !cachedSettings) {
+                    if (isMounted) setLoading(true);
                     const [stationeryRes, mappingsRes] = await Promise.all([
                         FinanceApi.getStationerySettings(),
                         FinanceApi.getDocumentMappings()
@@ -44,8 +54,24 @@ export const DynamicDocumentRenderer = ({
         };
 
         loadConfig();
-        return () => { isMounted = false; };
-    }, []);
+
+        const handleSettingsUpdate = () => {
+            cachedMappings = null;
+            cachedSettings = null;
+            loadConfig(true);
+        };
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('synos_document_settings_updated', handleSettingsUpdate);
+        }
+
+        return () => { 
+            isMounted = false; 
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('synos_document_settings_updated', handleSettingsUpdate);
+            }
+        };
+    }, [forceRefresh]);
 
     if (loading && !data) {
         return (

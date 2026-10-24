@@ -86,6 +86,36 @@ BEGIN
     ALTER TABLE [Visits] ALTER COLUMN [Token] nvarchar(64) NOT NULL;
 END
 
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'SecondaryReferralPartnerId')
+BEGIN
+    ALTER TABLE [Visits] ADD [SecondaryReferralPartnerId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountAmount')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountAmount] decimal(18,2) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountType')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountType] nvarchar(20) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountValue')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountValue] decimal(18,2) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountEnteredBy')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountEnteredBy] nvarchar(256) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountEnteredAt')
+BEGIN
+    ALTER TABLE [Visits] ADD [B2BDiscountEnteredAt] datetimeoffset NULL;
+END
+
 -- 4. Add columns to DiscountMasters if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
 BEGIN
@@ -544,6 +574,46 @@ BEGIN
     );
     CREATE INDEX [IX_CorporateRateRules_Account_Test] ON [CorporateRateRules] ([CorporateAccountId], [TestId]);
 END
+
+-- 24. Synchronize legacy ReceivableFacts and ReferralPayableFacts to Secondary Referral Partner (RMP) if assigned
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'SecondaryReferralPartnerId')
+BEGIN
+    UPDATE rf
+    SET rf.ReferralPartnerId = v.SecondaryReferralPartnerId,
+        rf.DebtorId = v.SecondaryReferralPartnerId,
+        rf.DebtorName = ISNULL(rp.Name, rf.DebtorName)
+    FROM [AR].[ReceivableFacts] rf
+    INNER JOIN [Visits] v ON rf.SourceVisitId = v.VisitId
+    INNER JOIN [ReferralPartners] rp ON v.SecondaryReferralPartnerId = rp.ReferralPartnerId
+    WHERE v.SecondaryReferralPartnerId IS NOT NULL 
+      AND rf.DebtorType = 1 
+      AND rf.ReferralPartnerId <> v.SecondaryReferralPartnerId;
+
+    UPDATE pf
+    SET pf.ReferralPartnerId = v.SecondaryReferralPartnerId
+    FROM [ReferralPayableFacts] pf
+    INNER JOIN [Visits] v ON pf.SourceVisitId = v.VisitId
+    WHERE v.SecondaryReferralPartnerId IS NOT NULL 
+      AND pf.ReferralPartnerId <> v.SecondaryReferralPartnerId;
+END
+
+-- 25. Create DiscountReasons table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DiscountReasons' AND type = 'U')
+BEGIN
+    CREATE TABLE [DiscountReasons] (
+        [DiscountReasonId] uniqueidentifier NOT NULL,
+        [ReasonText] nvarchar(200) NOT NULL,
+        [Category] nvarchar(100) NULL,
+        [Description] nvarchar(500) NULL,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [SortOrder] int NOT NULL DEFAULT 0,
+        [CreatedBy] nvarchar(100) NULL,
+        [CreatedAt] datetime2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        [UpdatedAt] datetime2 NULL,
+        CONSTRAINT [PK_DiscountReasons] PRIMARY KEY ([DiscountReasonId])
+    );
+    CREATE INDEX [IX_DiscountReasons_IsActive_SortOrder] ON [DiscountReasons] ([IsActive], [SortOrder]);
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
@@ -586,6 +656,86 @@ END
             SeedTestDefinitions(context);
             SeedLabAnalyzers(context);
             SeedInsuranceAndCorporate(context);
+            SeedDiscountReasons(context);
+        }
+
+        private static void SeedDiscountReasons(SynOSDbContext context)
+        {
+            if (!context.DiscountReasons.Any())
+            {
+                var reasons = new List<SynOS.Models.Entities.Discounts.DiscountReason>
+                {
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Dr. DVR Recommendation",
+                        Category = "Doctor Recommendation",
+                        Description = "Concession requested by referring doctor Dr. DVR",
+                        IsActive = true,
+                        SortOrder = 1,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Lab Director / Owner Approval",
+                        Category = "Management Approval",
+                        Description = "Approved directly by lab owner / medical director",
+                        IsActive = true,
+                        SortOrder = 2,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Senior Citizen Concession",
+                        Category = "Special Concession",
+                        Description = "Standard senior citizen courtesy concession",
+                        IsActive = true,
+                        SortOrder = 3,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Staff / Family Concession",
+                        Category = "Internal Courtesy",
+                        Description = "Concession for internal staff members and immediate family",
+                        IsActive = true,
+                        SortOrder = 4,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Poor / BPL Patient Support",
+                        Category = "Social Support",
+                        Description = "Financial assistance for economically underprivileged patients",
+                        IsActive = true,
+                        SortOrder = 5,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Special Health Camp / Outreach",
+                        Category = "Campaign",
+                        Description = "Special campaign or community health screening concession",
+                        IsActive = true,
+                        SortOrder = 6,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    }
+                };
+
+                context.DiscountReasons.AddRange(reasons);
+                context.SaveChanges();
+            }
         }
 
         private static void SeedInsuranceAndCorporate(SynOSDbContext context)
@@ -706,40 +856,53 @@ END
 
                 context.CorporateAccounts.AddRange(corporateAccounts);
                 context.SaveChanges();
+            }
 
-                var tests = context.Tests.ToList();
-                if (tests.Any())
+            RepairAccidentalCorporatePackageTests(context);
+        }
+
+        private static void RepairAccidentalCorporatePackageTests(SynOSDbContext context)
+        {
+            try
+            {
+                // Auto-repair any tests whose TestCode was prefixed with PKG-LIC- or PKG-SBI- or whose TestName was wrapped in Employee Wellness / Corporate Health Bundle
+                var corruptTests = context.Tests
+                    .Where(t => t.TestCode.StartsWith("PKG-LIC-") || t.TestCode.StartsWith("PKG-SBI-") ||
+                                t.TestName.StartsWith("LIC Employee Wellness (") || t.TestName.StartsWith("SBI Corporate Health Bundle ("))
+                    .ToList();
+
+                foreach (var ct in corruptTests)
                 {
-                    var rateRules = new List<CorporateRateRule>();
-                    foreach (var t in tests)
-                    {
-                        rateRules.Add(new CorporateRateRule
-                        {
-                            CorporateRateRuleId = Guid.NewGuid(),
-                            CorporateAccountId = sbiId,
-                            TestId = t.TestId,
-                            ContractedPrice = 350.00m,
-                            IsPackage = t.IsProfile,
-                            PackageCode = t.IsProfile ? $"PKG-SBI-{t.TestCode}" : null,
-                            PackageName = t.IsProfile ? $"SBI Corporate Health Bundle ({t.TestName})" : null,
-                            IsActive = true
-                        });
+                    if (ct.TestCode.StartsWith("PKG-LIC-"))
+                        ct.TestCode = ct.TestCode.Substring("PKG-LIC-".Length);
+                    else if (ct.TestCode.StartsWith("PKG-SBI-"))
+                        ct.TestCode = ct.TestCode.Substring("PKG-SBI-".Length);
 
-                        rateRules.Add(new CorporateRateRule
-                        {
-                            CorporateRateRuleId = Guid.NewGuid(),
-                            CorporateAccountId = licId,
-                            TestId = t.TestId,
-                            ContractedPrice = 300.00m,
-                            IsPackage = t.IsProfile,
-                            PackageCode = t.IsProfile ? $"PKG-LIC-{t.TestCode}" : null,
-                            PackageName = t.IsProfile ? $"LIC Employee Wellness ({t.TestName})" : null,
-                            IsActive = true
-                        });
+                    if (ct.TestName.StartsWith("LIC Employee Wellness (") && ct.TestName.EndsWith(")"))
+                    {
+                        ct.TestName = ct.TestName.Substring("LIC Employee Wellness (".Length, ct.TestName.Length - "LIC Employee Wellness (".Length - 1);
                     }
-                    context.CorporateRateRules.AddRange(rateRules);
-                    context.SaveChanges();
+                    else if (ct.TestName.StartsWith("SBI Corporate Health Bundle (") && ct.TestName.EndsWith(")"))
+                    {
+                        ct.TestName = ct.TestName.Substring("SBI Corporate Health Bundle (".Length, ct.TestName.Length - "SBI Corporate Health Bundle (".Length - 1);
+                    }
+
+                    // Reset Category if it was marked as CorporatePackage
+                    if (ct.Category == "CorporatePackage")
+                    {
+                        ct.Category = "Biochemistry";
+                    }
                 }
+
+                if (corruptTests.Any())
+                {
+                    context.SaveChanges();
+                    Console.WriteLine($"[DbInitializer] Repaired {corruptTests.Count} tests corrupted by legacy corporate package mutation.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during test repair: {ex.Message}");
             }
         }
 

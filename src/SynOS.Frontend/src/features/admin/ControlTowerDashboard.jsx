@@ -24,6 +24,25 @@ import { cn } from "@/lib/utils";
 import { ReceptionApi } from "@/api/reception";
 import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
+import {
+    ReceptionWatermark,
+    TypingWatermark,
+    DeliveryWatermark,
+    PhlebotomyWatermark,
+    WorkbenchWatermark,
+    PathologistWatermark,
+    XRayWatermark,
+    UltrasoundWatermark,
+    CTScanWatermark,
+    MRIWatermark,
+    RadiologistWatermark,
+    TotalTestsWatermark,
+    CollectionWatermark,
+    ReferralsWatermark,
+    CashFlowWatermark,
+    OnlineTotalWatermark,
+    NetInHandWatermark
+} from './components/ControlTowerWatermarks';
 
 export function ControlTowerDashboard() {
     const { theme } = useTheme();
@@ -153,23 +172,23 @@ export function ControlTowerDashboard() {
     const cardClasses = "synos-dept-card";
 
     const operationsCards = [
-        { title: "Reception", subtitle: "Registration & Billing", icon: UserPlus, data: summary?.reception, path: "/reception", btnText: "Open Reception" },
-        { title: "Reports Typing", subtitle: "Data Entry & Review", icon: Keyboard, data: summary?.reportsTyping, path: "/typist", btnText: "Open Typing" },
-        { title: "Delivery Desk", subtitle: "Report Dispatch", icon: Truck, data: summary?.delivery, path: "/delivery", btnText: "Open Delivery" },
+        { title: "Reception", subtitle: "Registration & Billing", icon: UserPlus, watermark: ReceptionWatermark, data: summary?.reception, path: "/reception", btnText: "Open Reception" },
+        { title: "Reports Typing", subtitle: "Data Entry & Review", icon: Keyboard, watermark: TypingWatermark, data: summary?.reportsTyping, path: "/typist", btnText: "Open Typing" },
+        { title: "Delivery Desk", subtitle: "Report Dispatch", icon: Truck, watermark: DeliveryWatermark, data: summary?.delivery, path: "/delivery", btnText: "Open Delivery" },
     ];
 
     const pathologyCards = [
-        { title: "Phlebotomy", subtitle: "Sample Collection", icon: Syringe, data: summary?.phlebotomy, path: "/phlebotomist", btnText: "Open Phlebotomy" },
-        { title: "Lab Workbench", subtitle: "Processing & Testing", icon: Beaker, data: summary?.labWorkbench, path: "/workbench", btnText: "Open Workbench" },
-        { title: "Pathologist", subtitle: "Final Validation", icon: UserCheck, data: summary?.pathologist, path: "/pathologist", btnText: "Open Pathologist" },
+        { title: "Phlebotomy", subtitle: "Sample Collection", icon: Syringe, watermark: PhlebotomyWatermark, data: summary?.phlebotomy, path: "/phlebotomist", btnText: "Open Phlebotomy" },
+        { title: "Lab Workbench", subtitle: "Processing & Testing", icon: Beaker, watermark: WorkbenchWatermark, data: summary?.labWorkbench, path: "/workbench", btnText: "Open Workbench" },
+        { title: "Pathologist", subtitle: "Final Validation", icon: UserCheck, watermark: PathologistWatermark, data: summary?.pathologist, path: "/pathologist", btnText: "Open Pathologist" },
     ];
 
     const radiologyCards = [
-        { title: "X-Ray Technician", subtitle: "Image Acquisition", icon: Activity, data: summary?.xRayTech, path: "/xraytech", btnText: "Open X-Ray" },
-        { title: "Ultrasound Technician", subtitle: "Ultrasonic Scan", icon: Activity, data: summary?.usTech, path: "/ustech", btnText: "Open Ultrasound" },
-        { title: "CT Technician", subtitle: "CT Scan Acquisition", icon: Activity, data: summary?.ctTech, path: "/cttech", btnText: "Open CT Scan" },
-        { title: "MRI Technician", subtitle: "Magnetic Resonance", icon: Activity, data: summary?.mriTech, path: "/mritech", btnText: "Open MRI" },
-        { title: "Radiologist", subtitle: "Clinical Reporting", icon: Eye, data: summary?.radiologist, path: "/radiologist", btnText: "Open Radiologist" },
+        { title: "X-Ray Technician", subtitle: "Image Acquisition", icon: Activity, watermark: XRayWatermark, data: summary?.xRayTech, path: "/xraytech", btnText: "Open X-Ray" },
+        { title: "Ultrasound Technician", subtitle: "Ultrasonic Scan", icon: Activity, watermark: UltrasoundWatermark, data: summary?.usTech, path: "/ustech", btnText: "Open Ultrasound" },
+        { title: "CT Technician", subtitle: "CT Scan Acquisition", icon: Activity, watermark: CTScanWatermark, data: summary?.ctTech, path: "/cttech", btnText: "Open CT Scan" },
+        { title: "MRI Technician", subtitle: "Magnetic Resonance", icon: Activity, watermark: MRIWatermark, data: summary?.mriTech, path: "/mritech", btnText: "Open MRI" },
+        { title: "Radiologist", subtitle: "Clinical Reporting", icon: Eye, watermark: RadiologistWatermark, data: summary?.radiologist, path: "/radiologist", btnText: "Open Radiologist" },
     ];
 
     const activeBranchName = isConsolidated 
@@ -325,68 +344,82 @@ export function ControlTowerDashboard() {
 
             {/* Financial Strip */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                <MetricBox label="Total Tests" value={summary?.financials?.totalTestsDone} icon={Activity} cardStyle={cardStyle} cardClasses={cardClasses} />
-                <MetricBox label="Collection" value={`₹ ${summary?.financials?.totalCollectionSales?.toLocaleString()}`} icon={TrendingUp} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
-                <MetricBox label="Referrals" value={`₹ ${summary?.financials?.referralPayouts?.toLocaleString()}`} icon={Wallet} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
-                <MetricBox label="Cash Flow" value={`₹ ${summary?.financials?.totalCashReceived?.toLocaleString()}`} icon={Banknote} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
-                <MetricBox label="Online Total" value={`₹ ${summary?.financials?.onlineReceived?.toLocaleString()}`} icon={TrendingUp} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
-                <MetricBox label="Net In-Hand" value={`₹ ${summary?.financials?.netCashInHand?.toLocaleString()}`} icon={IndianRupee} isCurrency highlight cardStyle={cardStyle} cardClasses={cardClasses} />
+                <MetricBox label="Total Tests" value={summary?.financials?.totalTestsDone} icon={Activity} watermark={TotalTestsWatermark} cardStyle={cardStyle} cardClasses={cardClasses} />
+                <MetricBox label="Collection" value={`₹ ${summary?.financials?.totalCollectionSales?.toLocaleString()}`} icon={TrendingUp} watermark={CollectionWatermark} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
+                <MetricBox label="Referrals" value={`₹ ${summary?.financials?.referralPayouts?.toLocaleString()}`} icon={Wallet} watermark={ReferralsWatermark} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
+                <MetricBox label="Cash Flow" value={`₹ ${summary?.financials?.totalCashReceived?.toLocaleString()}`} icon={Banknote} watermark={CashFlowWatermark} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
+                <MetricBox label="Online Total" value={`₹ ${summary?.financials?.onlineReceived?.toLocaleString()}`} icon={TrendingUp} watermark={OnlineTotalWatermark} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
+                <MetricBox label="Net In-Hand" value={`₹ ${summary?.financials?.netCashInHand?.toLocaleString()}`} icon={IndianRupee} watermark={NetInHandWatermark} isCurrency highlight cardStyle={cardStyle} cardClasses={cardClasses} />
             </div>
         </div>
     );
 }
 
-function DepartmentCard({ title, subtitle, icon: Icon, data, btnText, onAction, cardStyle, cardClasses }) {
+function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, data, btnText, onAction, cardStyle, cardClasses }) {
     return (
         <div 
             style={cardStyle}
             className={cn(
-                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden", 
+                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative", 
                 cardClasses, 
                 "hover:-translate-y-0.5 hover:shadow-xl"
             )}
         >
-            <div className="p-5 flex-1 space-y-4">
-                <div className="flex items-start justify-between">
-                    <div className="flex gap-4">
-                        <Icon className="w-6 h-6 text-zinc-500 group-hover:text-synos-primary transition-colors" />
-                        <div>
-                            <h3 className="type-value !text-sm leading-none mb-1">{title}</h3>
-                            <p className="type-meta">{data?.secondaryText || subtitle}</p>
-                        </div>
-                    </div>
-                    {data?.status && (
-                        <div className="flex items-center gap-1.5">
-                            <div className={cn("w-1.5 h-1.5 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
-                            <span className="type-meta">{data.status}</span>
-                        </div>
-                    )}
+            {/* Background Architectural Vector Watermark */}
+            {Watermark && (
+                <div className="absolute right-0 top-3 bottom-12 w-[54%] max-w-[270px] pointer-events-none select-none flex items-center justify-end z-0 opacity-95 dark:opacity-45 transition-opacity pr-2">
+                    <Watermark className="w-full h-full object-contain object-right" />
                 </div>
-                <div className="flex items-baseline gap-2 pt-2">
-                    <span className="type-display !text-4xl leading-none">{data?.count || 0}</span>
-                    <span className="type-label">{data?.primaryText || 'items pending'}</span>
-                </div>
-                <div className="space-y-2.5 min-h-[100px] border-t dark:border-white/5 border-black/5 pt-4">
-                    {data?.items?.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-[11px] group/item">
-                            <span className="type-code">{item.name}</span>
-                            <div className="flex items-center gap-3">
-                                <span className="type-meta italic opacity-70">{item.detail}</span>
-                                <div className="flex items-center gap-1.5">
-                                    <div className={cn("w-1 h-1 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-zinc-400')} />
-                                    <span className="type-meta">{item.statusBadge}</span>
-                                </div>
+            )}
+
+            <div className="p-5 flex-1 flex flex-col justify-between relative z-10">
+                <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                        <div className="flex gap-3.5 items-center">
+                            <Icon className="w-5 h-5 text-zinc-500 group-hover:text-synos-primary transition-colors" />
+                            <div>
+                                <h3 className="type-value !text-sm leading-none mb-1 font-bold">{title}</h3>
+                                <p className="type-meta text-xs text-zinc-500">{data?.secondaryText || subtitle}</p>
                             </div>
                         </div>
-                    ))}
-                    {(!data?.items || data.items.length === 0) && (
-                        <div className="h-full flex items-center justify-center py-6">
-                            <span className="type-section-header opacity-50">Standby</span>
+                        {data?.status && (
+                            <div className="flex items-center gap-1.5 shrink-0 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-black/5 dark:border-white/5">
+                                <div className={cn("w-1.5 h-1.5 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
+                                <span className="type-meta text-[11px] font-medium">{data.status}</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex items-baseline gap-2 pt-1">
+                        <span className="type-display !text-4xl leading-none font-black">{data?.count || 0}</span>
+                        <span className="type-label text-xs text-zinc-500">{data?.primaryText || 'items pending'}</span>
+                    </div>
+                </div>
+
+                {/* Queue or Standby */}
+                <div className="mt-4 pt-2">
+                    {data?.items && data.items.length > 0 ? (
+                        <div className="space-y-1.5 max-w-[62%]">
+                            {data.items.map((item, idx) => (
+                                <div key={idx} className="flex flex-col text-[11px] group/item bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs py-1 px-2.5 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10">
+                                    <span className="type-code font-bold truncate">{item.name}</span>
+                                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                                        <span className="type-meta italic opacity-75 truncate text-[10px]">{item.detail}</span>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <div className={cn("w-1 h-1 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
+                                            <span className="text-[10px] font-semibold opacity-80">{item.statusBadge}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="py-5">
+                            <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
                         </div>
                     )}
                 </div>
             </div>
-            <button onClick={onAction} className="w-full py-3 border-t dark:border-white/5 border-black/5 type-section-header hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2">
+            <button onClick={onAction} className="w-full py-2.5 border-t dark:border-white/5 border-slate-200/80 type-section-header hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
                 {btnText}
                 <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -394,23 +427,35 @@ function DepartmentCard({ title, subtitle, icon: Icon, data, btnText, onAction, 
     );
 }
 
-function MetricBox({ label, value, icon: Icon, isCurrency, highlight, cardStyle, cardClasses }) {
+function MetricBox({ label, value, icon: Icon, watermark: Watermark, isCurrency, highlight, cardStyle, cardClasses }) {
     return (
         <div 
             style={highlight ? undefined : cardStyle} 
             className={cn(
-                "p-4 rounded-xl transition-all duration-200", 
-                highlight ? 'bg-synos-primary/10 border border-synos-primary/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]' : 'synos-kpi-card'
+                "p-4 rounded-xl transition-all duration-200 relative overflow-hidden group min-h-[96px]", 
+                highlight 
+                    ? 'bg-indigo-50/80 border border-indigo-200/80 dark:bg-indigo-950/30 dark:border-indigo-800/40 shadow-xs' 
+                    : 'synos-kpi-card',
+                "hover:scale-[1.02]"
             )}
         >
-            <div className="flex items-center justify-between mb-3">
-                <span className="type-label">{label}</span>
-                <Icon className={cn("w-4 h-4", highlight ? 'text-synos-primary' : 'text-zinc-500')} />
+            {/* Background Watermark Icon */}
+            {Watermark && (
+                <div className="absolute right-1 bottom-1 w-[85px] h-[72px] pointer-events-none select-none z-0 opacity-85 dark:opacity-40 flex items-end justify-end">
+                    <Watermark className="w-full h-full object-contain object-right-bottom" />
+                </div>
+            )}
+
+            <div className="relative z-10 flex flex-col justify-between h-full">
+                <div className="flex items-center justify-between mb-2">
+                    <span className="type-label text-xs font-semibold text-zinc-500">{label}</span>
+                    <Icon className={cn("w-4 h-4", highlight ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-500')} />
+                </div>
+                <div className={cn("type-display !text-2xl font-black", highlight ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-white")}>
+                    {value ?? (isCurrency ? '₹ 0' : '0')}
+                </div>
+                <div className="type-meta mt-1 opacity-50 text-[10px]">Reality Check</div>
             </div>
-            <div className={cn("type-display !text-2xl", highlight && "text-synos-primary")}>
-                {value ?? (isCurrency ? '₹ 0' : '0')}
-            </div>
-            <div className="type-meta mt-1 opacity-50">Reality Check</div>
         </div>
     );
 }

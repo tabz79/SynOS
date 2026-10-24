@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using SynOS.Models.Enums;
 
 namespace SynOS.Models.DTOs.Reception
@@ -42,7 +43,24 @@ namespace SynOS.Models.DTOs.Reception
         public string Status { get; set; } = "Draft"; // Draft, Billed, Paid, Cancelled
         public bool IsReferred { get; set; }
         public IntakeReferralPartner? ReferralPartner { get; set; }
+        public IntakeReferralPartner? SecondaryReferralPartner { get; set; }
         public string PaymentCollectionModel { get; set; } = "LabCollects";
+
+        [JsonPropertyName("b2bDiscountAmount")]
+        public decimal? B2BDiscountAmount { get; set; }
+
+        [JsonPropertyName("b2bDiscountType")]
+        public string? B2BDiscountType { get; set; }
+
+        [JsonPropertyName("b2bDiscountValue")]
+        public decimal? B2BDiscountValue { get; set; }
+
+        [JsonPropertyName("b2bDiscountEnteredBy")]
+        public string? B2BDiscountEnteredBy { get; set; }
+
+        [JsonPropertyName("b2bDiscountEnteredAt")]
+        public DateTimeOffset? B2BDiscountEnteredAt { get; set; }
+
         public List<IntakeTestItem> Tests { get; set; } = new();
 
         // Multi-Payer Billing Engine (Insurance & Corporate)
@@ -87,6 +105,9 @@ namespace SynOS.Models.DTOs.Reception
         public decimal TaxAmount { get; set; }
         public decimal TotalAmount { get; set; } // Net + Tax
         public decimal TotalPaid { get; set; } // For Settlement Calculation
+
+        [JsonPropertyName("b2bDiscountAmount")]
+        public decimal? B2BDiscountAmount { get; set; }
         
         public AppliedDiscountInfo? AppliedDiscount { get; set; }
         public IntakeReferralState? Referral { get; set; }
@@ -103,13 +124,19 @@ namespace SynOS.Models.DTOs.Reception
         public string Code { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public decimal Amount { get; set; }
+        public string Type { get; set; } = "Percentage";
+        public decimal Value { get; set; }
+        public string? AppliedBy { get; set; }
+        public string? Reason { get; set; }
     }
 
     public class IntakeReferralState
     {
         public ReferralPartnerInfo? Partner { get; set; }
+        public ReferralPartnerInfo? SecondaryPartner { get; set; }
         public ReferralDraftInfo? Draft { get; set; } // Added
         public string? ReferrerText { get; set; }
+        public string? PrescribingDoctorName { get; set; }
     }
 
     public class ReferralDraftInfo
@@ -124,6 +151,8 @@ namespace SynOS.Models.DTOs.Reception
     {
         public Guid Id { get; set; }
         public string DisplayName { get; set; } = string.Empty;
+        public string? PartnerType { get; set; }
+        public decimal? CommissionCutPercentage { get; set; }
     }
 
     public class IntakeUiHints

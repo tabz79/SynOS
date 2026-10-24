@@ -141,17 +141,35 @@ export const FinanceApi = {
         return response.json();
     },
 
+    fetchWithRetry: async (url, options, maxRetries = 1) => {
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                return await fetch(url, options);
+            } catch (err) {
+                if (attempt < maxRetries && (err.name === 'TypeError' || err.message?.includes('network') || err.message?.includes('failed') || err.message?.includes('Load failed'))) {
+                    await new Promise(r => setTimeout(r, 1200));
+                    continue;
+                }
+                throw err;
+            }
+        }
+    },
+
     /**
      * Saves billing stationery and letterhead settings.
      */
     saveStationerySettings: async (settings) => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
+        const response = await FinanceApi.fetchWithRetry(FinanceApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify(settings)
         });
         if (!response.ok) throw new Error("Failed to save stationery settings");
-        return response.json();
+        const res = await response.json();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('synos_document_settings_updated'));
+        }
+        return res;
     },
 
     /**
@@ -169,13 +187,17 @@ export const FinanceApi = {
      * Saves system document slots and paperwork mapping registry.
      */
     saveDocumentMappings: async (mappings) => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/document-mappings'), {
+        const response = await FinanceApi.fetchWithRetry(FinanceApi.withBranchId('/api/v1/finance/bills/document-mappings'), {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify(mappings)
         });
         if (!response.ok) throw new Error("Failed to save document mappings registry");
-        return response.json();
+        const res = await response.json();
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('synos_document_settings_updated'));
+        }
+        return res;
     },
 
     /**
@@ -717,6 +739,7 @@ export const FinanceApi = {
         if (params.query) queryParams.append('query', params.query);
         if (params.status && params.status !== 'all') queryParams.append('status', params.status);
         if (params.speciality && params.speciality !== 'all') queryParams.append('speciality', params.speciality);
+        if (params.partnerType && params.partnerType !== 'all') queryParams.append('partnerType', params.partnerType);
         if (params.sortBy) queryParams.append('sortBy', params.sortBy);
         if (params.page) queryParams.append('page', params.page);
         if (params.pageSize) queryParams.append('pageSize', params.pageSize);
@@ -1144,5 +1167,122 @@ export const FinanceApi = {
             if (!response.ok) throw new Error("Migration sync failed");
             return response.json();
         }
+    },
+
+    /**
+     * Discount Master Management API
+     */
+    getDiscounts: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.isActive !== undefined && params.isActive !== null) queryParams.append('isActive', params.isActive);
+        if (params.isEffective !== undefined && params.isEffective !== null) queryParams.append('isEffective', params.isEffective);
+        if (params.search) queryParams.append('search', params.search);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount definitions");
+        return response.json();
+    },
+
+    getDiscountById: async (id) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/${id}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount definition");
+        return response.json();
+    },
+
+    createDiscount: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/discounts'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to create discount definition");
+        }
+        return response.json();
+    },
+
+    updateDiscount: async (id, payload) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/${id}`), {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to update discount definition");
+        }
+        return response.json();
+    },
+
+    getDiscountHistory: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.source) queryParams.append('source', params.source);
+        if (params.fromDate) queryParams.append('fromDate', params.fromDate);
+        if (params.toDate) queryParams.append('toDate', params.toDate);
+        if (params.search) queryParams.append('search', params.search);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/history${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount history");
+        return response.json();
+    },
+
+    getDiscountReasons: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.isActive !== undefined && params.isActive !== null) queryParams.append('isActive', params.isActive);
+        if (params.search) queryParams.append('search', params.search);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/reasons${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount reasons");
+        return response.json();
+    },
+
+    createDiscountReason: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/discounts/reasons'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to create discount reason");
+        }
+        return response.json();
+    },
+
+    updateDiscountReason: async (id, payload) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/reasons/${id}`), {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to update discount reason");
+        }
+        return response.json();
+    },
+
+    deleteDiscountReason: async (id) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/reasons/${id}`), {
+            method: 'DELETE',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to delete discount reason");
+        }
+        return response.json();
     }
 };

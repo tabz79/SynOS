@@ -265,18 +265,116 @@ export const ReceptionApi = {
     },
 
     /**
-     * Applies a discount code to the specified visit.
+     * Fetches preset discount reasons / authorization authorities.
+     * @returns {Promise<Array>}
+     */
+    getDiscountReasons: async () => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/discounts/reasons?isActive=true'), {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount reasons");
+        return response.json();
+    },
+
+    /**
+     * Quick-adds a new preset discount reason from Reception / Billing.
+     * @param {Object} data - { reasonText, category, description }
+     * @returns {Promise<Object>}
+     */
+    createDiscountReason: async (data) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/discounts/reasons'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to create discount reason");
+        }
+        return response.json();
+    },
+
+    /**
+     * Applies a discount code or custom percentage/flat discount to the specified visit.
      * @param {string} visitId
-     * @param {string} discountCode 
+     * @param {string|Object} discountPayload - string discountCode OR { discountCode, mode, customValue, reason }
      * @returns {Promise<void>}
      */
-    applyDiscountToVisit: async (visitId, discountCode) => {
+    applyDiscountToVisit: async (visitId, discountPayload) => {
+        const body = typeof discountPayload === 'string'
+            ? { VisitId: visitId, DiscountCode: discountPayload }
+            : {
+                VisitId: visitId,
+                DiscountCode: discountPayload?.discountCode || null,
+                Mode: discountPayload?.mode || null,
+                CustomValue: discountPayload?.customValue !== undefined && discountPayload?.customValue !== null ? Number(discountPayload.customValue) : null,
+                Reason: discountPayload?.reason || null
+            };
         const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/discount'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({ VisitId: visitId, DiscountCode: discountCode })
+            body: JSON.stringify(body)
         });
-        if (!response.ok) throw new Error('Failed to apply discount');
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to apply discount');
+        }
+    },
+
+    /**
+     * Sets or removes the secondary referral doctor (RMP) on the visit.
+     * @param {string} visitId
+     * @param {string|null} secondaryReferralPartnerId
+     * @returns {Promise<any>}
+     */
+    updateSecondaryReferral: async (visitId, secondaryReferralPartnerId) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/secondary-referral'), {
+            method: 'PUT',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify({
+                VisitId: visitId,
+                SecondaryReferralPartnerId: secondaryReferralPartnerId || null
+            })
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to update secondary referral doctor');
+        }
+        return response.json();
+    },
+
+    /**
+     * Updates the Corporate B2B (Prepaid) discount rate and net receivable on the visit.
+     * @param {string} visitId
+     * @param {number} b2bDiscountAmount
+     * @returns {Promise<any>}
+     */
+    updateB2BDiscountRate: async (visitId, payloadOrAmount) => {
+        const isObj = typeof payloadOrAmount === 'object' && payloadOrAmount !== null;
+        const discountAmount = Number(isObj ? (payloadOrAmount.discountAmount ?? payloadOrAmount.b2bDiscountAmount ?? payloadOrAmount.b2BDiscountAmount) : payloadOrAmount) || 0;
+        const discountType = isObj ? (payloadOrAmount.discountType || 'Flat') : 'Flat';
+        const discountValue = Number(isObj ? (payloadOrAmount.discountValue ?? payloadOrAmount.discountAmount) : payloadOrAmount) || 0;
+        const payload = {
+            VisitId: visitId,
+            visitId: visitId,
+            B2BDiscountAmount: discountAmount,
+            b2BDiscountAmount: discountAmount,
+            b2bDiscountAmount: discountAmount,
+            DiscountType: discountType,
+            discountType: discountType,
+            DiscountValue: discountValue,
+            discountValue: discountValue
+        };
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/visit/b2b-rate'), {
+            method: 'PUT',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to update B2B discount rate');
+        }
+        return response.json();
     },
 
     /**

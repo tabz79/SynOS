@@ -13,6 +13,8 @@ namespace SynOS.Services
         Task<ReceptionStartVisitResponse> RemoveTestAsync(Guid visitId, string testCode, Guid actorUserId);
         Task<ReceptionStartVisitResponse> RemoveOrderAsync(Guid visitId, Guid orderId, Guid actorUserId);
         Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId);
+        Task SetSecondaryReferralAsync(Guid visitId, Guid? secondaryPartnerId, Guid actorUserId);
+        Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId);
         Task RemoveVisitReferralAsync(Guid visitId, Guid actorUserId);
         Task UpdateReferrerTextAsync(Guid visitId, string? referrerText, Guid actorUserId);
         Task SetVisitCollectionModelAsync(Guid visitId, string model, Guid actorUserId);
@@ -25,6 +27,7 @@ namespace SynOS.Services
         
         // Added for Discount Wiring
         Task ApplyDiscountAsync(Guid visitId, string discountCode, Guid actorUserId);
+        Task ApplyCustomDiscountAsync(Guid visitId, string mode, decimal value, string? reason, Guid actorUserId);
         Task RemoveDiscountAsync(Guid visitId, Guid actorUserId);
 
         // Added for Referral Draft

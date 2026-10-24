@@ -56,6 +56,10 @@ namespace SynOS.Api.Controllers.AR
                                  r.DebtorName,
                                  r.ClaimReference,
                                  r.ReferralPartnerId,
+                                 PrimaryPartnerId = v.ReferralPartnerId,
+                                 PrimaryPartnerName = v.ReferralPartner != null ? v.ReferralPartner.Name : null,
+                                 SecondaryPartnerId = v.SecondaryReferralPartnerId,
+                                 SecondaryPartnerName = v.SecondaryReferralPartner != null ? v.SecondaryReferralPartner.Name : null,
                                  PartnerName = v.ReferralPartner != null ? v.ReferralPartner.Name : (r.DebtorType == DebtorType.Partner ? r.DebtorName : ""),
                                  CorporateName = v.CorporateAccount != null ? v.CorporateAccount.CompanyName : (r.DebtorType == DebtorType.Corporate ? r.DebtorName : ""),
                                  InsuranceName = v.InsuranceCompany != null ? v.InsuranceCompany.Name : (r.DebtorType == DebtorType.Insurance ? r.DebtorName : ""),
@@ -78,16 +82,32 @@ namespace SynOS.Api.Controllers.AR
                 var pending = x.Amount - x.AmountReceived;
                 var status = x.SettledAt.HasValue ? "Settled" : (x.AmountReceived > 0 ? "Partial" : "Pending");
 
+                // Secondary Referral overrides primary doctor for financial attribution (Receivables & Payouts)
+                var effectivePartnerId = x.SecondaryPartnerId ?? x.PrimaryPartnerId ?? x.ReferralPartnerId ?? (x.DebtorId != Guid.Empty ? x.DebtorId : (Guid?)null);
+                var effectivePartnerName = x.SecondaryPartnerName 
+                    ?? x.PrimaryPartnerName 
+                    ?? (!string.IsNullOrEmpty(x.PartnerName) ? x.PartnerName : (!string.IsNullOrEmpty(x.DebtorName) ? x.DebtorName : "Unknown Partner"));
+
+                var isPartnerDebtor = x.DebtorType == "Partner";
+                var resolvedDebtorId = isPartnerDebtor && effectivePartnerId.HasValue ? effectivePartnerId.Value : (x.DebtorId != Guid.Empty ? x.DebtorId : (effectivePartnerId ?? Guid.Empty));
+                var resolvedDebtorName = isPartnerDebtor ? effectivePartnerName : (!string.IsNullOrEmpty(x.DebtorName) ? x.DebtorName : effectivePartnerName);
+                var hasReferralChain = x.SecondaryPartnerId.HasValue && x.PrimaryPartnerId.HasValue;
+
                 return new
                 {
                     receivableFactId = x.ReceivableFactId,
                     sourceVisitId = x.SourceVisitId,
                     debtorType = x.DebtorType,
-                    debtorId = x.DebtorId != Guid.Empty ? x.DebtorId : (x.ReferralPartnerId ?? Guid.Empty),
-                    debtorName = !string.IsNullOrEmpty(x.DebtorName) ? x.DebtorName : (x.PartnerName != "" ? x.PartnerName : "Unknown Account"),
+                    debtorId = resolvedDebtorId,
+                    debtorName = resolvedDebtorName,
                     claimReference = x.ClaimReference,
-                    referralPartnerId = x.ReferralPartnerId,
-                    partnerName = !string.IsNullOrEmpty(x.PartnerName) ? x.PartnerName : (x.DebtorType == "Partner" ? x.DebtorName : "Direct / Walk-in"),
+                    referralPartnerId = effectivePartnerId,
+                    partnerName = effectivePartnerName,
+                    primaryDoctorId = x.PrimaryPartnerId,
+                    primaryDoctorName = x.PrimaryPartnerName,
+                    secondaryDoctorId = x.SecondaryPartnerId,
+                    secondaryDoctorName = x.SecondaryPartnerName,
+                    hasReferralChain = hasReferralChain,
                     corporateName = x.CorporateName,
                     insuranceName = x.InsuranceName,
                     amount = x.Amount,

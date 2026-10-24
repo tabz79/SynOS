@@ -8,7 +8,7 @@ namespace SynOS.Models.Entities.Referral
         [Key]
         public Guid ReferralPayableFactId { get; init; }
 
-        public Guid ReferralPartnerId { get; init; }
+        public Guid ReferralPartnerId { get; set; }
 
         public decimal Amount { get; set; }
         

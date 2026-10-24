@@ -32,7 +32,7 @@ import {
 import { FinanceApi } from '@/api/finance';
 import { cn } from '@/lib/utils';
 
-export const PartnerRegistryTab = () => {
+export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = false }) => {
     // Directory state
     const [directoryData, setDirectoryData] = useState({
         items: [],
@@ -87,6 +87,7 @@ export const PartnerRegistryTab = () => {
                 query: debouncedSearch,
                 status: statusFilter,
                 speciality: specialityFilter,
+                partnerType: isRmpOnly ? 'RMP' : (defaultPartnerType || undefined),
                 sortBy: sortBy,
                 page: page,
                 pageSize: pageSize
@@ -107,7 +108,7 @@ export const PartnerRegistryTab = () => {
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, statusFilter, specialityFilter, sortBy, page, pageSize]);
+    }, [debouncedSearch, statusFilter, specialityFilter, sortBy, page, pageSize, isRmpOnly, defaultPartnerType]);
 
     useEffect(() => {
         loadDirectory();
@@ -634,6 +635,7 @@ export const PartnerRegistryTab = () => {
             {/* ONBOARD NEW DOCTOR MODAL */}
             {isAddDoctorModalOpen && (
                 <PartnerFormModal 
+                    defaultPartnerType={isRmpOnly ? 'RMP' : 'Doctor'}
                     onClose={() => setIsAddDoctorModalOpen(false)} 
                     onSave={loadDirectory} 
                 />
@@ -1328,11 +1330,11 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 /* -------------------------------------------------------------------------- */
 /* ADD / EDIT DOCTOR MODAL                                                    */
 /* -------------------------------------------------------------------------- */
-const PartnerFormModal = ({ partner, onClose, onSave }) => {
+const PartnerFormModal = ({ partner, onClose, onSave, defaultPartnerType = 'Doctor' }) => {
     const isEdit = !!partner;
     const [formData, setFormData] = useState({
         name: partner?.name || '',
-        partnerType: partner?.partnerType || 'Doctor',
+        partnerType: partner?.partnerType || defaultPartnerType || 'Doctor',
         clinicName: partner?.clinicName || '',
         location: partner?.location || '',
         defaultCommissionPercentage: partner?.defaultCommissionPercentage ?? 10,
@@ -1395,6 +1397,20 @@ const PartnerFormModal = ({ partner, onClose, onSave }) => {
                                 className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
                                 placeholder="e.g. Dr. Ramesh Kumar"
                             />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="type-label text-xs">Partner Type</label>
+                            <select
+                                value={formData.partnerType}
+                                onChange={(e) => setFormData({...formData, partnerType: e.target.value})}
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                            >
+                                <option value="Doctor">Doctor / Physician</option>
+                                <option value="RMP">RMP (Rural Medical Practitioner)</option>
+                                <option value="Clinic">Clinic / Diagnostic Center</option>
+                                <option value="Hospital">Hospital / Nursing Home</option>
+                            </select>
                         </div>
 
                         <div className="space-y-1">

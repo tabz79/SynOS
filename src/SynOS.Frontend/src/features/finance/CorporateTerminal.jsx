@@ -38,8 +38,9 @@ import { FinancePrintableSummaryModal } from './components/FinancePrintableSumma
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 
-export function CorporateTerminal() {
-    const { tab = 'overview' } = useParams();
+export function CorporateTerminal({ forcedTab, hideHeader = false }) {
+    const { tab: paramTab = 'overview' } = useParams();
+    const tab = forcedTab || paramTab;
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -437,97 +438,101 @@ export function CorporateTerminal() {
 
     return (
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
-            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
-                        <Briefcase size={24} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Corporate B2B Terminal
-                        </h1>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            Client Directory, Contracted Rates & Corporate Package Infrastructure
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
-                        <div className="text-right">
-                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total B2B Invoiced</p>
-                            <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">₹{totalB2BAmount.toLocaleString()}</p>
+            {!hideHeader && (
+                <>
+                    {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
+                    <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
+                                <Briefcase size={24} />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
+                                    Corporate B2B Terminal
+                                </h1>
+                                <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                                    Client Directory, Contracted Rates & Corporate Package Infrastructure
+                                </p>
+                            </div>
                         </div>
-                        <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
-                        <div className="text-right">
-                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Active Clients</p>
-                            <p className="text-xs font-black text-zinc-900 dark:text-zinc-100">{accounts.filter(a => a.isActive).length}</p>
+
+                        <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
+                                <div className="text-right">
+                                    <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total B2B Invoiced</p>
+                                    <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">₹{totalB2BAmount.toLocaleString()}</p>
+                                </div>
+                                <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
+                                <div className="text-right">
+                                    <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Active Clients</p>
+                                    <p className="text-xs font-black text-zinc-900 dark:text-zinc-100">{accounts.filter(a => a.isActive).length}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleDownloadTabSummary}
+                                    className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
+                                    title="Download CSV for current tab"
+                                >
+                                    <Download size={14} className="text-zinc-500" />
+                                    <span>Download Summary</span>
+                                </button>
+
+                                <button
+                                    onClick={() => setIsPrintSummaryOpen(true)}
+                                    className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
+                                    title="Print official A4 summary for current tab"
+                                >
+                                    <Printer size={14} />
+                                    <span>Print Summary</span>
+                                </button>
+
+                                <button 
+                                    onClick={loadData} 
+                                    className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer"
+                                    title="Refresh"
+                                >
+                                    <History size={16} className="text-zinc-500" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
-                            title="Download CSV for current tab"
-                        >
-                            <Download size={14} className="text-zinc-500" />
-                            <span>Download Summary</span>
-                        </button>
-
-                        <button
-                            onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
-                            title="Print official A4 summary for current tab"
-                        >
-                            <Printer size={14} />
-                            <span>Print Summary</span>
-                        </button>
-
-                        <button 
-                            onClick={loadData} 
-                            className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer"
-                            title="Refresh"
-                        >
-                            <History size={16} className="text-zinc-500" />
-                        </button>
+                    {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
+                    <div className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+                        <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                            {tabs.map(t => {
+                                const Icon = t.icon;
+                                const isActive = tab === t.id;
+                                return (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => navigate(`/finance/corporate/${t.id}`)}
+                                        className={cn(
+                                            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
+                                            isActive
+                                                ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                        )}
+                                    >
+                                        <Icon size={14} />
+                                        <span>{t.label}</span>
+                                        {t.id === 'packages' && corporatePackages.length > 0 && (
+                                            <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full font-mono">
+                                                {corporatePackages.length}
+                                            </span>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-            <div className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                    {tabs.map(t => {
-                        const Icon = t.icon;
-                        const isActive = tab === t.id;
-                        return (
-                            <button
-                                key={t.id}
-                                onClick={() => navigate(`/finance/corporate/${t.id}`)}
-                                className={cn(
-                                    "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                                    isActive
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                                )}
-                            >
-                                <Icon size={14} />
-                                <span>{t.label}</span>
-                                {t.id === 'packages' && corporatePackages.length > 0 && (
-                                    <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full font-mono">
-                                        {corporatePackages.length}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+                </>
+            )}
 
             {/* TAB CONTENT BODY */}
-            <div className="flex-1 overflow-y-auto px-8 py-4 w-full custom-scrollbar">
+            <div className={cn("flex-1 overflow-y-auto w-full custom-scrollbar", hideHeader ? "px-8 py-2" : "px-8 py-4")}>
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center h-64 gap-3 text-zinc-400">
                         <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
@@ -764,17 +769,17 @@ export function CorporateTerminal() {
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
                                             <Sparkles className="w-4 h-4 text-amber-500" />
-                                            <h3 className="text-sm font-bold dark:text-white">Corporate Package & Rate Contract Builder</h3>
+                                            <h3 className="text-sm font-bold dark:text-white">Packages & Test Rates</h3>
                                         </div>
                                         <p className="text-xs text-zinc-500">
-                                            Compose commercial packages and set negotiated price lists for {activeAccountObj?.companyName || "the selected client"}.
+                                            Create packages and set test prices for {activeAccountObj?.companyName || "the selected company"}.
                                         </p>
                                     </div>
 
                                     <div className="flex flex-wrap items-center gap-3">
                                         <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
                                             <Building2 size={15} className="text-indigo-500 shrink-0" />
-                                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">Client:</span>
+                                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">Company:</span>
                                             <select
                                                 value={selectedAccountId}
                                                 onChange={(e) => setSelectedAccountId(e.target.value)}
@@ -794,7 +799,7 @@ export function CorporateTerminal() {
                                             disabled={!selectedAccountId}
                                             className="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-sm transition-all active:scale-95 cursor-pointer disabled:opacity-50 shrink-0"
                                         >
-                                            <Plus size={16} /> + Build Corporate Package
+                                            <Plus size={16} /> + Create Package
                                         </button>
                                     </div>
                                 </div>
@@ -804,7 +809,7 @@ export function CorporateTerminal() {
                                     <div className="flex items-center justify-between">
                                         <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
                                             <Package size={14} className="text-indigo-500" />
-                                            Commercial Bundles & Health Packages ({corporatePackages.length})
+                                            Packages ({corporatePackages.length})
                                         </h4>
                                         <span className="text-[11px] text-zinc-400">
                                             Click any card or pencil to edit package details and bundled tests
@@ -1538,7 +1543,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
-                                <h3 className="text-sm font-bold">{isEdit ? 'Edit Corporate Package' : 'Build Corporate Package'}</h3>
+                                <h3 className="text-sm font-bold">{isEdit ? 'Edit Package' : 'Create Package'}</h3>
                                 {isEdit && (packageData.packageCode || packageData.testCode) && (
                                     <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold border border-indigo-500/20">
                                         {packageData.packageCode || packageData.testCode}
@@ -1590,7 +1595,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
 
                         <div>
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
-                                Contracted Package Price (₹) *
+                                Package Price (₹) *
                             </label>
                             <input
                                 type="number"
@@ -1608,7 +1613,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                     <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                         <div className="flex items-center justify-between">
                             <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                                Select Constituent Tests to Bundle ({selectedTestIds.length} Selected)
+                                Select Tests to Bundle ({selectedTestIds.length} Selected)
                             </label>
                             <span className="text-[10px] text-indigo-500 font-bold">Pick tests & profiles</span>
                         </div>
@@ -1666,7 +1671,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                             className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-sm active:scale-95 cursor-pointer disabled:opacity-50"
                         >
                             {isSubmitting && <Loader2 size={14} className="animate-spin" />}
-                            {isEdit ? 'Update Corporate Package' : 'Create Corporate Package'}
+                            {isEdit ? 'Update Package' : 'Create Package'}
                         </button>
                     </div>
                 </form>

@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { 
     Trash2, 
     Edit2, 
@@ -39,6 +39,14 @@ const EditableField = ({
     const [isEditing, setIsEditing] = useState(false);
     const [tempValue, setTempValue] = useState(value || "");
     const [tempLabel, setTempLabel] = useState(label || "");
+
+    useEffect(() => {
+        setTempValue(value || "");
+    }, [value]);
+
+    useEffect(() => {
+        setTempLabel(label || "");
+    }, [label]);
 
     const handleSave = () => {
         if (onSave) {
@@ -283,6 +291,7 @@ export const DynamicInvoiceCanvas = ({
     letterheadMode = "digital",
     topMarginMm = 40,
     labSettings = {},
+    onUpdateLabSetting,
     onToggleBox,
     readOnly = false
 }) => {
@@ -324,6 +333,24 @@ export const DynamicInvoiceCanvas = ({
     const updateField = (boxId, fieldId, newLabel, newValue) => {
         const box = boxes[boxId];
         if (!box || !box.fields || !box.fields[fieldId]) return;
+
+        // Bi-directional sync with facility stationery settings
+        if (onUpdateLabSetting && newValue !== undefined) {
+            if (boxId === 'header') {
+                if (fieldId === 'legalName') onUpdateLabSetting('labLegalName', newValue);
+                else if (fieldId === 'tagline') onUpdateLabSetting('labTradeName', newValue);
+                else if (fieldId === 'address') onUpdateLabSetting('address', newValue);
+                else if (fieldId === 'phone') onUpdateLabSetting('phone', newValue);
+                else if (fieldId === 'email') onUpdateLabSetting('email', newValue);
+                else if (fieldId === 'gstin') onUpdateLabSetting('gstin', newValue);
+                else if (fieldId === 'pan') onUpdateLabSetting('pan', newValue);
+            } else if (boxId === 'bankAndUpi') {
+                if (fieldId === 'bankName') onUpdateLabSetting('bankName', newValue);
+                else if (fieldId === 'accountNumber') onUpdateLabSetting('accountNumber', newValue);
+                else if (fieldId === 'ifsc') onUpdateLabSetting('ifscCode', newValue);
+                else if (fieldId === 'upiId') onUpdateLabSetting('upiId', newValue);
+            }
+        }
 
         const next = {
             ...schema,
@@ -569,7 +596,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.header.fields?.legalName?.enabled && (
                                 <div className="block">
                                     <EditableField 
-                                        value={labSettings.labLegalName || boxes.header.fields.legalName.value}
+                                        value={boxes.header.fields.legalName.value || labSettings.labLegalName}
                                         onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
                                         onDelete={() => deleteField('header', 'legalName')}
                                         valueClassName="text-sm font-black text-zinc-900 tracking-tight uppercase"
@@ -579,7 +606,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.header.fields?.tagline?.enabled && (
                                 <div className="block">
                                     <EditableField 
-                                        value={labSettings.labTradeName || boxes.header.fields.tagline.value}
+                                        value={boxes.header.fields.tagline.value || labSettings.labTradeName}
                                         onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
                                         onDelete={() => deleteField('header', 'tagline')}
                                         valueClassName="text-[9px] font-bold text-zinc-600 uppercase block"
@@ -589,7 +616,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.header.fields?.address?.enabled && (
                                 <div className="block">
                                     <EditableField 
-                                        value={labSettings.address || boxes.header.fields.address.value}
+                                        value={boxes.header.fields.address.value || labSettings.address}
                                         onSave={(_, val) => updateField('header', 'address', undefined, val)}
                                         onDelete={() => deleteField('header', 'address')}
                                         valueClassName="text-[8.5px] text-zinc-500 block leading-tight mt-0.5"
@@ -600,7 +627,7 @@ export const DynamicInvoiceCanvas = ({
                                 {boxes.header.fields?.gstin?.enabled && (
                                     <EditableField 
                                         label="GSTIN:"
-                                        value={labSettings.gstin || boxes.header.fields.gstin.value}
+                                        value={boxes.header.fields.gstin.value || labSettings.gstin}
                                         onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
                                         onDelete={() => deleteField('header', 'gstin')}
                                         valueClassName="font-mono font-bold text-zinc-900"
@@ -609,7 +636,7 @@ export const DynamicInvoiceCanvas = ({
                                 {boxes.header.fields?.phone?.enabled && (
                                     <EditableField 
                                         label="Ph:"
-                                        value={labSettings.phone || boxes.header.fields.phone.value}
+                                        value={boxes.header.fields.phone.value || labSettings.phone}
                                         onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
                                         onDelete={() => deleteField('header', 'phone')}
                                         valueClassName="font-mono text-zinc-800"
@@ -646,7 +673,7 @@ export const DynamicInvoiceCanvas = ({
                                     {boxes.header.fields?.legalName?.enabled && (
                                         <div className="block">
                                             <EditableField 
-                                                value={labSettings.labLegalName || boxes.header.fields.legalName.value}
+                                                value={boxes.header.fields.legalName.value || labSettings.labLegalName}
                                                 onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
                                                 onDelete={() => deleteField('header', 'legalName')}
                                                 valueClassName="text-lg font-black text-zinc-900 tracking-tight uppercase"
@@ -656,7 +683,7 @@ export const DynamicInvoiceCanvas = ({
                                     {boxes.header.fields?.tagline?.enabled && (
                                         <div className="block">
                                             <EditableField 
-                                                value={labSettings.labTradeName || boxes.header.fields.tagline.value}
+                                                value={boxes.header.fields.tagline.value || labSettings.labTradeName}
                                                 onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
                                                 onDelete={() => deleteField('header', 'tagline')}
                                                 valueClassName="text-[11px] font-bold text-zinc-600 block"
@@ -666,7 +693,7 @@ export const DynamicInvoiceCanvas = ({
                                     {boxes.header.fields?.address?.enabled && (
                                         <div className="block">
                                             <EditableField 
-                                                value={labSettings.address || boxes.header.fields.address.value}
+                                                value={boxes.header.fields.address.value || labSettings.address}
                                                 onSave={(_, val) => updateField('header', 'address', undefined, val)}
                                                 onDelete={() => deleteField('header', 'address')}
                                                 valueClassName="text-[10px] text-zinc-500 leading-relaxed block"
@@ -677,7 +704,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.phone?.enabled && (
                                             <EditableField 
                                                 label="Phone:"
-                                                value={labSettings.phone || boxes.header.fields.phone.value}
+                                                value={boxes.header.fields.phone.value || labSettings.phone}
                                                 onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
                                                 onDelete={() => deleteField('header', 'phone')}
                                                 valueClassName="font-mono text-zinc-800"
@@ -686,7 +713,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.email?.enabled && (
                                             <EditableField 
                                                 label="Email:"
-                                                value={labSettings.email || boxes.header.fields.email.value}
+                                                value={boxes.header.fields.email.value || labSettings.email}
                                                 onSave={(lbl, val) => updateField('header', 'email', lbl, val)}
                                                 onDelete={() => deleteField('header', 'email')}
                                                 valueClassName="text-zinc-800"
@@ -695,7 +722,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.gstin?.enabled && (
                                             <EditableField 
                                                 label="GSTIN:"
-                                                value={labSettings.gstin || boxes.header.fields.gstin.value}
+                                                value={boxes.header.fields.gstin.value || labSettings.gstin}
                                                 onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
                                                 onDelete={() => deleteField('header', 'gstin')}
                                                 valueClassName="font-mono font-bold text-zinc-900"
@@ -704,7 +731,7 @@ export const DynamicInvoiceCanvas = ({
                                         {boxes.header.fields?.pan?.enabled && (
                                             <EditableField 
                                                 label="PAN:"
-                                                value={labSettings.pan || boxes.header.fields.pan.value}
+                                                value={boxes.header.fields.pan.value || labSettings.pan}
                                                 onSave={(lbl, val) => updateField('header', 'pan', lbl, val)}
                                                 onDelete={() => deleteField('header', 'pan')}
                                                 valueClassName="font-mono font-bold text-zinc-900"
@@ -865,6 +892,118 @@ export const DynamicInvoiceCanvas = ({
                 const colCount = activeColumns.length;
                 const isDense = colCount >= 8;
 
+                const getColWeight = (key) => {
+                    const weights = {
+                        index: 4,
+                        description: 34,
+                        testDescription: 32,
+                        testName: 32,
+                        itemDescription: 32,
+                        name: 26,
+                        serviceDescription: 32,
+                        investigations: 34,
+                        testNames: 34,
+                        expenseHead: 25,
+                        
+                        department: 14,
+                        patientName: 18,
+                        doctorName: 18,
+                        corporateName: 20,
+                        tpaName: 20,
+                        insuranceCompany: 20,
+                        referenceLab: 20,
+                        labName: 16,
+                        branchName: 12,
+                        specialty: 13,
+                        employeeId: 11,
+                        
+                        token: 9,
+                        visitToken: 9,
+                        billNumber: 13,
+                        date: 10,
+                        visitDate: 10,
+                        occurredAt: 12,
+                        period: 12,
+                        sacCode: 8,
+                        code: 8,
+                        itemCode: 9,
+                        sampleBarcode: 12,
+                        tpaClaimNo: 12,
+                        sourceReferenceId: 12,
+                        paymentMode: 10,
+                        mode: 10,
+                        sourceType: 12,
+                        status: 8,
+                        partnerCategory: 10,
+                        uom: 7,
+                        quantity: 7,
+                        qty: 7,
+                        poQty: 7,
+                        receivedQty: 7,
+                        acceptedQty: 7,
+                        rejectedQty: 7,
+                        totalReferrals: 8,
+                        pendingBills: 8,
+                        claimsCount: 8,
+                        testsReferred: 8,
+                        activeClaims: 8,
+                        visitsCount: 8,
+                        employeesTested: 8,
+                        samplesCount: 8,
+                        
+                        price: 11,
+                        tariff: 11,
+                        rate: 9,
+                        unitPrice: 11,
+                        b2bRate: 11,
+                        discount: 10,
+                        concession: 10,
+                        coPay: 9,
+                        commissionRate: 9,
+                        taxRate: 8,
+                        tdsDeducted: 9,
+                        tdsAmount: 9,
+                        amount: 11,
+                        total: 11,
+                        totalAmount: 11,
+                        grossAmount: 11,
+                        grossCommission: 11,
+                        grossClaimed: 11,
+                        grossDue: 11,
+                        netAmount: 11,
+                        netPayout: 11,
+                        netDue: 11,
+                        netPayable: 11,
+                        paidAmount: 11,
+                        pendingAmount: 11,
+                        dueAmount: 11,
+                        received: 11,
+                        receivedAmount: 11,
+                        settledAmount: 11,
+                        billedToCorp: 11,
+                        preAuthAmount: 11,
+                        approvedAmount: 11,
+                        patientShare: 10,
+                        patientPaid: 11,
+                        referralAmount: 11,
+                        claimAmount: 11,
+                        claimedAmount: 11,
+                        deniedAmount: 11,
+                        billedByLab: 11,
+                        billedAmount: 11,
+                        outstandingBalance: 12,
+                        labBilled: 11,
+                        notes: 15
+                    };
+
+                    if (weights[key]) return weights[key];
+                    const lower = String(key || "").toLowerCase();
+                    if (lower.includes('investigation') || lower.includes('desc') || lower.includes('name') || lower.includes('service') || lower.includes('item')) return 30;
+                    if (lower.includes('date') || lower.includes('token') || lower.includes('time') || lower.includes('code') || lower.includes('num') || lower.includes('no')) return 9;
+                    if (lower.includes('price') || lower.includes('amt') || lower.includes('amount') || lower.includes('rate') || lower.includes('due') || lower.includes('disc') || lower.includes('tariff') || lower.includes('fee')) return 11;
+                    return 10;
+                };
+
                 const getColumnWidth = (key) => {
                     if (isThermal) {
                         if (key === 'index') return '10%';
@@ -876,97 +1015,9 @@ export const DynamicInvoiceCanvas = ({
                         const perCol = (remainingPct / (otherCols.length || 1)).toFixed(1);
                         return `${perCol}%`;
                     }
-                    const weights = {
-                        index: 4,
-                        description: 34,
-                        testDescription: 28,
-                        testName: 28,
-                        itemDescription: 30,
-                        name: 24,
-                        serviceDescription: 32,
-                        expenseHead: 25,
-                        
-                        department: 14,
-                        patientName: 16,
-                        doctorName: 16,
-                        corporateName: 18,
-                        tpaName: 18,
-                        labName: 16,
-                        branchName: 12,
-                        specialty: 13,
-                        employeeId: 11,
-                        
-                        billNumber: 13,
-                        date: 11,
-                        occurredAt: 12,
-                        period: 12,
-                        sacCode: 9,
-                        code: 9,
-                        itemCode: 10,
-                        sampleBarcode: 12,
-                        tpaClaimNo: 12,
-                        sourceReferenceId: 12,
-                        paymentMode: 10,
-                        mode: 10,
-                        sourceType: 12,
-                        status: 8,
-                        partnerCategory: 10,
-                        uom: 7,
-                        quantity: 8,
-                        qty: 8,
-                        poQty: 8,
-                        receivedQty: 8,
-                        acceptedQty: 8,
-                        rejectedQty: 8,
-                        totalReferrals: 8,
-                        pendingBills: 8,
-                        claimsCount: 8,
-                        testsReferred: 8,
-                        activeClaims: 8,
-                        
-                        price: 11,
-                        tariff: 11,
-                        rate: 10,
-                        unitPrice: 11,
-                        b2bRate: 11,
-                        discount: 9,
-                        coPay: 9,
-                        commissionRate: 9,
-                        taxRate: 8,
-                        tdsDeducted: 9,
-                        tdsAmount: 9,
-                        amount: 12,
-                        total: 12,
-                        totalAmount: 12,
-                        grossAmount: 12,
-                        grossCommission: 12,
-                        grossClaimed: 12,
-                        grossDue: 12,
-                        netAmount: 12,
-                        netPayout: 12,
-                        netDue: 12,
-                        netPayable: 12,
-                        paidAmount: 11,
-                        pendingAmount: 11,
-                        dueAmount: 11,
-                        received: 11,
-                        receivedAmount: 11,
-                        settledAmount: 11,
-                        billedToCorp: 12,
-                        preAuthAmount: 11,
-                        approvedAmount: 11,
-                        patientShare: 10,
-                        claimAmount: 11,
-                        claimedAmount: 11,
-                        deniedAmount: 11,
-                        billedByLab: 11,
-                        outstandingBalance: 12,
-                        labBilled: 11,
-                        notes: 15
-                    };
 
-                    const totalWeight = activeColumns.reduce((sum, [cKey]) => sum + (weights[cKey] || 10), 0);
-                    const colWeight = weights[key] || 10;
+                    const totalWeight = activeColumns.reduce((sum, [cKey]) => sum + getColWeight(cKey), 0);
+                    const colWeight = getColWeight(key);
                     const availablePercent = !readOnly ? 96.5 : 100;
                     const pct = ((colWeight / totalWeight) * availablePercent).toFixed(1);
                     return `${pct}%`;
@@ -1087,10 +1138,16 @@ export const DynamicInvoiceCanvas = ({
                     >
                         <div className="mb-3 overflow-x-auto print:overflow-visible rounded-lg border border-zinc-300">
                             <table className="w-full text-left border-collapse table-fixed">
+                                <colgroup>
+                                    {activeColumns.map(([colKey]) => (
+                                        <col key={colKey} style={{ width: getColumnWidth(colKey) }} />
+                                    ))}
+                                    {!readOnly && <col style={{ width: '3.5%' }} />}
+                                </colgroup>
                                 <thead>
                                     <tr className={`bg-zinc-100 border-b border-zinc-300 font-black uppercase text-zinc-700 tracking-wider ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}>
                                         {activeColumns.map(([colKey, col]) => {
-                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount'].includes(colKey);
+                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount'].includes(colKey);
                                             return (
                                                 <th 
                                                     key={colKey} 
@@ -1101,11 +1158,11 @@ export const DynamicInvoiceCanvas = ({
                                                             setEditColLabel(col.label || "");
                                                         }
                                                     }}
-                                                    className={`${isDense ? 'px-1.5 py-1.5' : 'px-2 py-2'} border-r last:border-r-0 border-zinc-200 group/colhead relative align-middle ${!readOnly ? 'cursor-pointer hover:bg-indigo-50/70 transition-colors' : ''} ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                    className={`${isDense ? 'px-1.5 py-1.5' : 'px-2 py-2'} border-r last:border-r-0 border-zinc-200 group/colhead relative align-middle overflow-hidden box-border ${!readOnly ? 'cursor-pointer hover:bg-indigo-50/70 transition-colors' : ''} ${isNumeric ? 'text-right' : 'text-left'}`}
                                                     title={!readOnly ? `Click to edit "${col.label || colKey}" column heading` : undefined}
                                                 >
                                                     <div className={`flex items-center gap-1 w-full min-w-0 ${isNumeric ? 'justify-end' : 'justify-between'}`}>
-                                                        <span className={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[9.5px]'} whitespace-normal break-words leading-tight block flex-1`}>
+                                                        <span className={`font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[9.5px]'} whitespace-normal break-words [overflow-wrap:anywhere] leading-tight block flex-1 min-w-0`}>
                                                             {col.label}
                                                         </span>
                                                         {!readOnly && (
@@ -1171,20 +1228,20 @@ export const DynamicInvoiceCanvas = ({
                                             <tr className="hover:bg-zinc-50 group/row break-inside-avoid print:break-inside-avoid">
                                                 {activeColumns.map(([colKey, col]) => {
                                                     const cellVal = row[colKey] !== undefined ? row[colKey] : (row[col.id] ?? '');
-                                                    const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount'].includes(colKey);
+                                                    const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount'].includes(colKey);
                                                     return (
                                                         <td 
                                                             key={colKey} 
                                                             style={{ width: getColumnWidth(colKey) }}
-                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2 text-[10px]'} border-r last:border-r-0 border-zinc-200 align-top ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
+                                                            className={`${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2 text-[10px]'} border-r last:border-r-0 border-zinc-200 align-top overflow-hidden box-border ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
                                                         >
-                                                            <div className="min-w-0">
+                                                            <div className="min-w-0 overflow-hidden">
                                                                 <EditableField 
                                                                     value={String(cellVal)}
                                                                     onSave={(_, val) => updateRowCell('itemsTable', row.id, colKey, val)}
                                                                     canDelete={false}
-                                                                    className="w-full"
-                                                                    valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : 'whitespace-normal break-words leading-tight'} block`}
+                                                                    className="w-full min-w-0"
+                                                                    valueClassName={`font-medium text-zinc-800 ${isNumeric ? 'font-mono' : 'whitespace-normal break-words [overflow-wrap:anywhere] leading-tight'} block`}
                                                                 />
                                                             </div>
                                                         </td>
@@ -1346,7 +1403,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.bankName?.enabled && (
                                 <EditableField 
                                     label="Bank:"
-                                    value={labSettings.bankName || boxes.bankAndUpi.fields.bankName.value}
+                                    value={boxes.bankAndUpi.fields.bankName.value || labSettings.bankName}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'bankName', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'bankName')}
                                     valueClassName="font-bold text-zinc-800"
@@ -1355,7 +1412,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.accountNumber?.enabled && (
                                 <EditableField 
                                     label="A/C No:"
-                                    value={labSettings.accountNumber || boxes.bankAndUpi.fields.accountNumber.value}
+                                    value={boxes.bankAndUpi.fields.accountNumber.value || labSettings.accountNumber}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'accountNumber', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'accountNumber')}
                                     valueClassName="font-mono font-bold text-zinc-900"
@@ -1364,7 +1421,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.ifsc?.enabled && (
                                 <EditableField 
                                     label="IFSC:"
-                                    value={labSettings.ifscCode || boxes.bankAndUpi.fields.ifsc.value}
+                                    value={boxes.bankAndUpi.fields.ifsc.value || labSettings.ifscCode}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'ifsc', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'ifsc')}
                                     valueClassName="font-mono font-bold text-zinc-900"
@@ -1373,7 +1430,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.bankAndUpi.fields?.upiId?.enabled && (
                                 <EditableField 
                                     label="UPI ID:"
-                                    value={labSettings.upiId || boxes.bankAndUpi.fields.upiId.value}
+                                    value={boxes.bankAndUpi.fields.upiId.value || labSettings.upiId}
                                     onSave={(lbl, val) => updateField('bankAndUpi', 'upiId', lbl, val)}
                                     onDelete={() => deleteField('bankAndUpi', 'upiId')}
                                     valueClassName="font-mono font-bold text-indigo-700"
@@ -1493,8 +1550,11 @@ export const DynamicInvoiceCanvas = ({
                         <div className="h-6" />
                         <div className="border-t border-zinc-400 pt-1 inline-block text-center min-w-[160px]">
                             <EditableField 
-                                value={labSettings.signatoryTitle || boxes.signatory.title}
+                                value={boxes.signatory?.title || labSettings.signatoryTitle || "Authorised Signatory"}
                                 onSave={(_, val) => {
+                                    if (onUpdateLabSetting) {
+                                        onUpdateLabSetting('signatoryTitle', val);
+                                    }
                                     const next = {
                                         ...schema,
                                         boxes: {

@@ -41,16 +41,14 @@ namespace SynOS.Services.Referral
                 TotalGrossBilling = 0
             };
 
-            if (visit == null || !visit.IsReferred || visit.ReferralPartnerId == null)
+            var targetPartnerId = visit?.SecondaryReferralPartnerId ?? visit?.ReferralPartnerId;
+
+            if (visit == null || !visit.IsReferred || targetPartnerId == null)
             {
                 return result;
             }
 
-            var partner = visit.ReferralPartner;
-            if (partner == null)
-            {
-                partner = await _context.ReferralPartners.AsNoTracking().FirstOrDefaultAsync(p => p.ReferralPartnerId == visit.ReferralPartnerId.Value);
-            }
+            var partner = await _context.ReferralPartners.AsNoTracking().FirstOrDefaultAsync(p => p.ReferralPartnerId == targetPartnerId.Value);
 
             if (partner == null)
             {
@@ -143,12 +141,14 @@ namespace SynOS.Services.Referral
                 .Include(v => v.ReferralPartner)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
-            if (visit == null || !visit.IsReferred || visit.ReferralPartnerId == null)
+            var targetPartnerId = visit?.SecondaryReferralPartnerId ?? visit?.ReferralPartnerId;
+
+            if (visit == null || !visit.IsReferred || targetPartnerId == null)
             {
                 return eval;
             }
 
-            var partner = visit.ReferralPartner ?? await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId.Value);
+            var partner = await _context.ReferralPartners.FindAsync(targetPartnerId.Value);
             if (partner == null) return eval;
 
             // Draft partners wait for approval & rate learning

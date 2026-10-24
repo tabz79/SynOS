@@ -401,6 +401,15 @@ namespace SynOS.Services
             if (visit.Orders.Any(o => o.TestCode.Equals(testCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
                 throw new InvalidOperationException($"Test '{testCode}' is already added.");
 
+            // GUARD: Institutional / Insurance Packages can NEVER be added to Direct / Standard or B2B visits
+            if (visit.BillingType != SynOS.Models.Enums.BillingType.Insurance && visit.BillingType != SynOS.Models.Enums.BillingType.Corporate)
+            {
+                if (testCode.StartsWith("PKG-", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException($"Package '{testCode}' is an institutional package and can only be ordered under Insurance mode.");
+                }
+            }
+
             var currentOrders = visit.Orders.ToList();
             await ExpandAndAddOrdersInternalAsync(visitId, testCode, currentOrders, false);
 
@@ -656,6 +665,102 @@ namespace SynOS.Services
             );
         }
 
+        public async Task ApplyCustomDiscountToVisitAsync(Guid visitId, string mode, decimal value, string? reason, Guid actorUserId)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new InvalidOperationException("An authorized discount reason preset is required before applying a discount.");
+
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            if (IsSampleCollectionStarted(visit))
+                throw new InvalidOperationException("Cannot apply discount. Sample collection has already started.");
+
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No invoice found.");
+
+            // Find or create the generic custom concession master
+            var customMaster = await _context.DiscountMasters.FirstOrDefaultAsync(dm => dm.Code == "CUSTOM");
+            if (customMaster == null)
+            {
+                customMaster = new DiscountMaster
+                {
+                    DiscountDefinitionId = Guid.NewGuid(),
+                    Code = "CUSTOM",
+                    Name = "Manual Desk Concession",
+                    Type = mode.Equals("Flat", StringComparison.OrdinalIgnoreCase) ? DiscountType.Flat : DiscountType.Percentage,
+                    Value = value,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.DiscountMasters.Add(customMaster);
+                await _context.SaveChangesAsync();
+            }
+
+            var discType = mode.Equals("Flat", StringComparison.OrdinalIgnoreCase) ? DiscountType.Flat : DiscountType.Percentage;
+
+            var oldFacts = await _context.DiscountFacts.Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive).ToListAsync();
+            var replacedId = oldFacts.OrderByDescending(f => f.AppliedAt).FirstOrDefault()?.DiscountFactId;
+            foreach (var f in oldFacts) f.IsActive = false;
+
+            string actorName = await GetActorNameAsync(actorUserId);
+            string appliedByNote = string.IsNullOrWhiteSpace(reason) ? actorName : $"{actorName} - {reason.Trim()}";
+
+            var newFact = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoice.InvoiceId,
+                DiscountDefinitionId = customMaster.DiscountDefinitionId,
+                AppliedBy = appliedByNote,
+                AppliedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true,
+                ReplacedDiscountFactId = replacedId,
+                Type = discType,
+                Value = value,
+                MaxLimit = null,
+                GrossAmount = 0,
+                DiscountAmount = 0,
+                NetAmountAfterDiscount = 0
+            };
+
+            _context.DiscountFacts.Add(newFact);
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
+            var meta = JsonSerializer.Serialize(new
+            {
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                Mode = mode,
+                Value = value,
+                Reason = reason,
+                Action = "CustomDiscountApplied"
+            });
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"Custom {mode} concession ({value}) applied by {actorName}",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                meta
+            );
+        }
+
         public async Task SetVisitReferralAsync(Guid visitId, Guid referralPartnerId, Guid actorUserId)
         {
             var visit = await _context.Visits
@@ -708,6 +813,212 @@ namespace SynOS.Services
                 TimelineVisibility.Surface,
                 Guid.NewGuid(),
                 referralMetadata
+            );
+        }
+
+        public async Task SetSecondaryReferralAsync(Guid visitId, Guid? secondaryPartnerId, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            visit.SecondaryReferralPartnerId = secondaryPartnerId;
+            if (secondaryPartnerId.HasValue)
+            {
+                visit.IsReferred = true;
+            }
+
+            // Sync financial attribution facts (Receivables and Payables) to Secondary Partner
+            var targetPartnerId = secondaryPartnerId ?? visit.ReferralPartnerId;
+            if (targetPartnerId.HasValue)
+            {
+                var targetPartner = await _context.ReferralPartners.FindAsync(targetPartnerId.Value);
+                if (targetPartner != null)
+                {
+                    var recs = await _context.ReceivableFacts
+                        .Where(r => r.SourceVisitId == visitId && r.DebtorType == DebtorType.Partner)
+                        .ToListAsync();
+
+                    foreach (var r in recs)
+                    {
+                        r.DebtorId = targetPartnerId.Value;
+                        r.ReferralPartnerId = targetPartnerId.Value;
+                        r.DebtorName = targetPartner.Name;
+                        r.ClaimReference = $"Prepaid Partner Bill: {targetPartner.Name}";
+                    }
+
+                    var payables = await _context.ReferralPayableFacts
+                        .Where(f => f.SourceVisitId == visitId)
+                        .ToListAsync();
+
+                    foreach (var p in payables)
+                    {
+                        p.ReferralPartnerId = targetPartnerId.Value;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+            string partnerName = "None";
+            if (secondaryPartnerId.HasValue)
+            {
+                var partner = await _context.ReferralPartners.FindAsync(secondaryPartnerId.Value);
+                partnerName = partner?.Name ?? secondaryPartnerId.Value.ToString();
+            }
+
+            string actorName = await GetActorNameAsync(actorUserId);
+            string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
+
+            var meta = JsonSerializer.Serialize(new
+            {
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                SecondaryPartnerName = partnerName,
+                SecondaryPartnerId = secondaryPartnerId,
+                Action = "SetSecondaryReferral"
+            });
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                secondaryPartnerId.HasValue ? $"Secondary Referral Doctor (RMP) set to {partnerName}" : "Secondary Referral Doctor (RMP) removed",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                meta
+            );
+        }
+
+        public async Task SetB2BPrepaidRateAsync(Guid visitId, decimal b2bDiscountAmount, string? discountType, decimal? discountValue, Guid actorUserId)
+        {
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+
+            string actorName = await GetActorNameAsync(actorUserId);
+
+            visit.B2BDiscountAmount = b2bDiscountAmount;
+            visit.B2BDiscountType = discountType;
+            visit.B2BDiscountValue = discountValue;
+            visit.B2BDiscountEnteredBy = actorName;
+            visit.B2BDiscountEnteredAt = DateTimeOffset.UtcNow;
+
+            // Self-Learning Rate Engine:
+            // When a receptionist enters a contracted B2B discount for this partner, learn it safely
+            var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+            if (effectivePartnerId.HasValue && visit.Orders.Any())
+            {
+                try
+                {
+                    decimal totalGross = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).Sum(o => o.Price);
+                    if (totalGross > 0)
+                    {
+                        decimal discountRatio = Math.Min(1m, Math.Max(0m, b2bDiscountAmount / totalGross));
+                        decimal discountPercentage = Math.Round(discountRatio * 100m, 2);
+                        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                        var testIds = visit.Orders
+                            .Where(o => o.Status != OrderStatus.Cancelled && o.TestId != Guid.Empty)
+                            .Select(o => o.TestId)
+                            .Distinct()
+                            .ToList();
+
+                        foreach (var testId in testIds)
+                        {
+                            var existingRules = await _context.ReferralCommissionRules
+                                .Where(r => r.ReferralPartnerId == effectivePartnerId.Value && r.TestId == testId)
+                                .ToListAsync();
+
+                            var ruleForToday = existingRules.FirstOrDefault(r => r.EffectiveFrom == today);
+                            if (ruleForToday != null)
+                            {
+                                ruleForToday.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
+                                ruleForToday.CommissionValue = discountPercentage;
+                                ruleForToday.IsActive = true;
+                            }
+                            else
+                            {
+                                var activeRule = existingRules.FirstOrDefault(r => r.IsActive);
+                                if (activeRule != null)
+                                {
+                                    activeRule.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
+                                    activeRule.CommissionValue = discountPercentage;
+                                }
+                                else
+                                {
+                                    _context.ReferralCommissionRules.Add(new ReferralCommissionRule
+                                    {
+                                        RuleId = Guid.NewGuid(),
+                                        ReferralPartnerId = effectivePartnerId.Value,
+                                        TestId = testId,
+                                        CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage,
+                                        CommissionValue = discountPercentage,
+                                        EffectiveFrom = today,
+                                        IsActive = true
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (Exception learnEx)
+                {
+                    _logger.LogWarning(learnEx, "Non-fatal: Failed to auto-learn referral rate rule for partner {PartnerId}", effectivePartnerId);
+                }
+            }
+
+            // If a ReceivableFact already exists for this visit, adjust its amount in-place (no delete/re-insert to prevent unique key violation)
+            var receivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);
+            if (receivable != null)
+            {
+                var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                decimal invoiceTotal = invoice?.Total ?? 0m;
+                receivable.DebtorId = effectivePartnerId ?? receivable.DebtorId;
+                receivable.ReferralPartnerId = effectivePartnerId ?? receivable.ReferralPartnerId;
+                receivable.Amount = Math.Max(0m, invoiceTotal - b2bDiscountAmount);
+                receivable.RecordedAt = DateTimeOffset.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+
+            string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
+            var meta = JsonSerializer.Serialize(new
+            {
+                PatientName = patientName,
+                TokenId = visit.Token,
+                ActorName = actorName,
+                B2BDiscountAmount = b2bDiscountAmount,
+                Action = "B2BDiscountUpdated"
+            });
+
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_UPDATED,
+                _userContext.CurrentBranchId.ToString(),
+                visit.VisitId.ToString(),
+                visit.Token,
+                $"B2B Referral Discount set to ₹{b2bDiscountAmount:N2} by {actorName}",
+                actorName,
+                actorUserId.ToString(),
+                true, null, null,
+                TimelineVisibility.Surface,
+                visit.VisitId,
+                meta
             );
         }
 
@@ -816,6 +1127,7 @@ namespace SynOS.Services
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
                 .Include(v => v.ReferralPartner)
+                .Include(v => v.SecondaryReferralPartner)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
@@ -838,7 +1150,7 @@ namespace SynOS.Services
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Get Invoice
 
             var testCodes = visit.Orders?.Select(o => o.Test?.TestCode).Where(c => !string.IsNullOrEmpty(c)).ToList() ?? new List<string?>();
-            string doctorName = visit.ReferralPartner?.Name ?? "";
+            string doctorName = visit.SecondaryReferralPartner?.Name ?? visit.ReferralPartner?.Name ?? "";
 
             var prepaidMetadata = JsonSerializer.Serialize(new 
             { 
