@@ -341,6 +341,7 @@ namespace SynOS.Data
         
         // Discount DbSets
         public DbSet<DiscountMaster> DiscountMasters { get; set; } = null!;
+        public DbSet<DiscountReason> DiscountReasons { get; set; } = null!;
         public DbSet<DiscountFact> DiscountFacts { get; set; } = null!;
 
         // HR DbSets
@@ -1387,6 +1388,12 @@ namespace SynOS.Data
             {
                 entity.ToTable("DiscountMasters");
                 entity.Property(e => e.MaxLimit).HasColumnType("decimal(18, 4)");
+            });
+
+            modelBuilder.Entity<DiscountReason>(entity =>
+            {
+                entity.ToTable("DiscountReasons");
+                entity.HasKey(e => e.DiscountReasonId);
             });
 
             // Payroll Engine Configuration

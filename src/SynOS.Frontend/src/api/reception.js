@@ -265,6 +265,36 @@ export const ReceptionApi = {
     },
 
     /**
+     * Fetches preset discount reasons / authorization authorities.
+     * @returns {Promise<Array>}
+     */
+    getDiscountReasons: async () => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/discounts/reasons?isActive=true'), {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount reasons");
+        return response.json();
+    },
+
+    /**
+     * Quick-adds a new preset discount reason from Reception / Billing.
+     * @param {Object} data - { reasonText, category, description }
+     * @returns {Promise<Object>}
+     */
+    createDiscountReason: async (data) => {
+        const response = await fetch(ReceptionApi.withBranchId('/api/v1/admin/discounts/reasons'), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to create discount reason");
+        }
+        return response.json();
+    },
+
+    /**
      * Applies a discount code or custom percentage/flat discount to the specified visit.
      * @param {string} visitId
      * @param {string|Object} discountPayload - string discountCode OR { discountCode, mode, customValue, reason }

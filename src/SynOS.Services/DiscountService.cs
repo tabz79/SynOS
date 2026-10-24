@@ -248,5 +248,165 @@ namespace SynOS.Services
 
             return finalQuery.OrderByDescending(x => x.OccurredAt).ToList();
         }
+
+        public async Task<IEnumerable<DiscountReasonDto>> GetDiscountReasonsAsync(bool? isActive = null, string? search = null)
+        {
+            var query = _context.DiscountReasons.AsNoTracking().AsQueryable();
+
+            if (isActive.HasValue)
+                query = query.Where(r => r.IsActive == isActive.Value);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var s = search.Trim();
+                query = query.Where(r => r.ReasonText.Contains(s) || (r.Category != null && r.Category.Contains(s)) || (r.Description != null && r.Description.Contains(s)));
+            }
+
+            var list = await query
+                .OrderBy(r => r.SortOrder)
+                .ThenBy(r => r.ReasonText)
+                .Select(r => new DiscountReasonDto
+                {
+                    DiscountReasonId = r.DiscountReasonId,
+                    ReasonText = r.ReasonText,
+                    Category = r.Category,
+                    Description = r.Description,
+                    IsActive = r.IsActive,
+                    SortOrder = r.SortOrder,
+                    CreatedBy = r.CreatedBy,
+                    CreatedAt = r.CreatedAt,
+                    UpdatedAt = r.UpdatedAt
+                })
+                .ToListAsync();
+
+            return list;
+        }
+
+        public async Task<DiscountReasonDto> GetDiscountReasonByIdAsync(Guid id)
+        {
+            var reason = await _context.DiscountReasons.AsNoTracking().FirstOrDefaultAsync(r => r.DiscountReasonId == id);
+            if (reason == null) throw new KeyNotFoundException($"Discount reason {id} not found.");
+
+            return new DiscountReasonDto
+            {
+                DiscountReasonId = reason.DiscountReasonId,
+                ReasonText = reason.ReasonText,
+                Category = reason.Category,
+                Description = reason.Description,
+                IsActive = reason.IsActive,
+                SortOrder = reason.SortOrder,
+                CreatedBy = reason.CreatedBy,
+                CreatedAt = reason.CreatedAt,
+                UpdatedAt = reason.UpdatedAt
+            };
+        }
+
+        public async Task<DiscountReasonDto> CreateDiscountReasonAsync(CreateDiscountReasonDto createDto, Guid userId)
+        {
+            if (string.IsNullOrWhiteSpace(createDto.ReasonText))
+                throw new ArgumentException("Reason text cannot be empty.");
+
+            var cleanText = createDto.ReasonText.Trim();
+            var existing = await _context.DiscountReasons.FirstOrDefaultAsync(r => r.ReasonText.ToLower() == cleanText.ToLower());
+            if (existing != null)
+            {
+                if (!existing.IsActive && createDto.IsActive)
+                {
+                    existing.IsActive = true;
+                    existing.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+                return new DiscountReasonDto
+                {
+                    DiscountReasonId = existing.DiscountReasonId,
+                    ReasonText = existing.ReasonText,
+                    Category = existing.Category,
+                    Description = existing.Description,
+                    IsActive = existing.IsActive,
+                    SortOrder = existing.SortOrder,
+                    CreatedBy = existing.CreatedBy,
+                    CreatedAt = existing.CreatedAt,
+                    UpdatedAt = existing.UpdatedAt
+                };
+            }
+
+            var user = await _context.Users.FindAsync(userId);
+            string actorName = user?.Name ?? "User";
+
+            var entity = new SynOS.Models.Entities.Discounts.DiscountReason
+            {
+                DiscountReasonId = Guid.NewGuid(),
+                ReasonText = cleanText,
+                Category = !string.IsNullOrWhiteSpace(createDto.Category) ? createDto.Category.Trim() : "General",
+                Description = createDto.Description?.Trim(),
+                IsActive = createDto.IsActive,
+                SortOrder = createDto.SortOrder,
+                CreatedBy = actorName,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.DiscountReasons.Add(entity);
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "CreateDiscountReason", "DiscountReason", entity.DiscountReasonId, createDto);
+
+            return new DiscountReasonDto
+            {
+                DiscountReasonId = entity.DiscountReasonId,
+                ReasonText = entity.ReasonText,
+                Category = entity.Category,
+                Description = entity.Description,
+                IsActive = entity.IsActive,
+                SortOrder = entity.SortOrder,
+                CreatedBy = entity.CreatedBy,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt
+            };
+        }
+
+        public async Task<DiscountReasonDto> UpdateDiscountReasonAsync(Guid id, UpdateDiscountReasonDto updateDto, Guid userId)
+        {
+            if (string.IsNullOrWhiteSpace(updateDto.ReasonText))
+                throw new ArgumentException("Reason text cannot be empty.");
+
+            var reason = await _context.DiscountReasons.FindAsync(id);
+            if (reason == null) throw new KeyNotFoundException($"Discount reason {id} not found.");
+
+            reason.ReasonText = updateDto.ReasonText.Trim();
+            reason.Category = !string.IsNullOrWhiteSpace(updateDto.Category) ? updateDto.Category.Trim() : reason.Category;
+            reason.Description = updateDto.Description?.Trim();
+            reason.IsActive = updateDto.IsActive;
+            reason.SortOrder = updateDto.SortOrder;
+            reason.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "UpdateDiscountReason", "DiscountReason", id, updateDto);
+
+            return new DiscountReasonDto
+            {
+                DiscountReasonId = reason.DiscountReasonId,
+                ReasonText = reason.ReasonText,
+                Category = reason.Category,
+                Description = reason.Description,
+                IsActive = reason.IsActive,
+                SortOrder = reason.SortOrder,
+                CreatedBy = reason.CreatedBy,
+                CreatedAt = reason.CreatedAt,
+                UpdatedAt = reason.UpdatedAt
+            };
+        }
+
+        public async Task<bool> DeleteDiscountReasonAsync(Guid id, Guid userId)
+        {
+            var reason = await _context.DiscountReasons.FindAsync(id);
+            if (reason == null) throw new KeyNotFoundException($"Discount reason {id} not found.");
+
+            _context.DiscountReasons.Remove(reason);
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(userId, "DeleteDiscountReason", "DiscountReason", id, null);
+            return true;
+        }
     }
 }

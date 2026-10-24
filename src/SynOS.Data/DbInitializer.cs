@@ -596,6 +596,24 @@ BEGIN
     WHERE v.SecondaryReferralPartnerId IS NOT NULL 
       AND pf.ReferralPartnerId <> v.SecondaryReferralPartnerId;
 END
+
+-- 25. Create DiscountReasons table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'DiscountReasons' AND type = 'U')
+BEGIN
+    CREATE TABLE [DiscountReasons] (
+        [DiscountReasonId] uniqueidentifier NOT NULL,
+        [ReasonText] nvarchar(200) NOT NULL,
+        [Category] nvarchar(100) NULL,
+        [Description] nvarchar(500) NULL,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [SortOrder] int NOT NULL DEFAULT 0,
+        [CreatedBy] nvarchar(100) NULL,
+        [CreatedAt] datetime2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        [UpdatedAt] datetime2 NULL,
+        CONSTRAINT [PK_DiscountReasons] PRIMARY KEY ([DiscountReasonId])
+    );
+    CREATE INDEX [IX_DiscountReasons_IsActive_SortOrder] ON [DiscountReasons] ([IsActive], [SortOrder]);
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
@@ -638,6 +656,86 @@ END
             SeedTestDefinitions(context);
             SeedLabAnalyzers(context);
             SeedInsuranceAndCorporate(context);
+            SeedDiscountReasons(context);
+        }
+
+        private static void SeedDiscountReasons(SynOSDbContext context)
+        {
+            if (!context.DiscountReasons.Any())
+            {
+                var reasons = new List<SynOS.Models.Entities.Discounts.DiscountReason>
+                {
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Dr. DVR Recommendation",
+                        Category = "Doctor Recommendation",
+                        Description = "Concession requested by referring doctor Dr. DVR",
+                        IsActive = true,
+                        SortOrder = 1,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Lab Director / Owner Approval",
+                        Category = "Management Approval",
+                        Description = "Approved directly by lab owner / medical director",
+                        IsActive = true,
+                        SortOrder = 2,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Senior Citizen Concession",
+                        Category = "Special Concession",
+                        Description = "Standard senior citizen courtesy concession",
+                        IsActive = true,
+                        SortOrder = 3,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Staff / Family Concession",
+                        Category = "Internal Courtesy",
+                        Description = "Concession for internal staff members and immediate family",
+                        IsActive = true,
+                        SortOrder = 4,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Poor / BPL Patient Support",
+                        Category = "Social Support",
+                        Description = "Financial assistance for economically underprivileged patients",
+                        IsActive = true,
+                        SortOrder = 5,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    },
+                    new SynOS.Models.Entities.Discounts.DiscountReason
+                    {
+                        DiscountReasonId = Guid.NewGuid(),
+                        ReasonText = "Special Health Camp / Outreach",
+                        Category = "Campaign",
+                        Description = "Special campaign or community health screening concession",
+                        IsActive = true,
+                        SortOrder = 6,
+                        CreatedBy = "System",
+                        CreatedAt = DateTime.UtcNow
+                    }
+                };
+
+                context.DiscountReasons.AddRange(reasons);
+                context.SaveChanges();
+            }
         }
 
         private static void SeedInsuranceAndCorporate(SynOSDbContext context)

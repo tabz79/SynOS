@@ -98,5 +98,85 @@ namespace SynOS.Api.Controllers.Admin
             var result = await _service.GetDiscountHistoryAsync(source, fromDate, toDate, search);
             return Ok(result);
         }
+
+        // ==========================================
+        // DISCOUNT REASONS (PRESETS & AUTHORIZATIONS)
+        // ==========================================
+
+        [HttpGet("reasons")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
+        public async Task<IActionResult> GetDiscountReasons([FromQuery] bool? isActive, [FromQuery] string? search)
+        {
+            var result = await _service.GetDiscountReasonsAsync(isActive, search);
+            return Ok(result);
+        }
+
+        [HttpGet("reasons/{id}")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
+        public async Task<IActionResult> GetDiscountReason(Guid id)
+        {
+            try
+            {
+                var result = await _service.GetDiscountReasonByIdAsync(id);
+                return Ok(result);
+            }
+            catch (System.Collections.Generic.KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpPost("reasons")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
+        public async Task<IActionResult> CreateDiscountReason([FromBody] CreateDiscountReasonDto createDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _service.CreateDiscountReasonAsync(createDto, _userContext.CurrentUserId);
+                return CreatedAtAction(nameof(GetDiscountReason), new { id = result.DiscountReasonId }, result);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("reasons/{id}")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance")]
+        public async Task<IActionResult> UpdateDiscountReason(Guid id, [FromBody] UpdateDiscountReasonDto updateDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var result = await _service.UpdateDiscountReasonAsync(id, updateDto, _userContext.CurrentUserId);
+                return Ok(result);
+            }
+            catch (System.Collections.Generic.KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("reasons/{id}")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance")]
+        public async Task<IActionResult> DeleteDiscountReason(Guid id)
+        {
+            try
+            {
+                var success = await _service.DeleteDiscountReasonAsync(id, _userContext.CurrentUserId);
+                return Ok(new { success });
+            }
+            catch (System.Collections.Generic.KeyNotFoundException)
+            {
+                return NotFound();
+            }
+        }
     }
 }

@@ -75,4 +75,51 @@ namespace SynOS.Models.DTOs.Admin
         public string AppliedBy { get; set; } = string.Empty;
         public string? Reason { get; set; }
     }
+
+    public class DiscountReasonDto
+    {
+        public Guid DiscountReasonId { get; set; }
+        public string ReasonText { get; set; } = string.Empty;
+        public string? Category { get; set; }
+        public string? Description { get; set; }
+        public bool IsActive { get; set; }
+        public int SortOrder { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+    }
+
+    public class CreateDiscountReasonDto
+    {
+        [Required]
+        [StringLength(200)]
+        public string ReasonText { get; set; } = string.Empty;
+
+        [StringLength(100)]
+        public string? Category { get; set; }
+
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        public bool IsActive { get; set; } = true;
+
+        public int SortOrder { get; set; } = 0;
+    }
+
+    public class UpdateDiscountReasonDto
+    {
+        [Required]
+        [StringLength(200)]
+        public string ReasonText { get; set; } = string.Empty;
+
+        [StringLength(100)]
+        public string? Category { get; set; }
+
+        [StringLength(500)]
+        public string? Description { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public int SortOrder { get; set; }
+    }
 }

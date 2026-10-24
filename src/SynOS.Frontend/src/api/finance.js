@@ -1233,5 +1233,56 @@ export const FinanceApi = {
         });
         if (!response.ok) throw new Error("Failed to load discount history");
         return response.json();
+    },
+
+    getDiscountReasons: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.isActive !== undefined && params.isActive !== null) queryParams.append('isActive', params.isActive);
+        if (params.search) queryParams.append('search', params.search);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/reasons${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load discount reasons");
+        return response.json();
+    },
+
+    createDiscountReason: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/admin/discounts/reasons'), {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to create discount reason");
+        }
+        return response.json();
+    },
+
+    updateDiscountReason: async (id, payload) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/reasons/${id}`), {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to update discount reason");
+        }
+        return response.json();
+    },
+
+    deleteDiscountReason: async (id) => {
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/reasons/${id}`), {
+            method: 'DELETE',
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to delete discount reason");
+        }
+        return response.json();
     }
 };

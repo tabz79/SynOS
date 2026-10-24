@@ -20,7 +20,9 @@ import {
     Clock,
     Receipt,
     Filter,
-    User
+    User,
+    ShieldCheck,
+    Trash2
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn, formatDateCompact } from '@/lib/utils';
@@ -34,7 +36,7 @@ export function DiscountMasterScreen() {
     const isDark = theme === 'dark';
 
     // Normalize tab
-    const tab = paramTab === 'history' || paramTab === 'staff' ? paramTab : 'codes';
+    const tab = paramTab === 'reasons' || paramTab === 'history' || paramTab === 'staff' ? paramTab : 'codes';
 
     // 1. Discount Codes State (Tab 1)
     const [discounts, setDiscounts] = useState([]);
@@ -44,7 +46,16 @@ export function DiscountMasterScreen() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDiscount, setEditingDiscount] = useState(null);
 
-    // 2. Discount History State (Tab 2 & 3)
+    // 2. Discount Reasons State (Tab: reasons)
+    const [reasons, setReasons] = useState([]);
+    const [loadingReasons, setLoadingReasons] = useState(false);
+    const [reasonSearch, setReasonSearch] = useState('');
+    const [reasonActiveFilter, setReasonActiveFilter] = useState('ALL');
+    const [reasonCategoryFilter, setReasonCategoryFilter] = useState('ALL');
+    const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
+    const [editingReason, setEditingReason] = useState(null);
+
+    // 3. Discount History State (Tab 2 & 3)
     const [history, setHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [historySource, setHistorySource] = useState('Patient'); // 'Patient' (Default) | 'Partner' | 'All'
@@ -54,6 +65,7 @@ export function DiscountMasterScreen() {
     // Sub-navigation tabs
     const tabs = [
         { id: 'codes', label: 'Discount Codes', icon: Tag },
+        { id: 'reasons', label: 'Discount Reasons', icon: ShieldCheck },
         { id: 'history', label: 'Discount History', icon: History },
         { id: 'staff', label: 'Staff Summary', icon: Users }
     ];
@@ -76,6 +88,24 @@ export function DiscountMasterScreen() {
         }
     }, [activeFilter, searchQuery]);
 
+    // Load discount reasons
+    const loadReasons = useCallback(async () => {
+        try {
+            setLoadingReasons(true);
+            const params = {};
+            if (reasonActiveFilter === 'ACTIVE') params.isActive = true;
+            if (reasonActiveFilter === 'INACTIVE') params.isActive = false;
+            if (reasonSearch.trim()) params.search = reasonSearch.trim();
+
+            const data = await FinanceApi.getDiscountReasons(params);
+            setReasons(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to load discount reasons:", err);
+        } finally {
+            setLoadingReasons(false);
+        }
+    }, [reasonActiveFilter, reasonSearch]);
+
     // Load discount history
     const loadHistory = useCallback(async () => {
         try {
@@ -95,10 +125,12 @@ export function DiscountMasterScreen() {
     useEffect(() => {
         if (tab === 'codes') {
             loadDiscounts();
+        } else if (tab === 'reasons') {
+            loadReasons();
         } else {
             loadHistory();
         }
-    }, [tab, loadDiscounts, loadHistory]);
+    }, [tab, loadDiscounts, loadReasons, loadHistory]);
 
     // KPI Metrics for Codes Tab
     const totalCount = discounts.length;
@@ -112,6 +144,53 @@ export function DiscountMasterScreen() {
     const avgDiscountAmount = totalBillsDiscounted > 0 ? Math.round(totalDiscountAmount / totalBillsDiscounted) : 0;
     const patientDiscountCount = history.filter(h => h.source === 'Patient').length;
     const partnerDiscountCount = history.filter(h => h.source !== 'Patient').length;
+
+    // KPI Metrics for Reasons Tab
+    const totalReasonsCount = reasons.length;
+    const activeReasonsCount = reasons.filter(r => r.isActive).length;
+    const doctorReasonsCount = reasons.filter(r => (r.category || '').toLowerCase().includes('doctor')).length;
+    const managementReasonsCount = reasons.filter(r => (r.category || '').toLowerCase().includes('management') || (r.category || '').toLowerCase().includes('owner')).length;
+
+    const categories = useMemo(() => {
+        const set = new Set(reasons.map(r => r.category).filter(Boolean));
+        return ['ALL', ...Array.from(set)];
+    }, [reasons]);
+
+    const filteredReasons = useMemo(() => {
+        return reasons.filter(r => {
+            if (reasonCategoryFilter !== 'ALL' && r.category !== reasonCategoryFilter) return false;
+            return true;
+        });
+    }, [reasons, reasonCategoryFilter]);
+
+    const handleToggleReasonActive = async (reason) => {
+        try {
+            await FinanceApi.updateDiscountReason(reason.discountReasonId, {
+                reasonText: reason.reasonText,
+                category: reason.category,
+                description: reason.description,
+                sortOrder: reason.sortOrder,
+                isActive: !reason.isActive
+            });
+            loadReasons();
+        } catch (err) {
+            console.error("Failed to toggle reason status:", err);
+            alert("Failed to update status: " + (err.message || 'Unknown error'));
+        }
+    };
+
+    const handleDeleteReason = async (reasonId) => {
+        if (!window.confirm("Are you sure you want to delete this preset reason? Receptionists will no longer see it in the billing dropdown.")) {
+            return;
+        }
+        try {
+            await FinanceApi.deleteDiscountReason(reasonId);
+            loadReasons();
+        } catch (err) {
+            console.error("Failed to delete reason:", err);
+            alert("Failed to delete reason: " + (err.message || 'Unknown error'));
+        }
+    };
 
     // Staff Breakdown Aggregation
     const staffBreakdown = useMemo(() => {
@@ -162,6 +241,17 @@ export function DiscountMasterScreen() {
                 d.effectiveFrom ? new Date(d.effectiveFrom).toLocaleDateString() : 'Immediate',
                 d.effectiveTo ? new Date(d.effectiveTo).toLocaleDateString() : 'Perpetual',
                 d.isActive ? 'Active' : 'Inactive'
+            ]);
+        } else if (tab === 'reasons') {
+            headers = ["Reason / Authority", "Category", "Description", "Order", "Status", "Created By", "Created At"];
+            rows = filteredReasons.map(r => [
+                `"${(r.reasonText || '').replace(/"/g, '""')}"`,
+                `"${(r.category || '').replace(/"/g, '""')}"`,
+                `"${(r.description || '').replace(/"/g, '""')}"`,
+                r.sortOrder ?? 0,
+                r.isActive ? 'Active' : 'Inactive',
+                `"${(r.createdBy || '').replace(/"/g, '""')}"`,
+                r.createdAt ? new Date(r.createdAt).toLocaleString() : ''
             ]);
         } else if (tab === 'staff') {
             headers = ["Staff Member", "Number of Discounts", "Total Discount Given (INR)", "Average Discount (INR)", "Percentage Count", "Flat Count"];
@@ -230,24 +320,37 @@ export function DiscountMasterScreen() {
                         </button>
                     )}
 
-                    {tab !== 'codes' && (
-                        <>
-                            <button
-                                onClick={handleDownloadCSV}
-                                className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-xs cursor-pointer"
-                            >
-                                <Download size={14} className="text-zinc-500" />
-                                <span>Download CSV</span>
-                            </button>
+                    {tab === 'reasons' && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setEditingReason(null);
+                                setIsReasonModalOpen(true);
+                            }}
+                            className="px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 active:scale-95 shadow-md shadow-synos-primary/20 flex items-center gap-2 cursor-pointer transition-all"
+                        >
+                            <Plus className="w-4 h-4" /> Add Preset Reason
+                        </button>
+                    )}
 
-                            <button
-                                onClick={() => setIsPrintModalOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-                            >
-                                <Printer size={14} />
-                                <span>Print Report</span>
-                            </button>
-                        </>
+                    {tab !== 'codes' && (
+                        <button
+                            onClick={handleDownloadCSV}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-xs cursor-pointer"
+                        >
+                            <Download size={14} className="text-zinc-500" />
+                            <span>Download CSV</span>
+                        </button>
+                    )}
+
+                    {tab !== 'codes' && tab !== 'reasons' && (
+                        <button
+                            onClick={() => setIsPrintModalOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                        >
+                            <Printer size={14} />
+                            <span>Print Report</span>
+                        </button>
                     )}
                 </div>
             </div>
@@ -477,7 +580,229 @@ export function DiscountMasterScreen() {
                     </div>
                 )}
 
-                {/* 2. DISCOUNT HISTORY TAB */}
+                {/* 2. DISCOUNT REASONS TAB */}
+                {tab === 'reasons' && (
+                    <div className="space-y-6 animate-in fade-in duration-300">
+                        {/* 4 Reactive KPI Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Presets</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{totalReasonsCount}</p>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                        <ShieldCheck size={17} />
+                                    </div>
+                                </div>
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                    Approved discount authorization reasons
+                                </p>
+                            </div>
+
+                            <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Active at Desk</span>
+                                        <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{activeReasonsCount}</p>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                        <CheckCircle2 size={17} />
+                                    </div>
+                                </div>
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                    Visible in reception dropdowns
+                                </p>
+                            </div>
+
+                            <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Doctor Recommendations</span>
+                                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{doctorReasonsCount}</p>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                        <User size={17} />
+                                    </div>
+                                </div>
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                    Discounts on doctor reference (e.g. Dr. DVR)
+                                </p>
+                            </div>
+
+                            <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Management Approvals</span>
+                                        <p className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{managementReasonsCount}</p>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                        <Receipt size={17} />
+                                    </div>
+                                </div>
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                    Lab Owner / Director concessions
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Search and Filter Strip */}
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xs">
+                            <div className="relative flex-1 max-w-md">
+                                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search by reason text, authority or description..."
+                                    value={reasonSearch}
+                                    onChange={(e) => setReasonSearch(e.target.value)}
+                                    className="w-full h-9 pl-9 pr-3 text-xs font-medium rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary transition-colors"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold">
+                                    {[
+                                        { id: 'ALL', label: 'All Status' },
+                                        { id: 'ACTIVE', label: 'Active Only' },
+                                        { id: 'INACTIVE', label: 'Inactive' }
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            type="button"
+                                            onClick={() => setReasonActiveFilter(f.id)}
+                                            className={cn(
+                                                "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                                                reasonActiveFilter === f.id
+                                                    ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs"
+                                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                            )}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {categories.length > 2 && (
+                                    <select
+                                        value={reasonCategoryFilter}
+                                        onChange={(e) => setReasonCategoryFilter(e.target.value)}
+                                        className="h-9 px-3 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary text-zinc-700 dark:text-zinc-300"
+                                    >
+                                        <option value="ALL">All Categories</option>
+                                        {categories.filter(c => c !== 'ALL').map(c => (
+                                            <option key={c} value={c}>{c}</option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Reasons Table */}
+                        <div className="synos-dept-card rounded-2xl overflow-hidden">
+                            {loadingReasons ? (
+                                <div className="flex flex-col items-center justify-center p-16 gap-3 text-zinc-400">
+                                    <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
+                                    <span className="text-xs font-medium">Loading discount reasons...</span>
+                                </div>
+                            ) : filteredReasons.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center p-16 gap-2 text-zinc-400">
+                                    <ShieldCheck className="w-8 h-8 opacity-40 mb-1" />
+                                    <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">No preset discount reasons found</p>
+                                    <p className="text-xs text-zinc-500">Click &quot;Add Preset Reason&quot; to configure authorized reasons for reception staff.</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs">
+                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-zinc-800">
+                                            <tr>
+                                                <th className="py-3.5 px-4">Reason / Authorized Authority</th>
+                                                <th className="py-3.5 px-4">Category</th>
+                                                <th className="py-3.5 px-4">Description / Guidance</th>
+                                                <th className="py-3.5 px-4">Created By</th>
+                                                <th className="py-3.5 px-4">Status</th>
+                                                <th className="py-3.5 px-4 text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80">
+                                            {filteredReasons.map((r) => (
+                                                <tr key={r.discountReasonId} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                                                    <td className="py-3.5 px-4">
+                                                        <div className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
+                                                            {r.reasonText}
+                                                        </div>
+                                                        <div className="text-[10px] text-zinc-400 font-mono">
+                                                            Order: {r.sortOrder ?? 0}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-3.5 px-4">
+                                                        <span className={cn(
+                                                            "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                                                            r.category === 'Doctor Recommendation'
+                                                                ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                                                                : r.category === 'Management Approval'
+                                                                ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                                                                : r.category === 'Special Concession'
+                                                                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                                                                : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20"
+                                                        )}>
+                                                            {r.category || 'General'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-300 text-xs max-w-sm">
+                                                        {r.description || <span className="text-zinc-400 italic">No notes</span>}
+                                                    </td>
+                                                    <td className="py-3.5 px-4 text-zinc-500 text-xs">
+                                                        {r.createdBy || 'System'}
+                                                    </td>
+                                                    <td className="py-3.5 px-4">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleToggleReasonActive(r)}
+                                                            className={cn(
+                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer",
+                                                                r.isActive
+                                                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
+                                                                    : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20 hover:bg-zinc-500/20"
+                                                            )}
+                                                            title="Click to toggle active status"
+                                                        >
+                                                            <span className={cn("w-1.5 h-1.5 rounded-full", r.isActive ? "bg-emerald-500" : "bg-zinc-400")} />
+                                                            {r.isActive ? 'Active' : 'Inactive'}
+                                                        </button>
+                                                    </td>
+                                                    <td className="py-3.5 px-4 text-right">
+                                                        <div className="inline-flex items-center gap-1.5">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setEditingReason(r);
+                                                                    setIsReasonModalOpen(true);
+                                                                }}
+                                                                className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-synos-primary hover:border-synos-primary/40 text-xs font-semibold inline-flex items-center gap-1 transition-all cursor-pointer"
+                                                            >
+                                                                <Edit className="w-3.5 h-3.5" /> Edit
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteReason(r.discountReasonId)}
+                                                                className="px-2 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 text-rose-500 hover:text-rose-600 hover:border-rose-500/40 text-xs font-semibold inline-flex items-center transition-all cursor-pointer"
+                                                                title="Delete reason"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* 3. DISCOUNT HISTORY TAB */}
                 {tab === 'history' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
                         {/* 4 Reactive KPI Cards */}
@@ -819,6 +1144,18 @@ export function DiscountMasterScreen() {
                 />
             )}
 
+            {/* Create / Edit Reason Modal */}
+            {isReasonModalOpen && (
+                <DiscountReasonModal
+                    reason={editingReason}
+                    onClose={() => setIsReasonModalOpen(false)}
+                    onSuccess={() => {
+                        setIsReasonModalOpen(false);
+                        loadReasons();
+                    }}
+                />
+            )}
+
             {/* A4 Printable Summary Modal */}
             <FinancePrintableSummaryModal
                 isOpen={isPrintModalOpen}
@@ -1103,6 +1440,180 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                             className="flex-1 py-2.5 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 active:scale-95 disabled:opacity-50 cursor-pointer transition-all shadow-md shadow-synos-primary/20"
                         >
                             {isSubmitting ? "Saving..." : (isEdit ? "Update Code" : "Save Code")}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+function DiscountReasonModal({ reason, onClose, onSuccess }) {
+    const isEdit = !!reason;
+    const [reasonText, setReasonText] = useState(reason?.reasonText || '');
+    const [category, setCategory] = useState(reason?.category || 'Doctor Recommendation');
+    const [description, setDescription] = useState(reason?.description || '');
+    const [sortOrder, setSortOrder] = useState(reason?.sortOrder ?? 0);
+    const [isActive, setIsActive] = useState(reason?.isActive ?? true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError(null);
+
+        if (!reasonText.trim()) {
+            setError("Reason text is required.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            if (isEdit) {
+                await FinanceApi.updateDiscountReason(reason.discountReasonId, {
+                    reasonText: reasonText.trim(),
+                    category: category.trim(),
+                    description: description.trim() || null,
+                    sortOrder: parseInt(sortOrder, 10) || 0,
+                    isActive: isActive
+                });
+            } else {
+                await FinanceApi.createDiscountReason({
+                    reasonText: reasonText.trim(),
+                    category: category.trim(),
+                    description: description.trim() || null,
+                    sortOrder: parseInt(sortOrder, 10) || 0,
+                    isActive: isActive
+                });
+            }
+            onSuccess();
+        } catch (err) {
+            setError(err.message || "Failed to save discount reason");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-zinc-900 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-synos-primary/10 border border-synos-primary/20 flex items-center justify-center text-synos-primary">
+                            <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                                {isEdit ? "Edit Preset Discount Reason" : "Add Preset Discount Reason"}
+                            </h3>
+                            <p className="text-[10px] text-zinc-500 font-medium">Standardize reasons for receptionist billing to prevent spelling errors</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {error && (
+                    <div className="m-4 mb-0 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
+                            Reason / Authorization Authority *
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            placeholder="e.g. Dr. DVR Recommendation, Lab Owner Approval, BPL Concession"
+                            value={reasonText}
+                            onChange={(e) => setReasonText(e.target.value)}
+                            className="w-full h-9 px-3 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
+                                Category *
+                            </label>
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="w-full h-9 px-3 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary"
+                            >
+                                <option value="Doctor Recommendation">Doctor Recommendation</option>
+                                <option value="Management Approval">Management Approval</option>
+                                <option value="Special Concession">Special Concession</option>
+                                <option value="Internal Courtesy">Internal Courtesy</option>
+                                <option value="Social Support">Social Support</option>
+                                <option value="Campaign">Campaign / Camp</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
+                                Sort Order
+                            </label>
+                            <input
+                                type="number"
+                                min="0"
+                                placeholder="0"
+                                value={sortOrder}
+                                onChange={(e) => setSortOrder(e.target.value)}
+                                className="w-full h-9 px-3 rounded-xl text-xs font-mono font-medium bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
+                            Description / Policy Notes (Optional)
+                        </label>
+                        <textarea
+                            rows={2}
+                            placeholder="Optional notes or instructions for receptionist staff..."
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="w-full p-3 rounded-xl text-xs font-medium bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary resize-none"
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                        <input
+                            type="checkbox"
+                            id="reasonIsActive"
+                            checked={isActive}
+                            onChange={(e) => setIsActive(e.target.checked)}
+                            className="w-4 h-4 rounded border-slate-300 text-synos-primary focus:ring-synos-primary cursor-pointer"
+                        />
+                        <label htmlFor="reasonIsActive" className="text-xs font-bold text-zinc-700 dark:text-zinc-300 cursor-pointer">
+                            Active and selectable by Receptionists
+                        </label>
+                    </div>
+
+                    <div className="flex gap-3 pt-3 border-t border-slate-100 dark:border-zinc-900">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-zinc-900 cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="flex-1 py-2.5 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 active:scale-95 disabled:opacity-50 cursor-pointer transition-all shadow-md shadow-synos-primary/20"
+                        >
+                            {isSubmitting ? "Saving..." : (isEdit ? "Update Reason" : "Save Reason")}
                         </button>
                     </div>
                 </form>
