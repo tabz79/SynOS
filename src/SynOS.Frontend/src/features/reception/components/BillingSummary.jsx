@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck } from 'lucide-react'
+import { useState, useEffect, useRef, useMemo } from 'react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -29,6 +29,9 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
 
     // Preset Discount Reasons State
     const [discountReasons, setDiscountReasons] = useState([]);
+    const [showReasonDropdown, setShowReasonDropdown] = useState(false);
+    const [reasonSelectedIndex, setReasonSelectedIndex] = useState(-1);
+    const reasonListRef = useRef(null);
     const [isAddReasonModalOpen, setIsAddReasonModalOpen] = useState(false);
     const [newReasonText, setNewReasonText] = useState('');
     const [newReasonCategory, setNewReasonCategory] = useState('Doctor Recommendation');
@@ -150,6 +153,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 return exists ? prev : [...prev, created];
             });
             setCustomDiscountReason(created.reasonText);
+            setShowReasonDropdown(false);
             setNewReasonText('');
             setIsAddReasonModalOpen(false);
         } catch (err) {
@@ -157,6 +161,60 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             alert("Failed to save discount reason: " + err.message);
         } finally {
             setIsSavingReason(false);
+        }
+    };
+
+    // Derived filtered suggestions for Reason Autocomplete
+    const filteredReasonSuggestions = useMemo(() => {
+        const query = (customDiscountReason || '').trim().toLowerCase();
+        if (!query) return discountReasons;
+        return discountReasons.filter(r => 
+            (r.reasonText && r.reasonText.toLowerCase().includes(query)) ||
+            (r.category && r.category.toLowerCase().includes(query))
+        );
+    }, [discountReasons, customDiscountReason]);
+
+    // Reset selected index when suggestions change
+    useEffect(() => {
+        if (showReasonDropdown && filteredReasonSuggestions.length > 0) {
+            setReasonSelectedIndex(0);
+        } else {
+            setReasonSelectedIndex(-1);
+        }
+    }, [customDiscountReason, showReasonDropdown, filteredReasonSuggestions.length]);
+
+    // Scroll selected item into view inside dropdown
+    useEffect(() => {
+        if (reasonSelectedIndex >= 0 && reasonListRef.current) {
+            const selectedElem = reasonListRef.current.children[reasonSelectedIndex];
+            if (selectedElem) {
+                selectedElem.scrollIntoView({ block: 'nearest' });
+            }
+        }
+    }, [reasonSelectedIndex]);
+
+    const handleReasonKeyDown = (e) => {
+        if (!showReasonDropdown) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                setShowReasonDropdown(true);
+            }
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setReasonSelectedIndex(prev => (prev < filteredReasonSuggestions.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setReasonSelectedIndex(prev => (prev > 0 ? prev - 1 : filteredReasonSuggestions.length - 1));
+        } else if (e.key === 'Enter') {
+            if (reasonSelectedIndex >= 0 && reasonSelectedIndex < filteredReasonSuggestions.length) {
+                e.preventDefault();
+                setCustomDiscountReason(filteredReasonSuggestions[reasonSelectedIndex].reasonText);
+                setShowReasonDropdown(false);
+            }
+        } else if (e.key === 'Escape') {
+            setShowReasonDropdown(false);
         }
     };
 
@@ -381,7 +439,7 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                 </div>
             )}
 
-            <div className={cn("rounded-lg p-4 space-y-4 relative overflow-hidden border", ui.container)}>
+            <div className={cn("rounded-lg p-4 space-y-4 relative overflow-visible border", ui.container)}>
 
                 {/* Visual Lock Indicator - REMOVED for Silent Enforcement */}
 
@@ -743,43 +801,123 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                         </button>
                                     </div>
 
-                                    {/* Preset Reasons Dropdown */}
-                                    <select
-                                        value={customDiscountReason}
-                                        onChange={(e) => {
-                                            if (e.target.value === '__NEW__') {
-                                                setIsAddReasonModalOpen(true);
-                                            } else {
-                                                setCustomDiscountReason(e.target.value);
-                                            }
-                                        }}
-                                        className={cn("w-full h-8 px-2.5 rounded-md text-xs font-medium outline-none border cursor-pointer", ui.input)}
-                                    >
-                                        <option value="">Select Reason from Presets...</option>
-                                        {discountReasons.map(r => (
-                                            <option key={r.discountReasonId} value={r.reasonText} className={isDark ? "bg-zinc-900" : "bg-white"}>
-                                                {r.reasonText} {r.category ? `(${r.category})` : ''}
-                                            </option>
-                                        ))}
-                                        <option value="__NEW__" className="font-bold text-synos-primary">
-                                            + Add New Reason...
-                                        </option>
-                                    </select>
-
-                                    {/* Reason Text & Apply Button */}
+                                    {/* Native System Searchable Dropdown Combobox */}
                                     <div className="flex items-center gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Or enter custom / modified note..."
-                                            value={customDiscountReason}
-                                            onChange={(e) => setCustomDiscountReason(e.target.value)}
-                                            className={cn("flex-1 h-8 px-2.5 rounded-md text-xs font-medium outline-none border", ui.input)}
-                                        />
+                                        <div className="relative flex-1">
+                                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search or Select Reason (e.g. Dr. DVR)..."
+                                                value={customDiscountReason}
+                                                onFocus={() => setShowReasonDropdown(true)}
+                                                onChange={(e) => {
+                                                    setCustomDiscountReason(e.target.value);
+                                                    setShowReasonDropdown(true);
+                                                }}
+                                                onKeyDown={handleReasonKeyDown}
+                                                onBlur={() => {
+                                                    setTimeout(() => {
+                                                        setShowReasonDropdown(false);
+                                                    }, 200);
+                                                }}
+                                                className={cn("w-full h-8 pl-8 pr-7 rounded-md text-xs font-medium outline-none border transition-all", ui.input)}
+                                            />
+                                            {customDiscountReason ? (
+                                                <button
+                                                    type="button"
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault();
+                                                        setCustomDiscountReason('');
+                                                        setShowReasonDropdown(true);
+                                                    }}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                                                    title="Clear reason"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault();
+                                                        setShowReasonDropdown(prev => !prev);
+                                                    }}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                                                >
+                                                    <ChevronDown className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+
+                                            {/* Native Suggestions Floating Overlay */}
+                                            {showReasonDropdown && (
+                                                <div
+                                                    ref={reasonListRef}
+                                                    className={cn(
+                                                        "absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-50 border max-h-52 shadow-xl",
+                                                        isDark ? "bg-zinc-900 border-zinc-700/80 text-zinc-200" : "bg-white border-zinc-200 text-zinc-900"
+                                                    )}
+                                                >
+                                                    {filteredReasonSuggestions.length === 0 ? (
+                                                        <div className="px-3 py-2 text-[11px] text-zinc-400 italic">
+                                                            No matching preset. You can still apply as custom note.
+                                                        </div>
+                                                    ) : (
+                                                        filteredReasonSuggestions.map((r, idx) => (
+                                                            <button
+                                                                key={r.discountReasonId}
+                                                                type="button"
+                                                                onMouseEnter={() => setReasonSelectedIndex(idx)}
+                                                                onMouseDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    setCustomDiscountReason(r.reasonText);
+                                                                    setShowReasonDropdown(false);
+                                                                }}
+                                                                className={cn(
+                                                                    "w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between cursor-pointer",
+                                                                    idx === reasonSelectedIndex
+                                                                        ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                                                        : (isDark ? "hover:bg-zinc-800 text-zinc-300 hover:text-white" : "hover:bg-zinc-50 text-zinc-700 hover:text-black"),
+                                                                    isDark ? "border-zinc-800/50" : "border-zinc-100"
+                                                                )}
+                                                            >
+                                                                <span className="truncate text-xs font-semibold">{r.reasonText}</span>
+                                                                {r.category && (
+                                                                    <span className={cn(
+                                                                        "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
+                                                                        isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
+                                                                    )}>
+                                                                        {r.category}
+                                                                    </span>
+                                                                )}
+                                                            </button>
+                                                        ))
+                                                    )}
+
+                                                    {/* Quick + Add New Reason action at bottom of menu */}
+                                                    <button
+                                                        type="button"
+                                                        onMouseDown={(e) => {
+                                                            e.preventDefault();
+                                                            setShowReasonDropdown(false);
+                                                            setIsAddReasonModalOpen(true);
+                                                        }}
+                                                        className={cn(
+                                                            "w-full text-left px-3 py-2 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border-t",
+                                                            isDark ? "border-zinc-800 text-synos-primary hover:bg-zinc-800/60" : "border-zinc-100 text-synos-primary hover:bg-blue-50/50"
+                                                        )}
+                                                    >
+                                                        <Plus className="w-3.5 h-3.5" />
+                                                        <span>+ Add New Reason...</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <button
                                             type="button"
                                             disabled={!customDiscountValue || isProcessing}
                                             onClick={handleApplyCustomDiscount}
-                                            className="h-8 px-3 rounded-md bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
+                                            className="h-8 px-3 rounded-md bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1"
                                         >
                                             {isProcessing ? <Loader2 className="w-3 h-3 animate-spin" /> : "Apply"}
                                         </button>
