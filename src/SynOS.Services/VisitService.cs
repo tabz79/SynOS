@@ -1733,5 +1733,356 @@ namespace SynOS.Services
                 throw new UnauthorizedAccessException($"Visit {ownership.Token} is assigned to another desk. Modification denied.");
             }
         }
+
+        public async Task<BatchEditVisitResponseDto> BatchEditVisitAsync(Guid visitId, BatchEditVisitDto dto, Guid actorUserId)
+        {
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+            if (string.IsNullOrWhiteSpace(dto.Reason)) throw new ArgumentException("A valid operational reason is required for visit amendments.");
+
+            var visit = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.Invoices).ThenInclude(i => i.PartialPayments)
+                .Include(v => v.Orders).ThenInclude(o => o.Test)
+                .Include(v => v.Specimens)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
+            CheckVisitOwnership(visit);
+
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice == null) throw new InvalidOperationException("No invoice associated with this visit.");
+
+            string actorName = await GetActorNameAsync(actorUserId);
+            var affectedTubes = new List<string>();
+            bool reSignRequired = false;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Patient Demographics In-Place Updates
+                if (visit.Patient != null)
+                {
+                    if (!string.IsNullOrWhiteSpace(dto.FirstName)) visit.Patient.FirstName = dto.FirstName.Trim();
+                    if (!string.IsNullOrWhiteSpace(dto.LastName)) visit.Patient.LastName = dto.LastName.Trim();
+                    if (!string.IsNullOrWhiteSpace(dto.FirstName) || !string.IsNullOrWhiteSpace(dto.LastName))
+                    {
+                        visit.Patient.DisplayName = $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim();
+                    }
+                    if (dto.Age.HasValue && dto.Age.Value > 0)
+                    {
+                        var age = dto.Age.Value;
+                        var unit = (dto.AgeUnit ?? "Y").ToUpper();
+                        DateTime dob;
+                        if (unit.StartsWith("M"))
+                            dob = DateTime.UtcNow.AddMonths(-age);
+                        else if (unit.StartsWith("D"))
+                            dob = DateTime.UtcNow.AddDays(-age);
+                        else
+                            dob = DateTime.UtcNow.AddYears(-age);
+
+                        visit.Patient.DateOfBirth = dob;
+                        visit.Patient.IsDateOfBirthKnown = false;
+                    }
+                    if (!string.IsNullOrWhiteSpace(dto.Gender)) visit.Patient.Gender = dto.Gender.Trim();
+                    if (!string.IsNullOrWhiteSpace(dto.Mobile)) visit.Patient.CurrentPhoneNumber = dto.Mobile.Trim();
+                    visit.Patient.UpdatedAt = DateTime.UtcNow;
+                }
+
+                // 2. Referral & Doctor Updates
+                if (dto.ReferralPartnerId.HasValue)
+                {
+                    visit.ReferralPartnerId = dto.ReferralPartnerId.Value;
+                    visit.IsReferred = true;
+                }
+                if (dto.SecondaryPartnerId.HasValue)
+                {
+                    visit.SecondaryReferralPartnerId = dto.SecondaryPartnerId.Value;
+                }
+                if (dto.ReferrerText != null)
+                {
+                    visit.ReferrerText = dto.ReferrerText.Trim();
+                }
+
+                // 3. Billing Mode
+                if (!string.IsNullOrWhiteSpace(dto.BillingMode))
+                {
+                    if (dto.BillingMode.Equals("PrepaidPartner", StringComparison.OrdinalIgnoreCase))
+                    {
+                        visit.PaymentCollectionModel = "PartnerCollects";
+                        visit.BillingType = BillingType.PrepaidPartner;
+                    }
+                    else if (dto.BillingMode.Equals("Insurance", StringComparison.OrdinalIgnoreCase))
+                    {
+                        visit.BillingType = BillingType.Insurance;
+                    }
+                    else if (dto.BillingMode.Equals("Corporate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        visit.BillingType = BillingType.Corporate;
+                    }
+                    else
+                    {
+                        visit.PaymentCollectionModel = "LabCollects";
+                        visit.BillingType = BillingType.Standard;
+                    }
+                }
+
+                // 4. Test Cancellations (Removals)
+                if (dto.RemoveOrderIds != null && dto.RemoveOrderIds.Any())
+                {
+                    foreach (var orderId in dto.RemoveOrderIds)
+                    {
+                        var order = visit.Orders.FirstOrDefault(o => o.OrderId == orderId && o.Status != OrderStatus.Cancelled);
+                        if (order != null)
+                        {
+                            order.Status = OrderStatus.Cancelled;
+                            order.CancellationReason = OrderCancellationReason.ReceptionCorrection;
+                            order.CancelledAt = DateTime.UtcNow;
+                            order.CancelledByUserId = actorUserId;
+
+                            // Handle linked specimen
+                            if (order.SpecimenId.HasValue)
+                            {
+                                var otherActiveUsingSpecimen = visit.Orders.Any(o => o.OrderId != order.OrderId && o.SpecimenId == order.SpecimenId && o.Status != OrderStatus.Cancelled);
+                                if (!otherActiveUsingSpecimen)
+                                {
+                                    var spec = visit.Specimens.FirstOrDefault(s => s.SpecimenId == order.SpecimenId.Value);
+                                    if (spec != null)
+                                    {
+                                        spec.Status = SpecimenStatus.Cancelled;
+                                        if (!string.IsNullOrEmpty(spec.TubeName)) affectedTubes.Add($"Discard/Cancelled: {spec.TubeName}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 5. Test Additions
+                if (dto.AddTestCodes != null && dto.AddTestCodes.Any())
+                {
+                    var allCachedTests = await _testsCacheService.GetCachedTestsAsync();
+                    foreach (var code in dto.AddTestCodes)
+                    {
+                        if (string.IsNullOrWhiteSpace(code)) continue;
+                        if (visit.Orders.Any(o => o.TestCode.Equals(code, StringComparison.OrdinalIgnoreCase) && o.Status != OrderStatus.Cancelled)) continue;
+
+                        var currentOrdersList = visit.Orders.ToList();
+                        await ExpandAndAddOrdersInternalAsync(visitId, code, currentOrdersList, false);
+
+                        // Newly added order(s)
+                        var newlyAddedOrders = visit.Orders.Where(o => o.TestCode.Equals(code, StringComparison.OrdinalIgnoreCase) && o.Status == OrderStatus.Pending && o.SpecimenId == null).ToList();
+                        foreach (var newOrd in newlyAddedOrders)
+                        {
+                            var testDef = allCachedTests.FirstOrDefault(t => t.TestId == newOrd.TestId);
+                            if (testDef != null && !string.IsNullOrEmpty(testDef.SpecimenTypeCode))
+                            {
+                                // Check if visit has matching active collected/pending specimen with same specimen type code
+                                var existingMatch = visit.Specimens.FirstOrDefault(s => s.SpecimenTypeCode == testDef.SpecimenTypeCode && s.Status != SpecimenStatus.Cancelled);
+                                if (existingMatch != null)
+                                {
+                                    // Automatic container re-use!
+                                    newOrd.SpecimenId = existingMatch.SpecimenId;
+                                    if (existingMatch.Status == SpecimenStatus.Collected)
+                                    {
+                                        newOrd.Status = OrderStatus.Collected;
+                                    }
+                                    affectedTubes.Add($"Reused: {existingMatch.TubeName ?? existingMatch.SpecimenTypeCode}");
+                                }
+                                else
+                                {
+                                    affectedTubes.Add($"New Collection Needed: {testDef.SpecimenTypeCode}");
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 6. Discount Updates
+                if (dto.UpdateDiscount)
+                {
+                    var activeFacts = await _context.DiscountFacts
+                        .Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive)
+                        .ToListAsync();
+                    foreach (var f in activeFacts) f.IsActive = false;
+
+                    if (dto.DiscountValue.HasValue && dto.DiscountValue.Value > 0)
+                    {
+                        var mode = dto.DiscountType ?? "Percentage";
+                        var discType = mode.Equals("Flat", StringComparison.OrdinalIgnoreCase) ? DiscountType.Flat : DiscountType.Percentage;
+                        var customMaster = await _context.DiscountMasters
+                            .FirstOrDefaultAsync(dm => dm.Code == "CUSTOM" && dm.IsActive);
+
+                        if (customMaster == null)
+                        {
+                            customMaster = new DiscountMaster
+                            {
+                                DiscountDefinitionId = Guid.NewGuid(),
+                                Name = "Custom Discount",
+                                Code = "CUSTOM",
+                                Type = discType,
+                                Value = dto.DiscountValue.Value,
+                                MaxLimit = 100000,
+                                IsActive = true,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.DiscountMasters.Add(customMaster);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        string appliedNote = string.IsNullOrWhiteSpace(dto.DiscountReason) ? actorName : $"{actorName} - {dto.DiscountReason.Trim()}";
+                        var newFact = new DiscountFact
+                        {
+                            DiscountFactId = Guid.NewGuid(),
+                            InvoiceId = invoice.InvoiceId,
+                            DiscountDefinitionId = customMaster.DiscountDefinitionId,
+                            AppliedBy = appliedNote,
+                            AppliedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            IsActive = true,
+                            Type = discType,
+                            Value = dto.DiscountValue.Value,
+                            GrossAmount = 0, DiscountAmount = 0, NetAmountAfterDiscount = 0
+                        };
+                        _context.DiscountFacts.Add(newFact);
+                    }
+                }
+
+                // 7. Re-signing Check for Existing Signed Reports
+                var existingReports = await _context.Reports
+                    .Where(r => r.VisitId == visitId && (r.Status == "Signed" || r.Status == "ManualVerified"))
+                    .ToListAsync();
+
+                if (existingReports.Any())
+                {
+                    reSignRequired = true;
+                    foreach (var rep in existingReports)
+                    {
+                        rep.Status = "ReadyForVerification";
+                        rep.CurrentVersion += 1;
+                        rep.SignedAt = null;
+                        rep.SignedByUserId = null;
+                        rep.VerifiedAt = null;
+                        rep.VerifiedByUserId = null;
+                        rep.FinalSnapshotJson = null;
+                        rep.PdfUrl = null;
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 8. Re-calculate Financials via Revenue Engine
+                await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+
+                // 9. Financial Cash Settlement Reconciliation
+                string settlementAction = "None";
+                if (dto.SettlementDifference < 0)
+                {
+                    // Refund to patient via Cash from Register
+                    decimal refundAmt = Math.Abs(dto.SettlementDifference);
+                    var refundPayment = new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = invoice.InvoiceId,
+                        Amount = -refundAmt, // Negative payment reduces total paid
+                        Method = "Cash",
+                        ReceiptNo = $"REF-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = actorUserId
+                    };
+                    _context.Payments.Add(refundPayment);
+                    settlementAction = "RefundIssued";
+                    await _context.SaveChangesAsync();
+
+                    // Re-apply snapshot to lock in status
+                    await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+                }
+                else if (dto.SettlementDifference > 0)
+                {
+                    // Additional payment collected at desk
+                    decimal dueAmt = dto.SettlementDifference;
+                    var addPayment = new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = invoice.InvoiceId,
+                        Amount = dueAmt,
+                        Method = !string.IsNullOrWhiteSpace(dto.PaymentMethod) ? dto.PaymentMethod : "Cash",
+                        ReceiptNo = $"REC-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = actorUserId
+                    };
+                    _context.Payments.Add(addPayment);
+                    settlementAction = "AdditionalPaymentRecorded";
+                    await _context.SaveChangesAsync();
+
+                    // Re-apply snapshot to lock in status
+                    await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+                }
+
+                // 10. Audit Fact & Branch Operational Event
+                var auditCorrectionFact = new CorrectionFact
+                {
+                    CorrectionId = Guid.NewGuid(),
+                    VisitId = visit.VisitId,
+                    InvoiceId = invoice.InvoiceId,
+                    CorrectionType = CorrectionType.PriceOverride, // Generic amendment
+                    PreviousAmount = invoice.Total - dto.SettlementDifference,
+                    NewAmount = invoice.Total,
+                    CreatedBy = actorUserId,
+                    CreatedAt = DateTime.UtcNow,
+                    Reason = dto.Reason,
+                    PayloadJson = JsonSerializer.Serialize(new
+                    {
+                        dto.FirstName,
+                        dto.LastName,
+                        dto.Age,
+                        dto.Gender,
+                        dto.Mobile,
+                        dto.AddTestCodes,
+                        dto.RemoveOrderIds,
+                        dto.SettlementDifference,
+                        SettlementAction = settlementAction,
+                        dto.Reason
+                    })
+                };
+                _context.CorrectionFacts.Add(auditCorrectionFact);
+                await _context.SaveChangesAsync();
+
+                await _operationalEventWriter.WriteEventAsync(
+                    BranchEventType.VISIT_UPDATED,
+                    _userContext.CurrentBranchId.ToString(),
+                    visit.VisitId.ToString(),
+                    visit.Token,
+                    $"Visit amended by {actorName}. Reason: {dto.Reason}",
+                    actorName,
+                    actorUserId.ToString(),
+                    true, null, null,
+                    TimelineVisibility.Surface,
+                    visit.VisitId,
+                    auditCorrectionFact.PayloadJson
+                );
+
+                await transaction.CommitAsync();
+
+                return new BatchEditVisitResponseDto
+                {
+                    Success = true,
+                    Message = "Visit successfully amended.",
+                    VisitId = visit.VisitId,
+                    Token = visit.Token,
+                    RevisedNetTotal = invoice.Total,
+                    SettlementDifference = dto.SettlementDifference,
+                    SettlementAction = settlementAction,
+                    AffectedTubes = affectedTubes,
+                    ReSignRequired = reSignRequired
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to batch edit visit {VisitId}: {Message}", visitId, ex.Message);
+                throw;
+            }
+        }
     }
 }

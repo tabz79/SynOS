@@ -29,6 +29,7 @@ namespace SynOS.Services
         Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId);
         Task<string> AssignOfficialTokenAsync(Guid visitId, Guid actorUserId);
         Task RecalculateFinancialsAsync(Guid visitId, Guid actorUserId);
+        Task<BatchEditVisitResponseDto> BatchEditVisitAsync(Guid visitId, BatchEditVisitDto dto, Guid actorUserId);
         // bool IsPhysicallyLocked(Visit visit);
     }
 }

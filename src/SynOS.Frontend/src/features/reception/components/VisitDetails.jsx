@@ -18,7 +18,14 @@ export function VisitDetails({
     setIsPrepaidIntent, 
     isCorrectionIntent,
     billingMode = 'Standard',
-    onOpenModal
+    onOpenModal,
+    stagedAddedTests = [],
+    onAddStagedTest,
+    stagedRemovedOrderIds = [],
+    onToggleRemoveOrderId,
+    onRemoveStagedAddedTest,
+    onStageReferral,
+    onStageSecondaryReferral
 }) {
     const { closePanel } = useReceptionDrawer();
     // Local UI State for Search Interaction ONLY
@@ -291,6 +298,10 @@ export function VisitDetails({
 
         // CORRECTION INTENT
         if (isCorrectionIntent) {
+            if (onStageReferral) {
+                onStageReferral(partnerId);
+                return;
+            }
             setCorrectionState({
                 isOpen: true,
                 type: 'ChangeReferral',
@@ -317,6 +328,10 @@ export function VisitDetails({
 
         // CORRECTION INTENT
         if (isCorrectionIntent) {
+            if (onStageReferral) {
+                onStageReferral(null);
+                return;
+            }
             setCorrectionState({
                 isOpen: true,
                 type: 'ChangeReferral',
@@ -340,6 +355,10 @@ export function VisitDetails({
     // COMMAND: Apply Secondary Referral Doctor (RMP)
     const handleApplySecondaryReferral = async (secondaryPartnerId) => {
         if (!visitId) return;
+        if (isCorrectionIntent && onStageSecondaryReferral) {
+            onStageSecondaryReferral(secondaryPartnerId);
+            return;
+        }
         setIsProcessing(true);
         try {
             await ReceptionApi.updateSecondaryReferral(visitId, secondaryPartnerId);
@@ -355,6 +374,10 @@ export function VisitDetails({
     // COMMAND: Remove Secondary Referral Doctor (RMP)
     const handleRemoveSecondaryReferral = async () => {
         if (!visitId) return;
+        if (isCorrectionIntent && onStageSecondaryReferral) {
+            onStageSecondaryReferral(null);
+            return;
+        }
         setIsProcessing(true);
         try {
             await ReceptionApi.updateSecondaryReferral(visitId, null);
@@ -489,7 +512,12 @@ export function VisitDetails({
 
         // 1. CORRECTION INTENT (Paid/Finalized)
         if (isCorrectionIntent) {
-            // Open Modal for Reason
+            if (onAddStagedTest) {
+                onAddStagedTest(test);
+                setFilter("");
+                return;
+            }
+            // Fallback Modal for Reason
             setCorrectionState({
                 isOpen: true,
                 type: 'AddTest',
@@ -523,13 +551,14 @@ export function VisitDetails({
 
         // 1. CORRECTION INTENT
         if (isCorrectionIntent) {
+            if (onToggleRemoveOrderId) {
+                onToggleRemoveOrderId(orderId, testCode);
+                return;
+            }
             setCorrectionState({
                 isOpen: true,
                 type: 'RemoveTest',
-                payload: { testCode, orderId }, // Need OrderId for correction if possible, but backend might look it up via context? 
-                // CorrectionService RemoveTest uses TargetEntityId (OrderId). 
-                // Snapshot matches TestCode to OrderId? 
-                // We need to look up OrderID from 'test' object in the map loop.
+                payload: { testCode, orderId },
                 reason: ""
             });
             return;
@@ -1106,32 +1135,94 @@ export function VisitDetails({
                         </div>
                     )}
 
-                    {internalTests.map(test => (
-                        <div key={test.testCode || test.code} className={cn("rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border", ui.testCard)}>
+                    {internalTests.map(test => {
+                        const orderId = test.orderId || test.OrderId || test.TestId || test.testId;
+                        const isStagedRemoved = isCorrectionIntent && stagedRemovedOrderIds.includes(orderId);
+
+                        return (
+                            <div key={test.testCode || test.code} className={cn(
+                                "rounded-lg p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border transition-all",
+                                isStagedRemoved 
+                                    ? "opacity-50 bg-red-950/20 border-red-500/30 line-through" 
+                                    : ui.testCard
+                            )}>
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className={cn("px-2.5 py-1 min-w-[32px] min-h-[32px] max-w-[120px] rounded flex items-center justify-center type-code border shrink-0 font-mono text-[10px] font-bold truncate", ui.testCode)}>
+                                        {test.testCode || test.code}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="type-value leading-tight truncate flex items-center gap-2">
+                                            <span>{test.testName || test.name}</span>
+                                            {isStagedRemoved && (
+                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 no-underline not-italic">
+                                                    Marked for Cancellation
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="type-section-header mt-0.5">{test.dept || test.category || test.department}</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="type-code">₹{test.basePrice || test.price || test.Price}</div>
+                                    
+                                    {/* Allow Remove / Undo if NOT ReadOnly OR if Correction Intent */}
+                                    {(!isReadOnly || isCorrectionIntent) && (
+                                        isStagedRemoved ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveTest(test.testCode || test.code, orderId)}
+                                                className="text-xs font-bold text-synos-primary hover:underline px-2 py-1 bg-synos-primary/10 rounded cursor-pointer no-underline"
+                                            >
+                                                Undo
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    handleRemoveTest(test.testCode || test.code, orderId);
+                                                }}
+                                                disabled={isProcessing}
+                                                className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
+                                                title="Remove Test"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+
+                    {/* STAGED ADD-ON TESTS IN EDIT MODE */}
+                    {isCorrectionIntent && stagedAddedTests.length > 0 && stagedAddedTests.map((test, sIdx) => (
+                        <div key={`staged-add-${test.code || test.testCode}-${sIdx}`} className="rounded-lg p-3 flex items-center justify-between group border border-emerald-500/40 bg-emerald-500/10 animate-in zoom-in-95 duration-200">
                             <div className="flex items-center gap-3 min-w-0">
-                                <div className={cn("px-2.5 py-1 min-w-[32px] min-h-[32px] max-w-[120px] rounded flex items-center justify-center type-code border shrink-0 font-mono text-[10px] font-bold truncate", ui.testCode)}>
-                                    {test.testCode || test.code}
+                                <div className="px-2.5 py-1 min-w-[32px] min-h-[32px] max-w-[120px] rounded flex items-center justify-center border shrink-0 font-mono text-[10px] font-bold truncate bg-emerald-500/20 border-emerald-500/40 text-emerald-400">
+                                    {test.code || test.testCode}
                                 </div>
                                 <div className="min-w-0">
-                                    <div className="type-value leading-tight truncate">{test.testName || test.name}</div>
-                                    <div className="type-section-header mt-0.5">{test.dept || test.category || test.department}</div>
+                                    <div className="type-value leading-tight truncate flex items-center gap-2">
+                                        <span className="text-emerald-400 font-semibold">{test.name || test.testName}</span>
+                                        <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                            + Staged Add-On
+                                        </span>
+                                    </div>
+                                    <div className="type-section-header mt-0.5 text-emerald-500/80">
+                                        {test.specimenTypeCode ? `Specimen: ${test.specimenTypeCode}` : (test.dept || test.department || "Add-On Test")}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="type-code">₹{test.basePrice || test.price || test.Price}</div>
-                                
-                                {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
-                                {(!isReadOnly || isCorrectionIntent) && (
-                                    <button
-                                        onClick={() => {
-                                            handleRemoveTest(test.testCode || test.code, test.orderId || test.OrderId || test.TestId || test.testId);
-                                        }}
-                                        disabled={isProcessing}
-                                        className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                )}
+                                <div className="type-code text-emerald-400 font-bold">₹{test.price || test.basePrice || 0}</div>
+                                <button
+                                    type="button"
+                                    onClick={() => onRemoveStagedAddedTest && onRemoveStagedAddedTest(sIdx)}
+                                    className="text-emerald-400 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
+                                    title="Discard Add-On"
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
                             </div>
                         </div>
                     ))}

@@ -858,6 +858,32 @@ export const ReceptionApi = {
     },
 
     /**
+     * Enterprise Full-Fledged Edit for a Visit.
+     * Handles patient demographics, test additions/cancellations, specimen re-use/re-draw,
+     * report re-signing triggers, and cash refund / balance due financial settlement.
+     * @param {string} visitId
+     * @param {Object} data - BatchEditVisitDto
+     * @returns {Promise<Object>} - BatchEditVisitResponseDto
+     */
+    batchEditVisit: async (visitId, data) => {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/visits/${visitId}/batch-edit`), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            let errorMsg = "Batch edit failed";
+            try {
+                const err = await response.text();
+                try { errorMsg = JSON.parse(err).message || err; } catch { errorMsg = err; }
+            } catch (e) { }
+            throw new Error(errorMsg);
+        }
+        return response.json();
+    },
+
+    /**
      * Fetches all available branches.
      * @returns {Promise<Array>}
      */

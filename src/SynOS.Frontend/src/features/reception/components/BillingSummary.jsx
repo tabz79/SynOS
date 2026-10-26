@@ -16,7 +16,24 @@ const extractB2BInfo = (snap) => {
     return { rawVal: Number(rawVal) || 0, rawType, rawAmount: Number(rawAmount) || 0, enteredBy, enteredAt };
 };
 
-export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, isPrepaidIntent, billingMode = 'Standard', paymentMethod, setPaymentMethod, onOpenModal, createdDiscountReason }) {
+export function BillingSummary({ 
+    snapshot, 
+    onVisitUpdated, 
+    isCorrectionIntent, 
+    isPrepaidIntent, 
+    billingMode = 'Standard', 
+    paymentMethod, 
+    setPaymentMethod, 
+    onOpenModal, 
+    createdDiscountReason,
+    stagedDiscount,
+    onStageDiscount,
+    stagedGross,
+    stagedDiscountAmt,
+    stagedNet,
+    settlementDiff = 0,
+    originalPaid = 0
+}) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
@@ -234,12 +251,22 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const handleApplyDiscount = async (code) => {
         if (!code || !canPerformActions || !visitId) return;
 
-        // CORRECTION INTENT
-        // CORRECTION INTENT
+        const discount = discountCatalog.find(d => d.code === code);
+        const masterId = discount?.discountDefinitionId || discount?.id;
+
+        // CORRECTION INTENT (Staged Batch Edit)
         if (isCorrectionIntent) {
-            const discount = discountCatalog.find(d => d.code === code);
-            const masterId = discount?.discountDefinitionId || discount?.id;
-            console.log("DEBUG: Selected Discount:", discount, "MasterID:", masterId);
+            if (onStageDiscount && discount) {
+                onStageDiscount({
+                    mode: 'catalog',
+                    code: discount.code,
+                    discountMasterId: masterId,
+                    type: discount.type === 0 || discount.type === 'Percentage' ? 'Percentage' : 'Flat',
+                    value: discount.value,
+                    reason: discount.name
+                });
+                return;
+            }
 
             if (!masterId) {
                 console.error("Critical: Discount ID not found on object", discount);
@@ -285,6 +312,17 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
             return;
         }
         if (!canPerformActions || !visitId) return;
+
+        // CORRECTION INTENT (Staged Batch Edit)
+        if (isCorrectionIntent && onStageDiscount) {
+            onStageDiscount({
+                mode: 'custom',
+                type: customDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
+                value: val,
+                reason: customDiscountReason.trim()
+            });
+            return;
+        }
 
         setIsProcessing(true);
         try {
@@ -337,8 +375,14 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     const handleRemoveDiscount = async () => {
         if (!canPerformActions || !visitId) return;
 
-        // CORRECTION INTENT
+        // CORRECTION INTENT (Staged Batch Edit)
         if (isCorrectionIntent) {
+            if (onStageDiscount) {
+                onStageDiscount({ mode: 'remove', remove: true });
+                setCustomDiscountReason('');
+                setCustomDiscountValue('');
+                return;
+            }
             setCorrectionState({
                 isOpen: true,
                 type: 'ChangeDiscount',
@@ -386,10 +430,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
     };
 
     // Settlement Logic
-    const totalPaid = billing.totalPaid || 0;
-    const netAmount = billing.netAmount || 0;
-    const settlementDiff = totalPaid - netAmount; // Positive = Refund, Negative = Due
-    const isSettlementNeeded = isCorrectionIntent && totalPaid > 0 && Math.abs(settlementDiff) > 0.01;
+    const totalPaid = originalPaid || billing.totalPaid || 0;
+    const netAmount = stagedNet !== undefined ? stagedNet : (billing.netAmount || 0);
+    const effectiveDiff = settlementDiff !== undefined ? settlementDiff : (netAmount - totalPaid);
+    const isSettlementNeeded = isCorrectionIntent && totalPaid > 0 && Math.abs(effectiveDiff) > 0.01;
 
     // MULTI-PAYER DISPLAY LOGIC
     const isPrepaid = isPrepaidIntent || billingMode === 'PrepaidPartner';
@@ -498,13 +542,40 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     {/* Gross */}
                     <div className="flex justify-between items-center">
                         <span className={ui.rowLabel}>Total Amount</span>
-                        <span className={ui.rowValue}>₹{billing.grossAmount?.toLocaleString() ?? "—"}</span>
+                        <span className={ui.rowValue}>
+                            ₹{isCorrectionIntent && stagedGross !== undefined 
+                                ? stagedGross.toLocaleString() 
+                                : (billing.grossAmount?.toLocaleString() ?? "—")}
+                        </span>
                     </div>
 
                     {/* Discount Applied */}
                     <div className="flex justify-between items-center">
                         <span className={ui.rowLabel}>Discount</span>
-                        {billing.appliedDiscount && (billing.discountAmount > 0) ? (
+                        {isCorrectionIntent && stagedDiscount ? (
+                            stagedDiscount.remove ? (
+                                <span className="type-code text-red-400 font-semibold text-xs">Discount Removed</span>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
+                                        - ₹{stagedDiscountAmt?.toLocaleString() ?? 0}
+                                        <span className="text-xs opacity-80 font-semibold">({stagedDiscount.reason || stagedDiscount.name || (stagedDiscount.type === 'Percentage' ? `${stagedDiscount.value}%` : `₹${stagedDiscount.value}`)})</span>
+                                    </span>
+                                    {canPerformActions && (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveDiscount}
+                                            disabled={isProcessing}
+                                            className={cn("p-1 rounded-full transition-colors cursor-pointer",
+                                                isDark ? "hover:bg-zinc-800 text-zinc-500 hover:text-red-400" : "hover:bg-red-50 text-zinc-400 hover:text-red-600")}
+                                            title="Remove Discount"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+                            )
+                        ) : billing.appliedDiscount && (billing.discountAmount > 0) ? (
                             <div className="flex items-center gap-2">
                                 <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
                                     - ₹{billing.discountAmount?.toLocaleString()}
@@ -512,9 +583,10 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                                 </span>
                                 {canPerformActions && (
                                     <button
+                                        type="button"
                                         onClick={handleRemoveDiscount}
                                         disabled={isProcessing}
-                                        className={cn("p-1 rounded-full transition-colors",
+                                        className={cn("p-1 rounded-full transition-colors cursor-pointer",
                                             isDark ? "hover:bg-zinc-800 text-zinc-500 hover:text-red-400" : "hover:bg-red-50 text-zinc-400 hover:text-red-600")}
                                         title="Remove Discount"
                                     >
@@ -539,14 +611,94 @@ export function BillingSummary({ snapshot, onVisitUpdated, isCorrectionIntent, i
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
                         <span className={ui.netLabel}>
-                            {amountLabel}
+                            {isCorrectionIntent ? "Revised Net Amount" : amountLabel}
                         </span>
                         <span className={cn("flex items-center", ui.netValue)}>
                             <IndianRupee className="w-4 h-4 mr-0.5" />
-                            {displayAmountToCollect?.toLocaleString() ?? "—"}
+                            {isCorrectionIntent && stagedNet !== undefined 
+                                ? stagedNet.toLocaleString() 
+                                : (displayAmountToCollect?.toLocaleString() ?? "—")}
                         </span>
                     </div>
                 </div>
+
+                {/* LIVE RECONCILER CARD (Correction / Edit Mode Only) */}
+                {isCorrectionIntent && (
+                    <div className={cn(
+                        "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
+                        settlementDiff < 0 
+                            ? (isDark ? "bg-emerald-950/30 border-emerald-500/40 text-emerald-200" : "bg-emerald-50/90 border-emerald-300 text-emerald-900")
+                            : settlementDiff > 0 
+                                ? (isDark ? "bg-amber-950/30 border-amber-500/40 text-amber-200" : "bg-amber-50/90 border-amber-300 text-amber-900")
+                                : (isDark ? "bg-zinc-800/40 border-zinc-700 text-zinc-300" : "bg-zinc-100 border-zinc-200 text-zinc-800")
+                    )}>
+                        <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <span className={cn("w-2 h-2 rounded-full", settlementDiff < 0 ? "bg-emerald-500" : settlementDiff > 0 ? "bg-amber-500" : "bg-zinc-400")} />
+                                Live Difference Reconciler
+                            </span>
+                            <span className={cn(
+                                "text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border",
+                                settlementDiff < 0 
+                                    ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                    : settlementDiff > 0 
+                                        ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                        : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border-zinc-300 dark:border-zinc-600"
+                            )}>
+                                {settlementDiff < 0 ? "Refund Due" : settlementDiff > 0 ? "Balance Due" : "Settled (₹0 Diff)"}
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-current/10">
+                            <div>
+                                <span className="opacity-70 text-[11px] block">Previously Paid:</span>
+                                <span className="font-mono font-bold text-sm">₹{originalPaid.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span className="opacity-70 text-[11px] block">Revised Net Total:</span>
+                                <span className="font-mono font-bold text-sm">₹{(stagedNet !== undefined ? stagedNet : netAmount).toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1.5 border-t border-current/10 font-bold text-xs">
+                            <span>{settlementDiff < 0 ? "Cash Refund to Disburse:" : settlementDiff > 0 ? "Additional Balance to Collect:" : "Net Difference:"}</span>
+                            <span className="font-mono text-base font-extrabold">₹{Math.abs(settlementDiff).toLocaleString()}</span>
+                        </div>
+
+                        {settlementDiff < 0 && (
+                            <div className="text-[11px] opacity-90 p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-1.5">
+                                <span className="font-bold text-xs">💵</span>
+                                <span>Refund will be disbursed strictly in <strong>Cash from register</strong> upon confirmation.</span>
+                            </div>
+                        )}
+
+                        {settlementDiff > 0 && (
+                            <div className="pt-1 space-y-1.5">
+                                <label className="text-[10px] font-bold uppercase tracking-wider opacity-80 block">Payment Method for Balance</label>
+                                <div className="grid grid-cols-3 gap-1.5">
+                                    {['Cash', 'UPI', 'Card'].map(m => (
+                                        <button
+                                            key={m}
+                                            type="button"
+                                            onClick={() => setPaymentMethod && setPaymentMethod(m)}
+                                            className={cn(
+                                                "py-1 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-1",
+                                                paymentMethod === m 
+                                                    ? "bg-synos-primary text-white border-synos-primary shadow-xs" 
+                                                    : "bg-white/70 dark:bg-zinc-800/70 border-current/20 hover:bg-white dark:hover:bg-zinc-800"
+                                            )}
+                                        >
+                                            {m === 'Cash' && <IndianRupee className="w-3 h-3" />}
+                                            {m === 'UPI' && <Smartphone className="w-3 h-3" />}
+                                            {m === 'Card' && <CreditCard className="w-3 h-3" />}
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* CORPORATE B2B PREPAID PARTNER TARIFF & CONCESSION CARD */}
                 {isPrepaid && (() => {

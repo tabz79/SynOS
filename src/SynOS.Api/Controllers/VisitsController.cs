@@ -211,5 +211,46 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = "An internal error occurred." });
             }
         }
+
+        [HttpPost("{id}/batch-edit")]
+        [Authorize(Policy = "ReceptionPolicy")]
+        public async Task<IActionResult> BatchEditVisit(Guid id, [FromBody] BatchEditVisitDto dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest(new { code = "INVALID_REQUEST", message = "Request body cannot be null." });
+            }
+
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
+                Guid actorUserId = Guid.Empty;
+                if (!string.IsNullOrEmpty(userIdClaim)) Guid.TryParse(userIdClaim, out actorUserId);
+
+                var response = await _visitService.BatchEditVisitAsync(id, dto, actorUserId);
+                return Ok(new ApiResponse<BatchEditVisitResponseDto>(response));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { code = "NOT_FOUND", message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { code = "INVALID_ARGUMENT", message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new { code = "UNAUTHORIZED_DESK", message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { code = "INVALID_OPERATION", message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred during batch edit of visit ID {VisitId}.", id);
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message });
+            }
+        }
     }
 }

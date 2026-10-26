@@ -1,11 +1,11 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
 import { BillingSummary } from './BillingSummary'
 import { cn } from '@/lib/utils'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { ReceptionApi } from '@/api/reception'
 import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
@@ -58,6 +58,26 @@ export function IntentPanel({ onVisitUpdated }) {
     const [currentPatientId, setCurrentPatientId] = useState(null);
     const [currentVisitId, setCurrentVisitId] = useState(null);
 
+    // STAGED BATCH EDIT STATE (Enterprise Full-Fledged Edit Mode)
+    const [stagedAddedTests, setStagedAddedTests] = useState([]);
+    const [stagedRemovedOrderIds, setStagedRemovedOrderIds] = useState([]);
+    const [stagedDiscount, setStagedDiscount] = useState(null);
+    const [stagedDemographics, setStagedDemographics] = useState(null);
+    const [stagedReferralPartnerId, setStagedReferralPartnerId] = useState(undefined);
+    const [stagedSecondaryPartnerId, setStagedSecondaryPartnerId] = useState(undefined);
+    const [isEditDemographicsOpen, setIsEditDemographicsOpen] = useState(false);
+    const [editDemographicsDraft, setEditDemographicsDraft] = useState({
+        firstName: '',
+        lastName: '',
+        age: '',
+        ageUnit: 'Years',
+        gender: 'Male',
+        mobile: ''
+    });
+    const [isBatchEditConfirmModalOpen, setIsBatchEditConfirmModalOpen] = useState(false);
+    const [batchEditReason, setBatchEditReason] = useState('');
+    const [isSubmittingBatchEdit, setIsSubmittingBatchEdit] = useState(false);
+
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
@@ -108,6 +128,15 @@ export function IntentPanel({ onVisitUpdated }) {
             setBillingMode('Standard');
             setPaymentMethod('Cash'); // Reset to default
             setActiveModal(null);
+            setStagedAddedTests([]);
+            setStagedRemovedOrderIds([]);
+            setStagedDiscount(null);
+            setStagedDemographics(null);
+            setStagedReferralPartnerId(undefined);
+            setStagedSecondaryPartnerId(undefined);
+            setIsEditDemographicsOpen(false);
+            setIsBatchEditConfirmModalOpen(false);
+            setBatchEditReason('');
             return;
         }
 
@@ -609,6 +638,156 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     };
 
+    // STAGED BATCH EDIT HANDLERS (Enterprise Full-Fledged Edit Mode)
+    const handleAddStagedTest = (test) => {
+        const code = test.testCode || test.code;
+        if (stagedAddedTests.some(t => (t.testCode || t.code)?.toLowerCase() === code?.toLowerCase())) {
+            return;
+        }
+        setStagedAddedTests(prev => [...prev, test]);
+    };
+
+    const handleRemoveStagedAddedTest = (index) => {
+        setStagedAddedTests(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleToggleRemoveOrderId = (orderId, testCode) => {
+        if (!orderId) return;
+        setStagedRemovedOrderIds(prev => {
+            if (prev.includes(orderId)) {
+                return prev.filter(id => id !== orderId);
+            } else {
+                return [...prev, orderId];
+            }
+        });
+    };
+
+    const handleOpenEditDemographics = () => {
+        const p = snapshot?.patient;
+        setEditDemographicsDraft({
+            firstName: stagedDemographics?.firstName ?? p?.firstName ?? '',
+            lastName: stagedDemographics?.lastName ?? p?.lastName ?? '',
+            age: stagedDemographics?.age ?? p?.age ?? '',
+            ageUnit: stagedDemographics?.ageUnit ?? 'Years',
+            gender: stagedDemographics?.gender ?? p?.gender ?? 'Male',
+            mobile: stagedDemographics?.mobile ?? p?.mobile ?? p?.currentPhoneNumber ?? ''
+        });
+        setIsEditDemographicsOpen(true);
+    };
+
+    const handleSaveDemographicsDraft = () => {
+        setStagedDemographics({ ...editDemographicsDraft });
+        setIsEditDemographicsOpen(false);
+    };
+
+    // Staged Financial Calculations
+    const originalTests = snapshot?.visit?.tests || [];
+    const activeRemainingTests = originalTests.filter(t => 
+        !t.parentOrderId && 
+        !(t.price === 0 && !t.isProfile && originalTests.some(p => p.isProfile)) &&
+        !stagedRemovedOrderIds.includes(t.orderId || t.OrderId || t.TestId || t.testId)
+    );
+
+    const baseGross = activeRemainingTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
+    const addedGross = stagedAddedTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
+    const stagedGross = baseGross + addedGross;
+
+    let stagedDiscountAmt = 0;
+    if (stagedDiscount?.remove) {
+        stagedDiscountAmt = 0;
+    } else if (stagedDiscount) {
+        const val = Number(stagedDiscount.value) || 0;
+        if (stagedDiscount.type === 'Percentage') {
+            stagedDiscountAmt = Math.round((stagedGross * (val / 100)) * 100) / 100;
+        } else {
+            stagedDiscountAmt = Math.min(stagedGross, val);
+        }
+    } else {
+        stagedDiscountAmt = snapshot?.billing?.appliedDiscount ? (Number(snapshot?.billing?.discountAmount) || 0) : 0;
+    }
+
+    const stagedNet = Math.max(0, stagedGross - stagedDiscountAmt);
+    const originalPaid = Number(snapshot?.billing?.totalPaid ?? snapshot?.billing?.netAmount ?? 0);
+    const settlementDiff = stagedNet - originalPaid;
+
+    const stagedChangesCount = 
+        stagedAddedTests.length + 
+        stagedRemovedOrderIds.length + 
+        (stagedDiscount ? 1 : 0) + 
+        (stagedDemographics ? 1 : 0) +
+        (stagedReferralPartnerId !== undefined ? 1 : 0) +
+        (stagedSecondaryPartnerId !== undefined ? 1 : 0);
+
+    const displayedPatient = useMemo(() => {
+        if (!snapshot?.patient) return null;
+        if (!stagedDemographics) return snapshot.patient;
+        const fn = stagedDemographics.firstName ?? snapshot.patient.firstName;
+        const ln = stagedDemographics.lastName ?? snapshot.patient.lastName;
+        return {
+            ...snapshot.patient,
+            firstName: fn,
+            lastName: ln,
+            name: `${fn || ''} ${ln || ''}`.trim(),
+            displayName: `${fn || ''} ${ln || ''}`.trim(),
+            age: stagedDemographics.age !== undefined && stagedDemographics.age !== '' ? Number(stagedDemographics.age) : snapshot.patient.age,
+            gender: stagedDemographics.gender ?? snapshot.patient.gender,
+            mobile: stagedDemographics.mobile ?? snapshot.patient.mobile,
+            currentPhoneNumber: stagedDemographics.mobile ?? snapshot.patient.currentPhoneNumber,
+            isModified: true
+        };
+    }, [snapshot?.patient, stagedDemographics]);
+
+    const handleConfirmBatchEdit = async () => {
+        if (!batchEditReason || !batchEditReason.trim()) {
+            alert("A reason is mandatory for auditing visit modifications.");
+            return;
+        }
+        setIsSubmittingBatchEdit(true);
+        try {
+            const vId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+            const payload = {
+                firstName: stagedDemographics?.firstName,
+                lastName: stagedDemographics?.lastName,
+                age: stagedDemographics?.age ? Number(stagedDemographics.age) : null,
+                ageUnit: stagedDemographics?.ageUnit || "Years",
+                gender: stagedDemographics?.gender,
+                mobile: stagedDemographics?.mobile,
+                referralPartnerId: stagedReferralPartnerId !== undefined ? stagedReferralPartnerId : (snapshot?.visit?.referralPartnerId || null),
+                secondaryPartnerId: stagedSecondaryPartnerId !== undefined ? stagedSecondaryPartnerId : (snapshot?.visit?.secondaryReferralPartnerId || null),
+                billingMode: billingMode,
+                addTestCodes: stagedAddedTests.map(t => t.testCode || t.code),
+                removeOrderIds: stagedRemovedOrderIds,
+                updateDiscount: stagedDiscount !== null,
+                discountType: stagedDiscount?.type,
+                discountValue: stagedDiscount?.remove ? 0 : stagedDiscount?.value,
+                discountReason: stagedDiscount?.reason,
+                settlementDifference: settlementDiff,
+                paymentMethod: paymentMethod,
+                reason: batchEditReason.trim()
+            };
+
+            const result = await ReceptionApi.batchEditVisit(vId, payload);
+            
+            // Success Feedback
+            setStagedAddedTests([]);
+            setStagedRemovedOrderIds([]);
+            setStagedDiscount(null);
+            setStagedDemographics(null);
+            setStagedReferralPartnerId(undefined);
+            setStagedSecondaryPartnerId(undefined);
+            setIsBatchEditConfirmModalOpen(false);
+            setBatchEditReason('');
+            
+            await loadSnapshot();
+            alert(result.message || "Visit successfully updated and settled!");
+        } catch (err) {
+            console.error("Batch edit failed", err);
+            alert("Batch edit failed: " + err.message);
+        } finally {
+            setIsSubmittingBatchEdit(false);
+        }
+    };
+
     if (!isOpen) return null;
 
     const hasPatient = !!snapshot?.patient;
@@ -715,11 +894,23 @@ export function IntentPanel({ onVisitUpdated }) {
                 {snapshot && (
                     <>
                         {/* 1. Patient Identification (Internal Padding Managed) */}
-                        <PatientIdentification
-                            snapshot={snapshot}
-                            onSelectPatient={handleSelectPatient}
-                            onClearPatient={handleClearPatient}
-                        />
+                        <div className="relative">
+                            <PatientIdentification
+                                snapshot={{ ...snapshot, patient: displayedPatient }}
+                                onSelectPatient={handleSelectPatient}
+                                onClearPatient={handleClearPatient}
+                            />
+                            {isCorrectionIntent && (
+                                <button
+                                    type="button"
+                                    onClick={handleOpenEditDemographics}
+                                    className="absolute top-2 right-4 px-2.5 py-1 text-xs font-bold rounded-lg border border-synos-primary/40 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/20 flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer z-10"
+                                >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                    <span>{stagedDemographics ? "Demographics Modified" : "Edit Demographics"}</span>
+                                </button>
+                            )}
+                        </div>
 
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
                         {(hasPatient || isCorrectionIntent) && (
@@ -751,6 +942,13 @@ export function IntentPanel({ onVisitUpdated }) {
                                             isCorrectionIntent={isCorrectionIntent}
                                             billingMode={billingMode}
                                             onOpenModal={setActiveModal}
+                                            stagedAddedTests={stagedAddedTests}
+                                            onAddStagedTest={handleAddStagedTest}
+                                            stagedRemovedOrderIds={stagedRemovedOrderIds}
+                                            onToggleRemoveOrderId={handleToggleRemoveOrderId}
+                                            onRemoveStagedAddedTest={handleRemoveStagedAddedTest}
+                                            onStageReferral={(pId) => setStagedReferralPartnerId(pId)}
+                                            onStageSecondaryReferral={(sId) => setStagedSecondaryPartnerId(sId)}
                                         />
                                     </div>
 
@@ -758,13 +956,20 @@ export function IntentPanel({ onVisitUpdated }) {
                                         <BillingSummary
                                             snapshot={snapshot}
                                             onVisitUpdated={loadSnapshot}
-                                            isCorrectionIntent={isCorrectionIntent} // Pass down Intent
-                                            isPrepaidIntent={isPrepaidIntent} // Pass down Prepaid Status
+                                            isCorrectionIntent={isCorrectionIntent}
+                                            isPrepaidIntent={isPrepaidIntent}
                                             billingMode={billingMode}
                                             paymentMethod={paymentMethod}
                                             setPaymentMethod={setPaymentMethod}
                                             onOpenModal={setActiveModal}
                                             createdDiscountReason={createdDiscountReason}
+                                            stagedDiscount={stagedDiscount}
+                                            onStageDiscount={setStagedDiscount}
+                                            stagedGross={stagedGross}
+                                            stagedDiscountAmt={stagedDiscountAmt}
+                                            stagedNet={stagedNet}
+                                            settlementDiff={settlementDiff}
+                                            originalPaid={originalPaid}
                                         />
                                     </div>
                                 </div>
@@ -777,7 +982,7 @@ export function IntentPanel({ onVisitUpdated }) {
             {/* Footer / Status Bar - UNIFIED BUTTON */}
             <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
                 {isCorrectionIntent ? (
-                    <div className="flex items-center gap-2 w-full max-w-lg mx-auto">
+                    <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
                         <button
                             type="button"
                             onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
@@ -804,16 +1009,32 @@ export function IntentPanel({ onVisitUpdated }) {
                             {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
                             Doc Claim
                         </button>
-                        <button
-                            type="button"
-                            onClick={handleCloseAndReset}
-                            className={cn(
-                                "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
-                                ui.actionBtn.enabled
-                            )}
-                        >
-                            Finish Correction <CheckCircle2 className="w-4 h-4" />
-                        </button>
+
+                        {/* UNIFIED PRIMARY ACTION BUTTON */}
+                        {stagedChangesCount > 0 ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsBatchEditConfirmModalOpen(true)}
+                                className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
+                            >
+                                <span>Save Changes & Settle</span>
+                                <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold">
+                                    {stagedChangesCount}
+                                </span>
+                                <ArrowRight className="w-4 h-4" />
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={handleCloseAndReset}
+                                className={cn(
+                                    "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
+                                    ui.actionBtn.enabled
+                                )}
+                            >
+                                Close Editor <CheckCircle2 className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
                 ) : (
                     hasVisit && (
@@ -984,6 +1205,304 @@ export function IntentPanel({ onVisitUpdated }) {
                     setActiveModal(null);
                 }}
             />
+
+            {/* EDIT PATIENT DEMOGRAPHICS MODAL (Enterprise Edit Mode) */}
+            {isEditDemographicsOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+                    <div className={cn(
+                        "w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border",
+                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900"
+                    )}>
+                        <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
+                            <div className="flex items-center gap-2">
+                                <Pencil className="w-5 h-5 text-synos-primary" />
+                                <h3 className="font-bold text-base">Edit Patient Demographics</h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsEditDemographicsOpen(false)}
+                                className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-3.5 text-xs">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">First Name</label>
+                                    <input
+                                        type="text"
+                                        value={editDemographicsDraft.firstName}
+                                        onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, firstName: e.target.value }))}
+                                        className={cn("w-full h-9 px-3 rounded-lg border outline-none font-medium", isDark ? "bg-black border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900")}
+                                        placeholder="First Name"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Last Name</label>
+                                    <input
+                                        type="text"
+                                        value={editDemographicsDraft.lastName}
+                                        onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, lastName: e.target.value }))}
+                                        className={cn("w-full h-9 px-3 rounded-lg border outline-none font-medium", isDark ? "bg-black border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900")}
+                                        placeholder="Last Name"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="col-span-1 space-y-1">
+                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Age</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="130"
+                                        value={editDemographicsDraft.age}
+                                        onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, age: e.target.value }))}
+                                        className={cn("w-full h-9 px-3 rounded-lg border outline-none font-mono font-bold", isDark ? "bg-black border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900")}
+                                        placeholder="Age"
+                                    />
+                                </div>
+                                <div className="col-span-1 space-y-1">
+                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Age Unit</label>
+                                    <select
+                                        value={editDemographicsDraft.ageUnit}
+                                        onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, ageUnit: e.target.value }))}
+                                        className={cn("w-full h-9 px-2 rounded-lg border outline-none font-medium cursor-pointer", isDark ? "bg-black border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900")}
+                                    >
+                                        <option value="Years">Years</option>
+                                        <option value="Months">Months</option>
+                                        <option value="Days">Days</option>
+                                    </select>
+                                </div>
+                                <div className="col-span-1 space-y-1">
+                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Gender</label>
+                                    <select
+                                        value={editDemographicsDraft.gender}
+                                        onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, gender: e.target.value }))}
+                                        className={cn("w-full h-9 px-2 rounded-lg border outline-none font-medium cursor-pointer", isDark ? "bg-black border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900")}
+                                    >
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Mobile Number</label>
+                                <input
+                                    type="tel"
+                                    value={editDemographicsDraft.mobile}
+                                    onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, mobile: e.target.value }))}
+                                    className={cn("w-full h-9 px-3 rounded-lg border outline-none font-mono font-medium", isDark ? "bg-black border-zinc-700 text-white" : "bg-zinc-50 border-zinc-200 text-zinc-900")}
+                                    placeholder="10-digit mobile"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                            <button
+                                type="button"
+                                onClick={() => setIsEditDemographicsOpen(false)}
+                                className="px-3.5 py-2 rounded-lg text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSaveDemographicsDraft}
+                                className="px-4 py-2 rounded-lg text-xs font-bold bg-synos-primary text-white hover:bg-synos-primary/90 transition-all shadow-xs cursor-pointer"
+                            >
+                                Save Demographics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* UNIFIED BATCH EDIT CONFIRMATION MODAL */}
+            {isBatchEditConfirmModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+                    <div className={cn(
+                        "w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border max-h-[90vh] flex flex-col",
+                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900"
+                    )}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-synos-primary/10 text-synos-primary flex items-center justify-center font-bold">
+                                    <CheckCircle2 className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-base leading-none">Confirm Visit Edits & Settlement</h3>
+                                    <p className="text-xs text-zinc-500 mt-1 font-mono">Token: {snapshot?.visit?.token || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsBatchEditConfirmModalOpen(false)}
+                                className="p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Summary Body */}
+                        <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 text-xs">
+                            {/* 1. Demographics Summary */}
+                            {stagedDemographics && (
+                                <div className="p-3 rounded-xl border border-blue-500/30 bg-blue-500/5 space-y-1">
+                                    <div className="font-bold text-[11px] uppercase tracking-wider text-blue-500 flex items-center gap-1.5">
+                                        <span>👤 Patient Demographics Updated</span>
+                                    </div>
+                                    <div className="text-xs space-y-0.5 pt-1 font-medium text-zinc-700 dark:text-zinc-300">
+                                        <div>Name: <strong>{stagedDemographics.firstName} {stagedDemographics.lastName}</strong></div>
+                                        <div>Age/Gender: <strong>{stagedDemographics.age} {stagedDemographics.ageUnit} / {stagedDemographics.gender}</strong></div>
+                                        <div>Phone: <strong>{stagedDemographics.mobile}</strong></div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 2. Added Tests & Specimen Container Analysis */}
+                            {stagedAddedTests.length > 0 && (
+                                <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
+                                    <div className="font-bold text-[11px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                        🧪 Tests Added ({stagedAddedTests.length})
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        {stagedAddedTests.map((t, idx) => {
+                                            const specType = t.specimenTypeCode;
+                                            const existingSpec = (snapshot?.visit?.specimens || []).find(s => s.specimenTypeCode === specType && s.status !== 'Cancelled');
+                                            const isReuse = Boolean(existingSpec);
+
+                                            return (
+                                                <div key={idx} className="flex flex-col gap-0.5 p-2 rounded-lg bg-white/60 dark:bg-zinc-800/60 border border-emerald-500/20">
+                                                    <div className="flex justify-between font-bold">
+                                                        <span>{t.name || t.testName} ({t.code || t.testCode})</span>
+                                                        <span className="font-mono">₹{t.price || t.basePrice || 0}</span>
+                                                    </div>
+                                                    <div className="text-[11px] flex items-center gap-1.5 mt-0.5">
+                                                        {isReuse ? (
+                                                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                                                                ✓ Reusing collected {existingSpec.tubeName || specType || "Specimen"} container (No new pricking)
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1">
+                                                                ⚠️ Phlebotomy alert: New {specType || "sample"} tube queued for collection
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 3. Removed Tests */}
+                            {stagedRemovedOrderIds.length > 0 && (
+                                <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/5 space-y-1.5">
+                                    <div className="font-bold text-[11px] uppercase tracking-wider text-red-500">
+                                        🗑️ Tests Cancelled ({stagedRemovedOrderIds.length})
+                                    </div>
+                                    <div className="space-y-1">
+                                        {stagedRemovedOrderIds.map((oId, idx) => {
+                                            const order = (snapshot?.visit?.tests || []).find(t => (t.orderId || t.OrderId || t.TestId || t.testId) === oId);
+                                            return (
+                                                <div key={idx} className="flex justify-between text-xs p-1.5 rounded bg-white/50 dark:bg-zinc-800/50">
+                                                    <span className="line-through text-zinc-600 dark:text-zinc-400">{order?.testName || order?.name || 'Test Order'} ({order?.testCode || order?.code})</span>
+                                                    <span className="font-mono text-red-500">- ₹{order?.basePrice || order?.price || 0}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 4. Clinical Report Re-Signing Notice */}
+                            {snapshot?.visit?.reports?.some(r => r.status === 'Signed' || r.status === 'ManualVerified') && (
+                                <div className="p-3 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-1 text-purple-700 dark:text-purple-300">
+                                    <div className="font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                        <span>📋 Doctor Re-verification Required</span>
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed opacity-90">
+                                        This visit has previously signed doctor reports. In accordance with clinical safety, the report will be reset and re-queued for the pathologist to review and re-authorize.
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* 5. Financial Settlement Breakdown */}
+                            <div className={cn(
+                                "p-3.5 rounded-xl border space-y-2",
+                                settlementDiff < 0 
+                                    ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50 border-emerald-300")
+                                    : settlementDiff > 0 
+                                        ? (isDark ? "bg-amber-950/40 border-amber-500/50" : "bg-amber-50 border-amber-300")
+                                        : (isDark ? "bg-zinc-800/40 border-zinc-700" : "bg-zinc-100 border-zinc-200")
+                            )}>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="opacity-70">Previously Paid:</span>
+                                    <span className="font-mono font-bold">₹{originalPaid.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="opacity-70">Revised Net Total:</span>
+                                    <span className="font-mono font-bold">₹{stagedNet.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm font-extrabold pt-1.5 border-t border-current/10">
+                                    <span>{settlementDiff < 0 ? "Cash Refund to Disburse:" : settlementDiff > 0 ? `Balance Due (${paymentMethod}):` : "Financial Difference:"}</span>
+                                    <span className="font-mono text-base">₹{Math.abs(settlementDiff).toLocaleString()}</span>
+                                </div>
+                                {settlementDiff < 0 && (
+                                    <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 italic">
+                                        * Hand over ₹{Math.abs(settlementDiff).toLocaleString()} in Cash from the counter cash register.
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* 6. Mandatory Operational Reason */}
+                            <div className="space-y-1 pt-1">
+                                <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500 block">
+                                    Mandatory Audit Reason <span className="text-red-500">*</span>
+                                </label>
+                                <textarea
+                                    rows={2}
+                                    value={batchEditReason}
+                                    onChange={(e) => setBatchEditReason(e.target.value)}
+                                    placeholder="e.g. Doctor added LFT test on prescription revision, corrected patient age typo..."
+                                    className={cn(
+                                        "w-full p-2.5 rounded-xl border outline-none text-xs leading-relaxed",
+                                        isDark ? "bg-black border-zinc-700 text-white focus:border-synos-primary" : "bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-synos-primary"
+                                    )}
+                                    autoFocus
+                                />
+                            </div>
+                        </div>
+
+                        {/* Footer Buttons */}
+                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
+                            <button
+                                type="button"
+                                disabled={isSubmittingBatchEdit}
+                                onClick={() => setIsBatchEditConfirmModalOpen(false)}
+                                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isSubmittingBatchEdit || !batchEditReason.trim()}
+                                onClick={handleConfirmBatchEdit}
+                                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-synos-primary text-white hover:bg-synos-primary/90 disabled:opacity-50 transition-all shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                            >
+                                {isSubmittingBatchEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                <span>Confirm & Settle Edits</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     )
 }
