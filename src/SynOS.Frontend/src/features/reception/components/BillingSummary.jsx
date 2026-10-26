@@ -8,9 +8,10 @@ import { useTheme } from '@/context/ThemeContext'
 export const extractB2BInfo = (snap) => {
     const v = snap?.visit || {};
     const b = snap?.billing || {};
-    const rawVal = v.b2bDiscountValue ?? v.b2BDiscountValue ?? v.B2BDiscountValue ?? b.b2bDiscountAmount ?? b.b2BDiscountAmount ?? b.B2BDiscountAmount ?? 0;
+    const fallbackDiscount = Number(b.discountAmount) || 0;
+    const rawVal = v.b2bDiscountValue ?? v.b2BDiscountValue ?? v.B2BDiscountValue ?? b.b2bDiscountAmount ?? b.b2BDiscountAmount ?? b.B2BDiscountAmount ?? fallbackDiscount;
     const rawType = (v.b2bDiscountType ?? v.b2BDiscountType ?? v.B2BDiscountType ?? 'Flat') === 'Percentage' ? 'PERCENTAGE' : 'FLAT';
-    const rawAmount = v.b2bDiscountAmount ?? v.b2BDiscountAmount ?? v.B2BDiscountAmount ?? b.b2bDiscountAmount ?? b.b2BDiscountAmount ?? b.B2BDiscountAmount ?? 0;
+    const rawAmount = v.b2bDiscountAmount ?? v.b2BDiscountAmount ?? v.B2BDiscountAmount ?? b.b2bDiscountAmount ?? b.b2BDiscountAmount ?? b.B2BDiscountAmount ?? fallbackDiscount;
     const enteredBy = v.b2bDiscountEnteredBy ?? v.b2BDiscountEnteredBy ?? v.B2BDiscountEnteredBy;
     const enteredAt = v.b2bDiscountEnteredAt ?? v.b2BDiscountEnteredAt ?? v.B2BDiscountEnteredAt;
     return { rawVal: Number(rawVal) || 0, rawType, rawAmount: Number(rawAmount) || 0, enteredBy, enteredAt };
@@ -688,6 +689,13 @@ export function BillingSummary({
                                     <span className={cn("font-mono text-base font-extrabold", b2bClaimDiff > 0 ? "text-indigo-600 dark:text-indigo-400" : b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
                                         {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : b2bClaimDiff < 0 ? `-₹${Math.abs(b2bClaimDiff).toLocaleString()}` : "₹0 (No Change)"}
                                     </span>
+                                </div>
+                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
+                                    {b2bClaimDiff > 0 
+                                        ? `Partner receivable increases by ₹${b2bClaimDiff.toLocaleString()} (Revised ₹${currentB2BClaim.toLocaleString()} vs Previous ₹${originalB2BClaim.toLocaleString()})`
+                                        : b2bClaimDiff < 0 
+                                            ? `Partner receivable reduced by ₹${Math.abs(b2bClaimDiff).toLocaleString()} (Partner credit issued)`
+                                            : `Partner receivable matches original billing exactly`}
                                 </div>
 
                                 <div className="text-[11px] p-2 rounded-lg bg-black/[0.03] dark:bg-zinc-800/40 border border-black/5 dark:border-zinc-700/50 flex items-center justify-between">

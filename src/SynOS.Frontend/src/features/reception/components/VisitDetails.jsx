@@ -487,19 +487,29 @@ export function VisitDetails({
                 name.includes('employee wellness');
         };
 
+        const activeExistingCodes = tests
+            .filter(existing => !(isCorrectionIntent && stagedRemovedOrderIds.includes(existing.orderId || existing.OrderId || existing.TestId || existing.testId)))
+            .map(t => (t.testCode || t.code || '').toLowerCase());
+        const stagedAddedCodes = stagedAddedTests.map(t => (t.testCode || t.code || '').toLowerCase());
+
+        const isAlreadyAdded = (t) => {
+            const c = (t.testCode || t.code || '').toLowerCase();
+            return activeExistingCodes.includes(c) || stagedAddedCodes.includes(c);
+        };
+
         const cleanQuery = filter.replace(/^[\/\\#\s]+/, '').trim().toLowerCase();
         const internalSuggestions = cleanQuery.length < 2 ? [] : catalog.filter(t =>
             !isInstitutionalPackage(t) &&
             ((t.testName || t.name || "").toLowerCase().includes(cleanQuery) ||
                 (t.testCode || t.code || "").toLowerCase().includes(cleanQuery)) &&
-            !tests.some(existing => existing.code === (t.testCode || t.code))
+            !isAlreadyAdded(t)
         );
 
         const outsourcedSuggestions = cleanQuery.length < 2 ? [] : outsourcedCatalog.filter(t =>
             !isInstitutionalPackage(t) &&
             ((t.testName || t.name || "").toLowerCase().includes(cleanQuery) ||
                 (t.testCode || t.code || "").toLowerCase().includes(cleanQuery)) &&
-            !tests.some(existing => existing.code === (t.testCode || t.code))
+            !isAlreadyAdded(t)
         );
 
         suggestions = [...internalSuggestions, ...outsourcedSuggestions];
@@ -1033,7 +1043,7 @@ export function VisitDetails({
                     </div>
                 )}
 
-                {!isReadOnly && (
+                {(!isReadOnly || isCorrectionIntent) && (
                     <div className="relative z-10">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
                         <input
@@ -1140,7 +1150,7 @@ export function VisitDetails({
 
                 {/* Selected Internal Tests List (Pure Render from Snapshot) */}
                 <div className="space-y-2">
-                    {internalTests.length === 0 && !isReadOnly && (
+                    {internalTests.length === 0 && (!isReadOnly || isCorrectionIntent) && (
                         <div className="text-center py-4 border border-dashed border-zinc-800 rounded-lg type-label">
                             No internal tests added
                         </div>
