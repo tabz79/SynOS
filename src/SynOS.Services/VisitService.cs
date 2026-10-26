@@ -2040,6 +2040,90 @@ namespace SynOS.Services
                     await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
                 }
 
+                // 9b. Synchronize B2B Partner Receivable & PartnerAccount Payments
+                var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+                var existingReceivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId && r.DebtorType == DebtorType.Partner);
+
+                if (visit.PaymentCollectionModel == "PartnerCollects" || visit.BillingType == BillingType.PrepaidPartner)
+                {
+                    // Adjust system payment for PartnerAccount to align with revised invoice total
+                    var partnerPayment = invoice.Payments.FirstOrDefault(p => p.Method == "PartnerAccount");
+                    if (partnerPayment != null)
+                    {
+                        partnerPayment.Amount = invoice.Total;
+                    }
+                    else if (invoice.Payments.Count == 0 || invoice.Payments.All(p => p.Method == "PartnerAccount"))
+                    {
+                        var newPartnerPayment = new Payment
+                        {
+                            PaymentId = Guid.NewGuid(),
+                            InvoiceId = invoice.InvoiceId,
+                            Amount = invoice.Total,
+                            Method = "PartnerAccount",
+                            ReceiptNo = $"SYS-{visit.Token}",
+                            ReceivedAt = DateTime.UtcNow,
+                            ReceivedByUserId = actorUserId
+                        };
+                        _context.Payments.Add(newPartnerPayment);
+                    }
+
+                    if (effectivePartnerId.HasValue)
+                    {
+                        var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
+                        decimal b2bReceivableAmount = invoice.Total;
+                        if (visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+                        {
+                            b2bReceivableAmount = Math.Max(0m, invoice.Total - visit.B2BDiscountAmount.Value);
+                        }
+
+                        if (existingReceivable != null)
+                        {
+                            existingReceivable.DebtorId = effectivePartnerId.Value;
+                            existingReceivable.ReferralPartnerId = effectivePartnerId.Value;
+                            existingReceivable.DebtorName = partner?.Name ?? "Referral Partner";
+                            existingReceivable.ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}";
+                            existingReceivable.Amount = b2bReceivableAmount;
+                            existingReceivable.RecordedAt = DateTimeOffset.UtcNow;
+                            _context.ReceivableFacts.Update(existingReceivable);
+                        }
+                        else
+                        {
+                            var newFact = new ReceivableFact
+                            {
+                                ReceivableFactId = Guid.NewGuid(),
+                                SourceVisitId = visit.VisitId,
+                                DebtorType = DebtorType.Partner,
+                                DebtorId = effectivePartnerId.Value,
+                                DebtorName = partner?.Name ?? "Referral Partner",
+                                ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
+                                ReferralPartnerId = effectivePartnerId.Value,
+                                Amount = b2bReceivableAmount,
+                                Currency = invoice.Currency ?? "INR",
+                                OccurredAt = DateTimeOffset.UtcNow,
+                                RecordedAt = DateTimeOffset.UtcNow
+                            };
+                            _context.ReceivableFacts.Add(newFact);
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+                    await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+                }
+                else
+                {
+                    // Switched away from PartnerCollects to standard lab collection
+                    if (existingReceivable != null && existingReceivable.SettledAt == null)
+                    {
+                        _context.ReceivableFacts.Remove(existingReceivable);
+                    }
+                    var partnerPayments = invoice.Payments.Where(p => p.Method == "PartnerAccount").ToList();
+                    if (partnerPayments.Any())
+                    {
+                        _context.Payments.RemoveRange(partnerPayments);
+                    }
+                    await _context.SaveChangesAsync();
+                    await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+                }
+
                 // 10. Audit Fact & Branch Operational Event
                 var auditCorrectionFact = new CorrectionFact
                 {

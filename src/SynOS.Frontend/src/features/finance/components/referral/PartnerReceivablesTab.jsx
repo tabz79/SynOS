@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
     ArrowDownLeft, 
     ChevronRight, 
@@ -17,6 +17,7 @@ import {
     Briefcase
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
+import { SignalRService } from '@/lib/signalr';
 import { cn } from '@/lib/utils';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
@@ -37,23 +38,61 @@ export const PartnerReceivablesTab = () => {
     const [generatingClaim, setGeneratingClaim] = useState(false);
     const [selectedFactIds, setSelectedFactIds] = useState(new Set());
 
+    const activePayerTabRef = useRef(activePayerTab);
     useEffect(() => {
-        loadData();
-    }, []);
+        activePayerTabRef.current = activePayerTab;
+    }, [activePayerTab]);
 
-    const loadData = async () => {
+    const loadData = async (showSpinner = true) => {
         try {
-            setLoading(true);
+            if (showSpinner) setLoading(true);
             const data = await FinanceApi.getReceivables();
             setRawReceivables(data || []);
-            const grouped = groupReceivables(data || [], activePayerTab);
+            const tabToUse = activePayerTabRef.current || 'partner';
+            const grouped = groupReceivables(data || [], tabToUse);
             setReceivables(grouped);
+            setSelectedPartner(prev => {
+                if (!prev) return null;
+                return grouped.find(g => g.partnerId === prev.partnerId) || null;
+            });
         } catch (err) {
-            console.error(err);
+            console.error("PartnerReceivablesTab load error:", err);
         } finally {
-            setLoading(false);
+            if (showSpinner) setLoading(false);
         }
     };
+
+    useEffect(() => {
+        loadData(true);
+
+        // Real-time live synchronization via SignalR
+        SignalRService.startConnection().catch(console.error);
+        const conn = SignalRService._getConnection();
+
+        const handleLiveSync = () => {
+            loadData(false);
+        };
+
+        conn.on("ActionQueueDeltaReceived", handleLiveSync);
+        conn.on("ActionQueueUpdated", handleLiveSync);
+        conn.on("ReceptionSummaryUpdated", handleLiveSync);
+        conn.on("ReceivableUpdated", handleLiveSync);
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                loadData(false);
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            conn.off("ActionQueueDeltaReceived", handleLiveSync);
+            conn.off("ActionQueueUpdated", handleLiveSync);
+            conn.off("ReceptionSummaryUpdated", handleLiveSync);
+            conn.off("ReceivableUpdated", handleLiveSync);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
 
     const normalizeDebtorType = (val) => {
         if (!val && val !== 0) return 'partner';
