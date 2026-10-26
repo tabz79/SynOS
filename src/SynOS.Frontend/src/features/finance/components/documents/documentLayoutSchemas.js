@@ -227,6 +227,73 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
         }
     },
 
+    patient_thermal_prepaid_slip: {
+        slotId: 'patient_thermal_prepaid_slip',
+        title: 'Prepaid B2B Investigation Slip (80mm)',
+        isThermal: true,
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Thermal Brand Header',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Tagline', value: 'Automated Pathology & Imaging' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
+                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Slip Particulars',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Slip Title', value: 'PREPAID PATIENT SLIP' },
+                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Slip No', value: 'SLIP-202610-0912' },
+                    date: { id: 'date', enabled: true, label: 'Date/Time', value: '14/10/2026 12:48 PM' },
+                    tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'TOKEN # T-0142' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Patient & Sponsor Info',
+                enabled: true,
+                title: 'Patient',
+                fields: {
+                    fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
+                    uhid: { id: 'uhid', enabled: true, label: 'UHID', value: 'SYN-2026-9042' },
+                    ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '46Y / M' },
+                    sponsorName: { id: 'sponsorName', enabled: true, label: 'Billed To (Partner)', value: 'Padmavathi Nursing Home' },
+                    referringDoctor: { id: 'referringDoctor', enabled: true, label: 'Ref Doctor', value: 'Dr. B.S.V. Padmavathi' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Investigative Tests Ordered (Zero Pricing)',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Test Item' }
+                },
+                rows: [
+                    { id: 'r-1', index: 1, description: 'Complete Blood Picture (CBP)' },
+                    { id: 'r-2', index: 2, description: 'Liver Function Test (LFT)' }
+                ]
+            },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'Counter Instructions',
+                enabled: true,
+                title: 'Notice',
+                text: 'Please proceed to phlebotomy / radiology with this token.\nReports will be delivered to referring clinic / WhatsApp.\nReports available within 4 hours.',
+                systemNote: 'Thank You • SynOS Diagnostic OS'
+            }
+        }
+    },
+
     partner_b2b_invoice: {
         slotId: 'partner_b2b_invoice',
         title: 'Partner B2B Diagnostic Service Invoice (A4)',

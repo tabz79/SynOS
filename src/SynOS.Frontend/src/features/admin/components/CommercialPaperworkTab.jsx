@@ -438,6 +438,9 @@ export const CommercialPaperworkTab = () => {
             { id: 'template_thermal_pos_80mm', label: '80mm POS Slip' },
             { id: 'template_thermal_pos_58mm', label: '58mm POS Slip' }
         ],
+        patient_thermal_prepaid_slip: [
+            { id: 'template_thermal_prepaid_80mm', label: '80mm Prepaid Slip' }
+        ],
         partner_b2b_invoice: [
             { id: 'template_partner_b2b_a4', label: 'Doctor Bill (A4)' }
         ],
@@ -908,7 +911,7 @@ export const CommercialPaperworkTab = () => {
                                                         >
                                                             <option value="digital">Digital Letterhead</option>
                                                             <option value="preprinted">Pre-Printed Stationery</option>
-                                                            {slot.slotId === 'patient_thermal_receipt' && (
+                                                            {(slot.slotId === 'patient_thermal_receipt' || slot.slotId === 'patient_thermal_prepaid_slip') && (
                                                                 <option value="raw_thermal">POS Thermal Roll</option>
                                                             )}
                                                         </select>
@@ -1289,7 +1292,9 @@ export const CommercialPaperworkTab = () => {
                                         ? 'Triggered by [Doc Claim] button' 
                                         : (previewSlotId === 'patient_tax_invoice' 
                                             ? 'Triggered by [A4 Receipt] button' 
-                                            : (previewSlotId === 'patient_thermal_receipt' ? 'Triggered by [Thermal] button' : 'Finance & Billing Matrix'))}
+                                            : (previewSlotId === 'patient_thermal_receipt' 
+                                                ? 'Triggered by [Thermal Cash] button' 
+                                                : (previewSlotId === 'patient_thermal_prepaid_slip' ? 'Triggered by B2B Prepaid Visits' : 'Finance & Billing Matrix')))}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">

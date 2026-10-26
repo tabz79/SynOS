@@ -228,6 +228,35 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             break;
         }
 
+        case 'patient_thermal_prepaid_slip': {
+            const p = liveData.patient || {};
+            const refPartnerName = liveData.referringDoctorName || liveData.partnerName || liveData.billing?.referral?.partner?.displayName || liveData.billing?.referral?.partner?.name || "Corporate B2B Partner";
+
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.receiptNumber) boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || (liveData.token ? `SLIP-${liveData.token}` : boxes.docBadge.fields.receiptNumber.value);
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.dateTime || new Date().toLocaleString();
+                if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = liveData.token ? `TOKEN # ${liveData.token}` : "TOKEN # COUNTER";
+            }
+
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
+                if (boxes.partyDetails.fields.sponsorName) boxes.partyDetails.fields.sponsorName.value = refPartnerName;
+                if (boxes.partyDetails.fields.referringDoctor) boxes.partyDetails.fields.referringDoctor.value = liveData.referringDoctorName || refPartnerName;
+            }
+
+            if (boxes.itemsTable && Array.isArray(liveData.items || liveData.orders)) {
+                const list = liveData.items || liveData.orders;
+                boxes.itemsTable.rows = list.map((it, idx) => ({
+                    id: `r-${idx}`,
+                    index: idx + 1,
+                    description: it.testName || it.name || it.description || 'Test'
+                }));
+            }
+            break;
+        }
+
         case 'partner_b2b_invoice': {
             const partner = liveData.partner || {};
             const summary = liveData.summary || {};

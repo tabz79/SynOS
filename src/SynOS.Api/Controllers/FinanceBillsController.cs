@@ -424,6 +424,21 @@ namespace SynOS.Api.Controllers
                     isSystemDefault = true
                 },
                 new {
+                    slotId = "patient_thermal_prepaid_slip",
+                    module = "Counter",
+                    moduleCode = "reception",
+                    slotName = "Prepaid Slip",
+                    triggerDescription = "Printed on 80mm thermal POS printer for corporate B2B and prepaid partner visits (zero prices disclosed).",
+                    assignedTemplateId = "template_thermal_prepaid_80mm",
+                    templateName = "Prepaid Slip (80mm POS)",
+                    letterheadMode = "raw_thermal",
+                    topMarginMm = 0,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
                     slotId = "partner_b2b_invoice",
                     module = "Doctors",
                     moduleCode = "referral",
