@@ -24,7 +24,7 @@ import {
 } from './MultiPayerPanels'
 
 export function IntentPanel({ onVisitUpdated }) {
-    const { isOpen, closePanel, drawerState } = useReceptionDrawer();
+    const { isOpen, closePanel, drawerState, openResumeIntent, openCorrectionIntent } = useReceptionDrawer();
 
     // MOTION CANON: Rigid Body Entry
     const panelRef = useRef(null);
@@ -857,7 +857,7 @@ export function IntentPanel({ onVisitUpdated }) {
     
     const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && remainingDue > 0;
     const canLockPrepaid = (isPrepaidIntent || billingMode === 'PrepaidPartner') && !snapshot?.billing?.isLocked;
-    const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0);
+    const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0) || Boolean(snapshot?.billing?.isLocked);
 
     const hasTests = Boolean(
         (snapshot?.visit?.tests && snapshot?.visit?.tests.length > 0) || 
@@ -899,7 +899,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // Dynamic Title based on Intent
     let panelTitle = "Registration";
-    if (isResumeIntent) { panelTitle = "Resume Visit"; }
+    if (isResumeIntent) { panelTitle = isVisitFinalized ? "Visit Summary" : "Resume Visit"; }
     if (isCorrectionIntent) { panelTitle = "Visit Correction"; }
 
     return (
@@ -916,6 +916,11 @@ export function IntentPanel({ onVisitUpdated }) {
                 <div>
                     <h2 className={cn("text-lg xl:text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
                         {panelTitle}
+                        {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
+                            <span className="text-xs font-mono font-normal opacity-60">
+                                #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
+                            </span>
+                        )}
                     </h2>
                 </div>
                 <button
@@ -1063,21 +1068,39 @@ export function IntentPanel({ onVisitUpdated }) {
 
                         {/* UNIFIED PRIMARY ACTION BUTTON */}
                         {stagedChangesCount > 0 ? (
-                            <button
-                                type="button"
-                                onClick={() => setIsBatchEditConfirmModalOpen(true)}
-                                className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
-                            >
-                                <span>Save Changes & Settle</span>
-                                <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold">
-                                    {stagedChangesCount}
-                                </span>
-                                <ArrowRight className="w-4 h-4" />
-                            </button>
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setStagedAddedTests([]);
+                                        setStagedRemovedOrderIds([]);
+                                        setStagedDiscount(null);
+                                        setStagedDemographics(null);
+                                        setStagedReferralPartnerId(undefined);
+                                        setStagedSecondaryPartnerId(undefined);
+                                        openResumeIntent(currentVisitId || drawerState.visitId);
+                                    }}
+                                    className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-600/40 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
+                                    title="Discard staged edits and exit correction mode"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsBatchEditConfirmModalOpen(true)}
+                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
+                                >
+                                    <span>Save Changes & Settle</span>
+                                    <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold">
+                                        {stagedChangesCount}
+                                    </span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </>
                         ) : (
                             <button
                                 type="button"
-                                onClick={handleCloseAndReset}
+                                onClick={() => openResumeIntent(currentVisitId || drawerState.visitId)}
                                 className={cn(
                                     "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
                                     ui.actionBtn.enabled
@@ -1087,40 +1110,58 @@ export function IntentPanel({ onVisitUpdated }) {
                             </button>
                         )}
                     </div>
+                ) : isVisitFinalized ? (
+                    <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                        <button
+                            type="button"
+                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                            title="Preview & Print Full A4 Tax Invoice"
+                        >
+                            <FileText className="w-4 h-4" /> A4 Receipt
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handlePrintReceipt()}
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                            title="Print Thermal 80mm POS Slip"
+                        >
+                            <Printer className="w-4 h-4" /> Thermal
+                        </button>
+                        <button
+                            type="button"
+                            disabled={isGeneratingClaimDoc}
+                            onClick={handlePrintDoctorReceivable}
+                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                            title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
+                        >
+                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                            Doc Claim
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => openCorrectionIntent(currentVisitId || drawerState.visitId)}
+                            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-amber-500/40 text-amber-500 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-95 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+                            title="Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"
+                        >
+                            <Pencil className="w-4 h-4" />
+                            <span>Visit Correction</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleCloseAndReset}
+                            className={cn(
+                                "py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 shrink-0",
+                                isDark ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700" : "bg-zinc-200 text-zinc-800 hover:bg-zinc-300"
+                            )}
+                        >
+                            Close
+                        </button>
+                    </div>
                 ) : (
                     hasVisit && (
                         <div className="flex flex-col gap-1.5 w-full max-w-md mx-auto">
                             <div className="flex items-center gap-3 w-full">
-                                {isVisitFinalized && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
-                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                                            title="Preview & Print Full A4 Tax Invoice"
-                                        >
-                                            <FileText className="w-3.5 h-3.5" /> A4
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={handlePrintReceipt}
-                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
-                                            title="Print Thermal 80mm POS Slip"
-                                        >
-                                            <Printer className="w-3.5 h-3.5" /> POS
-                                        </button>
-                                        <button
-                                            type="button"
-                                            disabled={isGeneratingClaimDoc}
-                                            onClick={handlePrintDoctorReceivable}
-                                            className="py-2.5 px-2.5 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                                            title="Print Doctor's Receivable Claim Statement for Safe Keeping"
-                                        >
-                                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
-                                            Doc Claim
-                                        </button>
-                                    </>
-                                )}
                                 <button
                                     onClick={handleUnifiedAction}
                                     disabled={!isActionEnabled || isLoading || isActionSubmitting}

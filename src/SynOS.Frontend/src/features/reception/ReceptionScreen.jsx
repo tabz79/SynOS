@@ -213,11 +213,7 @@ export function ReceptionScreen() {
                     row={row}
                     theme={theme}
                     onAction={(r) => {
-                        if (r.isFinalized) {
-                            openCorrectionIntent(r.visitId);
-                        } else {
-                            openResumeIntent(r.visitId);
-                        }
+                        openResumeIntent(r.visitId);
                     }}
                 />
             )

@@ -101,7 +101,7 @@ export function PatientIdentification({
                     <RichPatientCard
                         patient={selectedPatient}
                         onAction={onClearPatient}
-                        actionLabel="Change"
+                        actionLabel={(Boolean(snapshot?.visit?.id || snapshot?.visit?.visitId || snapshot?.billing?.isLocked)) ? null : "Change"}
                         secondaryActionLabel={isCorrectionIntent ? "Edit" : null}
                         onSecondaryAction={onEditPatient}
                         isLocked={true}
