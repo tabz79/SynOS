@@ -51,9 +51,9 @@ export function BillingSummary({
     const reasonListRef = useRef(null);
 
     // B2B Prepaid Partner Rate State (Dual Mode: Flat vs Percentage)
-    const initialB2B = extractB2BInfo(snapshot);
-    const [b2bDiscountType, setB2BDiscountType] = useState(initialB2B.rawType);
-    const [localB2BInput, setLocalB2BInput] = useState(initialB2B.rawVal && initialB2B.rawVal > 0 ? String(initialB2B.rawVal) : '');
+    const b2bInfo = extractB2BInfo(snapshot);
+    const [b2bDiscountType, setB2BDiscountType] = useState(b2bInfo.rawType);
+    const [localB2BInput, setLocalB2BInput] = useState(b2bInfo.rawVal && b2bInfo.rawVal > 0 ? String(b2bInfo.rawVal) : '');
     const [isB2BEditing, setIsB2BEditing] = useState(false);
 
     useEffect(() => {
@@ -638,7 +638,8 @@ export function BillingSummary({
                 {isCorrectionIntent && (() => {
                     if (isPrepaid) {
                         const originalGross = billing?.grossAmount || 0;
-                        const originalB2BAmt = b2bInfo.rawAmount || 0;
+                        const currentB2BInfo = extractB2BInfo(snapshot);
+                        const originalB2BAmt = currentB2BInfo.rawAmount || 0;
                         const originalB2BClaim = Math.max(0, originalGross - originalB2BAmt);
 
                         const currentGross = stagedGross !== undefined ? stagedGross : originalGross;
@@ -646,7 +647,7 @@ export function BillingSummary({
                         if (stagedDiscountAmt !== undefined) {
                             currentB2BAmt = stagedDiscountAmt;
                         } else {
-                            const val = Number(localB2BInput) || b2bInfo.rawVal || 0;
+                            const val = Number(localB2BInput) || currentB2BInfo.rawVal || 0;
                             if (b2bDiscountType === 'PERCENTAGE') {
                                 currentB2BAmt = Math.round((currentGross * (val / 100)) * 100) / 100;
                             } else {
