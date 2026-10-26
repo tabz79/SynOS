@@ -3,7 +3,7 @@ import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, B
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
-import { BillingSummary } from './BillingSummary'
+import { BillingSummary, extractB2BInfo } from './BillingSummary'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ReceptionApi } from '@/api/reception'
@@ -343,15 +343,87 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isActionSubmitting, setIsActionSubmitting] = useState(false);
     const [taxInvoiceModal, setTaxInvoiceModal] = useState({ isOpen: false, data: null });
 
+    // Derived Modified Patient Identity
+    const displayedPatient = useMemo(() => {
+        if (!snapshot?.patient) return null;
+        if (!stagedDemographics) return snapshot.patient;
+        const fn = stagedDemographics.firstName ?? snapshot.patient.firstName;
+        const ln = stagedDemographics.lastName ?? snapshot.patient.lastName;
+        return {
+            ...snapshot.patient,
+            firstName: fn,
+            lastName: ln,
+            name: `${fn || ''} ${ln || ''}`.trim(),
+            displayName: `${fn || ''} ${ln || ''}`.trim(),
+            age: stagedDemographics.age !== undefined && stagedDemographics.age !== '' ? Number(stagedDemographics.age) : snapshot.patient.age,
+            gender: stagedDemographics.gender ?? snapshot.patient.gender,
+            mobile: stagedDemographics.mobile ?? snapshot.patient.mobile,
+            currentPhoneNumber: stagedDemographics.mobile ?? snapshot.patient.currentPhoneNumber,
+            isModified: true
+        };
+    }, [snapshot?.patient, stagedDemographics]);
+
+    // Staged Financial & Test Basket Calculations
+    const originalTests = snapshot?.visit?.tests || [];
+    const activeRemainingTests = originalTests.filter(t => 
+        !t.parentOrderId && 
+        !(t.price === 0 && !t.isProfile && originalTests.some(p => p.isProfile)) &&
+        !stagedRemovedOrderIds.includes(t.orderId || t.OrderId || t.TestId || t.testId)
+    );
+
+    const baseGross = activeRemainingTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
+    const addedGross = stagedAddedTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
+    const stagedGross = baseGross + addedGross;
+
+    const isPrepaid = billingMode === 'PrepaidPartner' || isPrepaidIntent;
+
+    let stagedDiscountAmt = 0;
+    if (stagedDiscount?.remove) {
+        stagedDiscountAmt = 0;
+    } else if (stagedDiscount) {
+        const val = Number(stagedDiscount.value) || 0;
+        if (stagedDiscount.type === 'Percentage') {
+            stagedDiscountAmt = Math.round((stagedGross * (val / 100)) * 100) / 100;
+        } else {
+            stagedDiscountAmt = Math.min(stagedGross, val);
+        }
+    } else if (isPrepaid) {
+        const b2bInfo = extractB2BInfo(snapshot);
+        if (b2bInfo.rawType === 'PERCENTAGE') {
+            stagedDiscountAmt = Math.round((stagedGross * (b2bInfo.rawVal / 100)) * 100) / 100;
+        } else {
+            stagedDiscountAmt = Math.min(stagedGross, b2bInfo.rawAmount || b2bInfo.rawVal || 0);
+        }
+    } else {
+        stagedDiscountAmt = snapshot?.billing?.appliedDiscount ? (Number(snapshot?.billing?.discountAmount) || 0) : 0;
+    }
+
+    const stagedNet = Math.max(0, stagedGross - stagedDiscountAmt);
+    const originalPaid = isPrepaid ? 0 : Number(snapshot?.billing?.totalPaid ?? snapshot?.billing?.netAmount ?? 0);
+    const settlementDiff = isPrepaid ? 0 : (stagedNet - originalPaid);
+
+    const stagedChangesCount = 
+        stagedAddedTests.length + 
+        stagedRemovedOrderIds.length + 
+        (stagedDiscount ? 1 : 0) + 
+        (stagedDemographics ? 1 : 0) +
+        (stagedReferralPartnerId !== undefined ? 1 : 0) +
+        (stagedSecondaryPartnerId !== undefined ? 1 : 0);
+
     const buildTaxInvoiceData = () => {
         const visitObj = snapshot?.visit;
-        const p = snapshot?.patient;
+        const p = displayedPatient || snapshot?.patient;
         const b = snapshot?.billing;
-        const dueVal = remainingDue !== undefined ? remainingDue : Math.max(0, (b?.netAmount || 0) - (b?.totalPaid || 0));
+
+        const effectiveGross = stagedGross !== undefined ? stagedGross : (b?.grossAmount || b?.netAmount || 0);
+        const effectiveDiscount = stagedDiscountAmt !== undefined ? stagedDiscountAmt : (b?.discountAmount || 0);
+        const effectiveNet = stagedNet !== undefined ? stagedNet : (b?.netAmount || 0);
+        const effectivePaid = isPrepaid ? 0 : (b?.totalPaid || effectiveNet);
+        const dueVal = isPrepaid ? 0 : Math.max(0, effectiveNet - effectivePaid);
 
         const isCorporate = billingMode === 'Corporate' || visitObj?.billingType === 'Corporate' || Boolean(visitObj?.corporateAccountId);
         const isInsurance = billingMode === 'Insurance' || visitObj?.billingType === 'Insurance' || Boolean(visitObj?.insuranceCompanyId);
-        const isPartner = billingMode === 'PrepaidPartner' || visitObj?.paymentCollectionModel === 'PartnerCollects' || Boolean(visitObj?.referralPartnerId);
+        const isPartner = isPrepaid || Boolean(visitObj?.referralPartnerId) || stagedReferralPartnerId !== undefined;
 
         const corpName = visitObj?.corporateAccount?.companyName || visitObj?.corporateAccount?.name || (isCorporate ? 'Corporate Client' : '');
         const corpCode = visitObj?.corporateAccount?.corporateCode || '';
@@ -363,13 +435,27 @@ export function IntentPanel({ onVisitUpdated }) {
         const preAuth = visitObj?.preAuthApprovalNumber || '';
         const coPay = visitObj?.insuranceCoPayAmount || 0;
 
-        const refName = visitObj?.referralPartner?.name || b?.referral?.partner?.displayName || (isPartner ? 'Referral Partner' : 'Self / Direct');
-        const refClinic = visitObj?.referralPartner?.clinicName || '';
-        const refCode = visitObj?.referralPartner?.code || '';
+        const effectiveRefPartner = stagedReferralPartnerId !== undefined
+            ? (stagedReferralPartnerId ? (visitObj?.referralPartner || b?.referral?.partner) : null)
+            : (visitObj?.referralPartner || b?.referral?.partner);
 
-        const tests = visitObj?.tests || [];
-        const hasOutsourced = tests.some(t => t.isOutsourced || Boolean(t.referenceLabName));
-        const outsourcedLabs = tests.filter(t => t.isOutsourced && t.referenceLabName).map(t => t.referenceLabName);
+        const refName = effectiveRefPartner?.name || effectiveRefPartner?.displayName || (isPartner ? 'Referral Partner' : 'Self / Direct');
+        const refClinic = effectiveRefPartner?.clinicName || '';
+        const refCode = effectiveRefPartner?.code || '';
+
+        // Dynamic On-the-Fly Test Basket
+        const effectiveTests = [
+            ...activeRemainingTests,
+            ...stagedAddedTests.map(t => ({
+                ...t,
+                testCode: t.testCode || t.code,
+                name: t.testName || t.name || t.testCode,
+                price: Number(t.basePrice || t.price || t.Price) || 0
+            }))
+        ];
+
+        const hasOutsourced = effectiveTests.some(t => t.isOutsourced || Boolean(t.referenceLabName));
+        const outsourcedLabs = effectiveTests.filter(t => t.isOutsourced && t.referenceLabName).map(t => t.referenceLabName);
 
         return {
             billNumber: visitObj?.visitToken || visitObj?.token || "INV-REC-001",
@@ -397,8 +483,8 @@ export function IntentPanel({ onVisitUpdated }) {
             patient: {
                 name: p?.fullName || p?.name || "Direct Patient",
                 uhid: p?.mrn || p?.uhid || "WALK-IN",
-                ageGender: p?.age ? `${p.age} / ${p?.gender || 'M'}` : "Adult",
-                phone: p?.phone || p?.mobile || "N/A",
+                ageGender: p?.age ? `${p.age} ${p?.ageUnit || 'Yrs'} / ${p?.gender || 'M'}` : "Adult",
+                phone: p?.phone || p?.mobile || p?.currentPhoneNumber || "N/A",
                 referringDoctor: refName,
                 corporateName: corpName,
                 corporateCode: corpCode,
@@ -409,22 +495,22 @@ export function IntentPanel({ onVisitUpdated }) {
                 preAuthNumber: preAuth,
                 billingMode: billingMode || visitObj?.billingType || 'Standard'
             },
-            items: tests.map((t, idx) => ({
+            items: effectiveTests.map((t, idx) => ({
                 index: idx + 1,
                 name: t.testName || t.name || t.testCode,
                 code: t.testCode,
                 department: t.department || 'Pathology',
-                price: Number(t.price || 0),
+                price: Number(t.price || t.basePrice || 0),
                 discount: 0,
-                amount: Number(t.price || 0),
+                amount: Number(t.price || t.basePrice || 0),
                 isOutsourced: Boolean(t.isOutsourced),
                 referenceLabName: t.referenceLabName || ''
             })),
             financial: {
-                grossSubtotal: b?.grossAmount || b?.netAmount || 0,
-                discountAmount: b?.discountAmount || 0,
-                totalAmount: b?.netAmount || 0,
-                totalPaid: (b?.totalPaid || 0) + (dueVal <= 0 ? 0 : 0),
+                grossSubtotal: effectiveGross,
+                discountAmount: effectiveDiscount,
+                totalAmount: effectiveNet,
+                totalPaid: effectivePaid,
                 balanceDue: dueVal
             }
         };
@@ -435,29 +521,52 @@ export function IntentPanel({ onVisitUpdated }) {
         if (!visitObj) return;
         try {
             const tokenToPrint = overrideToken || visitObj?.visitToken || visitObj?.token || "WAIT";
+            const p = displayedPatient || snapshot?.patient;
+
+            const effectiveGross = stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || 0);
+            const effectiveDiscount = stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0);
+            const effectiveNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0);
+            const effectivePaid = isPrepaid ? 0 : (snapshot?.billing?.totalPaid || effectiveNet);
+
+            const effectiveTests = [
+                ...activeRemainingTests,
+                ...stagedAddedTests.map(t => ({
+                    ...t,
+                    testCode: t.testCode || t.code,
+                    name: t.testName || t.name || t.testCode,
+                    price: Number(t.basePrice || t.price || t.Price) || 0
+                }))
+            ];
+
+            const effectiveRefPartner = stagedReferralPartnerId !== undefined
+                ? (stagedReferralPartnerId ? (visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
+                : (visitObj?.referralPartner || snapshot?.billing?.referral?.partner);
+
             const printPayload = {
                 visitId: visitObj?.visitId || currentVisitId,
                 token: tokenToPrint,
                 patient: {
-                    name: snapshot?.patient?.fullName || snapshot?.patient?.name || "Patient",
-                    sex: snapshot?.patient?.gender || "M",
-                    age: snapshot?.patient?.age || "",
-                    mrn: snapshot?.patient?.mrn || ""
+                    name: p?.fullName || p?.name || "Patient",
+                    sex: p?.gender || "M",
+                    age: p?.age || "",
+                    mrn: p?.mrn || ""
                 },
                 billing: {
                     ...snapshot?.billing,
-                    netAmount: snapshot?.billing?.netAmount || 0,
-                    totalPaid: (snapshot?.billing?.totalPaid || 0) + remainingDue,
-                    paymentMethod: snapshot?.billing?.paymentMethod || paymentMethod || "Cash"
+                    grossAmount: effectiveGross,
+                    discountAmount: effectiveDiscount,
+                    netAmount: effectiveNet,
+                    totalPaid: effectivePaid,
+                    paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")
                 },
-                orders: (visitObj?.tests || []).map(t => ({
+                orders: effectiveTests.map(t => ({
                     testCode: t.testCode,
                     testName: t.testName || t.name || t.testCode,
-                    grossAmount: t.price || 0,
+                    grossAmount: Number(t.price || t.basePrice || 0),
                     discount: 0,
-                    netAmount: t.price || 0
+                    netAmount: Number(t.price || t.basePrice || 0)
                 })),
-                referringDoctorName: visitObj?.referralPartner?.name || snapshot?.billing?.referral?.partner?.displayName || "Self",
+                referringDoctorName: effectiveRefPartner?.name || effectiveRefPartner?.displayName || "Self",
                 labName: "Diagnostic Laboratory",
                 branch: { name: "Main Lab" }
             };
@@ -680,63 +789,6 @@ export function IntentPanel({ onVisitUpdated }) {
         setIsEditDemographicsOpen(false);
     };
 
-    // Staged Financial Calculations
-    const originalTests = snapshot?.visit?.tests || [];
-    const activeRemainingTests = originalTests.filter(t => 
-        !t.parentOrderId && 
-        !(t.price === 0 && !t.isProfile && originalTests.some(p => p.isProfile)) &&
-        !stagedRemovedOrderIds.includes(t.orderId || t.OrderId || t.TestId || t.testId)
-    );
-
-    const baseGross = activeRemainingTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
-    const addedGross = stagedAddedTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
-    const stagedGross = baseGross + addedGross;
-
-    let stagedDiscountAmt = 0;
-    if (stagedDiscount?.remove) {
-        stagedDiscountAmt = 0;
-    } else if (stagedDiscount) {
-        const val = Number(stagedDiscount.value) || 0;
-        if (stagedDiscount.type === 'Percentage') {
-            stagedDiscountAmt = Math.round((stagedGross * (val / 100)) * 100) / 100;
-        } else {
-            stagedDiscountAmt = Math.min(stagedGross, val);
-        }
-    } else {
-        stagedDiscountAmt = snapshot?.billing?.appliedDiscount ? (Number(snapshot?.billing?.discountAmount) || 0) : 0;
-    }
-
-    const stagedNet = Math.max(0, stagedGross - stagedDiscountAmt);
-    const originalPaid = Number(snapshot?.billing?.totalPaid ?? snapshot?.billing?.netAmount ?? 0);
-    const settlementDiff = stagedNet - originalPaid;
-
-    const stagedChangesCount = 
-        stagedAddedTests.length + 
-        stagedRemovedOrderIds.length + 
-        (stagedDiscount ? 1 : 0) + 
-        (stagedDemographics ? 1 : 0) +
-        (stagedReferralPartnerId !== undefined ? 1 : 0) +
-        (stagedSecondaryPartnerId !== undefined ? 1 : 0);
-
-    const displayedPatient = useMemo(() => {
-        if (!snapshot?.patient) return null;
-        if (!stagedDemographics) return snapshot.patient;
-        const fn = stagedDemographics.firstName ?? snapshot.patient.firstName;
-        const ln = stagedDemographics.lastName ?? snapshot.patient.lastName;
-        return {
-            ...snapshot.patient,
-            firstName: fn,
-            lastName: ln,
-            name: `${fn || ''} ${ln || ''}`.trim(),
-            displayName: `${fn || ''} ${ln || ''}`.trim(),
-            age: stagedDemographics.age !== undefined && stagedDemographics.age !== '' ? Number(stagedDemographics.age) : snapshot.patient.age,
-            gender: stagedDemographics.gender ?? snapshot.patient.gender,
-            mobile: stagedDemographics.mobile ?? snapshot.patient.mobile,
-            currentPhoneNumber: stagedDemographics.mobile ?? snapshot.patient.currentPhoneNumber,
-            isModified: true
-        };
-    }, [snapshot?.patient, stagedDemographics]);
-
     const handleConfirmBatchEdit = async () => {
         if (!batchEditReason || !batchEditReason.trim()) {
             alert("A reason is mandatory for auditing visit modifications.");
@@ -752,7 +804,9 @@ export function IntentPanel({ onVisitUpdated }) {
                 ageUnit: stagedDemographics?.ageUnit || "Years",
                 gender: stagedDemographics?.gender,
                 mobile: stagedDemographics?.mobile,
+                updateReferralPartner: stagedReferralPartnerId !== undefined,
                 referralPartnerId: stagedReferralPartnerId !== undefined ? stagedReferralPartnerId : (snapshot?.visit?.referralPartnerId || null),
+                updateSecondaryPartner: stagedSecondaryPartnerId !== undefined,
                 secondaryPartnerId: stagedSecondaryPartnerId !== undefined ? stagedSecondaryPartnerId : (snapshot?.visit?.secondaryReferralPartnerId || null),
                 billingMode: billingMode,
                 addTestCodes: stagedAddedTests.map(t => t.testCode || t.code),
@@ -761,6 +815,9 @@ export function IntentPanel({ onVisitUpdated }) {
                 discountType: stagedDiscount?.type,
                 discountValue: stagedDiscount?.remove ? 0 : stagedDiscount?.value,
                 discountReason: stagedDiscount?.reason,
+                b2bDiscountAmount: isPrepaid ? stagedDiscountAmt : null,
+                b2bDiscountType: isPrepaid ? (stagedDiscount?.type || 'Flat') : null,
+                b2bDiscountValue: isPrepaid ? (stagedDiscount?.value ?? (Number(snapshot?.visit?.b2bDiscountValue) || 0)) : null,
                 settlementDifference: settlementDiff,
                 paymentMethod: paymentMethod,
                 reason: batchEditReason.trim()
@@ -899,17 +956,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                 snapshot={{ ...snapshot, patient: displayedPatient }}
                                 onSelectPatient={handleSelectPatient}
                                 onClearPatient={handleClearPatient}
+                                onEditPatient={handleOpenEditDemographics}
+                                isCorrectionIntent={isCorrectionIntent}
                             />
-                            {isCorrectionIntent && (
-                                <button
-                                    type="button"
-                                    onClick={handleOpenEditDemographics}
-                                    className="absolute top-2 right-4 px-2.5 py-1 text-xs font-bold rounded-lg border border-synos-primary/40 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/20 flex items-center gap-1.5 transition-all shadow-xs active:scale-95 cursor-pointer z-10"
-                                >
-                                    <Pencil className="w-3.5 h-3.5" />
-                                    <span>{stagedDemographics ? "Demographics Modified" : "Edit Demographics"}</span>
-                                </button>
-                            )}
                         </div>
 
                         {/* Block-Level Isolation for Visit Details (Scrollable) */}
@@ -947,6 +996,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                             stagedRemovedOrderIds={stagedRemovedOrderIds}
                                             onToggleRemoveOrderId={handleToggleRemoveOrderId}
                                             onRemoveStagedAddedTest={handleRemoveStagedAddedTest}
+                                            stagedReferralPartnerId={stagedReferralPartnerId}
+                                            stagedSecondaryPartnerId={stagedSecondaryPartnerId}
                                             onStageReferral={(pId) => setStagedReferralPartnerId(pId)}
                                             onStageSecondaryReferral={(sId) => setStagedSecondaryPartnerId(sId)}
                                         />

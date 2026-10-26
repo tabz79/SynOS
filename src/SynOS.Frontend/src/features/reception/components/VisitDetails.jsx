@@ -24,6 +24,8 @@ export function VisitDetails({
     stagedRemovedOrderIds = [],
     onToggleRemoveOrderId,
     onRemoveStagedAddedTest,
+    stagedReferralPartnerId,
+    stagedSecondaryPartnerId,
     onStageReferral,
     onStageSecondaryReferral
 }) {
@@ -96,13 +98,19 @@ export function VisitDetails({
     // Silent enforcement.
     const isPhysicallyLocked = (visit?.samples || []).some(s => s.status !== 'Pending');
 
-    // 5. REFERRAL EDITABILITY (Late Attribution Rule)
-    // - Always allowed if strictly open.
-    // - If Locked: Allowed ONLY if current partner is NULL (Late Attribution).
-    // - Once set & locked -> Immutable.
-    const hasReferralPartner = !!snapshot?.billing?.referral?.partner;
+    // 5. REFERRAL EDITABILITY & EFFECTIVE PARTNER STATE
+    // In Correction Intent, operator can freely change/remove referral partners
+    const effectivePartner = isCorrectionIntent && stagedReferralPartnerId !== undefined
+        ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || snapshot?.billing?.referral?.partner) : null)
+        : snapshot?.billing?.referral?.partner;
+
+    const effectiveSecondaryPartner = isCorrectionIntent && stagedSecondaryPartnerId !== undefined
+        ? (stagedSecondaryPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedSecondaryPartnerId) || snapshot?.billing?.referral?.secondaryPartner) : null)
+        : snapshot?.billing?.referral?.secondaryPartner;
+
+    const hasReferralPartner = !!effectivePartner;
     const referralDraft = snapshot?.billing?.referral?.draft;
-    const canEditReferral = !isReadOnly && (!isPhysicallyLocked || !hasReferralPartner);
+    const canEditReferral = isCorrectionIntent || (!isReadOnly && (!isPhysicallyLocked || !hasReferralPartner));
 
     // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
     useEffect(() => {
@@ -689,28 +697,29 @@ export function VisitDetails({
                                     <Plus className="w-3.5 h-3.5" /> Add Doctor
                                 </button>
                             </div>
-                            {snapshot?.billing?.referral?.partner ? (
+                            {effectivePartner ? (
                                 <div className={cn("flex items-center gap-2 font-bold p-2.5 rounded-lg border",
-                                    isDark ? "text-zinc-300 bg-zinc-800/50 border-zinc-700/50" : "text-zinc-900 bg-white border-zinc-200 shadow-sm")}>
+                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-white/60 border-black/5 text-zinc-900 shadow-xs hover:bg-white/80 transition-colors")}>
                                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1.5">
                                             <span className="truncate tracking-tight text-xs font-bold">
-                                                {snapshot.billing.referral.partner.displayName || "Partner"}
+                                                {effectivePartner.displayName || effectivePartner.name || "Partner"}
                                             </span>
-                                            {snapshot?.billing?.referral?.secondaryPartner && (
+                                            {effectiveSecondaryPartner && (
                                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
                                                     Commission Routed to RMP
                                                 </span>
                                             )}
                                         </div>
                                         <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
-                                            Type: {snapshot.billing.referral.partner.partnerType || 'Doctor'}
-                                            {!snapshot?.billing?.referral?.secondaryPartner && ` • Comm: ${snapshot.billing.referral.commissionCutPercentage || 0}%`}
+                                            Type: {effectivePartner.partnerType || 'Doctor'}
+                                            {!effectiveSecondaryPartner && ` • Comm: ${snapshot?.billing?.referral?.commissionCutPercentage || 0}%`}
                                         </div>
                                     </div>
                                     {canEditReferral && (
                                         <button
+                                            type="button"
                                             onClick={handleRemoveReferral}
                                             disabled={isProcessing}
                                             className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
@@ -837,13 +846,13 @@ export function VisitDetails({
                                     <Plus className="w-3.5 h-3.5" /> Add Doctor
                                 </button>
                             </div>
-                            {snapshot?.billing?.referral?.partner ? (
+                            {effectivePartner ? (
                                 <div className={cn("flex items-center gap-2 font-semibold p-2.5 rounded-lg border",
-                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-slate-50 border-slate-200 text-zinc-900 shadow-xs")}>
+                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-white/60 border-black/5 text-zinc-900 shadow-xs hover:bg-white/80 transition-colors")}>
                                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <div className="truncate tracking-tight text-xs font-bold">
-                                            {snapshot.billing.referral.partner.displayName || "Partner"}
+                                            {effectivePartner.displayName || effectivePartner.name || "Partner"}
                                         </div>
                                         <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
                                             Primary Consultant • Name retained on all patient documents
@@ -851,6 +860,7 @@ export function VisitDetails({
                                     </div>
                                     {canEditReferral && (
                                         <button
+                                            type="button"
                                             onClick={handleRemoveReferral}
                                             disabled={isProcessing}
                                             className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
@@ -901,17 +911,17 @@ export function VisitDetails({
                                     <Plus className="w-3.5 h-3.5" /> Add RMP
                                 </button>
                             </div>
-                            {snapshot?.billing?.referral?.secondaryPartner ? (
+                            {effectiveSecondaryPartner ? (
                                 <div className={cn("flex items-center gap-2 font-semibold p-2.5 rounded-lg border",
-                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-slate-50 border-slate-200 text-zinc-900 shadow-xs")}>
+                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-white/60 border-black/5 text-zinc-900 shadow-xs hover:bg-white/80 transition-colors")}>
                                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-1.5">
                                             <span className="truncate tracking-tight text-xs font-bold">
-                                                {snapshot.billing.referral.secondaryPartner.displayName}
+                                                {effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name}
                                             </span>
                                             <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold uppercase tracking-wider">
-                                                {snapshot.billing.referral.secondaryPartner.partnerType || 'RMP'}
+                                                {effectiveSecondaryPartner.partnerType || 'RMP'}
                                             </span>
                                         </div>
                                         <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
@@ -920,6 +930,7 @@ export function VisitDetails({
                                     </div>
                                     {canEditReferral && (
                                         <button
+                                            type="button"
                                             onClick={handleRemoveSecondaryReferral}
                                             disabled={isProcessing}
                                             className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"

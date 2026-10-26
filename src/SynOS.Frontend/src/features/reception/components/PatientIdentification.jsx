@@ -6,7 +6,13 @@ import { useTheme } from '@/context/ThemeContext'
 import { RichPatientCard, calculateDetailedAge } from '@/components/patient/RichPatientCard'
 
 
-export function PatientIdentification({ snapshot, onSelectPatient, onClearPatient }) {
+export function PatientIdentification({ 
+    snapshot, 
+    onSelectPatient, 
+    onClearPatient, 
+    onEditPatient, 
+    isCorrectionIntent 
+}) {
     const [searchQuery, setSearchQuery] = useState("");
     const [matches, setMatches] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -96,6 +102,8 @@ export function PatientIdentification({ snapshot, onSelectPatient, onClearPatien
                         patient={selectedPatient}
                         onAction={onClearPatient}
                         actionLabel="Change"
+                        secondaryActionLabel={isCorrectionIntent ? "Edit" : null}
+                        onSecondaryAction={onEditPatient}
                         isLocked={true}
                     />
                 </div>

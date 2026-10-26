@@ -14,7 +14,9 @@ namespace SynOS.Models.DTOs
         public string? Mobile { get; set; }
 
         // Referral & Doctor Updates
+        public bool UpdateReferralPartner { get; set; } = false;
         public Guid? ReferralPartnerId { get; set; }
+        public bool UpdateSecondaryPartner { get; set; } = false;
         public Guid? SecondaryPartnerId { get; set; }
         public string? ReferrerText { get; set; }
 
@@ -30,6 +32,11 @@ namespace SynOS.Models.DTOs
         public string? DiscountType { get; set; } // "Percentage" | "Flat"
         public decimal? DiscountValue { get; set; }
         public string? DiscountReason { get; set; }
+
+        // B2B Partner Concession Updates (Corporate B2B Prepaid)
+        public decimal? B2BDiscountAmount { get; set; }
+        public string? B2BDiscountType { get; set; }
+        public decimal? B2BDiscountValue { get; set; }
 
         // Financial Settlement Reconciliation
         // Difference = Staged Revised Net - Previously Paid

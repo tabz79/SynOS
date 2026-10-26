@@ -1790,15 +1790,26 @@ namespace SynOS.Services
                 }
 
                 // 2. Referral & Doctor Updates
-                if (dto.ReferralPartnerId.HasValue)
+                if (dto.UpdateReferralPartner)
+                {
+                    visit.ReferralPartnerId = dto.ReferralPartnerId;
+                    visit.IsReferred = dto.ReferralPartnerId.HasValue;
+                }
+                else if (dto.ReferralPartnerId.HasValue)
                 {
                     visit.ReferralPartnerId = dto.ReferralPartnerId.Value;
                     visit.IsReferred = true;
                 }
-                if (dto.SecondaryPartnerId.HasValue)
+
+                if (dto.UpdateSecondaryPartner)
+                {
+                    visit.SecondaryReferralPartnerId = dto.SecondaryPartnerId;
+                }
+                else if (dto.SecondaryPartnerId.HasValue)
                 {
                     visit.SecondaryReferralPartnerId = dto.SecondaryPartnerId.Value;
                 }
+
                 if (dto.ReferrerText != null)
                 {
                     visit.ReferrerText = dto.ReferrerText.Trim();
@@ -1946,6 +1957,16 @@ namespace SynOS.Services
                         };
                         _context.DiscountFacts.Add(newFact);
                     }
+                }
+
+                // 6b. B2B Partner Concession Updates
+                if (dto.B2BDiscountValue.HasValue || dto.B2BDiscountAmount.HasValue)
+                {
+                    visit.B2BDiscountAmount = dto.B2BDiscountAmount;
+                    visit.B2BDiscountType = dto.B2BDiscountType ?? "Flat";
+                    visit.B2BDiscountValue = dto.B2BDiscountValue;
+                    visit.B2BDiscountEnteredBy = actorName;
+                    visit.B2BDiscountEnteredAt = DateTimeOffset.UtcNow;
                 }
 
                 // 7. Re-signing Check for Existing Signed Reports
