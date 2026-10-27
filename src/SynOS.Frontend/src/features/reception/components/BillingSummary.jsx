@@ -59,6 +59,11 @@ export function BillingSummary({
 
     useEffect(() => {
         if (!isB2BEditing) {
+            if (isCorrectionIntent && stagedDiscount && stagedDiscount.isB2B) {
+                setLocalB2BInput(stagedDiscount.value !== undefined ? String(stagedDiscount.value) : '');
+                setB2BDiscountType(stagedDiscount.type === 'Percentage' ? 'PERCENTAGE' : 'FLAT');
+                return;
+            }
             const current = extractB2BInfo(snapshot);
             setB2BDiscountType(current.rawType);
             setLocalB2BInput(current.rawVal && current.rawVal > 0 ? String(current.rawVal) : '');
@@ -68,7 +73,9 @@ export function BillingSummary({
         snapshot?.visit?.b2bDiscountAmount, snapshot?.visit?.b2BDiscountAmount,
         snapshot?.visit?.b2bDiscountType, snapshot?.visit?.b2BDiscountType,
         snapshot?.billing?.b2bDiscountAmount, snapshot?.billing?.b2BDiscountAmount,
-        isB2BEditing
+        isB2BEditing,
+        isCorrectionIntent,
+        stagedDiscount
     ]);
 
     // Correction Modal State
@@ -135,16 +142,16 @@ export function BillingSummary({
     } : {
         indicator: "bg-white border-zinc-200 shadow-sm type-label",
         headerText: "type-value",
-        // UNIFIED CARD STYLE (From Patient Card)
-        container: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-4",
-        rowLabel: "type-label opacity-70",
-        rowValue: "type-code opacity-90", // Financials = Mono
+        // UNIFIED CARD STYLE (Enhanced subtle contrast)
+        container: "p-4 rounded-xl bg-zinc-100/75 border border-zinc-200/90 shadow-xs space-y-4",
+        rowLabel: "type-label text-zinc-600 font-semibold",
+        rowValue: "type-code text-zinc-900 font-bold", // Financials = Mono
         netLabel: "type-value font-medium",
         netValue: "type-page-title", // 20px Bold
-        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all outline-none",
+        input: "bg-white border-zinc-300 shadow-xs type-body focus:ring-1 focus:ring-synos-primary transition-all outline-none",
         method: {
-            active: "bg-black text-white border-zinc-900 shadow-md ring-1 ring-black/10",
-            inactive: "bg-white/50 border-black/5 hover:bg-white hover:text-black shadow-sm"
+            active: "bg-zinc-900 text-white border-zinc-900 shadow-md ring-1 ring-black/10",
+            inactive: "bg-white border-zinc-200 hover:bg-zinc-50 hover:text-black shadow-xs"
         }
     };
 
@@ -347,6 +354,7 @@ export function BillingSummary({
         const val = overrideValue !== undefined ? Number(overrideValue) : (Number(localB2BInput) || 0);
 
         if (isCorrectionIntent && onStageDiscount) {
+            setLocalB2BInput(String(val));
             onStageDiscount({
                 type: type === 'PERCENTAGE' ? 'Percentage' : 'Flat',
                 value: val,
@@ -661,7 +669,7 @@ export function BillingSummary({
                         return (
                             <div className={cn(
                                 "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
-                                isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
+                                isDark ? "bg-zinc-900/80 border-zinc-700 text-zinc-200" : "bg-white border border-zinc-200 text-zinc-900 shadow-xs"
                             )}>
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
@@ -800,7 +808,7 @@ export function BillingSummary({
                     return (
                         <div className={cn(
                             "p-3 rounded-xl border space-y-2.5",
-                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200 shadow-xs" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-xs"
+                            isDark ? "bg-zinc-900/80 border-zinc-700 text-zinc-200 shadow-xs" : "bg-white border border-zinc-200 text-zinc-900 shadow-xs"
                         )}>
                             <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
@@ -887,7 +895,7 @@ export function BillingSummary({
                                                 type="number"
                                                 min="0"
                                                 max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
-                                                value={localB2BInput}
+                                                value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
                                                 disabled={!canPerformActions || isProcessing}
                                                 onFocus={(e) => {
                                                     e.target.select();

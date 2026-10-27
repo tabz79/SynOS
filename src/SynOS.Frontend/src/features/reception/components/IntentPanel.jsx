@@ -87,34 +87,30 @@ export function IntentPanel({ onVisitUpdated }) {
     // THEME ISOLATION CONTRACT: Style Branching
     const ui = isDark ? {
         // DARK MODE: Solid Zinc, No Blur (Performance)
-        panel: "bg-zinc-900 border-l border-white/10 shadow-2xl z-20",
-        header: "bg-zinc-900 border-b border-white/5",
-        footer: "bg-zinc-900 border-t border-white/5",
+        panel: "bg-zinc-900 border-l border-zinc-700 shadow-2xl z-20",
+        header: "bg-zinc-900 border-b border-zinc-800",
+        footer: "bg-zinc-900 border-t border-zinc-800",
         title: "text-white",
-        subtitle: "text-zinc-500",
+        subtitle: "text-zinc-400",
         actionBtn: {
             enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/5",
             disabled: "bg-zinc-800 text-zinc-500"
         }
     } : {
-        // LIGHT MODE: REAL FAKE FROST (System Bar Match)
-        // No Blur = No Performance Hit.
-        // KNIFE-EDGE STYLE: Sharp borders, deep shadow, no blur.
+        // LIGHT MODE: Clean modern panel with defined crisp boundaries
         panel: cn(
             "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
-            "border-l border-white shadow-[-20px_0_50px_rgba(0,0,0,0.3)]", // Knife Edge: Solid White Border + Deep Shadow
-            "border-t border-white/80", // Top Rim Light
+            "border-l border-zinc-300 shadow-[-20px_0_50px_rgba(0,0,0,0.25)]",
+            "border-t border-white/90",
             "z-20"
         ),
-        // Header: EXACT MATCH with ActivityStream.jsx (Line 172)
-        header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
-        // Footer: Matches bottom of panel gradient for anchor
-        footer: "bg-[#D7E1E4] border-t border-black/[0.06] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
-        title: "text-zinc-900",
-        subtitle: "text-zinc-500",
+        header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-zinc-200/90",
+        footer: "bg-[#D7E1E4] border-t border-zinc-200/90 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
+        title: "text-zinc-900 font-bold",
+        subtitle: "text-zinc-600 font-medium",
         actionBtn: {
             enabled: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20 transition-transform active:scale-95",
-            disabled: "bg-zinc-100 text-zinc-400 border border-black/[0.05]"
+            disabled: "bg-zinc-100 text-zinc-500 border border-zinc-200"
         }
     };
 
@@ -1557,33 +1553,132 @@ export function IntentPanel({ onVisitUpdated }) {
                                 </div>
                             )}
 
-                            {/* 5. Financial Settlement Breakdown */}
-                            <div className={cn(
-                                "p-3.5 rounded-xl border space-y-2",
-                                settlementDiff < 0 
-                                    ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50 border-emerald-300")
-                                    : settlementDiff > 0 
-                                        ? (isDark ? "bg-amber-950/40 border-amber-500/50" : "bg-amber-50 border-amber-300")
-                                        : (isDark ? "bg-zinc-800/40 border-zinc-700" : "bg-zinc-100 border-zinc-200")
-                            )}>
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="opacity-70">Previously Paid:</span>
-                                    <span className="font-mono font-bold">₹{originalPaid.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="opacity-70">Revised Net Total:</span>
-                                    <span className="font-mono font-bold">₹{stagedNet.toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm font-extrabold pt-1.5 border-t border-current/10">
-                                    <span>{settlementDiff < 0 ? "Cash Refund to Disburse:" : settlementDiff > 0 ? `Balance Due (${paymentMethod}):` : "Financial Difference:"}</span>
-                                    <span className="font-mono text-base">₹{Math.abs(settlementDiff).toLocaleString()}</span>
-                                </div>
-                                {settlementDiff < 0 && (
-                                    <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 italic">
-                                        * Hand over ₹{Math.abs(settlementDiff).toLocaleString()} in Cash from the counter cash register.
-                                    </p>
-                                )}
-                            </div>
+                            {/* 5. Financial Settlement Breakdown (Dynamic: Prepaid B2B vs Standard Direct) */}
+                            {(() => {
+                                if (isPrepaid) {
+                                    const b2bInfo = extractB2BInfo(snapshot);
+                                    const originalGross = snapshot?.billing?.grossAmount || 0;
+                                    const originalB2BAmt = b2bInfo.rawAmount || 0;
+                                    const originalB2BClaim = Math.max(0, originalGross - originalB2BAmt);
+
+                                    const currentGross = stagedGross !== undefined ? stagedGross : originalGross;
+                                    let currentB2BAmt = 0;
+                                    if (stagedDiscountAmt !== undefined) {
+                                        currentB2BAmt = stagedDiscountAmt;
+                                    } else if (stagedDiscount) {
+                                        const val = Number(stagedDiscount.value) || 0;
+                                        if (stagedDiscount.type === 'Percentage') {
+                                            currentB2BAmt = Math.round((currentGross * (val / 100)) * 100) / 100;
+                                        } else {
+                                            currentB2BAmt = Math.min(currentGross, val);
+                                        }
+                                    } else {
+                                        currentB2BAmt = originalB2BAmt;
+                                    }
+                                    const currentB2BClaim = Math.max(0, currentGross - currentB2BAmt);
+                                    const b2bClaimDiff = currentB2BClaim - originalB2BClaim;
+
+                                    const partnerName = snapshot?.billing?.referral?.partner?.name || 
+                                                        snapshot?.visit?.referralPartner?.name || 
+                                                        snapshot?.visit?.secondaryReferralPartner?.name || 
+                                                        'Prepaid B2B Partner';
+
+                                    return (
+                                        <div className={cn(
+                                            "p-3.5 rounded-xl border space-y-2.5 shadow-xs",
+                                            b2bClaimDiff > 0 
+                                                ? (isDark ? "bg-amber-950/40 border-amber-500/50" : "bg-amber-50/90 border-amber-300")
+                                                : b2bClaimDiff < 0 
+                                                    ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50/90 border-emerald-300")
+                                                    : (isDark ? "bg-zinc-800/60 border-zinc-700" : "bg-zinc-100 border-zinc-200")
+                                        )}>
+                                            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                                                <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
+                                                    <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                                    B2B Partner Ledger Reconciliation
+                                                </span>
+                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
+                                                    Corporate B2B Prepaid
+                                                </span>
+                                            </div>
+
+                                            <div className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">
+                                                Partner Account: <strong>{partnerName}</strong>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                                                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Previously Billed to Partner</div>
+                                                    <div className="font-mono text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">₹{originalB2BClaim.toLocaleString()}</div>
+                                                </div>
+                                                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Revised Partner Receivable</div>
+                                                    <div className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{currentB2BClaim.toLocaleString()}</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-between items-center text-sm font-extrabold pt-2 border-t border-current/10">
+                                                <span>Partner Claim Adjustment:</span>
+                                                <span className={cn("font-mono text-base font-bold", 
+                                                    b2bClaimDiff > 0 ? "text-amber-600 dark:text-amber-400" : 
+                                                    b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
+                                                    {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : b2bClaimDiff < 0 ? `-₹${Math.abs(b2bClaimDiff).toLocaleString()}` : "₹0"}
+                                                </span>
+                                            </div>
+
+                                            <div className="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 pt-0.5">
+                                                {b2bClaimDiff > 0 && (
+                                                    <p className="font-semibold text-amber-700 dark:text-amber-300">
+                                                        * Partner receivable increases by ₹{b2bClaimDiff.toLocaleString()} (Revised ₹{currentB2BClaim.toLocaleString()} vs Previous ₹{originalB2BClaim.toLocaleString()}).
+                                                    </p>
+                                                )}
+                                                {b2bClaimDiff < 0 && (
+                                                    <p className="font-semibold text-emerald-700 dark:text-emerald-300">
+                                                        * Partner receivable reduces by ₹{Math.abs(b2bClaimDiff).toLocaleString()} (Credit adjusted against partner balance).
+                                                    </p>
+                                                )}
+                                                {b2bClaimDiff === 0 && (
+                                                    <p className="text-zinc-500">
+                                                        * No change in partner receivable claim amount.
+                                                    </p>
+                                                )}
+                                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium flex items-center gap-1">
+                                                    <span>✓ Patient Counter Collection: <strong>₹0 (Prepaid Account)</strong></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className={cn(
+                                        "p-3.5 rounded-xl border space-y-2 shadow-xs",
+                                        settlementDiff < 0 
+                                            ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50 border-emerald-300")
+                                            : settlementDiff > 0 
+                                                ? (isDark ? "bg-amber-950/40 border-amber-500/50" : "bg-amber-50 border-amber-300")
+                                                : (isDark ? "bg-zinc-800/40 border-zinc-700" : "bg-zinc-100 border-zinc-200")
+                                    )}>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="opacity-70 font-medium">Previously Paid by Patient:</span>
+                                            <span className="font-mono font-bold">₹{originalPaid.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="opacity-70 font-medium">Revised Net Total:</span>
+                                            <span className="font-mono font-bold">₹{stagedNet.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm font-extrabold pt-1.5 border-t border-current/10">
+                                            <span>{settlementDiff < 0 ? "Cash Refund to Disburse:" : settlementDiff > 0 ? `Balance Due (${paymentMethod}):` : "Financial Difference:"}</span>
+                                            <span className="font-mono text-base">₹{Math.abs(settlementDiff).toLocaleString()}</span>
+                                        </div>
+                                        {settlementDiff < 0 && (
+                                            <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 italic">
+                                                * Hand over ₹{Math.abs(settlementDiff).toLocaleString()} in Cash from the counter cash register.
+                                            </p>
+                                        )}
+                                    </div>
+                                );
+                            })()}
 
                             {/* 6. Mandatory Operational Reason */}
                             <div className="space-y-1 pt-1">

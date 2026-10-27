@@ -1757,10 +1757,13 @@ namespace SynOS.Services
             var affectedTubes = new List<string>();
             bool reSignRequired = false;
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                // 1. Patient Demographics In-Place Updates
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // 1. Patient Demographics In-Place Updates
                 if (visit.Patient != null)
                 {
                     if (!string.IsNullOrWhiteSpace(dto.FirstName)) visit.Patient.FirstName = dto.FirstName.Trim();
@@ -2181,13 +2184,14 @@ namespace SynOS.Services
                     AffectedTubes = affectedTubes,
                     ReSignRequired = reSignRequired
                 };
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to batch edit visit {VisitId}: {Message}", visitId, ex.Message);
-                throw;
-            }
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Failed to batch edit visit {VisitId}: {Message}", visitId, ex.Message);
+                    throw;
+                }
+            });
         }
     }
 }

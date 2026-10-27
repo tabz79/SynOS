@@ -144,18 +144,17 @@ export function VisitDetails({
     } : {
         indicator: "bg-white border-zinc-200 shadow-sm type-label",
         headerText: "type-value",
-        // UNIFIED CARD STYLE (From Patient Card)
-        section: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-3",
-        sectionTitle: "type-section-header opacity-70",
+        // UNIFIED CARD STYLE (Enhanced subtle contrast)
+        section: "p-4 rounded-xl bg-zinc-100/75 border border-zinc-200/90 shadow-xs space-y-3",
+        sectionTitle: "type-section-header text-zinc-700 font-bold",
         // ETCHED INPUT: Bright & sunken into the slab with refined visible focus ring and backlight glow
-        input: "bg-white border-zinc-200 shadow-sm type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(37,99,235,0.15)] transition-all placeholder:text-zinc-400",
+        input: "bg-white border-zinc-300 shadow-xs type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(37,99,235,0.15)] transition-all placeholder:text-zinc-400",
         suggestionBox: "bg-white border-zinc-200 shadow-xl",
-        // TEST CARD (Inside Recess): Needs to pop out slightly to be visible
-        // Default: White/60 Glass Chip. Hover: White/90 Bright Highlight.
-        testCard: "group flex items-center justify-between p-3 rounded-lg bg-white/60 border border-white/40 shadow-sm hover:bg-white/90 transition-all cursor-pointer",
-        testCode: "type-code opacity-70 group-hover:opacity-100 transition-opacity",
+        // TEST CARD: Clean white with subtle border and crisp elevation
+        testCard: "group flex items-center justify-between p-3 rounded-lg bg-white border border-zinc-200 shadow-xs hover:border-zinc-300 hover:shadow-sm transition-all cursor-pointer",
+        testCode: "type-code text-zinc-600 font-bold group-hover:text-zinc-900 transition-colors",
         modal: "bg-white border-zinc-200 type-body",
-        modalInput: "bg-zinc-50 border-zinc-200 type-body focus:border-black"
+        modalInput: "bg-zinc-50 border-zinc-300 type-body focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
