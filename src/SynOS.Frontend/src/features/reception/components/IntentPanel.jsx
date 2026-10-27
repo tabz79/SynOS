@@ -1373,24 +1373,54 @@ export function IntentPanel({ onVisitUpdated }) {
                     </div>
                 ) : (
                     hasVisit && (
-                        <div className="flex flex-col gap-1.5 w-full max-w-md mx-auto">
+                        <div className="flex flex-col gap-1.5 w-full max-w-2xl mx-auto">
                             <div className="flex items-center gap-2 w-full">
                                 {snapshot?.visit?.visitId && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsCancelModalOpen(true)}
-                                        className="py-3 px-3 rounded-lg border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer shrink-0"
-                                        title="Cancel this visit"
-                                    >
-                                        <Ban className="w-3.5 h-3.5" />
-                                        <span>Cancel</span>
-                                    </button>
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                                            title="Preview & Print Full A4 Tax Invoice"
+                                        >
+                                            <FileText className="w-4 h-4" /> A4 Receipt
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handlePrintReceipt()}
+                                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                                            title="Print Thermal 80mm POS Slip"
+                                        >
+                                            <Printer className="w-4 h-4" /> Thermal
+                                        </button>
+                                        {(snapshot?.billing?.billingMode === 'prepaid' || snapshot?.billing?.collectionModel === 'PartnerCollects') && (
+                                            <button
+                                                type="button"
+                                                disabled={isGeneratingClaimDoc}
+                                                onClick={handlePrintDoctorReceivable}
+                                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                                                title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
+                                            >
+                                                {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                                                Doc Claim
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCancelModalOpen(true)}
+                                            className="py-2.5 px-3 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+                                            title="Cancel this visit"
+                                        >
+                                            <Ban className="w-3.5 h-3.5" />
+                                            <span>Cancel</span>
+                                        </button>
+                                    </>
                                 )}
                                 <button
                                     onClick={handleUnifiedAction}
                                     disabled={!isActionEnabled || isLoading || isActionSubmitting}
                                     className={cn(
-                                        "flex-1 py-3 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
+                                        "flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
                                         (isActionEnabled && !isActionSubmitting)
                                             ? ui.actionBtn.enabled
                                             : ui.actionBtn.disabled

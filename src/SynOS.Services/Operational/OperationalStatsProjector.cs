@@ -221,6 +221,37 @@ namespace SynOS.Services.Operational
                                 _context.VisitOperationalStates.Remove(visitState);
                                 visitState = null; 
                             }
+
+                            // Reverse Financial Stats in Ledger Projection
+                            if (!string.IsNullOrWhiteSpace(evt.Metadata))
+                            {
+                                try
+                                {
+                                    using var doc = System.Text.Json.JsonDocument.Parse(evt.Metadata);
+                                    if (doc.RootElement.TryGetProperty("TotalRefunded", out var refProp) && refProp.TryGetDecimal(out var refundAmt) && refundAmt > 0)
+                                    {
+                                        userStats.PaymentsTotal -= refundAmt;
+                                        branchStats.PaymentsTotal -= refundAmt;
+
+                                        string refMethod = doc.RootElement.TryGetProperty("RefundMethod", out var rmProp) ? (rmProp.GetString() ?? "Cash") : "Cash";
+                                        bool isCashRefund = refMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0;
+                                        if (isCashRefund)
+                                        {
+                                            userStats.PaymentsCashTotal -= refundAmt;
+                                            branchStats.PaymentsCashTotal -= refundAmt;
+                                        }
+                                        else
+                                        {
+                                            userStats.PaymentsOnlineTotal -= refundAmt;
+                                            branchStats.PaymentsOnlineTotal -= refundAmt;
+                                            if (userStats.PaymentsOnlineCount > 0) userStats.PaymentsOnlineCount--;
+                                            if (branchStats.PaymentsOnlineCount > 0) branchStats.PaymentsOnlineCount--;
+                                        }
+                                    }
+                                }
+                                catch {}
+                            }
+
                             updated = true;
                             break;
 

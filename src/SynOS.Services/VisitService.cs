@@ -1324,6 +1324,7 @@ namespace SynOS.Services
 
             var invoice = visit.Invoices.FirstOrDefault();
             decimal totalRefunded = 0m;
+            string refundMethod = "None";
             if (invoice != null)
             {
                 invoice.Status = "Cancelled";
@@ -1333,9 +1334,10 @@ namespace SynOS.Services
                 if (netPaid > 0)
                 {
                     totalRefunded = netPaid;
-                    var refundMethod = !string.IsNullOrWhiteSpace(cancelDto.RefundMethod) 
-                        ? cancelDto.RefundMethod 
-                        : "Cash Refund";
+                    var firstPayment = invoice.Payments.FirstOrDefault(p => p.Amount > 0);
+                    refundMethod = !string.IsNullOrWhiteSpace(cancelDto.RefundMethod) 
+                        ? (cancelDto.RefundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? "Cash" : "UPI") 
+                        : (firstPayment?.Method ?? "Cash");
 
                     var refundPayment = new Payment
                     {
@@ -1399,7 +1401,14 @@ namespace SynOS.Services
                 true, null, null,
                 TimelineVisibility.Surface,
                 visit.VisitId,
-                JsonSerializer.Serialize(new { PatientName = patientName, ActorName = actorName, Status = "Cancelled", TotalRefunded = totalRefunded, Reason = cancelDto.Reason })
+                JsonSerializer.Serialize(new { 
+                    PatientName = patientName, 
+                    ActorName = actorName, 
+                    Status = "Cancelled", 
+                    TotalRefunded = totalRefunded, 
+                    RefundMethod = refundMethod,
+                    Reason = cancelDto.Reason 
+                })
             );
 
             return cancellation;

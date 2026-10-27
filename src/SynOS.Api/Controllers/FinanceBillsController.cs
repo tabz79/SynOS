@@ -737,7 +737,6 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("cancellations")]
-        [Authorize(Policy = "FinancePolicy")]
         public async Task<ActionResult<IEnumerable<object>>> GetVisitCancellations(
             [FromQuery] Guid? branchId = null,
             [FromQuery] DateTime? startDate = null,
@@ -812,11 +811,12 @@ namespace SynOS.Api.Controllers
             var result = list.Select(c =>
             {
                 var visit = c.Visit;
-                var invoice = visit?.Invoices.FirstOrDefault();
-                var payments = invoice?.Payments ?? new List<Payment>();
+                var invoices = visit?.Invoices ?? new List<Invoice>();
+                var payments = invoices.SelectMany(i => i.Payments).ToList();
                 var totalPaid = payments.Where(p => p.Amount > 0).Sum(p => p.Amount);
                 var refunds = payments.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
-                var refundMethod = payments.FirstOrDefault(p => p.Amount < 0)?.Method ?? (refunds > 0 ? "Cash Refund" : "None");
+                var refundMethod = payments.FirstOrDefault(p => p.Amount < 0)?.Method ?? (refunds > 0 ? "Cash" : "None");
+                var totalBilled = invoices.Sum(i => i.Total);
 
                 return new
                 {
@@ -833,7 +833,7 @@ namespace SynOS.Api.Controllers
                     BranchId = visit?.BranchId,
                     BranchName = visit?.Branch?.Name ?? "Main Facility",
                     ReferralPartnerName = visit?.ReferralPartner?.Name,
-                    TotalBilled = invoice?.Total ?? 0m,
+                    TotalBilled = totalBilled,
                     RefundedAmount = refunds > 0 ? refunds : (totalPaid > 0 ? totalPaid : 0m),
                     RefundMethod = refundMethod,
                     HasRefund = refunds > 0 || totalPaid > 0

@@ -131,10 +131,12 @@ namespace SynOS.Services
             }
 
             var payments = await paymentsQuery.ToListAsync();
-            decimal cashTotal = payments.Where(p => string.Equals(p.Method, "Cash", StringComparison.OrdinalIgnoreCase)).Sum(p => p.Amount);
-            var onlinePayments = payments.Where(p => !string.Equals(p.Method, "Cash", StringComparison.OrdinalIgnoreCase)).ToList();
+            Func<string?, bool> isCash = m => !string.IsNullOrEmpty(m) && m.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0;
+
+            decimal cashTotal = payments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
+            var onlinePayments = payments.Where(p => !isCash(p.Method)).ToList();
             decimal onlineTotal = onlinePayments.Sum(p => p.Amount);
-            int onlineCount = onlinePayments.Count;
+            int onlineCount = onlinePayments.Count(p => p.Amount > 0);
             decimal totalPayments = cashTotal + onlineTotal;
 
             // Direct ledger takes precedence for real-time accuracy (partial payments, refunds, cash desk)
