@@ -425,8 +425,8 @@ namespace SynOS.Api.Controllers
                 },
                 new {
                     slotId = "patient_thermal_prepaid_slip",
-                    module = "Counter",
-                    moduleCode = "reception",
+                    module = "Corporate B2B",
+                    moduleCode = "corporate",
                     slotName = "Prepaid Slip",
                     triggerDescription = "Printed on 80mm thermal POS printer for corporate B2B and prepaid partner visits (zero prices disclosed).",
                     assignedTemplateId = "template_thermal_prepaid_80mm",

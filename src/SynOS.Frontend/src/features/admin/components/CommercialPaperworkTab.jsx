@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
     FileSpreadsheet, 
     Printer, 
@@ -38,12 +38,41 @@ import { DEFAULT_DOCUMENT_SCHEMAS } from '@/features/finance/components/document
 import { DynamicInvoiceCanvas } from '@/features/finance/components/documents/DynamicInvoiceCanvas';
 import { clearDocumentCache } from '@/features/finance/components/documents/DynamicDocumentRenderer';
 
+const getSlotsForCategory = (catId, list = []) => {
+    if (!list || list.length === 0) return [];
+    if (catId === 'all') return list;
+    if (catId === 'reception') {
+        return list.filter(m => m.slotId === 'patient_tax_invoice' || m.slotId === 'patient_thermal_receipt');
+    }
+    if (catId === 'corporate') {
+        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'corporate_b2b_invoice' || m.slotId === 'summary_corporate');
+    }
+    if (catId === 'insurance') {
+        return list.filter(m => m.slotId === 'insurance_tpa_claim' || m.slotId === 'summary_insurance');
+    }
+    if (catId === 'operations') {
+        return list.filter(m => [
+            'partner_b2b_invoice', 
+            'referral_payout_voucher', 
+            'outsourced_lab_manifest', 
+            'procurement_po', 
+            'warehouse_grn', 
+            'workforce_salary_slip', 
+            'finance_expense_voucher', 
+            'summary_bills_daybook', 
+            'summary_doctor_dues', 
+            'summary_outsource'
+        ].includes(m.slotId));
+    }
+    return list.filter(m => m.moduleCode === catId);
+};
+
 export const CommercialPaperworkTab = () => {
     const [studioTab, setStudioTab] = useState('matrix'); // 'matrix' | 'profile'
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
-    const [moduleFilter, setModuleFilter] = useState('all');
+    const [moduleFilter, setModuleFilter] = useState('reception');
     
     // Active Preview Slot (corresponds to slotId)
     const [previewSlotId, setPreviewSlotId] = useState('patient_tax_invoice');
@@ -485,11 +514,18 @@ export const CommercialPaperworkTab = () => {
         ]
     };
 
-    // Filter Mappings
-    const filteredMappings = mappings.filter(m => {
-        if (moduleFilter === 'all') return true;
-        return m.moduleCode === moduleFilter;
-    });
+    const handleCategoryChange = (newCatId) => {
+        setModuleFilter(newCatId);
+        const slots = getSlotsForCategory(newCatId, mappings);
+        if (slots.length > 0 && !slots.some(s => s.slotId === previewSlotId)) {
+            setPreviewSlotId(slots[0].slotId);
+        }
+    };
+
+    // Filter Mappings by Dedicated Billing Category
+    const filteredMappings = useMemo(() => {
+        return getSlotsForCategory(moduleFilter, mappings);
+    }, [moduleFilter, mappings]);
 
     return (
         <div className="space-y-6 animate-fadeIn text-xs">
@@ -587,33 +623,39 @@ export const CommercialPaperworkTab = () => {
                     {studioTab === 'matrix' && (
                         <div className="space-y-5">
                             
-                            {/* MODULE FILTER BAR */}
-                            <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border dark:border-zinc-800 border-zinc-200">
+                            {/* DEDICATED BILLING CATEGORY TABS */}
+                            <div className="flex flex-wrap items-center gap-2 p-1.5 bg-zinc-100 dark:bg-zinc-900/60 rounded-2xl border dark:border-zinc-800 border-zinc-200">
                                 {[
-                                    { id: 'all', label: 'All' },
-                                    { id: 'reception', label: 'Counter' },
-                                    { id: 'referral', label: 'Doctors' },
-                                    { id: 'corporate', label: 'Corporate' },
-                                    { id: 'insurance', label: 'Insurance' },
-                                    { id: 'outsource', label: 'Outsource' },
-                                    { id: 'inventory', label: 'Stores' },
-                                    { id: 'workforce', label: 'Staff' },
-                                    { id: 'finance', label: 'Expenses' },
-                                    { id: 'summary', label: 'Summaries' }
-                                ].map(mod => (
-                                    <button
-                                        key={mod.id}
-                                        type="button"
-                                        onClick={() => setModuleFilter(mod.id)}
-                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
-                                            moduleFilter === mod.id
-                                                ? 'bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-sm'
-                                                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300'
-                                        }`}
-                                    >
-                                        {mod.label}
-                                    </button>
-                                ))}
+                                    { id: 'reception', label: 'Direct / Standard Desk', badge: 'Standard' },
+                                    { id: 'corporate', label: 'Prepaid / Corporate B2B', badge: 'Prepaid' },
+                                    { id: 'insurance', label: 'Insurance / TPA', badge: 'TPA' },
+                                    { id: 'operations', label: 'Operations & Accounts', badge: 'Admin' },
+                                    { id: 'all', label: 'All Bill Formats', badge: 'All' }
+                                ].map(cat => {
+                                    const isActive = moduleFilter === cat.id;
+                                    const count = getSlotsForCategory(cat.id, mappings).length;
+                                    return (
+                                        <button
+                                            key={cat.id}
+                                            type="button"
+                                            onClick={() => handleCategoryChange(cat.id)}
+                                            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                                                isActive
+                                                    ? 'bg-synos-primary text-white shadow-sm'
+                                                    : 'bg-white dark:bg-zinc-950/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 border border-zinc-200/60 dark:border-zinc-800/60'
+                                            }`}
+                                        >
+                                            <span>{cat.label}</span>
+                                            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                                                isActive 
+                                                    ? 'bg-white/20 text-white' 
+                                                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
+                                            }`}>
+                                                {count}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
                             </div>
 
                             {/* ACTIVE DOCUMENT MODULAR BOXES MANAGER */}
@@ -828,7 +870,11 @@ export const CommercialPaperworkTab = () => {
                             {/* BILL FORMATS LIST */}
                             <div className="space-y-3 pt-2">
                                 <h4 className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                                    All Bill Formats ({filteredMappings.length})
+                                    {moduleFilter === 'reception' && 'Direct / Standard Desk Formats'}
+                                    {moduleFilter === 'corporate' && 'Prepaid / Corporate B2B Formats'}
+                                    {moduleFilter === 'insurance' && 'Insurance / TPA Formats'}
+                                    {moduleFilter === 'operations' && 'Operations & Accounts Formats'}
+                                    {moduleFilter === 'all' && 'All Bill Formats'} ({filteredMappings.length})
                                 </h4>
 
                                 <div className="space-y-3">
@@ -1272,13 +1318,22 @@ export const CommercialPaperworkTab = () => {
                                     key={slot.slotId}
                                     type="button"
                                     onClick={() => setPreviewSlotId(slot.slotId)}
-                                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer ${
+                                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer flex items-center gap-1.5 ${
                                         previewSlotId === slot.slotId
                                             ? 'bg-synos-primary text-white shadow-xs'
                                             : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
                                     }`}
                                 >
-                                    {slot.slotName.split('(')[0].trim()}
+                                    <span>{slot.slotName.split('(')[0].trim()}</span>
+                                    {slot.slotId.includes('thermal') ? (
+                                        <span className={`text-[8.5px] px-1 py-0.2 rounded font-mono font-bold ${
+                                            previewSlotId === slot.slotId ? 'bg-white/20 text-white' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                                        }`}>80mm</span>
+                                    ) : (
+                                        <span className={`text-[8.5px] px-1 py-0.2 rounded font-mono font-bold ${
+                                            previewSlotId === slot.slotId ? 'bg-white/20 text-white' : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
+                                        }`}>A4</span>
+                                    )}
                                 </button>
                             ))}
                         </div>
