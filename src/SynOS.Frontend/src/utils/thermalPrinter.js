@@ -79,6 +79,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
             if (cachedLogo && !labSettings.logoUrl) {
                 labSettings.logoUrl = cachedLogo;
             }
+            const cachedQr = window.localStorage.getItem('synos_custom_qr_image');
+            if (cachedQr && !labSettings.customQrImage) {
+                labSettings.customQrImage = cachedQr;
+            }
         } catch (e) {
             console.warn("Could not load stored thermal schema/settings", e);
         }
@@ -346,16 +350,26 @@ export function generateThermalInvoiceHtml(payload = {}) {
         const labLegal = boxes.header?.fields?.legalName?.value || labSettings.labTradeName || 'SynOS Lab';
         const netAmt = normalizedData.financial.balanceDue > 0 ? normalizedData.financial.balanceDue : normalizedData.financial.totalAmount;
         const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(labLegal)}&am=${encodeURIComponent(netAmt.toFixed(2))}&cu=INR`;
-        const qrSvg = renderQrSvgSync(upiUrl, 68);
+        
+        const effectiveQrImage = boxes.bankAndUpi.customQrImage 
+            || labSettings.customQrImage 
+            || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_custom_qr_image') : "");
+
+        const qrRenderHtml = effectiveQrImage 
+            ? `<img src="${effectiveQrImage}" style="max-height: 68px; max-width: 68px; object-fit: contain; filter: grayscale(100%) contrast(200%); image-rendering: pixelated;" alt="UPI QR" />`
+            : renderQrSvgSync(upiUrl, 68);
+
+        const qrTitle = boxes.bankAndUpi.title || "SCAN QR TO PAY";
+        const qrSubtitle = boxes.bankAndUpi.subtitle || "Instant Bharat UPI";
 
         upiQrHtml = `
             <div style="border: 1px dashed #000000; padding: 4px; margin-bottom: 5px; text-align: center;">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    ${qrSvg}
+                    ${qrRenderHtml}
                     <div style="text-align: left; color: #000000;">
-                        <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em;">SCAN QR TO PAY</div>
+                        <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em;">${qrTitle}</div>
                         <div style="font-size: 8.5px; font-family: monospace; font-weight: 700; margin-top: 1px; word-break: break-all;">${upiId}</div>
-                        <div style="font-size: 8px; font-weight: 700; margin-top: 1px;">Instant Bharat UPI</div>
+                        <div style="font-size: 8px; font-weight: 700; margin-top: 1px;">${qrSubtitle}</div>
                     </div>
                 </div>
             </div>
@@ -469,6 +483,10 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
             const cachedLogo = window.localStorage.getItem('synos_lab_logo');
             if (cachedLogo && !labSettings.logoUrl) {
                 labSettings.logoUrl = cachedLogo;
+            }
+            const cachedQr = window.localStorage.getItem('synos_custom_qr_image');
+            if (cachedQr && !labSettings.customQrImage) {
+                labSettings.customQrImage = cachedQr;
             }
         } catch (e) {
             console.warn("Could not load stored prepaid thermal schema/settings", e);

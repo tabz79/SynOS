@@ -902,12 +902,15 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
     }
 
     // 3. BANK & UPI DETAILS (Merged from lab / stationery profile)
-    if (boxes.bankAndUpi?.fields) {
-        if (boxes.bankAndUpi.fields.bankName) boxes.bankAndUpi.fields.bankName.value = settings.bankName || boxes.bankAndUpi.fields.bankName.value;
-        if (boxes.bankAndUpi.fields.accountNumber) boxes.bankAndUpi.fields.accountNumber.value = settings.accountNumber || boxes.bankAndUpi.fields.accountNumber.value;
-        if (boxes.bankAndUpi.fields.ifsc) boxes.bankAndUpi.fields.ifsc.value = settings.ifscCode || boxes.bankAndUpi.fields.ifsc.value;
-        if (boxes.bankAndUpi.fields.branch) boxes.bankAndUpi.fields.branch.value = settings.branch || boxes.bankAndUpi.fields.branch.value;
-        if (boxes.bankAndUpi.fields.upiId) boxes.bankAndUpi.fields.upiId.value = settings.upiId || boxes.bankAndUpi.fields.upiId.value;
+    if (boxes.bankAndUpi) {
+        if (settings.customQrImage) boxes.bankAndUpi.customQrImage = settings.customQrImage;
+        if (boxes.bankAndUpi.fields) {
+            if (boxes.bankAndUpi.fields.bankName) boxes.bankAndUpi.fields.bankName.value = settings.bankName || boxes.bankAndUpi.fields.bankName.value;
+            if (boxes.bankAndUpi.fields.accountNumber) boxes.bankAndUpi.fields.accountNumber.value = settings.accountNumber || boxes.bankAndUpi.fields.accountNumber.value;
+            if (boxes.bankAndUpi.fields.ifsc) boxes.bankAndUpi.fields.ifsc.value = settings.ifscCode || boxes.bankAndUpi.fields.ifsc.value;
+            if (boxes.bankAndUpi.fields.branch) boxes.bankAndUpi.fields.branch.value = settings.branch || boxes.bankAndUpi.fields.branch.value;
+            if (boxes.bankAndUpi.fields.upiId) boxes.bankAndUpi.fields.upiId.value = settings.upiId || boxes.bankAndUpi.fields.upiId.value;
+        }
     }
 
     // 4. TERMS AND SIGNATORY

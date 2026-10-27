@@ -115,6 +115,7 @@ export const CommercialPaperworkTab = () => {
         accountHolderName: "SynOS Healthcare Diagnostic Services",
         upiId: "synoslab@hdfcbank",
         enableUpiQr: true,
+        customQrImage: "",
         defaultLetterheadMode: "digital", // "digital" | "preprinted"
         topMarginMm: 40,
         bottomMarginMm: 15,
@@ -139,6 +140,7 @@ export const CommercialPaperworkTab = () => {
             ]);
 
             const cachedLogo = typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : null;
+            const cachedQr = typeof window !== 'undefined' ? window.localStorage?.getItem('synos_custom_qr_image') : null;
             const cachedPrinter = typeof window !== 'undefined' ? window.localStorage?.getItem('synos_receipt_printer_name') : null;
 
             if (stationeryRes && typeof stationeryRes === 'object') {
@@ -146,12 +148,14 @@ export const CommercialPaperworkTab = () => {
                     ...prev, 
                     ...stationeryRes,
                     logoUrl: stationeryRes.logoUrl || cachedLogo || prev.logoUrl || "",
+                    customQrImage: stationeryRes.customQrImage || cachedQr || prev.customQrImage || "",
                     receiptPrinterName: stationeryRes.receiptPrinterName || cachedPrinter || prev.receiptPrinterName || ""
                 }));
-            } else if (cachedLogo || cachedPrinter) {
+            } else if (cachedLogo || cachedQr || cachedPrinter) {
                 setSettings(prev => ({
                     ...prev,
                     logoUrl: cachedLogo || prev.logoUrl || "",
+                    customQrImage: cachedQr || prev.customQrImage || "",
                     receiptPrinterName: cachedPrinter || prev.receiptPrinterName || ""
                 }));
             }
@@ -197,6 +201,11 @@ export const CommercialPaperworkTab = () => {
                         window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
                     } else {
                         window.localStorage.removeItem('synos_lab_logo');
+                    }
+                    if (settings.customQrImage) {
+                        window.localStorage.setItem('synos_custom_qr_image', settings.customQrImage);
+                    } else {
+                        window.localStorage.removeItem('synos_custom_qr_image');
                     }
                     if (settings.receiptPrinterName) {
                         window.localStorage.setItem('synos_receipt_printer_name', settings.receiptPrinterName);
@@ -250,6 +259,39 @@ export const CommercialPaperworkTab = () => {
         try {
             if (typeof window !== 'undefined' && window.localStorage) {
                 window.localStorage.removeItem('synos_lab_logo');
+            }
+        } catch {}
+    };
+
+    const handleQrUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 3 * 1024 * 1024) {
+            alert("QR screenshot or image must be under 3MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target.result;
+            handleSettingChange('customQrImage', dataUrl);
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.setItem('synos_custom_qr_image', dataUrl);
+                }
+            } catch (err) {
+                console.warn("Could not cache QR in localStorage:", err);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveQr = () => {
+        handleSettingChange('customQrImage', '');
+        try {
+            if (typeof window !== 'undefined' && window.localStorage) {
+                window.localStorage.removeItem('synos_custom_qr_image');
             }
         } catch {}
     };
@@ -804,6 +846,42 @@ export const CommercialPaperworkTab = () => {
                                                             </div>
                                                         )}
 
+                                                        {/* Custom UPI QR Shortcut in Bank & UPI Box */}
+                                                        {boxKey === 'bankAndUpi' && (
+                                                            <div className="p-2 mb-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 flex items-center justify-between gap-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-8 h-8 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                                                                        {settings.customQrImage ? (
+                                                                            <img src={settings.customQrImage} alt="Custom QR" className="w-full h-full object-contain p-0.5" />
+                                                                        ) : (
+                                                                            <QrCode size={15} className="text-zinc-400" />
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-[11px] font-black text-zinc-900 dark:text-zinc-100 block leading-tight">Payment QR</span>
+                                                                        <span className="text-[9px] text-zinc-500">{settings.customQrImage ? "Custom Screenshot" : "Dynamic Bharat UPI"}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1.5">
+                                                                    <label className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs active:scale-95">
+                                                                        <Upload size={11} />
+                                                                        <span>{settings.customQrImage ? "Change" : "Upload QR"}</span>
+                                                                        <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
+                                                                    </label>
+                                                                    {settings.customQrImage && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={handleRemoveQr}
+                                                                            className="p-1 rounded-md text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer"
+                                                                            title="Reset to dynamic QR"
+                                                                        >
+                                                                            <Trash2 size={12} />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
                                                         {/* Fields */}
                                                         {box.fields && (
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -823,7 +901,7 @@ export const CommercialPaperworkTab = () => {
                                                             </div>
                                                         )}
 
-                                                        {/* Table Columns */}
+                                                         {/* Table Columns */}
                                                         {box.columns && (() => {
                                                             const enabledCount = Object.values(box.columns).filter(c => c.enabled).length;
                                                             const isOverBudget = enabledCount > 6;
@@ -1233,6 +1311,55 @@ export const CommercialPaperworkTab = () => {
                                             placeholder="synoslab@hdfcbank"
                                             className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-mono font-bold text-indigo-700 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                         />
+                                    </div>
+
+                                    {/* Dedicated UPI App Screenshot / Custom QR Upload Box */}
+                                    <div className="sm:col-span-2 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col sm:flex-row items-center gap-4">
+                                        <div className="w-20 h-20 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                                            {settings.customQrImage ? (
+                                                <img src={settings.customQrImage} alt="Custom UPI QR" className="w-full h-full object-contain p-1" />
+                                            ) : (
+                                                <div className="text-center p-1">
+                                                    <QrCode size={24} className="text-zinc-400 mx-auto mb-1" />
+                                                    <span className="text-[7.5px] font-bold text-zinc-400 uppercase block">Dynamic QR</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 space-y-1 text-center sm:text-left">
+                                            <div className="flex items-center justify-center sm:justify-start gap-2">
+                                                <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
+                                                    UPI App QR Code / Screenshot
+                                                </h4>
+                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${settings.customQrImage ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                                                    {settings.customQrImage ? "Custom Upload Active" : "Dynamic Bharat UPI"}
+                                                </span>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-500 leading-relaxed">
+                                                Take a screenshot from PhonePe, Google Pay, Paytm, BHIM, or your bank UPI app and upload it here. This exact QR image will be formatted for both 80mm thermal printers and A4 invoices.
+                                            </p>
+                                            <div className="flex items-center gap-2 justify-center sm:justify-start pt-1">
+                                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer shadow-xs active:scale-95 transition-all">
+                                                    <Upload size={13} />
+                                                    <span>{settings.customQrImage ? "Change QR Screenshot" : "Upload UPI App Screenshot"}</span>
+                                                    <input 
+                                                        type="file" 
+                                                        accept="image/png,image/jpeg,image/webp,image/svg+xml" 
+                                                        onChange={handleQrUpload} 
+                                                        className="hidden" 
+                                                    />
+                                                </label>
+                                                {settings.customQrImage && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleRemoveQr}
+                                                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer active:scale-95 transition-all"
+                                                    >
+                                                        <Trash2 size={13} />
+                                                        <span>Reset to Auto Dynamic QR</span>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

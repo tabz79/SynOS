@@ -13,7 +13,8 @@ import {
     Sparkles,
     FileText,
     Building2,
-    Columns
+    Columns,
+    Upload
 } from 'lucide-react';
 
 const CanvasContext = createContext({ readOnly: false });
@@ -310,6 +311,64 @@ export const DynamicInvoiceCanvas = ({
     const { boxes } = schema;
     const isThermal = schema.isThermal || letterheadMode === 'raw_thermal' || schema.paperSize === 'thermal80';
     const effectiveLogo = labSettings?.logoUrl || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : null);
+    const effectiveQrImage = boxes.bankAndUpi?.customQrImage || labSettings?.customQrImage || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_custom_qr_image') : null);
+
+    const handleQrUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (file.size > 3 * 1024 * 1024) {
+            alert("QR screenshot or image must be under 3MB.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const dataUrl = event.target.result;
+            const next = {
+                ...schema,
+                boxes: {
+                    ...boxes,
+                    bankAndUpi: {
+                        ...boxes.bankAndUpi,
+                        customQrImage: dataUrl
+                    }
+                }
+            };
+            updateSchema(next);
+            if (onUpdateLabSetting) {
+                onUpdateLabSetting('customQrImage', dataUrl);
+            }
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.setItem('synos_custom_qr_image', dataUrl);
+                }
+            } catch (storageErr) {
+                console.warn("Storage sync warning for QR:", storageErr);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveQr = () => {
+        const next = {
+            ...schema,
+            boxes: {
+                ...boxes,
+                bankAndUpi: {
+                    ...boxes.bankAndUpi,
+                    customQrImage: ""
+                }
+            }
+        };
+        updateSchema(next);
+        if (onUpdateLabSetting) {
+            onUpdateLabSetting('customQrImage', "");
+        }
+        try {
+            if (typeof window !== 'undefined' && window.localStorage) {
+                window.localStorage.removeItem('synos_custom_qr_image');
+            }
+        } catch {}
+    };
 
     const [showColumnManager, setShowColumnManager] = useState(false);
     const [newColName, setNewColName] = useState("");
@@ -1507,46 +1566,148 @@ export const DynamicInvoiceCanvas = ({
             {boxes.bankAndUpi?.enabled && (
                 <ModularBoxWrapper 
                     boxId="bankAndUpi" 
-                    boxName={boxes.bankAndUpi.name || "Bank Wire & Dynamic UPI"}
+                    boxName={boxes.bankAndUpi.name || (isThermal ? "Instant Payment QR" : "Bank Wire & Dynamic UPI")}
                     onDeleteBox={() => deleteBox('bankAndUpi')}
                     onAddCustomLine={(line) => addCustomLine('bankAndUpi', line)}
+                    className="mt-2"
+                    extraToolbarActions={!readOnly && (
+                        <div className="flex items-center gap-1">
+                            <label className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-0.5 cursor-pointer">
+                                <Upload size={10} />
+                                <span>{effectiveQrImage ? 'Change QR' : 'Upload QR'}</span>
+                                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
+                            </label>
+                            {effectiveQrImage && (
+                                <button
+                                    type="button"
+                                    onClick={handleRemoveQr}
+                                    className="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-0.5 cursor-pointer"
+                                    title="Reset to dynamic QR"
+                                >
+                                    <X size={10} /> Reset QR
+                                </button>
+                            )}
+                        </div>
+                    )}
                 >
                     {isThermal ? (
-                        <div className="border border-dashed border-black p-1 mb-1 text-center">
+                        <div className="border border-dashed border-black p-1.5 mb-1 text-center">
                             <div className="flex items-center justify-center gap-2">
-                                {boxes.bankAndUpi.fields?.showQr?.enabled && (
-                                    <img 
-                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
-                                        alt="UPI QR"
-                                        className="w-16 h-16 object-contain"
-                                    />
+                                {boxes.bankAndUpi.fields?.showQr?.enabled !== false && (
+                                    <div className="relative group/qr shrink-0">
+                                        {effectiveQrImage ? (
+                                            <img 
+                                                src={effectiveQrImage} 
+                                                alt="Custom UPI QR" 
+                                                className="w-16 h-16 object-contain rounded border border-zinc-200 filter contrast-125" 
+                                            />
+                                        ) : (
+                                            <img 
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
+                                                alt="UPI QR"
+                                                className="w-16 h-16 object-contain"
+                                            />
+                                        )}
+                                        {!readOnly && (
+                                            <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/qr:opacity-100 flex flex-col items-center justify-center text-white text-[8px] font-bold rounded cursor-pointer transition-opacity">
+                                                <Upload size={12} className="mb-0.5" />
+                                                <span>{effectiveQrImage ? "Change" : "Upload"}</span>
+                                                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
+                                            </label>
+                                        )}
+                                    </div>
                                 )}
-                                <div className="text-left text-black">
-                                    <div className="text-[9.5px] font-black uppercase tracking-wider">SCAN QR TO PAY</div>
-                                    <div className="text-[8.5px] font-mono font-bold">{labSettings.upiId || 'synoslab@hdfcbank'}</div>
-                                    <div className="text-[8px] font-bold">Instant Bharat UPI</div>
+                                <div className="text-left text-black space-y-0.5 flex-1 min-w-0">
+                                    <EditableField 
+                                        value={boxes.bankAndUpi.title || "SCAN QR TO PAY"}
+                                        onSave={(_, val) => {
+                                            const next = {
+                                                ...schema,
+                                                boxes: {
+                                                    ...boxes,
+                                                    bankAndUpi: { ...boxes.bankAndUpi, title: val }
+                                                }
+                                            };
+                                            updateSchema(next);
+                                        }}
+                                        onDelete={() => deleteBox('bankAndUpi')}
+                                        valueClassName="text-[9.5px] font-black uppercase tracking-wider text-black block leading-tight"
+                                    />
+                                    <EditableField 
+                                        value={boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank'}
+                                        onSave={(_, val) => {
+                                            updateField('bankAndUpi', 'upiId', undefined, val);
+                                            if (onUpdateLabSetting) onUpdateLabSetting('upiId', val);
+                                        }}
+                                        onDelete={() => deleteField('bankAndUpi', 'upiId')}
+                                        valueClassName="text-[8.5px] font-mono font-bold text-black block break-all leading-tight"
+                                    />
+                                    <EditableField 
+                                        value={boxes.bankAndUpi.subtitle || "Instant Bharat UPI"}
+                                        onSave={(_, val) => {
+                                            const next = {
+                                                ...schema,
+                                                boxes: {
+                                                    ...boxes,
+                                                    bankAndUpi: { ...boxes.bankAndUpi, subtitle: val }
+                                                }
+                                            };
+                                            updateSchema(next);
+                                        }}
+                                        onDelete={() => {
+                                            const next = {
+                                                ...schema,
+                                                boxes: {
+                                                    ...boxes,
+                                                    bankAndUpi: { ...boxes.bankAndUpi, subtitle: "" }
+                                                }
+                                            };
+                                            updateSchema(next);
+                                        }}
+                                        valueClassName="text-[8px] font-bold text-black block leading-tight"
+                                    />
                                 </div>
                             </div>
                         </div>
                     ) : (
                         <div className="p-3 rounded-lg border border-zinc-200 mb-3 flex gap-3 items-center bg-zinc-50/30">
-                            {/* Dynamic UPI QR Code */}
+                            {/* Dynamic or Custom UPI QR Code */}
                             {boxes.bankAndUpi.fields?.showQr?.enabled && (
-                                <div className="w-20 h-20 bg-white p-1 rounded border border-zinc-300 flex flex-col items-center justify-center shrink-0">
+                                <div className="relative group/qr w-20 h-20 bg-white p-1 rounded border border-zinc-300 flex flex-col items-center justify-center shrink-0">
                                     <img 
-                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
+                                        src={effectiveQrImage || `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
                                         alt="UPI QR"
                                         className="w-16 h-16 object-contain"
                                     />
-                                    <span className="text-[7px] font-extrabold uppercase text-zinc-500 mt-0.5">Scan to Pay</span>
+                                    <span className="text-[7px] font-extrabold uppercase text-zinc-500 mt-0.5">
+                                        {effectiveQrImage ? "Custom QR" : "Scan to Pay"}
+                                    </span>
+                                    {!readOnly && (
+                                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/qr:opacity-100 flex flex-col items-center justify-center text-white text-[8px] font-bold rounded cursor-pointer transition-opacity">
+                                            <Upload size={12} className="mb-0.5" />
+                                            <span>{effectiveQrImage ? "Change" : "Upload"}</span>
+                                            <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
+                                        </label>
+                                    )}
                                 </div>
                             )}
 
                             {/* Bank Text */}
                             <div className="space-y-0.5 text-[10px] text-zinc-600 flex-1 min-w-0">
-                                <strong className="text-zinc-900 uppercase block tracking-wider text-[10px]">
-                                    {boxes.bankAndUpi.title || "Bank Transfer Details"}
-                                </strong>
+                                <EditableField 
+                                    value={boxes.bankAndUpi.title || "Bank Transfer Details"}
+                                    onSave={(_, val) => {
+                                        const next = {
+                                            ...schema,
+                                            boxes: {
+                                                ...boxes,
+                                                bankAndUpi: { ...boxes.bankAndUpi, title: val }
+                                            }
+                                        };
+                                        updateSchema(next);
+                                    }}
+                                    valueClassName="font-bold text-zinc-900 uppercase block tracking-wider text-[10px]"
+                                />
                                 {boxes.bankAndUpi.fields?.bankName?.enabled && (
                                     <EditableField 
                                         label="Bank:"

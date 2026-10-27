@@ -319,6 +319,7 @@ namespace SynOS.Api.Controllers
                 ["accountHolderName"] = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
                 ["upiId"] = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
                 ["enableUpiQr"] = true,
+                ["customQrImage"] = "",
                 ["defaultLetterheadMode"] = "digital", // "digital" | "preprinted"
                 ["topMarginMm"] = 40,
                 ["bottomMarginMm"] = 15,
@@ -1398,6 +1399,7 @@ namespace SynOS.Api.Controllers
             public string AccountHolderName { get; set; } = "SynOS Healthcare Diagnostic Services";
             public string UpiId { get; set; } = "synoslab@hdfcbank";
             public bool EnableUpiQr { get; set; } = true;
+            public string CustomQrImage { get; set; } = "";
             public string DefaultLetterheadMode { get; set; } = "digital";
             public int TopMarginMm { get; set; } = 40;
             public int BottomMarginMm { get; set; } = 15;
@@ -1441,6 +1443,7 @@ namespace SynOS.Api.Controllers
                     if (root.TryGetProperty("branch", out v) && v.GetString() is string s11 && !string.IsNullOrEmpty(s11)) res.Branch = s11;
                     if (root.TryGetProperty("accountHolderName", out v) && v.GetString() is string s12 && !string.IsNullOrEmpty(s12)) res.AccountHolderName = s12;
                     if (root.TryGetProperty("upiId", out v) && v.GetString() is string s13 && !string.IsNullOrEmpty(s13)) res.UpiId = s13;
+                    if (root.TryGetProperty("customQrImage", out v) && v.GetString() is string sQr && !string.IsNullOrEmpty(sQr)) res.CustomQrImage = sQr;
                     if (root.TryGetProperty("enableUpiQr", out v) && v.ValueKind == System.Text.Json.JsonValueKind.True) res.EnableUpiQr = true;
                     if (root.TryGetProperty("defaultLetterheadMode", out v) && v.GetString() is string s14 && !string.IsNullOrEmpty(s14)) res.DefaultLetterheadMode = s14;
                     if (root.TryGetProperty("topMarginMm", out v) && v.TryGetInt32(out var num)) res.TopMarginMm = num;

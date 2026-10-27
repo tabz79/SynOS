@@ -234,6 +234,8 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Instant Payment QR',
                 enabled: true,
                 title: 'Scan QR to Pay',
+                subtitle: 'Instant Bharat UPI',
+                customQrImage: '',
                 fields: {
                     showQr: { id: 'showQr', enabled: true, label: 'UPI QR', value: true },
                     upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'synoslab@hdfcbank' }
