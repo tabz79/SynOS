@@ -1462,48 +1462,72 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('financialSummary')}
                     onAddCustomLine={(line) => addCustomLine('financialSummary', line)}
                 >
-                    <div className={isThermal ? "border-b-[1.5px] border-black pb-1 mb-1 text-[11px] text-black w-full" : `bg-zinc-50 rounded-lg border border-zinc-300 p-3 mb-3 space-y-1.5 text-[11px] ${isThermal ? 'w-full' : 'max-w-sm ml-auto'}`}>
-                        {Object.entries(boxes.financialSummary.fields || {}).map(([key, field]) => {
-                            if (!field.enabled) return null;
-                            const isNet = key === 'totalAmount' || key === 'netSalary';
-                            const isDue = key === 'balanceDue';
-                            return (
-                                <div key={key} className={`flex justify-between items-center ${
-                                    isThermal 
-                                        ? (isNet ? 'border-y border-dashed border-black py-0.5 my-0.5 font-black text-[13.5px]' : 'py-0 font-bold text-[10.5px]') 
-                                        : (isNet ? 'border-t-2 border-zinc-900 pt-1.5 font-black text-sm' : 'py-0.5')
-                                } ${!isThermal && isDue ? 'border-t border-zinc-200 pt-1 font-black text-rose-600' : ''}`}>
-                                    <EditableField 
-                                        label={field.label ? `${field.label}:` : ""}
-                                        value={field.value}
-                                        isBlock={true}
-                                        onSave={(lbl, val) => updateField('financialSummary', key, lbl, val)}
-                                        onDelete={() => deleteField('financialSummary', key)}
-                                        labelClassName={isThermal ? (isNet ? 'text-black font-black uppercase' : 'text-black font-normal') : "text-zinc-600 font-medium"}
-                                        valueClassName={isThermal ? "font-mono font-black text-black" : `font-mono font-bold ${isDue ? 'text-rose-600' : 'text-zinc-900'}`}
-                                    />
-                                </div>
-                            );
-                        })}
-
-                        {/* Custom Lines in Financial Box */}
-                        {boxes.financialSummary.customLines?.map(line => (
-                            <div key={line.id} className="flex justify-between items-center py-0.5 border-t border-dashed border-zinc-200">
+                    {isThermal && (boxes.financialSummary.isPrepaidNotice || boxes.financialSummary.fields?.counterPayable || schema.slotId === 'patient_thermal_prepaid_slip' || boxes.financialSummary.title?.includes('REFERRAL PARTNER')) ? (
+                        <div className="border-[1.5px] border-black p-1.5 mb-1.5 text-center bg-white">
+                            <div className="text-[10px] font-black uppercase tracking-wider text-black">
                                 <EditableField 
-                                    label={line.label ? `${line.label}:` : ""}
-                                    value={line.value}
-                                    isBlock={true}
-                                    onSave={(lbl, val) => {
-                                        const nextLines = boxes.financialSummary.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
-                                        updateSchema({ ...schema, boxes: { ...boxes, financialSummary: { ...boxes.financialSummary, customLines: nextLines } } });
-                                    }}
-                                    onDelete={() => deleteCustomLine('financialSummary', line.id)}
-                                    labelClassName="text-zinc-600 font-medium"
-                                    valueClassName="font-mono font-bold text-zinc-900"
+                                    value={boxes.financialSummary.title || "BILLED TO REFERRAL PARTNER ACCOUNT"}
+                                    onSave={(_, val) => updateSchema({ ...schema, boxes: { ...boxes, financialSummary: { ...boxes.financialSummary, title: val } } })}
+                                    onDelete={() => deleteBox('financialSummary')}
+                                    valueClassName="text-[10px] font-black uppercase tracking-wider text-black block text-center"
                                 />
                             </div>
-                        ))}
-                    </div>
+                            {boxes.financialSummary.fields?.counterPayable?.enabled !== false && (
+                                <div className="text-[9.5px] font-bold text-black mt-0.5">
+                                    <EditableField 
+                                        label={boxes.financialSummary.fields?.counterPayable?.label ? `${boxes.financialSummary.fields.counterPayable.label}:` : "Amount Payable at Counter:"}
+                                        value={boxes.financialSummary.fields?.counterPayable?.value || "₹0.00 (Prepaid)"}
+                                        onSave={(lbl, val) => updateField('financialSummary', 'counterPayable', lbl, val)}
+                                        onDelete={() => deleteField('financialSummary', 'counterPayable')}
+                                        valueClassName="font-bold text-black font-mono text-[9.5px]"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className={isThermal ? "border-b-[1.5px] border-black pb-1 mb-1 text-[11px] text-black w-full" : `bg-zinc-50 rounded-lg border border-zinc-300 p-3 mb-3 space-y-1.5 text-[11px] ${isThermal ? 'w-full' : 'max-w-sm ml-auto'}`}>
+                            {Object.entries(boxes.financialSummary.fields || {}).map(([key, field]) => {
+                                if (!field.enabled) return null;
+                                const isNet = key === 'totalAmount' || key === 'netSalary';
+                                const isDue = key === 'balanceDue';
+                                return (
+                                    <div key={key} className={`flex justify-between items-center ${
+                                        isThermal 
+                                            ? (isNet ? 'border-y border-dashed border-black py-0.5 my-0.5 font-black text-[13.5px]' : 'py-0 font-bold text-[10.5px]') 
+                                            : (isNet ? 'border-t-2 border-zinc-900 pt-1.5 font-black text-sm' : 'py-0.5')
+                                    } ${!isThermal && isDue ? 'border-t border-zinc-200 pt-1 font-black text-rose-600' : ''}`}>
+                                        <EditableField 
+                                            label={field.label ? `${field.label}:` : ""}
+                                            value={field.value}
+                                            isBlock={true}
+                                            onSave={(lbl, val) => updateField('financialSummary', key, lbl, val)}
+                                            onDelete={() => deleteField('financialSummary', key)}
+                                            labelClassName={isThermal ? (isNet ? 'text-black font-black uppercase' : 'text-black font-normal') : "text-zinc-600 font-medium"}
+                                            valueClassName={isThermal ? "font-mono font-black text-black" : `font-mono font-bold ${isDue ? 'text-rose-600' : 'text-zinc-900'}`}
+                                        />
+                                    </div>
+                                );
+                            })}
+
+                            {/* Custom Lines in Financial Box */}
+                            {boxes.financialSummary.customLines?.map(line => (
+                                <div key={line.id} className="flex justify-between items-center py-0.5 border-t border-dashed border-zinc-200">
+                                    <EditableField 
+                                        label={line.label ? `${line.label}:` : ""}
+                                        value={line.value}
+                                        isBlock={true}
+                                        onSave={(lbl, val) => {
+                                            const nextLines = boxes.financialSummary.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
+                                            updateSchema({ ...schema, boxes: { ...boxes, financialSummary: { ...boxes.financialSummary, customLines: nextLines } } });
+                                        }}
+                                        onDelete={() => deleteCustomLine('financialSummary', line.id)}
+                                        labelClassName="text-zinc-600 font-medium"
+                                        valueClassName="font-mono font-bold text-zinc-900"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </ModularBoxWrapper>
             )}
 

@@ -300,6 +300,25 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                     description: it.testName || it.name || it.description || 'Test'
                 }));
             }
+
+            if (boxes.billerDetails?.fields) {
+                const billerObj = liveData.biller || liveData.visit?.biller || {};
+                const billerDisplay = liveData.billerName 
+                    || (typeof liveData.biller === 'string' ? liveData.biller : '')
+                    || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+                    || liveData.billedBy 
+                    || "Dr. Vasudeva Rao (admin)";
+
+                if (boxes.billerDetails.fields.billedBy) {
+                    boxes.billerDetails.fields.billedBy.value = billerDisplay;
+                }
+            }
+
+            if (boxes.financialSummary?.fields) {
+                if (boxes.financialSummary.fields.counterPayable) {
+                    boxes.financialSummary.fields.counterPayable.value = "Amount Payable at Counter: ₹0.00 (Prepaid)";
+                }
+            }
             break;
         }
 
@@ -915,7 +934,9 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
     // 4. TERMS AND SIGNATORY
     if (boxes.termsAndConditions) {
-        boxes.termsAndConditions.text = settings.termsAndConditions || boxes.termsAndConditions.text;
+        if (!baseSchema.isThermal) {
+            boxes.termsAndConditions.text = settings.termsAndConditions || boxes.termsAndConditions.text;
+        }
     }
     if (boxes.signatory) {
         boxes.signatory.title = settings.signatoryTitle || boxes.signatory.title;

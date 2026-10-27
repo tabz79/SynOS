@@ -498,6 +498,15 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     if (branchObj?.address) labSettings.address = branchObj.address;
     if (branchObj?.phone) labSettings.phone = branchObj.phone;
 
+    const billerObj = payload.biller || billingObj.biller || payload.visit?.biller || {};
+    const billerDisplay = payload.billerName 
+        || (typeof payload.biller === 'string' ? payload.biller : '')
+        || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+        || billingObj.billedBy 
+        || payload.visit?.billedBy 
+        || payload.billedBy 
+        || "Staff Desk";
+
     const allItems = ordersList.map((it, idx) => ({
         id: `r-${idx}`,
         index: idx + 1,
@@ -514,6 +523,9 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
             uhid: patientUhid,
             ageGender: `${patientAge ? `${patientAge}Y` : ''} / ${patientGender}`.trim(),
             phone: patientObj.phone || patientObj.mobile || ""
+        },
+        biller: {
+            billedBy: billerDisplay
         },
         referringDoctorName: doctorName,
         partnerName: sponsorName,
@@ -623,6 +635,24 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
         `;
     }
 
+    // C2. Biller / Desk Audit Details Box (NO DISCOUNT DISCLOSED ON PREPAID)
+    let billerHtml = "";
+    if (boxes.billerDetails?.enabled !== false) {
+        const bf = boxes.billerDetails?.fields || {};
+        const billedByVal = bf.billedBy?.value || billerDisplay;
+
+        billerHtml = `
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
+                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
+                    ${boxes.billerDetails?.title || 'BILLING DESK'}
+                </div>
+                <div style="font-size: 10px; line-height: 1.35; color: #000000;">
+                    <div>Billed by: <b style="font-weight: 900;">${billedByVal}</b></div>
+                </div>
+            </div>
+        `;
+    }
+
     // D. Investigation Items Table (NO AMOUNT COLUMN)
     let itemsTableHtml = "";
     if (boxes.itemsTable?.enabled) {
@@ -650,12 +680,19 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     }
 
     // E. Prepaid Account Notice Banner (ZERO COUNTER PAYMENT)
-    const prepaidNoticeHtml = `
-        <div style="border: 1.5px solid #000000; padding: 4px; margin-bottom: 5px; text-align: center; background: #ffffff;">
-            <div style="font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase;">BILLED TO REFERRAL PARTNER ACCOUNT</div>
-            <div style="font-size: 9.5px; font-weight: 800; margin-top: 1px;">Amount Payable at Counter: ₹0.00 (Prepaid)</div>
-        </div>
-    `;
+    let prepaidNoticeHtml = "";
+    if (boxes.financialSummary?.enabled !== false) {
+        const ff = boxes.financialSummary?.fields || {};
+        const title = boxes.financialSummary?.title || "BILLED TO REFERRAL PARTNER ACCOUNT";
+        const counterPayable = ff.counterPayable?.value || "Amount Payable at Counter: ₹0.00 (Prepaid)";
+
+        prepaidNoticeHtml = `
+            <div style="border: 1.5px solid #000000; padding: 4px; margin-bottom: 5px; text-align: center; background: #ffffff;">
+                <div style="font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase;">${title}</div>
+                <div style="font-size: 9.5px; font-weight: 800; margin-top: 1px;">${counterPayable}</div>
+            </div>
+        `;
+    }
 
     // F. Terms & Instructions
     let termsHtml = "";
@@ -717,6 +754,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     ${headerHtml}
     ${badgeHtml}
     ${patientHtml}
+    ${billerHtml}
     ${itemsTableHtml}
     ${prepaidNoticeHtml}
     ${termsHtml}

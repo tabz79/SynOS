@@ -296,6 +296,16 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 },
                 customLines: []
             },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Billing Desk Box',
+                enabled: true,
+                title: 'BILLING DESK',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' }
+                },
+                customLines: []
+            },
             itemsTable: {
                 id: 'itemsTable',
                 name: 'Investigative Tests Ordered (Zero Pricing)',
@@ -308,6 +318,17 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     { id: 'r-1', index: 1, description: 'Complete Blood Picture (CBP)' },
                     { id: 'r-2', index: 2, description: 'Liver Function Test (LFT)' }
                 ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Prepaid Settlement Notice',
+                enabled: true,
+                title: 'BILLED TO REFERRAL PARTNER ACCOUNT',
+                isPrepaidNotice: true,
+                fields: {
+                    counterPayable: { id: 'counterPayable', enabled: true, label: 'Amount Payable at Counter', value: '₹0.00 (Prepaid)' }
+                },
+                customLines: []
             },
             termsAndConditions: {
                 id: 'termsAndConditions',
