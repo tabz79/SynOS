@@ -76,17 +76,21 @@ namespace SynOS.Services.Operations
                 }
             }
 
-            // 1. Live Pending Reports Calculation (Avoids negative drift/errors)
+            // 1. Live Pending Reports Calculation (Scoped to today's active cohort, excluding drafts and cancelled)
+            var todayStart = new DateTimeOffset(today, TimeSpan.Zero);
+            var todayEnd = todayStart.AddDays(1);
+
             pendingReports = await _context.Reports
                 .Where(r => r.Visit.BranchId == branchId 
+                         && r.Visit.Status != VisitStatus.Draft
                          && r.Visit.Status != VisitStatus.Cancelled 
                          && r.Status != "Signed" 
-                         && r.Status != "ManualVerified")
+                         && r.Status != "ManualVerified"
+                         && r.Visit.CreatedAt >= todayStart 
+                         && r.Visit.CreatedAt < todayEnd)
                 .CountAsync();
 
             // 2. Live Avg Report Time Calculation (Filters out polluted backlog/draft data)
-            var todayStart = new DateTimeOffset(today, TimeSpan.Zero);
-            var todayEnd = todayStart.AddDays(1);
 
             var signedToday = await _context.Reports
                 .Where(r => r.Visit.BranchId == branchId 

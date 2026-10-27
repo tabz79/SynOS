@@ -191,8 +191,8 @@ namespace SynOS.Services.Operational
                     switch (type)
                     {
                         case BranchEventType.VISIT_STARTED:
-                            userStats.WalkInsCount++;
-                            branchStats.WalkInsCount++;
+                            // Note: Walk-ins are not counted on draft intake initiation to prevent draft leakage.
+                            // Walk-ins are incremented upon first payment/settlement or finalization.
                             if (visitState != null) visitState.WalkInActive = true;
                             updated = true;
                             break;
@@ -243,6 +243,11 @@ namespace SynOS.Services.Operational
                                          branchStats.PaymentsOnlineTotal += fact.Amount;
                                          userStats.PaymentsOnlineCount++;
                                          branchStats.PaymentsOnlineCount++;
+                                     }
+
+                                     if (Guid.TryParse(evt.VisitId, out var visitGuid))
+                                     {
+                                         await CheckAndIncrementWalkInAsync(userStats, branchStats, visitGuid, fact.RevenueFactId);
                                      }
                                      updated = true;
                                 }
@@ -467,7 +472,7 @@ namespace SynOS.Services.Operational
             }
         }
 
-        private async Task CheckAndIncrementWalkInAsync(UserOperationalStats stats, Guid visitId, Guid currentFactId)
+        private async Task CheckAndIncrementWalkInAsync(UserOperationalStats userStats, BranchOperationalStats branchStats, Guid visitId, Guid currentFactId)
         {
             try
             {
@@ -484,7 +489,8 @@ namespace SynOS.Services.Operational
 
                 if (hasPriorRevenue) return;
 
-                stats.WalkInsCount++;
+                userStats.WalkInsCount++;
+                branchStats.WalkInsCount++;
             }
             catch (Exception ex)
             {

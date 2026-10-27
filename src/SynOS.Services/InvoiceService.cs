@@ -84,28 +84,13 @@ namespace SynOS.Services
                 })
                 .FirstOrDefaultAsync();
 
-            if (stats != null && (stats.WalkIns > 0 || stats.Payments > 0 || stats.PrepaidCount > 0))
-            {
-                return new RevenueStatsDto
-                {
-                    WalkInsToday = stats.WalkIns,
-                    PaymentsCollected = stats.Payments,
-                    PaymentsCashTotal = stats.Cash,
-                    PaymentsOnlineTotal = stats.Online,
-                    PaymentsOnlineCount = stats.OnlineCount,
-                    PrepaidBillsCount = stats.PrepaidCount,
-                    PrepaidBillsTotal = stats.PrepaidTotal,
-                    PendingReports = 0,
-                    AvgReportTimeMinutes = 0
-                };
-            }
-
-            // Direct-query fallback if UserOperationalStats is not yet populated for today
+            // Calculate actual confirmed walk-ins from Visits table (excluding drafts, cancellations, and partner prepaid)
             var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
             var endOfToday = startOfToday.AddDays(1);
 
             var visitsQuery = _context.Visits
-                .Where(v => v.BranchId == branchId && v.CreatedAt >= startOfToday && v.CreatedAt < endOfToday);
+                .Where(v => v.BranchId == branchId && v.CreatedAt >= startOfToday && v.CreatedAt < endOfToday
+                         && v.Status != VisitStatus.Draft && v.Status != VisitStatus.Cancelled);
 
             if (userId.HasValue)
             {
@@ -117,15 +102,33 @@ namespace SynOS.Services
                 visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
             }
 
-            var walkIns = await visitsQuery.CountAsync();
+            var walkIns = await visitsQuery
+                .Where(v => v.PaymentCollectionModel != "PartnerCollects")
+                .CountAsync();
 
             var prepaidVisits = await visitsQuery
-                .Where(v => v.PaymentCollectionModel == "PartnerCollects" && v.Status == VisitStatus.Paid)
+                .Where(v => v.PaymentCollectionModel == "PartnerCollects" && (v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid))
                 .Include(v => v.Invoices)
                 .ToListAsync();
 
             int prepaidCount = prepaidVisits.Count;
             decimal prepaidTotal = prepaidVisits.Sum(v => v.Invoices.FirstOrDefault()?.Total ?? 0);
+
+            if (stats != null && (stats.WalkIns > 0 || stats.Payments > 0 || stats.PrepaidCount > 0))
+            {
+                return new RevenueStatsDto
+                {
+                    WalkInsToday = walkIns,
+                    PaymentsCollected = stats.Payments,
+                    PaymentsCashTotal = stats.Cash,
+                    PaymentsOnlineTotal = stats.Online,
+                    PaymentsOnlineCount = stats.OnlineCount,
+                    PrepaidBillsCount = prepaidCount > 0 ? prepaidCount : stats.PrepaidCount,
+                    PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : stats.PrepaidTotal,
+                    PendingReports = 0,
+                    AvgReportTimeMinutes = 0
+                };
+            }
 
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)

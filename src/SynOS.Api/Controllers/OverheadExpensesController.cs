@@ -9,6 +9,7 @@ using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums.Payables;
 using SynOS.Services.SpendEngine;
+using SynOS.Services.Security;
 
 namespace SynOS.Api.Controllers
 {
@@ -18,17 +19,28 @@ namespace SynOS.Api.Controllers
     {
         private readonly SynOSDbContext _context;
         private readonly ISpendFactWriter _spendFactWriter;
+        private readonly IUserContext _userContext;
 
-        public OverheadExpensesController(SynOSDbContext context, ISpendFactWriter spendFactWriter)
+        public OverheadExpensesController(SynOSDbContext context, ISpendFactWriter spendFactWriter, IUserContext userContext)
         {
             _context = context;
             _spendFactWriter = spendFactWriter;
+            _userContext = userContext;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<OverheadPayableFact>>> GetExpenses()
+        public async Task<ActionResult<IEnumerable<OverheadPayableFact>>> GetExpenses([FromQuery] string? filter = null)
         {
-            return await _context.OverheadPayableFacts
+            var query = _context.OverheadPayableFacts.AsQueryable();
+
+            if (string.Equals(filter, "today", StringComparison.OrdinalIgnoreCase))
+            {
+                var today = DateTime.UtcNow.Date;
+                var tomorrow = today.AddDays(1);
+                query = query.Where(e => (e.CreatedAt >= today && e.CreatedAt < tomorrow) || (e.DueDate >= today && e.DueDate < tomorrow));
+            }
+
+            return await query
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
         }
@@ -45,6 +57,7 @@ namespace SynOS.Api.Controllers
             try
             {
                 // 1. Create Overhead Payable (Obligation ONLY)
+                var userId = request.UserId != Guid.Empty ? request.UserId : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
                 var payable = new OverheadPayableFact
                 {
                     OverheadPayableId = Guid.NewGuid(),
@@ -54,7 +67,7 @@ namespace SynOS.Api.Controllers
                     DueDate = request.ExpenseDate,
                     Status = VendorPayableStatus.Pending,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedBy = request.UserId
+                    CreatedBy = userId
                 };
 
                 await _context.OverheadPayableFacts.AddAsync(payable);
@@ -98,6 +111,10 @@ namespace SynOS.Api.Controllers
                     payable.Status = VendorPayableStatus.PartiallyPaid;
                 }
 
+                var effectiveBranchId = _userContext.CurrentBranchId != Guid.Empty
+                    ? _userContext.CurrentBranchId
+                    : (Guid?)null;
+
                 // Emit SpendFact (Money Moved)
                 var spendFact = new SpendFact(
                     Guid.NewGuid(),
@@ -107,7 +124,7 @@ namespace SynOS.Api.Controllers
                     "Overhead",
                     payable.Description ?? "Overhead Expense", // PayeeName
                     $"Category: {payable.Category}", // Notes
-                    null, // BranchId
+                    effectiveBranchId, // BranchId
                     request.PaymentMethod,
                     $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}",
                     DateTime.UtcNow,

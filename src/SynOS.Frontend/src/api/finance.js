@@ -224,8 +224,10 @@ export const FinanceApi = {
     /**
      * Fetches overhead expenses/obligations.
      */
-    getOverheadExpenses: async () => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/OverheadExpenses'), {
+    getOverheadExpenses: async (filter = null) => {
+        let url = '/api/v1/OverheadExpenses';
+        if (filter) url += `?filter=${encodeURIComponent(filter)}`;
+        const response = await fetch(FinanceApi.withBranchId(url), {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load overhead expenses");

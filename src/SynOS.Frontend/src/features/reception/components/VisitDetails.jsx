@@ -35,6 +35,7 @@ export function VisitDetails({
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [testSelectedIndex, setTestSelectedIndex] = useState(0);
     const testListRef = useRef(null);
+    const testSearchInputRef = useRef(null);
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
@@ -132,7 +133,7 @@ export function VisitDetails({
         headerText: "type-value",
         section: "bg-zinc-950/30 border-synos-border",
         sectionTitle: "type-section-header",
-        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
+        input: "bg-zinc-900 border-synos-border type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(59,130,246,0.20)]",
         suggestionBox: "bg-zinc-900 border-synos-border shadow-xl",
         testCard: "bg-zinc-950/30 border-synos-border",
         testCode: "bg-zinc-800 border-zinc-700/50 type-code",
@@ -144,8 +145,8 @@ export function VisitDetails({
         // UNIFIED CARD STYLE (From Patient Card)
         section: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-3",
         sectionTitle: "type-section-header opacity-70",
-        // ETCHED INPUT: Bright & sunken into the slab
-        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all placeholder:text-zinc-400",
+        // ETCHED INPUT: Bright & sunken into the slab with refined visible focus ring and backlight glow
+        input: "bg-white border-zinc-200 shadow-sm type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(37,99,235,0.15)] transition-all placeholder:text-zinc-400",
         suggestionBox: "bg-white border-zinc-200 shadow-xl",
         // TEST CARD (Inside Recess): Needs to pop out slightly to be visible
         // Default: White/60 Glass Chip. Hover: White/90 Bright Highlight.
@@ -524,15 +525,19 @@ export function VisitDetails({
     });
 
 
-    // COMMAND: Add Test (Intent Aware)
+    // COMMAND: Add Test (Intent Aware & Keyboard Loop Optimized)
     const handleAddTest = async (test) => {
-        if (!visitId) return;
+        if (!visitId || isProcessing) return;
 
         // 1. CORRECTION INTENT (Paid/Finalized)
         if (isCorrectionIntent) {
             if (onAddStagedTest) {
                 onAddStagedTest(test);
                 setFilter("");
+                setIsSearchFocused(true);
+                setTimeout(() => {
+                    testSearchInputRef.current?.focus();
+                }, 50);
                 return;
             }
             // Fallback Modal for Reason
@@ -553,12 +558,17 @@ export function VisitDetails({
         try {
             const code = test.testCode || test.code;
             await ReceptionApi.addTestToVisit(visitId, code);
-            if (onVisitUpdated) onVisitUpdated();
+            if (onVisitUpdated) await onVisitUpdated();
         } catch (err) {
             console.error("Failed to add test", err);
             alert("Failed to add test: " + err.message);
         } finally {
             setIsProcessing(false);
+            // Enterprise multi-test keyboard loop: immediately refocus search input for consecutive test additions
+            setTimeout(() => {
+                testSearchInputRef.current?.focus();
+                setIsSearchFocused(true);
+            }, 50);
         }
     };
 
@@ -1045,8 +1055,13 @@ export function VisitDetails({
 
                 {(!isReadOnly || isCorrectionIntent) && (
                     <div className="relative z-10">
-                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
+                        {isProcessing ? (
+                            <Loader2 className="absolute left-3 top-2.5 w-4 h-4 text-synos-primary animate-spin" />
+                        ) : (
+                            <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
+                        )}
                         <input
+                            ref={testSearchInputRef}
                             type="text"
                             placeholder={isInstitutionalMode 
                                 ? (activeCorporateAccountId ? "Search insurance packages & tests..." : "Select insurance company above first...") 
@@ -1061,24 +1076,27 @@ export function VisitDetails({
                                 setTestSelectedIndex(0);
                             }}
                             onKeyDown={(e) => {
-                                if (suggestions.length === 0) return;
                                 if (e.key === 'ArrowDown') {
-                                    e.preventDefault();
-                                    setTestSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+                                    if (suggestions.length > 0) {
+                                        e.preventDefault();
+                                        setTestSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+                                    }
                                 } else if (e.key === 'ArrowUp') {
-                                    e.preventDefault();
-                                    setTestSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+                                    if (suggestions.length > 0) {
+                                        e.preventDefault();
+                                        setTestSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+                                    }
                                 } else if (e.key === 'Enter') {
-                                    if (testSelectedIndex >= 0 && testSelectedIndex < suggestions.length) {
+                                    if (suggestions.length > 0 && testSelectedIndex >= 0 && testSelectedIndex < suggestions.length) {
                                         e.preventDefault();
                                         handleAddTest(suggestions[testSelectedIndex]);
-                                        setFilter("");
-                                        setIsSearchFocused(false);
-                                        setTestSelectedIndex(0);
                                     }
+                                } else if (e.key === 'Tab') {
+                                    // Smoothly dismiss suggestions dropdown so tab focus advances to next section
+                                    setIsSearchFocused(false);
                                 }
                             }}
-                            disabled={isProcessing || (isInstitutionalMode && !activeCorporateAccountId)}
+                            disabled={isInstitutionalMode && !activeCorporateAccountId}
                             className={cn("w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none transition-colors disabled:opacity-50 type-code", ui.input)}
                         />
 
@@ -1091,12 +1109,10 @@ export function VisitDetails({
                                     return (
                                         <button
                                             key={test.testCode || test.code}
+                                            type="button"
                                             onMouseEnter={() => setTestSelectedIndex(idx)}
                                             onClick={() => {
                                                 handleAddTest({ ...test, price: pricing.price });
-                                                setFilter("");
-                                                setIsSearchFocused(false);
-                                                setTestSelectedIndex(0);
                                             }}
                                             className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
                                                 idx === testSelectedIndex

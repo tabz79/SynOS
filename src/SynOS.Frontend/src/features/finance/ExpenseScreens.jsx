@@ -550,6 +550,7 @@ export const VendorPayablesScreen = () => {
 export const DailyExpensesScreen = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [recentLogs, setRecentLogs] = useState([]);
+    const [isLoadingLogs, setIsLoadingLogs] = useState(true);
     const [formData, setFormData] = useState({
         amount: '',
         category: 'Misc',
@@ -567,15 +568,44 @@ export const DailyExpensesScreen = () => {
         { id: 'Staff', label: 'Staff Welfare', icon: Users2 }
     ];
 
+    const loadTodayLogs = useCallback(async () => {
+        try {
+            setIsLoadingLogs(true);
+            const data = await FinanceApi.getOverheadExpenses('today');
+            if (Array.isArray(data)) {
+                const logs = data.map(item => ({
+                    id: item.overheadPayableId,
+                    amount: Number(item.amountPaid || item.amountDue || 0),
+                    category: item.category || 'Misc',
+                    description: item.description || 'Overhead Payout',
+                    paymentMethod: (item.status === 2 || item.status === 'Settled') ? 'Settled' : 'Pending',
+                    time: item.settledAt 
+                        ? new Date(item.settledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                }));
+                setRecentLogs(logs);
+            }
+        } catch (err) {
+            console.error("Failed to load today daily expenses:", err);
+        } finally {
+            setIsLoadingLogs(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadTodayLogs();
+    }, [loadTodayLogs]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.amount || !formData.description) return;
 
         try {
             setIsSaving(true);
+            const numAmount = parseFloat(formData.amount);
             await FinanceApi.recordDailyExpense({
                 ...formData,
-                amount: parseFloat(formData.amount)
+                amount: numAmount
             });
             
             // Clear form
@@ -586,11 +616,8 @@ export const DailyExpensesScreen = () => {
                 paymentMethod: 'Cash'
             });
 
-            // Update recent local list
-            setRecentLogs(prev => [
-                { id: Date.now(), ...formData, amount: parseFloat(formData.amount), time: new Date().toLocaleTimeString() },
-                ...prev.slice(0, 4)
-            ]);
+            // Re-fetch persisted truth from server
+            await loadTodayLogs();
 
         } catch (err) {
             console.error("Failed to record daily expense:", err);
@@ -1860,8 +1887,8 @@ export const ExpenseOverviewTab = () => {
                     FinanceApi.getExpenseFeed().catch(() => [])
                 ]);
 
-                const totalOverheadObligation = overheads.reduce((acc, o) => acc + o.amount, 0);
-                const unpaidOverheads = overheads.filter(o => o.status !== 'Settled').reduce((acc, o) => acc + o.amount, 0);
+                const totalOverheadObligation = overheads.reduce((acc, o) => acc + (o.amountDue ?? o.amount ?? 0), 0);
+                const unpaidOverheads = overheads.filter(o => o.status !== 2 && o.status !== 'Settled').reduce((acc, o) => acc + (o.amountDue ?? o.amount ?? 0), 0);
 
                 setStats({
                     totalPaid: prof.totalExpensesCash || 0,
