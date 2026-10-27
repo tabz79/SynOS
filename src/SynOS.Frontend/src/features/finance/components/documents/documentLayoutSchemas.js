@@ -56,6 +56,17 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 },
                 customLines: []
             },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Biller / Desk Audit Particulars',
+                enabled: true,
+                title: 'Billing Desk',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' },
+                    discountReason: { id: 'discountReason', enabled: true, label: 'discount', value: 'A S X RAY SERVICES' }
+                },
+                customLines: []
+            },
             itemsTable: {
                 id: 'itemsTable',
                 name: 'Investigation Line Items Table',
@@ -180,6 +191,17 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 },
                 customLines: []
             },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Billing Desk Particulars',
+                enabled: true,
+                title: 'BILLING DESK',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' },
+                    discountReason: { id: 'discountReason', enabled: true, label: 'discount', value: 'A S X RAY SERVICES' }
+                },
+                customLines: []
+            },
             itemsTable: {
                 id: 'itemsTable',
                 name: 'Tests & Charges Slip',
@@ -199,6 +221,8 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Cash Totals',
                 enabled: true,
                 fields: {
+                    grossAmount: { id: 'grossAmount', enabled: true, label: 'Sub Total', value: '₹550.00' },
+                    discountAmount: { id: 'discountAmount', enabled: true, label: 'Discount', value: '₹0.00' },
                     totalAmount: { id: 'totalAmount', enabled: true, label: 'Grand Total', value: '₹550.00' },
                     totalPaid: { id: 'totalPaid', enabled: true, label: 'Amount Received (Cash)', value: '₹550.00' },
                     balanceDue: { id: 'balanceDue', enabled: true, label: 'Balance Due', value: '₹0.00' }

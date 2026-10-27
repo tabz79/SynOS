@@ -137,6 +137,22 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 }
             }
 
+            // Biller & Desk Audit Particulars (Direct / Standard Mode)
+            const billerStr = liveData.biller?.billedBy || liveData.billerName || liveData.billedBy || p.biller || "Staff Desk";
+            const discountReasonStr = fin.discountReason || bCtx.discountReason || liveData.discountReason || "";
+
+            if (boxes.billerDetails?.fields) {
+                if (boxes.billerDetails.fields.billedBy) boxes.billerDetails.fields.billedBy.value = billerStr;
+                if (boxes.billerDetails.fields.discountReason) {
+                    if (discountReasonStr) {
+                        boxes.billerDetails.fields.discountReason.value = discountReasonStr;
+                        boxes.billerDetails.fields.discountReason.enabled = true;
+                    } else {
+                        boxes.billerDetails.fields.discountReason.enabled = false;
+                    }
+                }
+            }
+
             if (boxes.itemsTable && Array.isArray(liveData.items) && liveData.items.length > 0) {
                 boxes.itemsTable.rows = liveData.items.map((it, idx) => {
                     let desc = it.name || it.testName || it.description || 'Clinical Investigation';
@@ -165,7 +181,9 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 const due = fin.balanceDue !== undefined ? fin.balanceDue : (net - paid);
 
                 if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${Number(sub).toLocaleString()}`;
-                if (boxes.financialSummary.fields.discountAmount) boxes.financialSummary.fields.discountAmount.value = `-₹${Number(disc).toLocaleString()}`;
+                if (boxes.financialSummary.fields.discountAmount) {
+                    boxes.financialSummary.fields.discountAmount.value = `-₹${Number(disc).toLocaleString()} ${discountReasonStr ? `(${discountReasonStr})` : ''}`.trim();
+                }
                 if (boxes.financialSummary.fields.taxableAmount) boxes.financialSummary.fields.taxableAmount.value = `₹${Number(fin.taxableAmount || net).toLocaleString()}`;
                 if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${Number(net).toLocaleString()}`;
                 if (boxes.financialSummary.fields.totalPaid) boxes.financialSummary.fields.totalPaid.value = `₹${Number(paid).toLocaleString()}`;
@@ -205,6 +223,22 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
             }
 
+            // Biller & Desk Audit Particulars (Direct / Standard Mode)
+            const thermalBillerStr = liveData.biller?.billedBy || liveData.billerName || liveData.billedBy || p.biller || "Staff Desk";
+            const thermalDiscountReasonStr = fin.discountReason || liveData.discountReason || "";
+
+            if (boxes.billerDetails?.fields) {
+                if (boxes.billerDetails.fields.billedBy) boxes.billerDetails.fields.billedBy.value = thermalBillerStr;
+                if (boxes.billerDetails.fields.discountReason) {
+                    if (thermalDiscountReasonStr) {
+                        boxes.billerDetails.fields.discountReason.value = thermalDiscountReasonStr;
+                        boxes.billerDetails.fields.discountReason.enabled = true;
+                    } else {
+                        boxes.billerDetails.fields.discountReason.enabled = false;
+                    }
+                }
+            }
+
             if (boxes.itemsTable && Array.isArray(liveData.items || liveData.orders)) {
                 const list = liveData.items || liveData.orders;
                 boxes.itemsTable.rows = list.map((it, idx) => ({
@@ -217,10 +251,22 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             }
 
             if (boxes.financialSummary?.fields) {
-                const net = fin.grandTotal || fin.totalAmount || fin.netAmount || 0;
+                const gross = fin.grossSubtotal || fin.subtotal || fin.grossAmount || 0;
+                const disc = fin.discountAmount || fin.discount || (fin.appliedDiscount?.discountAmount) || 0;
+                const net = fin.grandTotal || fin.totalAmount || fin.netAmount || (gross - disc);
                 const paid = fin.amountPaid || fin.totalCollected || net;
                 const due = fin.balanceDue !== undefined ? fin.balanceDue : 0;
 
+                if (boxes.financialSummary.fields.grossAmount) {
+                    boxes.financialSummary.fields.grossAmount.value = `₹${Number(gross).toLocaleString()}`;
+                    boxes.financialSummary.fields.grossAmount.enabled = disc > 0;
+                }
+                if (boxes.financialSummary.fields.discountAmount) {
+                    boxes.financialSummary.fields.discountAmount.value = disc > 0 
+                        ? `-₹${Number(disc).toLocaleString()} ${thermalDiscountReasonStr ? `(${thermalDiscountReasonStr})` : ''}`.trim()
+                        : `₹0`;
+                    boxes.financialSummary.fields.discountAmount.enabled = disc > 0;
+                }
                 if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${Number(net).toLocaleString()}`;
                 if (boxes.financialSummary.fields.totalPaid) boxes.financialSummary.fields.totalPaid.value = `₹${Number(paid).toLocaleString()}`;
                 if (boxes.financialSummary.fields.balanceDue) boxes.financialSummary.fields.balanceDue.value = `₹${Number(due).toLocaleString()}`;

@@ -1265,9 +1265,9 @@ export const CommercialPaperworkTab = () => {
                     
                     {/* QUICK SELECTION SHORTCUTS PILLS (THEME MATCHED, ZERO CLUTTER) */}
                     <div className="synos-dept-card rounded-2xl p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-sm space-y-2.5">
-                        {/* SLOT QUICK SWITCHER CHIPS */}
+                        {/* SLOT QUICK SWITCHER CHIPS (FILTERED BY ACTIVE CATEGORY) */}
                         <div className="flex flex-wrap gap-1.5">
-                            {mappings.map(slot => (
+                            {filteredMappings.map(slot => (
                                 <button
                                     key={slot.slotId}
                                     type="button"

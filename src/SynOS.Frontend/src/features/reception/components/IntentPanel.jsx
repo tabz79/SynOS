@@ -12,6 +12,7 @@ import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry } from '@/hooks/useSynOSMotion'
 import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/context/AuthContext'
 import { generateThermalInvoiceHtml, legacyTriggerPrint } from '@/utils/thermalPrinter'
 import { CommercialDocumentViewer } from '@/features/finance/components/documents/CommercialDocumentViewer'
 import { DynamicDocumentRenderer, clearDocumentCache } from '@/features/finance/components/documents/DynamicDocumentRenderer'
@@ -24,6 +25,7 @@ import {
 } from './MultiPayerPanels'
 
 export function IntentPanel({ onVisitUpdated }) {
+    const { user } = useAuth();
     const { isOpen, closePanel, drawerState, openResumeIntent, openCorrectionIntent } = useReceptionDrawer();
 
     // MOTION CANON: Rigid Body Entry
@@ -457,10 +459,24 @@ export function IntentPanel({ onVisitUpdated }) {
         const hasOutsourced = effectiveTests.some(t => t.isOutsourced || Boolean(t.referenceLabName));
         const outsourcedLabs = effectiveTests.filter(t => t.isOutsourced && t.referenceLabName).map(t => t.referenceLabName);
 
+        const effectiveDiscountReason = stagedDiscount?.remove
+            ? ""
+            : (stagedDiscount?.reason || stagedDiscount?.name || b?.appliedDiscount?.reason || b?.appliedDiscount?.name || "");
+
+        const billerDisplay = visitObj?.billedBy 
+            || b?.billedBy 
+            || (user?.name ? `${user.name}` : "Staff Desk");
+
         return {
             billNumber: visitObj?.visitToken || visitObj?.token || "INV-REC-001",
             date: new Date().toISOString(),
             status: b?.paymentStatus || (dueVal <= 0 ? 'Paid' : 'PendingPayment'),
+            biller: {
+                billedBy: billerDisplay,
+                discountReason: effectiveDiscountReason
+            },
+            billerName: billerDisplay,
+            discountReason: effectiveDiscountReason,
             billingContext: {
                 billingType: billingMode || visitObj?.billingType || 'Standard',
                 isCorporate,
@@ -509,6 +525,7 @@ export function IntentPanel({ onVisitUpdated }) {
             financial: {
                 grossSubtotal: effectiveGross,
                 discountAmount: effectiveDiscount,
+                discountReason: effectiveDiscountReason,
                 totalAmount: effectiveNet,
                 totalPaid: effectivePaid,
                 balanceDue: dueVal
@@ -528,6 +545,14 @@ export function IntentPanel({ onVisitUpdated }) {
             const effectiveNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0);
             const effectivePaid = isPrepaid ? 0 : (snapshot?.billing?.totalPaid || effectiveNet);
 
+            const effectiveDiscountReason = stagedDiscount?.remove
+                ? ""
+                : (stagedDiscount?.reason || stagedDiscount?.name || snapshot?.billing?.appliedDiscount?.reason || snapshot?.billing?.appliedDiscount?.name || "");
+
+            const billerDisplay = visitObj?.billedBy 
+                || snapshot?.billing?.billedBy 
+                || (user?.name ? `${user.name}` : "Staff Desk");
+
             const effectiveTests = [
                 ...activeRemainingTests,
                 ...stagedAddedTests.map(t => ({
@@ -545,6 +570,12 @@ export function IntentPanel({ onVisitUpdated }) {
             const printPayload = {
                 visitId: visitObj?.visitId || currentVisitId,
                 token: tokenToPrint,
+                biller: {
+                    billedBy: billerDisplay,
+                    discountReason: effectiveDiscountReason
+                },
+                billerName: billerDisplay,
+                discountReason: effectiveDiscountReason,
                 patient: {
                     name: p?.fullName || p?.name || "Patient",
                     sex: p?.gender || "M",
@@ -555,6 +586,7 @@ export function IntentPanel({ onVisitUpdated }) {
                     ...snapshot?.billing,
                     grossAmount: effectiveGross,
                     discountAmount: effectiveDiscount,
+                    discountReason: effectiveDiscountReason,
                     netAmount: effectiveNet,
                     totalPaid: effectivePaid,
                     paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")

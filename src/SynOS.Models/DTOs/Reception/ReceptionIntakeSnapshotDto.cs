@@ -74,6 +74,11 @@ namespace SynOS.Models.DTOs.Reception
         public string? CorporateCompanyName { get; set; }
         public string? EmployeeId { get; set; }
         public Guid? CorporatePackageId { get; set; }
+
+        // Biller / Desk Audit Details
+        public string? BilledBy { get; set; }
+        public string? BilledByFullName { get; set; }
+        public string? BilledByUsername { get; set; }
     }
 
     public class IntakeReferralPartner
@@ -114,6 +119,7 @@ namespace SynOS.Models.DTOs.Reception
         
         public string PaymentStatus { get; set; } = "PendingPayment"; // PendingPayment | Paid
         public string? PaymentMethod { get; set; }
+        public string? BilledBy { get; set; }
         public bool IsEditable { get; set; }
         public bool IsLocked { get; set; }
     }

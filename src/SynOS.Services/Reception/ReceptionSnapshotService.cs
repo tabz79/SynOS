@@ -104,6 +104,7 @@ namespace SynOS.Services.Reception
             var visit = await _context.Visits
                 .AsNoTracking()
                 .Include(v => v.Patient) // Just Patient info
+                .Include(v => v.Creator) // Biller User Info
                 .Include(v => v.Orders).ThenInclude(o => o.Test)
                 .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                 .Include(v => v.ReferralDraft)
@@ -181,6 +182,11 @@ namespace SynOS.Services.Reception
                         }
                     }
 
+                    if (string.IsNullOrWhiteSpace(extractedReason) && master != null)
+                    {
+                        extractedReason = master.Name;
+                    }
+
                     string displayName = master?.Name ?? (discountFact.Type == SynOS.Models.Enums.DiscountType.Percentage ? $"{discountFact.Value}% Custom Discount" : $"₹{discountFact.Value} Custom Concession");
                     if (!string.IsNullOrWhiteSpace(extractedReason))
                     {
@@ -192,7 +198,7 @@ namespace SynOS.Services.Reception
                         Id = master?.DiscountDefinitionId ?? discountFact.DiscountDefinitionId,
                         Code = master?.Code ?? "CUSTOM",
                         Name = displayName,
-                        Reason = extractedReason,
+                        Reason = extractedReason ?? displayName,
                         Amount = discountFact.DiscountAmount,
                         Type = discountFact.Type.ToString(),
                         Value = discountFact.Value,
@@ -275,6 +281,22 @@ namespace SynOS.Services.Reception
                 corporateName = corp?.CompanyName;
             }
 
+            string? billerFullName = visit.Creator?.Name;
+            string? billerUsername = visit.Creator?.Username;
+            string? billerDisplay = null;
+            if (!string.IsNullOrEmpty(billerFullName) && !string.IsNullOrEmpty(billerUsername))
+            {
+                billerDisplay = $"{billerFullName} ({billerUsername})";
+            }
+            else if (!string.IsNullOrEmpty(billerFullName))
+            {
+                billerDisplay = billerFullName;
+            }
+            else if (!string.IsNullOrEmpty(billerUsername))
+            {
+                billerDisplay = billerUsername;
+            }
+
             // Populate Visit
             snapshot.Visit = new IntakeVisit
             {
@@ -282,6 +304,9 @@ namespace SynOS.Services.Reception
                 VisitToken = visit.Token,
                 Status = visit.Status.ToString(),
                 IsReferred = visit.IsReferred,
+                BilledBy = billerDisplay,
+                BilledByFullName = billerFullName,
+                BilledByUsername = billerUsername,
                 ReferralPartner = partnerInfo != null ? new IntakeReferralPartner
                 {
                     PartnerId = partnerInfo.Id,
@@ -341,7 +366,7 @@ namespace SynOS.Services.Reception
                     
                     AppliedDiscount = appliedDiscount,
                     Referral = referralState, // Updated Structure
-                    
+                    BilledBy = billerDisplay,
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
                     PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
                     TotalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0m) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0m),

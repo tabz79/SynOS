@@ -99,9 +99,27 @@ export function generateThermalInvoiceHtml(payload = {}) {
     }));
 
     const grossSubtotal = Number(billingObj.grossAmount || billingObj.subtotal || billingObj.netAmount || 0);
+    const discountAmount = Number(billingObj.discountAmount || billingObj.discount || billingObj.appliedDiscount?.discountAmount || 0);
     const totalPaid = Number(billingObj.totalPaid || billingObj.amountPaid || 0);
-    const totalAmount = Number(billingObj.netAmount || billingObj.totalAmount || grossSubtotal || 0);
+    const totalAmount = Number(billingObj.netAmount || billingObj.totalAmount || (grossSubtotal - discountAmount) || 0);
     const dueVal = Number(billingObj.balanceDue ?? Math.max(0, totalAmount - totalPaid));
+
+    const billerObj = payload.biller || billingObj.biller || payload.visit?.biller || {};
+    const billerDisplay = payload.billerName 
+        || (typeof payload.biller === 'string' ? payload.biller : '')
+        || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+        || billingObj.billedBy 
+        || payload.visit?.billedBy 
+        || payload.billedBy 
+        || "Staff Desk";
+
+    const discountReason = payload.discountReason 
+        || billingObj.discountReason 
+        || billingObj.appliedDiscount?.reason 
+        || billingObj.appliedDiscount?.name 
+        || payload.stagedDiscount?.reason 
+        || payload.stagedDiscount?.name 
+        || "";
 
     const normalizedData = {
         receiptNumber: payload.receiptNumber || payload.billNumber || (token ? `RCPT-${token}` : `RCPT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`),
@@ -118,10 +136,17 @@ export function generateThermalInvoiceHtml(payload = {}) {
         orders: allItems,
         financial: {
             grossSubtotal,
+            discountAmount,
             totalAmount,
             totalPaid,
-            balanceDue: dueVal
-        }
+            balanceDue: dueVal,
+            discountReason
+        },
+        biller: {
+            billedBy: billerDisplay
+        },
+        billerName: billerDisplay,
+        discountReason
     };
 
     // 3. Hydrate Schema
@@ -220,6 +245,26 @@ export function generateThermalInvoiceHtml(payload = {}) {
         `;
     }
 
+    // C2. Biller / Desk Audit Details Box (boxes.billerDetails)
+    let billerHtml = "";
+    if (boxes.billerDetails?.enabled && !isPrepaid) {
+        const bf = boxes.billerDetails.fields || {};
+        const billedByVal = bf.billedBy?.value || billerDisplay;
+        const discountReasonVal = bf.discountReason?.value || discountReason;
+
+        billerHtml = `
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
+                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
+                    ${boxes.billerDetails.title || 'BILLING DESK'}
+                </div>
+                <div style="font-size: 10px; line-height: 1.35; color: #000000;">
+                    <div>Billed by: <b style="font-weight: 900;">${billedByVal}</b></div>
+                    ${discountReasonVal ? `<div style="margin-top: 1px;">discount: <b style="font-weight: 900;">${discountReasonVal}</b></div>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
     // D. Items Table Box (boxes.itemsTable)
     let itemsTableHtml = "";
     if (boxes.itemsTable?.enabled) {
@@ -252,14 +297,28 @@ export function generateThermalInvoiceHtml(payload = {}) {
     let finHtml = "";
     if (boxes.financialSummary?.enabled) {
         const ff = boxes.financialSummary.fields || {};
+        const grossVal = ff.grossAmount?.value || formatInr(grossSubtotal);
+        const discVal = ff.discountAmount?.value || (discountAmount > 0 ? `- ₹${discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${discountReason ? `(${discountReason})` : ''}`.trim() : '');
         const grandTotal = ff.totalAmount?.value || formatInr(normalizedData.financial.totalAmount);
         const totalPaidStr = ff.totalPaid?.value || formatInr(normalizedData.financial.totalPaid);
         const balanceDueStr = ff.balanceDue?.value || formatInr(normalizedData.financial.balanceDue);
 
         finHtml = `
             <div style="border-bottom: 1.5px solid #000000; padding-bottom: 4px; margin-bottom: 5px; font-size: 11px; color: #000000;">
+                ${discountAmount > 0 && ff.grossAmount?.enabled !== false ? `
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 10px; margin-bottom: 2px;">
+                        <span>Gross Subtotal:</span>
+                        <span style="font-family: monospace; text-align: right;">${grossVal}</span>
+                    </div>
+                ` : ''}
+                ${discountAmount > 0 && ff.discountAmount?.enabled !== false ? `
+                    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 10px; margin-bottom: 2px;">
+                        <span>Discount:</span>
+                        <span style="font-family: monospace; text-align: right;">${discVal}</span>
+                    </div>
+                ` : ''}
                 ${ff.totalAmount?.enabled !== false ? `
-                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 13.5px; border-bottom: 1px dashed #000000; padding-bottom: 2px; margin-bottom: 2px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 13.5px; border-bottom: 1px dashed #000000; padding-bottom: 2px; margin-bottom: 2px; ${discountAmount > 0 ? 'border-top: 1px dashed #000000; padding-top: 2px;' : ''}">
                         <span>GRAND TOTAL:</span>
                         <span style="font-family: monospace; text-align: right;">${grandTotal}</span>
                     </div>
@@ -363,6 +422,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
     ${headerHtml}
     ${badgeHtml}
     ${patientHtml}
+    ${billerHtml}
     ${itemsTableHtml}
     ${finHtml}
     ${upiQrHtml}

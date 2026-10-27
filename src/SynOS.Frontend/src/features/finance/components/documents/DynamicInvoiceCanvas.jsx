@@ -886,6 +886,61 @@ export const DynamicInvoiceCanvas = ({
                 </ModularBoxWrapper>
             )}
 
+            {/* 3B. BILLER / DESK AUDIT DETAILS BOX */}
+            {boxes.billerDetails?.enabled && (
+                <ModularBoxWrapper 
+                    boxId="billerDetails" 
+                    boxName={boxes.billerDetails.name || "Billing Desk Box"}
+                    onDeleteBox={() => deleteBox('billerDetails')}
+                    onAddCustomLine={(line) => addCustomLine('billerDetails', line)}
+                >
+                    <div className="border border-zinc-300 rounded-lg p-3 mb-3 bg-zinc-50/50">
+                        <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200">
+                            <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">
+                                {boxes.billerDetails.title || "Billing Desk"}
+                            </span>
+                        </div>
+
+                        <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-1.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1'} text-[11px]`}>
+                            {Object.entries(boxes.billerDetails.fields || {}).map(([key, field]) => {
+                                if (!field.enabled) return null;
+                                return (
+                                    <div key={key} className="py-0.5">
+                                        <EditableField 
+                                            label={field.label ? `${field.label}:` : ""}
+                                            value={field.value}
+                                            isBlock={true}
+                                            onSave={(lbl, val) => updateField('billerDetails', key, lbl, val)}
+                                            onDelete={() => deleteField('billerDetails', key)}
+                                            labelClassName="text-zinc-500 font-medium"
+                                            valueClassName="font-bold text-zinc-900"
+                                        />
+                                    </div>
+                                );
+                            })}
+
+                            {/* Custom Lines in Biller Box */}
+                            {boxes.billerDetails.customLines?.map(line => (
+                                <div key={line.id} className={`py-0.5 ${isThermal ? '' : 'sm:col-span-2'}`}>
+                                    <EditableField 
+                                        label={line.label ? `${line.label}:` : ""}
+                                        value={line.value}
+                                        isBlock={true}
+                                        onSave={(lbl, val) => {
+                                            const nextLines = boxes.billerDetails.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
+                                            updateSchema({ ...schema, boxes: { ...boxes, billerDetails: { ...boxes.billerDetails, customLines: nextLines } } });
+                                        }}
+                                        onDelete={() => deleteCustomLine('billerDetails', line.id)}
+                                        labelClassName="text-zinc-500 font-medium"
+                                        valueClassName="font-bold text-zinc-900"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </ModularBoxWrapper>
+            )}
+
             {/* 4. LINE ITEMS / CHARGES TABLE BOX */}
             {boxes.itemsTable?.enabled && (() => {
                 const activeColumns = Object.entries(boxes.itemsTable.columns || {}).filter(([_, col]) => col.enabled);
@@ -1578,7 +1633,7 @@ export const DynamicInvoiceCanvas = ({
             {/* 11. USER-ADDED CUSTOM DOCUMENT BOXES */}
             {Object.entries(boxes).map(([boxKey, customBox]) => {
                 // If it's not a standard predefined box key
-                const standardKeys = ['header', 'docBadge', 'partyDetails', 'itemsTable', 'financialSummary', 'amountInWords', 'receiptHistory', 'bankAndUpi', 'termsAndConditions', 'signatory'];
+                const standardKeys = ['header', 'docBadge', 'partyDetails', 'billerDetails', 'itemsTable', 'financialSummary', 'amountInWords', 'receiptHistory', 'bankAndUpi', 'termsAndConditions', 'signatory'];
                 if (standardKeys.includes(boxKey) || !customBox.enabled) return null;
 
                 return (
