@@ -24,7 +24,8 @@ import {
     Receipt,
     FileText,
     Share2,
-    Printer
+    Printer,
+    ShieldCheck
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -339,7 +340,9 @@ export const RevenueTerminal = () => {
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'bills', label: 'Bills & Collections', icon: IndianRupee },
+    { id: 'dues', label: 'Due Bills', icon: AlertCircle },
     { id: 'receivables', label: 'Pending Receivables', icon: Clock },
+    { id: 'corrections', label: 'Visit Corrections', icon: ShieldCheck },
     { id: 'history', label: 'Collection History', icon: History }
   ];
 
@@ -428,7 +431,9 @@ export const RevenueTerminal = () => {
           />
         )}
         {tab === 'bills' && <BillsCollectionsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
+        {tab === 'dues' && <DueBillsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
         {tab === 'receivables' && <PendingReceivablesScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
+        {tab === 'corrections' && <VisitCorrectionsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
         {tab === 'history' && <CollectionHistoryScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
       </div>
     </div>
@@ -1214,6 +1219,538 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
     );
 };
 
+export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
+    const { user } = useAuth();
+    const [dueBills, setDueBills] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [branchFilter, setBranchFilter] = useState('All');
+    const [statusFilter, setStatusFilter] = useState('All'); // 'All' | 'Partial' | 'Pending'
+
+    // Collection Modal State
+    const [selectedDueBill, setSelectedDueBill] = useState(null);
+    const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
+    const [collectAmount, setCollectAmount] = useState('');
+    const [collectMethod, setCollectMethod] = useState('Cash');
+    const [collectNotes, setCollectNotes] = useState('');
+    const [isSubmittingCollect, setIsSubmittingCollect] = useState(false);
+    const [collectError, setCollectError] = useState(null);
+
+    // Document Modal State
+    const [docData, setDocData] = useState(null);
+    const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+    const [loadingDoc, setLoadingDoc] = useState(false);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
+    useEffect(() => {
+        loadData();
+        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
+    }, [presetRange]);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const data = await FinanceApi.getDueBills({ preset: presetRange });
+            setDueBills(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to load patient due bills:", err);
+            setDueBills([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenCollectModal = (bill) => {
+        setSelectedDueBill(bill);
+        setCollectAmount(String(bill.balanceDue || ''));
+        setCollectMethod('Cash');
+        setCollectNotes('');
+        setCollectError(null);
+        setIsCollectModalOpen(true);
+    };
+
+    const handleConfirmCollect = async (e) => {
+        e?.preventDefault();
+        if (!selectedDueBill || !collectAmount || Number(collectAmount) <= 0) return;
+
+        try {
+            setIsSubmittingCollect(true);
+            setCollectError(null);
+            await FinanceApi.collectDuePayment(selectedDueBill.invoiceId, {
+                amount: Number(collectAmount),
+                method: collectMethod,
+                notes: collectNotes
+            });
+            setIsCollectModalOpen(false);
+            setSelectedDueBill(null);
+            await loadData();
+        } catch (err) {
+            setCollectError(err.message || "Failed to record payment");
+        } finally {
+            setIsSubmittingCollect(false);
+        }
+    };
+
+    const handleViewInvoiceDoc = async (invoiceId) => {
+        try {
+            setLoadingDoc(true);
+            const doc = await FinanceApi.getInvoiceDocument(invoiceId);
+            setDocData(doc);
+            setIsDocModalOpen(true);
+        } catch (err) {
+            console.error("Failed to fetch tax invoice:", err);
+        } finally {
+            setLoadingDoc(false);
+        }
+    };
+
+    // Filter Logic
+    const filteredBills = useMemo(() => {
+        return dueBills.filter(b => {
+            if (branchFilter !== 'All' && b.branchId && b.branchId !== branchFilter) return false;
+            if (statusFilter === 'Partial' && b.status !== 'Partial') return false;
+            if (statusFilter === 'Pending' && b.status !== 'Pending') return false;
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const matchName = (b.patientName || '').toLowerCase().includes(q);
+                const matchToken = (b.token || '').toLowerCase().includes(q);
+                const matchPhone = (b.patientMobile || '').includes(q);
+                const matchMrn = (b.patientMrn || '').toLowerCase().includes(q);
+                const matchDoc = (b.referralDoctor || '').toLowerCase().includes(q);
+                if (!matchName && !matchToken && !matchPhone && !matchMrn && !matchDoc) return false;
+            }
+
+            return true;
+        });
+    }, [dueBills, branchFilter, statusFilter, searchQuery]);
+
+    const totalDue = filteredBills.reduce((sum, b) => sum + (Number(b.balanceDue) || 0), 0);
+    const totalPaid = filteredBills.reduce((sum, b) => sum + (Number(b.totalPaid) || 0), 0);
+    const totalInvoiced = filteredBills.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
+    const recoveryRate = totalInvoiced > 0 ? Math.round((totalPaid / totalInvoiced) * 100) : 0;
+
+    // CSV Export
+    const handleDownloadSummary = () => {
+        const headers = [
+            "Visit Token",
+            "Date",
+            "Patient Name",
+            "MRN",
+            "Phone",
+            "Facility / Branch",
+            "Referring Doctor",
+            "Tests Invoiced",
+            "Total Invoiced (INR)",
+            "Paid Amount (INR)",
+            "Balance Due (INR)",
+            "Status",
+            "Last Payment Date",
+            "Last Payment Method"
+        ];
+
+        const rows = filteredBills.map(b => [
+            `"${b.token || ''}"`,
+            `"${b.createdAt ? new Date(b.createdAt).toLocaleDateString() : ''}"`,
+            `"${(b.patientName || '').replace(/"/g, '""')}"`,
+            `"${b.patientMrn || ''}"`,
+            `"${b.patientMobile || ''}"`,
+            `"${(b.branchName || 'Main Facility').replace(/"/g, '""')}"`,
+            `"${(b.referralDoctor || 'Direct Patient').replace(/"/g, '""')}"`,
+            `"${(b.tests?.join('; ') || '').replace(/"/g, '""')}"`,
+            b.totalAmount || 0,
+            b.totalPaid || 0,
+            b.balanceDue || 0,
+            `"${b.status || ''}"`,
+            `"${b.lastPaymentDate ? new Date(b.lastPaymentDate).toLocaleString() : 'N/A'}"`,
+            `"${b.lastPaymentMethod || 'N/A'}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Due_Bills_Summary_${presetRange}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="p-8 max-w-7xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-amber-500" />
+                        Patient Due Bills & Counter Balances
+                    </h2>
+                    <p className="text-xs text-zinc-500 mt-1">
+                        Track outstanding patient dues from walk-in and standard billing. Record desk collections and download due reports.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleDownloadSummary}
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Export CSV</span>
+                    </button>
+                    <button
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                        <span>Print Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl synos-kpi-card border border-rose-500/20 bg-rose-500/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Total Patient Dues</p>
+                    <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalDue.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">{filteredBills.length} Active Due Bills</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Collected So Far</p>
+                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{totalPaid.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Partially Paid at Counter</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Billed Volume</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">₹{totalInvoiced.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Original Invoiced Value</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">Recovery Rate</p>
+                    <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{recoveryRate}%</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Realized Settlement Ratio</span>
+                </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+                        {['All', 'Partial', 'Pending'].map(f => (
+                            <FilterTab key={f} label={f === 'All' ? 'All Due Bills' : (f === 'Partial' ? 'Partially Paid' : 'Unpaid Counter Dues')} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {/* Branch Selector */}
+                        <div className="relative min-w-[160px]">
+                            <select
+                                value={branchFilter}
+                                onChange={(e) => setBranchFilter(e.target.value)}
+                                className="w-full pl-3 pr-8 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                            >
+                                <option value="All">All Facilities / Branches</option>
+                                {branches.map(b => (
+                                    <option key={b.branchId || b.id} value={b.branchId || b.id}>{b.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="relative min-w-[220px]">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input
+                                type="text"
+                                placeholder="Search patient, token, phone..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:border-synos-primary transition-all shadow-xs"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Due Bills Table */}
+            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 overflow-hidden bg-white dark:bg-zinc-900/30 shadow-xs">
+                {loading ? (
+                    <div className="p-16 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                        <span>Scanning outstanding patient dues...</span>
+                    </div>
+                ) : filteredBills.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                        <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto opacity-75" />
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white">Zero Patient Dues Outstanding</p>
+                        <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                            All patient counter bills are fully settled for the selected time horizon. Great financial health!
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-3 px-4">Date & Time</th>
+                                    <th className="py-3 px-4">Token & Patient</th>
+                                    <th className="py-3 px-4">Facility</th>
+                                    <th className="py-3 px-4">Referring Doctor</th>
+                                    <th className="py-3 px-4">Tests</th>
+                                    <th className="py-3 px-4 text-right">Total Bill</th>
+                                    <th className="py-3 px-4 text-right">Paid So Far</th>
+                                    <th className="py-3 px-4 text-right">Balance Due</th>
+                                    <th className="py-3 px-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                {filteredBills.map((b) => (
+                                    <tr key={b.invoiceId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                        <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                            {b.createdAt ? new Date(b.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                                        </td>
+                                        <td className="py-3.5 px-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-black/5 dark:border-white/5">
+                                                    {b.token}
+                                                </span>
+                                                <div>
+                                                    <p className="font-bold text-zinc-900 dark:text-white leading-tight">{b.patientName}</p>
+                                                    <p className="text-[11px] text-zinc-400 font-medium">
+                                                        {b.patientGender || ''} {b.patientAge ? `• ${b.patientAge}y` : ''} {b.patientMobile ? `• ${b.patientMobile}` : ''}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400 font-medium">
+                                            {b.branchName || 'Main Facility'}
+                                        </td>
+                                        <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400">
+                                            {b.referralDoctor || 'Direct Patient'}
+                                        </td>
+                                        <td className="py-3.5 px-4 max-w-[200px] truncate text-zinc-500 text-[11px]">
+                                            {b.tests?.join(', ') || 'Diagnostic Tests'}
+                                        </td>
+                                        <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-900 dark:text-white">
+                                            ₹{Number(b.totalAmount || 0).toLocaleString()}
+                                        </td>
+                                        <td className="py-3.5 px-4 text-right font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                                            ₹{Number(b.totalPaid || 0).toLocaleString()}
+                                        </td>
+                                        <td className="py-3.5 px-4 text-right">
+                                            <span className="font-mono font-black text-xs px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                                ₹{Number(b.balanceDue || 0).toLocaleString()}
+                                            </span>
+                                        </td>
+                                        <td className="py-3.5 px-4 text-center">
+                                            <div className="flex items-center justify-center gap-1.5">
+                                                <button
+                                                    onClick={() => handleOpenCollectModal(b)}
+                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1"
+                                                >
+                                                    <IndianRupee className="w-3 h-3" />
+                                                    <span>Collect Due</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => handleViewInvoiceDoc(b.invoiceId)}
+                                                    className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                                    title="View Patient Tax Invoice"
+                                                >
+                                                    <Receipt className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* COLLECT DUE MODAL */}
+            {isCollectModalOpen && selectedDueBill && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                    <IndianRupee className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Collect Patient Due</h3>
+                                    <p className="text-[11px] text-zinc-400">Token: {selectedDueBill.token} • {selectedDueBill.patientName}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsCollectModalOpen(false)}
+                                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {collectError && (
+                            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-bold text-rose-600 dark:text-rose-400">
+                                {collectError}
+                            </div>
+                        )}
+
+                        {/* Balance Overview */}
+                        <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-center">
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Total Invoiced</span>
+                                <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">₹{selectedDueBill.totalAmount?.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-emerald-500 uppercase font-bold block">Paid So Far</span>
+                                <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">₹{selectedDueBill.totalPaid?.toLocaleString()}</span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-rose-500 uppercase font-bold block">Current Due</span>
+                                <span className="font-mono text-xs font-black text-rose-600 dark:text-rose-400">₹{selectedDueBill.balanceDue?.toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        {/* Amount Input */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Amount Collecting Now (₹)</label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-zinc-400">₹</span>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={selectedDueBill.balanceDue}
+                                    value={collectAmount}
+                                    onChange={(e) => setCollectAmount(e.target.value)}
+                                    className="w-full pl-8 pr-4 py-2.5 text-sm font-mono font-bold rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:border-amber-500"
+                                />
+                            </div>
+                            {Number(collectAmount) < selectedDueBill.balanceDue && Number(collectAmount) > 0 && (
+                                <p className="text-[11px] text-amber-500 font-medium">
+                                    * Remaining due after this payment: ₹{(selectedDueBill.balanceDue - Number(collectAmount)).toLocaleString()}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Payment Method */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Payment Channel</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {['Cash', 'UPI', 'Card'].map(m => (
+                                    <button
+                                        key={m}
+                                        type="button"
+                                        onClick={() => setCollectMethod(m)}
+                                        className={cn(
+                                            "py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center justify-center gap-1",
+                                            collectMethod === m
+                                                ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                                                : "bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100"
+                                        )}
+                                    >
+                                        {m === 'Cash' && <IndianRupee className="w-3.5 h-3.5" />}
+                                        {m === 'UPI' && <Smartphone className="w-3.5 h-3.5" />}
+                                        {m === 'Card' && <CreditCard className="w-3.5 h-3.5" />}
+                                        <span>{m}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-zinc-700 dark:text-zinc-300">Notes / Transaction Ref (Optional)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. UPI txn id or receipt memo"
+                                value={collectNotes}
+                                onChange={(e) => setCollectNotes(e.target.value)}
+                                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:border-amber-500"
+                            />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-zinc-800 border-zinc-200">
+                            <button
+                                type="button"
+                                onClick={() => setIsCollectModalOpen(false)}
+                                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-all cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isSubmittingCollect || !collectAmount || Number(collectAmount) <= 0}
+                                onClick={handleConfirmCollect}
+                                className="px-5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                            >
+                                {isSubmittingCollect ? (
+                                    <>
+                                        <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <span>Recording...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        <span>Confirm Collection (₹{Number(collectAmount || 0).toLocaleString()})</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Commercial Document Modal */}
+            {isDocModalOpen && docData && (
+                <CommercialDocumentViewer
+                    isOpen={isDocModalOpen}
+                    onClose={() => {
+                        setIsDocModalOpen(false);
+                        setDocData(null);
+                    }}
+                    title={`Patient Tax Invoice - ${docData.patient?.name || ''}`}
+                    defaultLetterheadMode="digital"
+                    paperSize="a4"
+                >
+                    <DynamicDocumentRenderer
+                        slotId="patient_tax_invoice"
+                        data={docData}
+                        forceRefresh={true}
+                    />
+                </CommercialDocumentViewer>
+            )}
+
+            {/* Printable Summary Modal */}
+            <FinancePrintableSummaryModal
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title="Patient Due Bills & Balances Report"
+                timeRange={presetRange}
+                columns={[
+                    { key: 'token', label: 'Token' },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'patientMobile', label: 'Phone' },
+                    { key: 'branchName', label: 'Facility' },
+                    { key: 'referralDoctor', label: 'Referring Doctor' },
+                    { key: 'totalAmount', label: 'Total Invoiced', align: 'right', format: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'totalPaid', label: 'Paid Amount', align: 'right', format: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'balanceDue', label: 'Balance Due', align: 'right', format: (v) => `₹${Number(v || 0).toLocaleString()}` }
+                ]}
+                data={filteredBills}
+                summaryTotals={{
+                    totalAmount: `₹${totalInvoiced.toLocaleString()}`,
+                    paidAmount: `₹${totalPaid.toLocaleString()}`,
+                    pendingAmount: `₹${totalDue.toLocaleString()}`
+                }}
+                onDownloadCsv={handleDownloadSummary}
+            />
+        </div>
+    );
+};
+
 export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange }) => {
     const { user } = useAuth();
     const [partnerSummaries, setPartnerSummaries] = useState([]);
@@ -1777,6 +2314,534 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                         totalAmount: `₹${itemizedBillsForPrint.reduce((acc, b) => acc + Number(b.totalAmount || 0), 0).toLocaleString()}`,
                         balanceDue: `₹${itemizedBillsForPrint.reduce((acc, b) => acc + Number(b.balanceDue || 0), 0).toLocaleString()}`
                     }
+                }}
+                onDownloadCsv={handleDownloadSummary}
+            />
+        </div>
+    );
+};
+
+export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }) => {
+    const { user } = useAuth();
+    const [corrections, setCorrections] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [branchFilter, setBranchFilter] = useState('All');
+    const [shiftFilter, setShiftFilter] = useState('All'); // 'All' | 'Upward' | 'Downward' | 'Zero'
+
+    // Details Modal State
+    const [selectedCorrection, setSelectedCorrection] = useState(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+    // Document Modal State
+    const [docData, setDocData] = useState(null);
+    const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+    const [loadingDoc, setLoadingDoc] = useState(false);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
+    useEffect(() => {
+        loadData();
+        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
+    }, [presetRange]);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const data = await FinanceApi.getVisitCorrections({ preset: presetRange });
+            setCorrections(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to load visit correction audit trail:", err);
+            setCorrections([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleViewInvoiceDoc = async (invoiceId) => {
+        if (!invoiceId) return;
+        try {
+            setLoadingDoc(true);
+            const doc = await FinanceApi.getInvoiceDocument(invoiceId);
+            setDocData(doc);
+            setIsDocModalOpen(true);
+        } catch (err) {
+            console.error("Failed to fetch tax invoice for corrected visit:", err);
+        } finally {
+            setLoadingDoc(false);
+        }
+    };
+
+    // Filter Logic
+    const filteredCorrections = useMemo(() => {
+        return corrections.filter(c => {
+            if (branchFilter !== 'All' && c.branchId && c.branchId !== branchFilter) return false;
+            
+            const diff = Number(c.differenceAmount || 0);
+            if (shiftFilter === 'Upward' && diff <= 0) return false;
+            if (shiftFilter === 'Downward' && diff >= 0) return false;
+            if (shiftFilter === 'Zero' && diff !== 0) return false;
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const matchToken = (c.visitToken || '').toLowerCase().includes(q);
+                const matchPatient = (c.patientName || '').toLowerCase().includes(q);
+                const matchStaff = (c.createdByName || '').toLowerCase().includes(q);
+                const matchReason = (c.reason || '').toLowerCase().includes(q);
+                const matchPhone = (c.patientPhone || '').includes(q);
+                if (!matchToken && !matchPatient && !matchStaff && !matchReason && !matchPhone) return false;
+            }
+
+            return true;
+        });
+    }, [corrections, branchFilter, shiftFilter, searchQuery]);
+
+    const totalAmendments = filteredCorrections.length;
+    const netShift = filteredCorrections.reduce((sum, c) => sum + (Number(c.differenceAmount) || 0), 0);
+    const upwardCount = filteredCorrections.filter(c => Number(c.differenceAmount || 0) > 0).length;
+    const downwardCount = filteredCorrections.filter(c => Number(c.differenceAmount || 0) < 0).length;
+
+    // CSV Export
+    const handleDownloadSummary = () => {
+        const headers = [
+            "Visit Token",
+            "Correction Date",
+            "Patient Name",
+            "MRN",
+            "Phone",
+            "Facility / Branch",
+            "Amended By Staff",
+            "Audit Justification / Reason",
+            "Previous Bill (INR)",
+            "New Bill (INR)",
+            "Net Difference (INR)"
+        ];
+
+        const rows = filteredCorrections.map(c => [
+            `"${c.visitToken || ''}"`,
+            `"${c.createdAt ? new Date(c.createdAt).toLocaleString() : ''}"`,
+            `"${(c.patientName || '').replace(/"/g, '""')}"`,
+            `"${c.patientMrn || ''}"`,
+            `"${c.patientPhone || ''}"`,
+            `"${(c.branchName || 'Main Facility').replace(/"/g, '""')}"`,
+            `"${(c.createdByName || 'Front Desk Staff').replace(/"/g, '""')}"`,
+            `"${(c.reason || '').replace(/"/g, '""')}"`,
+            c.previousAmount || 0,
+            c.newAmount || 0,
+            c.differenceAmount || 0
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Visit_Corrections_Audit_${presetRange}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    // Helper to parse audit payload JSON safely
+    const parsePayload = (jsonStr) => {
+        if (!jsonStr) return null;
+        try {
+            return JSON.parse(jsonStr);
+        } catch {
+            return null;
+        }
+    };
+
+    return (
+        <div className="p-8 max-w-7xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5 text-synos-primary" />
+                        Visit Corrections & Revision Audit Feed
+                    </h2>
+                    <p className="text-xs text-zinc-500 mt-1">
+                        Immutable forensic log of all amended visits, test revisions, fee adjustments, and referral transfer shifts.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleDownloadSummary}
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Export CSV</span>
+                    </button>
+                    <button
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                        <span>Print Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Amendments</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{totalAmendments}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Recorded Revision Events</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-synos-primary">Net Revenue Shift</p>
+                    <p className={cn("text-2xl font-black mt-1", netShift >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400")}>
+                        {netShift >= 0 ? `+₹${netShift.toLocaleString()}` : `-₹${Math.abs(netShift).toLocaleString()}`}
+                    </p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Cumulative Balance Impact</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Upward Revisions</p>
+                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{upwardCount}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Tests Added / Rates Raised</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Downward / Refunds</p>
+                    <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{downwardCount}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Tests Cancelled / Rates Lowered</span>
+                </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+                        {['All', 'Upward', 'Downward', 'Zero'].map(f => (
+                            <FilterTab 
+                                key={f} 
+                                label={f === 'All' ? 'All Amendments' : (f === 'Upward' ? 'Value Increases (+)' : (f === 'Downward' ? 'Value Decreases (-)' : 'Zero Shift'))} 
+                                isActive={shiftFilter === f} 
+                                onClick={() => setShiftFilter(f)} 
+                            />
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {/* Branch Selector */}
+                        <div className="relative min-w-[160px]">
+                            <select
+                                value={branchFilter}
+                                onChange={(e) => setBranchFilter(e.target.value)}
+                                className="w-full pl-3 pr-8 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
+                            >
+                                <option value="All">All Facilities / Branches</option>
+                                {branches.map(b => (
+                                    <option key={b.branchId || b.id} value={b.branchId || b.id}>{b.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Search Input */}
+                        <div className="relative min-w-[240px]">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input
+                                type="text"
+                                placeholder="Search token, patient, staff, reason..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:border-synos-primary transition-all shadow-xs"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Corrections Table */}
+            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 overflow-hidden bg-white dark:bg-zinc-900/30 shadow-xs">
+                {loading ? (
+                    <div className="p-16 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-3 border-synos-primary border-t-transparent rounded-full animate-spin" />
+                        <span>Retrieving forensic revision log...</span>
+                    </div>
+                ) : filteredCorrections.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                        <CheckCircle2 className="w-10 h-10 text-zinc-400 mx-auto opacity-75" />
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white">No Visit Corrections Logged</p>
+                        <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                            No visits have undergone post-registration amendments or test revisions for the selected time horizon.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-3 px-4">Date & Time</th>
+                                    <th className="py-3 px-4">Token & Patient</th>
+                                    <th className="py-3 px-4">Facility</th>
+                                    <th className="py-3 px-4">Amended By</th>
+                                    <th className="py-3 px-4">Audit Justification</th>
+                                    <th className="py-3 px-4 text-right">Previous → New Bill</th>
+                                    <th className="py-3 px-4 text-center">Net Shift</th>
+                                    <th className="py-3 px-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                {filteredCorrections.map((c) => {
+                                    const diff = Number(c.differenceAmount || 0);
+                                    return (
+                                        <tr key={c.correctionId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                                {c.createdAt ? new Date(c.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-black/5 dark:border-white/5">
+                                                        {c.visitToken}
+                                                    </span>
+                                                    <div>
+                                                        <p className="font-bold text-zinc-900 dark:text-white leading-tight">{c.patientName}</p>
+                                                        <p className="text-[11px] text-zinc-400 font-medium">
+                                                            {c.patientPhone || c.patientMrn || ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400 font-medium">
+                                                {c.branchName || 'Main Facility'}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 font-bold">
+                                                    <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                    <span>{c.createdByName || 'Front Desk Staff'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 px-4 max-w-[260px]">
+                                                <p className="text-zinc-800 dark:text-zinc-200 font-medium truncate" title={c.reason}>
+                                                    {c.reason || 'Administrative visit amendment'}
+                                                </p>
+                                                {c.referralPartnerName && (
+                                                    <p className="text-[10px] text-indigo-500 font-bold mt-0.5 truncate">
+                                                        Doctor: {c.referralPartnerName}
+                                                    </p>
+                                                )}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold">
+                                                <span className="text-zinc-400 line-through mr-1.5">₹{Number(c.previousAmount || 0).toLocaleString()}</span>
+                                                <span className="text-zinc-900 dark:text-white">→ ₹{Number(c.newAmount || 0).toLocaleString()}</span>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                <span className={cn(
+                                                    "font-mono font-black text-xs px-2.5 py-0.5 rounded-full border",
+                                                    diff > 0 
+                                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                                        : diff < 0 
+                                                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                                                            : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+                                                )}>
+                                                    {diff > 0 ? `+₹${diff.toLocaleString()}` : (diff < 0 ? `-₹${Math.abs(diff).toLocaleString()}` : "₹0")}
+                                                </span>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedCorrection(c);
+                                                            setIsDetailsModalOpen(true);
+                                                        }}
+                                                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+                                                    >
+                                                        <FileText className="w-3 h-3 text-synos-primary" />
+                                                        <span>Audit Details</span>
+                                                    </button>
+                                                    {c.invoiceId && (
+                                                        <button
+                                                            onClick={() => handleViewInvoiceDoc(c.invoiceId)}
+                                                            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                                                            title="View Current Tax Invoice"
+                                                        >
+                                                            <Receipt className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* AUDIT DETAILS MODAL */}
+            {isDetailsModalOpen && selectedCorrection && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-synos-primary/10 flex items-center justify-center text-synos-primary">
+                                    <ShieldCheck className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Correction Audit Record</h3>
+                                    <p className="text-[11px] text-zinc-400">Token: {selectedCorrection.visitToken} • {selectedCorrection.patientName}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsDetailsModalOpen(false)}
+                                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Top Meta Grid */}
+                        <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-xs">
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Amended By</span>
+                                <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 mt-0.5">
+                                    <User className="w-3.5 h-3.5 text-zinc-400" />
+                                    {selectedCorrection.createdByName || 'Front Desk Staff'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Timestamp</span>
+                                <span className="font-mono text-zinc-800 dark:text-zinc-200 mt-0.5 block">
+                                    {new Date(selectedCorrection.createdAt).toLocaleString()}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Previous Bill</span>
+                                <span className="font-mono font-bold text-zinc-600 dark:text-zinc-400 mt-0.5 block">
+                                    ₹{Number(selectedCorrection.previousAmount || 0).toLocaleString()}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">New Bill (After Correction)</span>
+                                <span className="font-mono font-bold text-zinc-900 dark:text-white mt-0.5 block">
+                                    ₹{Number(selectedCorrection.newAmount || 0).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Reason / Justification */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Mandatory Audit Reason</label>
+                            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs font-medium text-amber-800 dark:text-amber-300">
+                                {selectedCorrection.reason || 'No justification entered.'}
+                            </div>
+                        </div>
+
+                        {/* Parsed JSON Staged Actions */}
+                        {(() => {
+                            const p = parsePayload(selectedCorrection.payloadJson);
+                            if (!p) return null;
+                            return (
+                                <div className="space-y-3 pt-1 border-t dark:border-zinc-800 border-zinc-200">
+                                    <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Staged Actions In This Amendment</label>
+                                    
+                                    {p.AddTestCodes && p.AddTestCodes.length > 0 && (
+                                        <div className="space-y-1">
+                                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Tests Added:</span>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {p.AddTestCodes.map((code, idx) => (
+                                                    <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                        +{code}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {p.RemoveOrderIds && p.RemoveOrderIds.length > 0 && (
+                                        <div className="space-y-1">
+                                            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">Orders Cancelled / Removed:</span>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {p.RemoveOrderIds.map((id, idx) => (
+                                                    <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 line-through">
+                                                        Order #{idx + 1}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {p.SettlementAction && (
+                                        <div className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                            <span className="text-zinc-500 font-medium">Settlement Action:</span>
+                                            <span className="font-bold text-zinc-900 dark:text-white capitalize">{p.SettlementAction}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-zinc-800 border-zinc-200">
+                            <button
+                                type="button"
+                                onClick={() => setIsDetailsModalOpen(false)}
+                                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                            >
+                                Close
+                            </button>
+                            {selectedCorrection.invoiceId && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsDetailsModalOpen(false);
+                                        handleViewInvoiceDoc(selectedCorrection.invoiceId);
+                                    }}
+                                    className="px-4 py-2 rounded-xl text-xs font-bold bg-synos-primary hover:bg-synos-primary/90 text-white transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                                >
+                                    <Receipt className="w-3.5 h-3.5" />
+                                    <span>View Current Tax Invoice</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Commercial Document Modal */}
+            {isDocModalOpen && docData && (
+                <CommercialDocumentViewer
+                    isOpen={isDocModalOpen}
+                    onClose={() => {
+                        setIsDocModalOpen(false);
+                        setDocData(null);
+                    }}
+                    title={`Patient Tax Invoice - ${docData.patient?.name || ''}`}
+                    defaultLetterheadMode="digital"
+                    paperSize="a4"
+                >
+                    <DynamicDocumentRenderer
+                        slotId="patient_tax_invoice"
+                        data={docData}
+                        forceRefresh={true}
+                    />
+                </CommercialDocumentViewer>
+            )}
+
+            {/* Printable Summary Modal */}
+            <FinancePrintableSummaryModal
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                title="Visit Revision & Correction Audit Report"
+                timeRange={presetRange}
+                columns={[
+                    { key: 'visitToken', label: 'Token' },
+                    { key: 'patientName', label: 'Patient Name' },
+                    { key: 'createdByName', label: 'Amended By' },
+                    { key: 'reason', label: 'Audit Reason' },
+                    { key: 'previousAmount', label: 'Previous (₹)', align: 'right', format: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'newAmount', label: 'New (₹)', align: 'right', format: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'differenceAmount', label: 'Difference (₹)', align: 'right', format: (v) => `${Number(v || 0) >= 0 ? '+' : ''}₹${Number(v || 0).toLocaleString()}` }
+                ]}
+                data={filteredCorrections}
+                summaryTotals={{
+                    totalAmount: `Net Shift: ${netShift >= 0 ? '+' : ''}₹${netShift.toLocaleString()}`,
+                    paidAmount: `${totalAmendments} Events`,
+                    pendingAmount: `${upwardCount} Up / ${downwardCount} Down`
                 }}
                 onDownloadCsv={handleDownloadSummary}
             />

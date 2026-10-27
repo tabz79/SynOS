@@ -36,7 +36,9 @@ export function FinanceLayout() {
             subItems: [
                 { name: "Overview", path: "/finance/revenue/overview" },
                 { name: "Bills & Collections", path: "/finance/revenue/bills" },
+                { name: "Due Bills", path: "/finance/revenue/dues" },
                 { name: "Pending Receivables", path: "/finance/revenue/receivables" },
+                { name: "Visit Corrections", path: "/finance/revenue/corrections" },
                 { name: "Collection History", path: "/finance/revenue/history" }
             ]
         },

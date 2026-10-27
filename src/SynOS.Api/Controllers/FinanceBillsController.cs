@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
+using SynOS.Models.Entities;
+using SynOS.Models.Entities.Payments;
+using SynOS.Models.Entities.Revenue;
+using SynOS.Models.Enums;
 
 namespace SynOS.Api.Controllers
 {
@@ -294,6 +298,379 @@ namespace SynOS.Api.Controllers
 
             return Ok(result);
         }
+
+        #region Due Bills & Counter Collections
+
+        [HttpGet("due-bills")]
+        public async Task<ActionResult<IEnumerable<object>>> GetDueBills(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] string? search = null)
+        {
+            var now = DateTime.UtcNow;
+
+            if (!string.IsNullOrEmpty(preset))
+            {
+                var p = preset.Trim().ToLower();
+                if (p == "today")
+                {
+                    startDate = now.Date.AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "yesterday")
+                {
+                    startDate = now.Date.AddDays(-1).AddHours(-6);
+                    endDate = now.Date.AddTicks(-1);
+                }
+                else if (p == "this week" || p == "week")
+                {
+                    startDate = now.Date.AddDays(-7).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this month" || p == "month")
+                {
+                    startDate = new DateTime(now.Year, now.Month, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this quarter" || p == "quarter" || p.StartsWith("q"))
+                {
+                    var quarter = (now.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    startDate = new DateTime(now.Year, qStartMonth, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this year" || p == "year" || p == "fy")
+                {
+                    var fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                    startDate = new DateTime(fyStartYear, 4, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+            }
+
+            var query = _context.Invoices
+                .Include(i => i.Visit).ThenInclude(v => v!.Patient)
+                .Include(i => i.Visit).ThenInclude(v => v!.Branch)
+                .Include(i => i.Visit).ThenInclude(v => v!.ReferralPartner)
+                .Include(i => i.Visit).ThenInclude(v => v!.Orders).ThenInclude(o => o.Test)
+                .Include(i => i.Payments)
+                .Include(i => i.PartialPayments)
+                .Where(i => i.Visit != null && 
+                            i.Status != "Cancelled" && 
+                            i.Visit.PaymentCollectionModel != "PartnerMonthlyBilling")
+                .AsNoTracking();
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = query.Where(i => i.Visit!.BranchId == branchId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(i => i.CreatedAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(i => i.CreatedAt <= endDate.Value);
+            }
+
+            var rawInvoices = await query
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(500)
+                .ToListAsync();
+
+            var dueBills = rawInvoices
+                .Select(i => {
+                    var totalPaid = (i.Payments?.Sum(p => p.Amount) ?? 0) + (i.PartialPayments?.Sum(p => p.Amount) ?? 0);
+                    var balanceDue = i.Total - totalPaid;
+                    var lastPayment = i.Payments?.OrderByDescending(p => p.ReceivedAt).FirstOrDefault();
+                    return new {
+                        Invoice = i,
+                        TotalPaid = totalPaid,
+                        BalanceDue = balanceDue,
+                        LastPayment = lastPayment
+                    };
+                })
+                .Where(x => x.BalanceDue > 0)
+                .Select(x => new {
+                    InvoiceId = x.Invoice.InvoiceId,
+                    VisitId = x.Invoice.VisitId,
+                    Token = x.Invoice.Visit?.Token ?? "UNKNOWN",
+                    PatientName = x.Invoice.Visit?.Patient != null ? $"{x.Invoice.Visit.Patient.FirstName} {x.Invoice.Visit.Patient.LastName}".Trim() : "Walk-in Patient",
+                    PatientMobile = x.Invoice.Visit?.Patient?.CurrentPhoneNumber ?? "",
+                    PatientMrn = x.Invoice.Visit?.Patient?.MRN ?? "",
+                    PatientGender = x.Invoice.Visit?.Patient?.Gender ?? "",
+                    PatientAge = x.Invoice.Visit?.Patient != null && x.Invoice.Visit.Patient.DateOfBirth != default ? Math.Max(0, DateTime.UtcNow.Year - x.Invoice.Visit.Patient.DateOfBirth.Year) : 0,
+                    BranchId = x.Invoice.Visit?.BranchId,
+                    BranchName = x.Invoice.Visit?.Branch?.Name ?? "Main Facility",
+                    ReferralDoctor = x.Invoice.Visit?.ReferralPartner?.Name ?? "Direct Patient",
+                    CreatedAt = x.Invoice.CreatedAt,
+                    DueDate = x.Invoice.DueDate,
+                    GrossAmount = x.Invoice.GrossAmount,
+                    DiscountAmount = x.Invoice.DiscountAmount,
+                    TotalAmount = x.Invoice.Total,
+                    TotalPaid = x.TotalPaid,
+                    BalanceDue = x.BalanceDue,
+                    Status = x.TotalPaid > 0 ? "Partial" : "Pending",
+                    LastPaymentDate = x.LastPayment?.ReceivedAt,
+                    LastPaymentMethod = x.LastPayment?.Method ?? "N/A",
+                    Tests = x.Invoice.Visit?.Orders?.Select(o => o.Test?.TestName ?? o.TestCode).Where(t => !string.IsNullOrEmpty(t)).ToList() ?? new List<string>()
+                });
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim().ToLower();
+                dueBills = dueBills.Where(b => 
+                    (b.PatientName?.ToLower().Contains(q) ?? false) ||
+                    (b.Token?.ToLower().Contains(q) ?? false) ||
+                    (b.PatientMobile?.Contains(q) ?? false)
+                );
+            }
+
+            return Ok(dueBills.ToList());
+        }
+
+        [HttpPost("{invoiceId}/collect-due")]
+        public async Task<IActionResult> CollectDue(Guid invoiceId, [FromBody] CollectDueRequestDto request)
+        {
+            if (request == null || request.Amount <= 0)
+            {
+                return BadRequest(new { message = "Valid payment amount greater than zero is required." });
+            }
+
+            var invoice = await _context.Invoices
+                .Include(i => i.Payments)
+                .Include(i => i.PartialPayments)
+                .Include(i => i.Visit).ThenInclude(v => v!.Patient)
+                .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+
+            if (invoice == null)
+            {
+                return NotFound(new { message = "Invoice not found." });
+            }
+
+            if (string.Equals(invoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+            {
+                return BadRequest(new { message = "Invoice is already fully settled." });
+            }
+
+            var currentPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0);
+            var remainingDue = invoice.Total - currentPaid;
+
+            if (remainingDue <= 0)
+            {
+                invoice.Status = "Paid";
+                if (invoice.Visit != null) invoice.Visit.Status = VisitStatus.Paid;
+                await _context.SaveChangesAsync();
+                return BadRequest(new { message = "Invoice has no outstanding balance." });
+            }
+
+            var amountToRecord = Math.Min(request.Amount, remainingDue);
+
+            // Resolve userId
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            Guid userId = Guid.Empty;
+            if (userIdClaim != null && Guid.TryParse(userIdClaim, out var parsedId))
+            {
+                userId = parsedId;
+            }
+            else
+            {
+                userId = await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+            }
+
+            var payment = new Payment
+            {
+                PaymentId = Guid.NewGuid(),
+                InvoiceId = invoice.InvoiceId,
+                Amount = amountToRecord,
+                Method = !string.IsNullOrWhiteSpace(request.Method) ? request.Method : "Cash",
+                ReceiptNo = !string.IsNullOrWhiteSpace(request.ReceiptNo) 
+                    ? request.ReceiptNo 
+                    : $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                ReceivedAt = DateTime.UtcNow,
+                ReceivedByUserId = userId
+            };
+            _context.Payments.Add(payment);
+
+            var newTotalPaid = currentPaid + amountToRecord;
+            if (newTotalPaid >= invoice.Total)
+            {
+                invoice.Status = "Paid";
+                if (invoice.Visit != null)
+                {
+                    invoice.Visit.Status = VisitStatus.Paid;
+                }
+            }
+            else
+            {
+                invoice.Status = "PartialPayment";
+                if (invoice.Visit != null)
+                {
+                    invoice.Visit.Status = VisitStatus.PartialPayment;
+                }
+            }
+
+            // Ledger Confirmation Fact
+            var fact = new PaymentConfirmedFact(
+                Guid.NewGuid(),
+                PaymentDirection.In,
+                payment.Amount,
+                invoice.Visit?.PatientId ?? Guid.Empty,
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                payment.PaymentId,
+                payment.Method
+            );
+            _context.PaymentConfirmedFacts.Add(fact);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = newTotalPaid >= invoice.Total ? "Bill fully settled." : $"Partial payment of ₹{amountToRecord} recorded. Remaining due: ₹{invoice.Total - newTotalPaid}.",
+                paymentId = payment.PaymentId,
+                receiptNo = payment.ReceiptNo,
+                amountPaid = amountToRecord,
+                totalPaid = newTotalPaid,
+                balanceDue = invoice.Total - newTotalPaid,
+                status = invoice.Status
+            });
+        }
+
+        #endregion
+
+        #region Visit Corrections Audit Feed
+
+        [HttpGet("corrections")]
+        [HttpGet("/api/v1/finance/corrections")]
+        public async Task<ActionResult<IEnumerable<object>>> GetVisitCorrections(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] string? search = null)
+        {
+            var now = DateTime.UtcNow;
+
+            if (!string.IsNullOrEmpty(preset))
+            {
+                var p = preset.Trim().ToLower();
+                if (p == "today")
+                {
+                    startDate = now.Date.AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "yesterday")
+                {
+                    startDate = now.Date.AddDays(-1).AddHours(-6);
+                    endDate = now.Date.AddTicks(-1);
+                }
+                else if (p == "this week" || p == "week")
+                {
+                    startDate = now.Date.AddDays(-7).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this month" || p == "month")
+                {
+                    startDate = new DateTime(now.Year, now.Month, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this quarter" || p == "quarter" || p.StartsWith("q"))
+                {
+                    var quarter = (now.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    startDate = new DateTime(now.Year, qStartMonth, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this year" || p == "year" || p == "fy")
+                {
+                    var fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                    startDate = new DateTime(fyStartYear, 4, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+            }
+
+            var query = _context.CorrectionFacts.AsNoTracking();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt <= endDate.Value);
+            }
+
+            var corrections = await query.OrderByDescending(c => c.CreatedAt).Take(500).ToListAsync();
+
+            var visitIds = corrections.Select(c => c.VisitId).Distinct().ToList();
+            var userIds = corrections.Select(c => c.CreatedBy).Distinct().ToList();
+
+            var visits = await _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Branch)
+                .Include(v => v.ReferralPartner)
+                .Where(v => visitIds.Contains(v.VisitId))
+                .AsNoTracking()
+                .ToDictionaryAsync(v => v.VisitId);
+
+            var users = await _context.Users
+                .Where(u => userIds.Contains(u.UserId))
+                .AsNoTracking()
+                .ToDictionaryAsync(u => u.UserId, u => !string.IsNullOrEmpty(u.Name) ? u.Name : u.Username);
+
+            var result = corrections.Select(c =>
+            {
+                visits.TryGetValue(c.VisitId, out var visit);
+                users.TryGetValue(c.CreatedBy, out var staffName);
+
+                return new
+                {
+                    CorrectionId = c.CorrectionId,
+                    VisitId = c.VisitId,
+                    InvoiceId = c.InvoiceId,
+                    CreatedAt = c.CreatedAt,
+                    CreatedByName = staffName ?? "Front Desk Staff",
+                    VisitToken = visit?.Token ?? "UNKNOWN",
+                    PatientName = visit?.Patient != null ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim() : "Unknown Patient",
+                    PatientPhone = visit?.Patient?.CurrentPhoneNumber ?? "",
+                    PatientMrn = visit?.Patient?.MRN ?? "",
+                    BranchId = visit?.BranchId,
+                    BranchName = visit?.Branch?.Name ?? "Main Facility",
+                    ReferralPartnerName = visit?.ReferralPartner?.Name,
+                    CorrectionType = c.CorrectionType.ToString(),
+                    PreviousAmount = c.PreviousAmount,
+                    NewAmount = c.NewAmount,
+                    DifferenceAmount = c.NewAmount - c.PreviousAmount,
+                    Reason = c.Reason ?? "Administrative visit amendment",
+                    PayloadJson = c.PayloadJson,
+                    IsReversal = c.IsReversal
+                };
+            });
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                result = result.Where(r => r.BranchId == branchId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim().ToLower();
+                result = result.Where(r => 
+                    (r.VisitToken?.ToLower().Contains(q) ?? false) ||
+                    (r.PatientName?.ToLower().Contains(q) ?? false) ||
+                    (r.CreatedByName?.ToLower().Contains(q) ?? false) ||
+                    (r.Reason?.ToLower().Contains(q) ?? false)
+                );
+            }
+
+            return Ok(result.ToList());
+        }
+
+        #endregion
 
         #region Stationery & Billing Settings
 
@@ -1488,5 +1865,13 @@ namespace SynOS.Api.Controllers
         }
 
         #endregion
+    }
+
+    public class CollectDueRequestDto
+    {
+        public decimal Amount { get; set; }
+        public string Method { get; set; } = "Cash";
+        public string? ReceiptNo { get; set; }
+        public string? Notes { get; set; }
     }
 }

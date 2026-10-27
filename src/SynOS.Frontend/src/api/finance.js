@@ -94,6 +94,68 @@ export const FinanceApi = {
     },
 
     /**
+     * Fetches Patient Due Bills (walk-in and direct patient visits with outstanding counter dues).
+     */
+    getDueBills: async (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.branchId && params.branchId !== 'All') query.append('branchId', params.branchId);
+        if (params.startDate) query.append('startDate', params.startDate);
+        if (params.endDate) query.append('endDate', params.endDate);
+        if (params.preset && params.preset !== 'All Time' && params.preset !== 'all') query.append('preset', params.preset);
+        if (params.search) query.append('search', params.search);
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        const url = (params.branchId && params.branchId !== 'All')
+            ? FinanceApi.withBranchId(`/api/v1/finance/bills/due-bills${qs}`)
+            : `/api/v1/finance/bills/due-bills${qs}`;
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load patient due bills");
+        return response.json();
+    },
+
+    /**
+     * Records a balance collection against an outstanding due bill.
+     */
+    collectDuePayment: async (invoiceId, payload) => {
+        const url = FinanceApi.withBranchId(`/api/v1/finance/bills/${invoiceId}/collect-due`);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                ...FinanceApi.getHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || "Failed to record payment for due bill");
+        }
+        return response.json();
+    },
+
+    /**
+     * Fetches the audit trail of visit amendments and corrections.
+     */
+    getVisitCorrections: async (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.branchId && params.branchId !== 'All') query.append('branchId', params.branchId);
+        if (params.startDate) query.append('startDate', params.startDate);
+        if (params.endDate) query.append('endDate', params.endDate);
+        if (params.preset && params.preset !== 'All Time' && params.preset !== 'all') query.append('preset', params.preset);
+        if (params.search) query.append('search', params.search);
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        const url = (params.branchId && params.branchId !== 'All')
+            ? FinanceApi.withBranchId(`/api/v1/finance/bills/corrections${qs}`)
+            : `/api/v1/finance/bills/corrections${qs}`;
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load visit correction audit trail");
+        return response.json();
+    },
+
+    /**
      * Fetches detailed data for an A4 Patient Tax Invoice / Bill.
      */
     getInvoiceDocument: async (invoiceId) => {

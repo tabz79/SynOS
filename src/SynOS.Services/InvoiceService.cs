@@ -226,6 +226,15 @@ namespace SynOS.Services
             if (paymentDto.Amount < remainingDue)
             {
                 invoice.Status = "PartialPayment";
+                var targetVisit = await _context.Visits.FindAsync(invoice.VisitId);
+                if (targetVisit != null) 
+                {
+                    targetVisit.Status = VisitStatus.PartialPayment;
+                    if (targetVisit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || targetVisit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await _visitService.AssignOfficialTokenAsync(targetVisit.VisitId, paymentDto.ReceivedByUserId);
+                    }
+                }
             }
             else
             {

@@ -81,6 +81,8 @@ export function IntentPanel({ onVisitUpdated }) {
     const [batchEditReason, setBatchEditReason] = useState('');
     const [isSubmittingBatchEdit, setIsSubmittingBatchEdit] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isPartialPayment, setIsPartialPayment] = useState(false);
+    const [customPaymentAmount, setCustomPaymentAmount] = useState('');
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -131,6 +133,8 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsPrepaidIntent(false);
             setBillingMode('Standard');
             setPaymentMethod('Cash'); // Reset to default
+            setIsPartialPayment(false);
+            setCustomPaymentAmount('');
             setActiveModal(null);
             setStagedAddedTests([]);
             setStagedRemovedOrderIds([]);
@@ -761,10 +765,17 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsActionSubmitting(true);
             setError(null);
             try {
-                const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, remainingDue, paymentMethod);
+                const numCustom = Number(customPaymentAmount);
+                const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
+                const effectiveAmount = isPartialValid ? numCustom : remainingDue;
+
+                const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, effectiveAmount, paymentMethod);
 
                 // Auto-print thermal receipt slip
                 handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
+
+                setIsPartialPayment(false);
+                setCustomPaymentAmount('');
 
                 // Instantly reset and close panel - zero extra clicks or modals
                 handleCloseAndReset();
@@ -931,7 +942,14 @@ export function IntentPanel({ onVisitUpdated }) {
             mainActionLabel = "Confirm Doctor B2B Bill (₹0)";
             isActionEnabled = hasTests;
         } else if (canCheckout) {
-            mainActionLabel = `Accept Payment (₹${remainingDue})`;
+            const numCustom = Number(customPaymentAmount);
+            const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
+            const payNowAmount = isPartialValid ? numCustom : remainingDue;
+            const balanceRemaining = remainingDue - payNowAmount;
+
+            mainActionLabel = isPartialValid
+                ? `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`
+                : `Accept Payment (₹${remainingDue.toLocaleString()})`;
             isActionEnabled = true;
         } else {
             mainActionLabel = "Add Tests to Proceed";
@@ -1068,6 +1086,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                             stagedNet={stagedNet}
                                             settlementDiff={settlementDiff}
                                             originalPaid={originalPaid}
+                                            isPartialPayment={isPartialPayment}
+                                            setIsPartialPayment={setIsPartialPayment}
+                                            customPaymentAmount={customPaymentAmount}
+                                            setCustomPaymentAmount={setCustomPaymentAmount}
                                         />
                                     </div>
                                 </div>

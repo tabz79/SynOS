@@ -888,8 +888,9 @@ namespace SynOS.Services
             }
             // ------------------------------------------------------------
 
-            // If payment is complete, trigger creation of lab work items
-            if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+            // If payment is complete or partial payment accepted at desk, trigger creation of lab work items
+            if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase))
             {
                 // Assign official daily token (e.g. MAI-001) from branch counter
                 var dbVisitForToken = await _context.Visits.FindAsync(visit.VisitId);
@@ -1286,8 +1287,8 @@ namespace SynOS.Services
                 Flags = new ReadinessFlagsDto
                 {
                     CanPrintToken = visit.Status != VisitStatus.Cancelled,
-                    CanCollectSamples = visit.Department == "Pathology" && invoice.Status == "Paid",
-                    CanPerformScan = visit.Department == "Radiology" && invoice.Status == "Paid"
+                    CanCollectSamples = visit.Department == "Pathology" && (invoice.Status == "Paid" || invoice.Status == "PartialPayment"),
+                    CanPerformScan = visit.Department == "Radiology" && (invoice.Status == "Paid" || invoice.Status == "PartialPayment")
                 },
                 Branch = branchDetails
             };

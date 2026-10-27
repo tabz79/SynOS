@@ -33,7 +33,11 @@ export function BillingSummary({
     stagedDiscountAmt,
     stagedNet,
     settlementDiff = 0,
-    originalPaid = 0
+    originalPaid = 0,
+    isPartialPayment = false,
+    setIsPartialPayment,
+    customPaymentAmount = '',
+    setCustomPaymentAmount
 }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
@@ -461,8 +465,11 @@ export function BillingSummary({
     const isInsurance = billingMode === 'Insurance';
     const isCorporate = billingMode === 'Corporate';
 
-    let displayAmountToCollect = billing.netAmount;
-    let amountLabel = billing.paymentStatus === 'Paid' ? "Total Bill Amount" : "Amount to Collect";
+    const totalNet = stagedNet !== undefined ? stagedNet : (billing?.netAmount || billing?.totalAmount || 0);
+    const remainingDue = Math.max(0, totalNet - totalPaid);
+
+    let displayAmountToCollect = remainingDue;
+    let amountLabel = billing?.paymentStatus === 'Paid' ? "Total Bill Amount" : (totalPaid > 0 ? "Remaining Due to Collect" : "Amount to Collect");
 
     if (isPrepaid) {
         displayAmountToCollect = 0;
@@ -1213,8 +1220,113 @@ export function BillingSummary({
                     </div>
                 )}
 
+                {/* E. Payment Settlement Mode (Full vs Partial) & Amount Collected */}
+                {displayAmountToCollect > 0 && !isPrepaid && !isCorporate && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && !isCorrectionIntent && (
+                    <div className="pt-2 animate-in fade-in space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className="type-section-header">Settlement Terms</label>
+                            {isPartialPayment && (
+                                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Partial Payment</span>
+                            )}
+                        </div>
+                        
+                        {/* Segmented control: Full Settlement vs Partial */}
+                        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-lg bg-black/[0.04] dark:bg-white/[0.04] border border-black/5 dark:border-white/5">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsPartialPayment?.(false);
+                                    setCustomPaymentAmount?.('');
+                                }}
+                                className={cn(
+                                    "py-1.5 px-2 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                                    !isPartialPayment
+                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                )}
+                            >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Full (₹{displayAmountToCollect.toLocaleString()})</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsPartialPayment?.(true);
+                                    if (!customPaymentAmount) {
+                                        setCustomPaymentAmount?.(String(Math.round(displayAmountToCollect * 0.5)));
+                                    }
+                                }}
+                                className={cn(
+                                    "py-1.5 px-2 rounded-md text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                                    isPartialPayment
+                                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                )}
+                            >
+                                <AlertCircle className="w-3.5 h-3.5" />
+                                <span>Partial Due</span>
+                            </button>
+                        </div>
+
+                        {/* Partial Payment Amount Input & Quick Chips */}
+                        {isPartialPayment && (
+                            <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20 space-y-2 animate-in fade-in duration-150">
+                                <div className="flex items-center justify-between text-xs">
+                                    <span className="font-bold text-amber-700 dark:text-amber-300">Amount Collected Now</span>
+                                    <span className="font-mono font-black text-amber-700 dark:text-amber-300">
+                                        ₹{Number(customPaymentAmount || 0).toLocaleString()}
+                                    </span>
+                                </div>
+
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">₹</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max={displayAmountToCollect}
+                                        value={customPaymentAmount || ''}
+                                        onChange={(e) => {
+                                            const val = Math.min(displayAmountToCollect, Math.max(0, Number(e.target.value)));
+                                            setCustomPaymentAmount?.(e.target.value === '' ? '' : String(val));
+                                        }}
+                                        placeholder={`1 - ${displayAmountToCollect}`}
+                                        className="w-full pl-7 pr-3 py-1.5 text-xs font-bold font-mono rounded-md border border-amber-300 dark:border-amber-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-amber-500"
+                                    />
+                                </div>
+
+                                {/* Quick selection chips */}
+                                <div className="flex items-center gap-1.5 pt-0.5">
+                                    {[
+                                        { label: '₹500', val: 500 },
+                                        { label: '₹1,000', val: 1000 },
+                                        { label: '50%', val: Math.round(displayAmountToCollect * 0.5) }
+                                    ].filter(c => c.val > 0 && c.val < displayAmountToCollect).map((chip, idx) => (
+                                        <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => setCustomPaymentAmount?.(String(chip.val))}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20 transition-all cursor-pointer"
+                                        >
+                                            {chip.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Desk Due Notice */}
+                                <div className="flex items-center justify-between pt-1 border-t border-amber-200 dark:border-amber-900/50 text-[11px]">
+                                    <span className="text-zinc-500 dark:text-zinc-400 font-medium">Remaining Due at Desk:</span>
+                                    <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
+                                        ₹{Math.max(0, displayAmountToCollect - Number(customPaymentAmount || 0)).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* E. Payment Method (STAGE 2) - Only show when desk collection is required */}
-                {displayAmountToCollect > 0 && billing.paymentStatus === 'PendingPayment' && (
+                {displayAmountToCollect > 0 && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && (
                     <div className="pt-2 animate-in fade-in space-y-2">
                         <label className="type-section-header">Payment Method</label>
                         <div className="grid grid-cols-3 gap-2">
