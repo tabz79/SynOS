@@ -110,18 +110,18 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
     const isDark = theme === 'dark';
 
     const cardUi = isDark ? {
-        locked: "bg-zinc-900 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] rounded-xl cursor-default p-3.5",
-        inactive: "bg-zinc-900/90 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] rounded-xl cursor-pointer hover:border-zinc-500 hover:bg-zinc-850 transition-all p-3.5",
+        locked: "bg-zinc-900/90 backdrop-blur-sm border border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] rounded-2xl cursor-default p-4",
+        inactive: "bg-zinc-900/90 backdrop-blur-sm border border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] rounded-2xl cursor-pointer hover:border-zinc-500 hover:bg-zinc-850 transition-all p-4",
         name: isLocked ? "text-white" : "text-zinc-200 group-hover:text-white",
         badge: isLocked ? "bg-synos-primary/20 border-synos-primary/40 text-synos-primary" : "bg-zinc-800 text-zinc-300 border-zinc-700",
         mrn: "bg-zinc-950 border-zinc-800 text-zinc-400"
     } : {
-        // LIGHT MODE: Crisp elevated card with solid white surface & shadow depth
-        locked: "bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-xl cursor-default p-3.5",
-        inactive: "bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-xl cursor-pointer hover:border-slate-400 hover:shadow-md transition-all p-3.5",
-        name: isLocked ? "type-value text-zinc-900 font-bold" : "type-value group-hover:text-black font-semibold",
-        badge: isLocked ? "bg-slate-100 border-slate-300 text-zinc-800 shadow-2xs font-semibold" : "bg-slate-50 border-slate-200 text-zinc-600",
-        mrn: "bg-slate-50 border-slate-300 text-zinc-900 font-bold"
+        // LIGHT MODE: Frosted glass slab with crisp rim light & shadow depth
+        locked: "bg-white/90 backdrop-blur-sm border border-white/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] rounded-2xl cursor-default p-4",
+        inactive: "bg-white/90 backdrop-blur-sm border border-white/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] rounded-2xl cursor-pointer hover:border-slate-300 hover:shadow-md transition-all p-4",
+        name: isLocked ? "type-value text-zinc-900 font-bold" : "type-value text-zinc-900 group-hover:text-black font-semibold",
+        badge: isLocked ? "bg-slate-100/80 border-slate-200/90 text-zinc-800 shadow-2xs font-semibold" : "bg-slate-50 border-slate-200 text-zinc-600",
+        mrn: "bg-slate-50/80 border-slate-200 text-zinc-900 font-bold"
     };
 
     return (
@@ -137,12 +137,12 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
 
                 {/* COL 1: AVATAR (Row Span 3) */}
                 <div className={cn(
-                    "row-span-3 self-center w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                    "row-span-3 self-center w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-2xs",
                     isLocked
-                        ? (isDark ? "bg-synos-primary/20 text-synos-primary border border-synos-primary/30" : "bg-sky-100 text-sky-600 border border-sky-200")
-                        : (isDark ? "bg-zinc-800 text-zinc-300 border border-zinc-700" : "bg-slate-100 text-slate-600 border border-slate-200")
+                        ? (isDark ? "bg-synos-primary/20 text-synos-primary border border-synos-primary/30" : "bg-slate-100 text-slate-700 border border-slate-200/80")
+                        : (isDark ? "bg-zinc-800 text-zinc-300 border border-zinc-700" : "bg-slate-100 text-slate-600 border border-slate-200/80")
                 )}>
-                    <User className="w-6 h-6" />
+                    <User className="w-5 h-5" />
                 </div>
 
                 {/* ROW 1: NAME + SELECT */}
@@ -182,17 +182,17 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                 </div>
 
                 {/* ROW 2: META + LABEL */}
-                <div className="flex flex-wrap items-center gap-2 type-code opacity-80 leading-none">
+                <div className="flex flex-wrap items-center gap-2 type-code opacity-90 leading-none">
                     {/* Age */}
-                    <span className="px-2 py-0.5 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 font-medium text-xs">
+                    <span className="px-2.5 py-0.5 rounded-full bg-slate-100/80 dark:bg-zinc-800 border border-slate-200/70 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium text-xs">
                         Age: {detailedAge.text}
                     </span>
                     {/* Gender */}
-                    <span className="w-6 h-6 rounded-full bg-white/60 border border-zinc-200 text-zinc-700 flex items-center justify-center font-medium text-xs">
+                    <span className="w-6 h-6 rounded-full bg-slate-100/80 dark:bg-zinc-800 border border-slate-200/70 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-medium text-xs">
                         {genderInitial}
                     </span>
                     {/* Mobile */}
-                    <span className="text-zinc-900 font-mono tracking-wide ml-1 text-sm">
+                    <span className="text-zinc-900 dark:text-zinc-100 font-mono tracking-wide ml-1 text-sm font-medium">
                         {mobile}
                     </span>
                 </div>
@@ -206,8 +206,8 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
 
                 {/* ROW 3: MRN + DATE */}
                 <div className="flex items-center leading-none">
-                    <div className="px-2 py-0.5 rounded bg-white/40 border border-zinc-200/50 text-zinc-900 font-mono text-sm tracking-wider inline-flex items-center">
-                        <span className="font-bold opacity-60 mr-2 text-[10px]">MRN:</span>
+                    <div className="px-2 py-0.5 rounded-md bg-slate-100/70 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700 text-zinc-900 dark:text-zinc-200 font-mono text-xs tracking-wider inline-flex items-center">
+                        <span className="font-bold opacity-60 mr-1.5 text-[10px]">MRN:</span>
                         {mrn}
                     </div>
                 </div>

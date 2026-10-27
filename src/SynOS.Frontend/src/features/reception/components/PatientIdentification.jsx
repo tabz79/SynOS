@@ -28,36 +28,36 @@ export function PatientIdentification({
 
     const ui = isDark ? {
         indicator: {
-            active: "bg-blue-600 text-white font-bold border-blue-500 shadow-sm",
-            inactive: "bg-zinc-800 border-zinc-700 text-zinc-300 font-bold"
+            active: "bg-zinc-800 text-white border border-zinc-700 shadow-2xs font-bold",
+            inactive: "bg-zinc-900 text-zinc-500 border border-zinc-800 font-semibold"
         },
         headerText: {
             active: "text-white font-bold text-sm tracking-tight",
             inactive: "text-zinc-400 font-semibold text-sm tracking-tight"
         },
-        section: "p-4 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] space-y-3",
-        input: "bg-zinc-950 border border-zinc-700 type-code text-white focus:border-synos-primary shadow-xs",
+        section: "p-4 xl:p-5 rounded-2xl bg-zinc-900/90 backdrop-blur-sm border border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] space-y-3",
+        input: "bg-zinc-950 border border-zinc-800 rounded-xl type-code text-white focus:border-synos-primary shadow-xs",
         emptyBox: "bg-zinc-900 border border-zinc-800 type-body",
         form: "bg-zinc-900 border border-zinc-800",
         formLabel: "type-section-header text-zinc-300",
         formInput: "bg-black border border-zinc-800 text-white type-body focus:border-synos-primary"
     } : {
         indicator: {
-            active: "bg-blue-600 text-white font-bold border-blue-600 shadow-sm",
-            inactive: "bg-white text-zinc-600 border-slate-300 shadow-2xs font-bold"
+            active: "bg-white text-zinc-900 border border-slate-200/90 shadow-2xs font-bold",
+            inactive: "bg-slate-100 text-zinc-500 border border-slate-200/50 shadow-none font-semibold"
         },
         headerText: {
             active: "text-zinc-900 font-bold text-sm tracking-tight",
-            inactive: "text-zinc-600 font-semibold text-sm tracking-tight"
+            inactive: "text-zinc-500 font-medium text-sm tracking-tight"
         },
-        // ELEVATED CARD SECTION
-        section: "p-4 rounded-xl bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)] space-y-3",
+        // ELEVATED FROSTED SLAB
+        section: "p-4 xl:p-5 rounded-2xl bg-white/90 backdrop-blur-sm border border-white/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] space-y-3",
         // ETCHED INPUT
-        input: "bg-white border border-slate-300 shadow-xs type-code text-zinc-900 focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/20 transition-all",
-        emptyBox: "border-dashed border-slate-300 bg-slate-50/50 type-body text-zinc-600",
+        input: "bg-slate-50/80 border border-slate-200/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] rounded-xl type-code text-zinc-900 focus:bg-white focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/20 transition-all",
+        emptyBox: "border-dashed border-slate-300 bg-slate-50/50 type-body text-zinc-600 rounded-xl",
         form: "ring-0 space-y-4",
         formLabel: "type-section-header text-zinc-700 font-bold",
-        formInput: "bg-white border border-slate-300 shadow-xs type-body text-zinc-900 focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/20"
+        formInput: "bg-slate-50/80 border border-slate-200/80 rounded-xl shadow-xs type-body text-zinc-900 focus:bg-white focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/20"
     };
 
     // Search Effect (Debounced)

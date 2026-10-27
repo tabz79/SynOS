@@ -98,20 +98,20 @@ export function IntentPanel({ onVisitUpdated }) {
             disabled: "bg-zinc-800 text-zinc-500"
         }
     } : {
-        // LIGHT MODE: Clean modern panel with defined crisp boundaries
+        // LIGHT MODE: Architectural Studio Frost Slab
         panel: cn(
-            "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
-            "border-l border-zinc-300 shadow-[-20px_0_50px_rgba(0,0,0,0.25)]",
-            "border-t border-white/90",
+            "bg-[linear-gradient(to_bottom,#EEF3F7_0%,#E3EAF0_50%,#D5E0EB_100%)]",
+            "border-l border-white shadow-[-24px_0_60px_rgba(15,23,42,0.18)]",
+            "border-t border-white/80",
             "z-20"
         ),
-        header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-zinc-200/90",
-        footer: "bg-[#D7E1E4] border-t border-zinc-200/90 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
+        header: "bg-white/80 backdrop-blur-md border-b border-slate-200/80",
+        footer: "bg-white/85 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_20px_-10px_rgba(15,23,42,0.06)]",
         title: "text-zinc-900 font-bold",
-        subtitle: "text-zinc-600 font-medium",
+        subtitle: "text-zinc-500 font-medium",
         actionBtn: {
             enabled: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20 transition-transform active:scale-95",
-            disabled: "bg-zinc-100 text-zinc-500 border border-zinc-200"
+            disabled: "bg-zinc-100 text-zinc-400 border border-slate-200"
         }
     };
 
@@ -1008,8 +1008,8 @@ export function IntentPanel({ onVisitUpdated }) {
                             <div className="px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-4 space-y-3.5 xl:space-y-4 animate-in fade-in duration-300">
                                 {/* Full-width 4-mode segmented toggle bar separated from payer box */}
                                 <div className={cn(
-                                    "p-3 rounded-2xl border transition-all shadow-sm",
-                                    isDark ? "bg-zinc-900 border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)]" : "bg-white border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                                    "p-3 rounded-2xl border transition-all shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)]",
+                                    isDark ? "bg-zinc-900/90 border-white/10" : "bg-white/90 backdrop-blur-sm border-white/90"
                                 )}>
                                     <MultiPayerSelector
                                         billingMode={billingMode}

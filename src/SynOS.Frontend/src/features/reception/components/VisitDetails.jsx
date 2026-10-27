@@ -133,28 +133,28 @@ export function VisitDetails({
     const ui = isDark ? {
         indicator: "bg-zinc-800 border-zinc-700 text-zinc-200 font-bold",
         headerText: "text-white font-bold text-sm tracking-tight",
-        section: "p-4 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] space-y-3",
+        section: "p-4 xl:p-5 rounded-2xl bg-zinc-900/90 backdrop-blur-sm border border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] space-y-3",
         sectionTitle: "type-section-header text-zinc-300 font-bold",
-        input: "bg-zinc-950 border border-zinc-700 text-white type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(59,130,246,0.20)] shadow-xs",
+        input: "bg-zinc-950 border border-zinc-800 text-white type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(59,130,246,0.20)] shadow-xs rounded-xl",
         suggestionBox: "bg-zinc-900 border border-zinc-700 shadow-xl",
-        testCard: "group flex items-center justify-between p-3 rounded-lg bg-zinc-800/60 border border-zinc-700/70 shadow-xs hover:bg-zinc-800 hover:border-zinc-600 transition-all cursor-pointer",
+        testCard: "group flex items-center justify-between p-3 rounded-xl bg-zinc-800/60 border border-zinc-700/70 shadow-xs hover:bg-zinc-800 hover:border-zinc-600 transition-all cursor-pointer",
         testCode: "bg-zinc-800 border-zinc-700/50 type-code text-zinc-300",
         modal: "bg-zinc-900 border border-zinc-700 type-body",
         modalInput: "bg-black border border-zinc-700 text-white type-body focus:border-amber-500"
     } : {
-        indicator: "bg-blue-600 text-white border-blue-600 shadow-sm font-bold",
+        indicator: "bg-white text-zinc-900 border-slate-200/90 shadow-2xs font-bold",
         headerText: "text-zinc-900 font-bold text-sm tracking-tight",
-        // ELEVATED CARD STYLE (Solid white surface with crisp borders & elevation)
-        section: "p-4 rounded-xl bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)] space-y-3",
+        // ELEVATED FROSTED SLAB
+        section: "p-4 xl:p-5 rounded-2xl bg-white/90 backdrop-blur-sm border border-white/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] space-y-3",
         sectionTitle: "type-section-header text-zinc-800 font-bold",
         // ETCHED INPUT: Bright & sunken into the slab with refined visible focus ring and backlight glow
-        input: "bg-white border border-slate-300 shadow-xs type-body text-zinc-900 focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/30 focus:shadow-[0_0_12px_rgba(37,99,235,0.15)] transition-all placeholder:text-zinc-400",
-        suggestionBox: "bg-white border border-slate-300 shadow-xl",
-        // TEST CARD: Clean elevated card with subtle border and crisp elevation
-        testCard: "group flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-200 shadow-xs hover:border-slate-300 hover:bg-white hover:shadow-sm transition-all cursor-pointer",
+        input: "bg-slate-50/80 border border-slate-200/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] rounded-xl type-body text-zinc-900 focus:bg-white focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/20 transition-all placeholder:text-zinc-400",
+        suggestionBox: "bg-white border border-slate-200/90 shadow-xl rounded-xl",
+        // TEST CARD: Clean elevated frosted card with subtle border and crisp elevation
+        testCard: "group flex items-center justify-between p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 shadow-2xs hover:border-slate-300 hover:bg-white hover:shadow-xs transition-all cursor-pointer",
         testCode: "type-code text-zinc-700 font-bold group-hover:text-zinc-900 transition-colors",
-        modal: "bg-white border border-slate-300 type-body",
-        modalInput: "bg-slate-50 border border-slate-300 text-zinc-900 type-body focus:border-black"
+        modal: "bg-white border border-slate-200 type-body",
+        modalInput: "bg-slate-50 border border-slate-200 text-zinc-900 type-body focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||

@@ -59,11 +59,11 @@ export function MultiPayerSelector({
                                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-synos-primary/70 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950 focus-visible:border-synos-primary focus-visible:shadow-[0_0_18px_rgba(59,130,246,0.22)]",
                                 isSelected
                                     ? isDark
-                                        ? "bg-synos-primary/15 border-synos-primary text-white shadow-[0_0_16px_rgba(59,130,246,0.20)] ring-1 ring-synos-primary"
-                                        : "bg-blue-50/90 border-2 border-blue-600 text-blue-950 shadow-[0_2px_8px_rgba(37,99,235,0.14)]"
+                                        ? "bg-synos-primary/15 border-synos-primary text-white shadow-sm ring-1 ring-synos-primary"
+                                        : "bg-white text-zinc-950 border-slate-300 shadow-[0_2px_10px_rgba(0,0,0,0.06)] ring-1 ring-blue-500/25"
                                     : isDark
-                                        ? "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 hover:shadow-xs"
-                                        : "bg-white border-slate-200 text-zinc-600 hover:border-slate-300 hover:bg-slate-50/60 hover:shadow-xs",
+                                        ? "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                                        : "bg-slate-100/60 border-transparent text-zinc-600 hover:bg-white/80 hover:text-zinc-900 hover:border-slate-200",
                                 disabled && !isSelected && "opacity-60"
                             )}
                         >
@@ -72,10 +72,10 @@ export function MultiPayerSelector({
                                 isSelected
                                     ? isDark
                                         ? "bg-synos-primary text-white border-synos-primary"
-                                        : "bg-blue-600 text-white border-blue-600"
+                                        : "bg-blue-600 text-white border-blue-600 shadow-2xs"
                                     : isDark
                                         ? "bg-zinc-800 text-zinc-400 border-zinc-700"
-                                        : "bg-zinc-100 text-zinc-500 border-zinc-200"
+                                        : "bg-slate-200/60 text-zinc-600 border-slate-300/60"
                             )}>
                                 <Icon className="w-3.5 h-3.5" />
                             </div>
