@@ -12,6 +12,7 @@ namespace SynOS.Models.DTOs.Reception
         public IntakeVisit? Visit { get; set; }
         public IntakeBilling? Billing { get; set; }
         public IntakeUiHints UiState { get; set; } = new();
+        public List<IntakeCorrectionHistoryItem> CorrectionHistory { get; set; } = new();
     }
 
     public class IntakeContext
@@ -169,6 +170,17 @@ namespace SynOS.Models.DTOs.Reception
         public bool CanAcceptPayment { get; set; }
         public bool IsReadOnly { get; set; }
         public string? ReadOnlyReason { get; set; }
+    }
+
+    public class IntakeCorrectionHistoryItem
+    {
+        public Guid CorrectionId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string? Reason { get; set; }
+        public decimal PreviousAmount { get; set; }
+        public decimal NewAmount { get; set; }
+        public string? CreatedByName { get; set; }
+        public string? PayloadJson { get; set; }
     }
 
     // Query DTO

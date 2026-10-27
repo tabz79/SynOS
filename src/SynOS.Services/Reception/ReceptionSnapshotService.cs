@@ -391,6 +391,33 @@ namespace SynOS.Services.Reception
                 snapshot.UiState.CanGenerateBill = hasTests && !hasBill;
                 snapshot.UiState.CanAcceptPayment = _lifecyclePolicy.CanAcceptPayment(visit.Status);
             }
+
+            // 4. Correction & Revision Audit History
+            var correctionFacts = await _context.CorrectionFacts
+                .AsNoTracking()
+                .Where(c => c.VisitId == visit.VisitId)
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+
+            if (correctionFacts.Any())
+            {
+                var userIds = correctionFacts.Select(c => c.CreatedBy).Distinct().ToList();
+                var users = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => userIds.Contains(u.UserId))
+                    .ToDictionaryAsync(u => u.UserId, u => u.Name ?? u.Username);
+
+                snapshot.CorrectionHistory = correctionFacts.Select(c => new IntakeCorrectionHistoryItem
+                {
+                    CorrectionId = c.CorrectionId,
+                    CreatedAt = c.CreatedAt,
+                    Reason = c.Reason,
+                    PreviousAmount = c.PreviousAmount,
+                    NewAmount = c.NewAmount,
+                    CreatedByName = users.TryGetValue(c.CreatedBy, out var name) ? name : "Staff Desk",
+                    PayloadJson = c.PayloadJson
+                }).ToList();
+            }
         }
 
         private async Task LoadPatientContextAsync(ReceptionIntakeSnapshotDto snapshot, Guid patientId)

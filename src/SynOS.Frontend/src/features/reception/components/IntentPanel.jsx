@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
@@ -80,6 +80,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isBatchEditConfirmModalOpen, setIsBatchEditConfirmModalOpen] = useState(false);
     const [batchEditReason, setBatchEditReason] = useState('');
     const [isSubmittingBatchEdit, setIsSubmittingBatchEdit] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -1070,6 +1071,101 @@ export function IntentPanel({ onVisitUpdated }) {
                                         />
                                     </div>
                                 </div>
+
+                                {/* Audit & Amendment History (Forensic Visibility) */}
+                                {snapshot?.correctionHistory && snapshot.correctionHistory.length > 0 && (
+                                    <div className={cn(
+                                        "p-4 rounded-lg border space-y-3 transition-all",
+                                        isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-inner"
+                                    )}>
+                                        <div 
+                                            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+                                            className="flex items-center justify-between cursor-pointer select-none"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <History className="w-4 h-4 text-synos-primary" />
+                                                <span className="type-section-header font-bold text-xs">
+                                                    Amendment & Audit History
+                                                </span>
+                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-synos-primary/10 text-synos-primary border border-synos-primary/20">
+                                                    {snapshot.correctionHistory.length} {snapshot.correctionHistory.length === 1 ? 'Record' : 'Records'}
+                                                </span>
+                                            </div>
+                                            <button type="button" className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
+                                                {isHistoryOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+
+                                        {isHistoryOpen && (
+                                            <div className="space-y-2.5 pt-2 border-t border-black/5 dark:border-white/5 animate-in fade-in duration-200">
+                                                {snapshot.correctionHistory.map((h, idx) => {
+                                                    let parsedPayload = null;
+                                                    try {
+                                                        if (h.payloadJson) parsedPayload = JSON.parse(h.payloadJson);
+                                                    } catch (_) {}
+
+                                                    const amountDiff = h.newAmount - h.previousAmount;
+
+                                                    return (
+                                                        <div 
+                                                            key={h.correctionId || idx}
+                                                            className={cn(
+                                                                "p-3 rounded-lg border text-xs space-y-1.5 transition-all",
+                                                                isDark ? "bg-zinc-950/40 border-zinc-800" : "bg-white/80 border-black/5 shadow-2xs"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex items-center gap-1.5 font-bold">
+                                                                    <span className="text-zinc-900 dark:text-zinc-100">{h.createdByName || "Staff Desk"}</span>
+                                                                    <span className="text-zinc-400 font-normal">•</span>
+                                                                    <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 font-normal">
+                                                                        {new Date(h.createdAt).toLocaleString('en-IN', {
+                                                                            day: '2-digit', month: 'short', year: 'numeric',
+                                                                            hour: '2-digit', minute: '2-digit', hour12: true
+                                                                        })}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="font-mono text-xs font-bold">
+                                                                    <span>₹{h.previousAmount?.toLocaleString()} → ₹{h.newAmount?.toLocaleString()}</span>
+                                                                    {amountDiff !== 0 && (
+                                                                        <span className={cn("ml-1.5", amountDiff > 0 ? "text-indigo-600 dark:text-indigo-400" : "text-emerald-600 dark:text-emerald-400")}>
+                                                                            ({amountDiff > 0 ? `+₹${amountDiff.toLocaleString()}` : `-₹${Math.abs(amountDiff).toLocaleString()}`})
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                                                                <span className="font-semibold text-zinc-500 dark:text-zinc-400 mr-1">Reason:</span>
+                                                                <span>{h.reason || "Visit amended via Reception"}</span>
+                                                            </div>
+
+                                                            {parsedPayload && (
+                                                                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px]">
+                                                                    {parsedPayload.addTestCodes?.length > 0 && (
+                                                                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-medium">
+                                                                            +Added: {parsedPayload.addTestCodes.join(", ")}
+                                                                        </span>
+                                                                    )}
+                                                                    {parsedPayload.removeOrderIds?.length > 0 && (
+                                                                        <span className="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-medium">
+                                                                            -Removed {parsedPayload.removeOrderIds.length} {parsedPayload.removeOrderIds.length === 1 ? 'test' : 'tests'}
+                                                                        </span>
+                                                                    )}
+                                                                    {parsedPayload.settlementAction && parsedPayload.settlementAction !== 'None' && (
+                                                                        <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 font-medium">
+                                                                            Settlement: {parsedPayload.settlementAction === 'RefundIssued' ? 'Refund Cash Disbursed' : 'Additional Payment Collected'}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </>
