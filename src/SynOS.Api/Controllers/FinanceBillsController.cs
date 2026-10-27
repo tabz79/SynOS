@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
@@ -627,6 +629,69 @@ namespace SynOS.Api.Controllers
                 visits.TryGetValue(c.VisitId, out var visit);
                 users.TryGetValue(c.CreatedBy, out var staffName);
 
+                var changeSummary = new List<string>();
+                try
+                {
+                    if (!string.IsNullOrWhiteSpace(c.PayloadJson))
+                    {
+                        using var doc = JsonDocument.Parse(c.PayloadJson);
+                        var root = doc.RootElement;
+
+                        if (root.TryGetProperty("AddTestCodes", out var addCodes) && addCodes.ValueKind == JsonValueKind.Array)
+                        {
+                            var codes = addCodes.EnumerateArray().Select(x => x.GetString()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+                            if (codes.Any())
+                            {
+                                changeSummary.Add($"+Tests: {string.Join(", ", codes)}");
+                            }
+                        }
+
+                        if (root.TryGetProperty("RemoveOrderIds", out var remOrders) && remOrders.ValueKind == JsonValueKind.Array)
+                        {
+                            var remCount = remOrders.GetArrayLength();
+                            if (remCount > 0)
+                            {
+                                changeSummary.Add($"-{remCount} Test{(remCount > 1 ? "s" : "")} Cancelled");
+                            }
+                        }
+
+                        if (root.TryGetProperty("DoctorChange", out var docChange))
+                        {
+                            changeSummary.Add($"Doctor: {docChange.GetString()}");
+                        }
+                        else if (visit?.ReferralPartner != null)
+                        {
+                            changeSummary.Add($"Doctor: {visit.ReferralPartner.Name}");
+                        }
+
+                        if (root.TryGetProperty("BillingMode", out var bMode))
+                        {
+                            changeSummary.Add($"Mode: {bMode.GetString()}");
+                        }
+
+                        if (root.TryGetProperty("SettlementAction", out var setAct) && setAct.GetString() != "None")
+                        {
+                            var actStr = setAct.GetString();
+                            if (actStr == "RefundIssued") changeSummary.Add("Refund Issued at Desk");
+                            else if (actStr == "AdditionalPaymentRecorded") changeSummary.Add("Additional Payment Collected");
+                        }
+
+                        if (root.TryGetProperty("Age", out var _) || root.TryGetProperty("Gender", out _) || root.TryGetProperty("FirstName", out _))
+                        {
+                            changeSummary.Add("Patient Demographics Corrected");
+                        }
+                    }
+                }
+                catch
+                {
+                    // Fallback to basic reason
+                }
+
+                if (!changeSummary.Any() && visit?.ReferralPartner != null)
+                {
+                    changeSummary.Add($"Doctor: {visit.ReferralPartner.Name}");
+                }
+
                 return new
                 {
                     CorrectionId = c.CorrectionId,
@@ -647,6 +712,7 @@ namespace SynOS.Api.Controllers
                     DifferenceAmount = c.NewAmount - c.PreviousAmount,
                     Reason = c.Reason ?? "Administrative visit amendment",
                     PayloadJson = c.PayloadJson,
+                    ChangeSummary = changeSummary,
                     IsReversal = c.IsReversal
                 };
             });
@@ -664,6 +730,130 @@ namespace SynOS.Api.Controllers
                     (r.PatientName?.ToLower().Contains(q) ?? false) ||
                     (r.CreatedByName?.ToLower().Contains(q) ?? false) ||
                     (r.Reason?.ToLower().Contains(q) ?? false)
+                );
+            }
+
+            return Ok(result.ToList());
+        }
+
+        [HttpGet("cancellations")]
+        [Authorize(Policy = "FinancePolicy")]
+        public async Task<ActionResult<IEnumerable<object>>> GetVisitCancellations(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] string? search = null)
+        {
+            var now = DateTime.UtcNow;
+
+            if (!string.IsNullOrEmpty(preset))
+            {
+                var p = preset.Trim().ToLower();
+                if (p == "today")
+                {
+                    startDate = now.Date.AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "yesterday")
+                {
+                    startDate = now.Date.AddDays(-1).AddHours(-6);
+                    endDate = now.Date.AddTicks(-1);
+                }
+                else if (p == "this week" || p == "week")
+                {
+                    startDate = now.Date.AddDays(-7).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this month" || p == "month")
+                {
+                    startDate = new DateTime(now.Year, now.Month, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this quarter" || p == "quarter" || p.StartsWith("q"))
+                {
+                    var quarter = (now.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    startDate = new DateTime(now.Year, qStartMonth, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+                else if (p == "this year" || p == "year" || p == "fy")
+                {
+                    var fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                    startDate = new DateTime(fyStartYear, 4, 1).AddHours(-6);
+                    endDate = now.Date.AddDays(1).AddTicks(-1);
+                }
+            }
+
+            var query = _context.VisitCancellations
+                .Include(c => c.CancelledBy)
+                .Include(c => c.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(c => c.Visit)
+                    .ThenInclude(v => v.Branch)
+                .Include(c => c.Visit)
+                    .ThenInclude(v => v.ReferralPartner)
+                .Include(c => c.Visit)
+                    .ThenInclude(v => v.Invoices)
+                        .ThenInclude(i => i.Payments)
+                .AsNoTracking();
+
+            if (startDate.HasValue)
+            {
+                query = query.Where(c => c.CancelledAt >= startDate.Value);
+            }
+            if (endDate.HasValue)
+            {
+                query = query.Where(c => c.CancelledAt <= endDate.Value);
+            }
+
+            var list = await query.OrderByDescending(c => c.CancelledAt).Take(500).ToListAsync();
+
+            var result = list.Select(c =>
+            {
+                var visit = c.Visit;
+                var invoice = visit?.Invoices.FirstOrDefault();
+                var payments = invoice?.Payments ?? new List<Payment>();
+                var totalPaid = payments.Where(p => p.Amount > 0).Sum(p => p.Amount);
+                var refunds = payments.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
+                var refundMethod = payments.FirstOrDefault(p => p.Amount < 0)?.Method ?? (refunds > 0 ? "Cash Refund" : "None");
+
+                return new
+                {
+                    CancelId = c.CancelId,
+                    VisitId = c.VisitId,
+                    CancelledAt = c.CancelledAt,
+                    Reason = c.Reason,
+                    Notes = c.Notes,
+                    CancelledByName = c.CancelledBy != null && !string.IsNullOrEmpty(c.CancelledBy.Name) ? c.CancelledBy.Name : (c.CancelledBy?.Username ?? "Staff Desk"),
+                    VisitToken = visit?.Token ?? "UNKNOWN",
+                    PatientName = visit?.Patient != null ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim() : "Direct Patient",
+                    PatientPhone = visit?.Patient?.CurrentPhoneNumber ?? "",
+                    PatientMrn = visit?.Patient?.MRN ?? "",
+                    BranchId = visit?.BranchId,
+                    BranchName = visit?.Branch?.Name ?? "Main Facility",
+                    ReferralPartnerName = visit?.ReferralPartner?.Name,
+                    TotalBilled = invoice?.Total ?? 0m,
+                    RefundedAmount = refunds > 0 ? refunds : (totalPaid > 0 ? totalPaid : 0m),
+                    RefundMethod = refundMethod,
+                    HasRefund = refunds > 0 || totalPaid > 0
+                };
+            });
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                result = result.Where(r => r.BranchId == branchId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim().ToLower();
+                result = result.Where(r =>
+                    (r.VisitToken?.ToLower().Contains(q) ?? false) ||
+                    (r.PatientName?.ToLower().Contains(q) ?? false) ||
+                    (r.CancelledByName?.ToLower().Contains(q) ?? false) ||
+                    (r.Reason?.ToLower().Contains(q) ?? false) ||
+                    (r.PatientPhone?.Contains(q) ?? false)
                 );
             }
 

@@ -39,6 +39,7 @@ export function FinanceLayout() {
                 { name: "Due Bills", path: "/finance/revenue/dues" },
                 { name: "Pending Receivables", path: "/finance/revenue/receivables" },
                 { name: "Visit Corrections", path: "/finance/revenue/corrections" },
+                { name: "Cancellations & Refunds", path: "/finance/revenue/cancellations" },
                 { name: "Collection History", path: "/finance/revenue/history" }
             ]
         },

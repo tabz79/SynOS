@@ -177,8 +177,8 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 const sub = fin.grossSubtotal || fin.subtotal || fin.totalAmount || 0;
                 const disc = fin.discountAmount || fin.itemDiscounts || 0;
                 const net = fin.totalAmount || fin.grandTotal || (sub - disc);
-                const paid = fin.totalCollected || fin.amountPaid || 0;
-                const due = fin.balanceDue !== undefined ? fin.balanceDue : (net - paid);
+                const paid = fin.totalPaid !== undefined ? fin.totalPaid : (fin.totalCollected !== undefined ? fin.totalCollected : (fin.amountPaid !== undefined ? fin.amountPaid : 0));
+                const due = fin.balanceDue !== undefined ? fin.balanceDue : Math.max(0, net - paid);
 
                 if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${Number(sub).toLocaleString()}`;
                 if (boxes.financialSummary.fields.discountAmount) {
@@ -254,8 +254,14 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 const gross = fin.grossSubtotal || fin.subtotal || fin.grossAmount || 0;
                 const disc = fin.discountAmount || fin.discount || (fin.appliedDiscount?.discountAmount) || 0;
                 const net = fin.grandTotal || fin.totalAmount || fin.netAmount || (gross - disc);
-                const paid = fin.amountPaid || fin.totalCollected || net;
-                const due = fin.balanceDue !== undefined ? fin.balanceDue : 0;
+                const paid = fin.totalPaid !== undefined ? fin.totalPaid : (fin.amountPaid !== undefined ? fin.amountPaid : (fin.totalCollected !== undefined ? fin.totalCollected : net));
+                const due = fin.balanceDue !== undefined ? fin.balanceDue : Math.max(0, net - paid);
+
+                if (boxes.docBadge?.fields?.badgeTitle) {
+                    if (due > 0 && paid > 0) boxes.docBadge.fields.badgeTitle.value = "PARTIAL PAYMENT RECEIPT";
+                    else if (due > 0 && paid === 0) boxes.docBadge.fields.badgeTitle.value = "PAYMENT DUE RECEIPT";
+                    else boxes.docBadge.fields.badgeTitle.value = "CASH PAYMENT RECEIPT";
+                }
 
                 if (boxes.financialSummary.fields.grossAmount) {
                     boxes.financialSummary.fields.grossAmount.value = `₹${Number(gross).toLocaleString()}`;

@@ -191,7 +191,15 @@ export function generateThermalInvoiceHtml(payload = {}) {
     let badgeHtml = "";
     if (boxes.docBadge?.enabled) {
         const df = boxes.docBadge.fields || {};
-        const title = df.badgeTitle?.value || "CASH PAYMENT RECEIPT";
+        const dueVal = Number(normalizedData.financial.balanceDue || 0);
+        const paidVal = Number(normalizedData.financial.totalPaid || 0);
+        let defaultTitle = "CASH PAYMENT RECEIPT";
+        if (dueVal > 0 && paidVal > 0) {
+            defaultTitle = "PARTIAL PAYMENT RECEIPT";
+        } else if (dueVal > 0 && paidVal === 0) {
+            defaultTitle = "PAYMENT DUE RECEIPT";
+        }
+        const title = (df.badgeTitle?.value && df.badgeTitle.value !== "CASH PAYMENT RECEIPT") ? df.badgeTitle.value : defaultTitle;
         const dateVal = df.date?.value || normalizedData.dateTime;
         const receiptNo = df.receiptNumber?.value || normalizedData.receiptNumber;
 

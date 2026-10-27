@@ -156,6 +156,27 @@ export const FinanceApi = {
     },
 
     /**
+     * Fetches the audit trail of cancelled visits and processed refunds.
+     */
+    getVisitCancellations: async (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.branchId && params.branchId !== 'All') query.append('branchId', params.branchId);
+        if (params.startDate) query.append('startDate', params.startDate);
+        if (params.endDate) query.append('endDate', params.endDate);
+        if (params.preset && params.preset !== 'All Time' && params.preset !== 'all') query.append('preset', params.preset);
+        if (params.search) query.append('search', params.search);
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        const url = (params.branchId && params.branchId !== 'All')
+            ? FinanceApi.withBranchId(`/api/v1/finance/bills/cancellations${qs}`)
+            : `/api/v1/finance/bills/cancellations${qs}`;
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load visit cancellations log");
+        return response.json();
+    },
+
+    /**
      * Fetches detailed data for an A4 Patient Tax Invoice / Bill.
      */
     getInvoiceDocument: async (invoiceId) => {

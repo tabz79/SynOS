@@ -1323,10 +1323,53 @@ namespace SynOS.Services
             _context.VisitCancellations.Add(cancellation);
 
             var invoice = visit.Invoices.FirstOrDefault();
+            decimal totalRefunded = 0m;
             if (invoice != null)
             {
                 invoice.Status = "Cancelled";
-                // Refund logic if needed
+
+                // Refund logic: Calculate exact net paid amount
+                var netPaid = invoice.Payments.Sum(p => p.Amount);
+                if (netPaid > 0)
+                {
+                    totalRefunded = netPaid;
+                    var refundMethod = !string.IsNullOrWhiteSpace(cancelDto.RefundMethod) 
+                        ? cancelDto.RefundMethod 
+                        : "Cash Refund";
+
+                    var refundPayment = new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = invoice.InvoiceId,
+                        Amount = -netPaid,
+                        Method = refundMethod,
+                        ReceiptNo = $"REF-CAN-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = cancelDto.CancelledByUserId
+                    };
+                    _context.Payments.Add(refundPayment);
+                }
+
+                // If B2B partner receivable existed for this visit, settle/void it
+                var partnerReceivable = await _context.ReceivableFacts
+                    .FirstOrDefaultAsync(r => r.SourceVisitId == visitId && r.DebtorType == DebtorType.Partner);
+                if (partnerReceivable != null)
+                {
+                    partnerReceivable.SettledAt = DateTimeOffset.UtcNow;
+                    partnerReceivable.AmountReceived = partnerReceivable.Amount;
+                }
+            }
+
+            // Cancel all Orders on the visit
+            foreach (var order in visit.Orders)
+            {
+                if (order.Status != OrderStatus.Cancelled)
+                {
+                    order.Status = OrderStatus.Cancelled;
+                    order.CancellationReason = OrderCancellationReason.PatientRequest;
+                    order.CancelledAt = DateTime.UtcNow;
+                    order.CancelledByUserId = cancelDto.CancelledByUserId;
+                }
             }
 
             // Cancel all Specimens not yet processed
@@ -1345,18 +1388,18 @@ namespace SynOS.Services
             string actorName = await GetActorNameAsync(cancelDto.CancelledByUserId);
             string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
             
-             await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.VISIT_UPDATED,
+            await _operationalEventWriter.WriteEventAsync(
+                BranchEventType.VISIT_CANCELLED,
                 visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL",
                 visit.VisitId.ToString(),
                 visit.Token,
-                $"Visit Cancelled: {cancelDto.Reason}",
+                $"Visit Cancelled: {cancelDto.Reason}. Refund: ₹{totalRefunded}",
                 actorName,
                 cancelDto.CancelledByUserId.ToString(),
                 true, null, null,
                 TimelineVisibility.Surface,
                 visit.VisitId,
-                JsonSerializer.Serialize(new { PatientName = patientName, ActorName = actorName, Status = "Cancelled" })
+                JsonSerializer.Serialize(new { PatientName = patientName, ActorName = actorName, Status = "Cancelled", TotalRefunded = totalRefunded, Reason = cancelDto.Reason })
             );
 
             return cancellation;
@@ -2148,6 +2191,13 @@ namespace SynOS.Services
                         dto.Mobile,
                         dto.AddTestCodes,
                         dto.RemoveOrderIds,
+                        dto.ReferralPartnerId,
+                        dto.SecondaryPartnerId,
+                        dto.ReferrerText,
+                        dto.BillingMode,
+                        dto.DiscountValue,
+                        dto.DiscountReason,
+                        DoctorChange = visit.ReferralPartner?.Name,
                         dto.SettlementDifference,
                         SettlementAction = settlementAction,
                         dto.Reason

@@ -290,6 +290,8 @@ namespace SynOS.Services.Operations
                     
                     // Phase 6: Granular Payment Fields
                     TotalAmount = invoice?.Total ?? 0m,
+                    TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
+                    RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
@@ -415,6 +417,8 @@ namespace SynOS.Services.Operations
                 PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                 
                 TotalAmount = invoice?.Total ?? 0m,
+                TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
+                RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                 PaymentMethod = DerivePaymentMethod(visit, invoice),
                 ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
@@ -506,6 +510,13 @@ namespace SynOS.Services.Operations
                 return "Paid";
             }
 
+            if (invoice != null && (invoice.Status == "PartialPayment" || visit.Status == VisitStatus.PartialPayment))
+            {
+                var paid = invoice.Payments.Sum(p => p.Amount);
+                var due = Math.Max(0m, invoice.Total - paid);
+                return $"Partial Due (₹{due:N0})";
+            }
+
             return "Due";
         }
 
@@ -518,6 +529,12 @@ namespace SynOS.Services.Operations
                 var method = invoice.Payments.FirstOrDefault()?.Method;
                 return method ?? "Paid"; // Fallback
             }
+
+            if (invoice != null && (invoice.Status == "PartialPayment" || visit.Status == VisitStatus.PartialPayment))
+            {
+                return "Partial Due";
+            }
+
             return "Due";
         }
 

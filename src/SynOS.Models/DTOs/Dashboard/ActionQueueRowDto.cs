@@ -23,6 +23,8 @@ namespace SynOS.Models.DTOs.Dashboard
         // Examples: "Cash", "UPI", "Prepaid (Dr. Rao)"
 
         public decimal TotalAmount { get; set; }
+        public decimal TotalPaid { get; set; }
+        public decimal RemainingDue { get; set; }
         public string PaymentMethod { get; set; } = string.Empty; // "Cash", "UPI", "Card", "Prepaid"
         public string ReferrerName { get; set; } = string.Empty;
 

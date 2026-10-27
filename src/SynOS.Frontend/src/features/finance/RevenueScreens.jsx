@@ -25,7 +25,8 @@ import {
     FileText,
     Share2,
     Printer,
-    ShieldCheck
+    ShieldCheck,
+    Ban
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -343,6 +344,7 @@ export const RevenueTerminal = () => {
     { id: 'dues', label: 'Due Bills', icon: AlertCircle },
     { id: 'receivables', label: 'Pending Receivables', icon: Clock },
     { id: 'corrections', label: 'Visit Corrections', icon: ShieldCheck },
+    { id: 'cancellations', label: 'Cancellations & Refunds', icon: Ban },
     { id: 'history', label: 'Collection History', icon: History }
   ];
 
@@ -434,6 +436,7 @@ export const RevenueTerminal = () => {
         {tab === 'dues' && <DueBillsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
         {tab === 'receivables' && <PendingReceivablesScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
         {tab === 'corrections' && <VisitCorrectionsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
+        {tab === 'cancellations' && <CancellationsRefundsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
         {tab === 'history' && <CollectionHistoryScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
       </div>
     </div>
@@ -1380,7 +1383,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-6">
+        <div className="w-full px-8 py-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -2454,7 +2457,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-6">
+        <div className="w-full px-8 py-6 space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -2614,15 +2617,26 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     <span>{c.createdByName || 'Front Desk Staff'}</span>
                                                 </div>
                                             </td>
-                                            <td className="py-3.5 px-4 max-w-[260px]">
-                                                <p className="text-zinc-800 dark:text-zinc-200 font-medium truncate" title={c.reason}>
+                                            <td className="py-3.5 px-4 min-w-[240px] max-w-[340px]">
+                                                <p className="text-zinc-800 dark:text-zinc-200 font-medium" title={c.reason}>
                                                     {c.reason || 'Administrative visit amendment'}
                                                 </p>
-                                                {c.referralPartnerName && (
-                                                    <p className="text-[10px] text-indigo-500 font-bold mt-0.5 truncate">
-                                                        Doctor: {c.referralPartnerName}
-                                                    </p>
-                                                )}
+                                                <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                                                    {Array.isArray(c.changeSummary) && c.changeSummary.length > 0 ? (
+                                                        c.changeSummary.map((pill, idx) => (
+                                                            <span 
+                                                                key={idx}
+                                                                className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 leading-none"
+                                                            >
+                                                                {pill}
+                                                            </span>
+                                                        ))
+                                                    ) : c.referralPartnerName ? (
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 leading-none">
+                                                            Doctor: {c.referralPartnerName}
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                             </td>
                                             <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold">
                                                 <span className="text-zinc-400 line-through mr-1.5">₹{Number(c.previousAmount || 0).toLocaleString()}</span>
@@ -2726,7 +2740,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                         {/* Reason / Justification */}
                         <div className="space-y-1">
                             <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Mandatory Audit Reason</label>
-                            <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs font-medium text-amber-800 dark:text-amber-300">
+                            <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-zinc-800 dark:text-zinc-200">
                                 {selectedCorrection.reason || 'No justification entered.'}
                             </div>
                         </div>
@@ -3134,6 +3148,448 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
                 data={filteredHistory}
                 summaryTotals={{
                     amount: `₹${totalCollected.toLocaleString()}`
+                }}
+                onDownloadCsv={handleDownloadSummary}
+            />
+        </div>
+    );
+};
+
+export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRange }) => {
+    const { user } = useAuth();
+    const [cancellations, setCancellations] = useState([]);
+    const [branches, setBranches] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [branchFilter, setBranchFilter] = useState('All');
+    const [refundFilter, setRefundFilter] = useState('All'); // 'All' | 'WithRefund' | 'WithoutRefund'
+
+    // Details Modal State
+    const [selectedCancellation, setSelectedCancellation] = useState(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
+    useEffect(() => {
+        loadData();
+        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
+    }, [presetRange]);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const data = await FinanceApi.getVisitCancellations({ preset: presetRange });
+            setCancellations(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to load visit cancellations audit feed:", err);
+            setCancellations([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Filter Logic
+    const filteredCancellations = useMemo(() => {
+        return cancellations.filter(c => {
+            if (branchFilter !== 'All' && c.branchId && c.branchId !== branchFilter) return false;
+
+            const hasRef = Number(c.refundedAmount || 0) > 0;
+            if (refundFilter === 'WithRefund' && !hasRef) return false;
+            if (refundFilter === 'WithoutRefund' && hasRef) return false;
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const matchToken = (c.visitToken || '').toLowerCase().includes(q);
+                const matchPatient = (c.patientName || '').toLowerCase().includes(q);
+                const matchStaff = (c.cancelledByName || '').toLowerCase().includes(q);
+                const matchReason = (c.reason || '').toLowerCase().includes(q);
+                const matchNotes = (c.notes || '').toLowerCase().includes(q);
+                const matchPhone = (c.patientPhone || '').includes(q);
+                if (!matchToken && !matchPatient && !matchStaff && !matchReason && !matchNotes && !matchPhone) return false;
+            }
+
+            return true;
+        });
+    }, [cancellations, branchFilter, refundFilter, searchQuery]);
+
+    const totalCancelled = filteredCancellations.length;
+    const totalRefunded = filteredCancellations.reduce((sum, c) => sum + (Number(c.refundedAmount) || 0), 0);
+    const totalBilled = filteredCancellations.reduce((sum, c) => sum + (Number(c.totalBilled) || 0), 0);
+    const withRefundCount = filteredCancellations.filter(c => Number(c.refundedAmount || 0) > 0).length;
+
+    // CSV Export
+    const handleDownloadSummary = () => {
+        const headers = [
+            "Visit Token",
+            "Cancellation Date",
+            "Patient Name",
+            "MRN",
+            "Phone",
+            "Facility / Branch",
+            "Cancelled By Staff",
+            "Cancellation Reason",
+            "Administrative Notes",
+            "Original Bill (INR)",
+            "Refunded Amount (INR)",
+            "Refund Method"
+        ];
+
+        const rows = filteredCancellations.map(c => [
+            `"${c.visitToken || ''}"`,
+            `"${c.cancelledAt ? new Date(c.cancelledAt).toLocaleString() : ''}"`,
+            `"${(c.patientName || '').replace(/"/g, '""')}"`,
+            `"${c.patientMrn || ''}"`,
+            `"${c.patientPhone || ''}"`,
+            `"${(c.branchName || 'Main Facility').replace(/"/g, '""')}"`,
+            `"${(c.cancelledByName || 'Front Desk Staff').replace(/"/g, '""')}"`,
+            `"${(c.reason || '').replace(/"/g, '""')}"`,
+            `"${(c.notes || '').replace(/"/g, '""')}"`,
+            c.totalBilled || 0,
+            c.refundedAmount || 0,
+            `"${c.refundMethod || 'None'}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Visit_Cancellations_Refunds_${presetRange}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="w-full px-8 py-6 space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                        <Ban className="w-5 h-5 text-rose-500" />
+                        Cancelled Visits & Refund Settlements
+                    </h2>
+                    <p className="text-xs text-zinc-500 mt-1">
+                        Comprehensive ledger of voided registrations, order withdrawals, and outbound customer cash/UPI refunds.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleDownloadSummary}
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Export CSV</span>
+                    </button>
+                    <button
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                        <span>Print Summary</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Cancellations</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{totalCancelled}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Voided Patient Registrations</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Total Refunds Issued</p>
+                    <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalRefunded.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Outbound Customer Settlements</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Visits with Refund</p>
+                    <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{withRefundCount}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Paid Prior to Cancellation</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Gross Billed Voided</p>
+                    <p className="text-2xl font-black text-zinc-600 dark:text-zinc-300 mt-1">₹{totalBilled.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Gross Reversed Volume</span>
+                </div>
+            </div>
+
+            {/* Filters Bar */}
+            <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+                        {['All', 'WithRefund', 'WithoutRefund'].map(f => (
+                            <FilterTab 
+                                key={f} 
+                                label={f === 'All' ? 'All Cancellations' : (f === 'WithRefund' ? 'Refunds Issued' : 'Zero Refund / Unpaid')} 
+                                count={f === 'All' ? cancellations.length : (f === 'WithRefund' ? withRefundCount : (cancellations.length - withRefundCount))} 
+                                isActive={refundFilter === f} 
+                                onClick={() => setRefundFilter(f)} 
+                            />
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {branches.length > 0 && (
+                            <div className="shrink-0">
+                                <select
+                                    value={branchFilter}
+                                    onChange={(e) => setBranchFilter(e.target.value)}
+                                    aria-label="Filter cancellations by facility branch"
+                                    className="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none focus:border-synos-primary transition-all shadow-xs"
+                                >
+                                    <option value="All">All Facilities</option>
+                                    {branches.map(b => (
+                                        <option key={b.branchId || b.id} value={b.branchId || b.id}>{b.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        <div className="relative flex-1 sm:w-64">
+                            <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <input
+                                type="text"
+                                placeholder="Search token, patient, reason, staff..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:border-synos-primary transition-all shadow-xs"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Cancellations Table */}
+            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 overflow-hidden bg-white dark:bg-zinc-900/30 shadow-xs">
+                {loading ? (
+                    <div className="p-16 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-3 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                        <span>Retrieving cancellation records...</span>
+                    </div>
+                ) : filteredCancellations.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                        <CheckCircle2 className="w-10 h-10 text-zinc-400 mx-auto opacity-75" />
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white">No Cancelled Visits Logged</p>
+                        <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                            No visits have been cancelled or refunded for the selected period.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-3 px-4">Date & Time</th>
+                                    <th className="py-3 px-4">Token & Patient</th>
+                                    <th className="py-3 px-4">Facility</th>
+                                    <th className="py-3 px-4">Cancelled By</th>
+                                    <th className="py-3 px-4">Cancellation Reason & Notes</th>
+                                    <th className="py-3 px-4 text-right">Gross Billed</th>
+                                    <th className="py-3 px-4 text-right">Refund Amount</th>
+                                    <th className="py-3 px-4 text-center">Status</th>
+                                    <th className="py-3 px-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                {filteredCancellations.map((c) => {
+                                    const hasRefund = Number(c.refundedAmount || 0) > 0;
+                                    return (
+                                        <tr key={c.cancelId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                                {c.cancelledAt ? new Date(c.cancelledAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-black/5 dark:border-white/5">
+                                                        {c.visitToken}
+                                                    </span>
+                                                    <div>
+                                                        <p className="font-bold text-zinc-900 dark:text-white leading-tight">{c.patientName}</p>
+                                                        <p className="text-[11px] text-zinc-400 font-medium">
+                                                            {c.patientPhone || c.patientMrn || ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400 font-medium">
+                                                {c.branchName || 'Main Facility'}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 font-bold">
+                                                    <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                    <span>{c.cancelledByName || 'Staff Desk'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 px-4 min-w-[220px] max-w-[320px]">
+                                                <p className="text-zinc-800 dark:text-zinc-200 font-medium" title={c.reason}>
+                                                    {c.reason || 'Patient cancelled visit'}
+                                                </p>
+                                                {c.notes && (
+                                                    <p className="text-[11px] text-zinc-400 italic mt-0.5 truncate" title={c.notes}>
+                                                        Note: {c.notes}
+                                                    </p>
+                                                )}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold text-zinc-500 line-through">
+                                                ₹{Number(c.totalBilled || 0).toLocaleString()}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black">
+                                                {hasRefund ? (
+                                                    <span className="text-rose-600 dark:text-rose-400">
+                                                        -₹{Number(c.refundedAmount || 0).toLocaleString()}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-zinc-400 font-normal">₹0</span>
+                                                )}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                <span className={cn(
+                                                    "text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider",
+                                                    hasRefund
+                                                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                                                        : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+                                                )}>
+                                                    {hasRefund ? "Refunded" : "Cancelled"}
+                                                </span>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                <button
+                                                    onClick={() => {
+                                                        setSelectedCancellation(c);
+                                                        setIsDetailsModalOpen(true);
+                                                    }}
+                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-all cursor-pointer flex items-center gap-1 shadow-xs mx-auto"
+                                                >
+                                                    <FileText className="w-3 h-3 text-rose-500" />
+                                                    <span>Audit Details</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* AUDIT DETAILS MODAL */}
+            {isDetailsModalOpen && selectedCancellation && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+                    <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 space-y-5 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-200 pb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-500">
+                                    <Ban className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Cancellation Audit Particulars</h3>
+                                    <p className="text-[11px] text-zinc-400">Token: {selectedCancellation.visitToken} • {selectedCancellation.patientName}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsDetailsModalOpen(false)}
+                                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-sm font-bold"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Top Meta Grid */}
+                        <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-xs">
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Cancelled By</span>
+                                <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 mt-0.5">
+                                    <User className="w-3.5 h-3.5 text-zinc-400" />
+                                    {selectedCancellation.cancelledByName || 'Staff Desk'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Timestamp</span>
+                                <span className="font-mono text-zinc-800 dark:text-zinc-200 mt-0.5 block">
+                                    {new Date(selectedCancellation.cancelledAt).toLocaleString()}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Original Billed</span>
+                                <span className="font-mono font-bold text-zinc-500 line-through mt-0.5 block">
+                                    ₹{Number(selectedCancellation.totalBilled || 0).toLocaleString()}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] text-rose-500 uppercase font-bold block">Refund Settled</span>
+                                <span className="font-mono font-black text-rose-600 dark:text-rose-400 mt-0.5 block">
+                                    ₹{Number(selectedCancellation.refundedAmount || 0).toLocaleString()} ({selectedCancellation.refundMethod || 'Cash'})
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Reason / Justification */}
+                        <div className="space-y-1">
+                            <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Cancellation Reason</label>
+                            <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                                {selectedCancellation.reason || 'Patient cancelled visit.'}
+                            </div>
+                        </div>
+
+                        {selectedCancellation.notes && (
+                            <div className="space-y-1">
+                                <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Administrative Notes</label>
+                                <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400">
+                                    {selectedCancellation.notes}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-zinc-800 border-zinc-200">
+                            <button
+                                type="button"
+                                onClick={() => setIsDetailsModalOpen(false)}
+                                className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
+            <FinancePrintableSummaryModal
+                isOpen={isPrintSummaryOpen}
+                onClose={() => setIsPrintSummaryOpen(false)}
+                slotId="summary_cancellations_daybook"
+                title="Cancelled Visits & Customer Refunds Ledger"
+                subtitle="Forensic settlement ledger of all revoked orders, visit voidings, and cash/digital refunds"
+                dateRangeText={presetRange}
+                categoryLabel="CANCELLATION & REFUND AUDIT"
+                filterTags={[
+                    branchFilter !== 'All' ? `Branch: ${branchFilter}` : null,
+                    refundFilter !== 'All' ? `Refunds: ${refundFilter}` : null,
+                    searchQuery ? `Search: "${searchQuery}"` : null
+                ].filter(Boolean)}
+                kpis={[
+                    { label: "Total Cancellations", value: totalCancelled.toString(), color: "text-zinc-900", subtext: "Revoked Visits" },
+                    { label: "Total Refunds", value: `₹${totalRefunded.toLocaleString()}`, color: "text-rose-600", subtext: "Outbound Settled" },
+                    { label: "With Refunds", value: withRefundCount.toString(), color: "text-amber-600", subtext: "Pre-collected Visits" },
+                    { label: "Voided Gross", value: `₹${totalBilled.toLocaleString()}`, color: "text-zinc-600", subtext: "Cancelled Billed Volume" }
+                ]}
+                columns={[
+                    { key: 'cancelledAt', label: 'Date & Time', render: (v) => v ? new Date(v).toLocaleDateString() : '—' },
+                    { key: 'visitToken', label: 'Token', render: (v) => v || '—' },
+                    { key: 'patientName', label: 'Patient Name', render: (v) => v || 'Direct Patient' },
+                    { key: 'reason', label: 'Reason', render: (v) => v || '-' },
+                    { key: 'cancelledByName', label: 'Cancelled By', render: (v) => v || 'Staff Desk' },
+                    { key: 'totalBilled', label: 'Billed (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'refundedAmount', label: 'Refunded (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` }
+                ]}
+                data={filteredCancellations}
+                summaryTotals={{
+                    totalBilled: `₹${totalBilled.toLocaleString()}`,
+                    refundedAmount: `₹${totalRefunded.toLocaleString()}`
                 }}
                 onDownloadCsv={handleDownloadSummary}
             />

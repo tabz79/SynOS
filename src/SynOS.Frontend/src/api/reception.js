@@ -53,6 +53,8 @@ export const ReceptionApi = {
             testCodes: row.testCodes || row.TestCodes || [],
             paymentDisplay: row.paymentDisplay || row.PaymentDisplay,
             totalAmount: row.totalAmount || row.TotalAmount,
+            totalPaid: row.totalPaid ?? row.TotalPaid ?? 0,
+            remainingDue: row.remainingDue ?? row.RemainingDue ?? Math.max(0, (row.totalAmount || row.TotalAmount || 0) - (row.totalPaid ?? row.TotalPaid ?? 0)),
             paymentMethod: row.paymentMethod || row.PaymentMethod,
             referrerName: row.referrerName || row.ReferrerName,
             operationalStatus: row.operationalStatus || row.OperationalStatus,
@@ -402,6 +404,25 @@ export const ReceptionApi = {
             body: JSON.stringify({ visitId })
         });
         if (!response.ok) throw new Error('Failed to generate bill');
+    },
+
+    /**
+     * Cancels a visit and handles automated ledger refunds / order voiding.
+     * @param {string} visitId
+     * @param {Object} payload - { reason, notes, refundMethod }
+     * @returns {Promise<Object>}
+     */
+    cancelVisit: async (visitId, payload) => {
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/visits/${visitId}/cancel`), {
+            method: 'POST',
+            headers: ReceptionApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to cancel visit');
+        }
+        return await response.json();
     },
 
     /**

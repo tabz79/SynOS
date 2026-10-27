@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { VisitDetails } from './VisitDetails'
@@ -359,6 +359,37 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isActionSubmitting, setIsActionSubmitting] = useState(false);
     const [taxInvoiceModal, setTaxInvoiceModal] = useState({ isOpen: false, data: null });
 
+    // Cancel Visit State
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [cancelReason, setCancelReason] = useState('Patient unable to wait / Long queue');
+    const [cancelNotes, setCancelNotes] = useState('');
+    const [cancelRefundMethod, setCancelRefundMethod] = useState('Cash Refund');
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const handleCancelVisit = async () => {
+        const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+        if (!visitId) return;
+        if (!cancelReason?.trim()) {
+            alert("Please provide a reason for cancelling this visit.");
+            return;
+        }
+
+        setIsCancelling(true);
+        try {
+            await ReceptionApi.cancelVisit(visitId, {
+                reason: cancelReason,
+                notes: cancelNotes,
+                refundMethod: cancelRefundMethod
+            });
+            setIsCancelModalOpen(false);
+            handleCloseAndReset();
+        } catch (err) {
+            alert("Cancellation Failed: " + (err.message || 'Unknown error'));
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
     // Derived Modified Patient Identity
     const displayedPatient = useMemo(() => {
         if (!snapshot?.patient) return null;
@@ -434,7 +465,7 @@ export function IntentPanel({ onVisitUpdated }) {
         const effectiveGross = stagedGross !== undefined ? stagedGross : (b?.grossAmount || b?.netAmount || 0);
         const effectiveDiscount = stagedDiscountAmt !== undefined ? stagedDiscountAmt : (b?.discountAmount || 0);
         const effectiveNet = stagedNet !== undefined ? stagedNet : (b?.netAmount || 0);
-        const effectivePaid = isPrepaid ? 0 : (b?.totalPaid || effectiveNet);
+        const effectivePaid = isPrepaid ? 0 : (b?.totalPaid !== undefined ? Number(b.totalPaid) : 0);
         const dueVal = isPrepaid ? 0 : Math.max(0, effectiveNet - effectivePaid);
 
         const isCorporate = billingMode === 'Corporate' || visitObj?.billingType === 'Corporate' || Boolean(visitObj?.corporateAccountId);
@@ -547,7 +578,7 @@ export function IntentPanel({ onVisitUpdated }) {
         };
     };
 
-    const handlePrintReceipt = async (overrideToken) => {
+    const handlePrintReceipt = async (overrideToken, overridePaidAmount) => {
         const visitObj = snapshot?.visit;
         if (!visitObj) return;
         try {
@@ -557,7 +588,9 @@ export function IntentPanel({ onVisitUpdated }) {
             const effectiveGross = stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || 0);
             const effectiveDiscount = stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0);
             const effectiveNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0);
-            const effectivePaid = isPrepaid ? 0 : (snapshot?.billing?.totalPaid || effectiveNet);
+            const effectivePaid = overridePaidAmount !== undefined
+                ? overridePaidAmount
+                : (isPrepaid ? 0 : (snapshot?.billing?.totalPaid !== undefined ? Number(snapshot.billing.totalPaid) : effectiveNet));
 
             const effectiveDiscountReason = stagedDiscount?.remove
                 ? ""
@@ -709,8 +742,9 @@ export function IntentPanel({ onVisitUpdated }) {
                     await ReceptionApi.collectPayment(snapshot.visit.visitId, coPay, paymentMethod).catch(err => console.warn("Co-Pay collection:", err));
                 }
 
-                // Auto-print thermal receipt slip
-                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
+                // Auto-print thermal receipt slip with exact total paid so far
+                const currentPaid = snapshot?.billing?.totalPaid || 0;
+                handlePrintReceipt(res?.token, currentPaid + effectiveAmount).catch(err => console.error("Thermal print error:", err));
                 handleCloseAndReset();
             } catch (err) {
                 setError(err.message);
@@ -747,8 +781,9 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 const res = await ReceptionApi.markVisitAsCorporate(snapshot.visit.visitId);
 
-                // Auto-print thermal receipt slip
-                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
+                // Auto-print thermal receipt slip with exact total paid so far
+                const currentPaid = snapshot?.billing?.totalPaid || 0;
+                handlePrintReceipt(res?.token, currentPaid + effectiveAmount).catch(err => console.error("Thermal print error:", err));
                 handleCloseAndReset();
             } catch (err) {
                 setError(err.message);
@@ -771,8 +806,9 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, effectiveAmount, paymentMethod);
 
-                // Auto-print thermal receipt slip
-                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
+                // Auto-print thermal receipt slip with exact total paid so far
+                const currentPaid = snapshot?.billing?.totalPaid || 0;
+                handlePrintReceipt(res?.token, currentPaid + effectiveAmount).catch(err => console.error("Thermal print error:", err));
 
                 setIsPartialPayment(false);
                 setCustomPaymentAmount('');
@@ -1230,6 +1266,15 @@ export function IntentPanel({ onVisitUpdated }) {
                             <>
                                 <button
                                     type="button"
+                                    onClick={() => setIsCancelModalOpen(true)}
+                                    className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
+                                    title="Cancel this visit and automatically process refunds"
+                                >
+                                    <Ban className="w-3.5 h-3.5" />
+                                    <span>Cancel Visit</span>
+                                </button>
+                                <button
+                                    type="button"
                                     onClick={() => {
                                         setStagedAddedTests([]);
                                         setStagedRemovedOrderIds([]);
@@ -1300,11 +1345,20 @@ export function IntentPanel({ onVisitUpdated }) {
                         <button
                             type="button"
                             onClick={() => openCorrectionIntent(currentVisitId || drawerState.visitId)}
-                            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-amber-500/40 text-amber-500 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-95 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+                            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
                             title="Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"
                         >
-                            <Pencil className="w-4 h-4" />
+                            <Pencil className="w-4 h-4 text-synos-primary" />
                             <span>Visit Correction</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsCancelModalOpen(true)}
+                            className="py-3 px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-all active:scale-95 shadow-sm cursor-pointer shrink-0"
+                            title="Cancel this visit and issue automated refund"
+                        >
+                            <Ban className="w-3.5 h-3.5" />
+                            <span>Cancel Visit</span>
                         </button>
                         <button
                             type="button"
@@ -1320,7 +1374,18 @@ export function IntentPanel({ onVisitUpdated }) {
                 ) : (
                     hasVisit && (
                         <div className="flex flex-col gap-1.5 w-full max-w-md mx-auto">
-                            <div className="flex items-center gap-3 w-full">
+                            <div className="flex items-center gap-2 w-full">
+                                {snapshot?.visit?.visitId && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCancelModalOpen(true)}
+                                        className="py-3 px-3 rounded-lg border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer shrink-0"
+                                        title="Cancel this visit"
+                                    >
+                                        <Ban className="w-3.5 h-3.5" />
+                                        <span>Cancel</span>
+                                    </button>
+                                )}
                                 <button
                                     onClick={handleUnifiedAction}
                                     disabled={!isActionEnabled || isLoading || isActionSubmitting}
@@ -1900,6 +1965,130 @@ export function IntentPanel({ onVisitUpdated }) {
                             >
                                 {isSubmittingBatchEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                 <span>Save Changes</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* CANCEL VISIT & REFUND CONFIRMATION MODAL */}
+            {isCancelModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+                    <div className={cn(
+                        "w-full max-w-md rounded-2xl border shadow-2xl overflow-hidden flex flex-col p-6 space-y-4 animate-in zoom-in-95 duration-200",
+                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900"
+                    )}>
+                        <div className="flex items-center justify-between border-b dark:border-zinc-800 border-zinc-100 pb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                                    <Ban className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-sm">Cancel Patient Visit</h3>
+                                    <p className="text-[11px] text-zinc-400">Token: <span className="font-mono font-bold text-zinc-700 dark:text-zinc-200">{snapshot?.visit?.token || snapshot?.visit?.visitToken || 'WAIT'}</span></p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsCancelModalOpen(false)}
+                                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Patient & Financial Card */}
+                        <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 space-y-2 text-xs">
+                            <div className="flex justify-between items-center">
+                                <span className="text-zinc-500">Patient:</span>
+                                <span className="font-bold">{displayedPatient?.name || displayedPatient?.fullName || 'Direct Patient'}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-zinc-500">Net Bill Total:</span>
+                                <span className="font-mono font-bold">₹{Number(snapshot?.billing?.netAmount || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center pt-1 border-t border-zinc-200 dark:border-zinc-700">
+                                <span className="font-bold text-rose-600 dark:text-rose-400">Amount to Refund:</span>
+                                <span className="font-mono font-black text-sm text-rose-600 dark:text-rose-400">
+                                    ₹{Number(snapshot?.billing?.totalPaid || 0).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Reason Selection */}
+                        <div className="space-y-2">
+                            <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                Cancellation Reason (Mandatory)
+                            </label>
+                            <div className="flex flex-wrap gap-1.5">
+                                {[
+                                    'Patient unable to wait / Long queue',
+                                    'Patient prefers outside facility',
+                                    'Doctor consultation cancelled',
+                                    'Duplicate registration',
+                                    'Financial constraint',
+                                    'Personal emergency'
+                                ].map((preset, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => setCancelReason(preset)}
+                                        className={cn(
+                                            "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border",
+                                            cancelReason === preset
+                                                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-xs"
+                                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:text-zinc-900 dark:hover:text-white"
+                                        )}
+                                    >
+                                        {preset}
+                                    </button>
+                                ))}
+                            </div>
+                            <input
+                                type="text"
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Or enter custom reason..."
+                                className={cn(
+                                    "w-full px-3 py-2 text-xs rounded-xl border outline-none font-medium mt-1",
+                                    isDark ? "bg-black border-zinc-700 text-white focus:border-rose-500" : "bg-white border-zinc-300 text-zinc-900 focus:border-rose-500"
+                                )}
+                            />
+                        </div>
+
+                        {/* Optional Notes */}
+                        <div className="space-y-1">
+                            <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                Administrative Notes (Optional)
+                            </label>
+                            <textarea
+                                value={cancelNotes}
+                                onChange={(e) => setCancelNotes(e.target.value)}
+                                placeholder="Additional audit notes or remarks..."
+                                className={cn(
+                                    "w-full px-3 py-2 text-xs rounded-xl border outline-none font-medium min-h-[50px] resize-none",
+                                    isDark ? "bg-black border-zinc-700 text-white focus:border-zinc-500" : "bg-white border-zinc-300 text-zinc-900 focus:border-zinc-900"
+                                )}
+                            />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                            <button
+                                type="button"
+                                disabled={isCancelling}
+                                onClick={() => setIsCancelModalOpen(false)}
+                                className="px-4 py-2 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+                            >
+                                Keep Visit
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isCancelling || !cancelReason.trim()}
+                                onClick={handleCancelVisit}
+                                className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            >
+                                {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+                                <span>{Number(snapshot?.billing?.totalPaid || 0) > 0 ? `Cancel & Refund ₹${Number(snapshot?.billing?.totalPaid || 0).toLocaleString()}` : "Confirm Cancellation"}</span>
                             </button>
                         </div>
                     </div>

@@ -115,22 +115,6 @@ namespace SynOS.Services
             int prepaidCount = prepaidVisits.Count;
             decimal prepaidTotal = prepaidVisits.Sum(v => v.Invoices.FirstOrDefault()?.Total ?? 0);
 
-            if (stats != null && (stats.WalkIns > 0 || stats.Payments > 0 || stats.PrepaidCount > 0))
-            {
-                return new RevenueStatsDto
-                {
-                    WalkInsToday = walkIns,
-                    PaymentsCollected = stats.Payments,
-                    PaymentsCashTotal = stats.Cash,
-                    PaymentsOnlineTotal = stats.Online,
-                    PaymentsOnlineCount = stats.OnlineCount,
-                    PrepaidBillsCount = prepaidCount > 0 ? prepaidCount : stats.PrepaidCount,
-                    PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : stats.PrepaidTotal,
-                    PendingReports = 0,
-                    AvgReportTimeMinutes = 0
-                };
-            }
-
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
@@ -150,18 +134,24 @@ namespace SynOS.Services
             decimal cashTotal = payments.Where(p => string.Equals(p.Method, "Cash", StringComparison.OrdinalIgnoreCase)).Sum(p => p.Amount);
             var onlinePayments = payments.Where(p => !string.Equals(p.Method, "Cash", StringComparison.OrdinalIgnoreCase)).ToList();
             decimal onlineTotal = onlinePayments.Sum(p => p.Amount);
-            int onlineCount = onlinePayments.Count();
+            int onlineCount = onlinePayments.Count;
             decimal totalPayments = cashTotal + onlineTotal;
+
+            // Direct ledger takes precedence for real-time accuracy (partial payments, refunds, cash desk)
+            decimal finalCash = payments.Any() ? cashTotal : (stats?.Cash ?? 0m);
+            decimal finalOnline = payments.Any() ? onlineTotal : (stats?.Online ?? 0m);
+            int finalOnlineCount = payments.Any() ? onlineCount : (stats?.OnlineCount ?? 0);
+            decimal finalTotal = payments.Any() ? totalPayments : (stats?.Payments ?? 0m);
 
             return new RevenueStatsDto
             {
                 WalkInsToday = walkIns,
-                PaymentsCollected = totalPayments,
-                PaymentsCashTotal = cashTotal,
-                PaymentsOnlineTotal = onlineTotal,
-                PaymentsOnlineCount = onlineCount,
-                PrepaidBillsCount = prepaidCount,
-                PrepaidBillsTotal = prepaidTotal,
+                PaymentsCollected = finalTotal,
+                PaymentsCashTotal = finalCash,
+                PaymentsOnlineTotal = finalOnline,
+                PaymentsOnlineCount = finalOnlineCount,
+                PrepaidBillsCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0),
+                PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
                 PendingReports = 0,
                 AvgReportTimeMinutes = 0
             };
