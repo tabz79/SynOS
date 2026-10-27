@@ -131,30 +131,30 @@ export function VisitDetails({
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        indicator: "bg-zinc-800 border-synos-border type-label",
-        headerText: "type-value",
-        section: "bg-zinc-950/30 border-synos-border",
-        sectionTitle: "type-section-header",
-        input: "bg-zinc-900 border-synos-border type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(59,130,246,0.20)]",
-        suggestionBox: "bg-zinc-900 border-synos-border shadow-xl",
-        testCard: "bg-zinc-950/30 border-synos-border",
-        testCode: "bg-zinc-800 border-zinc-700/50 type-code",
-        modal: "bg-zinc-900 border-synos-border type-body",
-        modalInput: "bg-black border-zinc-700 type-body focus:border-amber-500"
+        indicator: "bg-zinc-800 border-zinc-700 text-zinc-200 font-bold",
+        headerText: "text-white font-bold text-sm tracking-tight",
+        section: "p-4 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] space-y-3",
+        sectionTitle: "type-section-header text-zinc-300 font-bold",
+        input: "bg-zinc-950 border border-zinc-700 text-white type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(59,130,246,0.20)] shadow-xs",
+        suggestionBox: "bg-zinc-900 border border-zinc-700 shadow-xl",
+        testCard: "group flex items-center justify-between p-3 rounded-lg bg-zinc-800/60 border border-zinc-700/70 shadow-xs hover:bg-zinc-800 hover:border-zinc-600 transition-all cursor-pointer",
+        testCode: "bg-zinc-800 border-zinc-700/50 type-code text-zinc-300",
+        modal: "bg-zinc-900 border border-zinc-700 type-body",
+        modalInput: "bg-black border border-zinc-700 text-white type-body focus:border-amber-500"
     } : {
-        indicator: "bg-white border-zinc-200 shadow-sm type-label",
-        headerText: "type-value",
-        // UNIFIED CARD STYLE (Enhanced subtle contrast)
-        section: "p-4 rounded-xl bg-zinc-100/75 border border-zinc-200/90 shadow-xs space-y-3",
-        sectionTitle: "type-section-header text-zinc-700 font-bold",
+        indicator: "bg-blue-600 text-white border-blue-600 shadow-sm font-bold",
+        headerText: "text-zinc-900 font-bold text-sm tracking-tight",
+        // ELEVATED CARD STYLE (Solid white surface with crisp borders & elevation)
+        section: "p-4 rounded-xl bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)] space-y-3",
+        sectionTitle: "type-section-header text-zinc-800 font-bold",
         // ETCHED INPUT: Bright & sunken into the slab with refined visible focus ring and backlight glow
-        input: "bg-white border-zinc-300 shadow-xs type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(37,99,235,0.15)] transition-all placeholder:text-zinc-400",
-        suggestionBox: "bg-white border-zinc-200 shadow-xl",
-        // TEST CARD: Clean white with subtle border and crisp elevation
-        testCard: "group flex items-center justify-between p-3 rounded-lg bg-white border border-zinc-200 shadow-xs hover:border-zinc-300 hover:shadow-sm transition-all cursor-pointer",
-        testCode: "type-code text-zinc-600 font-bold group-hover:text-zinc-900 transition-colors",
-        modal: "bg-white border-zinc-200 type-body",
-        modalInput: "bg-zinc-50 border-zinc-300 type-body focus:border-black"
+        input: "bg-white border border-slate-300 shadow-xs type-body text-zinc-900 focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/30 focus:shadow-[0_0_12px_rgba(37,99,235,0.15)] transition-all placeholder:text-zinc-400",
+        suggestionBox: "bg-white border border-slate-300 shadow-xl",
+        // TEST CARD: Clean elevated card with subtle border and crisp elevation
+        testCard: "group flex items-center justify-between p-3 rounded-lg bg-slate-50/70 border border-slate-200 shadow-xs hover:border-slate-300 hover:bg-white hover:shadow-sm transition-all cursor-pointer",
+        testCode: "type-code text-zinc-700 font-bold group-hover:text-zinc-900 transition-colors",
+        modal: "bg-white border border-slate-300 type-body",
+        modalInput: "bg-slate-50 border border-slate-300 text-zinc-900 type-body focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||
@@ -698,7 +698,7 @@ export function VisitDetails({
                 <div className="flex items-center justify-between">
                     <h4 className="type-section-header">
                         {billingMode === 'Standard' && "Referring Doctor / Clinic"}
-                        {billingMode === 'PrepaidPartner' && "Prepaid Partner Referral"}
+                        {billingMode === 'PrepaidPartner' && "Referring Doctor / Partner (Prepaid B2B)"}
                         {billingMode === 'Insurance' && "Insurance Details"}
                         {billingMode === 'Corporate' && "Corporate B2B Account"}
                     </h4>
@@ -707,9 +707,9 @@ export function VisitDetails({
                         billingMode === 'PrepaidPartner' ? "border-amber-500/40 text-amber-500 bg-amber-500/10" :
                         billingMode === 'Insurance' ? "border-blue-500/40 text-blue-500 bg-blue-500/10" :
                         billingMode === 'Corporate' ? "border-indigo-500/40 text-indigo-500 bg-indigo-500/10" :
-                        "border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800"
+                        "border-slate-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-slate-100 dark:bg-zinc-800"
                     )}>
-                        {billingMode === 'PrepaidPartner' ? 'Prepaid B2B' : billingMode}
+                        {billingMode === 'PrepaidPartner' ? 'Doctor Bill (B2B)' : billingMode}
                     </span>
                 </div>
 
@@ -1689,11 +1689,11 @@ function ReferralCombinedInput({
                 value={value}
                 readOnly={isReadOnly}
                 aria-disabled={isProcessing}
-                placeholder="Search Partner or Type Name..."
+                placeholder="Search Doctor / Clinic Name..."
                 className={cn("w-full rounded-lg pl-9 pr-4 py-2 outline-none transition-colors type-label", 
                     ui.input,
                     isProcessing && "opacity-70 pointer-events-none",
-                    isReadOnly && "opacity-50")}
+                    isReadOnly && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none")}
                 onChange={(e) => {
                     setValue(e.target.value);
                     setShowSuggestions(true);

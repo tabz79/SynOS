@@ -110,20 +110,18 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
     const isDark = theme === 'dark';
 
     const cardUi = isDark ? {
-        locked: "bg-synos-primary/10 border border-synos-primary/30 cursor-default",
-        inactive: "bg-zinc-800/50 hover:bg-zinc-800 border border-synos-border hover:border-synos-primary/50 cursor-pointer",
+        locked: "bg-zinc-900 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] rounded-xl cursor-default p-3.5",
+        inactive: "bg-zinc-900/90 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] rounded-xl cursor-pointer hover:border-zinc-500 hover:bg-zinc-850 transition-all p-3.5",
         name: isLocked ? "text-white" : "text-zinc-200 group-hover:text-white",
-        badge: isLocked ? "bg-synos-primary/20 border-synos-primary/30 text-synos-primary" : "bg-zinc-700 text-zinc-300",
-        mrn: "bg-zinc-900 border-zinc-800 text-zinc-600"
+        badge: isLocked ? "bg-synos-primary/20 border-synos-primary/40 text-synos-primary" : "bg-zinc-800 text-zinc-300 border-zinc-700",
+        mrn: "bg-zinc-950 border-zinc-800 text-zinc-400"
     } : {
-        // LIGHT MODE: INDIVIDUAL RECESSED CARDS
-        // Both Locked and Inactive are now full pockets.
-        locked: "bg-black/[0.04] border border-black/5 shadow-inner rounded-lg cursor-default p-3",
-        // Inactive = Same Pocket Style, but Interactive
-        inactive: "bg-black/[0.04] border border-black/5 shadow-inner rounded-lg cursor-pointer hover:bg-black/[0.06] transition-all p-3",
-        name: isLocked ? "type-value text-black font-semibold" : "type-value group-hover:text-black font-medium",
-        badge: isLocked ? "bg-white border-zinc-200 text-black shadow-sm" : "bg-white/50 border-zinc-200/50 text-zinc-600",
-        mrn: "bg-white/50 border-zinc-200/50 text-black font-medium"
+        // LIGHT MODE: Crisp elevated card with solid white surface & shadow depth
+        locked: "bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-xl cursor-default p-3.5",
+        inactive: "bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)] rounded-xl cursor-pointer hover:border-slate-400 hover:shadow-md transition-all p-3.5",
+        name: isLocked ? "type-value text-zinc-900 font-bold" : "type-value group-hover:text-black font-semibold",
+        badge: isLocked ? "bg-slate-100 border-slate-300 text-zinc-800 shadow-2xs font-semibold" : "bg-slate-50 border-slate-200 text-zinc-600",
+        mrn: "bg-slate-50 border-slate-300 text-zinc-900 font-bold"
     };
 
     return (

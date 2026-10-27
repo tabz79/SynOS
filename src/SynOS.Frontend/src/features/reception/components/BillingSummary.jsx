@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown } from 'lucide-react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2 } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -127,31 +127,31 @@ export function BillingSummary({
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        indicator: "bg-zinc-800 border-synos-border type-label",
-        headerText: "type-value",
-        container: "bg-zinc-950/25 border-synos-border",
-        rowLabel: "type-label",
-        rowValue: "type-code", // Financials = Mono
-        netLabel: "type-value",
-        netValue: "type-page-title", // 20px Bold
-        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
+        indicator: "bg-zinc-800 border-zinc-700 text-zinc-200 font-bold",
+        headerText: "text-white font-bold text-sm tracking-tight",
+        container: "p-4 rounded-xl bg-zinc-900 border border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)] space-y-4",
+        rowLabel: "type-label text-zinc-400",
+        rowValue: "type-code text-zinc-100", // Financials = Mono
+        netLabel: "type-value text-white font-bold",
+        netValue: "type-page-title text-white font-extrabold", // 20px Bold
+        input: "bg-zinc-950 border border-zinc-700 text-white type-body focus:border-synos-primary shadow-xs",
         method: {
-            active: "bg-zinc-100 border-white shadow-md",
-            inactive: "bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
+            active: "bg-white text-zinc-900 border-white shadow-md ring-2 ring-white/20 font-bold",
+            inactive: "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white shadow-xs"
         }
     } : {
-        indicator: "bg-white border-zinc-200 shadow-sm type-label",
-        headerText: "type-value",
-        // UNIFIED CARD STYLE (Enhanced subtle contrast)
-        container: "p-4 rounded-xl bg-zinc-100/75 border border-zinc-200/90 shadow-xs space-y-4",
-        rowLabel: "type-label text-zinc-600 font-semibold",
+        indicator: "bg-blue-600 text-white border-blue-600 shadow-sm font-bold",
+        headerText: "text-zinc-900 font-bold text-sm tracking-tight",
+        // ELEVATED CARD STYLE (Solid white surface with crisp borders & elevation)
+        container: "p-4 rounded-xl bg-white border border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)] space-y-4",
+        rowLabel: "type-label text-zinc-700 font-semibold",
         rowValue: "type-code text-zinc-900 font-bold", // Financials = Mono
-        netLabel: "type-value font-medium",
-        netValue: "type-page-title", // 20px Bold
-        input: "bg-white border-zinc-300 shadow-xs type-body focus:ring-1 focus:ring-synos-primary transition-all outline-none",
+        netLabel: "type-value font-bold text-zinc-900",
+        netValue: "type-page-title text-zinc-900 font-extrabold", // 20px Bold
+        input: "bg-white border border-slate-300 shadow-xs type-body text-zinc-900 focus:ring-2 focus:ring-synos-primary/30 focus:border-synos-primary transition-all outline-none",
         method: {
-            active: "bg-zinc-900 text-white border-zinc-900 shadow-md ring-1 ring-black/10",
-            inactive: "bg-white border-zinc-200 hover:bg-zinc-50 hover:text-black shadow-xs"
+            active: "bg-zinc-900 text-white border-zinc-900 shadow-md ring-2 ring-zinc-900/20 font-bold",
+            inactive: "bg-white border border-slate-300 text-zinc-700 hover:bg-slate-50 hover:text-black shadow-xs font-semibold"
         }
     };
 
@@ -668,47 +668,47 @@ export function BillingSummary({
 
                         return (
                             <div className={cn(
-                                "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
-                                isDark ? "bg-zinc-900/80 border-zinc-700 text-zinc-200" : "bg-white border border-zinc-200 text-zinc-900 shadow-xs"
+                                "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-sm animate-in fade-in duration-200",
+                                isDark ? "bg-zinc-900 border-zinc-700 text-zinc-200" : "bg-slate-50 border border-slate-300 text-zinc-900"
                             )}>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
                                         <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                                        B2B Partner Ledger Reconciler
+                                        Doctor / Partner Bill
                                     </span>
                                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
-                                        Corporate B2B Prepaid
+                                        Billed to Doctor
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-black/5 dark:border-white/5">
-                                    <div>
-                                        <span className="opacity-70 text-[11px] block">Previously Billed to Partner:</span>
-                                        <span className="font-mono font-bold text-sm">₹{originalB2BClaim.toLocaleString()}</span>
+                                <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-slate-200 dark:border-zinc-800">
+                                    <div className="p-2 rounded-lg bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 shadow-2xs">
+                                        <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold block">Previous Doctor Bill</span>
+                                        <span className="font-mono font-bold text-sm text-zinc-800 dark:text-zinc-200">₹{originalB2BClaim.toLocaleString()}</span>
                                     </div>
-                                    <div>
-                                        <span className="opacity-70 text-[11px] block">Revised Partner Receivable:</span>
+                                    <div className="p-2 rounded-lg bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 shadow-2xs">
+                                        <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold block">New Doctor Bill</span>
                                         <span className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">₹{currentB2BClaim.toLocaleString()}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-1.5 border-t border-black/5 dark:border-white/5 font-bold text-xs">
-                                    <span>Partner Claim Adjustment:</span>
+                                <div className="flex items-center justify-between pt-1.5 border-t border-slate-200 dark:border-zinc-800 font-bold text-xs">
+                                    <span>Difference to Doctor:</span>
                                     <span className={cn("font-mono text-base font-extrabold", b2bClaimDiff > 0 ? "text-indigo-600 dark:text-indigo-400" : b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
                                         {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : b2bClaimDiff < 0 ? `-₹${Math.abs(b2bClaimDiff).toLocaleString()}` : "₹0 (No Change)"}
                                     </span>
                                 </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
+                                <div className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
                                     {b2bClaimDiff > 0 
-                                        ? `Partner receivable increases by ₹${b2bClaimDiff.toLocaleString()} (Revised ₹${currentB2BClaim.toLocaleString()} vs Previous ₹${originalB2BClaim.toLocaleString()})`
+                                        ? `* Doctor bill increases by ₹${b2bClaimDiff.toLocaleString()} (New: ₹${currentB2BClaim.toLocaleString()} vs Old: ₹${originalB2BClaim.toLocaleString()}). Lab will bill this to doctor.`
                                         : b2bClaimDiff < 0 
-                                            ? `Partner receivable reduced by ₹${Math.abs(b2bClaimDiff).toLocaleString()} (Partner credit issued)`
-                                            : `Partner receivable matches original billing exactly`}
+                                            ? `* Doctor bill decreases by ₹${Math.abs(b2bClaimDiff).toLocaleString()} (Credited to doctor's monthly account).`
+                                            : `* Doctor bill unchanged at ₹${currentB2BClaim.toLocaleString()}.`}
                                 </div>
 
-                                <div className="text-[11px] p-2 rounded-lg bg-black/[0.03] dark:bg-zinc-800/40 border border-black/5 dark:border-zinc-700/50 flex items-center justify-between">
-                                    <span className="text-zinc-600 dark:text-zinc-400">Patient Counter Collection:</span>
-                                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">₹0 (Prepaid Account)</span>
+                                <div className="text-[11px] p-2 rounded-lg bg-slate-100 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 flex items-center justify-between">
+                                    <span className="text-zinc-600 dark:text-zinc-400 font-medium">Collect from Patient:</span>
+                                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">₹0 (Billed directly to doctor)</span>
                                 </div>
                             </div>
                         );
@@ -716,13 +716,13 @@ export function BillingSummary({
 
                     return (
                         <div className={cn(
-                            "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
-                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
+                            "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-sm animate-in fade-in duration-200",
+                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-slate-50 border-slate-300 text-zinc-900"
                         )}>
                             <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
                                     <span className={cn("w-2 h-2 rounded-full", settlementDiff < 0 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" : settlementDiff > 0 ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" : "bg-zinc-400")} />
-                                    Live Difference Reconciler
+                                    Live Bill Difference
                                 </span>
                                 <span className={cn(
                                     "text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border",
@@ -808,30 +808,30 @@ export function BillingSummary({
                     return (
                         <div className={cn(
                             "p-3 rounded-xl border space-y-2.5",
-                            isDark ? "bg-zinc-900/80 border-zinc-700 text-zinc-200 shadow-xs" : "bg-white border border-zinc-200 text-zinc-900 shadow-xs"
+                            isDark ? "bg-zinc-900 border-zinc-700 text-zinc-200 shadow-sm" : "bg-white border border-slate-300 text-zinc-900 shadow-sm"
                         )}>
                             <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                                    B2B Partner Concession & Rate
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+                                    Doctor Discount & Rate
                                 </span>
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-200/70 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-semibold border border-zinc-300/50 dark:border-zinc-700">
-                                    Self-Learning Rate
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold border border-slate-200 dark:border-zinc-700">
+                                    Doctor Tariff
                                 </span>
                             </div>
 
                             <div className="text-xs space-y-2">
-                                <div className="flex justify-between items-center text-zinc-500 dark:text-zinc-400">
-                                    <span>Standard Lab Tariff:</span>
-                                    <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                                <div className="flex justify-between items-center text-zinc-600 dark:text-zinc-400">
+                                    <span>Standard Lab MRP:</span>
+                                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
                                         ₹{grossTariff.toLocaleString()}
                                     </span>
                                 </div>
 
                                 {/* Mode Toggle & Input */}
-                                <div className="space-y-1.5 pt-1.5 border-t border-black/5 dark:border-white/5">
+                                <div className="space-y-1.5 pt-1.5 border-t border-slate-200 dark:border-zinc-800">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
-                                            Partner Discount Mode:
+                                        <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                                            Discount Type:
                                         </span>
                                         <div className="flex items-center rounded-lg p-0.5 bg-zinc-200/70 dark:bg-zinc-800 text-[10px] font-bold">
                                             <button
@@ -947,9 +947,9 @@ export function BillingSummary({
                                     )}
                                 </div>
 
-                                <div className="flex justify-between items-center pt-2 border-t border-black/5 dark:border-white/5 font-bold">
-                                    <span className="text-zinc-700 dark:text-zinc-300">Net B2B Partner Receivable:</span>
-                                    <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm">
+                                <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-zinc-800 font-bold">
+                                    <span className="text-zinc-800 dark:text-zinc-200">Final Doctor Bill:</span>
+                                    <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">
                                         ₹{computedNetClaim.toLocaleString()}
                                     </span>
                                 </div>
@@ -1240,10 +1240,36 @@ export function BillingSummary({
                     </div>
                 )}
 
-                {/* D. Payment Mode (Read Only for now, based on snapshot) */}
-                <div className="type-section-header text-center">
-                    {billing.paymentModel === 'PartnerCollects' ? "Prepaid Visit" : "Checkout at Counter"}
-                </div>
+                {/* D. Settlement Status Indicator (Prominent in Visit Summary Mode) */}
+                {isLocked && (
+                    <div className={cn(
+                        "p-3 rounded-xl border flex items-center justify-between shadow-xs",
+                        billing.paymentModel === 'PartnerCollects' || isPrepaid
+                            ? (isDark ? "bg-indigo-950/40 border-indigo-500/40 text-indigo-300" : "bg-indigo-50/80 border-indigo-200 text-indigo-900")
+                            : (isDark ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300" : "bg-emerald-50/80 border-emerald-200 text-emerald-900")
+                    )}>
+                        <div className="flex items-center gap-2">
+                            <CheckCircle2 className={cn("w-4 h-4", billing.paymentModel === 'PartnerCollects' || isPrepaid ? "text-indigo-600 dark:text-indigo-400" : "text-emerald-600 dark:text-emerald-400")} />
+                            <div>
+                                <span className="text-xs font-bold block leading-tight">
+                                    {billing.paymentModel === 'PartnerCollects' || isPrepaid
+                                        ? "Billed to Doctor Account"
+                                        : "Payment Settled & Complete"}
+                                </span>
+                                <span className="text-[10px] opacity-75 font-medium">
+                                    {billing.paymentModel === 'PartnerCollects' || isPrepaid
+                                        ? "Doctor will settle via monthly account"
+                                        : `Paid via ${billing.paymentMethod || 'Counter Collection'}`}
+                                </span>
+                            </div>
+                        </div>
+                        <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-full border bg-white/60 dark:bg-black/30 border-current/20">
+                            {billing.paymentModel === 'PartnerCollects' || isPrepaid
+                                ? "Doctor B2B"
+                                : `₹${(billing.totalPaid || billing.netAmount || 0).toLocaleString()}`}
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* CORRECTION REASON MODAL */}

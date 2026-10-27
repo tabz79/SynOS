@@ -6,7 +6,7 @@ import { VisitDetails } from './VisitDetails'
 import { BillingSummary, extractB2BInfo } from './BillingSummary'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { ReceptionApi } from '@/api/reception'
+import { ReceptionApi, fetchReferralPartnersCached } from '@/api/reception'
 import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry } from '@/hooks/useSynOSMotion'
@@ -67,6 +67,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [stagedDemographics, setStagedDemographics] = useState(null);
     const [stagedReferralPartnerId, setStagedReferralPartnerId] = useState(undefined);
     const [stagedSecondaryPartnerId, setStagedSecondaryPartnerId] = useState(undefined);
+    const [referralPartners, setReferralPartners] = useState([]);
     const [isEditDemographicsOpen, setIsEditDemographicsOpen] = useState(false);
     const [editDemographicsDraft, setEditDemographicsDraft] = useState({
         firstName: '',
@@ -144,6 +145,14 @@ export function IntentPanel({ onVisitUpdated }) {
             // Patient ID will be derived from snapshot
         }
     }, [isOpen, intent, drawerState?.visitId]);
+
+    // Load referral partners for dynamic staged name resolution
+    useEffect(() => {
+        if (!isOpen) return;
+        fetchReferralPartnersCached()
+            .then(data => setReferralPartners(data || []))
+            .catch(err => console.warn("Failed to load referral partners:", err));
+    }, [isOpen]);
 
     const loadSnapshot = async () => {
         if (!snapshot) setIsLoading(true);
@@ -434,7 +443,7 @@ export function IntentPanel({ onVisitUpdated }) {
         const coPay = visitObj?.insuranceCoPayAmount || 0;
 
         const effectiveRefPartner = stagedReferralPartnerId !== undefined
-            ? (stagedReferralPartnerId ? (visitObj?.referralPartner || b?.referral?.partner) : null)
+            ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || visitObj?.referralPartner || b?.referral?.partner) : null)
             : (visitObj?.referralPartner || b?.referral?.partner);
 
         const refName = effectiveRefPartner?.name || effectiveRefPartner?.displayName || (isPartner ? 'Referral Partner' : 'Self / Direct');
@@ -560,7 +569,7 @@ export function IntentPanel({ onVisitUpdated }) {
             ];
 
             const effectiveRefPartner = stagedReferralPartnerId !== undefined
-                ? (stagedReferralPartnerId ? (visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
+                ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
                 : (visitObj?.referralPartner || snapshot?.billing?.referral?.partner);
 
             const printPayload = {
@@ -914,7 +923,7 @@ export function IntentPanel({ onVisitUpdated }) {
             mainActionLabel = "Authorize Corporate B2B Bill (₹0)";
             isActionEnabled = hasTests;
         } else if (canLockPrepaid) {
-            mainActionLabel = "Prepaid Checkout (₹0)";
+            mainActionLabel = "Confirm Doctor B2B Bill (₹0)";
             isActionEnabled = hasTests;
         } else if (canCheckout) {
             mainActionLabel = `Accept Payment (₹${remainingDue})`;
@@ -999,8 +1008,8 @@ export function IntentPanel({ onVisitUpdated }) {
                             <div className="px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-4 space-y-3.5 xl:space-y-4 animate-in fade-in duration-300">
                                 {/* Full-width 4-mode segmented toggle bar separated from payer box */}
                                 <div className={cn(
-                                    "p-3 rounded-2xl border transition-all shadow-xs",
-                                    isDark ? "bg-zinc-900/60 border-zinc-800" : "bg-white/80 border-black/5"
+                                    "p-3 rounded-2xl border transition-all shadow-sm",
+                                    isDark ? "bg-zinc-900 border-zinc-700/80 shadow-[0_4px_16px_rgba(0,0,0,0.4)]" : "bg-white border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                                 )}>
                                     <MultiPayerSelector
                                         billingMode={billingMode}
@@ -1447,7 +1456,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
                     <div className={cn(
                         "w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border max-h-[90vh] flex flex-col",
-                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900"
+                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-slate-300 text-zinc-900"
                     )}>
                         {/* Header */}
                         <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
@@ -1456,7 +1465,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     <CheckCircle2 className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-base leading-none">Confirm Visit Edits & Settlement</h3>
+                                    <h3 className="font-bold text-base leading-none">Review & Save Changes</h3>
                                     <p className="text-xs text-zinc-500 mt-1 font-mono">Token: {snapshot?.visit?.token || 'N/A'}</p>
                                 </div>
                             </div>
@@ -1471,6 +1480,38 @@ export function IntentPanel({ onVisitUpdated }) {
 
                         {/* Scrollable Summary Body */}
                         <div className="flex-1 overflow-y-auto space-y-3.5 pr-1 text-xs">
+                            {/* 0. Referring Doctor Changed Notice (Dynamic Staged Referral Context) */}
+                            {(() => {
+                                const origPartner = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
+                                const origName = origPartner?.name || origPartner?.displayName || snapshot?.visit?.referralPartnerName || 'Self / Direct';
+                                const origId = origPartner?.id || origPartner?.referralPartnerId || snapshot?.visit?.referralPartnerId;
+                                const isChanged = stagedReferralPartnerId !== undefined && stagedReferralPartnerId !== origId;
+                                if (!isChanged) return null;
+
+                                let newName = origName;
+                                if (stagedReferralPartnerId) {
+                                    const match = referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId);
+                                    newName = match ? (match.name || match.displayName) : 'Selected Doctor';
+                                } else {
+                                    newName = 'Self / Direct (Removed)';
+                                }
+
+                                return (
+                                    <div className="p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/70 dark:bg-indigo-950/30 space-y-1">
+                                        <div className="font-bold text-[11px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                                            <span>👨‍⚕️ Referring Doctor Changed</span>
+                                        </div>
+                                        <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 pt-0.5">
+                                            <span className="line-through text-zinc-400 font-normal">{origName}</span>
+                                            <ArrowRight className="w-3.5 h-3.5 text-indigo-500" />
+                                            <span className="text-indigo-700 dark:text-indigo-300 font-bold">{newName}</span>
+                                        </div>
+                                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400 pt-0.5">
+                                            * This visit and all bills are now assigned to <strong>{newName}</strong>.
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                             {/* 1. Demographics Summary */}
                             {stagedDemographics && (
                                 <div className="p-3 rounded-xl border border-blue-500/30 bg-blue-500/5 space-y-1">
@@ -1578,47 +1619,55 @@ export function IntentPanel({ onVisitUpdated }) {
                                     const currentB2BClaim = Math.max(0, currentGross - currentB2BAmt);
                                     const b2bClaimDiff = currentB2BClaim - originalB2BClaim;
 
-                                    const partnerName = snapshot?.billing?.referral?.partner?.name || 
-                                                        snapshot?.visit?.referralPartner?.name || 
-                                                        snapshot?.visit?.secondaryReferralPartner?.name || 
-                                                        'Prepaid B2B Partner';
+                                    let currentDoctorName = snapshot?.billing?.referral?.partner?.name || 
+                                                            snapshot?.visit?.referralPartner?.name || 
+                                                            snapshot?.visit?.secondaryReferralPartner?.name || 
+                                                            'Doctor / Partner';
+                                    if (stagedReferralPartnerId !== undefined) {
+                                        if (stagedReferralPartnerId) {
+                                            const match = referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId);
+                                            if (match) currentDoctorName = match.name || match.displayName;
+                                        } else {
+                                            currentDoctorName = 'Self / Direct (Removed)';
+                                        }
+                                    }
 
                                     return (
                                         <div className={cn(
-                                            "p-3.5 rounded-xl border space-y-2.5 shadow-xs",
+                                            "p-3.5 rounded-xl border space-y-2.5 shadow-sm",
                                             b2bClaimDiff > 0 
                                                 ? (isDark ? "bg-amber-950/40 border-amber-500/50" : "bg-amber-50/90 border-amber-300")
                                                 : b2bClaimDiff < 0 
                                                     ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50/90 border-emerald-300")
-                                                    : (isDark ? "bg-zinc-800/60 border-zinc-700" : "bg-zinc-100 border-zinc-200")
+                                                    : (isDark ? "bg-zinc-800/60 border-zinc-700" : "bg-slate-50 border-slate-300")
                                         )}>
                                             <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
                                                 <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
                                                     <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                                                    B2B Partner Ledger Reconciliation
+                                                    Doctor / B2B Partner Bill
                                                 </span>
                                                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
-                                                    Corporate B2B Prepaid
+                                                    Billed to Doctor
                                                 </span>
                                             </div>
 
-                                            <div className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">
-                                                Partner Account: <strong>{partnerName}</strong>
+                                            <div className="text-xs text-zinc-800 dark:text-zinc-200 font-medium">
+                                                Doctor Account: <strong>{currentDoctorName}</strong>
                                             </div>
 
                                             <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-                                                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
-                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Previously Billed to Partner</div>
+                                                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Previous Doctor Bill</div>
                                                     <div className="font-mono text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">₹{originalB2BClaim.toLocaleString()}</div>
                                                 </div>
-                                                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs">
-                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Revised Partner Receivable</div>
+                                                <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">New Doctor Bill</div>
                                                     <div className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{currentB2BClaim.toLocaleString()}</div>
                                                 </div>
                                             </div>
 
                                             <div className="flex justify-between items-center text-sm font-extrabold pt-2 border-t border-current/10">
-                                                <span>Partner Claim Adjustment:</span>
+                                                <span>Difference to Doctor:</span>
                                                 <span className={cn("font-mono text-base font-bold", 
                                                     b2bClaimDiff > 0 ? "text-amber-600 dark:text-amber-400" : 
                                                     b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
@@ -1629,21 +1678,21 @@ export function IntentPanel({ onVisitUpdated }) {
                                             <div className="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 pt-0.5">
                                                 {b2bClaimDiff > 0 && (
                                                     <p className="font-semibold text-amber-700 dark:text-amber-300">
-                                                        * Partner receivable increases by ₹{b2bClaimDiff.toLocaleString()} (Revised ₹{currentB2BClaim.toLocaleString()} vs Previous ₹{originalB2BClaim.toLocaleString()}).
+                                                        * Doctor bill increases by ₹{b2bClaimDiff.toLocaleString()} (New bill ₹{currentB2BClaim.toLocaleString()} vs Old bill ₹{originalB2BClaim.toLocaleString()}). Added to doctor's monthly account.
                                                     </p>
                                                 )}
                                                 {b2bClaimDiff < 0 && (
                                                     <p className="font-semibold text-emerald-700 dark:text-emerald-300">
-                                                        * Partner receivable reduces by ₹{Math.abs(b2bClaimDiff).toLocaleString()} (Credit adjusted against partner balance).
+                                                        * Doctor bill decreases by ₹{Math.abs(b2bClaimDiff).toLocaleString()} (New bill ₹{currentB2BClaim.toLocaleString()} vs Old bill ₹{originalB2BClaim.toLocaleString()}). Credited back to doctor's account.
                                                     </p>
                                                 )}
                                                 {b2bClaimDiff === 0 && (
-                                                    <p className="text-zinc-500">
-                                                        * No change in partner receivable claim amount.
+                                                    <p className="text-zinc-600 dark:text-zinc-400 font-medium">
+                                                        * Doctor bill unchanged at ₹{currentB2BClaim.toLocaleString()}.
                                                     </p>
                                                 )}
-                                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 font-medium flex items-center gap-1">
-                                                    <span>✓ Patient Counter Collection: <strong>₹0 (Prepaid Account)</strong></span>
+                                                <div className="text-[10px] text-zinc-600 dark:text-zinc-400 mt-1 font-semibold flex items-center gap-1">
+                                                    <span>✓ Collect from Patient: <strong className="text-zinc-900 dark:text-zinc-100">₹0 (Billed directly to doctor)</strong></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -1652,47 +1701,59 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                 return (
                                     <div className={cn(
-                                        "p-3.5 rounded-xl border space-y-2 shadow-xs",
+                                        "p-3.5 rounded-xl border space-y-2 shadow-sm",
                                         settlementDiff < 0 
                                             ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50 border-emerald-300")
                                             : settlementDiff > 0 
                                                 ? (isDark ? "bg-amber-950/40 border-amber-500/50" : "bg-amber-50 border-amber-300")
-                                                : (isDark ? "bg-zinc-800/40 border-zinc-700" : "bg-zinc-100 border-zinc-200")
+                                                : (isDark ? "bg-zinc-800/40 border-zinc-700" : "bg-slate-50 border-slate-300")
                                     )}>
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="opacity-70 font-medium">Previously Paid by Patient:</span>
                                             <span className="font-mono font-bold">₹{originalPaid.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-xs">
-                                            <span className="opacity-70 font-medium">Revised Net Total:</span>
+                                            <span className="opacity-70 font-medium">New Total Bill:</span>
                                             <span className="font-mono font-bold">₹{stagedNet.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm font-extrabold pt-1.5 border-t border-current/10">
-                                            <span>{settlementDiff < 0 ? "Cash Refund to Disburse:" : settlementDiff > 0 ? `Balance Due (${paymentMethod}):` : "Financial Difference:"}</span>
-                                            <span className="font-mono text-base">₹{Math.abs(settlementDiff).toLocaleString()}</span>
+                                            <span>{settlementDiff < 0 ? "Cash Refund to Patient:" : settlementDiff > 0 ? `Collect from Patient (${paymentMethod}):` : "Difference:"}</span>
+                                            <span className="font-mono text-base font-bold">
+                                                {settlementDiff > 0 ? `+₹${settlementDiff.toLocaleString()}` : settlementDiff < 0 ? `-₹${Math.abs(settlementDiff).toLocaleString()}` : "₹0"}
+                                            </span>
                                         </div>
+                                        {settlementDiff > 0 && (
+                                            <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                                                * Collect ₹{settlementDiff.toLocaleString()} from patient at the counter via {paymentMethod}.
+                                            </p>
+                                        )}
                                         {settlementDiff < 0 && (
-                                            <p className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 italic">
-                                                * Hand over ₹{Math.abs(settlementDiff).toLocaleString()} in Cash from the counter cash register.
+                                            <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                                                * Give ₹{Math.abs(settlementDiff).toLocaleString()} refund cash to patient from cash drawer.
+                                            </p>
+                                        )}
+                                        {settlementDiff === 0 && (
+                                            <p className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                                                * No additional payment needed from patient.
                                             </p>
                                         )}
                                     </div>
                                 );
                             })()}
 
-                            {/* 6. Mandatory Operational Reason */}
+                            {/* 6. Reason for Change */}
                             <div className="space-y-1 pt-1">
-                                <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500 block">
-                                    Mandatory Audit Reason <span className="text-red-500">*</span>
+                                <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-600 dark:text-zinc-400 block">
+                                    Reason for Change <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
                                     rows={2}
                                     value={batchEditReason}
                                     onChange={(e) => setBatchEditReason(e.target.value)}
-                                    placeholder="e.g. Doctor added LFT test on prescription revision, corrected patient age typo..."
+                                    placeholder="e.g. Doctor changed, added tests, corrected discount, fixed name typo..."
                                     className={cn(
-                                        "w-full p-2.5 rounded-xl border outline-none text-xs leading-relaxed",
-                                        isDark ? "bg-black border-zinc-700 text-white focus:border-synos-primary" : "bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-synos-primary"
+                                        "w-full p-2.5 rounded-xl border outline-none text-xs leading-relaxed font-medium shadow-xs",
+                                        isDark ? "bg-black border-zinc-700 text-white focus:border-synos-primary" : "bg-slate-50 border-slate-300 text-zinc-900 focus:border-synos-primary"
                                     )}
                                     autoFocus
                                 />
@@ -1705,7 +1766,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                 type="button"
                                 disabled={isSubmittingBatchEdit}
                                 onClick={() => setIsBatchEditConfirmModalOpen(false)}
-                                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
+                                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
@@ -1716,7 +1777,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                 className="px-5 py-2.5 rounded-xl text-xs font-bold bg-synos-primary text-white hover:bg-synos-primary/90 disabled:opacity-50 transition-all shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer"
                             >
                                 {isSubmittingBatchEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                <span>Confirm & Settle Edits</span>
+                                <span>Save Changes</span>
                             </button>
                         </div>
                     </div>

@@ -134,8 +134,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 215 16% 84%;
-    --input: 215 16% 84%;
+    --border: 215 16% 80%;
+    --input: 215 16% 80%;
     --ring: 222.2 84% 4.9%;
 
     /* SYNOS THEME TOKENS (LIGHT MODE) */
@@ -143,8 +143,8 @@
     /* Zinc-50 */
     --synos-surface: #ffffff;
     /* White */
-    --synos-border: #d4d4d8;
-    /* Zinc-300 */
+    --synos-border: #cbd5e1;
+    /* Slate-300 */
     --synos-muted: #52525b;
     /* Zinc-600 */
 
