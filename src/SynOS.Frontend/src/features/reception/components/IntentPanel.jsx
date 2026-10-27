@@ -88,30 +88,34 @@ export function IntentPanel({ onVisitUpdated }) {
     // THEME ISOLATION CONTRACT: Style Branching
     const ui = isDark ? {
         // DARK MODE: Solid Zinc, No Blur (Performance)
-        panel: "bg-zinc-900 border-l border-zinc-700 shadow-2xl z-20",
-        header: "bg-zinc-900 border-b border-zinc-800",
-        footer: "bg-zinc-900 border-t border-zinc-800",
+        panel: "bg-zinc-900 border-l border-white/10 shadow-2xl z-20",
+        header: "bg-zinc-900 border-b border-white/5",
+        footer: "bg-zinc-900 border-t border-white/5",
         title: "text-white",
-        subtitle: "text-zinc-400",
+        subtitle: "text-zinc-500",
         actionBtn: {
             enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/5",
             disabled: "bg-zinc-800 text-zinc-500"
         }
     } : {
-        // LIGHT MODE: Architectural Studio Frost Slab
+        // LIGHT MODE: REAL FAKE FROST (System Bar Match)
+        // No Blur = No Performance Hit.
+        // KNIFE-EDGE STYLE: Sharp borders, deep shadow, no blur.
         panel: cn(
-            "bg-[linear-gradient(to_bottom,#EEF3F7_0%,#E3EAF0_50%,#D5E0EB_100%)]",
-            "border-l border-white shadow-[-24px_0_60px_rgba(15,23,42,0.18)]",
-            "border-t border-white/80",
+            "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
+            "border-l border-white shadow-[-20px_0_50px_rgba(0,0,0,0.3)]", // Knife Edge: Solid White Border + Deep Shadow
+            "border-t border-white/80", // Top Rim Light
             "z-20"
         ),
-        header: "bg-white/80 backdrop-blur-md border-b border-slate-200/80",
-        footer: "bg-white/85 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_20px_-10px_rgba(15,23,42,0.06)]",
-        title: "text-zinc-900 font-bold",
-        subtitle: "text-zinc-500 font-medium",
+        // Header: EXACT MATCH with ActivityStream.jsx (Line 172)
+        header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
+        // Footer: Matches bottom of panel gradient for anchor
+        footer: "bg-[#D7E1E4] border-t border-black/[0.06] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
+        title: "text-zinc-900",
+        subtitle: "text-zinc-500",
         actionBtn: {
             enabled: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20 transition-transform active:scale-95",
-            disabled: "bg-zinc-100 text-zinc-400 border border-slate-200"
+            disabled: "bg-zinc-100 text-zinc-400 border border-black/[0.05]"
         }
     };
 
@@ -1008,8 +1012,8 @@ export function IntentPanel({ onVisitUpdated }) {
                             <div className="px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-4 space-y-3.5 xl:space-y-4 animate-in fade-in duration-300">
                                 {/* Full-width 4-mode segmented toggle bar separated from payer box */}
                                 <div className={cn(
-                                    "p-3 rounded-2xl border transition-all shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)]",
-                                    isDark ? "bg-zinc-900/90 border-white/10" : "bg-white/90 backdrop-blur-sm border-white/90"
+                                    "p-3 rounded-2xl border transition-all shadow-xs",
+                                    isDark ? "bg-zinc-900/60 border-zinc-800" : "bg-white/80 border-black/5"
                                 )}>
                                     <MultiPayerSelector
                                         billingMode={billingMode}
@@ -1456,7 +1460,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
                     <div className={cn(
                         "w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border max-h-[90vh] flex flex-col",
-                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-slate-300 text-zinc-900"
+                        isDark ? "bg-zinc-900 border-zinc-800 text-white" : "bg-white border-zinc-200 text-zinc-900"
                     )}>
                         {/* Header */}
                         <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
@@ -1753,7 +1757,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     placeholder="e.g. Doctor changed, added tests, corrected discount, fixed name typo..."
                                     className={cn(
                                         "w-full p-2.5 rounded-xl border outline-none text-xs leading-relaxed font-medium shadow-xs",
-                                        isDark ? "bg-black border-zinc-700 text-white focus:border-synos-primary" : "bg-slate-50 border-slate-300 text-zinc-900 focus:border-synos-primary"
+                                        isDark ? "bg-black border-zinc-700 text-white focus:border-synos-primary" : "bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-synos-primary"
                                     )}
                                     autoFocus
                                 />

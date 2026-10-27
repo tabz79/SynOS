@@ -54,17 +54,15 @@ export function MultiPayerSelector({
                                 if (!disabled && billingMode !== m.id) onChangeMode(m.id);
                             }}
                             className={cn(
-                                "relative flex items-start gap-2.5 p-2.5 rounded-xl border text-left transition-all",
-                                disabled ? "cursor-default" : "cursor-pointer active:scale-[0.98]",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-synos-primary/70 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-zinc-950 focus-visible:border-synos-primary focus-visible:shadow-[0_0_18px_rgba(59,130,246,0.22)]",
+                                "relative flex items-start gap-2.5 p-2.5 rounded-xl border text-left transition-all active:scale-[0.98] cursor-pointer",
                                 isSelected
                                     ? isDark
-                                        ? "bg-synos-primary/15 border-synos-primary text-white shadow-sm ring-1 ring-synos-primary"
-                                        : "bg-white text-zinc-950 border-slate-300 shadow-[0_2px_10px_rgba(0,0,0,0.06)] ring-1 ring-blue-500/25"
+                                        ? "bg-synos-primary/15 border-synos-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.15)] ring-1 ring-synos-primary"
+                                        : "bg-blue-50/80 border-blue-500 text-blue-950 shadow-sm ring-1 ring-blue-500"
                                     : isDark
                                         ? "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-                                        : "bg-slate-100/60 border-transparent text-zinc-600 hover:bg-white/80 hover:text-zinc-900 hover:border-slate-200",
-                                disabled && !isSelected && "opacity-60"
+                                        : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50/60",
+                                disabled && "opacity-50 cursor-not-allowed"
                             )}
                         >
                             <div className={cn(
@@ -72,10 +70,10 @@ export function MultiPayerSelector({
                                 isSelected
                                     ? isDark
                                         ? "bg-synos-primary text-white border-synos-primary"
-                                        : "bg-blue-600 text-white border-blue-600 shadow-2xs"
+                                        : "bg-blue-600 text-white border-blue-600"
                                     : isDark
                                         ? "bg-zinc-800 text-zinc-400 border-zinc-700"
-                                        : "bg-slate-200/60 text-zinc-600 border-slate-300/60"
+                                        : "bg-zinc-100 text-zinc-500 border-zinc-200"
                             )}>
                                 <Icon className="w-3.5 h-3.5" />
                             </div>

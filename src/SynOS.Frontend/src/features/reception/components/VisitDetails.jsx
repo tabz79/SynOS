@@ -131,30 +131,31 @@ export function VisitDetails({
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        indicator: "bg-zinc-800 border-zinc-700 text-zinc-200 font-bold",
-        headerText: "text-white font-bold text-sm tracking-tight",
-        section: "p-4 xl:p-5 rounded-2xl bg-zinc-900/90 backdrop-blur-sm border border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] space-y-3",
-        sectionTitle: "type-section-header text-zinc-300 font-bold",
-        input: "bg-zinc-950 border border-zinc-800 text-white type-body focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/40 focus:shadow-[0_0_12px_rgba(59,130,246,0.20)] shadow-xs rounded-xl",
-        suggestionBox: "bg-zinc-900 border border-zinc-700 shadow-xl",
-        testCard: "group flex items-center justify-between p-3 rounded-xl bg-zinc-800/60 border border-zinc-700/70 shadow-xs hover:bg-zinc-800 hover:border-zinc-600 transition-all cursor-pointer",
-        testCode: "bg-zinc-800 border-zinc-700/50 type-code text-zinc-300",
-        modal: "bg-zinc-900 border border-zinc-700 type-body",
-        modalInput: "bg-black border border-zinc-700 text-white type-body focus:border-amber-500"
+        indicator: "bg-zinc-800 border-synos-border type-label",
+        headerText: "type-value",
+        section: "bg-zinc-950/30 border-synos-border",
+        sectionTitle: "type-section-header",
+        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
+        suggestionBox: "bg-zinc-900 border-synos-border shadow-xl",
+        testCard: "bg-zinc-950/30 border-synos-border",
+        testCode: "bg-zinc-800 border-zinc-700/50 type-code",
+        modal: "bg-zinc-900 border-synos-border type-body",
+        modalInput: "bg-black border-zinc-700 type-body focus:border-amber-500"
     } : {
-        indicator: "bg-white text-zinc-900 border-slate-200/90 shadow-2xs font-bold",
-        headerText: "text-zinc-900 font-bold text-sm tracking-tight",
-        // ELEVATED FROSTED SLAB
-        section: "p-4 xl:p-5 rounded-2xl bg-white/90 backdrop-blur-sm border border-white/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] space-y-3",
-        sectionTitle: "type-section-header text-zinc-800 font-bold",
-        // ETCHED INPUT: Bright & sunken into the slab with refined visible focus ring and backlight glow
-        input: "bg-slate-50/80 border border-slate-200/80 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] rounded-xl type-body text-zinc-900 focus:bg-white focus:outline-none focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/20 transition-all placeholder:text-zinc-400",
-        suggestionBox: "bg-white border border-slate-200/90 shadow-xl rounded-xl",
-        // TEST CARD: Clean elevated frosted card with subtle border and crisp elevation
-        testCard: "group flex items-center justify-between p-3 rounded-xl bg-slate-50/70 border border-slate-200/60 shadow-2xs hover:border-slate-300 hover:bg-white hover:shadow-xs transition-all cursor-pointer",
-        testCode: "type-code text-zinc-700 font-bold group-hover:text-zinc-900 transition-colors",
-        modal: "bg-white border border-slate-200 type-body",
-        modalInput: "bg-slate-50 border border-slate-200 text-zinc-900 type-body focus:border-black"
+        indicator: "bg-white border-zinc-200 shadow-sm type-label",
+        headerText: "type-value",
+        // UNIFIED CARD STYLE (From Patient Card)
+        section: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-3",
+        sectionTitle: "type-section-header opacity-70",
+        // ETCHED INPUT: Bright & sunken into the slab
+        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all placeholder:text-zinc-400",
+        suggestionBox: "bg-white border-zinc-200 shadow-xl",
+        // TEST CARD (Inside Recess): Needs to pop out slightly to be visible
+        // Default: White/60 Glass Chip. Hover: White/90 Bright Highlight.
+        testCard: "group flex items-center justify-between p-3 rounded-lg bg-white/60 border border-white/40 shadow-sm hover:bg-white/90 transition-all cursor-pointer",
+        testCode: "type-code opacity-70 group-hover:opacity-100 transition-opacity",
+        modal: "bg-white border-zinc-200 type-body",
+        modalInput: "bg-zinc-50 border-zinc-200 type-body focus:border-black"
     };
 
     const readOnlyReason = snapshot?.uiHints?.readOnlyReason ||

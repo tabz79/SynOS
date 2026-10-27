@@ -127,31 +127,31 @@ export function BillingSummary({
     const isDark = theme === 'dark';
 
     const ui = isDark ? {
-        indicator: "bg-zinc-800 border-zinc-700 text-zinc-200 font-bold",
-        headerText: "text-white font-bold text-sm tracking-tight",
-        container: "p-4 xl:p-5 rounded-2xl bg-zinc-900/90 backdrop-blur-sm border border-white/10 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.4)] space-y-4",
-        rowLabel: "type-label text-zinc-400",
-        rowValue: "type-code text-zinc-100", // Financials = Mono
-        netLabel: "type-value text-white font-bold",
-        netValue: "type-page-title text-white font-extrabold", // 20px Bold
-        input: "bg-zinc-950 border border-zinc-700 text-white type-body focus:border-synos-primary shadow-xs rounded-xl",
+        indicator: "bg-zinc-800 border-synos-border type-label",
+        headerText: "type-value",
+        container: "bg-zinc-950/25 border-synos-border",
+        rowLabel: "type-label",
+        rowValue: "type-code", // Financials = Mono
+        netLabel: "type-value",
+        netValue: "type-page-title", // 20px Bold
+        input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
         method: {
-            active: "bg-white text-zinc-900 border-white shadow-md ring-2 ring-white/20 font-bold",
-            inactive: "bg-zinc-950 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white shadow-xs"
+            active: "bg-zinc-100 border-white shadow-md",
+            inactive: "bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
         }
     } : {
-        indicator: "bg-white text-zinc-900 border-slate-200/90 shadow-2xs font-bold",
-        headerText: "text-zinc-900 font-bold text-sm tracking-tight",
-        // ELEVATED FROSTED SLAB
-        container: "p-4 xl:p-5 rounded-2xl bg-white/90 backdrop-blur-sm border border-white/90 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] space-y-4",
-        rowLabel: "type-label text-zinc-700 font-semibold",
-        rowValue: "type-code text-zinc-900 font-bold", // Financials = Mono
-        netLabel: "type-value font-bold text-zinc-900",
-        netValue: "type-page-title text-zinc-900 font-extrabold", // 20px Bold
-        input: "bg-slate-50/80 border border-slate-200/80 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] type-body text-zinc-900 focus:bg-white focus:ring-2 focus:ring-synos-primary/20 focus:border-synos-primary transition-all outline-none",
+        indicator: "bg-white border-zinc-200 shadow-sm type-label",
+        headerText: "type-value",
+        // UNIFIED CARD STYLE (From Patient Card)
+        container: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-4",
+        rowLabel: "type-label opacity-70",
+        rowValue: "type-code opacity-90", // Financials = Mono
+        netLabel: "type-value font-medium",
+        netValue: "type-page-title", // 20px Bold
+        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:ring-1 focus:ring-black/5 transition-all outline-none",
         method: {
-            active: "bg-zinc-900 text-white border-zinc-900 shadow-md ring-2 ring-zinc-900/20 font-bold",
-            inactive: "bg-white/90 border border-slate-200/80 text-zinc-700 hover:bg-slate-50 hover:text-black shadow-xs font-semibold"
+            active: "bg-black text-white border-zinc-900 shadow-md ring-1 ring-black/10",
+            inactive: "bg-white/50 border-black/5 hover:bg-white hover:text-black shadow-sm"
         }
     };
 
@@ -669,7 +669,7 @@ export function BillingSummary({
                         return (
                             <div className={cn(
                                 "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
-                                isDark ? "bg-indigo-950/20 border-indigo-500/30 text-zinc-200" : "bg-indigo-50/50 backdrop-blur-sm border border-indigo-200/70 text-zinc-900"
+                                isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
                             )}>
                                 <div className="flex items-center justify-between">
                                     <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
@@ -681,24 +681,24 @@ export function BillingSummary({
                                     </span>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-slate-200/70 dark:border-zinc-800">
-                                    <div className="p-2 rounded-lg bg-white/80 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-700 shadow-2xs">
-                                        <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold block">Previous Doctor Bill</span>
-                                        <span className="font-mono font-bold text-sm text-zinc-800 dark:text-zinc-200">₹{originalB2BClaim.toLocaleString()}</span>
+                                <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-black/5 dark:border-white/5">
+                                    <div>
+                                        <span className="opacity-70 text-[11px] block">Previous Doctor Bill:</span>
+                                        <span className="font-mono font-bold text-sm">₹{originalB2BClaim.toLocaleString()}</span>
                                     </div>
-                                    <div className="p-2 rounded-lg bg-white/80 dark:bg-zinc-800/80 border border-slate-200/60 dark:border-zinc-700 shadow-2xs">
-                                        <span className="text-zinc-500 dark:text-zinc-400 text-[10px] uppercase font-bold block">New Doctor Bill</span>
+                                    <div>
+                                        <span className="opacity-70 text-[11px] block">New Doctor Bill:</span>
                                         <span className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">₹{currentB2BClaim.toLocaleString()}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/70 dark:border-zinc-800 font-bold text-xs">
+                                <div className="flex items-center justify-between pt-1.5 border-t border-black/5 dark:border-white/5 font-bold text-xs">
                                     <span>Difference to Doctor:</span>
                                     <span className={cn("font-mono text-base font-extrabold", b2bClaimDiff > 0 ? "text-indigo-600 dark:text-indigo-400" : b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
                                         {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : b2bClaimDiff < 0 ? `-₹${Math.abs(b2bClaimDiff).toLocaleString()}` : "₹0 (No Change)"}
                                     </span>
                                 </div>
-                                <div className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
                                     {b2bClaimDiff > 0 
                                         ? `* Doctor bill increases by ₹${b2bClaimDiff.toLocaleString()} (New: ₹${currentB2BClaim.toLocaleString()} vs Old: ₹${originalB2BClaim.toLocaleString()}). Lab will bill this to doctor.`
                                         : b2bClaimDiff < 0 
@@ -706,8 +706,8 @@ export function BillingSummary({
                                             : `* Doctor bill unchanged at ₹${currentB2BClaim.toLocaleString()}.`}
                                 </div>
 
-                                <div className="text-[11px] p-2 rounded-lg bg-slate-100/70 dark:bg-zinc-800/60 border border-slate-200/60 dark:border-zinc-700 flex items-center justify-between">
-                                    <span className="text-zinc-600 dark:text-zinc-400 font-medium">Collect from Patient:</span>
+                                <div className="text-[11px] p-2 rounded-lg bg-black/[0.03] dark:bg-zinc-800/40 border border-black/5 dark:border-zinc-700/50 flex items-center justify-between">
+                                    <span className="text-zinc-600 dark:text-zinc-400">Collect from Patient:</span>
                                     <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">₹0 (Billed directly to doctor)</span>
                                 </div>
                             </div>
@@ -717,7 +717,7 @@ export function BillingSummary({
                     return (
                         <div className={cn(
                             "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
-                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-slate-50/80 backdrop-blur-sm border border-slate-200/80 text-zinc-900"
+                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
                         )}>
                             <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
@@ -808,7 +808,7 @@ export function BillingSummary({
                     return (
                         <div className={cn(
                             "p-3 rounded-xl border space-y-2.5",
-                            isDark ? "bg-zinc-900/80 border-zinc-700/80 text-zinc-200 shadow-2xs" : "bg-slate-50/80 border border-slate-200/80 text-zinc-900 shadow-2xs"
+                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200 shadow-xs" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-xs"
                         )}>
                             <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
