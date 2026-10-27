@@ -36,6 +36,8 @@ export function VisitDetails({
     const [testSelectedIndex, setTestSelectedIndex] = useState(0);
     const testListRef = useRef(null);
     const testSearchInputRef = useRef(null);
+    const standardSecondaryReferralRef = useRef(null);
+    const prepaidSecondaryReferralRef = useRef(null);
     const [catalog, setCatalog] = useState([]); // Master list for search suggestions
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
@@ -322,7 +324,18 @@ export function VisitDetails({
         setIsProcessing(true);
         try {
             await ReceptionApi.applyReferralToVisit(visitId, partnerId);
-            if (onVisitUpdated) onVisitUpdated();
+            if (onVisitUpdated) await onVisitUpdated();
+            setTimeout(() => {
+                if (!document.activeElement || document.activeElement === document.body) {
+                    if (standardSecondaryReferralRef.current) {
+                        standardSecondaryReferralRef.current.focus();
+                    } else if (prepaidSecondaryReferralRef.current) {
+                        prepaidSecondaryReferralRef.current.focus();
+                    } else if (testSearchInputRef.current) {
+                        testSearchInputRef.current.focus();
+                    }
+                }
+            }, 100);
         } catch (err) {
             console.error("Failed to apply referral", err);
             alert("Failed to apply referral: " + err.message);
@@ -371,7 +384,12 @@ export function VisitDetails({
         setIsProcessing(true);
         try {
             await ReceptionApi.updateSecondaryReferral(visitId, secondaryPartnerId);
-            if (onVisitUpdated) onVisitUpdated();
+            if (onVisitUpdated) await onVisitUpdated();
+            setTimeout(() => {
+                if (!document.activeElement || document.activeElement === document.body) {
+                    testSearchInputRef.current?.focus();
+                }
+            }, 100);
         } catch (err) {
             console.error("Failed to update secondary referral doctor", err);
             alert("Failed to update secondary referral doctor: " + err.message);
@@ -742,6 +760,7 @@ export function VisitDetails({
                                             type="button"
                                             onClick={handleRemoveReferral}
                                             disabled={isProcessing}
+                                            tabIndex={-1}
                                             className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer"
                                             title="Remove Primary Doctor"
                                         >
@@ -758,6 +777,8 @@ export function VisitDetails({
                                         partners={referralPartners}
                                         allowFreeText={true}
                                         onApplyPartner={handleApplyReferral}
+                                        nextInputRef={snapshot?.billing?.referral?.secondaryPartner ? testSearchInputRef : standardSecondaryReferralRef}
+                                        fallbackNextRef={testSearchInputRef}
                                         onUpdateText={async (text) => {
                                             if (!visitId || !canEditReferral) return;
                                             if (isCorrectionIntent) {
@@ -824,6 +845,7 @@ export function VisitDetails({
                                         <button
                                             onClick={handleRemoveSecondaryReferral}
                                             disabled={isProcessing}
+                                            tabIndex={-1}
                                             className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
                                             title="Remove Second Referral Doctor"
                                         >
@@ -834,6 +856,9 @@ export function VisitDetails({
                             ) : (
                                 <div className="space-y-2">
                                     <ReferralCombinedInput
+                                        inputRef={standardSecondaryReferralRef}
+                                        nextInputRef={testSearchInputRef}
+                                        fallbackNextRef={testSearchInputRef}
                                         initialValue=""
                                         isReadOnly={!canEditReferral}
                                         isProcessing={isProcessing}
@@ -883,6 +908,7 @@ export function VisitDetails({
                                             type="button"
                                             onClick={handleRemoveReferral}
                                             disabled={isProcessing}
+                                            tabIndex={-1}
                                             className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
                                             title="Remove Doctor"
                                         >
@@ -899,6 +925,8 @@ export function VisitDetails({
                                         partners={referralPartners}
                                         allowFreeText={true}
                                         onApplyPartner={handleApplyReferral}
+                                        nextInputRef={effectiveSecondaryPartner ? testSearchInputRef : prepaidSecondaryReferralRef}
+                                        fallbackNextRef={testSearchInputRef}
                                         onUpdateText={async (text) => {
                                             if (!visitId || !canEditReferral) return;
                                             setIsProcessing(true);
@@ -953,6 +981,7 @@ export function VisitDetails({
                                             type="button"
                                             onClick={handleRemoveSecondaryReferral}
                                             disabled={isProcessing}
+                                            tabIndex={-1}
                                             className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
                                             title="Remove RMP"
                                         >
@@ -963,6 +992,9 @@ export function VisitDetails({
                             ) : (
                                 <div className="space-y-2">
                                     <ReferralCombinedInput
+                                        inputRef={prepaidSecondaryReferralRef}
+                                        nextInputRef={testSearchInputRef}
+                                        fallbackNextRef={testSearchInputRef}
                                         initialValue=""
                                         isReadOnly={!canEditReferral}
                                         isProcessing={isProcessing}
@@ -1545,7 +1577,17 @@ export function VisitDetails({
     )
 }
 
-function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partners, onApplyPartner, onUpdateText }) {
+function ReferralCombinedInput({ 
+    initialValue, 
+    isReadOnly, 
+    isProcessing, 
+    partners, 
+    onApplyPartner, 
+    onUpdateText,
+    inputRef,
+    nextInputRef,
+    fallbackNextRef
+}) {
     const [value, setValue] = useState(initialValue);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -1585,7 +1627,21 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
         isSelecting.current = true;
         onApplyPartner(partnerId);
         setShowSuggestions(false);
-        setTimeout(() => { isSelecting.current = false; }, 500);
+
+        // Immediate forward focus transfer before component unmounts
+        const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
+        if (target) {
+            target.focus();
+        }
+
+        setTimeout(() => { 
+            isSelecting.current = false; 
+            // Re-assert focus if browser dropped it during re-render
+            const targetAfter = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
+            if (targetAfter && document.activeElement !== targetAfter) {
+                targetAfter.focus();
+            }
+        }, 150);
     };
 
     const handleKeyDown = (e) => {
@@ -1598,6 +1654,11 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
             e.preventDefault();
             setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
         } else if (e.key === 'Enter') {
+            if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+                e.preventDefault();
+                handleApply(suggestions[selectedIndex].referralPartnerId);
+            }
+        } else if (e.key === 'Tab') {
             if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
                 e.preventDefault();
                 handleApply(suggestions[selectedIndex].referralPartnerId);
@@ -1624,11 +1685,16 @@ function ReferralCombinedInput({ initialValue, isReadOnly, isProcessing, partner
         <div className="relative">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
             <input
+                ref={inputRef}
                 type="text"
                 value={value}
-                disabled={isReadOnly || isProcessing}
+                readOnly={isReadOnly}
+                aria-disabled={isProcessing}
                 placeholder="Search Partner or Type Name..."
-                className={cn("w-full rounded-lg pl-9 pr-4 py-2 outline-none transition-colors disabled:opacity-50 type-label", ui.input)}
+                className={cn("w-full rounded-lg pl-9 pr-4 py-2 outline-none transition-colors type-label", 
+                    ui.input,
+                    isProcessing && "opacity-70 pointer-events-none",
+                    isReadOnly && "opacity-50")}
                 onChange={(e) => {
                     setValue(e.target.value);
                     setShowSuggestions(true);

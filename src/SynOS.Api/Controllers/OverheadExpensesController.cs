@@ -10,6 +10,7 @@ using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums.Payables;
 using SynOS.Services.SpendEngine;
 using SynOS.Services.Security;
+using SynOS.Services.Time;
 
 namespace SynOS.Api.Controllers
 {
@@ -20,12 +21,18 @@ namespace SynOS.Api.Controllers
         private readonly SynOSDbContext _context;
         private readonly ISpendFactWriter _spendFactWriter;
         private readonly IUserContext _userContext;
+        private readonly ILabTimeProvider _labTimeProvider;
 
-        public OverheadExpensesController(SynOSDbContext context, ISpendFactWriter spendFactWriter, IUserContext userContext)
+        public OverheadExpensesController(
+            SynOSDbContext context, 
+            ISpendFactWriter spendFactWriter, 
+            IUserContext userContext,
+            ILabTimeProvider labTimeProvider)
         {
             _context = context;
             _spendFactWriter = spendFactWriter;
             _userContext = userContext;
+            _labTimeProvider = labTimeProvider;
         }
 
         [HttpGet]
@@ -35,14 +42,24 @@ namespace SynOS.Api.Controllers
 
             if (string.Equals(filter, "today", StringComparison.OrdinalIgnoreCase))
             {
-                var today = DateTime.UtcNow.Date;
-                var tomorrow = today.AddDays(1);
-                query = query.Where(e => (e.CreatedAt >= today && e.CreatedAt < tomorrow) || (e.DueDate >= today && e.DueDate < tomorrow));
+                var labToday = _labTimeProvider.GetLabToday();
+                var tz = _labTimeProvider.GetLabTimeZone();
+                var startUtc = TimeZoneInfo.ConvertTimeToUtc(labToday.Date, tz);
+                var endUtc = startUtc.AddDays(1);
+                query = query.Where(e => (e.CreatedAt >= startUtc && e.CreatedAt < endUtc) || (e.DueDate >= startUtc && e.DueDate < endUtc));
             }
 
             return await query
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<OverheadPayableFact>> GetExpenseById(Guid id)
+        {
+            var expense = await _context.OverheadPayableFacts.FindAsync(id);
+            if (expense == null) return NotFound();
+            return Ok(expense);
         }
 
         [HttpPost]
@@ -64,7 +81,7 @@ namespace SynOS.Api.Controllers
                     Category = request.Category,
                     AmountDue = request.Amount,
                     Description = request.Description,
-                    DueDate = request.ExpenseDate,
+                    DueDate = request.ExpenseDate != default ? request.ExpenseDate : DateTime.UtcNow,
                     Status = VendorPayableStatus.Pending,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = userId
@@ -74,7 +91,7 @@ namespace SynOS.Api.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return CreatedAtAction(nameof(GetExpenses), new { id = payable.OverheadPayableId }, payable);
+                return CreatedAtAction(nameof(GetExpenseById), new { id = payable.OverheadPayableId }, payable);
             }
             catch (Exception ex)
             {

@@ -84,13 +84,14 @@ namespace SynOS.Services
                 })
                 .FirstOrDefaultAsync();
 
-            // Calculate actual confirmed walk-ins from Visits table (excluding drafts, cancellations, and partner prepaid)
+            // Calculate actual confirmed walk-ins from Visits table (excluding blank unbilled drafts, cancellations, and partner prepaid)
             var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
             var endOfToday = startOfToday.AddDays(1);
 
             var visitsQuery = _context.Visits
                 .Where(v => v.BranchId == branchId && v.CreatedAt >= startOfToday && v.CreatedAt < endOfToday
-                         && v.Status != VisitStatus.Draft && v.Status != VisitStatus.Cancelled);
+                         && v.Status != VisitStatus.Cancelled
+                         && (v.Status != VisitStatus.Draft || v.Orders.Any() || v.Invoices.Any()));
 
             if (userId.HasValue)
             {
