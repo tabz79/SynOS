@@ -499,27 +499,27 @@ export function DiscountMasterScreen() {
                             </div>
                         ) : intelligence ? (
                             <>
-                                {/* SECTION 1: HERO CONTROL DECK (Finance Hub Style) */}
+                                {/* SECTION 1: HERO CONTROL DECK (Concession Portfolio Overview) */}
                                 <div className="space-y-1.5">
                                     <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 px-0.5">
-                                        Finance Hub
+                                        Concession Portfolio Overview
                                     </h3>
                                     <div className="p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-8">
-                                        {/* Left: Net Cash Position Equivalent */}
+                                        {/* Left: Total Concessions Position */}
                                         <div className="space-y-1 lg:min-w-[260px]">
                                             <div className="flex items-center gap-2.5">
                                                 <span className="text-sm font-medium text-slate-600 dark:text-zinc-400">
-                                                    Net Concessions Given
+                                                    Total Concessions Granted
                                                 </span>
                                                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60">
-                                                    +{intelligence.overallDiscountPercentage}% Realized
+                                                    +{intelligence.overallDiscountPercentage}% Concession Rate
                                                 </span>
                                             </div>
                                             <p className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white tracking-tight leading-none my-2 font-sans">
                                                 ₹{intelligence.totalDiscountAmount.toLocaleString()}
                                             </p>
                                             <p className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                                                Total Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
+                                                Total Lab Tariff Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
                                             </p>
                                         </div>
 
@@ -527,11 +527,11 @@ export function DiscountMasterScreen() {
                                         <div className="flex-1 max-w-2xl space-y-4">
                                             {/* Top 2 Sliders */}
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                {/* Slider 1: Collected / Patient Walk-Ins */}
+                                                {/* Slider 1: Direct Patient Walk-Ins */}
                                                 <div className="space-y-1.5">
                                                     <div className="flex items-center justify-between text-xs sm:text-sm">
                                                         <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                            Collected: ₹{intelligence.patientDiscountAmount.toLocaleString()}
+                                                            Patient Walk-In: ₹{intelligence.patientDiscountAmount.toLocaleString()}
                                                         </span>
                                                         <span className="text-xs text-slate-400 font-normal">
                                                             ({intelligence.patientBillsCount} bills)
@@ -552,15 +552,15 @@ export function DiscountMasterScreen() {
                                                         </span>
                                                     </div>
                                                     <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
-                                                        Collected from total billed (₹{intelligence.patientDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
+                                                        Direct patient concessions from total volume (₹{intelligence.patientDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
                                                     </p>
                                                 </div>
 
-                                                {/* Slider 2: Uncollected Dues / B2B Wholesale */}
+                                                {/* Slider 2: Corporate B2B Wholesale */}
                                                 <div className="space-y-1.5">
                                                     <div className="flex items-center justify-between text-xs sm:text-sm">
                                                         <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                            Uncollected Dues: ₹{intelligence.partnerDiscountAmount.toLocaleString()}
+                                                            B2B Wholesale: ₹{intelligence.partnerDiscountAmount.toLocaleString()}
                                                         </span>
                                                         <span className="text-xs text-slate-400 font-normal">
                                                             ({intelligence.partnerBillsCount} bills)
@@ -581,19 +581,19 @@ export function DiscountMasterScreen() {
                                                         </span>
                                                     </div>
                                                     <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
-                                                        Outstanding from total billed (₹{intelligence.partnerDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
+                                                        B2B partner concessions from total volume (₹{intelligence.partnerDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
                                                     </p>
                                                 </div>
                                             </div>
 
-                                            {/* Bottom Full-Width Bar: Bills/Payouts We Owe Style */}
+                                            {/* Bottom Full-Width Bar: Channel Volume Split */}
                                             <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-zinc-800">
                                                 <div className="flex items-center justify-between text-xs sm:text-sm">
                                                     <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                        Bills/Payouts We Owe
+                                                        Channel Volume Split (Patient vs B2B Wholesale)
                                                     </span>
                                                     <span className="text-sm font-bold text-slate-800 dark:text-zinc-100">
-                                                        ₹{intelligence.partnerDiscountAmount.toLocaleString()}
+                                                        ₹{intelligence.partnerDiscountAmount.toLocaleString()} B2B Wholesale
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-2.5">
@@ -610,24 +610,24 @@ export function DiscountMasterScreen() {
                                                     </span>
                                                 </div>
                                                 <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
-                                                    Payouts from collected cash (₹{intelligence.partnerDiscountAmount.toLocaleString()} / ₹{intelligence.patientDiscountAmount.toLocaleString()})
+                                                    Wholesale concession share of overall concession volume ({intelligence.partnerSharePercentage}% B2B · {intelligence.patientSharePercentage}% Patient)
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* SECTION 2: CHANNEL BREAKDOWN (Department & Modality Economics Style) */}
+                                {/* SECTION 2: CHANNEL BREAKDOWN (Channel Concession Drivers) */}
                                 <div className="space-y-1.5">
                                     <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 px-0.5">
-                                        Department & Modality Economics
+                                        Channel Concession Drivers
                                     </h3>
                                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                        {/* CARD 1: PATHOLOGY DISCIPLINES (Top Patient Presets) */}
+                                        {/* CARD 1: PATIENT WALK-IN PRESETS */}
                                         <div className="p-4 sm:p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] space-y-3">
                                             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
                                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    Pathology Disciplines
+                                                    Patient Walk-In Presets
                                                 </h4>
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-base font-bold text-slate-900 dark:text-white">
@@ -643,11 +643,11 @@ export function DiscountMasterScreen() {
                                                 <table className="w-full text-left border-collapse table-fixed">
                                                     <thead>
                                                         <tr className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
-                                                            <th className="pb-2 pl-1 font-medium w-[165px] sm:w-[185px]">Discipline</th>
-                                                            <th className="pb-2 text-right font-medium w-[68px]">Billed</th>
-                                                            <th className="pb-2 text-right font-medium w-[68px]">Collected</th>
-                                                            <th className="pb-2 text-center font-medium w-[130px] sm:w-[145px]">Collection %</th>
-                                                            <th className="pb-2 text-center font-medium w-[44px] pr-1">Margin %</th>
+                                                            <th className="pb-2 pl-1 font-medium w-[165px] sm:w-[185px]">Preset Reason</th>
+                                                            <th className="pb-2 text-right font-medium w-[68px]">Gross Tariff</th>
+                                                            <th className="pb-2 text-right font-medium w-[68px]">Concession</th>
+                                                            <th className="pb-2 text-center font-medium w-[130px] sm:w-[145px]">Concession Share</th>
+                                                            <th className="pb-2 text-center font-medium w-[44px] pr-1">Net Yield</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/40">
@@ -709,11 +709,11 @@ export function DiscountMasterScreen() {
                                             </div>
                                         </div>
 
-                                        {/* CARD 2: RADIOLOGY MODALITIES (Top Corporate B2B Wholesale) */}
+                                        {/* CARD 2: CORPORATE B2B WHOLESALE PARTNERS */}
                                         <div className="p-4 sm:p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] space-y-3">
                                             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
                                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                                    Radiology Modalities
+                                                    Corporate B2B Wholesale Partners
                                                 </h4>
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-base font-bold text-slate-900 dark:text-white">
@@ -729,11 +729,11 @@ export function DiscountMasterScreen() {
                                                 <table className="w-full text-left border-collapse table-fixed">
                                                     <thead>
                                                         <tr className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
-                                                            <th className="pb-2 pl-1 font-medium w-[165px] sm:w-[185px]">Modality</th>
-                                                            <th className="pb-2 text-right font-medium w-[68px]">Billed</th>
-                                                            <th className="pb-2 text-right font-medium w-[68px]">Collected</th>
-                                                            <th className="pb-2 text-center font-medium w-[130px] sm:w-[145px]">Collection %</th>
-                                                            <th className="pb-2 text-center font-medium w-[44px] pr-1">Margin %</th>
+                                                            <th className="pb-2 pl-1 font-medium w-[165px] sm:w-[185px]">Partner Organization</th>
+                                                            <th className="pb-2 text-right font-medium w-[68px]">Gross Tariff</th>
+                                                            <th className="pb-2 text-right font-medium w-[68px]">Concession</th>
+                                                            <th className="pb-2 text-center font-medium w-[130px] sm:w-[145px]">Concession Share</th>
+                                                            <th className="pb-2 text-center font-medium w-[44px] pr-1">Net Yield</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/40">
@@ -797,19 +797,19 @@ export function DiscountMasterScreen() {
                                     </div>
                                 </div>
 
-                                {/* SECTION 3: FINANCIAL OPERATIONS & MODULES (Bottom 4 Pods) */}
+                                {/* SECTION 3: CONCESSION GOVERNANCE & CONTROLS (Bottom 4 Pods) */}
                                 <div className="space-y-1.5">
                                     <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 px-0.5">
-                                        Financial Operations & Modules
+                                        Concession Governance & Controls
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {/* POD 1: DOCTOR SETTLEMENTS STYLE (Channel Balance) */}
+                                        {/* POD 1: CHANNEL CONCESSION BALANCE */}
                                         <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3">
                                             <div>
                                                 <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                                                    Doctor Settlements
+                                                    Channel Concession Balance
                                                 </h4>
-                                                <p className="text-[10px] text-slate-400 text-center font-medium mt-0.5">Balance</p>
+                                                <p className="text-[10px] text-slate-400 text-center font-medium mt-0.5">Volume Ratio</p>
                                             </div>
 
                                             {/* Dual Slider Indicator with swap circle */}
@@ -825,24 +825,24 @@ export function DiscountMasterScreen() {
 
                                             <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100 dark:border-zinc-800">
                                                 <div>
-                                                    <span className="text-[10px] text-slate-400 block font-normal">We Owe Doctors</span>
+                                                    <span className="text-[10px] text-slate-400 block font-normal">Patient Walk-In</span>
                                                     <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
                                                 </div>
                                                 <div>
-                                                    <span className="text-[10px] text-slate-400 block font-normal">Doctors Owe Us</span>
+                                                    <span className="text-[10px] text-slate-400 block font-normal">B2B Wholesale</span>
                                                     <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
                                                 </div>
                                                 <div>
-                                                    <span className="text-[10px] text-slate-400 block font-normal">Net Credit</span>
-                                                    <span className="font-bold text-teal-600 dark:text-teal-400 text-xs sm:text-sm">+₹{Math.abs(intelligence.patientDiscountAmount - intelligence.partnerDiscountAmount).toLocaleString()}</span>
+                                                    <span className="text-[10px] text-slate-400 block font-normal">B2B Share</span>
+                                                    <span className="font-bold text-teal-600 dark:text-teal-400 text-xs sm:text-sm">{intelligence.partnerSharePercentage}%</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* POD 2: INSURANCE & B2B STYLE (Channel Modules Pills) */}
+                                        {/* POD 2: CHANNEL AUDIT QUEUES */}
                                         <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
                                             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                                                Insurance & B2B
+                                                Channel Audit Queues
                                             </h4>
 
                                             <div className="space-y-2">
@@ -858,8 +858,8 @@ export function DiscountMasterScreen() {
                                                         <Building2 size={15} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block truncate">Corporate B2B</span>
-                                                        <span className="text-[11px] text-slate-500 font-medium">₹{intelligence.partnerDiscountAmount.toLocaleString()} ({intelligence.partnerBillsCount} Clients)</span>
+                                                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block truncate">Corporate B2B Ledger</span>
+                                                        <span className="text-[11px] text-slate-500 font-medium">₹{intelligence.partnerDiscountAmount.toLocaleString()} ({intelligence.partnerBillsCount} B2B Bills)</span>
                                                     </div>
                                                 </div>
 
@@ -875,17 +875,17 @@ export function DiscountMasterScreen() {
                                                         <Users size={15} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block truncate">Patient Walk-Ins</span>
-                                                        <span className="text-[11px] text-slate-500 font-medium">₹{intelligence.patientDiscountAmount.toLocaleString()} ({intelligence.patientBillsCount} Payers)</span>
+                                                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block truncate">Patient Walk-In Ledger</span>
+                                                        <span className="text-[11px] text-slate-500 font-medium">₹{intelligence.patientDiscountAmount.toLocaleString()} ({intelligence.patientBillsCount} Patient Bills)</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* POD 3: STAFF & PAYROLL STYLE (Staff Approvals) */}
+                                        {/* POD 3: STAFF CONCESSION AUTHORITY */}
                                         <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
                                             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                                                Staff & Payroll
+                                                Staff Concession Authority
                                             </h4>
 
                                             <div className="flex items-center justify-between">
@@ -893,7 +893,7 @@ export function DiscountMasterScreen() {
                                                     <p className="text-3xl font-bold text-slate-900 dark:text-white leading-none">
                                                         {intelligence.staffContributions.length || 2}
                                                     </p>
-                                                    <p className="text-xs text-slate-400 font-medium mt-1">Active Staff</p>
+                                                    <p className="text-xs text-slate-400 font-medium mt-1">Authorizing Staff</p>
                                                 </div>
 
                                                 {/* Overlapping Avatar Stack */}
@@ -912,22 +912,22 @@ export function DiscountMasterScreen() {
 
                                             {/* Pipeline flow */}
                                             <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-2 border-t border-slate-100 dark:border-zinc-800">
-                                                <span>Attendance</span>
+                                                <span>Front Desk</span>
                                                 <span>&rarr;</span>
-                                                <span>Draft</span>
+                                                <span>Supervisor</span>
                                                 <span>&rarr;</span>
-                                                <span>Paid</span>
+                                                <span>Audit Settled</span>
                                             </div>
                                         </div>
 
-                                        {/* POD 4: OUTSOURCED LABS STYLE (Preset Health with iOS Toggles) */}
+                                        {/* POD 4: PRESET CATALOG HEALTH */}
                                         <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
                                             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                                                Outsourced Labs
+                                                Preset Catalog Health
                                             </h4>
 
                                             <div className="space-y-2">
-                                                {/* Toggle Row 1: Active Ref Labs */}
+                                                {/* Toggle Row 1: Active Presets */}
                                                 <div 
                                                     onClick={() => {
                                                         setReasonUsageFilter('USED');
@@ -936,7 +936,7 @@ export function DiscountMasterScreen() {
                                                     className="p-2.5 px-3 rounded-xl bg-[#ECFDF5] dark:bg-emerald-950/30 border border-[#A7F3D0] dark:border-emerald-900/40 flex items-center justify-between cursor-pointer"
                                                 >
                                                     <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                                        {intelligence.usedPresetsCount} Active Ref Labs
+                                                        {intelligence.usedPresetsCount} Active Used Presets
                                                     </span>
                                                     {/* iOS Toggle Switch (ON) */}
                                                     <div className="w-11 h-6 rounded-full bg-[#10B981] p-0.5 flex items-center justify-end shadow-inner">
@@ -944,7 +944,7 @@ export function DiscountMasterScreen() {
                                                     </div>
                                                 </div>
 
-                                                {/* Toggle Row 2: Pending Pricing */}
+                                                {/* Toggle Row 2: Dormant Presets */}
                                                 <div 
                                                     onClick={() => {
                                                         setReasonUsageFilter('DORMANT');
@@ -953,7 +953,7 @@ export function DiscountMasterScreen() {
                                                     className="p-2.5 px-3 rounded-xl bg-[#F8FAFC] dark:bg-zinc-800/60 border border-[#E2E8F0] dark:border-zinc-700/50 flex items-center justify-between cursor-pointer"
                                                 >
                                                     <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                                        {intelligence.dormantPresetsCount} Pending Pricing
+                                                        {intelligence.dormantPresetsCount} Dormant Presets
                                                     </span>
                                                     {/* iOS Toggle Switch (OFF) */}
                                                     <div className="w-11 h-6 rounded-full bg-[#CBD5E1] dark:bg-zinc-600 p-0.5 flex items-center justify-start shadow-inner">
