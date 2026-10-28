@@ -419,55 +419,80 @@ export function generateThermalInvoiceHtml(payload = {}) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Cash-Slip</title>
+    <title></title>
     <style>
         @page {
-            size: 80mm auto;
-            margin: 0mm !important;
+            margin: 0;
+            size: auto;
         }
         @media print {
             @page {
-                size: 80mm auto;
-                margin: 0mm !important;
+                margin: 0;
+                size: auto;
             }
-            html, body {
-                width: 70mm !important;
-                max-width: 70mm !important;
-                margin: 0 auto !important;
-                padding: 1mm 2mm !important;
-                color: #000000 !important;
-                background: #ffffff !important;
-            }
-            * {
+            *, *:before, *:after {
+                box-sizing: border-box !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            html, body {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: hidden !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .thermal-receipt-root {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 1.5mm 1.5mm !important;
                 box-sizing: border-box !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
-            margin: 0 auto;
-            padding: 1mm 2mm;
-            width: 70mm;
-            max-width: 70mm;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 72mm;
+            max-width: 72mm;
+            background: #ffffff;
             color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
             font-size: 10.5px;
             line-height: 1.3;
-            background: #ffffff;
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
+        }
+        .thermal-receipt-root {
+            width: 72mm;
+            max-width: 72mm;
+            margin: 0;
+            padding: 1.5mm 1.5mm;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
-    ${headerHtml}
-    ${badgeHtml}
-    ${patientHtml}
-    ${billerHtml}
-    ${itemsTableHtml}
-    ${finHtml}
-    ${upiQrHtml}
-    ${termsHtml}
+    <div class="thermal-receipt-root">
+        ${headerHtml}
+        ${badgeHtml}
+        ${patientHtml}
+        ${billerHtml}
+        ${itemsTableHtml}
+        ${finHtml}
+        ${upiQrHtml}
+        ${termsHtml}
+    </div>
 </body>
 </html>
     `;
@@ -753,54 +778,79 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Prepaid-Slip</title>
+    <title></title>
     <style>
         @page {
-            size: 80mm auto;
-            margin: 0mm !important;
+            margin: 0;
+            size: auto;
         }
         @media print {
             @page {
-                size: 80mm auto;
-                margin: 0mm !important;
+                margin: 0;
+                size: auto;
             }
-            html, body {
-                width: 70mm !important;
-                max-width: 70mm !important;
-                margin: 0 auto !important;
-                padding: 1mm 2mm !important;
-                color: #000000 !important;
-                background: #ffffff !important;
-            }
-            * {
+            *, *:before, *:after {
+                box-sizing: border-box !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            html, body {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: hidden !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .thermal-receipt-root {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 1.5mm 1.5mm !important;
                 box-sizing: border-box !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
-            margin: 0 auto;
-            padding: 1mm 2mm;
-            width: 70mm;
-            max-width: 70mm;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 72mm;
+            max-width: 72mm;
+            background: #ffffff;
             color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
             font-size: 10.5px;
             line-height: 1.3;
-            background: #ffffff;
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
+        }
+        .thermal-receipt-root {
+            width: 72mm;
+            max-width: 72mm;
+            margin: 0;
+            padding: 1.5mm 1.5mm;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
-    ${headerHtml}
-    ${badgeHtml}
-    ${patientHtml}
-    ${billerHtml}
-    ${itemsTableHtml}
-    ${prepaidNoticeHtml}
-    ${termsHtml}
+    <div class="thermal-receipt-root">
+        ${headerHtml}
+        ${badgeHtml}
+        ${patientHtml}
+        ${billerHtml}
+        ${itemsTableHtml}
+        ${prepaidNoticeHtml}
+        ${termsHtml}
+    </div>
 </body>
 </html>
     `;
@@ -1094,54 +1144,79 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Insurance-Cashless-Slip</title>
+    <title></title>
     <style>
         @page {
-            size: 80mm auto;
-            margin: 0mm !important;
+            margin: 0;
+            size: auto;
         }
         @media print {
             @page {
-                size: 80mm auto;
-                margin: 0mm !important;
+                margin: 0;
+                size: auto;
             }
-            html, body {
-                width: 70mm !important;
-                max-width: 70mm !important;
-                margin: 0 auto !important;
-                padding: 1mm 2mm !important;
-                color: #000000 !important;
-                background: #ffffff !important;
-            }
-            * {
+            *, *:before, *:after {
+                box-sizing: border-box !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            html, body {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: hidden !important;
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            .thermal-receipt-root {
+                width: 72mm !important;
+                max-width: 72mm !important;
+                margin: 0 !important;
+                padding: 1.5mm 1.5mm !important;
                 box-sizing: border-box !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
-            margin: 0 auto;
-            padding: 1mm 2mm;
-            width: 70mm;
-            max-width: 70mm;
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 72mm;
+            max-width: 72mm;
+            background: #ffffff;
             color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
             font-size: 10.5px;
             line-height: 1.3;
-            background: #ffffff;
             box-sizing: border-box;
             -webkit-font-smoothing: antialiased;
+        }
+        .thermal-receipt-root {
+            width: 72mm;
+            max-width: 72mm;
+            margin: 0;
+            padding: 1.5mm 1.5mm;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
-    ${headerHtml}
-    ${badgeHtml}
-    ${patientHtml}
-    ${billerHtml}
-    ${itemsTableHtml}
-    ${financialHtml}
-    ${termsHtml}
+    <div class="thermal-receipt-root">
+        ${headerHtml}
+        ${badgeHtml}
+        ${patientHtml}
+        ${billerHtml}
+        ${itemsTableHtml}
+        ${financialHtml}
+        ${termsHtml}
+    </div>
 </body>
 </html>
     `;
@@ -1193,6 +1268,9 @@ export async function legacyTriggerPrint(htmlContent) {
         doc.open();
         doc.write(htmlContent);
         doc.close();
+        try {
+            doc.title = "";
+        } catch {}
 
         let printed = false;
         const triggerPrint = () => {

@@ -79,8 +79,8 @@ export const CommercialDocumentViewer = ({
                         display: none !important;
                     }
                     @page {
-                        size: ${isThermal ? '80mm auto' : 'A4 portrait'};
-                        margin: ${isThermal ? '0 !important' : '10mm 10mm 12mm 10mm'};
+                        size: ${isThermal ? 'auto' : 'A4 portrait'};
+                        margin: ${isThermal ? '0' : '10mm 10mm 12mm 10mm'};
                     }
                     thead {
                         display: table-header-group !important;

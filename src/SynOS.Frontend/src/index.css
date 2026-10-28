@@ -526,7 +526,7 @@
    * ========================================================================================= */
   @page {
     size: A4 portrait;
-    margin: 0 !important; /* Eliminate browser default margins that trigger 2-page breaks */
+    margin: 0; /* Eliminate browser default margins that trigger 2-page breaks (no !important allowed in @page) */
   }
 
   /* Hide UI junk */
