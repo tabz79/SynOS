@@ -43,9 +43,9 @@ export function BillingSummary({
     const [isProcessing, setIsProcessing] = useState(false);
     const [discountCatalog, setDiscountCatalog] = useState([]);
 
-    // Custom Discount State (Percentage vs Flat) - Default to 'custom' as requested
+    // Custom Discount State (Percentage vs Flat) - Default to 'FLAT' for standard Indian clinical concessions
     const [discountInputMode, setDiscountInputMode] = useState('custom'); // 'custom' | 'catalog'
-    const [customDiscountType, setCustomDiscountType] = useState('PERCENTAGE'); // 'PERCENTAGE' | 'FLAT'
+    const [customDiscountType, setCustomDiscountType] = useState('FLAT'); // 'FLAT' | 'PERCENTAGE'
     const [customDiscountValue, setCustomDiscountValue] = useState('');
     const [customDiscountReason, setCustomDiscountReason] = useState('');
 
@@ -1060,27 +1060,27 @@ export function BillingSummary({
                                     <div className="flex rounded-md p-0.5 bg-zinc-200 dark:bg-zinc-800 text-[10px] font-bold shrink-0">
                                         <button
                                             type="button"
-                                            onClick={() => setCustomDiscountType('PERCENTAGE')}
-                                            className={cn(
-                                                "px-2 py-1 rounded cursor-pointer transition-all",
-                                                customDiscountType === 'PERCENTAGE'
-                                                    ? "bg-synos-primary text-white"
-                                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                                            )}
-                                        >
-                                            % Off
-                                        </button>
-                                        <button
-                                            type="button"
                                             onClick={() => setCustomDiscountType('FLAT')}
                                             className={cn(
                                                 "px-2 py-1 rounded cursor-pointer transition-all",
                                                 customDiscountType === 'FLAT'
-                                                    ? "bg-synos-primary text-white"
+                                                    ? "bg-synos-primary text-white shadow-xs"
                                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
                                             )}
                                         >
                                             ₹ Flat
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCustomDiscountType('PERCENTAGE')}
+                                            className={cn(
+                                                "px-2 py-1 rounded cursor-pointer transition-all",
+                                                customDiscountType === 'PERCENTAGE'
+                                                    ? "bg-synos-primary text-white shadow-xs"
+                                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                            )}
+                                        >
+                                            % Off
                                         </button>
                                     </div>
 
@@ -1090,7 +1090,7 @@ export function BillingSummary({
                                             min="0"
                                             max={customDiscountType === 'PERCENTAGE' ? 100 : (billing.grossAmount || 100000)}
                                             step={customDiscountType === 'PERCENTAGE' ? '1' : '10'}
-                                            placeholder={customDiscountType === 'PERCENTAGE' ? 'Discount % (e.g. 15)' : 'Flat ₹ (e.g. 200)'}
+                                            placeholder={customDiscountType === 'PERCENTAGE' ? 'Discount % (e.g. 15)' : 'Flat Concession ₹ (e.g. 100)'}
                                             value={customDiscountValue}
                                             onFocus={(e) => e.target.select()}
                                             onChange={(e) => {
@@ -1102,6 +1102,26 @@ export function BillingSummary({
                                         />
                                     </div>
                                 </div>
+
+                                {customDiscountValue && Number(customDiscountValue) > 0 && (() => {
+                                    const gross = billing.grossAmount || 0;
+                                    const val = Number(customDiscountValue) || 0;
+                                    const calculatedDiscount = customDiscountType === 'PERCENTAGE'
+                                        ? Math.round((gross * (val / 100)) * 100) / 100
+                                        : Math.min(gross, val);
+                                    const calculatedNet = Math.max(0, gross - calculatedDiscount);
+                                    return (
+                                        <div className="flex items-center justify-between text-[11px] px-2 py-1 rounded bg-synos-primary/10 border border-synos-primary/20 text-synos-primary font-medium animate-in fade-in">
+                                            <span>
+                                                {customDiscountType === 'PERCENTAGE' ? `${val}% off ₹${gross.toLocaleString()}` : `₹${val.toLocaleString()} Flat off ₹${gross.toLocaleString()}`}
+                                                {' → '}<strong>-₹{calculatedDiscount.toLocaleString()}</strong>
+                                            </span>
+                                            <span>
+                                                Net Bill: <strong className="font-bold text-emerald-600 dark:text-emerald-400">₹{calculatedNet.toLocaleString()}</strong>
+                                            </span>
+                                        </div>
+                                    );
+                                })()}
 
                                 <div className="space-y-1.5 pt-1 border-t border-zinc-200/60 dark:border-zinc-800/60">
                                     <div className="flex items-center justify-between">

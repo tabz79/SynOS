@@ -1876,7 +1876,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
                                                 <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
                                                     <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                                                    Doctor / B2B Partner Bill
+                                                    Corporate B2B Partner Bill
                                                 </span>
                                                 <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
                                                     Billed to Doctor

@@ -19,10 +19,10 @@ export function MultiPayerSelector({
         },
         {
             id: 'PrepaidPartner',
-            title: 'Doctor / B2B (Prepaid)',
-            subtitle: 'Doctor billed monthly, ₹0 at desk',
+            title: 'Corporate B2B (Prepaid)',
+            subtitle: 'B2B partner billed, ₹0 at desk',
             icon: Building2,
-            badge: 'Doctor B2B'
+            badge: 'B2B Prepaid'
         },
         {
             id: 'Insurance',
