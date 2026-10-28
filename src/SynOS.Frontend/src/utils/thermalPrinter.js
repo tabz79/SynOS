@@ -638,8 +638,9 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
         const ptName = pf.fullName?.value || normalizedData.patient.fullName;
         const mrnVal = pf.uhid?.value || normalizedData.patient.uhid;
         const ageGender = pf.ageGender?.value || normalizedData.patient.ageGender;
-        const sponsor = pf.sponsorName?.value || sponsorName;
-        const refDoc = pf.referringDoctor?.value || doctorName;
+        const isBilledDoctorSlip = schema.slotId === 'patient_thermal_prepaid_billed_doctor';
+        const billedToDoc = pf.billedToDoctor?.value || payload.billedToDoctorName || sponsorName;
+        const refDoc = pf.referringDoctor?.value || payload.prescribingDoctorName || doctorName;
 
         patientHtml = `
             <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
@@ -654,16 +655,24 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
                     <div style="font-weight: 700; margin-top: 1px;">
                         ${pf.ageGender?.enabled !== false ? `<span>Age/Sex: <b>${ageGender}</b></span>` : ''}
                     </div>
-                    ${sponsor ? `
-                        <div style="font-weight: 700; margin-top: 1px; line-height: 1.25; word-break: break-word;">
-                            Billed To (Partner): <b style="font-weight: 900;">${sponsor}</b>
-                        </div>
-                    ` : ''}
-                    ${refDoc && refDoc !== sponsor ? `
-                        <div style="font-weight: 700; margin-top: 1px; line-height: 1.25; word-break: break-word;">
-                            Ref Doctor: <b style="font-weight: 900;">${refDoc}</b>
-                        </div>
-                    ` : ''}
+                    ${isBilledDoctorSlip ? `
+                        ${pf.billedToDoctor?.enabled !== false && billedToDoc ? `
+                            <div style="font-weight: 700; margin-top: 1px; line-height: 1.25; word-break: break-word;">
+                                Billed To Doctor: <b style="font-weight: 900;">${billedToDoc}</b>
+                            </div>
+                        ` : ''}
+                        ${pf.referringDoctor?.enabled !== false && refDoc ? `
+                            <div style="font-weight: 700; margin-top: 1px; line-height: 1.25; word-break: break-word;">
+                                Prescribing Doctor: <b style="font-weight: 900;">${refDoc}</b>
+                            </div>
+                        ` : ''}
+                    ` : `
+                        ${pf.referringDoctor?.enabled !== false && refDoc ? `
+                            <div style="font-weight: 700; margin-top: 1px; line-height: 1.25; word-break: break-word;">
+                                Ref Doctor: <b style="font-weight: 900;">${refDoc}</b>
+                            </div>
+                        ` : ''}
+                    `}
                 </div>
             </div>
         `;

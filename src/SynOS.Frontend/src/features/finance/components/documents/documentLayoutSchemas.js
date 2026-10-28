@@ -298,7 +298,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     ageGender: { id: 'ageGender', enabled: true, label: 'Age / Gender', value: '46 Yrs / Male' },
                     phone: { id: 'phone', enabled: true, label: 'Contact Phone', value: '+91 98480 22334' },
                     refDoctor: { id: 'refDoctor', enabled: true, label: 'Referring Doctor', value: 'Dr. Khaleeq Ur Rahman, MD' },
-                    sponsorName: { id: 'sponsorName', enabled: true, label: 'Referral Partner / Account', value: 'Khaleeq Polyclinic & Hospital' },
+                    sponsorName: { id: 'sponsorName', enabled: false, label: 'Referral Partner / Account', value: '' },
                     address: { id: 'address', enabled: true, label: 'Patient Address', value: 'Doctors Colony, Khammam' }
                 },
                 customLines: []
@@ -400,7 +400,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
                     uhid: { id: 'uhid', enabled: true, label: 'MRN', value: 'A0001E' },
                     ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '46Y / M' },
-                    sponsorName: { id: 'sponsorName', enabled: true, label: 'Billed To (Partner)', value: 'Padmavathi Nursing Home' },
+                    sponsorName: { id: 'sponsorName', enabled: false, label: 'Billed To (Partner)', value: '' },
                     referringDoctor: { id: 'referringDoctor', enabled: true, label: 'Ref Doctor', value: 'Dr. B.S.V. Padmavathi' }
                 },
                 customLines: []
@@ -450,6 +450,94 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
         }
     },
 
+    patient_thermal_prepaid_billed_doctor: {
+        slotId: 'patient_thermal_prepaid_billed_doctor',
+        title: 'Prepaid Slip Thermal Billed to Doctor (80mm)',
+        isThermal: true,
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Thermal Brand Header',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
+                    gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Slip Particulars',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Slip Title', value: 'PREPAID SLIP (BILLED TO DOCTOR)' },
+                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Slip No', value: 'SLIP-202610-0912' },
+                    date: { id: 'date', enabled: true, label: 'Date/Time', value: '14/10/2026 12:48 PM' },
+                    tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'TOKEN # T-0142' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Patient & Doctor Particulars',
+                enabled: true,
+                title: 'Patient & Accounts Doctor',
+                fields: {
+                    fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
+                    uhid: { id: 'uhid', enabled: true, label: 'MRN', value: 'A0001E' },
+                    ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '46Y / M' },
+                    billedToDoctor: { id: 'billedToDoctor', enabled: true, label: 'Billed To Doctor', value: 'Padmavathi Nursing Home' },
+                    referringDoctor: { id: 'referringDoctor', enabled: true, label: 'Prescribing Doctor', value: 'Dr. B.S.V. Padmavathi' }
+                },
+                customLines: []
+            },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Billing Desk Box',
+                enabled: true,
+                title: 'BILLING DESK',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Investigative Tests Ordered (Zero Pricing)',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Test Item' }
+                },
+                rows: [
+                    { id: 'r-1', index: 1, description: 'Complete Blood Picture (CBP)' },
+                    { id: 'r-2', index: 2, description: 'Liver Function Test (LFT)' }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Prepaid Settlement Notice',
+                enabled: true,
+                title: 'BILLED TO REFERRAL PARTNER ACCOUNT',
+                isPrepaidNotice: true,
+                fields: {
+                    counterPayable: { id: 'counterPayable', enabled: true, label: 'Amount Payable at Counter', value: '₹0.00 (Prepaid)' }
+                },
+                customLines: []
+            },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'Counter Instructions',
+                enabled: true,
+                title: 'Notice',
+                text: 'Internal Doctor Billing Copy.\nReports will be delivered to referring clinic / WhatsApp.\nReports available within 4 hours.',
+                systemNote: 'Thank You • SynOS Diagnostic OS'
+            }
+        }
+    },
+
     partner_b2b_invoice: {
         slotId: 'partner_b2b_invoice',
         title: 'Partner B2B Diagnostic Service Invoice (A4)',
@@ -489,7 +577,8 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 enabled: true,
                 title: 'Billed To (Referral Partner / Clinic)',
                 fields: {
-                    fullName: { id: 'fullName', enabled: true, label: 'Partner / Doctor Name', value: 'Dr. Khaleeq Ur Rahman, MD' },
+                    fullName: { id: 'fullName', enabled: true, label: 'Billed To Doctor', value: 'Dr. Khaleeq Ur Rahman, MD' },
+                    prescribingDoctor: { id: 'prescribingDoctor', enabled: true, label: 'Prescribing Doctor', value: 'Dr. B.S.V. Padmavathi' },
                     clinicName: { id: 'clinicName', enabled: true, label: 'Clinic / Hospital', value: 'Khaleeq Polyclinic & Maternity Center' },
                     partnerId: { id: 'partnerId', enabled: true, label: 'Partner ID', value: 'PART-DR-KHALIKH' },
                     phone: { id: 'phone', enabled: true, label: 'Contact Phone', value: '+91 98490 11223' },
@@ -506,6 +595,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     token: { id: 'token', enabled: true, label: 'Visit Token' },
                     date: { id: 'date', enabled: true, label: 'Date' },
                     patientName: { id: 'patientName', enabled: true, label: 'Patient Name' },
+                    prescribingDoctor: { id: 'prescribingDoctor', enabled: true, label: 'Prescribing Dr' },
                     investigations: { id: 'investigations', enabled: true, label: 'Prescribed Investigations' },
                     labBilled: { id: 'labBilled', enabled: true, label: 'Lab Tariff (₹)' },
                     discount: { id: 'discount', enabled: false, label: 'Concession (₹)' },
@@ -513,9 +603,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     netDue: { id: 'netDue', enabled: true, label: 'Claim Due (₹)' }
                 },
                 rows: [
-                    { id: 'b2b-1', index: 1, token: 'T-0104', date: '14/10/2026', patientName: 'Mohammed Afzal', investigations: 'CBC, Serum Creatinine', labBilled: 550, received: 0, netDue: 550 },
-                    { id: 'b2b-2', index: 2, token: 'T-0118', date: '14/10/2026', patientName: 'Smt. Lakshmi Devi', investigations: 'Lipid Profile, Thyroid Profile', labBilled: 1250, received: 0, netDue: 1250 },
-                    { id: 'b2b-3', index: 3, token: 'T-0131', date: '14/10/2026', patientName: 'K. Venkatesh', investigations: 'Whole Abdomen Ultrasound', labBilled: 1200, received: 0, netDue: 1200 }
+                    { id: 'b2b-1', index: 1, token: 'T-0104', date: '14/10/2026', patientName: 'Mohammed Afzal', prescribingDoctor: 'Dr. B.S.V. Padmavathi', investigations: 'CBC, Serum Creatinine', labBilled: 550, received: 0, netDue: 550 },
+                    { id: 'b2b-2', index: 2, token: 'T-0118', date: '14/10/2026', patientName: 'Smt. Lakshmi Devi', prescribingDoctor: 'Dr. B.S.V. Padmavathi', investigations: 'Lipid Profile, Thyroid Profile', labBilled: 1250, received: 0, netDue: 1250 },
+                    { id: 'b2b-3', index: 3, token: 'T-0131', date: '14/10/2026', patientName: 'K. Venkatesh', prescribingDoctor: 'Dr. B.S.V. Padmavathi', investigations: 'Whole Abdomen Ultrasound', labBilled: 1200, received: 0, netDue: 1200 }
                 ]
             },
             financialSummary: {

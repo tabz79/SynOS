@@ -45,7 +45,7 @@ const getSlotsForCategory = (catId, list = []) => {
         return list.filter(m => m.slotId === 'patient_tax_invoice' || m.slotId === 'patient_thermal_receipt');
     }
     if (catId === 'corporate') {
-        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'partner_b2b_invoice' || m.slotId === 'summary_corporate');
+        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'patient_thermal_prepaid_billed_doctor' || m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'partner_b2b_invoice' || m.slotId === 'summary_corporate');
     }
     if (catId === 'insurance') {
         return list.filter(m => m.slotId === 'insurance_thermal_receipt' || m.slotId === 'insurance_tpa_claim' || m.slotId === 'summary_insurance');
@@ -558,6 +558,9 @@ export const CommercialPaperworkTab = () => {
         ],
         patient_thermal_prepaid_slip: [
             { id: 'template_thermal_prepaid_80mm', label: '80mm Prepaid Slip' }
+        ],
+        patient_thermal_prepaid_billed_doctor: [
+            { id: 'template_thermal_prepaid_billed_doctor_80mm', label: '80mm Prepaid Slip (Billed to Doctor)' }
         ],
         partner_b2b_invoice: [
             { id: 'template_partner_b2b_a4', label: 'Doctor Bill (A4)' }
@@ -1095,7 +1098,7 @@ export const CommercialPaperworkTab = () => {
                                                         >
                                                             <option value="digital">Digital Letterhead</option>
                                                             <option value="preprinted">Pre-Printed Stationery</option>
-                                                            {(slot.slotId === 'patient_thermal_receipt' || slot.slotId === 'patient_thermal_prepaid_slip' || slot.slotId === 'insurance_thermal_receipt') && (
+                                                            {(slot.slotId === 'patient_thermal_receipt' || slot.slotId === 'patient_thermal_prepaid_slip' || slot.slotId === 'patient_thermal_prepaid_billed_doctor' || slot.slotId === 'insurance_thermal_receipt') && (
                                                                 <option value="raw_thermal">POS Thermal Roll</option>
                                                             )}
                                                         </select>
@@ -1538,13 +1541,15 @@ export const CommercialPaperworkTab = () => {
                                                 ? 'Triggered by [Thermal Cash] button' 
                                                 : (previewSlotId === 'patient_thermal_prepaid_slip' 
                                                     ? 'Triggered by B2B Prepaid Visits (Thermal)' 
-                                                    : (previewSlotId === 'corporate_b2b_invoice'
-                                                        ? 'Triggered by B2B Referral Partner Bill (A4)'
-                                                        : (previewSlotId === 'insurance_thermal_receipt'
-                                                            ? 'Triggered by Insurance Cashless Visits (Thermal)'
-                                                            : (previewSlotId === 'insurance_tpa_claim'
-                                                                ? 'Triggered by Insurance TPA Claim (A4)'
-                                                                : 'Finance & Billing Matrix'))))))}
+                                                    : (previewSlotId === 'patient_thermal_prepaid_billed_doctor'
+                                                        ? 'Triggered by B2B Prepaid Doctor Copy (Thermal)'
+                                                        : (previewSlotId === 'corporate_b2b_invoice'
+                                                            ? 'Triggered by B2B Referral Partner Bill (A4)'
+                                                            : (previewSlotId === 'insurance_thermal_receipt'
+                                                                ? 'Triggered by Insurance Cashless Visits (Thermal)'
+                                                                : (previewSlotId === 'insurance_tpa_claim'
+                                                                    ? 'Triggered by Insurance TPA Claim (A4)'
+                                                                    : 'Finance & Billing Matrix')))))))}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">

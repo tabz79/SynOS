@@ -422,28 +422,34 @@ export function InsuranceContextPanel({
                             {/* Anchored Dropdown List */}
                             {isDropdownOpen && (
                                 <div className={cn(
-                                    "absolute top-full left-0 right-0 mt-1 rounded-xl border shadow-xl z-50 overflow-hidden max-h-60 flex flex-col",
-                                    isDark ? "bg-zinc-900 border-zinc-700" : "bg-white border-zinc-200"
+                                    "absolute top-full left-0 right-0 mt-1.5 rounded-xl border shadow-xl z-50 overflow-hidden max-h-60 flex flex-col backdrop-blur-md",
+                                    isDark ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10"
                                 )}>
                                     <div className="px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[10px] text-zinc-400 font-medium bg-zinc-50/50 dark:bg-zinc-950/50">
                                         <span>{filteredProviders.length} companies available</span>
                                         <span>Use ↑↓ keys + Enter</span>
                                     </div>
                                     
-                                    <div className="overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/60" ref={dropdownListRef}>
+                                    <div className="p-1 overflow-y-auto space-y-1" ref={dropdownListRef}>
                                         {filteredProviders.length > 0 ? (
-                                            filteredProviders.map((p, idx) => (
-                                                <div
-                                                    key={p.id}
-                                                    onMouseEnter={() => setHighlightedIndex(idx)}
-                                                    onClick={() => handleSelectProvider(p)}
-                                                    className={cn(
-                                                        "p-2.5 flex items-center justify-between cursor-pointer transition-colors text-left",
-                                                        highlightedIndex === idx
-                                                            ? isDark ? "bg-zinc-800 text-white ring-2 ring-inset ring-synos-primary" : "bg-blue-50/80 text-blue-950 font-medium ring-2 ring-inset ring-synos-primary"
-                                                            : isDark ? "text-zinc-200 hover:bg-zinc-800/50" : "text-zinc-800 hover:bg-zinc-50"
-                                                    )}
-                                                >
+                                            filteredProviders.map((p, idx) => {
+                                                const isSelected = highlightedIndex === idx;
+                                                return (
+                                                    <div
+                                                        key={p.id}
+                                                        onMouseEnter={() => setHighlightedIndex(idx)}
+                                                        onClick={() => handleSelectProvider(p)}
+                                                        className={cn(
+                                                            "p-2.5 rounded-lg flex items-center justify-between cursor-pointer transition-all duration-150 text-left",
+                                                            isSelected
+                                                                ? (isDark 
+                                                                    ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" 
+                                                                    : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]")
+                                                                : (isDark 
+                                                                    ? "hover:bg-zinc-800/70 border border-transparent text-zinc-200 hover:text-white" 
+                                                                    : "hover:bg-zinc-50 border border-transparent text-zinc-800 hover:text-zinc-950")
+                                                        )}
+                                                    >
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <div className={cn(
                                                             "w-6 h-6 rounded-md flex items-center justify-center shrink-0",
@@ -478,8 +484,9 @@ export function InsuranceContextPanel({
                                                         {p.isCorporate ? "Corporate" : "Insurance"}
                                                     </span>
                                                 </div>
-                                            ))
-                                        ) : (
+                                            );
+                                        })
+                                    ) : (
                                             <div className="p-4 text-center text-xs text-zinc-400">
                                                 No company found matching "{searchQuery}"
                                             </div>

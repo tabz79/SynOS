@@ -1089,6 +1089,21 @@ namespace SynOS.Api.Controllers
                     isSystemDefault = true
                 },
                 new {
+                    slotId = "patient_thermal_prepaid_billed_doctor",
+                    module = "Corporate B2B",
+                    moduleCode = "corporate",
+                    slotName = "Prepaid Slip Thermal Billed to Doctor",
+                    triggerDescription = "Printed on 80mm thermal POS printer for corporate B2B visits disclosing Billed to Doctor for accounts.",
+                    assignedTemplateId = "template_thermal_prepaid_billed_doctor_80mm",
+                    templateName = "Prepaid Slip Thermal Billed to Doctor (80mm POS)",
+                    letterheadMode = "raw_thermal",
+                    topMarginMm = 0,
+                    enableUpiQr = false,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
                     slotId = "partner_b2b_invoice",
                     module = "Doctors",
                     moduleCode = "referral",
@@ -1727,6 +1742,8 @@ namespace SynOS.Api.Controllers
             var visitIds = facts.Select(f => f.SourceVisitId).Distinct().ToList();
             var visits = await _context.Visits
                 .Include(v => v.Patient)
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.SecondaryReferralPartner)
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
                 .Include(v => v.Invoices)
@@ -1797,6 +1814,7 @@ namespace SynOS.Api.Controllers
                     VisitToken = displayToken,
                     Date = fact.OccurredAt.DateTime,
                     PatientName = ptName,
+                    PrescribingDoctor = visit?.ReferralPartner?.Name ?? partner.Name,
                     AgeGender = ageGen,
                     Investigations = testSummary,
                     GrossAmount = standardTariff,
@@ -1820,6 +1838,8 @@ namespace SynOS.Api.Controllers
             {
                 var directVisits = await _context.Visits
                     .Include(v => v.Patient)
+                    .Include(v => v.ReferralPartner)
+                    .Include(v => v.SecondaryReferralPartner)
                     .Include(v => v.Orders).ThenInclude(o => o.Test)
                     .Include(v => v.Invoices).ThenInclude(i => i.Payments)
                     .Where(v => request.VisitIds.Contains(v.VisitId))
@@ -1880,6 +1900,7 @@ namespace SynOS.Api.Controllers
                         VisitToken = displayToken,
                         Date = v.CreatedAt,
                         PatientName = ptName,
+                        PrescribingDoctor = v.ReferralPartner?.Name ?? partner.Name,
                         AgeGender = ageGen,
                         Investigations = testSummary,
                         GrossAmount = standardTariff,
@@ -1911,6 +1932,10 @@ namespace SynOS.Api.Controllers
             if (partnerNameClean.Length > 16) partnerNameClean = partnerNameClean.Substring(0, 16);
             var cleanPartnerId = $"PART-{partnerNameClean}";
 
+            string prescribingDoctorName = (facts.Count > 0 
+                ? visits.Values.Select(v => v.ReferralPartner?.Name).FirstOrDefault(n => !string.IsNullOrEmpty(n)) 
+                : null) ?? partner.Name;
+
             return Ok(new
             {
                 StatementNumber = statementNo,
@@ -1918,6 +1943,8 @@ namespace SynOS.Api.Controllers
                 GeneratedAt = now,
                 Date = now,
                 DueDate = now.AddDays(15),
+                PrescribingDoctorName = prescribingDoctorName,
+                BilledToDoctorName = partner.Name,
                 BillingPeriod = request.StartDate.HasValue && request.EndDate.HasValue 
                     ? $"{request.StartDate.Value:dd MMM yyyy} to {request.EndDate.Value:dd MMM yyyy}" 
                     : $"Transactions as of {now:dd MMM yyyy}",

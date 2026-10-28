@@ -315,11 +315,13 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} / ${p.gender || ''}` : "Adult");
                 if (boxes.partyDetails.fields.phone) boxes.partyDetails.fields.phone.value = p.phone || p.mobile || "N/A";
+                const prescribingDoc = liveData.prescribingDoctorName || liveData.patient?.referringDoctor || liveData.referringDoctorName || refPartnerName;
                 if (boxes.partyDetails.fields.refDoctor) {
-                    boxes.partyDetails.fields.refDoctor.value = refClinic ? `${refPartnerName} (${refClinic})` : refPartnerName;
+                    boxes.partyDetails.fields.refDoctor.value = prescribingDoc;
                 }
                 if (boxes.partyDetails.fields.sponsorName) {
-                    boxes.partyDetails.fields.sponsorName.value = refClinic ? `${refPartnerName} (${refClinic})` : refPartnerName;
+                    boxes.partyDetails.fields.sponsorName.enabled = false;
+                    boxes.partyDetails.fields.sponsorName.value = "";
                 }
                 if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = p.address || "N/A";
             }
@@ -365,7 +367,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
         case 'patient_thermal_prepaid_slip': {
             const p = liveData.patient || {};
-            const refPartnerName = liveData.referringDoctorName || liveData.partnerName || liveData.billing?.referral?.partner?.displayName || liveData.billing?.referral?.partner?.name || "Corporate B2B Partner";
+            const prescribingDoc = liveData.prescribingDoctorName || liveData.patient?.referringDoctor || liveData.referringDoctorName || "Prescribing Doctor";
 
             if (boxes.docBadge?.fields) {
                 if (boxes.docBadge.fields.receiptNumber) boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || (liveData.token ? `SLIP-${liveData.token}` : boxes.docBadge.fields.receiptNumber.value);
@@ -377,8 +379,60 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
                 if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
-                if (boxes.partyDetails.fields.sponsorName) boxes.partyDetails.fields.sponsorName.value = refPartnerName;
-                if (boxes.partyDetails.fields.referringDoctor) boxes.partyDetails.fields.referringDoctor.value = liveData.referringDoctorName || refPartnerName;
+                if (boxes.partyDetails.fields.sponsorName) {
+                    boxes.partyDetails.fields.sponsorName.enabled = false;
+                    boxes.partyDetails.fields.sponsorName.value = "";
+                }
+                if (boxes.partyDetails.fields.referringDoctor) boxes.partyDetails.fields.referringDoctor.value = prescribingDoc;
+            }
+
+            if (boxes.itemsTable && Array.isArray(liveData.items || liveData.orders)) {
+                const list = liveData.items || liveData.orders;
+                boxes.itemsTable.rows = list.map((it, idx) => ({
+                    id: `r-${idx}`,
+                    index: idx + 1,
+                    description: it.testName || it.name || it.description || 'Test'
+                }));
+            }
+
+            if (boxes.billerDetails?.fields) {
+                const billerObj = liveData.biller || liveData.visit?.biller || {};
+                const billerDisplay = liveData.billerName 
+                    || (typeof liveData.biller === 'string' ? liveData.biller : '')
+                    || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+                    || liveData.billedBy 
+                    || "Dr. Vasudeva Rao (admin)";
+
+                if (boxes.billerDetails.fields.billedBy) {
+                    boxes.billerDetails.fields.billedBy.value = billerDisplay;
+                }
+            }
+
+            if (boxes.financialSummary?.fields) {
+                if (boxes.financialSummary.fields.counterPayable) {
+                    boxes.financialSummary.fields.counterPayable.value = "Amount Payable at Counter: ₹0.00 (Prepaid)";
+                }
+            }
+            break;
+        }
+
+        case 'patient_thermal_prepaid_billed_doctor': {
+            const p = liveData.patient || {};
+            const billedToDoc = liveData.billedToDoctorName || liveData.partnerName || liveData.partner?.name || "Doctor Partner";
+            const prescribingDoc = liveData.prescribingDoctorName || liveData.patient?.referringDoctor || liveData.referringDoctorName || billedToDoc;
+
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.receiptNumber) boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || (liveData.token ? `SLIP-${liveData.token}` : boxes.docBadge.fields.receiptNumber.value);
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.dateTime || new Date().toLocaleString();
+                if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = liveData.token ? `TOKEN # ${liveData.token}` : "TOKEN # COUNTER";
+            }
+
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
+                if (boxes.partyDetails.fields.billedToDoctor) boxes.partyDetails.fields.billedToDoctor.value = billedToDoc;
+                if (boxes.partyDetails.fields.referringDoctor) boxes.partyDetails.fields.referringDoctor.value = prescribingDoc;
             }
 
             if (boxes.itemsTable && Array.isArray(liveData.items || liveData.orders)) {
@@ -430,7 +484,8 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             }
 
             if (boxes.partyDetails?.fields) {
-                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = partner.name || partner.partnerName || "Doctor Partner";
+                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = partner.name || partner.partnerName || liveData.billedToDoctorName || "Doctor Partner";
+                if (boxes.partyDetails.fields.prescribingDoctor) boxes.partyDetails.fields.prescribingDoctor.value = liveData.prescribingDoctorName || (liveData.items?.[0]?.prescribingDoctor) || partner.name || "";
                 if (boxes.partyDetails.fields.clinicName) boxes.partyDetails.fields.clinicName.value = partner.clinicName || "Medical Clinic";
                 
                 if (boxes.partyDetails.fields.partnerId) {
@@ -464,6 +519,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                         visitToken: rowToken,
                         date: it.date ? new Date(it.date).toLocaleDateString() : '',
                         patientName: it.patientName || 'Patient',
+                        prescribingDoctor: it.prescribingDoctor || liveData.prescribingDoctorName || partner.name || '',
                         investigations: it.investigations || 'Diagnostic Tests',
                         tests: it.investigations || 'Diagnostic Tests',
                         labBilled: rowLabBilled,

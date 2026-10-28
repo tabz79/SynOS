@@ -1071,10 +1071,18 @@ export function VisitDetails({
 
                         {/* Search Suggestions Dropdown */}
                         {suggestions.length > 0 && filter.trim().length > 0 && isSearchFocused && (
-                            <div ref={testListRef} className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border shadow-lg", ui.suggestionBox, "max-h-60")}>
+                            <div 
+                                ref={testListRef} 
+                                className={cn(
+                                    "absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-20 border overflow-y-auto space-y-1 backdrop-blur-md max-h-64",
+                                    ui.suggestionBox,
+                                    isDark ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10"
+                                )}
+                            >
                                 {/* INTERNAL & OUTSOURCED & CORPORATE TESTS */}
                                 {suggestions.map((test, idx) => {
                                     const pricing = getTestPricing(test);
+                                    const isSelected = idx === testSelectedIndex;
                                     return (
                                         <button
                                             key={test.testCode || test.code}
@@ -1083,10 +1091,16 @@ export function VisitDetails({
                                             onClick={() => {
                                                 handleAddTest({ ...test, price: pricing.price });
                                             }}
-                                            className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
-                                                idx === testSelectedIndex
-                                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
-                                                    : (isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100"))}
+                                            className={cn(
+                                                "w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between group transition-all duration-150 cursor-pointer",
+                                                isSelected
+                                                    ? (isDark 
+                                                        ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" 
+                                                        : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]")
+                                                    : (isDark 
+                                                        ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" 
+                                                        : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900")
+                                            )}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <div>
@@ -1660,31 +1674,43 @@ function ReferralCombinedInput({
             {showSuggestions && suggestions.length > 0 && (
                 <div 
                     ref={listRef}
-                    className={cn("absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-20 border", ui.suggestionBox, "max-h-48")}
+                    className={cn(
+                        "absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-20 border overflow-y-auto space-y-1 backdrop-blur-md max-h-48",
+                        ui.suggestionBox,
+                        isDark ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10"
+                    )}
                 >
-                    {suggestions.map((p, idx) => (
-                        <button
-                            key={p.referralPartnerId}
-                            onMouseEnter={() => setSelectedIndex(idx)}
-                            onMouseDown={(e) => {
-                                e.preventDefault(); // Prevent blur
-                                handleApply(p.referralPartnerId);
-                            }}
-                            className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between",
-                                idx === selectedIndex 
-                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
-                                    : ui.hover,
-                                isDark ? "border-zinc-800/50" : "border-zinc-100")}
-                        >
-                            <span className="truncate">{p.name}</span>
-                            {p.status === 0 && (
-                                <span className={cn("text-[9px] font-bold px-1 py-0.5 rounded border leading-none uppercase", 
-                                    isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-amber-100 border-amber-300 text-amber-700")}>
-                                    Draft
-                                </span>
-                            )}
-                        </button>
-                    ))}
+                    {suggestions.map((p, idx) => {
+                        const isSelected = idx === selectedIndex;
+                        return (
+                            <button
+                                key={p.referralPartnerId}
+                                onMouseEnter={() => setSelectedIndex(idx)}
+                                onMouseDown={(e) => {
+                                    e.preventDefault(); // Prevent blur
+                                    handleApply(p.referralPartnerId);
+                                }}
+                                className={cn(
+                                    "w-full text-left px-3 py-2 rounded-lg transition-all duration-150 type-label flex items-center justify-between cursor-pointer",
+                                    isSelected 
+                                        ? (isDark 
+                                            ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" 
+                                            : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]")
+                                        : (isDark 
+                                            ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" 
+                                            : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900")
+                                )}
+                            >
+                                <span className="truncate">{p.name}</span>
+                                {p.status === 0 && (
+                                    <span className={cn("text-[9px] font-bold px-1 py-0.5 rounded border leading-none uppercase", 
+                                        isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-amber-100 border-amber-300 text-amber-700")}>
+                                        Draft
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             )}
         </div>

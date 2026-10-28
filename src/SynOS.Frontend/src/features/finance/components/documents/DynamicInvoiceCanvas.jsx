@@ -1101,6 +1101,7 @@ export const DynamicInvoiceCanvas = ({
                         department: 14,
                         patientName: 18,
                         doctorName: 18,
+                        prescribingDoctor: 18,
                         corporateName: 20,
                         tpaName: 20,
                         insuranceCompany: 20,
@@ -1477,7 +1478,7 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('financialSummary')}
                     onAddCustomLine={(line) => addCustomLine('financialSummary', line)}
                 >
-                    {isThermal && (boxes.financialSummary.isPrepaidNotice || boxes.financialSummary.fields?.counterPayable || schema.slotId === 'patient_thermal_prepaid_slip' || boxes.financialSummary.title?.includes('REFERRAL PARTNER')) ? (
+                    {isThermal && (boxes.financialSummary.isPrepaidNotice || boxes.financialSummary.fields?.counterPayable || schema.slotId === 'patient_thermal_prepaid_slip' || schema.slotId === 'patient_thermal_prepaid_billed_doctor' || boxes.financialSummary.title?.includes('REFERRAL PARTNER')) ? (
                         <div className="border-[1.5px] border-black p-1.5 mb-1.5 text-center bg-white">
                             <div className="text-[10px] font-black uppercase tracking-wider text-black">
                                 <EditableField 

@@ -1180,8 +1180,8 @@ export function BillingSummary({
                                                         <div
                                                             ref={b2bDoctorListRef}
                                                             className={cn(
-                                                                "absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-50 border max-h-48 shadow-xl",
-                                                                isDark ? "bg-zinc-900 border-zinc-700/80 text-zinc-200" : "bg-white border-zinc-200 text-zinc-900"
+                                                                "absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52",
+                                                                isDark ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10 text-zinc-900"
                                                             )}
                                                         >
                                                             {filteredB2BDoctors.length === 0 ? (
@@ -1189,32 +1189,38 @@ export function BillingSummary({
                                                                     No matching doctor found. Click "+ Add Doctor" to create one.
                                                                 </div>
                                                             ) : (
-                                                                filteredB2BDoctors.map((doc, idx) => (
-                                                                    <button
-                                                                        key={doc.referralPartnerId || doc.id}
-                                                                        type="button"
-                                                                        onMouseEnter={() => setB2BDoctorSelectedIndex(idx)}
-                                                                        onMouseDown={(e) => {
-                                                                            e.preventDefault();
-                                                                            handleApplyB2BOverrideDoctor(doc.referralPartnerId || doc.id);
-                                                                        }}
-                                                                        className={cn(
-                                                                            "w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between cursor-pointer",
-                                                                            idx === b2bDoctorSelectedIndex
-                                                                                ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
-                                                                                : (isDark ? "hover:bg-zinc-800 text-zinc-300 hover:text-white" : "hover:bg-zinc-50 text-zinc-700 hover:text-black"),
-                                                                            isDark ? "border-zinc-800/50" : "border-zinc-100"
-                                                                        )}
-                                                                    >
-                                                                        <span className="truncate text-xs font-semibold">{doc.name || doc.displayName}</span>
-                                                                        <span className={cn(
-                                                                            "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
-                                                                            isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
-                                                                        )}>
-                                                                            {doc.partnerType || 'Doctor'}
-                                                                        </span>
-                                                                    </button>
-                                                                ))
+                                                                filteredB2BDoctors.map((doc, idx) => {
+                                                                    const isSelected = idx === b2bDoctorSelectedIndex;
+                                                                    return (
+                                                                        <button
+                                                                            key={doc.referralPartnerId || doc.id}
+                                                                            type="button"
+                                                                            onMouseEnter={() => setB2BDoctorSelectedIndex(idx)}
+                                                                            onMouseDown={(e) => {
+                                                                                e.preventDefault();
+                                                                                handleApplyB2BOverrideDoctor(doc.referralPartnerId || doc.id);
+                                                                            }}
+                                                                            className={cn(
+                                                                                "w-full text-left px-3 py-2 rounded-lg transition-all duration-150 type-label flex items-center justify-between cursor-pointer",
+                                                                                isSelected
+                                                                                    ? (isDark 
+                                                                                        ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" 
+                                                                                        : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]")
+                                                                                    : (isDark 
+                                                                                        ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" 
+                                                                                        : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900")
+                                                                            )}
+                                                                        >
+                                                                            <span className="truncate text-xs font-semibold">{doc.name || doc.displayName}</span>
+                                                                            <span className={cn(
+                                                                                "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
+                                                                                isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
+                                                                            )}>
+                                                                                {doc.partnerType || 'Doctor'}
+                                                                            </span>
+                                                                        </button>
+                                                                    );
+                                                                })
                                                             )}
                                                         </div>
                                                     )}
@@ -1435,8 +1441,8 @@ export function BillingSummary({
                                                 <div
                                                     ref={reasonListRef}
                                                     className={cn(
-                                                        "absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-50 border max-h-52 shadow-xl",
-                                                        isDark ? "bg-zinc-900 border-zinc-700/80 text-zinc-200" : "bg-white border-zinc-200 text-zinc-900"
+                                                        "absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52",
+                                                        isDark ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10 text-zinc-900"
                                                     )}
                                                 >
                                                     {filteredReasonSuggestions.length === 0 ? (
@@ -1444,35 +1450,41 @@ export function BillingSummary({
                                                             No matching preset. You can still apply as custom note.
                                                         </div>
                                                     ) : (
-                                                        filteredReasonSuggestions.map((r, idx) => (
-                                                            <button
-                                                                key={r.discountReasonId}
-                                                                type="button"
-                                                                onMouseEnter={() => setReasonSelectedIndex(idx)}
-                                                                onMouseDown={(e) => {
-                                                                    e.preventDefault();
-                                                                    setCustomDiscountReason(r.reasonText);
-                                                                    setShowReasonDropdown(false);
-                                                                }}
-                                                                className={cn(
-                                                                    "w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between cursor-pointer",
-                                                                    idx === reasonSelectedIndex
-                                                                        ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
-                                                                        : (isDark ? "hover:bg-zinc-800 text-zinc-300 hover:text-white" : "hover:bg-zinc-50 text-zinc-700 hover:text-black"),
-                                                                    isDark ? "border-zinc-800/50" : "border-zinc-100"
-                                                                )}
-                                                            >
-                                                                <span className="truncate text-xs font-semibold">{r.reasonText}</span>
-                                                                {r.category && (
-                                                                    <span className={cn(
-                                                                        "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
-                                                                        isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
-                                                                    )}>
-                                                                        {r.category}
-                                                                    </span>
-                                                                )}
-                                                            </button>
-                                                        ))
+                                                        filteredReasonSuggestions.map((r, idx) => {
+                                                            const isSelected = idx === reasonSelectedIndex;
+                                                            return (
+                                                                <button
+                                                                    key={r.discountReasonId}
+                                                                    type="button"
+                                                                    onMouseEnter={() => setReasonSelectedIndex(idx)}
+                                                                    onMouseDown={(e) => {
+                                                                        e.preventDefault();
+                                                                        setCustomDiscountReason(r.reasonText);
+                                                                        setShowReasonDropdown(false);
+                                                                    }}
+                                                                    className={cn(
+                                                                        "w-full text-left px-3 py-2 rounded-lg transition-all duration-150 type-label flex items-center justify-between cursor-pointer",
+                                                                        isSelected
+                                                                            ? (isDark 
+                                                                                ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" 
+                                                                                : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]")
+                                                                            : (isDark 
+                                                                                ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" 
+                                                                                : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900")
+                                                                    )}
+                                                                >
+                                                                    <span className="truncate text-xs font-semibold">{r.reasonText}</span>
+                                                                    {r.category && (
+                                                                        <span className={cn(
+                                                                            "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
+                                                                            isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
+                                                                        )}>
+                                                                            {r.category}
+                                                                        </span>
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        })
                                                     )}
 
                                                     {/* Quick + Add New Reason action at bottom of menu */}
