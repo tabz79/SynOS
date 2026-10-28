@@ -288,8 +288,10 @@ namespace SynOS.Services.Operations
                     
                     PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                     
-                    // Phase 6: Granular Payment Fields
-                    TotalAmount = invoice?.Total ?? 0m,
+                    // Phase 6: Granular Payment Fields (Contracted B2B Net Rate applied for Prepaid)
+                    TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects" && visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+                        ? Math.Max(0m, (invoice?.Total ?? 0m) - visit.B2BDiscountAmount.Value)
+                        : (invoice?.Total ?? 0m),
                     TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
                     RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
@@ -416,7 +418,9 @@ namespace SynOS.Services.Operations
                 
                 PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                 
-                TotalAmount = invoice?.Total ?? 0m,
+                TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects" && visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+                    ? Math.Max(0m, (invoice?.Total ?? 0m) - visit.B2BDiscountAmount.Value)
+                    : (invoice?.Total ?? 0m),
                 TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
                 RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                 PaymentMethod = DerivePaymentMethod(visit, invoice),

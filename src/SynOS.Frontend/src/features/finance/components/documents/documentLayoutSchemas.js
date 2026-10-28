@@ -160,9 +160,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
                     tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
-                    address: { id: 'address', enabled: true, label: 'Address', value: 'Central Diagnostic Complex, Main Road | Ph: 9876543210' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
                     gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
@@ -186,7 +186,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 title: 'Patient',
                 fields: {
                     fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
-                    uhid: { id: 'uhid', enabled: true, label: 'UHID', value: 'SYN-2026-9042' },
+                    uhid: { id: 'uhid', enabled: true, label: 'MRN', value: 'A0001E' },
                     ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '46Y / M' }
                 },
                 customLines: []
@@ -372,9 +372,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
                     tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
-                    address: { id: 'address', enabled: true, label: 'Address', value: 'Central Diagnostic Complex, Main Road | Ph: 9876543210' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
                     gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
@@ -398,7 +398,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 title: 'Patient',
                 fields: {
                     fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
-                    uhid: { id: 'uhid', enabled: true, label: 'UHID', value: 'SYN-2026-9042' },
+                    uhid: { id: 'uhid', enabled: true, label: 'MRN', value: 'A0001E' },
                     ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '46Y / M' },
                     sponsorName: { id: 'sponsorName', enabled: true, label: 'Billed To (Partner)', value: 'Padmavathi Nursing Home' },
                     referringDoctor: { id: 'referringDoctor', enabled: true, label: 'Ref Doctor', value: 'Dr. B.S.V. Padmavathi' }
@@ -1136,9 +1136,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
                     tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
-                    address: { id: 'address', enabled: true, label: 'Address', value: 'Central Diagnostic Complex, Main Road | Ph: 9876543210' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
                     gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
@@ -1163,7 +1163,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 title: 'Patient & Insurance',
                 fields: {
                     fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'S. Anusha' },
-                    uhid: { id: 'uhid', enabled: true, label: 'UHID', value: 'SYN-2026-8819' },
+                    uhid: { id: 'uhid', enabled: true, label: 'MRN', value: 'A0001E' },
                     ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '34Y / F' },
                     insuranceProvider: { id: 'insuranceProvider', enabled: true, label: 'Insurance Co', value: 'Star Health & Allied Insurance' },
                     tpaName: { id: 'tpaName', enabled: true, label: 'TPA Network', value: 'Medi Assist TPA' },

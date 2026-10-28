@@ -512,8 +512,12 @@ export function IntentPanel({ onVisitUpdated }) {
             || b?.billedBy 
             || (user?.name ? `${user.name}` : "Staff Desk");
 
+        const rawToken = visitObj?.visitToken || visitObj?.token;
+        const isDraftToken = !rawToken || rawToken.startsWith("DRAFT") || rawToken.startsWith("D-");
+        const displayToken = isDraftToken ? "" : rawToken;
+
         return {
-            billNumber: visitObj?.visitToken || visitObj?.token || "INV-REC-001",
+            billNumber: displayToken || "INV-REC-001",
             date: new Date().toISOString(),
             status: b?.paymentStatus || (dueVal <= 0 ? 'Paid' : 'PendingPayment'),
             biller: {
@@ -544,6 +548,7 @@ export function IntentPanel({ onVisitUpdated }) {
             patient: {
                 name: p?.fullName || p?.name || "Direct Patient",
                 uhid: p?.mrn || p?.uhid || "WALK-IN",
+                mrn: p?.mrn || p?.uhid || "WALK-IN",
                 ageGender: p?.age ? `${p.age} ${p?.ageUnit || 'Yrs'} / ${p?.gender || 'M'}` : "Adult",
                 phone: p?.phone || p?.mobile || p?.currentPhoneNumber || "N/A",
                 referringDoctor: refName,
@@ -582,7 +587,11 @@ export function IntentPanel({ onVisitUpdated }) {
         const visitObj = snapshot?.visit;
         if (!visitObj) return;
         try {
-            const tokenToPrint = overrideToken || visitObj?.visitToken || visitObj?.token || "WAIT";
+            const tokenToPrint = overrideToken || visitObj?.visitToken || visitObj?.token;
+            if (!tokenToPrint || tokenToPrint.startsWith("DRAFT") || tokenToPrint.startsWith("D-")) {
+                console.warn("Prevented draft token from leaking into print:", tokenToPrint);
+                return;
+            }
             const p = displayedPatient || snapshot?.patient;
 
             const effectiveGross = stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || 0);
@@ -645,9 +654,7 @@ export function IntentPanel({ onVisitUpdated }) {
                     discount: 0,
                     netAmount: Number(t.price || t.basePrice || 0)
                 })),
-                referringDoctorName: effectiveRefPartner?.name || effectiveRefPartner?.displayName || "Self",
-                labName: "Diagnostic Laboratory",
-                branch: { name: "Main Lab" }
+                referringDoctorName: effectiveRefPartner?.name || effectiveRefPartner?.displayName || "Self"
             };
             const html = generateThermalInvoiceHtml(printPayload);
             await legacyTriggerPrint(html);
@@ -1342,9 +1349,15 @@ export function IntentPanel({ onVisitUpdated }) {
                         </button>
                         <button
                             type="button"
-                            onClick={() => handlePrintReceipt()}
+                            onClick={() => setTaxInvoiceModal({ 
+                                isOpen: true, 
+                                slotId: isPrepaid ? 'patient_thermal_prepaid_slip' : (billingMode === 'Insurance' ? 'insurance_thermal_receipt' : 'patient_thermal_receipt'), 
+                                paperSize: 'thermal80',
+                                data: buildTaxInvoiceData(), 
+                                title: isPrepaid ? 'Prepaid Patient Slip (80mm)' : (billingMode === 'Insurance' ? 'Insurance Thermal Receipt (80mm)' : 'Thermal Slip (80mm)') 
+                            })}
                             className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
-                            title="Print Thermal 80mm POS Slip"
+                            title="Preview & Print Thermal 80mm POS Slip"
                         >
                             <Printer className="w-4 h-4" /> Thermal
                         </button>
@@ -1392,50 +1405,15 @@ export function IntentPanel({ onVisitUpdated }) {
                         <div className="flex flex-col gap-1.5 w-full max-w-2xl mx-auto">
                             <div className="flex items-center gap-2 w-full">
                                 {snapshot?.visit?.visitId && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={() => setTaxInvoiceModal({ 
-                                                isOpen: true, 
-                                                slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
-                                                data: buildTaxInvoiceData(), 
-                                                title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
-                                            })}
-                                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                                            title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
-                                        >
-                                            <FileText className="w-4 h-4" /> A4 Receipt
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handlePrintReceipt()}
-                                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
-                                            title="Print Thermal 80mm POS Slip"
-                                        >
-                                            <Printer className="w-4 h-4" /> Thermal
-                                        </button>
-                                        {(snapshot?.billing?.billingMode === 'prepaid' || snapshot?.billing?.collectionModel === 'PartnerCollects') && (
-                                            <button
-                                                type="button"
-                                                disabled={isGeneratingClaimDoc}
-                                                onClick={handlePrintDoctorReceivable}
-                                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                                                title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
-                                            >
-                                                {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
-                                                Doc Claim
-                                            </button>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsCancelModalOpen(true)}
-                                            className="py-2.5 px-3 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
-                                            title="Cancel this visit"
-                                        >
-                                            <Ban className="w-3.5 h-3.5" />
-                                            <span>Cancel</span>
-                                        </button>
-                                    </>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCancelModalOpen(true)}
+                                        className="py-2.5 px-3 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+                                        title="Cancel this visit"
+                                    >
+                                        <Ban className="w-3.5 h-3.5" />
+                                        <span>Cancel</span>
+                                    </button>
                                 )}
                                 <button
                                     onClick={handleUnifiedAction}

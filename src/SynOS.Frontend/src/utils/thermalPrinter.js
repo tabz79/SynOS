@@ -73,7 +73,12 @@ export function generateThermalInvoiceHtml(payload = {}) {
 
     // 1. Resolve Schema from Custom Studio Override or Defaults
     let schema = customLayout || DEFAULT_DOCUMENT_SCHEMAS['patient_thermal_receipt'];
-    let labSettings = {};
+    let labSettings = {
+        labLegalName: "SRI DIVYA DIAGNOSTIC CENTRE",
+        labTradeName: "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+        address: "Wyra Road, Khammam | Ph: 9876543210",
+        phone: "+91 98765 43210"
+    };
 
     if (typeof window !== 'undefined' && window.localStorage) {
         try {
@@ -85,7 +90,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
             }
             const settingsSaved = window.localStorage.getItem('synos_stationery_settings');
             if (settingsSaved) {
-                labSettings = JSON.parse(settingsSaved);
+                labSettings = { ...labSettings, ...JSON.parse(settingsSaved) };
+            }
+            if (window.__synos_stationery_settings) {
+                labSettings = { ...labSettings, ...window.__synos_stationery_settings };
             }
             const cachedLogo = window.localStorage.getItem('synos_lab_logo');
             if (cachedLogo && !labSettings.logoUrl) {
@@ -100,7 +108,6 @@ export function generateThermalInvoiceHtml(payload = {}) {
         }
     }
 
-    if (labName) labSettings.labTradeName = labName;
     if (branchObj?.name) labSettings.branchName = branchObj.name;
     if (branchObj?.address) labSettings.address = branchObj.address;
     if (branchObj?.phone) labSettings.phone = branchObj.phone;
@@ -173,10 +180,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
     let headerHtml = "";
     if (boxes.header?.enabled) {
         const hf = boxes.header.fields || {};
-        const legalName = labSettings.legalName || labSettings.labTradeName || hf.legalName?.value || "SYNOS DIAGNOSTIC CENTRE";
-        const rawTagline = labSettings.tagline || hf.tagline?.value || "";
+        const legalName = labSettings.labLegalName || labSettings.legalName || hf.legalName?.value || "SRI DIVYA DIAGNOSTIC CENTRE";
+        const rawTagline = labSettings.labTradeName || labSettings.tagline || hf.tagline?.value || "";
         const tagline = (rawTagline && rawTagline.trim().toLowerCase() !== legalName.trim().toLowerCase()) ? rawTagline : "";
-        const address = labSettings.address || hf.address?.value || "";
+        const address = labSettings.address || hf.address?.value || "Wyra Road, Khammam | Ph: 9876543210";
         const gstin = labSettings.gstin || hf.gstin?.value || "";
         const phone = labSettings.phone || hf.phone?.value || "";
         const effectiveLogo = labSettings.logoUrl || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : "");
@@ -243,18 +250,18 @@ export function generateThermalInvoiceHtml(payload = {}) {
     if (boxes.partyDetails?.enabled) {
         const pf = boxes.partyDetails.fields || {};
         const ptName = pf.fullName?.value || normalizedData.patient.fullName;
-        const uhid = pf.uhid?.value || normalizedData.patient.uhid;
+        const mrnVal = pf.uhid?.value || normalizedData.patient.uhid;
         const ageGender = pf.ageGender?.value || normalizedData.patient.ageGender;
 
         patientHtml = `
             <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
-                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
-                    ${boxes.partyDetails.title || 'PATIENT DETAILS'}
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
+                    <span style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em;">${boxes.partyDetails.title || 'PATIENT DETAILS'}</span>
+                    ${pf.uhid?.enabled !== false && mrnVal ? `<span style="font-size: 11px; font-weight: 900; font-family: monospace; color: #000000;">MRN: <b>${mrnVal}</b></span>` : ''}
                 </div>
                 <div style="font-size: 10.5px; line-height: 1.3; color: #000000;">
-                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">Patient: <b style="font-weight: 900;">${ptName}</b></span>
-                        ${pf.uhid?.enabled !== false ? `<span style="font-family: monospace; white-space: nowrap;">UHID: <b>${uhid}</b></span>` : ''}
+                    <div style="font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; color: #000000; margin-bottom: 2px;">
+                        ${ptName}
                     </div>
                     <div style="font-weight: 700; margin-top: 1px;">
                         ${pf.ageGender?.enabled !== false ? `<span>Age/Sex: <b>${ageGender}</b></span>` : ''}
@@ -486,7 +493,12 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     const customLayout = payload.customLayout;
 
     let schema = customLayout || DEFAULT_DOCUMENT_SCHEMAS['patient_thermal_prepaid_slip'];
-    let labSettings = {};
+    let labSettings = {
+        labLegalName: "SRI DIVYA DIAGNOSTIC CENTRE",
+        labTradeName: "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+        address: "Wyra Road, Khammam | Ph: 9876543210",
+        phone: "+91 98765 43210"
+    };
 
     if (typeof window !== 'undefined' && window.localStorage) {
         try {
@@ -498,7 +510,10 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
             }
             const settingsSaved = window.localStorage.getItem('synos_stationery_settings');
             if (settingsSaved) {
-                labSettings = JSON.parse(settingsSaved);
+                labSettings = { ...labSettings, ...JSON.parse(settingsSaved) };
+            }
+            if (window.__synos_stationery_settings) {
+                labSettings = { ...labSettings, ...window.__synos_stationery_settings };
             }
             const cachedLogo = window.localStorage.getItem('synos_lab_logo');
             if (cachedLogo && !labSettings.logoUrl) {
@@ -513,7 +528,6 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
         }
     }
 
-    if (labName) labSettings.labTradeName = labName;
     if (branchObj?.name) labSettings.branchName = branchObj.name;
     if (branchObj?.address) labSettings.address = branchObj.address;
     if (branchObj?.phone) labSettings.phone = branchObj.phone;
@@ -560,10 +574,10 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     let headerHtml = "";
     if (boxes.header?.enabled) {
         const hf = boxes.header.fields || {};
-        const legalName = labSettings.legalName || labSettings.labTradeName || hf.legalName?.value || "SYNOS DIAGNOSTIC CENTRE";
-        const rawTagline = labSettings.tagline || hf.tagline?.value || "";
+        const legalName = labSettings.labLegalName || labSettings.legalName || hf.legalName?.value || "SRI DIVYA DIAGNOSTIC CENTRE";
+        const rawTagline = labSettings.labTradeName || labSettings.tagline || hf.tagline?.value || "";
         const tagline = (rawTagline && rawTagline.trim().toLowerCase() !== legalName.trim().toLowerCase()) ? rawTagline : "";
-        const address = labSettings.address || hf.address?.value || "";
+        const address = labSettings.address || hf.address?.value || "Wyra Road, Khammam | Ph: 9876543210";
         const gstin = labSettings.gstin || hf.gstin?.value || "";
         const phone = labSettings.phone || hf.phone?.value || "";
         const effectiveLogo = labSettings.logoUrl || (typeof window !== 'undefined' ? window.localStorage?.getItem('synos_lab_logo') : "");
@@ -622,27 +636,27 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     if (boxes.partyDetails?.enabled) {
         const pf = boxes.partyDetails.fields || {};
         const ptName = pf.fullName?.value || normalizedData.patient.fullName;
-        const uhid = pf.uhid?.value || normalizedData.patient.uhid;
+        const mrnVal = pf.uhid?.value || normalizedData.patient.uhid;
         const ageGender = pf.ageGender?.value || normalizedData.patient.ageGender;
         const sponsor = pf.sponsorName?.value || sponsorName;
         const refDoc = pf.referringDoctor?.value || doctorName;
 
         patientHtml = `
             <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
-                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
-                    PATIENT & SPONSOR INFO
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
+                    <span style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em;">PATIENT</span>
+                    ${pf.uhid?.enabled !== false && mrnVal ? `<span style="font-size: 11px; font-weight: 900; font-family: monospace; color: #000000;">MRN: <b>${mrnVal}</b></span>` : ''}
                 </div>
                 <div style="font-size: 10.5px; line-height: 1.3; color: #000000;">
-                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">Patient: <b style="font-weight: 900;">${ptName}</b></span>
-                        ${pf.uhid?.enabled !== false ? `<span style="font-family: monospace; white-space: nowrap;">UHID: <b>${uhid}</b></span>` : ''}
+                    <div style="font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; color: #000000; margin-bottom: 2px;">
+                        ${ptName}
                     </div>
                     <div style="font-weight: 700; margin-top: 1px;">
                         ${pf.ageGender?.enabled !== false ? `<span>Age/Sex: <b>${ageGender}</b></span>` : ''}
                     </div>
                     ${sponsor ? `
                         <div style="font-weight: 700; margin-top: 1px; line-height: 1.25; word-break: break-word;">
-                            Billed To: <b style="font-weight: 900;">${sponsor}</b>
+                            Billed To (Partner): <b style="font-weight: 900;">${sponsor}</b>
                         </div>
                     ` : ''}
                     ${refDoc && refDoc !== sponsor ? `
@@ -949,15 +963,17 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
     let patientHtml = "";
     if (boxes.partyDetails?.enabled) {
         const pf = boxes.partyDetails.fields || {};
+        const ptName = pf.fullName?.value || patientName;
+        const mrnVal = pf.uhid?.value || patientUhid;
         patientHtml = `
             <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
-                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
-                    PATIENT & INSURANCE INFO
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
+                    <span style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em;">PATIENT & INSURANCE INFO</span>
+                    ${mrnVal ? `<span style="font-size: 11px; font-weight: 900; font-family: monospace; color: #000000;">MRN: <b>${mrnVal}</b></span>` : ''}
                 </div>
                 <div style="font-size: 10px; line-height: 1.3; color: #000000;">
-                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">Patient: <b style="font-weight: 900;">${pf.fullName?.value || patientName}</b></span>
-                        <span style="font-family: monospace; white-space: nowrap;">UHID: <b>${pf.uhid?.value || patientUhid}</b></span>
+                    <div style="font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; color: #000000; margin-bottom: 2px;">
+                        ${ptName}
                     </div>
                     <div style="font-weight: 700; margin-top: 1px;">
                         <span>Age/Sex: <b>${pf.ageGender?.value || normalizedData.patient.ageGender}</b></span>

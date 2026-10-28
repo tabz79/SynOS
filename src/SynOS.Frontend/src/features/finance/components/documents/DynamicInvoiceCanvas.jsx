@@ -972,16 +972,31 @@ export const DynamicInvoiceCanvas = ({
                         <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-0.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1'} text-[11px]`}>
                             {Object.entries(boxes.partyDetails.fields || {}).map(([key, field]) => {
                                 if (!field.enabled) return null;
+                                const isName = key === 'fullName';
+                                const isMrn = key === 'uhid' || key === 'mrn';
+                                const displayLabel = (isMrn && (!field.label || field.label === 'UHID')) ? 'MRN' : field.label;
                                 return (
-                                    <div key={key} className={isThermal ? "py-0" : "py-0.5"}>
+                                    <div key={key} className={isThermal ? (isName || isMrn ? "py-0.5" : "py-0") : "py-0.5"}>
                                         <EditableField 
-                                            label={field.label ? `${field.label}:` : ""}
+                                            label={displayLabel ? `${displayLabel}:` : ""}
                                             value={field.value}
                                             isBlock={!isThermal}
                                             onSave={(lbl, val) => updateField('partyDetails', key, lbl, val)}
                                             onDelete={() => deleteField('partyDetails', key)}
-                                            labelClassName={isThermal ? "text-black font-normal" : "text-zinc-500 font-medium"}
-                                            valueClassName={isThermal ? "font-bold text-black" : "font-bold text-zinc-900"}
+                                            labelClassName={isThermal ? (isMrn ? "text-black font-black uppercase text-[10px]" : "text-black font-medium") : "text-zinc-500 font-medium"}
+                                            valueClassName={
+                                                isThermal 
+                                                    ? (isName 
+                                                        ? "font-black text-black text-[12px] uppercase tracking-tight block" 
+                                                        : isMrn 
+                                                            ? "font-black font-mono text-black text-[11.5px]" 
+                                                            : "font-bold text-black") 
+                                                    : (isName 
+                                                        ? "font-black text-zinc-900 text-sm" 
+                                                        : isMrn 
+                                                            ? "font-mono font-bold text-zinc-900" 
+                                                            : "font-bold text-zinc-900")
+                                            }
                                         />
                                     </div>
                                 );

@@ -989,10 +989,23 @@ namespace SynOS.Services
             {
                 var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
                 decimal invoiceTotal = invoice?.Total ?? 0m;
+                decimal oldAmount = receivable.Amount;
+                decimal newAmount = Math.Max(0m, invoiceTotal - b2bDiscountAmount);
                 receivable.DebtorId = effectivePartnerId ?? receivable.DebtorId;
                 receivable.ReferralPartnerId = effectivePartnerId ?? receivable.ReferralPartnerId;
-                receivable.Amount = Math.Max(0m, invoiceTotal - b2bDiscountAmount);
+                receivable.Amount = newAmount;
                 receivable.RecordedAt = DateTimeOffset.UtcNow;
+
+                decimal diff = newAmount - oldAmount;
+                if (diff != 0)
+                {
+                    var today = visit.CreatedAt.Date;
+                    var bStats = await _context.BranchOperationalStats.FirstOrDefaultAsync(s => s.BranchId == visit.BranchId && s.Date == today);
+                    if (bStats != null) bStats.PrepaidBillsTotal += diff;
+
+                    var uStats = await _context.UserOperationalStats.FirstOrDefaultAsync(s => s.UserId == actorUserId && s.Date == today);
+                    if (uStats != null) uStats.PrepaidBillsTotal += diff;
+                }
             }
 
             await _context.SaveChangesAsync();

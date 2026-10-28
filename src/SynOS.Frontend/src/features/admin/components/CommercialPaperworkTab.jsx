@@ -145,13 +145,18 @@ export const CommercialPaperworkTab = () => {
             const cachedPrinter = typeof window !== 'undefined' ? window.localStorage?.getItem('synos_receipt_printer_name') : null;
 
             if (stationeryRes && typeof stationeryRes === 'object') {
-                setSettings(prev => ({ 
-                    ...prev, 
+                const mergedSettings = {
+                    ...settings,
                     ...stationeryRes,
-                    logoUrl: stationeryRes.logoUrl || cachedLogo || prev.logoUrl || "",
-                    customQrImage: stationeryRes.customQrImage || cachedQr || prev.customQrImage || "",
-                    receiptPrinterName: stationeryRes.receiptPrinterName || cachedPrinter || prev.receiptPrinterName || ""
-                }));
+                    logoUrl: stationeryRes.logoUrl || cachedLogo || settings.logoUrl || "",
+                    customQrImage: stationeryRes.customQrImage || cachedQr || settings.customQrImage || "",
+                    receiptPrinterName: stationeryRes.receiptPrinterName || cachedPrinter || settings.receiptPrinterName || ""
+                };
+                setSettings(mergedSettings);
+                if (typeof window !== 'undefined') {
+                    window.__synos_stationery_settings = mergedSettings;
+                    try { window.localStorage?.setItem('synos_stationery_settings', JSON.stringify(mergedSettings)); } catch {}
+                }
             } else if (cachedLogo || cachedQr || cachedPrinter) {
                 setSettings(prev => ({
                     ...prev,
@@ -226,19 +231,28 @@ export const CommercialPaperworkTab = () => {
             clearDocumentCache();
 
             try {
-                if (typeof window !== 'undefined' && window.localStorage) {
-                    if (settings.logoUrl) {
-                        window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
-                    } else {
-                        window.localStorage.removeItem('synos_lab_logo');
-                    }
-                    if (settings.customQrImage) {
-                        window.localStorage.setItem('synos_custom_qr_image', settings.customQrImage);
-                    } else {
-                        window.localStorage.removeItem('synos_custom_qr_image');
-                    }
-                    if (settings.receiptPrinterName) {
-                        window.localStorage.setItem('synos_receipt_printer_name', settings.receiptPrinterName);
+                if (typeof window !== 'undefined') {
+                    window.__synos_stationery_settings = settings;
+                    if (window.localStorage) {
+                        window.localStorage.setItem('synos_stationery_settings', JSON.stringify(settings));
+                        mappingsToSave.forEach(m => {
+                            if (m.customLayout) {
+                                window.localStorage.setItem(`synos_document_layout_${m.slotId}`, JSON.stringify(m.customLayout));
+                            }
+                        });
+                        if (settings.logoUrl) {
+                            window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
+                        } else {
+                            window.localStorage.removeItem('synos_lab_logo');
+                        }
+                        if (settings.customQrImage) {
+                            window.localStorage.setItem('synos_custom_qr_image', settings.customQrImage);
+                        } else {
+                            window.localStorage.removeItem('synos_custom_qr_image');
+                        }
+                        if (settings.receiptPrinterName) {
+                            window.localStorage.setItem('synos_receipt_printer_name', settings.receiptPrinterName);
+                        }
                     }
                 }
             } catch (storageErr) {

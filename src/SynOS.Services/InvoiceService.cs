@@ -113,7 +113,11 @@ namespace SynOS.Services
                 .ToListAsync();
 
             int prepaidCount = prepaidVisits.Count;
-            decimal prepaidTotal = prepaidVisits.Sum(v => v.Invoices.FirstOrDefault()?.Total ?? 0);
+            decimal prepaidTotal = prepaidVisits.Sum(v => {
+                var invTotal = v.Invoices.FirstOrDefault()?.Total ?? 0m;
+                var b2bDiscount = v.B2BDiscountAmount ?? 0m;
+                return Math.Max(0m, invTotal - b2bDiscount);
+            });
 
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
