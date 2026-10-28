@@ -1010,18 +1010,18 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
 
     corporate_b2b_invoice: {
         slotId: 'corporate_b2b_invoice',
-        title: 'Corporate Bill (A4)',
+        title: 'Prepaid B2B Bill (A4)',
         boxes: {
             header: {
                 id: 'header',
-                name: 'Lab Letterhead',
+                name: 'Lab Letterhead & Clinic Brand',
                 enabled: true,
                 fields: {
                     legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Corporate Health Checkups & Occupational Diagnostics' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Wyra Road, Khammam, Telangana - 507001' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Comprehensive Pathology, Radiology & Molecular Diagnostics' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Main Road' },
                     phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
-                    email: { id: 'email', enabled: true, label: 'Email', value: 'corporate@synoslab.in' },
+                    email: { id: 'email', enabled: true, label: 'Email', value: 'billing@synoslab.in' },
                     gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
                     pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
                 },
@@ -1032,58 +1032,72 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Document Badge & Meta',
                 enabled: true,
                 fields: {
-                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'CORPORATE TAX INVOICE' },
-                    subBadge: { id: 'subBadge', enabled: true, label: 'Account Type', value: 'Corporate B2B Account' },
-                    billNumber: { id: 'billNumber', enabled: true, label: 'Invoice No', value: 'INV-CORP-202610-0081' },
-                    date: { id: 'date', enabled: true, label: 'Invoice Date', value: '14/10/2026' },
-                    corporateCode: { id: 'corporateCode', enabled: true, label: 'Corporate Code', value: 'CORP-LIC-01' },
-                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Payment Status', value: 'PENDING SETTLEMENT' }
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'PREPAID B2B TAX INVOICE' },
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Billing Mode', value: 'B2B Partner Prepaid Account' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Invoice No', value: 'INV-B2B-202610-0081' },
+                    date: { id: 'date', enabled: true, label: 'Invoice Date', value: '14/10/2026 12:45 PM' },
+                    tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'COUNTER-104' },
+                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Desk Payment Status', value: 'PARTNER SETTLED (PATIENT CASH: ₹0.00)' }
                 },
                 customLines: []
             },
             partyDetails: {
                 id: 'partyDetails',
-                name: 'Corporate & Employee Details',
+                name: 'Referral Partner & Patient Details',
                 enabled: true,
-                title: 'Corporate Client (Billed To)',
+                title: 'Billed To (Referral Partner Account)',
                 fields: {
-                    corporateName: { id: 'corporateName', enabled: true, label: 'Corporate Client', value: 'Life Insurance Corporation of India (LIC)' },
-                    employeeName: { id: 'employeeName', enabled: true, label: 'Employee Name', value: 'Venkatesh Rao' },
-                    employeeId: { id: 'employeeId', enabled: true, label: 'Employee ID / Staff No', value: 'LIC-EMP-9821' },
-                    designation: { id: 'designation', enabled: true, label: 'Department / Branch', value: 'Divisional Office, Khammam' },
-                    gstin: { id: 'gstin', enabled: true, label: 'Client GSTIN', value: '36AAACL0000A1Z2' },
-                    address: { id: 'address', enabled: true, label: 'Client Address', value: 'LIC Divisional Office, Main Road, Khammam' },
-                    packageSelected: { id: 'packageSelected', enabled: true, label: 'Wellness Package', value: 'LIC Annual Executive Health Checkup' }
+                    sponsorName: { id: 'sponsorName', enabled: true, label: 'Billed To Partner', value: 'Padmavathi Nursing Home & Hospital' },
+                    referringDoctor: { id: 'referringDoctor', enabled: true, label: 'Referring Doctor', value: 'Dr. B.S.V. Padmavathi, MD' },
+                    partnerId: { id: 'partnerId', enabled: true, label: 'Partner Code', value: 'PART-PADMAVATHI-01' },
+                    fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
+                    uhid: { id: 'uhid', enabled: true, label: 'UHID / MRN', value: 'SYN-2026-9042' },
+                    ageGender: { id: 'ageGender', enabled: true, label: 'Age / Gender', value: '46 Yrs / Male' },
+                    phone: { id: 'phone', enabled: true, label: 'Patient Mobile', value: '+91 98480 22334' },
+                    address: { id: 'address', enabled: true, label: 'Patient Address', value: 'Doctors Colony, Khammam' }
+                },
+                customLines: []
+            },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Billing Desk Particulars',
+                enabled: true,
+                title: 'Billing Desk',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' }
                 },
                 customLines: []
             },
             itemsTable: {
                 id: 'itemsTable',
-                name: 'Billed Tests & Packages',
+                name: 'Prescribed Investigations Table',
                 enabled: true,
                 columns: {
                     index: { id: 'index', enabled: true, label: '#' },
-                    description: { id: 'description', enabled: true, label: 'Investigation / Package' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Service Description' },
                     department: { id: 'department', enabled: true, label: 'Department' },
-                    price: { id: 'price', enabled: true, label: 'Contract Rate (₹)' },
-                    discount: { id: 'discount', enabled: true, label: 'Corporate Disc (₹)' },
-                    amount: { id: 'amount', enabled: true, label: 'Net Billed (₹)' }
+                    sacCode: { id: 'sacCode', enabled: true, label: 'SAC Code' },
+                    price: { id: 'price', enabled: true, label: 'Lab Tariff (₹)' },
+                    discount: { id: 'discount', enabled: true, label: 'Partner Concession (₹)' },
+                    amount: { id: 'amount', enabled: true, label: 'Billed to Partner (₹)' }
                 },
                 rows: [
-                    { id: 'corp-1', index: 1, description: 'Executive Health Screening Package (LFT, KFT, CBC, Lipid, ECG, USG)', department: 'Health Packages', price: 2500, discount: 300, amount: 2200 }
+                    { id: 'b2b-1', index: 1, description: 'Complete Blood Count (5-Part Automated with ESR)', department: 'Hematology', sacCode: '999312', price: 350, discount: 0, amount: 350 },
+                    { id: 'b2b-2', index: 2, description: 'Liver Function Test Profile (LFT 11 Parameters)', department: 'Biochemistry', sacCode: '999312', price: 850, discount: 50, amount: 800 },
+                    { id: 'b2b-3', index: 3, description: 'Ultrasound Whole Abdomen (Sonography)', department: 'Radiology', sacCode: '999312', price: 1200, discount: 0, amount: 1200 }
                 ]
             },
             financialSummary: {
                 id: 'financialSummary',
-                name: 'Financial Totals',
+                name: 'Prepaid Settlement & Counter Notice',
                 enabled: true,
+                isPrepaidNotice: true,
                 fields: {
-                    grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Amount', value: '₹2,500.00' },
-                    discountAmount: { id: 'discountAmount', enabled: true, label: 'Corporate Discount', value: '-₹300.00' },
-                    taxableAmount: { id: 'taxableAmount', enabled: true, label: 'Taxable Amount', value: '₹2,200.00' },
-                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Corporate Bill', value: '₹2,200.00' },
-                    totalPaid: { id: 'totalPaid', enabled: true, label: 'Paid / Advance', value: '₹0.00' },
-                    balanceDue: { id: 'balanceDue', enabled: true, label: 'Balance Due from Company', value: '₹2,200.00' }
+                    grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Diagnostic Tariff', value: '₹2,400.00' },
+                    partnerDiscount: { id: 'partnerDiscount', enabled: true, label: 'Partner Concession', value: '-₹50.00' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Billed to Partner Account', value: '₹2,350.00' },
+                    settlementMode: { id: 'settlementMode', enabled: true, label: 'Partner Ledger Status', value: 'Direct Settlement by Referring Clinic / Doctor' },
+                    counterPayable: { id: 'counterPayable', enabled: true, label: 'Amount Payable by Patient at Desk', value: '₹0.00 (Paid at Partner Clinic)' }
                 },
                 customLines: []
             },
@@ -1091,26 +1105,116 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 id: 'amountInWords',
                 name: 'Amount in Words',
                 enabled: true,
-                label: 'Amount in Words',
-                value: 'Rupees Two Thousand Two Hundred Only'
+                label: 'Partner Billed Amount in Words',
+                value: 'Rupees Two Thousand Three Hundred Fifty Only'
             },
-            bankAndUpi: {
-                id: 'bankAndUpi',
-                name: 'Bank Remittance Details',
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'Prepaid Settlement Terms',
                 enabled: true,
-                fields: {
-                    bankName: { id: 'bankName', enabled: true, label: 'Bank Name', value: 'HDFC Bank' },
-                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C Number', value: '50200012345678' },
-                    ifscCode: { id: 'ifscCode', enabled: true, label: 'IFSC Code', value: 'HDFC0001234' },
-                    accountHolder: { id: 'accountHolder', enabled: true, label: 'Beneficiary', value: 'SynOS Healthcare Diagnostic Services' }
-                }
+                title: 'Terms & Conditions',
+                text: '1. Diagnostic charges are billed directly to the referring partner clinic account.\n2. No desk payment collected from patient at sample collection counter.\n3. Verified test results delivered to referring clinic / doctor and sent to registered patient mobile.\n4. Cheques / RTGS subject to periodic monthly realization.',
+                systemNote: 'This is an authentic computer-generated Prepaid B2B Tax Invoice generated by SynOS Diagnostic OS.'
             },
             signatory: {
                 id: 'signatory',
                 name: 'Signatory',
                 enabled: true,
                 title: 'Authorised Signatory',
-                subtitle: 'Corporate Accounts Desk'
+                subtitle: 'Accounts & Billing Desk'
+            }
+        }
+    },
+
+    insurance_thermal_receipt: {
+        slotId: 'insurance_thermal_receipt',
+        title: 'Insurance Cashless Slip (80mm)',
+        isThermal: true,
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Thermal Brand Header',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
+                    tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Central Diagnostic Complex, Main Road | Ph: 9876543210' },
+                    gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Claim Particulars',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Slip Title', value: 'CASHLESS TPA CLAIM SLIP' },
+                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Slip / Claim No', value: 'CLM-202610-0912' },
+                    date: { id: 'date', enabled: true, label: 'Date/Time', value: '14/10/2026 12:48 PM' },
+                    tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'TOKEN # T-0142' },
+                    claimStatus: { id: 'claimStatus', enabled: true, label: 'Claim Status', value: 'APPROVED / PRE-AUTH' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Claimant & Insurance Info',
+                enabled: true,
+                title: 'Patient & Insurance',
+                fields: {
+                    fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'S. Anusha' },
+                    uhid: { id: 'uhid', enabled: true, label: 'UHID', value: 'SYN-2026-8819' },
+                    ageGender: { id: 'ageGender', enabled: true, label: 'Age/Sex', value: '34Y / F' },
+                    insuranceProvider: { id: 'insuranceProvider', enabled: true, label: 'Insurance Co', value: 'Star Health & Allied Insurance' },
+                    tpaName: { id: 'tpaName', enabled: true, label: 'TPA Network', value: 'Medi Assist TPA' },
+                    policyNumber: { id: 'policyNumber', enabled: true, label: 'Policy No', value: 'POL-STAR-771920' },
+                    preAuthApprovalNumber: { id: 'preAuthApprovalNumber', enabled: true, label: 'Pre-Auth No', value: 'PA-STAR-99214' }
+                },
+                customLines: []
+            },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Billing Desk Box',
+                enabled: true,
+                title: 'BILLING DESK',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Approved Tests & Packages Slip',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Package' },
+                    price: { id: 'price', enabled: true, label: 'Claim (₹)' }
+                },
+                rows: [
+                    { id: 'r-1', index: 1, description: 'MRI Brain with Contrast (3.0 Tesla Protocol)', price: 6500, amount: 6500 },
+                    { id: 'r-2', index: 2, description: 'Executive Health Checkup Package', price: 2000, amount: 2000 }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Claim Totals',
+                enabled: true,
+                fields: {
+                    grossAmount: { id: 'grossAmount', enabled: true, label: 'Total Diagnostic Tariff', value: '₹8,500.00' },
+                    coPayAmount: { id: 'coPayAmount', enabled: true, label: 'Patient Co-Pay Received', value: '₹500.00' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Billed to TPA', value: '₹8,000.00' },
+                    balanceDue: { id: 'balanceDue', enabled: true, label: 'Patient Desk Due', value: '₹0.00 (Settled)' }
+                },
+                customLines: []
+            },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'Counter Instructions',
+                enabled: true,
+                title: 'Notice',
+                text: 'Cashless facility approved as per TPA sanction.\nPlease proceed to phlebotomy / imaging counters.\nReports dispatched to hospital portal & patient WhatsApp.',
+                systemNote: 'Thank You • SynOS Diagnostic OS'
             }
         }
     },
@@ -1126,7 +1230,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 fields: {
                     legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
                     tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'NABH / NABL Accredited Healthcare Network' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Wyra Road, Khammam, Telangana - 507001' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Main Road' },
                     phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
                     email: { id: 'email', enabled: true, label: 'Email', value: 'tpa@synoslab.in' },
                     gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
@@ -1163,13 +1267,23 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 },
                 customLines: []
             },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Billing Desk Particulars',
+                enabled: true,
+                title: 'Billing Desk',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' }
+                },
+                customLines: []
+            },
             itemsTable: {
                 id: 'itemsTable',
-                name: 'Approved Investigations Table',
+                name: 'Approved Investigations & Packages Table',
                 enabled: true,
                 columns: {
                     index: { id: 'index', enabled: true, label: '#' },
-                    description: { id: 'description', enabled: true, label: 'Investigation / Service' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Health Package' },
                     sacCode: { id: 'sacCode', enabled: true, label: 'SAC Code' },
                     price: { id: 'price', enabled: true, label: 'TPA Tariff (₹)' },
                     discount: { id: 'discount', enabled: true, label: 'Co-Pay (₹)' },
@@ -1177,7 +1291,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 },
                 rows: [
                     { id: 'ins-1', index: 1, description: 'MRI Brain with Contrast (3.0 Tesla Protocol)', sacCode: '999312', price: 6500, discount: 0, amount: 6500 },
-                    { id: 'ins-2', index: 2, description: 'Complete Blood Count & Serum Creatinine', sacCode: '999312', price: 550, discount: 0, amount: 550 }
+                    { id: 'ins-2', index: 2, description: 'Executive Comprehensive Health Checkup Package', sacCode: '999312', price: 2500, discount: 500, amount: 2000 }
                 ]
             },
             financialSummary: {
@@ -1185,10 +1299,10 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Claim Financials',
                 enabled: true,
                 fields: {
-                    grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Claim', value: '₹7,050.00' },
-                    coPayAmount: { id: 'coPayAmount', enabled: true, label: 'Patient Co-Pay Received', value: '₹0.00' },
-                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Approved TPA Claim', value: '₹7,050.00' },
-                    balanceDue: { id: 'balanceDue', enabled: true, label: 'Pending from TPA', value: '₹7,050.00' }
+                    grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Claim', value: '₹9,000.00' },
+                    coPayAmount: { id: 'coPayAmount', enabled: true, label: 'Patient Co-Pay Received', value: '₹500.00' },
+                    totalAmount: { id: 'totalAmount', enabled: true, label: 'Net Approved TPA Claim', value: '₹8,500.00' },
+                    balanceDue: { id: 'balanceDue', enabled: true, label: 'Pending from TPA', value: '₹8,500.00' }
                 },
                 customLines: []
             },
@@ -1197,7 +1311,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Amount in Words',
                 enabled: true,
                 label: 'Claim Amount in Words',
-                value: 'Rupees Seven Thousand Fifty Only'
+                value: 'Rupees Eight Thousand Five Hundred Only'
             },
             signatory: {
                 id: 'signatory',

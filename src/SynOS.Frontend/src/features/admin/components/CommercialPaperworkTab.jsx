@@ -45,10 +45,10 @@ const getSlotsForCategory = (catId, list = []) => {
         return list.filter(m => m.slotId === 'patient_tax_invoice' || m.slotId === 'patient_thermal_receipt');
     }
     if (catId === 'corporate') {
-        return list.filter(m => m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'corporate_b2b_invoice' || m.slotId === 'summary_corporate');
+        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'corporate_b2b_invoice' || m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'partner_b2b_invoice' || m.slotId === 'summary_corporate');
     }
     if (catId === 'insurance') {
-        return list.filter(m => m.slotId === 'insurance_tpa_claim' || m.slotId === 'summary_insurance');
+        return list.filter(m => m.slotId === 'insurance_thermal_receipt' || m.slotId === 'insurance_tpa_claim' || m.slotId === 'summary_insurance');
     }
     if (catId === 'operations') {
         return list.filter(m => [
@@ -82,6 +82,7 @@ export const CommercialPaperworkTab = () => {
         header: true,
         docBadge: false,
         partyDetails: true,
+        billerDetails: true,
         itemsTable: false,
         financialSummary: false,
         bankAndUpi: false
@@ -162,12 +163,41 @@ export const CommercialPaperworkTab = () => {
 
             if (Array.isArray(mappingsRes)) {
                 setMappings(mappingsRes);
-                // If customLayout exists in any mapping, merge it into schemas
+                // Deep merge saved customLayout over DEFAULT_DOCUMENT_SCHEMAS so standard boxes (e.g. billerDetails) are never lost
                 setSchemas(prev => {
                     const merged = { ...prev };
                     mappingsRes.forEach(m => {
+                        const defaultSchema = DEFAULT_DOCUMENT_SCHEMAS[m.slotId] || {};
                         if (m.customLayout && typeof m.customLayout === 'object') {
-                            merged[m.slotId] = m.customLayout;
+                            const savedLayout = m.customLayout;
+                            const mergedBoxes = { ...(defaultSchema.boxes || {}) };
+                            if (savedLayout.boxes && typeof savedLayout.boxes === 'object') {
+                                Object.entries(savedLayout.boxes).forEach(([bKey, bVal]) => {
+                                    if (mergedBoxes[bKey]) {
+                                        mergedBoxes[bKey] = {
+                                            ...mergedBoxes[bKey],
+                                            ...bVal,
+                                            fields: {
+                                                ...(mergedBoxes[bKey].fields || {}),
+                                                ...(bVal.fields || {})
+                                            },
+                                            columns: {
+                                                ...(mergedBoxes[bKey].columns || {}),
+                                                ...(bVal.columns || {})
+                                            }
+                                        };
+                                    } else {
+                                        mergedBoxes[bKey] = bVal;
+                                    }
+                                });
+                            }
+                            merged[m.slotId] = {
+                                ...defaultSchema,
+                                ...savedLayout,
+                                boxes: mergedBoxes
+                            };
+                        } else if (defaultSchema.slotId) {
+                            merged[m.slotId] = JSON.parse(JSON.stringify(defaultSchema));
                         }
                     });
                     return merged;
@@ -522,7 +552,10 @@ export const CommercialPaperworkTab = () => {
             { id: 'template_referral_voucher_a4', label: 'Doctor Payout (A4)' }
         ],
         corporate_b2b_invoice: [
-            { id: 'template_corporate_b2b_a4', label: 'Corporate Bill (A4)' }
+            { id: 'template_corporate_b2b_a4', label: 'Prepaid B2B Bill (A4)' }
+        ],
+        insurance_thermal_receipt: [
+            { id: 'template_thermal_insurance_80mm', label: '80mm Insurance Slip' }
         ],
         insurance_tpa_claim: [
             { id: 'template_insurance_tpa_a4', label: 'Insurance Bill (A4)' }
@@ -1048,7 +1081,7 @@ export const CommercialPaperworkTab = () => {
                                                         >
                                                             <option value="digital">Digital Letterhead</option>
                                                             <option value="preprinted">Pre-Printed Stationery</option>
-                                                            {(slot.slotId === 'patient_thermal_receipt' || slot.slotId === 'patient_thermal_prepaid_slip') && (
+                                                            {(slot.slotId === 'patient_thermal_receipt' || slot.slotId === 'patient_thermal_prepaid_slip' || slot.slotId === 'insurance_thermal_receipt') && (
                                                                 <option value="raw_thermal">POS Thermal Roll</option>
                                                             )}
                                                         </select>
@@ -1489,7 +1522,15 @@ export const CommercialPaperworkTab = () => {
                                             ? 'Triggered by [A4 Receipt] button' 
                                             : (previewSlotId === 'patient_thermal_receipt' 
                                                 ? 'Triggered by [Thermal Cash] button' 
-                                                : (previewSlotId === 'patient_thermal_prepaid_slip' ? 'Triggered by B2B Prepaid Visits' : 'Finance & Billing Matrix')))}
+                                                : (previewSlotId === 'patient_thermal_prepaid_slip' 
+                                                    ? 'Triggered by B2B Prepaid Visits (Thermal)' 
+                                                    : (previewSlotId === 'corporate_b2b_invoice'
+                                                        ? 'Triggered by B2B Referral Partner Bill (A4)'
+                                                        : (previewSlotId === 'insurance_thermal_receipt'
+                                                            ? 'Triggered by Insurance Cashless Visits (Thermal)'
+                                                            : (previewSlotId === 'insurance_tpa_claim'
+                                                                ? 'Triggered by Insurance TPA Claim (A4)'
+                                                                : 'Finance & Billing Matrix'))))))}
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">

@@ -4,12 +4,27 @@ import { formatDateCompact } from '@/lib/utils';
 
 export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySettings = {}) {
     // Start from active custom schema or factory default
+    const defaultSchema = DEFAULT_DOCUMENT_SCHEMAS[slotId] || {};
     const baseSchema = rawSchema && rawSchema.boxes 
         ? JSON.parse(JSON.stringify(rawSchema))
-        : JSON.parse(JSON.stringify(DEFAULT_DOCUMENT_SCHEMAS[slotId] || {}));
+        : JSON.parse(JSON.stringify(defaultSchema));
 
     if (!baseSchema || !baseSchema.boxes || !liveData) {
         return baseSchema;
+    }
+
+    // Ensure standard boxes and fields from default schema are never dropped if omitted in saved custom layout
+    if (defaultSchema.boxes) {
+        Object.keys(defaultSchema.boxes).forEach(boxKey => {
+            if (!baseSchema.boxes[boxKey]) {
+                baseSchema.boxes[boxKey] = JSON.parse(JSON.stringify(defaultSchema.boxes[boxKey]));
+            } else if (defaultSchema.boxes[boxKey].fields) {
+                baseSchema.boxes[boxKey].fields = {
+                    ...JSON.parse(JSON.stringify(defaultSchema.boxes[boxKey].fields)),
+                    ...(baseSchema.boxes[boxKey].fields || {})
+                };
+            }
+        });
     }
 
     const { boxes } = baseSchema;
@@ -762,26 +777,196 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
         }
 
         case 'corporate_b2b_invoice': {
+            const p = liveData.patient || {};
+            const refPartnerName = liveData.referringDoctorName 
+                || liveData.partnerName 
+                || liveData.partner?.name 
+                || liveData.billing?.referral?.partner?.displayName 
+                || liveData.billing?.referral?.partner?.name 
+                || liveData.billingContext?.referralPartnerName 
+                || "Referring Doctor / Clinic";
+            const refClinic = liveData.partnerClinic 
+                || liveData.partner?.clinicName 
+                || liveData.billingContext?.referralPartnerClinic 
+                || "";
+            const refDoctor = liveData.referringDoctorName 
+                || liveData.partnerDoctor 
+                || liveData.partner?.doctorName 
+                || (refClinic ? refPartnerName : "");
+            const partnerCode = liveData.partnerCode 
+                || liveData.partnerId 
+                || liveData.partner?.code 
+                || "";
+
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || liveData.token || boxes.docBadge.fields.billNumber.value;
-                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date || liveData.createdAt ? new Date(liveData.date || liveData.createdAt).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN');
-                if (boxes.docBadge.fields.corporateCode) boxes.docBadge.fields.corporateCode.value = liveData.corporateCode || liveData.corporateAccountId || boxes.docBadge.fields.corporateCode.value;
+                if (boxes.docBadge.fields.billNumber) {
+                    boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || (liveData.token ? `INV-B2B-${liveData.token}` : boxes.docBadge.fields.billNumber.value);
+                }
+                if (boxes.docBadge.fields.date) {
+                    boxes.docBadge.fields.date.value = liveData.date || liveData.createdAt 
+                        ? new Date(liveData.date || liveData.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) 
+                        : new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                }
+                if (boxes.docBadge.fields.tokenNumber) {
+                    boxes.docBadge.fields.tokenNumber.value = p.token || liveData.token || "COUNTER";
+                }
                 if (boxes.docBadge.fields.paymentStatus) {
-                    const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : (liveData.status === 'Paid' ? 0 : (liveData.grossAmount || 0)));
-                    boxes.docBadge.fields.paymentStatus.value = due <= 0 ? "PAID / SETTLED" : "BALANCE DUE";
+                    boxes.docBadge.fields.paymentStatus.value = "PARTNER SETTLED (PATIENT CASH: ₹0.00)";
                 }
             }
+
             if (boxes.partyDetails?.fields) {
-                if (boxes.partyDetails.fields.corporateName) boxes.partyDetails.fields.corporateName.value = liveData.corporateName || liveData.companyName || liveData.clientName || boxes.partyDetails.fields.corporateName.value;
-                if (boxes.partyDetails.fields.employeeName) boxes.partyDetails.fields.employeeName.value = liveData.employeeName || liveData.patientName || boxes.partyDetails.fields.employeeName.value;
-                if (boxes.partyDetails.fields.employeeId) boxes.partyDetails.fields.employeeId.value = liveData.employeeId || boxes.partyDetails.fields.employeeId.value;
-                if (boxes.partyDetails.fields.designation) boxes.partyDetails.fields.designation.value = liveData.designation || liveData.branchName || boxes.partyDetails.fields.designation.value;
-                if (boxes.partyDetails.fields.gstin) boxes.partyDetails.fields.gstin.value = liveData.corporateGstin || boxes.partyDetails.fields.gstin.value;
-                if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = liveData.corporateAddress || boxes.partyDetails.fields.address.value;
-                if (boxes.partyDetails.fields.packageSelected) boxes.partyDetails.fields.packageSelected.value = liveData.packageSelected || liveData.packageName || boxes.partyDetails.fields.packageSelected.value;
+                if (boxes.partyDetails.fields.sponsorName) {
+                    boxes.partyDetails.fields.sponsorName.value = refClinic ? `${refPartnerName} (${refClinic})` : refPartnerName;
+                }
+                if (boxes.partyDetails.fields.referringDoctor) {
+                    boxes.partyDetails.fields.referringDoctor.value = refDoctor || refPartnerName;
+                }
+                if (boxes.partyDetails.fields.partnerId && partnerCode) {
+                    boxes.partyDetails.fields.partnerId.value = partnerCode;
+                }
+                if (boxes.partyDetails.fields.fullName) {
+                    boxes.partyDetails.fields.fullName.value = p.name || p.fullName || liveData.patientName || "Patient";
+                }
+                if (boxes.partyDetails.fields.uhid) {
+                    boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || liveData.mrn || "WALK-IN";
+                }
+                if (boxes.partyDetails.fields.ageGender) {
+                    boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} Yrs / ${p.gender || ''}` : "Adult");
+                }
+                if (boxes.partyDetails.fields.phone) {
+                    boxes.partyDetails.fields.phone.value = p.phone || p.mobile || liveData.phone || "N/A";
+                }
+                if (boxes.partyDetails.fields.address) {
+                    boxes.partyDetails.fields.address.value = p.address || liveData.address || "N/A";
+                }
             }
+
+            if (boxes.billerDetails?.fields) {
+                const billerObj = liveData.biller || liveData.visit?.biller || {};
+                const billerDisplay = liveData.billerName 
+                    || (typeof liveData.biller === 'string' ? liveData.biller : '')
+                    || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+                    || liveData.billedBy 
+                    || "Dr. Vasudeva Rao (admin)";
+
+                if (boxes.billerDetails.fields.billedBy) {
+                    boxes.billerDetails.fields.billedBy.value = billerDisplay;
+                }
+            }
+
             if (boxes.itemsTable) {
-                let rawList = liveData.items || liveData.tests;
+                let rawList = liveData.items || liveData.orders || liveData.tests;
+                if (!rawList && liveData.testsSummary) {
+                    rawList = liveData.testsSummary.split(',').map(s => s.trim()).filter(Boolean);
+                }
+                if (Array.isArray(rawList) && rawList.length > 0) {
+                    boxes.itemsTable.rows = rawList.map((it, idx) => {
+                        const isStr = typeof it === 'string';
+                        const desc = isStr ? it : (it.description || it.testName || it.name || 'Investigation');
+                        const rate = isStr ? 0 : Number(it.price || it.rate || it.grossAmount || 0);
+                        const disc = isStr ? 0 : Number(it.discount || it.concession || 0);
+                        const net = isStr ? rate : Number(it.amount || it.netAmount || (rate - disc));
+                        return {
+                            id: `b2b-${idx}`,
+                            index: idx + 1,
+                            description: desc,
+                            department: isStr ? 'Pathology' : (it.department || it.section || 'Diagnostics'),
+                            sacCode: isStr ? '999312' : (it.sacCode || '999312'),
+                            price: rate,
+                            discount: disc,
+                            amount: net
+                        };
+                    });
+                }
+            }
+
+            if (boxes.financialSummary?.fields) {
+                const fin = liveData.financial || liveData.billing || {};
+                const gross = fin.grossSubtotal || fin.subtotal || fin.grossAmount || liveData.grossAmount || 0;
+                const disc = fin.discountAmount || fin.discount || liveData.discountAmount || 0;
+                const total = fin.grandTotal || fin.totalAmount || fin.netAmount || liveData.totalAmount || (gross - disc);
+
+                if (boxes.financialSummary.fields.grossSubtotal) {
+                    boxes.financialSummary.fields.grossSubtotal.value = `₹${Number(gross).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.partnerDiscount) {
+                    boxes.financialSummary.fields.partnerDiscount.value = `-₹${Number(disc).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    boxes.financialSummary.fields.partnerDiscount.enabled = disc > 0;
+                }
+                if (boxes.financialSummary.fields.totalAmount) {
+                    boxes.financialSummary.fields.totalAmount.value = `₹${Number(total).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.settlementMode) {
+                    boxes.financialSummary.fields.settlementMode.value = "Direct Settlement by Referring Clinic / Doctor";
+                }
+                if (boxes.financialSummary.fields.counterPayable) {
+                    boxes.financialSummary.fields.counterPayable.value = "₹0.00 (Paid at Partner Clinic)";
+                }
+            }
+
+            if (boxes.amountInWords) {
+                if (liveData.amountInWords) {
+                    boxes.amountInWords.value = liveData.amountInWords;
+                }
+            }
+            break;
+        }
+
+        case 'insurance_thermal_receipt': {
+            const p = liveData.patient || {};
+            const ins = liveData.insurance || liveData.billingContext || {};
+
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.receiptNumber) {
+                    boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || liveData.claimNumber || (liveData.token ? `CLM-${liveData.token}` : boxes.docBadge.fields.receiptNumber.value);
+                }
+                if (boxes.docBadge.fields.date) {
+                    boxes.docBadge.fields.date.value = liveData.dateTime || liveData.date 
+                        ? new Date(liveData.dateTime || liveData.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) 
+                        : new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                }
+                if (boxes.docBadge.fields.tokenNumber) {
+                    boxes.docBadge.fields.tokenNumber.value = liveData.token ? `TOKEN # ${liveData.token}` : "TOKEN # COUNTER";
+                }
+                if (boxes.docBadge.fields.claimStatus) {
+                    boxes.docBadge.fields.claimStatus.value = liveData.claimStatus || "APPROVED / PRE-AUTH";
+                }
+            }
+
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || liveData.patientName || "Patient";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
+                if (boxes.partyDetails.fields.insuranceProvider) {
+                    boxes.partyDetails.fields.insuranceProvider.value = ins.insuranceCompanyName || liveData.insuranceProvider || liveData.insuranceCompany || "Insurance Provider";
+                }
+                if (boxes.partyDetails.fields.tpaName) {
+                    boxes.partyDetails.fields.tpaName.value = ins.insuranceTpaName || liveData.tpaName || "TPA Network";
+                }
+                if (boxes.partyDetails.fields.policyNumber) {
+                    boxes.partyDetails.fields.policyNumber.value = ins.policyNumber || liveData.policyNumber || "N/A";
+                }
+                if (boxes.partyDetails.fields.preAuthApprovalNumber) {
+                    boxes.partyDetails.fields.preAuthApprovalNumber.value = ins.preAuthApprovalNumber || liveData.preAuthApprovalNumber || liveData.preAuthNumber || "N/A";
+                }
+            }
+
+            if (boxes.billerDetails?.fields) {
+                const billerObj = liveData.biller || liveData.visit?.biller || {};
+                const billerDisplay = liveData.billerName 
+                    || (typeof liveData.biller === 'string' ? liveData.biller : '')
+                    || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+                    || liveData.billedBy 
+                    || "Dr. Vasudeva Rao (admin)";
+
+                if (boxes.billerDetails.fields.billedBy) {
+                    boxes.billerDetails.fields.billedBy.value = billerDisplay;
+                }
+            }
+
+            if (boxes.itemsTable) {
+                let rawList = liveData.items || liveData.orders || liveData.tests;
                 if (!rawList && liveData.testsSummary) {
                     rawList = liveData.testsSummary.split(',').map(s => s.trim()).filter(Boolean);
                 }
@@ -789,30 +974,36 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                     boxes.itemsTable.rows = rawList.map((it, idx) => {
                         const isStr = typeof it === 'string';
                         return {
-                            id: `corp-${idx}`,
+                            id: `r-${idx}`,
                             index: idx + 1,
-                            description: isStr ? it : (it.description || it.testName || it.name || 'Corporate Investigation'),
-                            department: isStr ? 'Diagnostics' : (it.department || 'Diagnostics'),
-                            price: isStr ? Number(liveData.grossAmount || 0) : Number(it.price || it.amount || 0),
-                            discount: isStr ? 0 : Number(it.discount || 0),
-                            amount: isStr ? Number(liveData.grossAmount || 0) : Number(it.amount || it.price || 0)
+                            description: isStr ? it : (it.description || it.testName || it.name || it.packageName || 'Investigation / Package'),
+                            price: isStr ? 0 : Number(it.price || it.amount || 0)
                         };
                     });
                 }
             }
-            if (boxes.financialSummary?.fields) {
-                const gross = Number(liveData.grossSubtotal || liveData.grossAmount || liveData.totalAmount || 0);
-                const disc = Number(liveData.discountAmount || 0);
-                const total = Number(liveData.totalAmount || (gross - disc));
-                const paid = Number(liveData.totalPaid || liveData.paidAmount || (liveData.status === 'Paid' ? total : 0));
-                const due = Number(liveData.balanceDue !== undefined ? liveData.balanceDue : (total - paid));
 
-                if (boxes.financialSummary.fields.grossSubtotal) boxes.financialSummary.fields.grossSubtotal.value = `₹${gross.toLocaleString('en-IN')}`;
-                if (boxes.financialSummary.fields.discountAmount) boxes.financialSummary.fields.discountAmount.value = `-₹${disc.toLocaleString('en-IN')}`;
-                if (boxes.financialSummary.fields.taxableAmount) boxes.financialSummary.fields.taxableAmount.value = `₹${total.toLocaleString('en-IN')}`;
-                if (boxes.financialSummary.fields.totalAmount) boxes.financialSummary.fields.totalAmount.value = `₹${total.toLocaleString('en-IN')}`;
-                if (boxes.financialSummary.fields.totalPaid) boxes.financialSummary.fields.totalPaid.value = `₹${paid.toLocaleString('en-IN')}`;
-                if (boxes.financialSummary.fields.balanceDue) boxes.financialSummary.fields.balanceDue.value = `₹${due.toLocaleString('en-IN')}`;
+            if (boxes.financialSummary?.fields) {
+                const fin = liveData.financial || liveData.billing || {};
+                const gross = Number(fin.grossSubtotal || fin.subtotal || liveData.grossAmount || liveData.totalAmount || 0);
+                const coPay = Number(fin.coPayAmount || liveData.coPayAmount || 0);
+                const netClaim = Number(fin.netClaimApproved || (gross - coPay));
+                const deskDue = Number(fin.balanceDue !== undefined ? fin.balanceDue : 0);
+
+                if (boxes.financialSummary.fields.grossAmount) {
+                    boxes.financialSummary.fields.grossAmount.value = `₹${gross.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.coPayAmount) {
+                    boxes.financialSummary.fields.coPayAmount.value = `₹${coPay.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.totalAmount) {
+                    boxes.financialSummary.fields.totalAmount.value = `₹${netClaim.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (boxes.financialSummary.fields.balanceDue) {
+                    boxes.financialSummary.fields.balanceDue.value = deskDue > 0 
+                        ? `₹${deskDue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Due)` 
+                        : '₹0.00 (Settled)';
+                }
             }
             break;
         }
@@ -831,6 +1022,18 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 if (boxes.partyDetails.fields.policyNumber) boxes.partyDetails.fields.policyNumber.value = liveData.policyNumber || boxes.partyDetails.fields.policyNumber.value;
                 if (boxes.partyDetails.fields.preAuthApprovalNumber) boxes.partyDetails.fields.preAuthApprovalNumber.value = liveData.preAuthApprovalNumber || boxes.partyDetails.fields.preAuthApprovalNumber.value;
             }
+            if (boxes.billerDetails?.fields) {
+                const billerObj = liveData.biller || liveData.visit?.biller || {};
+                const billerDisplay = liveData.billerName 
+                    || (typeof liveData.biller === 'string' ? liveData.biller : '')
+                    || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+                    || liveData.billedBy 
+                    || "Dr. Vasudeva Rao (admin)";
+
+                if (boxes.billerDetails.fields.billedBy) {
+                    boxes.billerDetails.fields.billedBy.value = billerDisplay;
+                }
+            }
             if (boxes.itemsTable) {
                 let rawList = liveData.items || liveData.tests;
                 if (!rawList && liveData.testsSummary) {
@@ -842,7 +1045,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                         return {
                             id: `ins-${idx}`,
                             index: idx + 1,
-                            description: isStr ? it : (it.description || it.testName || 'Investigation'),
+                            description: isStr ? it : (it.description || it.testName || it.name || it.packageName || 'Investigation / Package'),
                             sacCode: isStr ? '999312' : (it.sacCode || '999312'),
                             price: isStr ? Number(liveData.grossAmount || 0) : Number(it.price || it.amount || 0),
                             discount: isStr ? 0 : Number(it.discount || 0),

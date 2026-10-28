@@ -1120,16 +1120,31 @@ namespace SynOS.Api.Controllers
                 },
                 new {
                     slotId = "corporate_b2b_invoice",
-                    module = "Corporate",
+                    module = "Corporate B2B",
                     moduleCode = "corporate",
-                    slotName = "Corporate Bill",
-                    triggerDescription = "Generated for corporate tie-ups and employee wellness diagnostics.",
+                    slotName = "Prepaid B2B Bill",
+                    triggerDescription = "Generated for referral partner accounts (Corporate B2B) where patient pays ₹0.00 at desk.",
                     assignedTemplateId = "template_corporate_b2b_a4",
-                    templateName = "Corporate Bill (A4)",
+                    templateName = "Prepaid B2B Bill (A4)",
                     letterheadMode = "digital",
                     topMarginMm = 40,
                     enableUpiQr = true,
                     enableBankDetails = true,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "insurance_thermal_receipt",
+                    module = "Insurance",
+                    moduleCode = "insurance",
+                    slotName = "Insurance Thermal Slip",
+                    triggerDescription = "80mm POS slip for insurance pre-auth, TPA cashless claims and patient co-pay.",
+                    assignedTemplateId = "template_thermal_insurance_80mm",
+                    templateName = "80mm Insurance Slip",
+                    letterheadMode = "raw_thermal",
+                    topMarginMm = 0,
+                    enableUpiQr = true,
+                    enableBankDetails = false,
                     customTerms = (string?)null,
                     isSystemDefault = true
                 },
@@ -1332,10 +1347,29 @@ namespace SynOS.Api.Controllers
                     }
 
                     var missingSlots = defaultSlots.Where(ds => !existingSlotIds.Contains(ds.slotId)).ToList();
+                    var userMappings = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(existing) ?? new();
+                    bool mutated = false;
+
+                    foreach (var m in userMappings)
+                    {
+                        if (m.TryGetValue("slotId", out var sidObj) && sidObj?.ToString() == "corporate_b2b_invoice")
+                        {
+                            if (m.TryGetValue("slotName", out var sn) && sn?.ToString() == "Corporate Bill")
+                            {
+                                m["slotName"] = "Prepaid B2B Bill";
+                                m["module"] = "Corporate B2B";
+                                if (m.TryGetValue("templateName", out var tn) && tn?.ToString() == "Corporate Bill (A4)")
+                                {
+                                    m["templateName"] = "Prepaid B2B Bill (A4)";
+                                }
+                                mutated = true;
+                            }
+                        }
+                    }
+
                     if (missingSlots.Any())
                     {
                         // Append missing slots without overwriting user's customized templates & customLayout
-                        var userMappings = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(existing) ?? new();
                         foreach (var ms in missingSlots)
                         {
                             var dict = new Dictionary<string, object>
@@ -1356,7 +1390,11 @@ namespace SynOS.Api.Controllers
                             };
                             userMappings.Add(dict);
                         }
+                        mutated = true;
+                    }
 
+                    if (mutated)
+                    {
                         var updatedJson = System.Text.Json.JsonSerializer.Serialize(userMappings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                         await System.IO.File.WriteAllTextAsync(path, updatedJson);
                         try

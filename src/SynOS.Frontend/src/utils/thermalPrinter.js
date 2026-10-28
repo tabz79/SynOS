@@ -45,6 +45,18 @@ export function generateThermalInvoiceHtml(payload = {}) {
         return generateThermalPrepaidSlipHtml(payload);
     }
 
+    const isInsurance = payload.isInsurance
+        || payload.billingMode === 'Insurance'
+        || payload.billingMode === 'TPA'
+        || payload.PaymentCollectionModel === 'Insurance'
+        || payload.billing?.paymentMethod === 'Insurance'
+        || payload.billing?.paymentMethod === 'TPA'
+        || payload.billing?.isInsurance;
+
+    if (isInsurance && !payload.forceStandardReceipt) {
+        return generateThermalInsuranceReceiptHtml(payload);
+    }
+
     const visitId = payload.visitId || payload.VisitId || '';
     const token = payload.token || payload.Token || payload.visitToken || '';
     const patientObj = payload.patient || payload.Patient || {};
@@ -765,6 +777,345 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     ${billerHtml}
     ${itemsTableHtml}
     ${prepaidNoticeHtml}
+    ${termsHtml}
+</body>
+</html>
+    `;
+}
+
+/**
+ * Generates an 80mm thermal cashless insurance slip HTML formatted string.
+ */
+export function generateThermalInsuranceReceiptHtml(payload = {}) {
+    const token = payload.token || payload.Token || payload.visitToken || '';
+    const patientObj = payload.patient || payload.Patient || {};
+    const patientName = patientObj.name || patientObj.fullName || payload.patientName || payload.PatientName || 'Patient';
+    const patientUhid = patientObj.uhid || patientObj.mrn || payload.mrn || payload.Mrn || 'SYN-2026-0001';
+    const patientAge = patientObj.age || payload.age || payload.Age || '';
+    const patientGender = patientObj.gender || patientObj.sex || payload.gender || payload.Gender || 'M';
+    const billingObj = payload.billing || payload.Billing || payload.financial || {};
+    const ordersList = payload.orders || payload.Orders || payload.items || [];
+    const labName = payload.labName || payload.LabName || '';
+    const branchObj = payload.branch || payload.Branch || {};
+    const customLayout = payload.customLayout;
+
+    let schema = customLayout || DEFAULT_DOCUMENT_SCHEMAS['insurance_thermal_receipt'];
+    let labSettings = {};
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+            if (!customLayout) {
+                const studioSaved = window.localStorage.getItem('synos_document_layout_insurance_thermal_receipt');
+                if (studioSaved) {
+                    schema = JSON.parse(studioSaved);
+                }
+            }
+            const settingsSaved = window.localStorage.getItem('synos_stationery_settings');
+            if (settingsSaved) {
+                labSettings = JSON.parse(settingsSaved);
+            }
+            const cachedLogo = window.localStorage.getItem('synos_lab_logo');
+            if (cachedLogo && !labSettings.logoUrl) {
+                labSettings.logoUrl = cachedLogo;
+            }
+            const cachedQr = window.localStorage.getItem('synos_custom_qr_image');
+            if (cachedQr && !labSettings.customQrImage) {
+                labSettings.customQrImage = cachedQr;
+            }
+        } catch (e) {
+            console.warn("Could not load stored insurance thermal schema/settings", e);
+        }
+    }
+
+    if (labName) labSettings.labTradeName = labName;
+    if (branchObj?.name) labSettings.branchName = branchObj.name;
+    if (branchObj?.address) labSettings.address = branchObj.address;
+    if (branchObj?.phone) labSettings.phone = branchObj.phone;
+
+    const billerObj = payload.biller || billingObj.biller || payload.visit?.biller || {};
+    const billerDisplay = payload.billerName 
+        || (typeof payload.biller === 'string' ? payload.biller : '')
+        || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+        || billingObj.billedBy 
+        || payload.visit?.billedBy 
+        || payload.billedBy 
+        || "Staff Desk";
+
+    const insObj = payload.insurance || payload.billingContext || billingObj.insurance || {};
+    const insCompany = insObj.insuranceCompanyName || insObj.insuranceCompany || payload.insuranceCompany || 'Cashless Insurance Provider';
+    const insTpa = insObj.insuranceTpaName || insObj.tpaName || payload.tpaName || 'TPA Desk';
+    const policyNo = insObj.policyNumber || payload.policyNumber || 'N/A';
+    const preAuthNo = insObj.preAuthApprovalNumber || payload.preAuthApprovalNumber || payload.preAuthNumber || 'N/A';
+
+    const allItems = ordersList.map((it, idx) => ({
+        id: `r-${idx}`,
+        index: idx + 1,
+        testName: it.testName || it.name || it.description || it.packageName || 'Investigation / Package',
+        price: Number(it.price || it.amount || 0)
+    }));
+
+    const gross = Number(billingObj.grossSubtotal || billingObj.grossAmount || payload.grossAmount || payload.totalAmount || allItems.reduce((s, x) => s + x.price, 0));
+    const coPay = Number(billingObj.coPayAmount || payload.coPayAmount || 0);
+    const netTpa = Number(billingObj.netClaimApproved || (gross - coPay));
+    const balanceDue = Number(billingObj.balanceDue !== undefined ? billingObj.balanceDue : 0);
+
+    const normalizedData = {
+        receiptNumber: payload.receiptNumber || (token ? `CLM-${token}` : `CLM-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`),
+        dateTime: payload.dateTime || new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+        token: token || "WAIT",
+        claimStatus: payload.claimStatus || "APPROVED / PRE-AUTH",
+        patient: {
+            name: patientName,
+            fullName: patientName,
+            uhid: patientUhid,
+            ageGender: `${patientAge ? `${patientAge}Y` : ''} / ${patientGender}`.trim(),
+            phone: patientObj.phone || patientObj.mobile || ""
+        },
+        insurance: {
+            insuranceCompanyName: insCompany,
+            insuranceTpaName: insTpa,
+            policyNumber: policyNo,
+            preAuthApprovalNumber: preAuthNo
+        },
+        biller: {
+            billedBy: billerDisplay
+        },
+        items: allItems,
+        orders: allItems,
+        financial: {
+            grossSubtotal: gross,
+            coPayAmount: coPay,
+            netClaimApproved: netTpa,
+            balanceDue: balanceDue
+        }
+    };
+
+    const hydrated = hydrateDocumentSchema('insurance_thermal_receipt', schema, normalizedData, labSettings);
+    const { boxes } = hydrated;
+
+    // A. Brand Header
+    let headerHtml = "";
+    if (boxes.header?.enabled) {
+        const hf = boxes.header.fields || {};
+        headerHtml = `
+            <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 5px; margin-bottom: 5px;">
+                ${labSettings.logoUrl ? `<img src="${labSettings.logoUrl}" style="max-height: 40px; max-width: 140px; margin: 0 auto 3px auto; display: block; object-fit: contain;" alt="Logo" />` : ''}
+                <div style="font-size: 15px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; color: #000000; line-height: 1.15;">
+                    ${hf.legalName?.value || labSettings.labTradeName || 'SYNOS DIAGNOSTICS'}
+                </div>
+                ${hf.tagline?.enabled && hf.tagline.value ? `
+                    <div style="font-size: 8.5px; font-weight: 700; text-transform: uppercase; color: #000000; letter-spacing: 0.05em; margin-top: 1px;">
+                        ${hf.tagline.value}
+                    </div>
+                ` : ''}
+                ${hf.address?.enabled && hf.address.value ? `
+                    <div style="font-size: 8px; font-weight: 600; line-height: 1.25; color: #000000; margin-top: 2px;">
+                        ${hf.address.value}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // B. Claim Particulars Badge
+    let badgeHtml = "";
+    if (boxes.docBadge?.enabled) {
+        const bf = boxes.docBadge.fields || {};
+        badgeHtml = `
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span style="font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.03em; color: #000000;">
+                        ${bf.badgeTitle?.value || 'CASHLESS TPA CLAIM SLIP'}
+                    </span>
+                    <span style="font-size: 8.5px; font-weight: 800; border: 1px solid #000000; padding: 1px 3px; border-radius: 2px;">
+                        ${bf.claimStatus?.value || 'APPROVED'}
+                    </span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 9.5px; color: #000000; margin-top: 2px; font-family: monospace;">
+                    <span>Claim: <b>${bf.receiptNumber?.value || normalizedData.receiptNumber}</b></span>
+                    <span>${bf.date?.value || normalizedData.dateTime}</span>
+                </div>
+                ${token ? `
+                    <div style="margin-top: 3px; text-align: center; border: 1.5px dashed #000000; padding: 3px 0; background-color: #f7f7f7;">
+                        <span style="font-size: 9px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.05em;">Token Number</span>
+                        <div style="font-size: 24px; font-weight: 900; font-family: monospace; color: #000000; line-height: 1.1; margin-top: 1px;">${token}</div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // C. Patient & Insurance Details
+    let patientHtml = "";
+    if (boxes.partyDetails?.enabled) {
+        const pf = boxes.partyDetails.fields || {};
+        patientHtml = `
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
+                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
+                    PATIENT & INSURANCE INFO
+                </div>
+                <div style="font-size: 10px; line-height: 1.3; color: #000000;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                        <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%;">Patient: <b style="font-weight: 900;">${pf.fullName?.value || patientName}</b></span>
+                        <span style="font-family: monospace; white-space: nowrap;">UHID: <b>${pf.uhid?.value || patientUhid}</b></span>
+                    </div>
+                    <div style="font-weight: 700; margin-top: 1px;">
+                        <span>Age/Sex: <b>${pf.ageGender?.value || normalizedData.patient.ageGender}</b></span>
+                    </div>
+                    <div style="font-weight: 700; margin-top: 1px;">
+                        Ins Co: <b>${pf.insuranceProvider?.value || insCompany}</b>
+                    </div>
+                    <div style="font-weight: 700; margin-top: 1px;">
+                        TPA: <b>${pf.tpaName?.value || insTpa}</b>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 9.5px; font-weight: 700; margin-top: 1px;">
+                        <span>Policy: <b>${pf.policyNumber?.value || policyNo}</b></span>
+                        <span>Pre-Auth: <b>${pf.preAuthApprovalNumber?.value || preAuthNo}</b></span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // C2. Biller Desk Box
+    let billerHtml = "";
+    if (boxes.billerDetails?.enabled !== false) {
+        const bf = boxes.billerDetails?.fields || {};
+        billerHtml = `
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
+                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 2px;">
+                    ${boxes.billerDetails?.title || 'BILLING DESK'}
+                </div>
+                <div style="font-size: 10px; line-height: 1.35; color: #000000;">
+                    <div>Billed by: <b style="font-weight: 900;">${bf.billedBy?.value || billerDisplay}</b></div>
+                </div>
+            </div>
+        `;
+    }
+
+    // D. Approved Items & Health Packages Table
+    let itemsTableHtml = "";
+    if (boxes.itemsTable?.enabled) {
+        const rows = boxes.itemsTable.rows || [];
+        itemsTableHtml = `
+            <div style="border-bottom: 1px solid #000000; padding-bottom: 4px; margin-bottom: 5px;">
+                <div style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em; margin-bottom: 3px;">
+                    APPROVED TESTS & PACKAGES
+                </div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; line-height: 1.25;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #000000; border-top: 1px solid #000000; font-weight: 900;">
+                            <th style="text-align: left; padding: 2px 0; width: 12px;">#</th>
+                            <th style="text-align: left; padding: 2px 4px;">Investigation / Package</th>
+                            <th style="text-align: right; padding: 2px 0; width: 50px;">Tariff</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map((r, i) => `
+                            <tr style="border-bottom: 1px dotted #cccccc;">
+                                <td style="padding: 2.5px 0; vertical-align: top; font-weight: 700;">${r.index || (i + 1)}</td>
+                                <td style="padding: 2.5px 4px; vertical-align: top; font-weight: 800; word-break: break-word;">${r.description || r.testName}</td>
+                                <td style="padding: 2.5px 0; vertical-align: top; text-align: right; font-weight: 800; font-family: monospace;">${formatInr(r.price || r.amount || 0)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    // E. Financial Summary
+    let financialHtml = "";
+    if (boxes.financialSummary?.enabled) {
+        const ff = boxes.financialSummary.fields || {};
+        financialHtml = `
+            <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px; font-size: 10px; line-height: 1.35;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Total Tariff:</span>
+                    <span style="font-weight: 800; font-family: monospace;">${ff.grossAmount?.value || formatInr(gross)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Patient Co-Pay:</span>
+                    <span style="font-weight: 800; font-family: monospace;">${ff.coPayAmount?.value || formatInr(coPay)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11px; margin-top: 2px; border-top: 1px dotted #000000; padding-top: 2px;">
+                    <span>Approved TPA Claim:</span>
+                    <span style="font-family: monospace;">${ff.totalAmount?.value || formatInr(netTpa)}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 10.5px; margin-top: 1px;">
+                    <span>Patient Desk Due:</span>
+                    <span style="font-family: monospace;">${ff.balanceDue?.value || formatInr(balanceDue)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // F. Notice & Terms
+    let termsHtml = "";
+    if (boxes.termsAndConditions?.enabled) {
+        const text = boxes.termsAndConditions.text || '';
+        termsHtml = `
+            <div style="text-align: center; font-size: 8px; color: #000000; line-height: 1.25; padding-top: 2px;">
+                ${text.split('\n').filter(Boolean).map(line => `<div>${line}</div>`).join('')}
+                <div style="margin-top: 3px; font-weight: 700; text-transform: uppercase;">
+                    ${boxes.termsAndConditions.systemNote || 'Thank You • SynOS Diagnostic OS'}
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Insurance-Cashless-Slip</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0mm !important;
+        }
+        @media print {
+            @page {
+                size: 80mm auto;
+                margin: 0mm !important;
+            }
+            html, body {
+                width: 70mm !important;
+                max-width: 70mm !important;
+                margin: 0 auto !important;
+                padding: 1mm 2mm !important;
+                color: #000000 !important;
+                background: #ffffff !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-sizing: border-box !important;
+            }
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
+            margin: 0 auto;
+            padding: 1mm 2mm;
+            width: 70mm;
+            max-width: 70mm;
+            color: #000000;
+            font-size: 10.5px;
+            line-height: 1.3;
+            background: #ffffff;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body>
+    ${headerHtml}
+    ${badgeHtml}
+    ${patientHtml}
+    ${billerHtml}
+    ${itemsTableHtml}
+    ${financialHtml}
     ${termsHtml}
 </body>
 </html>
