@@ -98,12 +98,12 @@ export const CommercialPaperworkTab = () => {
 
     // Commercial Stationery Settings
     const [settings, setSettings] = useState({
-        labLegalName: "SRI DIVYA DIAGNOSTIC CENTRE",
-        labTradeName: "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+        labLegalName: "SynOS Diagnostic Centre & Laboratory",
+        labTradeName: "Advanced Pathology & Imaging Services",
         logoUrl: "",
         receiptPrinterName: "",
-        address: "Wyra Road, Khammam | Ph: 9876543210",
-        phone: "9876543210",
+        address: "Central Diagnostic Facility, Hyderabad, Telangana",
+        phone: "+91 98765 43210",
         email: "billing@synoslab.in",
         website: "www.synoslab.in",
         gstin: "36AAAAA0000A1Z5",
@@ -111,8 +111,8 @@ export const CommercialPaperworkTab = () => {
         bankName: "HDFC Bank",
         accountNumber: "50200012345678",
         ifscCode: "HDFC0001234",
-        branch: "Main Branch, Khammam",
-        accountHolderName: "SRI DIVYA DIAGNOSTIC CENTRE",
+        branch: "Main Branch, Hyderabad",
+        accountHolderName: "SynOS Healthcare Diagnostic Services",
         upiId: "synoslab@hdfcbank",
         enableUpiQr: true,
         customQrImage: "",
@@ -602,6 +602,7 @@ export const CommercialPaperworkTab = () => {
                         onClick={handleSaveAll}
                         disabled={saving}
                         className="px-6 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-synos-primary/25 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        title="Save your preferences as system default across the entire application"
                     >
                         {saving ? (
                             <>
@@ -611,12 +612,12 @@ export const CommercialPaperworkTab = () => {
                         ) : saveSuccess ? (
                             <>
                                 <Check size={16} className="text-emerald-300" />
-                                <span>Saved!</span>
+                                <span>Default Saved!</span>
                             </>
                         ) : (
                             <>
                                 <Save size={16} />
-                                <span>Save</span>
+                                <span>Save as Default</span>
                             </>
                         )}
                     </button>
@@ -716,6 +717,15 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleSaveAll}
+                                            disabled={saving}
+                                            className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-synos-primary/90 shadow-xs active:scale-95 transition-all"
+                                            title="Make this layout the system default for this bill"
+                                        >
+                                            <Check size={12} /> Make Default
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={handleResetLayout}

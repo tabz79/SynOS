@@ -880,32 +880,71 @@ namespace SynOS.Api.Controllers
 
         #region Stationery & Billing Settings
 
+        private static string GetConfigFilePath(string fileName)
+        {
+            try
+            {
+                var appData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                if (!string.IsNullOrEmpty(appData))
+                {
+                    var dir = System.IO.Path.Combine(appData, "SynOS", "Config");
+                    if (!System.IO.Directory.Exists(dir))
+                    {
+                        System.IO.Directory.CreateDirectory(dir);
+                    }
+                    var persistentPath = System.IO.Path.Combine(dir, fileName);
+
+                    // If file already exists in persistent storage, use it
+                    if (System.IO.File.Exists(persistentPath))
+                    {
+                        return persistentPath;
+                    }
+
+                    // If it exists in BaseDirectory (from previous session), migrate to persistent storage
+                    var legacyPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, fileName);
+                    if (System.IO.File.Exists(legacyPath))
+                    {
+                        try
+                        {
+                            System.IO.File.Copy(legacyPath, persistentPath, overwrite: true);
+                        }
+                        catch { }
+                    }
+
+                    return persistentPath;
+                }
+            }
+            catch { }
+
+            return System.IO.Path.Combine(System.AppContext.BaseDirectory, fileName);
+        }
+
         [HttpGet("stationery-settings")]
         public async Task<IActionResult> GetStationerySettings()
         {
-            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            var path = GetConfigFilePath("billing_stationery_settings.json");
             var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
             var defaultSettings = new Dictionary<string, object>
             {
-                ["labLegalName"] = lab?.Name ?? "SRI DIVYA DIAGNOSTIC CENTRE",
-                ["labTradeName"] = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
-                ["address"] = !string.IsNullOrEmpty(lab?.Address) ? lab.Address : "Wyra Road, Khammam | Ph: 9876543210",
-                ["phone"] = !string.IsNullOrEmpty(lab?.Phone) ? lab.Phone : "9876543210",
-                ["email"] = lab?.Email ?? "billing@synoslab.in",
-                ["website"] = lab?.Website ?? "www.synoslab.in",
+                ["labLegalName"] = !string.IsNullOrEmpty(lab?.Name) ? lab.Name : "SynOS Diagnostic Centre & Laboratory",
+                ["labTradeName"] = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
+                ["address"] = !string.IsNullOrEmpty(lab?.Address) ? lab.Address : "Central Diagnostic Facility Complex",
+                ["phone"] = !string.IsNullOrEmpty(lab?.Phone) ? lab.Phone : "+91 98765 43210",
+                ["email"] = !string.IsNullOrEmpty(lab?.Email) ? lab.Email : "billing@synoslab.in",
+                ["website"] = !string.IsNullOrEmpty(lab?.Website) ? lab.Website : "www.synoslab.in",
                 ["gstin"] = "36AAAAA0000A1Z5",
                 ["pan"] = "AAAAA0000A",
                 ["bankName"] = "HDFC Bank",
                 ["accountNumber"] = "50200012345678",
                 ["ifscCode"] = "HDFC0001234",
-                ["branch"] = "Main Branch, Khammam",
-                ["accountHolderName"] = lab?.Name ?? "SRI DIVYA DIAGNOSTIC CENTRE",
+                ["branch"] = !string.IsNullOrEmpty(lab?.LabCity) ? $"{lab.LabCity} Branch" : "Main Branch",
+                ["accountHolderName"] = !string.IsNullOrEmpty(lab?.Name) ? lab.Name : "SynOS Healthcare Diagnostic Services",
                 ["upiId"] = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
                 ["enableUpiQr"] = true,
                 ["customQrImage"] = "",
                 ["defaultLetterheadMode"] = "digital", // "digital" | "preprinted"
-                ["topMarginMm"] = 40,
-                ["bottomMarginMm"] = 15,
+                ["topMarginMm"] = lab?.HeaderHeightMm > 0 ? lab.HeaderHeightMm : 40,
+                ["bottomMarginMm"] = lab?.FooterMarginMm > 0 ? lab.FooterMarginMm : 15,
                 ["termsAndConditions"] = "1. All disputes are subject to local jurisdiction.\n2. Payment terms: Due within 15 days of invoice date.\n3. In case of online payment, please mention invoice or statement reference number.\n4. Cheques are subject to realization.",
                 ["signatoryTitle"] = "Authorised Signatory / Accounts Desk"
             };
@@ -914,6 +953,12 @@ namespace SynOS.Api.Controllers
             {
                 var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 await System.IO.File.WriteAllTextAsync(path, json);
+                try
+                {
+                    var legacyPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+                    await System.IO.File.WriteAllTextAsync(legacyPath, json);
+                }
+                catch { }
                 return Content(json, "application/json");
             }
 
@@ -940,9 +985,15 @@ namespace SynOS.Api.Controllers
         [HttpPost("stationery-settings")]
         public async Task<IActionResult> SaveStationerySettings([FromBody] System.Text.Json.JsonElement settings)
         {
-            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            var path = GetConfigFilePath("billing_stationery_settings.json");
             var json = settings.ToString();
             await System.IO.File.WriteAllTextAsync(path, json);
+            try
+            {
+                var legacyPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+                await System.IO.File.WriteAllTextAsync(legacyPath, json);
+            }
+            catch { }
 
             try
             {
@@ -969,7 +1020,7 @@ namespace SynOS.Api.Controllers
                 Serilog.Log.Warning(ex, "Failed to sync LabProfiles table during SaveStationerySettings");
             }
 
-            return Ok(new { message = "Billing stationery settings successfully saved." });
+            return Ok(new { message = "Billing stationery settings successfully saved as system default." });
         }
 
         [HttpGet("document-mappings")]
@@ -1249,18 +1300,24 @@ namespace SynOS.Api.Controllers
                 }
             };
 
-            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+            var path = GetConfigFilePath("document_mappings_registry.json");
             if (!System.IO.File.Exists(path))
             {
                 var json = System.Text.Json.JsonSerializer.Serialize(defaultSlots, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                 await System.IO.File.WriteAllTextAsync(path, json);
+                try
+                {
+                    var legacyPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+                    await System.IO.File.WriteAllTextAsync(legacyPath, json);
+                }
+                catch { }
                 return Content(json, "application/json");
             }
 
             var existing = await System.IO.File.ReadAllTextAsync(path);
             try
             {
-                // Check if any default slots are missing from existing JSON, if so merge them
+                // Check if any default slots are missing from existing JSON, if so append them while preserving user customizations
                 using var doc = System.Text.Json.JsonDocument.Parse(existing);
                 if (doc.RootElement.ValueKind == System.Text.Json.JsonValueKind.Array)
                 {
@@ -1274,15 +1331,41 @@ namespace SynOS.Api.Controllers
                         }
                     }
 
-                    bool missingAny = defaultSlots.Any(ds => !existingSlotIds.Contains(ds.slotId));
-                    if (missingAny)
+                    var missingSlots = defaultSlots.Where(ds => !existingSlotIds.Contains(ds.slotId)).ToList();
+                    if (missingSlots.Any())
                     {
-                        // Merge and save
-                        var list = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.JsonElement>>(existing) ?? new List<System.Text.Json.JsonElement>();
-                        // Overwrite with fresh defaults to ensure clean Indian English slot names
-                        var json = System.Text.Json.JsonSerializer.Serialize(defaultSlots, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
-                        await System.IO.File.WriteAllTextAsync(path, json);
-                        return Content(json, "application/json");
+                        // Append missing slots without overwriting user's customized templates & customLayout
+                        var userMappings = System.Text.Json.JsonSerializer.Deserialize<List<Dictionary<string, object>>>(existing) ?? new();
+                        foreach (var ms in missingSlots)
+                        {
+                            var dict = new Dictionary<string, object>
+                            {
+                                ["slotId"] = ms.slotId,
+                                ["module"] = ms.module,
+                                ["moduleCode"] = ms.moduleCode,
+                                ["slotName"] = ms.slotName,
+                                ["triggerDescription"] = ms.triggerDescription,
+                                ["assignedTemplateId"] = ms.assignedTemplateId,
+                                ["templateName"] = ms.templateName,
+                                ["letterheadMode"] = ms.letterheadMode,
+                                ["topMarginMm"] = ms.topMarginMm,
+                                ["enableUpiQr"] = ms.enableUpiQr,
+                                ["enableBankDetails"] = ms.enableBankDetails,
+                                ["customTerms"] = ms.customTerms ?? "",
+                                ["isSystemDefault"] = ms.isSystemDefault
+                            };
+                            userMappings.Add(dict);
+                        }
+
+                        var updatedJson = System.Text.Json.JsonSerializer.Serialize(userMappings, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+                        await System.IO.File.WriteAllTextAsync(path, updatedJson);
+                        try
+                        {
+                            var legacyPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+                            await System.IO.File.WriteAllTextAsync(legacyPath, updatedJson);
+                        }
+                        catch { }
+                        return Content(updatedJson, "application/json");
                     }
                 }
             }
@@ -1294,10 +1377,16 @@ namespace SynOS.Api.Controllers
         [HttpPost("document-mappings")]
         public async Task<IActionResult> SaveDocumentMappings([FromBody] System.Text.Json.JsonElement mappings)
         {
-            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+            var path = GetConfigFilePath("document_mappings_registry.json");
             var json = mappings.ToString();
             await System.IO.File.WriteAllTextAsync(path, json);
-            return Ok(new { message = "Document mappings registry successfully saved." });
+            try
+            {
+                var legacyPath = System.IO.Path.Combine(System.AppContext.BaseDirectory, "document_mappings_registry.json");
+                await System.IO.File.WriteAllTextAsync(legacyPath, json);
+            }
+            catch { }
+            return Ok(new { message = "Document mappings registry successfully saved as system default." });
         }
 
         #endregion
@@ -2020,7 +2109,7 @@ namespace SynOS.Api.Controllers
                 if (lab.HeaderHeightMm > 0) res.TopMarginMm = lab.HeaderHeightMm;
             }
 
-            var path = System.IO.Path.Combine(System.AppContext.BaseDirectory, "billing_stationery_settings.json");
+            var path = GetConfigFilePath("billing_stationery_settings.json");
             if (System.IO.File.Exists(path))
             {
                 try

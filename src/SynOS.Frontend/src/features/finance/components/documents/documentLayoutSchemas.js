@@ -10,10 +10,10 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Lab Letterhead & Clinic Brand',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
-                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '9876543210' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Comprehensive Pathology, Radiology & Molecular Diagnostics' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Main Road' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
                     email: { id: 'email', enabled: true, label: 'Email', value: 'billing@synoslab.in' },
                     gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
                     pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
@@ -160,9 +160,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
                     tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
-                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Central Diagnostic Complex, Main Road | Ph: 9876543210' },
                     gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
@@ -262,10 +262,10 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Lab Letterhead & Clinic Brand',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
-                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '9876543210' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Comprehensive Pathology, Radiology & Molecular Diagnostics' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Main Road' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
                     email: { id: 'email', enabled: true, label: 'Email', value: 'billing@synoslab.in' },
                     gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
                     pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
@@ -357,7 +357,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Authorised Desk Signatory',
                 enabled: true,
                 title: 'Phlebotomy & Billing Desk',
-                subtitle: 'Sri Divya Diagnostic Centre'
+                subtitle: 'Accounts & Billing Desk'
             }
         }
     },
@@ -372,9 +372,9 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
                     tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
-                    address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
+                    address: { id: 'address', enabled: true, label: 'Address', value: 'Central Diagnostic Complex, Main Road | Ph: 9876543210' },
                     gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
