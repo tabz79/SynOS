@@ -403,21 +403,16 @@ export function DiscountMasterScreen() {
     };
 
     return (
-        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
-            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-synos-primary/10 text-synos-primary rounded-xl">
-                        <Tag size={24} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Discount Master
-                        </h1>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            Manage discount codes, view discounts given, and track staff discounts
-                        </p>
-                    </div>
+        <div className="flex flex-col h-full bg-[#EDF3F7] dark:bg-zinc-950 overflow-hidden animate-in fade-in duration-500">
+            {/* TERMINAL HEADER MATCHING REFERENCE A */}
+            <div className="px-8 pt-8 pb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold dark:text-white text-slate-900 tracking-tight">
+                        Discount Master
+                    </h1>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                        Manage discount codes, view discounts given, and track staff discounts
+                    </p>
                 </div>
 
                 <div className="flex items-center gap-2.5 flex-wrap">
@@ -447,9 +442,9 @@ export function DiscountMasterScreen() {
                     {tab !== 'codes' && (
                         <button
                             onClick={handleDownloadCSV}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-xs cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs font-semibold transition-all border border-slate-200/80 dark:border-zinc-700 shadow-xs cursor-pointer"
                         >
-                            <Download size={14} className="text-zinc-500" />
+                            <Download size={14} className="text-slate-500" />
                             <span>Download CSV</span>
                         </button>
                     )}
@@ -457,7 +452,7 @@ export function DiscountMasterScreen() {
                     {tab !== 'codes' && tab !== 'reasons' && (
                         <button
                             onClick={() => setIsPrintModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer"
                         >
                             <Printer size={14} />
                             <span>Print Report</span>
@@ -466,18 +461,18 @@ export function DiscountMasterScreen() {
                 </div>
             </div>
 
-            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-            <div className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+            {/* TAB NAVIGATION (SEGMENTED PILL MATCHING REFERENCE A) */}
+            <div className="px-8 pb-3 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+                <div className="flex items-center bg-slate-200/70 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map(t => (
                         <button
                             key={t.id}
                             onClick={() => navigate(`/finance/discounts/${t.id}`)}
                             className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap",
+                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
                                 tab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs"
+                                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                             )}
                         >
                             <t.icon size={14} />
@@ -491,7 +486,7 @@ export function DiscountMasterScreen() {
             <div className="flex-1 overflow-y-auto px-8 py-4 space-y-6 custom-scrollbar">
                 {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
                 {tab === 'intelligence' && (
-                    <div className="space-y-4 animate-in fade-in duration-300">
+                    <div className="space-y-6 animate-in fade-in duration-300">
                         {loadingIntelligence ? (
                             <div className="flex flex-col items-center justify-center p-20 gap-2.5 text-zinc-400">
                                 <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
@@ -499,138 +494,133 @@ export function DiscountMasterScreen() {
                             </div>
                         ) : intelligence ? (
                             <>
-                                {/* SECTION 1: HERO CONTROL DECK (Concession Portfolio Overview) */}
-                                <div className="space-y-1.5">
-                                    <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 px-0.5">
-                                        Concession Portfolio Overview
-                                    </h3>
-                                    <div className="p-5 sm:p-6 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-8">
-                                        {/* Left: Total Concessions Position */}
-                                        <div className="space-y-1 lg:min-w-[260px]">
-                                            <div className="flex items-center gap-2.5">
-                                                <span className="text-sm font-medium text-slate-600 dark:text-zinc-400">
-                                                    Total Concessions Granted
-                                                </span>
-                                                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#E6F4EA] text-[#137333] border border-[#CEEAD6] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/60">
-                                                    +{intelligence.overallDiscountPercentage}% Concession Rate
-                                                </span>
-                                            </div>
-                                            <p className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white tracking-tight leading-none my-2 font-sans">
-                                                ₹{intelligence.totalDiscountAmount.toLocaleString()}
-                                            </p>
-                                            <p className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                                                Total Lab Tariff Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
-                                            </p>
+                                {/* SECTION 1: HERO CONTROL DECK MATCHING REFERENCE A */}
+                                <div className="p-6 lg:p-7 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-8">
+                                    {/* Left: Total Concessions Position */}
+                                    <div className="space-y-1 lg:min-w-[260px]">
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="text-sm font-medium text-slate-600 dark:text-zinc-400">
+                                                Total Concessions Granted
+                                            </span>
+                                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#D1F2EB]/60 text-[#0E6251] border border-[#A2D9CE]/50 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                                +{intelligence.overallDiscountPercentage}% Concession Rate
+                                            </span>
                                         </div>
+                                        <p className="text-4xl lg:text-[44px] font-bold text-slate-900 dark:text-white tracking-tight leading-none my-2 font-sans">
+                                            ₹{intelligence.totalDiscountAmount.toLocaleString()}
+                                        </p>
+                                        <p className="text-xs font-medium text-slate-500 dark:text-zinc-400">
+                                            Total Lab Tariff Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
+                                        </p>
+                                    </div>
 
-                                        {/* Right: iOS Control Center Sliders & Split */}
-                                        <div className="flex-1 max-w-2xl space-y-4">
-                                            {/* Top 2 Sliders */}
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                {/* Slider 1: Direct Patient Walk-Ins */}
-                                                <div className="space-y-1.5">
-                                                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                                                        <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                            Patient Walk-In: ₹{intelligence.patientDiscountAmount.toLocaleString()}
-                                                        </span>
-                                                        <span className="text-xs text-slate-400 font-normal">
-                                                            ({intelligence.patientBillsCount} bills)
-                                                        </span>
-                                                    </div>
-                                                    {/* Capsule Slider with Knob & Right % */}
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="flex-1 h-7 bg-slate-200/90 dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center shadow-inner">
-                                                            <div 
-                                                                className="h-full rounded-full bg-gradient-to-r from-[#3A5D7C] to-[#5C85A6] relative transition-all duration-500"
-                                                                style={{ width: `${Math.max(12, Math.min(100, intelligence.patientSharePercentage))}%` }}
-                                                            >
-                                                                <div className="w-5 h-5 rounded-full bg-white shadow-md border border-slate-100 dark:border-zinc-700 absolute right-1 top-1/2 -translate-y-1/2" />
-                                                            </div>
-                                                        </div>
-                                                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 w-11 text-right tabular-nums">
-                                                            {intelligence.patientSharePercentage}%
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
-                                                        Direct patient concessions from total volume (₹{intelligence.patientDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
-                                                    </p>
+                                    {/* Right: iOS Control Center Sliders & Split */}
+                                    <div className="flex-1 max-w-2xl space-y-4">
+                                        {/* Top 2 Sliders */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {/* Slider 1: Direct Patient Walk-Ins */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-center justify-between text-xs sm:text-sm">
+                                                    <span className="font-semibold text-slate-900 dark:text-white">
+                                                        Patient Walk-In: ₹{intelligence.patientDiscountAmount.toLocaleString()}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 font-normal">
+                                                        ({intelligence.patientBillsCount} bills)
+                                                    </span>
                                                 </div>
-
-                                                {/* Slider 2: Corporate B2B Wholesale */}
-                                                <div className="space-y-1.5">
-                                                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                                                        <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                            B2B Wholesale: ₹{intelligence.partnerDiscountAmount.toLocaleString()}
-                                                        </span>
-                                                        <span className="text-xs text-slate-400 font-normal">
-                                                            ({intelligence.partnerBillsCount} bills)
-                                                        </span>
-                                                    </div>
-                                                    {/* Capsule Slider with Knob & Right % */}
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="flex-1 h-7 bg-slate-200/90 dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center shadow-inner">
-                                                            <div 
-                                                                className="h-full rounded-full bg-gradient-to-r from-[#64748B] to-[#94A3B8] relative transition-all duration-500"
-                                                                style={{ width: `${Math.max(12, Math.min(100, intelligence.partnerSharePercentage))}%` }}
-                                                            >
-                                                                <div className="w-5 h-5 rounded-full bg-white shadow-md border border-slate-100 dark:border-zinc-700 absolute right-1 top-1/2 -translate-y-1/2" />
-                                                            </div>
+                                                {/* Capsule Slider with Knob & Right % */}
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-1 h-7 bg-[#DCE5EC] dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center">
+                                                        <div 
+                                                            className="h-full rounded-full bg-gradient-to-r from-[#40627E] to-[#6B8FA8] relative transition-all duration-500"
+                                                            style={{ width: `${Math.max(12, Math.min(100, intelligence.patientSharePercentage))}%` }}
+                                                        >
+                                                            <div className="w-5 h-5 rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] absolute right-1 top-1/2 -translate-y-1/2" />
                                                         </div>
-                                                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 w-11 text-right tabular-nums">
-                                                            {intelligence.partnerSharePercentage}%
-                                                        </span>
                                                     </div>
-                                                    <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
-                                                        B2B partner concessions from total volume (₹{intelligence.partnerDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
-                                                    </p>
+                                                    <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 w-11 text-right tabular-nums">
+                                                        {intelligence.patientSharePercentage}%
+                                                    </span>
                                                 </div>
+                                                <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
+                                                    Direct patient concessions from total volume (₹{intelligence.patientDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
+                                                </p>
                                             </div>
 
-                                            {/* Bottom Full-Width Bar: Channel Volume Split */}
-                                            <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                                            {/* Slider 2: Corporate B2B Wholesale */}
+                                            <div className="space-y-1.5">
                                                 <div className="flex items-center justify-between text-xs sm:text-sm">
-                                                    <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                        Channel Volume Split (Patient vs B2B Wholesale)
+                                                    <span className="font-semibold text-slate-900 dark:text-white">
+                                                        B2B Wholesale: ₹{intelligence.partnerDiscountAmount.toLocaleString()}
                                                     </span>
-                                                    <span className="text-sm font-bold text-slate-800 dark:text-zinc-100">
-                                                        ₹{intelligence.partnerDiscountAmount.toLocaleString()} B2B Wholesale
+                                                    <span className="text-xs text-slate-400 font-normal">
+                                                        ({intelligence.partnerBillsCount} bills)
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="flex-1 h-6 bg-slate-200/90 dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center shadow-inner">
+                                                {/* Capsule Slider with Knob & Right % */}
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-1 h-7 bg-[#DCE5EC] dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center">
                                                         <div 
-                                                            className="h-full rounded-full bg-gradient-to-r from-[#F87171] to-[#FB7185] relative transition-all duration-500"
-                                                            style={{ width: `${Math.max(10, Math.min(100, intelligence.partnerSharePercentage))}%` }}
+                                                            className="h-full rounded-full bg-gradient-to-r from-[#7C8D9B] to-[#9FB1C0] relative transition-all duration-500"
+                                                            style={{ width: `${Math.max(12, Math.min(100, intelligence.partnerSharePercentage))}%` }}
                                                         >
-                                                            <div className="w-4 h-4 rounded-full bg-white shadow-md border border-slate-100 absolute right-0.5 top-1/2 -translate-y-1/2" />
+                                                            <div className="w-5 h-5 rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] absolute right-1 top-1/2 -translate-y-1/2" />
                                                         </div>
                                                     </div>
-                                                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 w-11 text-right tabular-nums">
+                                                    <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 w-11 text-right tabular-nums">
                                                         {intelligence.partnerSharePercentage}%
                                                     </span>
                                                 </div>
                                                 <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
-                                                    Wholesale concession share of overall concession volume ({intelligence.partnerSharePercentage}% B2B · {intelligence.patientSharePercentage}% Patient)
+                                                    B2B partner concessions from total volume (₹{intelligence.partnerDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
                                                 </p>
                                             </div>
+                                        </div>
+
+                                        {/* Bottom Full-Width Bar: Channel Volume Split */}
+                                        <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                                            <div className="flex items-center justify-between text-xs sm:text-sm">
+                                                <span className="font-semibold text-slate-900 dark:text-white">
+                                                    Channel Concession Split (Patient vs B2B Wholesale)
+                                                </span>
+                                                <span className="text-base font-bold text-slate-900 dark:text-white">
+                                                    ₹{intelligence.partnerDiscountAmount.toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-1 h-6 bg-[#DCE5EC] dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center">
+                                                    <div 
+                                                        className="h-full rounded-full bg-gradient-to-r from-[#F87171] to-[#FB7185] relative transition-all duration-500"
+                                                        style={{ width: `${Math.max(10, Math.min(100, intelligence.partnerSharePercentage))}%` }}
+                                                    >
+                                                        <div className="w-4 h-4 rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.15)] absolute right-0.5 top-1/2 -translate-y-1/2" />
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 w-11 text-right tabular-nums">
+                                                    {intelligence.partnerSharePercentage}%
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
+                                                Wholesale concession share of overall concession volume ({intelligence.partnerSharePercentage}% B2B · {intelligence.patientSharePercentage}% Patient)
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* SECTION 2: CHANNEL BREAKDOWN (Channel Concession Drivers) */}
-                                <div className="space-y-1.5">
-                                    <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 px-0.5">
+                                <div className="space-y-3">
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight px-0.5">
                                         Channel Concession Drivers
                                     </h3>
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                                         {/* CARD 1: PATIENT WALK-IN PRESETS */}
-                                        <div className="p-4 sm:p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] space-y-3">
-                                            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                                        <div className="p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
+                                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
                                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                                                     Patient Walk-In Presets
                                                 </h4>
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-base font-bold text-slate-900 dark:text-white">
+                                                    <span className="text-sm font-bold text-slate-900 dark:text-white">
                                                         ₹{intelligence.patientDiscountAmount.toLocaleString()}
                                                     </span>
                                                     <span className="text-xs text-slate-400 font-medium">
@@ -643,7 +633,7 @@ export function DiscountMasterScreen() {
                                                 <table className="w-full text-left border-collapse table-fixed">
                                                     <thead>
                                                         <tr className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
-                                                            <th className="pb-2 pl-1 font-medium w-[165px] sm:w-[185px]">Preset Reason</th>
+                                                            <th className="pb-2 pl-1 font-medium w-[170px] sm:w-[190px]">Preset Reason</th>
                                                             <th className="pb-2 text-right font-medium w-[68px]">Gross Tariff</th>
                                                             <th className="pb-2 text-right font-medium w-[68px]">Concession</th>
                                                             <th className="pb-2 text-center font-medium w-[130px] sm:w-[145px]">Concession Share</th>
@@ -657,10 +647,10 @@ export function DiscountMasterScreen() {
                                                             const marginPct = Math.min(95, Math.max(65, Math.round(100 - pct * 0.4)));
                                                             const iconObj = PRESET_ICONS[i % PRESET_ICONS.length];
                                                             return (
-                                                                <tr key={i} className="h-10 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors">
-                                                                    <td className="py-1.5 pl-1">
-                                                                        <div className="flex items-center gap-2 max-w-[160px] sm:max-w-[180px]">
-                                                                            <div className={cn("w-7 h-7 rounded-full flex items-center justify-center shrink-0", iconObj.bg)}>
+                                                                <tr key={i} className="h-11 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors">
+                                                                    <td className="py-2 pl-1">
+                                                                        <div className="flex items-center gap-2.5 max-w-[165px] sm:max-w-[185px]">
+                                                                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0">
                                                                                 {iconObj.icon}
                                                                             </div>
                                                                             <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate" title={r.reasonText}>
@@ -668,30 +658,30 @@ export function DiscountMasterScreen() {
                                                                             </span>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="py-1.5 text-right tabular-nums text-xs font-medium text-slate-500 dark:text-zinc-400">
+                                                                    <td className="py-2 text-right tabular-nums text-xs font-medium text-slate-600 dark:text-zinc-400">
                                                                         ₹{billed.toLocaleString()}
                                                                     </td>
-                                                                    <td className="py-1.5 text-right tabular-nums text-xs font-bold text-slate-800 dark:text-zinc-100">
+                                                                    <td className="py-2 text-right tabular-nums text-xs font-bold text-slate-900 dark:text-zinc-100">
                                                                         ₹{r.totalAmount.toLocaleString()}
                                                                     </td>
-                                                                    <td className="py-1.5">
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <div className="w-16 sm:w-20 h-3 bg-slate-200/90 dark:bg-zinc-800 rounded-full relative overflow-hidden flex items-center p-0.5">
+                                                                    <td className="py-2">
+                                                                        <div className="flex items-center justify-center gap-2.5">
+                                                                            <div className="w-16 sm:w-20 h-3 bg-[#DCE5EC] dark:bg-zinc-800 rounded-full relative overflow-hidden flex items-center p-0.5">
                                                                                 <div 
-                                                                                    className="h-full rounded-full bg-gradient-to-r from-[#3A5D7C] to-[#5C85A6] relative flex items-center"
+                                                                                    className="h-full rounded-full bg-gradient-to-r from-[#2DD4BF] to-[#0D9488] relative flex items-center"
                                                                                     style={{ width: `${Math.min(100, Math.max(12, pct))}%` }}
                                                                                 >
                                                                                     <div className="w-2 h-2 rounded-full bg-white shadow-xs absolute right-0.5 top-1/2 -translate-y-1/2" />
                                                                                 </div>
                                                                             </div>
-                                                                            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300 w-10 text-right tabular-nums">
+                                                                            <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300 w-10 text-right tabular-nums">
                                                                                 {pct}%
                                                                             </span>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="py-1.5 text-center pr-1">
+                                                                    <td className="py-2 text-center pr-1">
                                                                         <div className="flex justify-center">
-                                                                            <CircularProgressGauge percentage={marginPct} color="#0D9488" />
+                                                                            <CircularProgressGauge percentage={marginPct} color="#2DD4BF" />
                                                                         </div>
                                                                     </td>
                                                                 </tr>
@@ -699,7 +689,7 @@ export function DiscountMasterScreen() {
                                                         })}
                                                         {intelligence.topPresetReasons.length === 0 && (
                                                             <tr>
-                                                                <td colSpan={5} className="text-center py-4 text-xs text-slate-400">
+                                                                <td colSpan={5} className="text-center py-6 text-xs text-slate-400">
                                                                     No patient presets used yet.
                                                                 </td>
                                                             </tr>
@@ -710,13 +700,13 @@ export function DiscountMasterScreen() {
                                         </div>
 
                                         {/* CARD 2: CORPORATE B2B WHOLESALE PARTNERS */}
-                                        <div className="p-4 sm:p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] space-y-3">
-                                            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-zinc-800">
+                                        <div className="p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] space-y-3">
+                                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
                                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
                                                     Corporate B2B Wholesale Partners
                                                 </h4>
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-base font-bold text-slate-900 dark:text-white">
+                                                    <span className="text-sm font-bold text-slate-900 dark:text-white">
                                                         ₹{intelligence.partnerDiscountAmount.toLocaleString()}
                                                     </span>
                                                     <span className="text-xs text-slate-400 font-medium">
@@ -729,7 +719,7 @@ export function DiscountMasterScreen() {
                                                 <table className="w-full text-left border-collapse table-fixed">
                                                     <thead>
                                                         <tr className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
-                                                            <th className="pb-2 pl-1 font-medium w-[165px] sm:w-[185px]">Partner Organization</th>
+                                                            <th className="pb-2 pl-1 font-medium w-[170px] sm:w-[190px]">Partner Organization</th>
                                                             <th className="pb-2 text-right font-medium w-[68px]">Gross Tariff</th>
                                                             <th className="pb-2 text-right font-medium w-[68px]">Concession</th>
                                                             <th className="pb-2 text-center font-medium w-[130px] sm:w-[145px]">Concession Share</th>
@@ -743,10 +733,10 @@ export function DiscountMasterScreen() {
                                                             const marginPct = Math.min(95, Math.max(68, Math.round(100 - pct * 0.45)));
                                                             const iconObj = PARTNER_ICONS[i % PARTNER_ICONS.length];
                                                             return (
-                                                                <tr key={i} className="h-10 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors">
-                                                                    <td className="py-1.5 pl-1">
-                                                                        <div className="flex items-center gap-2 max-w-[160px] sm:max-w-[180px]">
-                                                                            <div className={cn("w-7 h-7 rounded-full flex items-center justify-center shrink-0", iconObj.bg)}>
+                                                                <tr key={i} className="h-11 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors">
+                                                                    <td className="py-2 pl-1">
+                                                                        <div className="flex items-center gap-2.5 max-w-[165px] sm:max-w-[185px]">
+                                                                            <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 shrink-0">
                                                                                 {iconObj.icon}
                                                                             </div>
                                                                             <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate" title={p.partnerName}>
@@ -754,17 +744,17 @@ export function DiscountMasterScreen() {
                                                                             </span>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="py-1.5 text-right tabular-nums text-xs font-medium text-slate-500 dark:text-zinc-400">
+                                                                    <td className="py-2 text-right tabular-nums text-xs font-medium text-slate-600 dark:text-zinc-400">
                                                                         ₹{billed.toLocaleString()}
                                                                     </td>
-                                                                    <td className="py-1.5 text-right tabular-nums text-xs font-bold text-slate-800 dark:text-zinc-100">
+                                                                    <td className="py-2 text-right tabular-nums text-xs font-bold text-slate-900 dark:text-zinc-100">
                                                                         ₹{p.totalAmount.toLocaleString()}
                                                                     </td>
-                                                                    <td className="py-1.5">
-                                                                        <div className="flex items-center justify-center gap-2">
-                                                                            <div className="w-16 sm:w-20 h-3 bg-slate-200/90 dark:bg-zinc-800 rounded-full relative overflow-hidden flex items-center p-0.5">
+                                                                    <td className="py-2">
+                                                                        <div className="flex items-center justify-center gap-2.5">
+                                                                            <div className="w-16 sm:w-20 h-3 bg-[#DCE5EC] dark:bg-zinc-800 rounded-full relative overflow-hidden flex items-center p-0.5">
                                                                                 <div 
-                                                                                    className="h-full rounded-full bg-gradient-to-r from-[#0D9488] to-[#2DD4BF] relative flex items-center"
+                                                                                    className="h-full rounded-full bg-gradient-to-r from-[#2DD4BF] to-[#0D9488] relative flex items-center"
                                                                                     style={{ width: `${Math.min(100, Math.max(12, pct))}%` }}
                                                                                 >
                                                                                     <div className="w-2 h-2 rounded-full bg-white shadow-xs absolute right-0.5 top-1/2 -translate-y-1/2" />
@@ -775,9 +765,9 @@ export function DiscountMasterScreen() {
                                                                             </span>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="py-1.5 text-center pr-1">
+                                                                    <td className="py-2 text-center pr-1">
                                                                         <div className="flex justify-center">
-                                                                            <CircularProgressGauge percentage={marginPct} color="#0D9488" />
+                                                                            <CircularProgressGauge percentage={marginPct} color="#2DD4BF" />
                                                                         </div>
                                                                     </td>
                                                                 </tr>
@@ -785,7 +775,7 @@ export function DiscountMasterScreen() {
                                                         })}
                                                         {intelligence.topB2BPartners.length === 0 && (
                                                             <tr>
-                                                                <td colSpan={5} className="text-center py-4 text-xs text-slate-400">
+                                                                <td colSpan={5} className="text-center py-6 text-xs text-slate-400">
                                                                     No B2B partner concessions recorded yet.
                                                                 </td>
                                                             </tr>
@@ -798,13 +788,13 @@ export function DiscountMasterScreen() {
                                 </div>
 
                                 {/* SECTION 3: CONCESSION GOVERNANCE & CONTROLS (Bottom 4 Pods) */}
-                                <div className="space-y-1.5">
-                                    <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200 px-0.5">
+                                <div className="space-y-3">
+                                    <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight px-0.5">
                                         Concession Governance & Controls
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                                         {/* POD 1: CHANNEL CONCESSION BALANCE */}
-                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3">
+                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-3">
                                             <div>
                                                 <h4 className="text-xs font-bold text-slate-900 dark:text-white">
                                                     Channel Concession Balance
@@ -814,16 +804,16 @@ export function DiscountMasterScreen() {
 
                                             {/* Dual Slider Indicator with swap circle */}
                                             <div className="relative py-1 flex items-center justify-center">
-                                                <div className="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full flex overflow-hidden">
-                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-gradient-to-r from-[#FB7185] to-[#F43F5E] h-full" />
-                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-gradient-to-r from-[#14B8A6] to-[#0D9488] h-full" />
+                                                <div className="h-2 w-full bg-[#DCE5EC] dark:bg-zinc-800 rounded-full flex overflow-hidden">
+                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-[#FB7185] h-full" />
+                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-[#14B8A6] h-full" />
                                                 </div>
                                                 <div className="absolute w-6 h-6 rounded-full bg-slate-500 text-white flex items-center justify-center shadow-md border-2 border-white dark:border-zinc-900 text-[10px]">
                                                     <ArrowLeftRight size={11} />
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100 dark:border-zinc-800">
+                                            <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-zinc-800">
                                                 <div>
                                                     <span className="text-[10px] text-slate-400 block font-normal">Patient Walk-In</span>
                                                     <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
@@ -840,7 +830,7 @@ export function DiscountMasterScreen() {
                                         </div>
 
                                         {/* POD 2: CHANNEL AUDIT QUEUES */}
-                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
+                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-2.5">
                                             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
                                                 Channel Audit Queues
                                             </h4>
@@ -852,13 +842,13 @@ export function DiscountMasterScreen() {
                                                         setHistorySource('Partner');
                                                         navigate('/finance/discounts/history');
                                                     }}
-                                                    className="p-2.5 rounded-xl bg-[#F0F9FF] dark:bg-sky-950/30 border border-[#BAE6FD] dark:border-sky-900/40 hover:bg-[#E0F2FE] transition-all flex items-center gap-3 cursor-pointer"
+                                                    className="p-3 rounded-xl bg-[#EBF5FB] border border-[#D4E6F1] dark:bg-sky-950/20 dark:border-sky-900/40 hover:border-sky-300 transition-all flex items-center gap-3 cursor-pointer"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-600 dark:bg-sky-900 dark:text-sky-300 flex items-center justify-center shrink-0">
-                                                        <Building2 size={15} />
+                                                    <div className="w-8 h-8 rounded-lg bg-[#D4E6F1] dark:bg-sky-900/50 text-[#2980B9] dark:text-sky-300 flex items-center justify-center shrink-0">
+                                                        <Building2 size={16} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block truncate">Corporate B2B Ledger</span>
+                                                        <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">Corporate B2B Ledger</span>
                                                         <span className="text-[11px] text-slate-500 font-medium">₹{intelligence.partnerDiscountAmount.toLocaleString()} ({intelligence.partnerBillsCount} B2B Bills)</span>
                                                     </div>
                                                 </div>
@@ -869,13 +859,13 @@ export function DiscountMasterScreen() {
                                                         setHistorySource('Patient');
                                                         navigate('/finance/discounts/history');
                                                     }}
-                                                    className="p-2.5 rounded-xl bg-[#EFF6FF] dark:bg-blue-950/30 border border-[#DBEAFE] dark:border-blue-900/40 hover:bg-[#DBEAFE] transition-all flex items-center gap-3 cursor-pointer"
+                                                    className="p-3 rounded-xl bg-[#E8F8F5] border border-[#D1F2EB] dark:bg-teal-950/20 dark:border-teal-900/40 hover:border-teal-300 transition-all flex items-center gap-3 cursor-pointer"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300 flex items-center justify-center shrink-0">
-                                                        <Users size={15} />
+                                                    <div className="w-8 h-8 rounded-lg bg-[#D1F2EB] dark:bg-teal-900/50 text-[#16A085] dark:text-teal-300 flex items-center justify-center shrink-0">
+                                                        <Users size={16} />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <span className="text-xs font-bold text-slate-900 dark:text-zinc-100 block truncate">Patient Walk-In Ledger</span>
+                                                        <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">Patient Walk-In Ledger</span>
                                                         <span className="text-[11px] text-slate-500 font-medium">₹{intelligence.patientDiscountAmount.toLocaleString()} ({intelligence.patientBillsCount} Patient Bills)</span>
                                                     </div>
                                                 </div>
@@ -883,7 +873,7 @@ export function DiscountMasterScreen() {
                                         </div>
 
                                         {/* POD 3: STAFF CONCESSION AUTHORITY */}
-                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
+                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-2.5">
                                             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
                                                 Staff Concession Authority
                                             </h4>
@@ -921,7 +911,7 @@ export function DiscountMasterScreen() {
                                         </div>
 
                                         {/* POD 4: PRESET CATALOG HEALTH */}
-                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
+                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_4px_20px_rgba(0,0,0,0.02),0_1px_3px_rgba(0,0,0,0.03)] flex flex-col justify-between space-y-2.5">
                                             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
                                                 Preset Catalog Health
                                             </h4>
@@ -933,7 +923,7 @@ export function DiscountMasterScreen() {
                                                         setReasonUsageFilter('USED');
                                                         navigate('/finance/discounts/reasons');
                                                     }}
-                                                    className="p-2.5 px-3 rounded-xl bg-[#ECFDF5] dark:bg-emerald-950/30 border border-[#A7F3D0] dark:border-emerald-900/40 flex items-center justify-between cursor-pointer"
+                                                    className="p-3 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] dark:bg-emerald-950/20 dark:border-emerald-900/40 flex items-center justify-between cursor-pointer hover:border-emerald-300 transition-all"
                                                 >
                                                     <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
                                                         {intelligence.usedPresetsCount} Active Used Presets
@@ -950,13 +940,13 @@ export function DiscountMasterScreen() {
                                                         setReasonUsageFilter('DORMANT');
                                                         navigate('/finance/discounts/reasons');
                                                     }}
-                                                    className="p-2.5 px-3 rounded-xl bg-[#F8FAFC] dark:bg-zinc-800/60 border border-[#E2E8F0] dark:border-zinc-700/50 flex items-center justify-between cursor-pointer"
+                                                    className="p-3 rounded-xl bg-[#F8F9F9] border border-[#EAEDED] dark:bg-zinc-800/40 dark:border-zinc-700/50 flex items-center justify-between cursor-pointer hover:border-slate-300 transition-all"
                                                 >
                                                     <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
                                                         {intelligence.dormantPresetsCount} Dormant Presets
                                                     </span>
                                                     {/* iOS Toggle Switch (OFF) */}
-                                                    <div className="w-11 h-6 rounded-full bg-[#CBD5E1] dark:bg-zinc-600 p-0.5 flex items-center justify-start shadow-inner">
+                                                    <div className="w-11 h-6 rounded-full bg-[#D5D8DC] dark:bg-zinc-600 p-0.5 flex items-center justify-start shadow-inner">
                                                         <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
                                                     </div>
                                                 </div>
