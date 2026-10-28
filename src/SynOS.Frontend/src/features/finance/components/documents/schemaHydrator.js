@@ -1159,6 +1159,31 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                 });
             }
             if (boxes.financialSummary?.fields) {
+                if (slotId === 'summary_corporate') {
+                    const partner = liveData.partner || liveData.doctor || {};
+                    if (boxes.partyDetails?.fields) {
+                        if (boxes.partyDetails.fields.partnerName) {
+                            boxes.partyDetails.fields.partnerName.value = partner.name || partner.partnerName || liveData.doctorName || liveData.partnerName || boxes.partyDetails.fields.partnerName.value;
+                        }
+                        if (boxes.partyDetails.fields.clinicName) {
+                            boxes.partyDetails.fields.clinicName.value = partner.clinicName || liveData.clinicName || boxes.partyDetails.fields.clinicName.value;
+                        }
+                        if (boxes.partyDetails.fields.partnerCode) {
+                            boxes.partyDetails.fields.partnerCode.value = partner.code || partner.partnerCode || liveData.partnerCode || boxes.partyDetails.fields.partnerCode.value;
+                        }
+                        if (boxes.partyDetails.fields.totalReferrals && (liveData.totalVisits || liveData.items?.length)) {
+                            const cnt = liveData.totalVisits || liveData.items?.length;
+                            boxes.partyDetails.fields.totalReferrals.value = `${cnt} Patient Visits Referred`;
+                        }
+                    }
+                    if (boxes.financialSummary.fields.totalLabTariff && liveData.totalLabTariff !== undefined) {
+                        boxes.financialSummary.fields.totalLabTariff.value = `₹${Number(liveData.totalLabTariff).toLocaleString('en-IN')}`;
+                    }
+                    if (boxes.financialSummary.fields.totalConcession && liveData.totalConcession !== undefined) {
+                        boxes.financialSummary.fields.totalConcession.value = `-₹${Number(liveData.totalConcession).toLocaleString('en-IN')}`;
+                    }
+                }
+
                 if (liveData.summaryTotals) {
                     Object.entries(liveData.summaryTotals).forEach(([k, val]) => {
                         if (boxes.financialSummary.fields[k]) {

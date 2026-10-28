@@ -1533,63 +1533,94 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
 
     summary_corporate: {
         slotId: 'summary_corporate',
-        title: 'Corporate Summary (A4)',
+        title: 'B2B Corporate Summary (A4)',
         boxes: {
             header: {
                 id: 'header',
-                name: 'Lab Letterhead',
+                name: 'Lab Letterhead & Brand',
                 enabled: true,
                 fields: {
                     legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Corporate B2B Tie-Ups & Executive Screening Summary' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Khammam, Telangana - 507001' }
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'B2B Referral Partner & Doctor Investigation Summary' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Main Road' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
+                    email: { id: 'email', enabled: true, label: 'Email', value: 'billing@synoslab.in' },
+                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
             },
             docBadge: {
                 id: 'docBadge',
-                name: 'Statement Meta',
+                name: 'Statement Meta & Cycle',
                 enabled: true,
                 fields: {
-                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'CORPORATE B2B SUMMARY' },
-                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'This Month' },
-                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated At', value: '14/10/2026' }
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Statement Title', value: 'B2B REFERRAL DOCTOR SUMMARY' },
+                    statementNumber: { id: 'statementNumber', enabled: true, label: 'Statement No', value: 'STMT-B2B-202610-0019' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'Current Month (October 2026)' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated Date', value: '14/10/2026' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Referring Doctor / Partner Info',
+                enabled: true,
+                title: 'Billed To (Referring Doctor / Clinic)',
+                fields: {
+                    partnerName: { id: 'partnerName', enabled: true, label: 'Doctor / Partner Name', value: 'Dr. Khalil Ahmed, MD' },
+                    clinicName: { id: 'clinicName', enabled: true, label: 'Hospital / Clinic', value: 'Padmavathi Nursing Home & Hospital' },
+                    partnerCode: { id: 'partnerCode', enabled: true, label: 'Partner Code', value: 'PART-KHALIL-01' },
+                    phone: { id: 'phone', enabled: true, label: 'Doctor Contact', value: '+91 98490 12345' },
+                    totalReferrals: { id: 'totalReferrals', enabled: true, label: 'Total Referred Visits', value: '10 Patient Visits' }
                 },
                 customLines: []
             },
             itemsTable: {
                 id: 'itemsTable',
-                name: 'Corporate Accounts Table',
+                name: 'Doctor Recommended Investigations & Tariff Breakdown',
                 enabled: true,
                 columns: {
                     index: { id: 'index', enabled: true, label: '#' },
-                    corporateName: { id: 'corporateName', enabled: true, label: 'Corporate Organization' },
-                    employeesTested: { id: 'employeesTested', enabled: true, label: 'Employees' },
-                    billedAmount: { id: 'billedAmount', enabled: true, label: 'Billed (₹)' },
-                    received: { id: 'received', enabled: true, label: 'Settled (₹)' },
-                    netDue: { id: 'netDue', enabled: true, label: 'Pending Due (₹)' }
+                    patientInfo: { id: 'patientInfo', enabled: true, label: 'Date / Patient Name' },
+                    testName: { id: 'testName', enabled: true, label: 'Recommended Investigation / Test' },
+                    labTariff: { id: 'labTariff', enabled: true, label: 'Lab Tariff (₹)' },
+                    partnerCharged: { id: 'partnerCharged', enabled: true, label: 'Charged to Doctor (₹)' }
                 },
                 rows: [
-                    { id: 'c-1', index: 1, corporateName: 'Life Insurance Corporation (LIC)', employeesTested: 24, billedAmount: 36000, received: 0, netDue: 36000 },
-                    { id: 'c-2', index: 2, corporateName: 'Singareni Collieries (SCCL)', employeesTested: 12, billedAmount: 18000, received: 18000, netDue: 0 }
+                    { id: 'sc-1', index: 1, patientInfo: '10/10 - K. Ramesh Kumar (SYN-9042)', testName: 'Complete Blood Picture (CBP)', labTariff: 600, partnerCharged: 300 },
+                    { id: 'sc-2', index: 2, patientInfo: '10/10 - S. Anusha (SYN-8819)', testName: 'Liver Function Test Profile (LFT)', labTariff: 850, partnerCharged: 450 },
+                    { id: 'sc-3', index: 3, patientInfo: '11/10 - M. Venkatesh (SYN-8762)', testName: 'Lipid Profile Comprehensive', labTariff: 750, partnerCharged: 400 },
+                    { id: 'sc-4', index: 4, patientInfo: '12/10 - P. Sunitha (SYN-8701)', testName: 'Thyroid Profile Total (T3, T4, TSH)', labTariff: 600, partnerCharged: 300 },
+                    { id: 'sc-5', index: 5, patientInfo: '13/10 - T. Rajesh (SYN-8654)', testName: 'Ultrasound Whole Abdomen (Sonography)', labTariff: 1200, partnerCharged: 700 }
                 ]
             },
             financialSummary: {
                 id: 'financialSummary',
-                name: 'Summary Totals',
+                name: 'B2B Tariff & Receivables Due',
                 enabled: true,
                 fields: {
-                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Total B2B Billed', value: '₹54,000.00' },
-                    totalDue: { id: 'totalDue', enabled: true, label: 'Total Corporate Receivables Due', value: '₹36,000.00' }
+                    totalLabTariff: { id: 'totalLabTariff', enabled: true, label: 'Total Standard Lab Tariff', value: '₹4,000.00' },
+                    totalConcession: { id: 'totalConcession', enabled: true, label: 'Doctor Concession / Benefit', value: '-₹1,850.00' },
+                    totalBilled: { id: 'totalBilled', enabled: true, label: 'Total Charged to Doctor (Due)', value: '₹2,150.00' },
+                    totalSettled: { id: 'totalSettled', enabled: true, label: 'Settled / Collected from Doctor', value: '₹0.00' },
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Net Outstanding Due', value: '₹2,150.00' }
                 },
                 customLines: []
             },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'Settlement Terms',
+                enabled: true,
+                title: 'Settlement Terms & Notes',
+                text: '1. All tests were ordered by the referring doctor under the B2B Partner billing arrangement.\n2. Patients paid ₹0.00 at lab reception desk.\n3. The net charged total is billed to the doctor / clinic ledger.\n4. Payment due within 15 days of monthly statement.',
+                systemNote: 'Computer Generated B2B Corporate Summary • SynOS Diagnostics'
+            },
             signatory: {
                 id: 'signatory',
-                name: 'Corporate Desk',
+                name: 'Signatory',
                 enabled: true,
-                title: 'Head of Corporate Accounts',
-                subtitle: 'SynOS Diagnostics'
+                title: 'Authorised Signatory',
+                subtitle: 'B2B Accounts & Audit Desk'
             }
         }
     },

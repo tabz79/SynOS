@@ -1270,12 +1270,12 @@ namespace SynOS.Api.Controllers
                 },
                 new {
                     slotId = "summary_corporate",
-                    module = "Summaries",
-                    moduleCode = "summary",
-                    slotName = "Corporate Summary",
-                    triggerDescription = "Corporate B2B accounts, visits, and settlement summary.",
+                    module = "Corporate B2B",
+                    moduleCode = "corporate",
+                    slotName = "B2B Corporate Summary",
+                    triggerDescription = "Summary statement for referring doctor/partner detailing patient investigations, standard tariffs, partner charges, and total dues.",
                     assignedTemplateId = "template_summary_corporate_a4",
-                    templateName = "Corporate Summary (A4)",
+                    templateName = "B2B Corporate Summary (A4)",
                     letterheadMode = "digital",
                     topMarginMm = 35,
                     enableUpiQr = false,
@@ -1361,6 +1361,20 @@ namespace SynOS.Api.Controllers
                                 if (m.TryGetValue("templateName", out var tn) && tn?.ToString() == "Corporate Bill (A4)")
                                 {
                                     m["templateName"] = "Prepaid B2B Bill (A4)";
+                                }
+                                mutated = true;
+                            }
+                        }
+                        if (m.TryGetValue("slotId", out var sidObj2) && sidObj2?.ToString() == "summary_corporate")
+                        {
+                            if (m.TryGetValue("slotName", out var sn2) && sn2?.ToString() == "Corporate Summary")
+                            {
+                                m["slotName"] = "B2B Corporate Summary";
+                                m["module"] = "Corporate B2B";
+                                m["moduleCode"] = "corporate";
+                                if (m.TryGetValue("templateName", out var tn2) && tn2?.ToString() == "Corporate Summary (A4)")
+                                {
+                                    m["templateName"] = "B2B Corporate Summary (A4)";
                                 }
                                 mutated = true;
                             }

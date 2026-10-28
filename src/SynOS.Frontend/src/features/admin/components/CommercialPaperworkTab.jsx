@@ -45,7 +45,7 @@ const getSlotsForCategory = (catId, list = []) => {
         return list.filter(m => m.slotId === 'patient_tax_invoice' || m.slotId === 'patient_thermal_receipt');
     }
     if (catId === 'corporate') {
-        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'corporate_b2b_invoice' || m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'partner_b2b_invoice' || m.slotId === 'summary_corporate');
+        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'partner_b2b_invoice' || m.slotId === 'summary_corporate');
     }
     if (catId === 'insurance') {
         return list.filter(m => m.slotId === 'insurance_thermal_receipt' || m.slotId === 'insurance_tpa_claim' || m.slotId === 'summary_insurance');
@@ -582,7 +582,7 @@ export const CommercialPaperworkTab = () => {
             { id: 'template_summary_doctor_dues_a4', label: 'Doctor Dues Summary (A4)' }
         ],
         summary_corporate: [
-            { id: 'template_summary_corporate_a4', label: 'Corporate Summary (A4)' }
+            { id: 'template_summary_corporate_a4', label: 'B2B Corporate Summary (A4)' }
         ],
         summary_insurance: [
             { id: 'template_summary_insurance_a4', label: 'Insurance Summary (A4)' }
