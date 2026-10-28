@@ -836,20 +836,27 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
             Payment payment;
-            if (existingInvoice != null && string.Equals(existingInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+            if (existingInvoice != null && (string.Equals(existingInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) || existingInvoice.Total <= 0 || request.Amount <= 0))
             {
-                // Idempotent retry: Invoice was already recorded as Paid (e.g. from prior network attempt or study insertion retry)
+                // Idempotent retry or zero net bill (e.g. 100% concession / complimentary service)
+                existingInvoice.Status = "Paid";
                 payment = existingInvoice.Payments.OrderByDescending(p => p.ReceivedAt).FirstOrDefault()
                     ?? new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoiceId,
-                        Amount = request.Amount,
-                        Method = request.Method,
+                        Amount = 0m,
+                        Method = string.IsNullOrWhiteSpace(request.Method) ? "Concession" : request.Method,
                         ReceiptNo = request.ReceiptNo ?? $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = userId
                     };
+
+                if (!existingInvoice.Payments.Any(p => p.PaymentId == payment.PaymentId))
+                {
+                    _context.Payments.Add(payment);
+                }
+                await _context.SaveChangesAsync();
             }
             else
             {

@@ -628,5 +628,67 @@ namespace SynOS.Tests
             Assert.Equal(510m, updatedInvoice.NetAmount);
             Assert.Equal(510m, updatedInvoice.Total);
         }
+
+        [Fact]
+        public async Task RevenueEngine_FullConcession_SetsInvoiceTotalToZero_Accurately()
+        {
+            using var db = GetDbContext();
+            var visitId = Guid.NewGuid();
+            var invoiceId = Guid.NewGuid();
+
+            var visit = new Visit
+            {
+                VisitId = visitId,
+                Token = "TKN_FULL_CONC",
+                Status = VisitStatus.Draft,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            db.Visits.Add(visit);
+
+            var invoice = new Invoice
+            {
+                InvoiceId = invoiceId,
+                VisitId = visitId,
+                Currency = "INR",
+                DueDate = DateTime.UtcNow.AddDays(1),
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Invoices.Add(invoice);
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                Price = 600,
+                Status = OrderStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Orders.Add(order);
+
+            // 100% concession
+            var discountFact = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoiceId,
+                Type = DiscountType.Percentage,
+                Value = 100,
+                IsActive = true,
+                AppliedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.DiscountFacts.Add(discountFact);
+            await db.SaveChangesAsync();
+
+            var engine = new SynOS.Services.Revenue.RevenueEngine(db);
+            await engine.ApplySnapshotAsync(visitId, Guid.NewGuid());
+
+            var updatedInvoice = await db.Invoices.FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+            Assert.NotNull(updatedInvoice);
+            Assert.Equal(600m, updatedInvoice.GrossAmount);
+            Assert.Equal(600m, updatedInvoice.DiscountAmount);
+            Assert.Equal(0m, updatedInvoice.NetAmount);
+            Assert.Equal(0m, updatedInvoice.Total);
+        }
     }
 }

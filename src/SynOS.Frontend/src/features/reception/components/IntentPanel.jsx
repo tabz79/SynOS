@@ -944,15 +944,16 @@ export function IntentPanel({ onVisitUpdated }) {
     const totalPaid = snapshot?.billing?.totalPaid || 0;
     const remainingDue = Math.max(0, totalDue - totalPaid);
     
-    const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && remainingDue > 0;
-    const canLockPrepaid = (isPrepaidIntent || billingMode === 'PrepaidPartner') && !snapshot?.billing?.isLocked;
-    const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0) || Boolean(snapshot?.billing?.isLocked);
-
     const hasTests = Boolean(
         (snapshot?.visit?.tests && snapshot?.visit?.tests.length > 0) || 
         (snapshot?.billing?.items && snapshot?.billing?.items.length > 0) || 
         (snapshot?.billing?.grossAmount > 0)
     );
+
+    const isZeroNetDue = hasTests && remainingDue === 0;
+    const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && (remainingDue > 0 || isZeroNetDue);
+    const canLockPrepaid = (isPrepaidIntent || billingMode === 'PrepaidPartner') && !snapshot?.billing?.isLocked;
+    const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0) || Boolean(snapshot?.billing?.isLocked);
 
     // Determine Button Label & State
     let mainActionLabel = "Identify Patient & Start Visit";
@@ -975,21 +976,26 @@ export function IntentPanel({ onVisitUpdated }) {
             mainActionLabel = "Authorize Corporate B2B Bill (₹0)";
             isActionEnabled = hasTests;
         } else if (canLockPrepaid) {
-            mainActionLabel = "Confirm Doctor B2B Bill (₹0)";
+            mainActionLabel = "Confirm Corporate B2B Bill (₹0)";
             isActionEnabled = hasTests;
         } else if (canCheckout) {
-            const numCustom = Number(customPaymentAmount);
-            const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
-            const payNowAmount = isPartialValid ? numCustom : remainingDue;
-            const balanceRemaining = remainingDue - payNowAmount;
+            if (isZeroNetDue) {
+                mainActionLabel = "Confirm & Complete Visit (₹0)";
+                isActionEnabled = true;
+            } else {
+                const numCustom = Number(customPaymentAmount);
+                const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
+                const payNowAmount = isPartialValid ? numCustom : remainingDue;
+                const balanceRemaining = remainingDue - payNowAmount;
 
-            mainActionLabel = isPartialValid
-                ? `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`
-                : `Accept Payment (₹${remainingDue.toLocaleString()})`;
-            isActionEnabled = true;
+                mainActionLabel = isPartialValid
+                    ? `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`
+                    : `Accept Payment (₹${remainingDue.toLocaleString()})`;
+                isActionEnabled = true;
+            }
         } else {
-            mainActionLabel = "Add Tests to Proceed";
-            isActionEnabled = false;
+            mainActionLabel = hasTests ? "Visit Complete (Close)" : "Add Tests to Proceed";
+            isActionEnabled = hasTests;
         }
     }
 
