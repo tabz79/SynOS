@@ -932,6 +932,19 @@ export const FinanceApi = {
         return result;
     },
 
+    createVendorPayable: async (data) => {
+        const response = await fetch('/api/v1/Payables', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err || "Failed to record vendor inward bill");
+        }
+        return response.json();
+    },
+
     getReceptionExpensesFeed: async (filter = 'today', userId = null) => {
         let url = `/api/v1/OverheadExpenses/reception-feed?filter=${encodeURIComponent(filter)}`;
         const effectiveUserId = userId || localStorage.getItem('synos_user_id');

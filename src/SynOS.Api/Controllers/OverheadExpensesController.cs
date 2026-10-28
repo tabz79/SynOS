@@ -410,14 +410,22 @@ namespace SynOS.Api.Controllers
                     .OrderByDescending(e => e.CreatedAt)
                     .ToListAsync();
 
+                var vendorPayables = await _context.VendorPayables
+                    .Where(vp => vp.CreatedAt >= startUtc && vp.CreatedAt < endUtc)
+                    .OrderByDescending(vp => vp.CreatedAt)
+                    .ToListAsync();
+
                 // Compute metrics
                 var activeItems = payables.Where(p => p.Status != VendorPayableStatus.Cancelled).ToList();
-                var netOutflow = activeItems.Sum(p => p.AmountPaid);
+                var activeVendors = vendorPayables.Where(vp => vp.Status != VendorPayableStatus.Cancelled).ToList();
 
-                // Fetch spend facts for these payables to accurately identify Cash vs UPI/Bank
-                var payablePrefixes = payables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}").ToList();
+                // Fetch spend facts for these payables and vendors to accurately identify Cash vs UPI/Bank
+                var payablePrefixes = payables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}")
+                    .Concat(vendorPayables.Select(vp => $"VENDOR-SETTLE-{vp.VendorPayableId.ToString().Substring(0, 8)}"))
+                    .ToList();
+
                 var spendFacts = await _context.SpendFacts
-                    .Where(s => payablePrefixes.Contains(s.TransactionReference))
+                    .Where(s => payablePrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
                     .ToListAsync();
 
                 decimal cashOutflow = 0;
@@ -426,7 +434,7 @@ namespace SynOS.Api.Controllers
                 foreach (var item in activeItems)
                 {
                     var prefix = $"OHP-{item.OverheadPayableId.ToString().Substring(0, 8)}";
-                    var sf = spendFacts.FirstOrDefault(s => s.TransactionReference == prefix);
+                    var sf = spendFacts.FirstOrDefault(s => s.TransactionReference.StartsWith(prefix));
                     if (sf != null && sf.PaymentMethod == SynOS.Models.Enums.PaymentMethod.Cash)
                     {
                         cashOutflow += item.AmountPaid;
@@ -441,8 +449,28 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
-                var pendingDues = activeItems.Where(p => p.Status != VendorPayableStatus.Settled).Sum(p => p.AmountDue - p.AmountPaid);
-                var totalCount = activeItems.Count;
+                foreach (var vp in activeVendors)
+                {
+                    var prefix = $"VENDOR-SETTLE-{vp.VendorPayableId.ToString().Substring(0, 8)}";
+                    var sf = spendFacts.FirstOrDefault(s => s.TransactionReference.StartsWith(prefix));
+                    if (sf != null && sf.PaymentMethod == SynOS.Models.Enums.PaymentMethod.Cash)
+                    {
+                        cashOutflow += vp.AmountPaid;
+                    }
+                    else if (sf != null)
+                    {
+                        digitalOutflow += vp.AmountPaid;
+                    }
+                    else
+                    {
+                        cashOutflow += vp.AmountPaid;
+                    }
+                }
+
+                var netOutflow = activeItems.Sum(p => p.AmountPaid) + activeVendors.Sum(vp => vp.AmountPaid);
+                var pendingDues = activeItems.Where(p => p.Status != VendorPayableStatus.Settled).Sum(p => p.AmountDue - p.AmountPaid)
+                                + activeVendors.Where(vp => vp.Status != VendorPayableStatus.Settled).Sum(vp => vp.Amount - vp.AmountPaid);
+                var totalCount = activeItems.Count + activeVendors.Count;
 
                 // Category breakdown
                 var categorySummary = activeItems
@@ -454,6 +482,15 @@ namespace SynOS.Api.Controllers
                     })
                     .ToList();
 
+                if (activeVendors.Any())
+                {
+                    categorySummary.Add(new {
+                        category = "Vendor",
+                        amount = activeVendors.Sum(x => x.AmountPaid > 0 ? x.AmountPaid : x.Amount),
+                        count = activeVendors.Count
+                    });
+                }
+
                 // 7-day daily breakdown if requested
                 var dailyHistory = new List<object>();
                 for (int i = 6; i >= 0; i--)
@@ -462,19 +499,22 @@ namespace SynOS.Api.Controllers
                     var dayStart = TimeZoneInfo.ConvertTimeToUtc(dayDate, tz);
                     var dayEnd = dayStart.AddDays(1);
                     var dayItems = activeItems.Where(p => p.CreatedAt >= dayStart && p.CreatedAt < dayEnd).ToList();
+                    var dayVendors = activeVendors.Where(p => p.CreatedAt >= dayStart && p.CreatedAt < dayEnd).ToList();
                     dailyHistory.Add(new
                     {
                         date = dayDate.ToString("yyyy-MM-dd"),
                         dayLabel = dayDate.ToString("ddd, dd MMM"),
-                        outflow = dayItems.Sum(x => x.AmountPaid),
-                        count = dayItems.Count
+                        outflow = dayItems.Sum(x => x.AmountPaid) + dayVendors.Sum(x => x.AmountPaid),
+                        count = dayItems.Count + dayVendors.Count
                     });
                 }
 
-                var items = payables.Select(p => {
+                var items = new List<object>();
+                foreach (var p in payables)
+                {
                     var prefix = $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}";
-                    var sf = spendFacts.FirstOrDefault(s => s.TransactionReference == prefix);
-                    return new {
+                    var sf = spendFacts.FirstOrDefault(s => s.TransactionReference.StartsWith(prefix));
+                    items.Add(new {
                         id = p.OverheadPayableId,
                         category = p.Category.ToString(),
                         description = p.Description,
@@ -484,9 +524,30 @@ namespace SynOS.Api.Controllers
                         paymentMethod = sf != null ? sf.PaymentMethod.ToString() : "Cash",
                         dueDate = p.DueDate,
                         createdAt = p.CreatedAt,
-                        createdBy = p.CreatedBy
-                    };
-                });
+                        createdBy = p.CreatedBy,
+                        isVendor = false,
+                        vendorName = (string?)null
+                    });
+                }
+                foreach (var vp in vendorPayables)
+                {
+                    var prefix = $"VENDOR-SETTLE-{vp.VendorPayableId.ToString().Substring(0, 8)}";
+                    var sf = spendFacts.FirstOrDefault(s => s.TransactionReference.StartsWith(prefix));
+                    items.Add(new {
+                        id = vp.VendorPayableId,
+                        category = "Vendor",
+                        description = $"{vp.VendorName} [{vp.ReferenceType}]",
+                        amountDue = vp.Amount,
+                        amountPaid = vp.AmountPaid,
+                        status = vp.Status.ToString(),
+                        paymentMethod = sf != null ? sf.PaymentMethod.ToString() : (vp.Status == VendorPayableStatus.Settled ? "Cash" : "Pending"),
+                        dueDate = vp.CreatedAt,
+                        createdAt = vp.CreatedAt,
+                        createdBy = Guid.Empty,
+                        isVendor = true,
+                        vendorName = vp.VendorName
+                    });
+                }
 
                 return Ok(new
                 {
@@ -500,7 +561,7 @@ namespace SynOS.Api.Controllers
                         categories = categorySummary,
                         dailyHistory
                     },
-                    items
+                    items = items.OrderByDescending(x => ((dynamic)x).createdAt).ToList()
                 });
             }
             catch (Exception ex)
@@ -521,10 +582,56 @@ namespace SynOS.Api.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var payable = await _context.OverheadPayableFacts.FindAsync(id);
-                if (payable == null) return NotFound("Expense record not found.");
+                var effectiveUserId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
+                    ? request.UserId.Value 
+                    : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
 
-                var prevAmount = payable.AmountDue;
+                var payable = await _context.OverheadPayableFacts.FindAsync(id);
+                var vp = payable == null ? await _context.VendorPayables.FindAsync(id) : null;
+                if (payable == null && vp == null) return NotFound("Expense record not found.");
+
+                if (vp != null)
+                {
+                    var prevVpAmount = vp.Amount;
+                    var diffVp = request.NewAmount - prevVpAmount;
+                    vp.Amount = request.NewAmount;
+                    if (vp.Status == VendorPayableStatus.Settled)
+                    {
+                        vp.AmountPaid = request.NewAmount;
+                    }
+
+                    var vpAudit = new ExpenseCorrectionAudit
+                    {
+                        Id = Guid.NewGuid(),
+                        ExpenseId = vp.VendorPayableId,
+                        ExpenseType = "VendorPayable",
+                        PreviousAmount = prevVpAmount,
+                        NewAmount = request.NewAmount,
+                        PreviousCategory = "Vendor",
+                        NewCategory = "Vendor",
+                        PreviousPaymentMethod = "BankTransfer",
+                        NewPaymentMethod = request.NewPaymentMethod ?? "BankTransfer",
+                        Reason = request.Reason,
+                        Notes = request.Notes ?? "",
+                        AuditDiffJson = System.Text.Json.JsonSerializer.Serialize(new {
+                            previousAmount = prevVpAmount,
+                            newAmount = request.NewAmount,
+                            difference = diffVp,
+                            vendorName = vp.VendorName
+                        }),
+                        CorrectedByUserId = effectiveUserId,
+                        CorrectedByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
+                        CorrectedAt = DateTime.UtcNow
+                    };
+
+                    await _context.ExpenseCorrectionAudits.AddAsync(vpAudit);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Ok(new { payable = vp, audit = vpAudit });
+                }
+
+                var prevAmount = payable!.AmountDue;
                 var prevCategory = payable.Category.ToString();
                 var prevDesc = payable.Description;
 
@@ -585,10 +692,6 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
-                var userId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
-                    ? request.UserId.Value 
-                    : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
-
                 var auditDiff = new
                 {
                     previousAmount = prevAmount,
@@ -616,7 +719,7 @@ namespace SynOS.Api.Controllers
                     Reason = request.Reason,
                     Notes = request.Notes ?? "",
                     AuditDiffJson = System.Text.Json.JsonSerializer.Serialize(auditDiff),
-                    CorrectedByUserId = userId,
+                    CorrectedByUserId = effectiveUserId,
                     CorrectedByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
                     CorrectedAt = DateTime.UtcNow
                 };
@@ -643,10 +746,48 @@ namespace SynOS.Api.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var payable = await _context.OverheadPayableFacts.FindAsync(id);
-                if (payable == null) return NotFound("Expense record not found.");
+                var effectiveUserId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
+                    ? request.UserId.Value 
+                    : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
 
-                if (payable.Status == VendorPayableStatus.Cancelled)
+                var payable = await _context.OverheadPayableFacts.FindAsync(id);
+                var vp = payable == null ? await _context.VendorPayables.FindAsync(id) : null;
+                if (payable == null && vp == null) return NotFound("Expense record not found.");
+
+                if (vp != null)
+                {
+                    if (vp.Status == VendorPayableStatus.Cancelled)
+                        return BadRequest("Expense is already cancelled.");
+
+                    var vpCancelledAmount = vp.AmountPaid > 0 ? vp.AmountPaid : vp.Amount;
+                    vp.Status = VendorPayableStatus.Cancelled;
+                    vp.AmountPaid = 0;
+
+                    var vpAudit = new ExpenseCancellationAudit
+                    {
+                        Id = Guid.NewGuid(),
+                        ExpenseId = vp.VendorPayableId,
+                        ExpenseType = "VendorPayable",
+                        CancelledAmount = vpCancelledAmount,
+                        Category = "Vendor",
+                        PaymentMethod = "Cash",
+                        Description = $"{vp.VendorName} [{vp.ReferenceType}]",
+                        Reason = request.Reason,
+                        Notes = request.Notes ?? "",
+                        IsDrawerRefunded = request.RefundToDrawer,
+                        CancelledByUserId = effectiveUserId,
+                        CancelledByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
+                        CancelledAt = DateTime.UtcNow
+                    };
+
+                    await _context.ExpenseCancellationAudits.AddAsync(vpAudit);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Ok(new { message = "Vendor expense cancelled successfully", audit = vpAudit });
+                }
+
+                if (payable!.Status == VendorPayableStatus.Cancelled)
                     return BadRequest("Expense is already cancelled.");
 
                 var cancelledAmount = payable.AmountPaid > 0 ? payable.AmountPaid : payable.AmountDue;
@@ -687,10 +828,6 @@ namespace SynOS.Api.Controllers
                 payable.Status = VendorPayableStatus.Cancelled;
                 payable.AmountPaid = 0;
 
-                var userId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
-                    ? request.UserId.Value 
-                    : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
-
                 var audit = new ExpenseCancellationAudit
                 {
                     Id = Guid.NewGuid(),
@@ -703,7 +840,7 @@ namespace SynOS.Api.Controllers
                     Reason = request.Reason,
                     Notes = request.Notes ?? "",
                     IsDrawerRefunded = request.RefundToDrawer,
-                    CancelledByUserId = userId,
+                    CancelledByUserId = effectiveUserId,
                     CancelledByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
                     CancelledAt = DateTime.UtcNow
                 };

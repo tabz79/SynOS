@@ -197,6 +197,86 @@ namespace SynOS.Api.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateVendorPayable([FromBody] CreateVendorPayableRequestDto request)
+        {
+            if (request == null || request.Amount <= 0)
+                return BadRequest("Valid amount is required.");
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var supplier = request.VendorId.HasValue 
+                    ? await _context.ImsSuppliers.FindAsync(request.VendorId.Value) 
+                    : null;
+
+                var vendorName = supplier?.Name ?? request.VendorName ?? "Vendor";
+                var refType = !string.IsNullOrWhiteSpace(request.InvoiceNumber) ? $"INV-{request.InvoiceNumber}" : "INWARD-BILL";
+
+                var payable = new VendorPayable
+                {
+                    VendorPayableId = Guid.NewGuid(),
+                    VendorId = request.VendorId ?? supplier?.SupplierId,
+                    VendorName = vendorName,
+                    Amount = request.Amount,
+                    AmountPaid = request.IsSettledNow ? request.Amount : 0,
+                    ReferenceType = refType,
+                    ReferenceId = Guid.NewGuid(),
+                    Status = request.IsSettledNow ? SynOS.Models.Enums.Payables.VendorPayableStatus.Settled : SynOS.Models.Enums.Payables.VendorPayableStatus.Pending,
+                    SettledAt = request.IsSettledNow ? DateTime.UtcNow : null,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _context.VendorPayables.AddAsync(payable);
+
+                if (request.IsSettledNow)
+                {
+                    var spendFact = new SpendFact(
+                        Guid.NewGuid(),
+                        payable.VendorId ?? Guid.Empty,
+                        request.Amount,
+                        "INR",
+                        "Inventory",
+                        vendorName,
+                        $"Vendor Inward Settlement: {payable.ReferenceType} - {request.Description ?? "Reagents & Consumables"}",
+                        null,
+                        request.PaymentMethod,
+                        $"VENDOR-SETTLE-{payable.VendorPayableId.ToString().Substring(0, 8)}-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        "Purchasing",
+                        "Finance API",
+                        Guid.Empty,
+                        Guid.Empty,
+                        Guid.Empty
+                    );
+
+                    await _spendFactWriter.CreateSpendFactAsync(spendFact);
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return Ok(payable);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+    }
+
+    public class CreateVendorPayableRequestDto
+    {
+        public Guid? VendorId { get; set; }
+        public string? VendorName { get; set; }
+        public decimal Amount { get; set; }
+        public string? InvoiceNumber { get; set; }
+        public string? Description { get; set; }
+        public bool IsSettledNow { get; set; } = true;
+        public SynOS.Models.Enums.PaymentMethod PaymentMethod { get; set; } = SynOS.Models.Enums.PaymentMethod.Cash;
     }
 
     public class BulkVendorSettleRequest
