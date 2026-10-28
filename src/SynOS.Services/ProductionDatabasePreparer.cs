@@ -236,7 +236,7 @@ namespace SynOS.Services
                 name == "ReferralPartner" || name == "ReferralCommissionRule" ||
                 name == "BranchPrinter" || name == "TerminalPrinterConfig" ||
                 name.StartsWith("CostAttribution_UsagePolicy") ||
-                name == "DiscountMaster" ||
+                name == "DiscountMaster" || name == "DiscountReason" ||
                 name.StartsWith("PayComponent") || name == "PayStructure" || name == "PayStructureAssignment" || name == "PayrollPeriod" || name == "PayStructureComponent" ||
                 name == "StatutoryConfig" || name == "WorkforcePolicy" ||
                 name == "ReferenceLab" || name == "ReferenceLabRateRule" ||
@@ -261,7 +261,7 @@ namespace SynOS.Services
                 name == "WorkAssignment" || name == "WorkAssignmentAccession" || name == "ProcessingAssignment" ||
                 name == "AuditLog" || name == "RefreshToken" || name == "EditLock" ||
                 name.EndsWith("Fact") ||
-                name == "OverheadExpense" ||
+                name == "OverheadExpense" || name == "ExpenseCancellationAudit" || name == "ExpenseCorrectionAudit" ||
                 name == "SalaryAdvance" || name == "PayrollRun" || name == "PayrollAdjustment" ||
                 name == "AttendanceLog" ||
                 name == "SupportTicket" ||

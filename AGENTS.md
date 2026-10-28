@@ -74,6 +74,38 @@
 
 ---
 
+## 💰 Section II: Reception, Financials & Payer Mode Invariants (Production Shield)
+
+### 1. Three Canonical Payer Modes & Immutable Lingo
+The reception intake pipeline operates on three distinct, production-locked billing modes in [`MultiPayerPanels.jsx`](file:///src/SynOS.Frontend/src/features/reception/components/MultiPayerPanels.jsx):
+* **Mode 1 (`Standard`):** `Direct / Standard`
+  * Subtitle: `Desk collection & standard tariff` | Badge: `Retail`
+  * Financial Contract: Billed directly to patient at desk. Patient pays cash/UPI/card.
+* **Mode 2 (`PrepaidPartner`):** `Corporate B2B (Prepaid)`
+  * Subtitle: `B2B partner billed, ₹0 at desk` | Badge: `B2B Prepaid`
+  * Financial Contract: The patient pays ₹0 at the desk because the referral partner/hospital collects in advance. The lab bills the B2B referral partner monthly.
+  * **PROHIBITION:** NEVER rename this mode to "Doctor", "Doctor B2B", or confuse it with Insurance. It represents Corporate & B2B Referral Partner contracts.
+* **Mode 3 (`Insurance`):** `Insurance / TPA`
+  * Subtitle: `Cashless pre-auth claim` | Badge: `Cashless`
+  * Financial Contract: Cashless insurance pre-auth claims with potential co-pay.
+
+### 2. Concession & Discount Defaults (Clinical Desk Rule)
+* **Default Mode:** Custom discounts in [`BillingSummary.jsx`](file:///src/SynOS.Frontend/src/features/reception/components/BillingSummary.jsx) MUST default to **`FLAT` (`₹ Flat`)**, not `PERCENTAGE`.
+* **Clinical Truth:** In clinical diagnostic desk workflows, receptionists enter flat rupee amounts (₹50, ₹100, ₹200). Defaulting to percentage turns a ₹100 concession into 100% off, wiping bills to ₹0.
+* **Calculation Safeguards:**
+  * Entering flat `100` on a ₹600 bill MUST yield `Gross: ₹600`, `Discount: -₹100`, `Net Bill: ₹500`.
+  * Live deduction and Net Bill preview MUST be rendered beneath the input before the user confirms.
+  * Backend calculations are enforced by [`RevenueEngine.cs`](file:///src/SynOS.Services/Revenue/RevenueEngine.cs) and verified by [`ProductionValidationTests.cs`](file:///tests/SynOS.Tests/ProductionValidationTests.cs).
+
+### 3. Strict Boundary Defense (Zero Unsolicited Edits)
+* **PROHIBITION:** When working on features such as expenses, inventory, prints, reports, or visual facelifts, AI agents and developers are **FORBIDDEN** from touching:
+  * Payer mode definitions, IDs, or labels in `MultiPayerPanels.jsx`
+  * Financial formulas, discount default states, or net bill calculations in `BillingSummary.jsx`
+  * Invariants in `RevenueEngine.cs`
+* Every PR/commit touching billing or revenue must pass `dotnet test tests/SynOS.Tests/SynOS.Tests.csproj --filter "ProductionValidationTests"`.
+
+---
+
 ## 🛠️ Build & Verification Protocol
 
 When making modifications to the frontend or document pipelines:

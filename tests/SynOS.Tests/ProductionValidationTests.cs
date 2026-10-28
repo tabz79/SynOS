@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SynOS.Data;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Enums;
 using SynOS.Services;
 using SynOS.Models.Entities.IMS;
@@ -502,6 +503,130 @@ namespace SynOS.Tests
             }
 
             Assert.Empty(unclassified);
+        }
+
+        [Fact]
+        public async Task RevenueEngine_FlatDiscount_DeductsExactRupees_NeverZeroesOutBillUnexpectedly()
+        {
+            using var db = GetDbContext();
+            var visitId = Guid.NewGuid();
+            var invoiceId = Guid.NewGuid();
+
+            var visit = new Visit
+            {
+                VisitId = visitId,
+                Token = "TKN_DISC_TEST",
+                Status = VisitStatus.Draft,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            db.Visits.Add(visit);
+
+            var invoice = new Invoice
+            {
+                InvoiceId = invoiceId,
+                VisitId = visitId,
+                Currency = "INR",
+                DueDate = DateTime.UtcNow.AddDays(1),
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Invoices.Add(invoice);
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                Price = 600,
+                Status = OrderStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Orders.Add(order);
+
+            // Applying Flat 100 INR concession (e.g. routine clinical concession)
+            var discountFact = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoiceId,
+                Type = DiscountType.Flat,
+                Value = 100,
+                IsActive = true,
+                AppliedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.DiscountFacts.Add(discountFact);
+            await db.SaveChangesAsync();
+
+            var engine = new SynOS.Services.Revenue.RevenueEngine(db);
+            await engine.ApplySnapshotAsync(visitId, Guid.NewGuid());
+
+            var updatedInvoice = await db.Invoices.FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+            Assert.NotNull(updatedInvoice);
+            Assert.Equal(600m, updatedInvoice.GrossAmount);
+            Assert.Equal(100m, updatedInvoice.DiscountAmount);
+            Assert.Equal(500m, updatedInvoice.NetAmount);
+            Assert.Equal(500m, updatedInvoice.Total);
+        }
+
+        [Fact]
+        public async Task RevenueEngine_PercentageDiscount_CalculatesExactPercentage()
+        {
+            using var db = GetDbContext();
+            var visitId = Guid.NewGuid();
+            var invoiceId = Guid.NewGuid();
+
+            var visit = new Visit
+            {
+                VisitId = visitId,
+                Token = "TKN_PCT_TEST",
+                Status = VisitStatus.Draft,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            db.Visits.Add(visit);
+
+            var invoice = new Invoice
+            {
+                InvoiceId = invoiceId,
+                VisitId = visitId,
+                Currency = "INR",
+                DueDate = DateTime.UtcNow.AddDays(1),
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Invoices.Add(invoice);
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                Price = 600,
+                Status = OrderStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Orders.Add(order);
+
+            // 15% discount on 600 = 90
+            var discountFact = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoiceId,
+                Type = DiscountType.Percentage,
+                Value = 15,
+                IsActive = true,
+                AppliedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.DiscountFacts.Add(discountFact);
+            await db.SaveChangesAsync();
+
+            var engine = new SynOS.Services.Revenue.RevenueEngine(db);
+            await engine.ApplySnapshotAsync(visitId, Guid.NewGuid());
+
+            var updatedInvoice = await db.Invoices.FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
+            Assert.NotNull(updatedInvoice);
+            Assert.Equal(600m, updatedInvoice.GrossAmount);
+            Assert.Equal(90m, updatedInvoice.DiscountAmount);
+            Assert.Equal(510m, updatedInvoice.NetAmount);
+            Assert.Equal(510m, updatedInvoice.Total);
         }
     }
 }
