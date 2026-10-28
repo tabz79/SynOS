@@ -925,7 +925,7 @@ export function VisitDetails({
                                         partners={referralPartners}
                                         allowFreeText={true}
                                         onApplyPartner={handleApplyReferral}
-                                        nextInputRef={effectiveSecondaryPartner ? testSearchInputRef : prepaidSecondaryReferralRef}
+                                        nextInputRef={testSearchInputRef}
                                         fallbackNextRef={testSearchInputRef}
                                         onUpdateText={async (text) => {
                                             if (!visitId || !canEditReferral) return;
@@ -939,69 +939,6 @@ export function VisitDetails({
                                                 setIsProcessing(false);
                                             }
                                         }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* 2. SECONDARY REFERRAL DOCTOR (RMP) / B2B PARTNER */}
-                        <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-1.5">
-                            <div className="type-label flex justify-between items-center">
-                                <span className="flex items-center gap-1.5 font-bold text-zinc-700 dark:text-zinc-300">
-                                    <span>Secondary Referral Doctor / RMP (Receivables Route Here)</span>
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => onOpenModal && onOpenModal('rmp')}
-                                    disabled={!canEditReferral}
-                                    className="text-[11px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
-                                >
-                                    <Plus className="w-3.5 h-3.5" /> Add RMP
-                                </button>
-                            </div>
-                            {effectiveSecondaryPartner ? (
-                                <div className={cn("flex items-center gap-2 font-semibold p-2.5 rounded-lg border",
-                                    isDark ? "bg-zinc-800/40 border-zinc-700/60 text-zinc-100" : "bg-white/60 border-black/5 text-zinc-900 shadow-xs hover:bg-white/80 transition-colors")}>
-                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="truncate tracking-tight text-xs font-bold">
-                                                {effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name}
-                                            </span>
-                                            <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold uppercase tracking-wider">
-                                                {effectiveSecondaryPartner.partnerType || 'RMP'}
-                                            </span>
-                                        </div>
-                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal">
-                                            B2B Receivable Account • All B2B claims, rate discounts & remittances route to this partner
-                                        </div>
-                                    </div>
-                                    {canEditReferral && (
-                                        <button
-                                            type="button"
-                                            onClick={handleRemoveSecondaryReferral}
-                                            disabled={isProcessing}
-                                            tabIndex={-1}
-                                            className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
-                                            title="Remove RMP"
-                                        >
-                                            <X className="w-3.5 h-3.5" />
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    <ReferralCombinedInput
-                                        inputRef={prepaidSecondaryReferralRef}
-                                        nextInputRef={testSearchInputRef}
-                                        fallbackNextRef={testSearchInputRef}
-                                        initialValue=""
-                                        isReadOnly={!canEditReferral}
-                                        isProcessing={isProcessing}
-                                        partners={referralPartners}
-                                        allowFreeText={false}
-                                        onApplyPartner={handleApplySecondaryReferral}
-                                        onUpdateText={() => {}}
                                     />
                                 </div>
                             )}
@@ -1148,7 +1085,7 @@ export function VisitDetails({
                                             }}
                                             className={cn("w-full text-left px-3 py-2 flex items-center justify-between group transition-colors border-b last:border-0",
                                                 idx === testSelectedIndex
-                                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
                                                     : (isDark ? "hover:bg-zinc-800 border-zinc-800/50" : "hover:bg-zinc-50 border-zinc-100"))}
                                         >
                                             <div className="flex items-center gap-2">
@@ -1735,7 +1672,7 @@ function ReferralCombinedInput({
                             }}
                             className={cn("w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between",
                                 idx === selectedIndex 
-                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                    ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
                                     : ui.hover,
                                 isDark ? "border-zinc-800/50" : "border-zinc-100")}
                         >

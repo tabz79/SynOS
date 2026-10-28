@@ -6,7 +6,7 @@ import { VisitDetails } from './VisitDetails'
 import { BillingSummary, extractB2BInfo } from './BillingSummary'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { ReceptionApi, fetchReferralPartnersCached } from '@/api/reception'
+import { ReceptionApi, fetchReferralPartnersCached, clearReceptionMasterCaches } from '@/api/reception'
 import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry } from '@/hooks/useSynOSMotion'
@@ -1139,6 +1139,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             setIsPartialPayment={setIsPartialPayment}
                                             customPaymentAmount={customPaymentAmount}
                                             setCustomPaymentAmount={setCustomPaymentAmount}
+                                            referralPartners={referralPartners}
                                         />
                                     </div>
                                 </div>
@@ -1476,17 +1477,21 @@ export function IntentPanel({ onVisitUpdated }) {
                             console.error("Failed to auto-apply referral partner to visit:", err);
                         }
                     }
+                    clearReceptionMasterCaches();
+                    fetchReferralPartnersCached()
+                        .then(data => setReferralPartners(data || []))
+                        .catch(() => {});
                     await loadSnapshot();
                     setActiveModal(null);
                 }}
             />
 
-            {/* Dedicated RMP Quick-Add Modal */}
+            {/* Dedicated RMP / B2B Billing Doctor Quick-Add Modal */}
             <AddReferralPartnerModal
-                isOpen={activeModal === 'rmp'}
+                isOpen={activeModal === 'rmp' || activeModal === 'b2bBillingDoctor'}
                 onClose={() => setActiveModal(null)}
                 initialPaymentModel="PartnerCollects"
-                initialPartnerType="RMP"
+                initialPartnerType={activeModal === 'b2bBillingDoctor' ? 'Doctor' : 'RMP'}
                 isDark={isDark}
                 onSuccess={async (newPartner) => {
                     const partnerId = newPartner.referralPartnerId || newPartner.id;
@@ -1495,9 +1500,13 @@ export function IntentPanel({ onVisitUpdated }) {
                         try {
                             await ReceptionApi.updateSecondaryReferral(visitId, partnerId);
                         } catch (err) {
-                            console.error("Failed to auto-apply RMP to visit:", err);
+                            console.error("Failed to auto-apply billing doctor to visit:", err);
                         }
                     }
+                    clearReceptionMasterCaches();
+                    fetchReferralPartnersCached()
+                        .then(data => setReferralPartners(data || []))
+                        .catch(() => {});
                     await loadSnapshot();
                     setActiveModal(null);
                 }}

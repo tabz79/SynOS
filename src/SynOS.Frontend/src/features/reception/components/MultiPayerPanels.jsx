@@ -440,7 +440,7 @@ export function InsuranceContextPanel({
                                                     className={cn(
                                                         "p-2.5 flex items-center justify-between cursor-pointer transition-colors text-left",
                                                         highlightedIndex === idx
-                                                            ? isDark ? "bg-zinc-800 text-white" : "bg-blue-50/80 text-blue-950 font-medium"
+                                                            ? isDark ? "bg-zinc-800 text-white ring-2 ring-inset ring-synos-primary" : "bg-blue-50/80 text-blue-950 font-medium ring-2 ring-inset ring-synos-primary"
                                                             : isDark ? "text-zinc-200 hover:bg-zinc-800/50" : "text-zinc-800 hover:bg-zinc-50"
                                                     )}
                                                 >

@@ -37,7 +37,8 @@ export function BillingSummary({
     isPartialPayment = false,
     setIsPartialPayment,
     customPaymentAmount = '',
-    setCustomPaymentAmount
+    setCustomPaymentAmount,
+    referralPartners = []
 }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
@@ -54,6 +55,95 @@ export function BillingSummary({
     const [showReasonDropdown, setShowReasonDropdown] = useState(false);
     const [reasonSelectedIndex, setReasonSelectedIndex] = useState(-1);
     const reasonListRef = useRef(null);
+
+    // Corporate B2B Billing Doctor Override State
+    const [b2bDoctorSearch, setB2BDoctorSearch] = useState('');
+    const [showB2BDoctorDropdown, setShowB2BDoctorDropdown] = useState(false);
+    const [b2bDoctorSelectedIndex, setB2BDoctorSelectedIndex] = useState(0);
+    const b2bDoctorListRef = useRef(null);
+
+    const filteredB2BDoctors = useMemo(() => {
+        const q = (b2bDoctorSearch || '').trim().toLowerCase();
+        const docs = Array.isArray(referralPartners) ? referralPartners : [];
+        if (!q) return docs.slice(0, 30);
+        return docs.filter(p => 
+            (p.name || p.displayName || '').toLowerCase().includes(q) ||
+            (p.code || '').toLowerCase().includes(q) ||
+            (p.partnerType || '').toLowerCase().includes(q)
+        ).slice(0, 30);
+    }, [referralPartners, b2bDoctorSearch]);
+
+    useEffect(() => {
+        if (showB2BDoctorDropdown && filteredB2BDoctors.length > 0) {
+            setB2BDoctorSelectedIndex(0);
+        } else {
+            setB2BDoctorSelectedIndex(-1);
+        }
+    }, [b2bDoctorSearch, showB2BDoctorDropdown, filteredB2BDoctors.length]);
+
+    useEffect(() => {
+        if (showB2BDoctorDropdown && b2bDoctorSelectedIndex >= 0 && b2bDoctorListRef.current) {
+            const selectedElem = b2bDoctorListRef.current.children[b2bDoctorSelectedIndex];
+            if (selectedElem) selectedElem.scrollIntoView({ block: 'nearest' });
+        }
+    }, [b2bDoctorSelectedIndex, showB2BDoctorDropdown]);
+
+    const handleB2BDoctorKeyDown = (e) => {
+        if (!showB2BDoctorDropdown) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                setShowB2BDoctorDropdown(true);
+            }
+            return;
+        }
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setB2BDoctorSelectedIndex(prev => (prev < filteredB2BDoctors.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setB2BDoctorSelectedIndex(prev => (prev > 0 ? prev - 1 : filteredB2BDoctors.length - 1));
+        } else if (e.key === 'Enter') {
+            if (b2bDoctorSelectedIndex >= 0 && b2bDoctorSelectedIndex < filteredB2BDoctors.length) {
+                e.preventDefault();
+                const chosen = filteredB2BDoctors[b2bDoctorSelectedIndex];
+                handleApplyB2BOverrideDoctor(chosen.referralPartnerId || chosen.id);
+            }
+        } else if (e.key === 'Escape') {
+            setShowB2BDoctorDropdown(false);
+        }
+    };
+
+    const handleApplyB2BOverrideDoctor = async (doctorId) => {
+        const visitId = snapshot?.visit?.visitId || snapshot?.visit?.id;
+        setShowB2BDoctorDropdown(false);
+        setB2BDoctorSearch('');
+        if (!visitId || !doctorId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.updateSecondaryReferral(visitId, doctorId);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to set B2B billing override doctor:", err);
+            alert(err.message || "Failed to set B2B billing doctor");
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleClearB2BOverrideDoctor = async () => {
+        const visitId = snapshot?.visit?.visitId || snapshot?.visit?.id;
+        if (!visitId) return;
+        setIsProcessing(true);
+        try {
+            await ReceptionApi.updateSecondaryReferral(visitId, null);
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to clear B2B billing override doctor:", err);
+            alert(err.message || "Failed to clear B2B billing doctor");
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     // B2B Prepaid Partner Rate State (Dual Mode: Flat vs Percentage)
     const b2bInfo = extractB2BInfo(snapshot);
@@ -982,6 +1072,158 @@ export function BillingSummary({
                                     )}
                                 </div>
 
+                                {/* BILLED TO DOCTOR (Corporate B2B Billing Entity Override) */}
+                                {(() => {
+                                    const primaryDoctor = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
+                                    const overriddenDoctor = snapshot?.billing?.referral?.secondaryPartner || snapshot?.visit?.secondaryReferralPartner;
+                                    const isOverridden = Boolean(overriddenDoctor);
+
+                                    return (
+                                        <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-1.5">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                                                    <span>Billed to Doctor</span>
+                                                    {isOverridden && (
+                                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
+                                                            Overruled
+                                                        </span>
+                                                    )}
+                                                </label>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setShowB2BDoctorDropdown(false);
+                                                        if (onOpenModal) onOpenModal('b2bBillingDoctor');
+                                                    }}
+                                                    disabled={!canPerformActions || isProcessing}
+                                                    className="text-[10px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
+                                                    title="Register & bill a new doctor profile"
+                                                >
+                                                    <Plus className="w-3 h-3" /> Add Doctor
+                                                </button>
+                                            </div>
+
+                                            {isOverridden ? (
+                                                <div className={cn(
+                                                    "flex items-center justify-between gap-2 p-2 rounded-lg border text-xs font-semibold",
+                                                    isDark ? "bg-zinc-800/60 border-zinc-700 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900 shadow-xs"
+                                                )}>
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></div>
+                                                        <div className="truncate">
+                                                            <div className="font-bold text-xs truncate">
+                                                                {overriddenDoctor.displayName || overriddenDoctor.name}
+                                                            </div>
+                                                            <div className="text-[10px] text-zinc-400 font-normal truncate">
+                                                                Receivables & ledger will be billed to this doctor
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {canPerformActions && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleClearB2BOverrideDoctor}
+                                                            disabled={isProcessing}
+                                                            className="p-1 text-zinc-400 hover:text-rose-500 rounded cursor-pointer transition-colors shrink-0"
+                                                            title="Revert billing back to prescribing doctor"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="relative">
+                                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
+                                                    <input
+                                                        type="text"
+                                                        placeholder={primaryDoctor?.displayName || primaryDoctor?.name ? `Default: ${primaryDoctor.displayName || primaryDoctor.name} (or search to overrule)...` : "Search Doctor to Bill..."}
+                                                        value={b2bDoctorSearch}
+                                                        onFocus={() => setShowB2BDoctorDropdown(true)}
+                                                        onChange={(e) => {
+                                                            setB2BDoctorSearch(e.target.value);
+                                                            setShowB2BDoctorDropdown(true);
+                                                        }}
+                                                        onKeyDown={handleB2BDoctorKeyDown}
+                                                        onBlur={() => {
+                                                            setTimeout(() => setShowB2BDoctorDropdown(false), 200);
+                                                        }}
+                                                        disabled={!canPerformActions || isProcessing}
+                                                        className={cn("w-full h-8 pl-8 pr-7 rounded-md text-xs font-medium outline-none border transition-all", ui.input)}
+                                                    />
+                                                    {b2bDoctorSearch ? (
+                                                        <button
+                                                            type="button"
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                setB2BDoctorSearch('');
+                                                                setShowB2BDoctorDropdown(true);
+                                                            }}
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                setShowB2BDoctorDropdown(prev => !prev);
+                                                            }}
+                                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                                                        >
+                                                            <ChevronDown className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+
+                                                    {/* Suggestions Overlay */}
+                                                    {showB2BDoctorDropdown && (
+                                                        <div
+                                                            ref={b2bDoctorListRef}
+                                                            className={cn(
+                                                                "absolute top-full left-0 right-0 mt-1 rounded-lg overflow-y-auto z-50 border max-h-48 shadow-xl",
+                                                                isDark ? "bg-zinc-900 border-zinc-700/80 text-zinc-200" : "bg-white border-zinc-200 text-zinc-900"
+                                                            )}
+                                                        >
+                                                            {filteredB2BDoctors.length === 0 ? (
+                                                                <div className="px-3 py-2 text-[11px] text-zinc-400 italic">
+                                                                    No matching doctor found. Click "+ Add Doctor" to create one.
+                                                                </div>
+                                                            ) : (
+                                                                filteredB2BDoctors.map((doc, idx) => (
+                                                                    <button
+                                                                        key={doc.referralPartnerId || doc.id}
+                                                                        type="button"
+                                                                        onMouseEnter={() => setB2BDoctorSelectedIndex(idx)}
+                                                                        onMouseDown={(e) => {
+                                                                            e.preventDefault();
+                                                                            handleApplyB2BOverrideDoctor(doc.referralPartnerId || doc.id);
+                                                                        }}
+                                                                        className={cn(
+                                                                            "w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between cursor-pointer",
+                                                                            idx === b2bDoctorSelectedIndex
+                                                                                ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
+                                                                                : (isDark ? "hover:bg-zinc-800 text-zinc-300 hover:text-white" : "hover:bg-zinc-50 text-zinc-700 hover:text-black"),
+                                                                            isDark ? "border-zinc-800/50" : "border-zinc-100"
+                                                                        )}
+                                                                    >
+                                                                        <span className="truncate text-xs font-semibold">{doc.name || doc.displayName}</span>
+                                                                        <span className={cn(
+                                                                            "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
+                                                                            isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"
+                                                                        )}>
+                                                                            {doc.partnerType || 'Doctor'}
+                                                                        </span>
+                                                                    </button>
+                                                                ))
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+
                                 <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-zinc-800 font-bold">
                                     <span className="text-zinc-800 dark:text-zinc-200">Final Doctor Bill:</span>
                                     <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">
@@ -1215,7 +1457,7 @@ export function BillingSummary({
                                                                 className={cn(
                                                                     "w-full text-left px-3 py-2 transition-colors border-b last:border-0 type-label flex items-center justify-between cursor-pointer",
                                                                     idx === reasonSelectedIndex
-                                                                        ? (isDark ? "bg-synos-primary/20 text-white font-bold" : "bg-blue-50 text-synos-primary font-bold")
+                                                                        ? (isDark ? "bg-synos-primary/20 text-white font-bold ring-2 ring-inset ring-synos-primary" : "bg-blue-50 text-synos-primary font-bold ring-2 ring-inset ring-synos-primary")
                                                                         : (isDark ? "hover:bg-zinc-800 text-zinc-300 hover:text-white" : "hover:bg-zinc-50 text-zinc-700 hover:text-black"),
                                                                     isDark ? "border-zinc-800/50" : "border-zinc-100"
                                                                 )}
