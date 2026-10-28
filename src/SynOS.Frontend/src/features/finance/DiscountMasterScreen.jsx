@@ -22,7 +22,15 @@ import {
     Filter,
     User,
     ShieldCheck,
-    Trash2
+    Trash2,
+    LayoutDashboard,
+    Sliders,
+    Building2,
+    Activity,
+    ArrowRight,
+    ArrowUpRight,
+    Sparkles,
+    CheckCircle
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn, formatDateCompact } from '@/lib/utils';
@@ -30,13 +38,19 @@ import { useTheme } from '@/context/ThemeContext';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 
 export function DiscountMasterScreen() {
-    const { tab: paramTab = 'codes' } = useParams();
+    const { tab: paramTab = 'intelligence' } = useParams();
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
     // Normalize tab
-    const tab = paramTab === 'reasons' || paramTab === 'history' || paramTab === 'staff' ? paramTab : 'codes';
+    const tab = paramTab === 'reasons' || paramTab === 'history' || paramTab === 'staff' || paramTab === 'codes' 
+        ? paramTab 
+        : 'intelligence';
+
+    // 0. Concession Intelligence State (Tab: intelligence)
+    const [intelligence, setIntelligence] = useState(null);
+    const [loadingIntelligence, setLoadingIntelligence] = useState(false);
 
     // 1. Discount Codes State (Tab 1)
     const [discounts, setDiscounts] = useState([]);
@@ -52,23 +66,39 @@ export function DiscountMasterScreen() {
     const [reasonSearch, setReasonSearch] = useState('');
     const [reasonActiveFilter, setReasonActiveFilter] = useState('ALL');
     const [reasonCategoryFilter, setReasonCategoryFilter] = useState('ALL');
+    const [reasonUsageFilter, setReasonUsageFilter] = useState('ALL'); // 'ALL' | 'USED' | 'DORMANT'
+    const [reasonSortBy, setReasonSortBy] = useState('HIGHEST_DISCOUNT'); // 'HIGHEST_DISCOUNT' | 'MOST_USED' | 'NAME' | 'ORDER'
     const [isReasonModalOpen, setIsReasonModalOpen] = useState(false);
     const [editingReason, setEditingReason] = useState(null);
 
     // 3. Discount History State (Tab 2 & 3)
     const [history, setHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
-    const [historySource, setHistorySource] = useState('Patient'); // 'Patient' (Default) | 'Partner' | 'All'
+    const [historySource, setHistorySource] = useState('All'); // 'All' (Default) | 'Patient' | 'Partner'
     const [historySearch, setHistorySearch] = useState('');
     const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
     // Sub-navigation tabs
     const tabs = [
-        { id: 'codes', label: 'Discount Codes', icon: Tag },
+        { id: 'intelligence', label: 'Concession Control Deck', icon: LayoutDashboard },
         { id: 'reasons', label: 'Preset Reasons', icon: ShieldCheck },
         { id: 'history', label: 'Discount History', icon: History },
-        { id: 'staff', label: 'Staff Summary', icon: Users }
+        { id: 'staff', label: 'Staff Summary', icon: Users },
+        { id: 'codes', label: 'Discount Codes', icon: Tag }
     ];
+
+    // Load Concession Intelligence
+    const loadIntelligence = useCallback(async () => {
+        try {
+            setLoadingIntelligence(true);
+            const data = await FinanceApi.getConcessionIntelligence();
+            setIntelligence(data);
+        } catch (err) {
+            console.error("Failed to load concession intelligence:", err);
+        } finally {
+            setLoadingIntelligence(false);
+        }
+    }, []);
 
     // Load discount codes
     const loadDiscounts = useCallback(async () => {
@@ -123,14 +153,16 @@ export function DiscountMasterScreen() {
     }, [historySource, historySearch]);
 
     useEffect(() => {
-        if (tab === 'codes') {
+        if (tab === 'intelligence') {
+            loadIntelligence();
+        } else if (tab === 'codes') {
             loadDiscounts();
         } else if (tab === 'reasons') {
             loadReasons();
         } else {
             loadHistory();
         }
-    }, [tab, loadDiscounts, loadReasons, loadHistory]);
+    }, [tab, loadIntelligence, loadDiscounts, loadReasons, loadHistory]);
 
     // KPI Metrics for Codes Tab
     const totalCount = discounts.length;
@@ -150,6 +182,8 @@ export function DiscountMasterScreen() {
     const activeReasonsCount = reasons.filter(r => r.isActive).length;
     const doctorReasonsCount = reasons.filter(r => (r.category || '').toLowerCase().includes('doctor')).length;
     const managementReasonsCount = reasons.filter(r => (r.category || '').toLowerCase().includes('management') || (r.category || '').toLowerCase().includes('owner')).length;
+    const usedReasonsCount = useMemo(() => reasons.filter(r => (r.usageCount || 0) > 0).length, [reasons]);
+    const dormantReasonsCount = useMemo(() => reasons.filter(r => (r.usageCount || 0) === 0).length, [reasons]);
 
     const categories = useMemo(() => {
         const set = new Set(reasons.map(r => r.category).filter(Boolean));
@@ -157,11 +191,28 @@ export function DiscountMasterScreen() {
     }, [reasons]);
 
     const filteredReasons = useMemo(() => {
-        return reasons.filter(r => {
-            if (reasonCategoryFilter !== 'ALL' && r.category !== reasonCategoryFilter) return false;
-            return true;
-        });
-    }, [reasons, reasonCategoryFilter]);
+        let list = [...reasons];
+        if (reasonCategoryFilter !== 'ALL') {
+            list = list.filter(r => r.category === reasonCategoryFilter);
+        }
+        if (reasonUsageFilter === 'USED') {
+            list = list.filter(r => (r.usageCount || 0) > 0);
+        } else if (reasonUsageFilter === 'DORMANT') {
+            list = list.filter(r => (r.usageCount || 0) === 0);
+        }
+
+        if (reasonSortBy === 'HIGHEST_DISCOUNT') {
+            list.sort((a, b) => (b.totalDiscountAmount || 0) - (a.totalDiscountAmount || 0));
+        } else if (reasonSortBy === 'MOST_USED') {
+            list.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+        } else if (reasonSortBy === 'NAME') {
+            list.sort((a, b) => (a.reasonText || '').localeCompare(b.reasonText || ''));
+        } else {
+            list.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        }
+
+        return list;
+    }, [reasons, reasonCategoryFilter, reasonUsageFilter, reasonSortBy]);
 
     const handleToggleReasonActive = async (reason) => {
         try {
@@ -243,10 +294,13 @@ export function DiscountMasterScreen() {
                 d.isActive ? 'Active' : 'Inactive'
             ]);
         } else if (tab === 'reasons') {
-            headers = ["Reason / Authority", "Category", "Description", "Order", "Status", "Created By", "Created At"];
+            headers = ["Reason / Authority", "Category", "Usage Count", "Total Concession (INR)", "Avg Concession (INR)", "Description", "Order", "Status", "Created By", "Created At"];
             rows = filteredReasons.map(r => [
                 `"${(r.reasonText || '').replace(/"/g, '""')}"`,
                 `"${(r.category || '').replace(/"/g, '""')}"`,
+                r.usageCount ?? 0,
+                r.totalDiscountAmount ?? 0,
+                r.avgDiscountAmount ?? 0,
                 `"${(r.description || '').replace(/"/g, '""')}"`,
                 r.sortOrder ?? 0,
                 r.isActive ? 'Active' : 'Inactive',
@@ -378,6 +432,360 @@ export function DiscountMasterScreen() {
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto px-8 py-4 space-y-6 custom-scrollbar">
+                {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
+                {tab === 'intelligence' && (
+                    <div className="space-y-6 animate-in fade-in duration-300">
+                        {loadingIntelligence ? (
+                            <div className="flex flex-col items-center justify-center p-24 gap-3 text-zinc-400">
+                                <Loader2 className="w-7 h-7 animate-spin text-synos-primary" />
+                                <span className="text-xs font-semibold">Loading Concession Intelligence Deck...</span>
+                            </div>
+                        ) : intelligence ? (
+                            <>
+                                {/* 1. HERO CONTROL DECK (iOS Control Center Banner) */}
+                                <div className="p-6 md:p-8 rounded-3xl bg-slate-100/70 dark:bg-zinc-900/70 backdrop-blur-md border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-8">
+                                    {/* Left: Net Concession Position */}
+                                    <div className="space-y-2 lg:max-w-md">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                                                Total Concessions (All Channels)
+                                            </span>
+                                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                                {intelligence.overallDiscountPercentage}% of Total Tariff
+                                            </span>
+                                        </div>
+                                        <p className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
+                                            ₹{intelligence.totalDiscountAmount.toLocaleString()}
+                                        </p>
+                                        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                                            <span>Total Billed Tariff: ₹{intelligence.totalGrossBilled.toLocaleString()}</span>
+                                            <span>•</span>
+                                            <span>{intelligence.totalBillsDiscounted} Discounted Bills</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Dual Channel Volume Sliders */}
+                                    <div className="flex-1 max-w-xl space-y-4">
+                                        {/* Channel 1: Walk-In Patients */}
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                    Walk-In Patient Concessions (Desk)
+                                                </span>
+                                                <span className="font-black text-zinc-900 dark:text-white">
+                                                    ₹{intelligence.patientDiscountAmount.toLocaleString()} <span className="font-normal text-zinc-400">({intelligence.patientBillsCount} bills · {intelligence.patientSharePercentage}%)</span>
+                                                </span>
+                                            </div>
+                                            {/* iOS Style Pill Track */}
+                                            <div className="relative h-6 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+                                                <div 
+                                                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 relative"
+                                                    style={{ width: `${Math.max(5, Math.min(100, intelligence.patientSharePercentage))}%` }}
+                                                >
+                                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-sm"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Channel 2: B2B Partners */}
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between text-xs">
+                                                <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                                    Corporate B2B Wholesale Concessions
+                                                </span>
+                                                <span className="font-black text-zinc-900 dark:text-white">
+                                                    ₹{intelligence.partnerDiscountAmount.toLocaleString()} <span className="font-normal text-zinc-400">({intelligence.partnerBillsCount} bills · {intelligence.partnerSharePercentage}%)</span>
+                                                </span>
+                                            </div>
+                                            {/* iOS Style Pill Track */}
+                                            <div className="relative h-6 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+                                                <div 
+                                                    className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500 relative"
+                                                    style={{ width: `${Math.max(5, Math.min(100, intelligence.partnerSharePercentage))}%` }}
+                                                >
+                                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-sm"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Distribution Note */}
+                                        <div className="pt-1 flex items-center justify-between text-[11px] text-zinc-500 font-medium border-t border-slate-200/70 dark:border-zinc-800/80">
+                                            <span>Average Patient Concession: ₹{intelligence.patientAvgDiscount}</span>
+                                            <span>Average B2B Concession: ₹{intelligence.partnerAvgDiscount}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 2. MIDDLE SECTION: THE TWO CHANNELS SIDE-BY-SIDE */}
+                                <div className="space-y-3">
+                                    <div className="px-1 flex items-center justify-between">
+                                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                                            Channel Breakdown & Concession Drivers
+                                        </h3>
+                                        <span className="text-[10px] text-zinc-400 font-medium">Ranked by Financial Impact</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* CARD A: TOP WALK-IN PRESETS */}
+                                        <div className="p-6 rounded-3xl synos-dept-card space-y-4">
+                                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                                                        <ShieldCheck size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-black text-zinc-900 dark:text-white">
+                                                            Top Walk-In Preset Reasons
+                                                        </h4>
+                                                        <p className="text-[10px] text-zinc-500">Authorized reasons chosen at reception for patients</p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                                                    {intelligence.topPresetReasons.length} Reasons Active
+                                                </span>
+                                            </div>
+
+                                            {/* Preset List */}
+                                            <div className="space-y-3">
+                                                {intelligence.topPresetReasons.slice(0, 5).map((r, i) => (
+                                                    <div key={i} className="p-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800 space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-black text-zinc-900 dark:text-white">
+                                                                    {r.reasonText}
+                                                                </span>
+                                                                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                                                                    {r.category}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                                                                    ₹{r.totalAmount.toLocaleString()}
+                                                                </span>
+                                                                <span className="text-[10px] text-zinc-400 ml-1.5">
+                                                                    ({r.usageCount} {r.usageCount === 1 ? 'bill' : 'bills'})
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {/* Slider bar */}
+                                                        <div className="h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                            <div 
+                                                                className="h-full bg-blue-500 rounded-full"
+                                                                style={{ width: `${Math.min(100, Math.max(5, r.percentageOfPatientDiscounts))}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                {intelligence.topPresetReasons.length === 0 && (
+                                                    <div className="text-center py-8 text-zinc-400 text-xs">
+                                                        No patient presets used yet.
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button 
+                                                onClick={() => navigate('/finance/discounts/reasons')}
+                                                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                                            >
+                                                <span>View All {intelligence.totalPresetsCount} Preset Definitions & Analytics</span>
+                                                <ArrowRight size={13} />
+                                            </button>
+                                        </div>
+
+                                        {/* CARD B: TOP B2B PARTNERS */}
+                                        <div className="p-6 rounded-3xl synos-dept-card space-y-4">
+                                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                                                        <Building2 size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-black text-zinc-900 dark:text-white">
+                                                            Top Corporate B2B Concessions
+                                                        </h4>
+                                                        <p className="text-[10px] text-zinc-500">Hospitals & referral accounts with wholesale rates</p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                                                    {intelligence.topB2BPartners.length} Partners
+                                                </span>
+                                            </div>
+
+                                            {/* Partners List */}
+                                            <div className="space-y-3">
+                                                {intelligence.topB2BPartners.slice(0, 5).map((p, i) => (
+                                                    <div key={i} className="p-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800 space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs font-black text-zinc-900 dark:text-white">
+                                                                {p.partnerName}
+                                                            </span>
+                                                            <div className="text-right">
+                                                                <span className="text-xs font-black text-amber-600 dark:text-amber-400">
+                                                                    ₹{p.totalAmount.toLocaleString()}
+                                                                </span>
+                                                                <span className="text-[10px] text-zinc-400 ml-1.5">
+                                                                    ({p.billsCount} {p.billsCount === 1 ? 'bill' : 'bills'})
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        {/* Slider bar */}
+                                                        <div className="h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                            <div 
+                                                                className="h-full bg-amber-500 rounded-full"
+                                                                style={{ width: `${Math.min(100, Math.max(5, p.percentageOfPartnerDiscounts))}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                {intelligence.topB2BPartners.length === 0 && (
+                                                    <div className="text-center py-8 text-zinc-400 text-xs">
+                                                        No B2B partner concessions recorded yet.
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button 
+                                                onClick={() => {
+                                                    setHistorySource('Partner');
+                                                    navigate('/finance/discounts/history');
+                                                }}
+                                                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                                            >
+                                                <span>View B2B Partner Receivable Ledger</span>
+                                                <ArrowRight size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 3. BOTTOM ROW: 4 CONTROL CENTER PODS */}
+                                <div className="space-y-3">
+                                    <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-1">
+                                        Operations & Catalog Health
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {/* POD 1: CHANNEL BALANCE */}
+                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
+                                            <div>
+                                                <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Channel Balance</span>
+                                                <p className="text-sm font-black text-zinc-900 dark:text-white mt-1">
+                                                    Walk-In vs. Corporate
+                                                </p>
+                                            </div>
+                                            <div className="py-2">
+                                                <div className="flex justify-between text-[11px] font-bold text-zinc-500 mb-1">
+                                                    <span className="text-blue-600 dark:text-blue-400">Patient: ₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
+                                                    <span className="text-amber-600 dark:text-amber-400">B2B: ₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
+                                                </div>
+                                                <div className="h-2 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden flex">
+                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-blue-500 h-full" />
+                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-amber-500 h-full" />
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-500 border-t border-slate-100 dark:border-zinc-800 pt-2">
+                                                Patient discounts reduce cash at desk; B2B reduces hospital receivables.
+                                            </p>
+                                        </div>
+
+                                        {/* POD 2: PRESET HEALTH */}
+                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Preset Master Health</span>
+                                                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">
+                                                        {intelligence.totalPresetsCount} Presets
+                                                    </p>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                                                    <Sliders size={15} />
+                                                </div>
+                                            </div>
+                                            <div className="text-xs space-y-1">
+                                                <div className="flex justify-between font-bold text-emerald-600 dark:text-emerald-400">
+                                                    <span>Active & Used in Bills:</span>
+                                                    <span>{intelligence.usedPresetsCount}</span>
+                                                </div>
+                                                <div className="flex justify-between font-medium text-zinc-400">
+                                                    <span>Dormant / Never Used:</span>
+                                                    <span>{intelligence.dormantPresetsCount}</span>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setReasonUsageFilter('DORMANT');
+                                                    navigate('/finance/discounts/reasons');
+                                                }}
+                                                className="text-[10px] font-bold text-synos-primary hover:underline text-left border-t border-slate-100 dark:border-zinc-800 pt-2 cursor-pointer"
+                                            >
+                                                View Dormant Presets →
+                                            </button>
+                                        </div>
+
+                                        {/* POD 3: STAFF CONCESSIONS */}
+                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Top Approver</span>
+                                                    <p className="text-sm font-black text-zinc-900 dark:text-white mt-1 truncate">
+                                                        {intelligence.staffContributions[0]?.staffName || 'Staff Desk'}
+                                                    </p>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                                                    <Users size={15} />
+                                                </div>
+                                            </div>
+                                            <div className="text-xs space-y-1">
+                                                <p className="text-lg font-black text-zinc-900 dark:text-white">
+                                                    ₹{(intelligence.staffContributions[0]?.totalAmount || 0).toLocaleString()}
+                                                </p>
+                                                <p className="text-[10px] text-zinc-500">
+                                                    Across {intelligence.staffContributions[0]?.billsCount || 0} bills · ₹{intelligence.staffContributions[0]?.avgAmount || 0} avg
+                                                </p>
+                                            </div>
+                                            <button
+                                                onClick={() => navigate('/finance/discounts/staff')}
+                                                className="text-[10px] font-bold text-synos-primary hover:underline text-left border-t border-slate-100 dark:border-zinc-800 pt-2 cursor-pointer"
+                                            >
+                                                View Staff Audit Report →
+                                            </button>
+                                        </div>
+
+                                        {/* POD 4: GOVERNANCE & INTEGRITY */}
+                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Policy & Guardrails</span>
+                                                    <p className="text-sm font-black text-zinc-900 dark:text-white mt-1">
+                                                        Desk Safety
+                                                    </p>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                                                    <CheckCircle size={15} />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5 text-[11px]">
+                                                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
+                                                    <Check size={12} /> Reason Mandatory
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
+                                                    <Check size={12} /> Immutable Audit Fact
+                                                </div>
+                                            </div>
+                                            <p className="text-[10px] text-zinc-400 border-t border-slate-100 dark:border-zinc-800 pt-2">
+                                                100% of discounts tied to authorized audit facts.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : null}
+                    </div>
+                )}
+
                 {/* 1. DISCOUNT CODES TAB */}
                 {tab === 'codes' && (
                     <div className="space-y-6 animate-in fade-in duration-300">
@@ -647,7 +1055,7 @@ export function DiscountMasterScreen() {
                         </div>
 
                         {/* Search and Filter Strip */}
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xs">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-xs">
                             <div className="relative flex-1 max-w-md">
                                 <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
                                 <input
@@ -660,18 +1068,42 @@ export function DiscountMasterScreen() {
                             </div>
 
                             <div className="flex items-center gap-2 flex-wrap">
+                                {/* Utilization Filter Pills */}
                                 <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold">
                                     {[
-                                        { id: 'ALL', label: 'All Status' },
-                                        { id: 'ACTIVE', label: 'Active Only' },
-                                        { id: 'INACTIVE', label: 'Inactive' }
+                                        { id: 'ALL', label: `All (${totalReasonsCount})` },
+                                        { id: 'USED', label: `Used in Bills (${usedReasonsCount})` },
+                                        { id: 'DORMANT', label: `Dormant (${dormantReasonsCount})` }
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            type="button"
+                                            onClick={() => setReasonUsageFilter(f.id)}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap",
+                                                reasonUsageFilter === f.id
+                                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
+                                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
+                                            )}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Active Filter */}
+                                <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold">
+                                    {[
+                                        { id: 'ALL', label: 'All' },
+                                        { id: 'ACTIVE', label: 'Active' },
+                                        { id: 'INACTIVE', label: 'Off' }
                                     ].map(f => (
                                         <button
                                             key={f.id}
                                             type="button"
                                             onClick={() => setReasonActiveFilter(f.id)}
                                             className={cn(
-                                                "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                                                "px-2 py-1 rounded-lg transition-all cursor-pointer",
                                                 reasonActiveFilter === f.id
                                                     ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs"
                                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
@@ -681,6 +1113,18 @@ export function DiscountMasterScreen() {
                                         </button>
                                     ))}
                                 </div>
+
+                                {/* Sort Order Selector */}
+                                <select
+                                    value={reasonSortBy}
+                                    onChange={(e) => setReasonSortBy(e.target.value)}
+                                    className="h-9 px-2.5 rounded-xl text-xs font-semibold bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 outline-none focus:border-synos-primary text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                                >
+                                    <option value="HIGHEST_DISCOUNT">Sort: Highest Concession (₹)</option>
+                                    <option value="MOST_USED">Sort: Most Used (Bills)</option>
+                                    <option value="NAME">Sort: Preset Name (A-Z)</option>
+                                    <option value="DEFAULT">Sort: Default Order</option>
+                                </select>
 
                                 {categories.length > 2 && (
                                     <select
@@ -717,6 +1161,8 @@ export function DiscountMasterScreen() {
                                             <tr>
                                                 <th className="py-3.5 px-4">Reason / Authorized Authority</th>
                                                 <th className="py-3.5 px-4">Category</th>
+                                                <th className="py-3.5 px-4 text-center">Usage Count</th>
+                                                <th className="py-3.5 px-4 text-right">Total Concession</th>
                                                 <th className="py-3.5 px-4">Description / Guidance</th>
                                                 <th className="py-3.5 px-4">Created By</th>
                                                 <th className="py-3.5 px-4">Status</th>
@@ -748,7 +1194,25 @@ export function DiscountMasterScreen() {
                                                             {r.category || 'General'}
                                                         </span>
                                                     </td>
-                                                    <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-300 text-xs max-w-sm">
+                                                    <td className="py-3.5 px-4 text-center">
+                                                        {(r.usageCount || 0) > 0 ? (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                                                {r.usageCount} {r.usageCount === 1 ? 'bill' : 'bills'}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-zinc-400 text-[11px]">0</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3.5 px-4 font-mono text-right">
+                                                        {(r.totalDiscountAmount || 0) > 0 ? (
+                                                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                                                                ₹{r.totalDiscountAmount.toLocaleString()}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-zinc-400 text-xs">₹0</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-300 text-xs max-w-xs truncate">
                                                         {r.description || <span className="text-zinc-400 italic">No notes</span>}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-zinc-500 text-xs">
@@ -881,21 +1345,21 @@ export function DiscountMasterScreen() {
                                 />
                             </div>
 
-                            {/* Discrete Source Filter Pills: Default is Patient Discounts */}
+                            {/* Discrete Source Filter Pills: Default is All Concessions */}
                             <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-semibold text-zinc-500 hidden md:inline">Showing:</span>
+                                <span className="text-[11px] font-semibold text-zinc-500 hidden md:inline">Channel:</span>
                                 <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold">
                                     {[
-                                        { id: 'Patient', label: 'Patient Discounts' },
-                                        { id: 'Partner', label: 'Partner Discounts' },
-                                        { id: 'All', label: 'All Discounts' }
+                                        { id: 'All', label: 'All Concessions' },
+                                        { id: 'Patient', label: 'Patient Walk-Ins (Desk)' },
+                                        { id: 'Partner', label: 'B2B Partners (Wholesale)' }
                                     ].map(f => (
                                         <button
                                             key={f.id}
                                             type="button"
                                             onClick={() => setHistorySource(f.id)}
                                             className={cn(
-                                                "px-3 py-1 rounded-lg transition-all cursor-pointer",
+                                                "px-3 py-1 rounded-lg transition-all cursor-pointer whitespace-nowrap",
                                                 historySource === f.id
                                                     ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
                                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
@@ -957,10 +1421,10 @@ export function DiscountMasterScreen() {
                                                             <span className={cn(
                                                                 "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
                                                                 isPartner
-                                                                    ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                                                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                                                                     : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
                                                             )}>
-                                                                {isPartner ? 'Partner B2B' : 'Patient'}
+                                                                {isPartner ? 'Partner B2B' : 'Patient Walk-In'}
                                                             </span>
                                                         </td>
                                                         <td className="py-3.5 px-4 font-medium text-zinc-700 dark:text-zinc-300">

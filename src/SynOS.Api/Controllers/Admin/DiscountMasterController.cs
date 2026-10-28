@@ -99,6 +99,16 @@ namespace SynOS.Api.Controllers.Admin
             return Ok(result);
         }
 
+        [HttpGet("intelligence")]
+        [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
+        public async Task<IActionResult> GetConcessionIntelligence(
+            [FromQuery] DateTime? fromDate,
+            [FromQuery] DateTime? toDate)
+        {
+            var result = await _service.GetConcessionIntelligenceAsync(fromDate, toDate);
+            return Ok(result);
+        }
+
         // ==========================================
         // DISCOUNT REASONS (PRESETS & AUTHORIZATIONS)
         // ==========================================

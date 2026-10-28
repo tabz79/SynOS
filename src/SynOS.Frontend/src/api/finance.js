@@ -1413,6 +1413,19 @@ export const FinanceApi = {
         return response.json();
     },
 
+    getConcessionIntelligence: async (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.fromDate) queryParams.append('fromDate', params.fromDate);
+        if (params.toDate) queryParams.append('toDate', params.toDate);
+
+        const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/intelligence${qs}`), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load concession intelligence");
+        return response.json();
+    },
+
     getDiscountReasons: async (params = {}) => {
         const queryParams = new URLSearchParams();
         if (params.isActive !== undefined && params.isActive !== null) queryParams.append('isActive', params.isActive);

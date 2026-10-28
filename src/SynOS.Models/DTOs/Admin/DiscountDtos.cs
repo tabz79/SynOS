@@ -87,6 +87,66 @@ namespace SynOS.Models.DTOs.Admin
         public string? CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public int UsageCount { get; set; } = 0;
+        public decimal TotalDiscountAmount { get; set; } = 0m;
+        public decimal AvgDiscountAmount { get; set; } = 0m;
+    }
+
+    public class ConcessionIntelligenceDto
+    {
+        public decimal TotalDiscountAmount { get; set; }
+        public int TotalBillsDiscounted { get; set; }
+        public decimal TotalGrossBilled { get; set; }
+        public decimal OverallDiscountPercentage { get; set; }
+
+        public decimal PatientDiscountAmount { get; set; }
+        public int PatientBillsCount { get; set; }
+        public decimal PatientAvgDiscount { get; set; }
+        public decimal PatientSharePercentage { get; set; }
+
+        public decimal PartnerDiscountAmount { get; set; }
+        public int PartnerBillsCount { get; set; }
+        public decimal PartnerAvgDiscount { get; set; }
+        public decimal PartnerSharePercentage { get; set; }
+
+        public System.Collections.Generic.List<PresetReasonContributionDto> TopPresetReasons { get; set; } = new();
+        public System.Collections.Generic.List<PartnerConcessionContributionDto> TopB2BPartners { get; set; } = new();
+
+        public int TotalPresetsCount { get; set; }
+        public int ActivePresetsCount { get; set; }
+        public int UsedPresetsCount { get; set; }
+        public int DormantPresetsCount { get; set; }
+
+        public System.Collections.Generic.List<StaffConcessionContributionDto> StaffContributions { get; set; } = new();
+    }
+
+    public class PresetReasonContributionDto
+    {
+        public Guid? DiscountReasonId { get; set; }
+        public string ReasonText { get; set; } = string.Empty;
+        public string Category { get; set; } = "General";
+        public int UsageCount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal PercentageOfPatientDiscounts { get; set; }
+        public decimal AvgAmount { get; set; }
+    }
+
+    public class PartnerConcessionContributionDto
+    {
+        public Guid? PartnerId { get; set; }
+        public string PartnerName { get; set; } = string.Empty;
+        public int BillsCount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal PercentageOfPartnerDiscounts { get; set; }
+        public decimal AvgAmount { get; set; }
+    }
+
+    public class StaffConcessionContributionDto
+    {
+        public string StaffName { get; set; } = string.Empty;
+        public int BillsCount { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal AvgAmount { get; set; }
     }
 
     public class CreateDiscountReasonDto

@@ -279,7 +279,248 @@ namespace SynOS.Services
                 })
                 .ToListAsync();
 
+            // Live Attribution: Compute usage counts and financial totals from active DiscountFacts
+            var facts = await _context.DiscountFacts
+                .AsNoTracking()
+                .Where(f => f.IsActive && !string.IsNullOrEmpty(f.AppliedBy))
+                .Select(f => new { f.AppliedBy, f.DiscountAmount })
+                .ToListAsync();
+
+            var usageMap = new Dictionary<string, (int Count, decimal Total)>(StringComparer.OrdinalIgnoreCase);
+            foreach (var f in facts)
+            {
+                if (string.IsNullOrWhiteSpace(f.AppliedBy)) continue;
+                var reason = f.AppliedBy;
+                if (reason.Contains(" - "))
+                {
+                    var parts = reason.Split(new[] { " - " }, 2, StringSplitOptions.None);
+                    reason = parts.Length > 1 ? parts[1].Trim() : parts[0].Trim();
+                }
+                else
+                {
+                    reason = reason.Trim();
+                }
+
+                if (!string.IsNullOrEmpty(reason))
+                {
+                    if (usageMap.TryGetValue(reason, out var current))
+                    {
+                        usageMap[reason] = (current.Count + 1, current.Total + f.DiscountAmount);
+                    }
+                    else
+                    {
+                        usageMap[reason] = (1, f.DiscountAmount);
+                    }
+                }
+            }
+
+            foreach (var r in list)
+            {
+                if (usageMap.TryGetValue(r.ReasonText.Trim(), out var u))
+                {
+                    r.UsageCount = u.Count;
+                    r.TotalDiscountAmount = u.Total;
+                    r.AvgDiscountAmount = u.Count > 0 ? Math.Round(u.Total / u.Count, 2) : 0m;
+                }
+            }
+
             return list;
+        }
+
+        public async Task<ConcessionIntelligenceDto> GetConcessionIntelligenceAsync(DateTime? fromDate = null, DateTime? toDate = null)
+        {
+            var result = new ConcessionIntelligenceDto();
+
+            // 1. Fetch Patient Discounts from DiscountFact
+            var factsQuery = _context.DiscountFacts
+                .AsNoTracking()
+                .Where(f => f.IsActive);
+
+            if (fromDate.HasValue)
+                factsQuery = factsQuery.Where(f => f.AppliedAt >= fromDate.Value);
+            if (toDate.HasValue)
+                factsQuery = factsQuery.Where(f => f.AppliedAt <= toDate.Value);
+
+            var patientFacts = await factsQuery
+                .Select(f => new
+                {
+                    f.DiscountFactId,
+                    f.AppliedAt,
+                    f.DiscountAmount,
+                    f.GrossAmount,
+                    f.NetAmountAfterDiscount,
+                    f.AppliedBy
+                })
+                .ToListAsync();
+
+            // 2. Fetch B2B Partner Concessions from Visits
+            var b2bQuery = from v in _context.Visits.AsNoTracking()
+                           join rp in _context.ReferralPartners.AsNoTracking() on v.ReferralPartnerId equals rp.ReferralPartnerId into rpGroup
+                           from partner in rpGroup.DefaultIfEmpty()
+                           join inv in _context.Invoices.AsNoTracking() on v.VisitId equals inv.VisitId into invGroup
+                           from invoice in invGroup.DefaultIfEmpty()
+                           where v.B2BDiscountAmount != null && v.B2BDiscountAmount > 0
+                           select new
+                           {
+                               v.VisitId,
+                               v.ReferralPartnerId,
+                               PartnerName = partner != null ? partner.Name : "B2B Referral Partner",
+                               OccurredAt = v.B2BDiscountEnteredAt ?? v.CreatedAt,
+                               DiscountAmount = v.B2BDiscountAmount ?? 0,
+                               GrossAmount = invoice != null ? invoice.GrossAmount : (v.B2BDiscountAmount ?? 0),
+                               EnteredBy = v.B2BDiscountEnteredBy ?? "Reception"
+                           };
+
+            if (fromDate.HasValue)
+                b2bQuery = b2bQuery.Where(x => x.OccurredAt >= fromDate.Value);
+            if (toDate.HasValue)
+                b2bQuery = b2bQuery.Where(x => x.OccurredAt <= toDate.Value);
+
+            var b2bList = await b2bQuery.ToListAsync();
+
+            // 3. Aggregate Patient Pool
+            result.PatientDiscountAmount = patientFacts.Sum(x => x.DiscountAmount);
+            result.PatientBillsCount = patientFacts.Count;
+            result.PatientAvgDiscount = result.PatientBillsCount > 0 
+                ? Math.Round(result.PatientDiscountAmount / result.PatientBillsCount, 2) 
+                : 0m;
+
+            // 4. Aggregate Partner Pool
+            result.PartnerDiscountAmount = b2bList.Sum(x => x.DiscountAmount);
+            result.PartnerBillsCount = b2bList.Count;
+            result.PartnerAvgDiscount = result.PartnerBillsCount > 0 
+                ? Math.Round(result.PartnerDiscountAmount / result.PartnerBillsCount, 2) 
+                : 0m;
+
+            // 5. Total Metrics
+            result.TotalDiscountAmount = result.PatientDiscountAmount + result.PartnerDiscountAmount;
+            result.TotalBillsDiscounted = result.PatientBillsCount + result.PartnerBillsCount;
+            decimal totalPatientGross = patientFacts.Sum(x => x.GrossAmount > 0 ? x.GrossAmount : (x.DiscountAmount + x.NetAmountAfterDiscount));
+            decimal totalB2bGross = b2bList.Sum(x => x.GrossAmount);
+            result.TotalGrossBilled = totalPatientGross + totalB2bGross;
+
+            result.OverallDiscountPercentage = result.TotalGrossBilled > 0 
+                ? Math.Round((result.TotalDiscountAmount / result.TotalGrossBilled) * 100m, 1) 
+                : 0m;
+
+            result.PatientSharePercentage = result.TotalDiscountAmount > 0 
+                ? Math.Round((result.PatientDiscountAmount / result.TotalDiscountAmount) * 100m, 1) 
+                : 0m;
+
+            result.PartnerSharePercentage = result.TotalDiscountAmount > 0 
+                ? Math.Round((result.PartnerDiscountAmount / result.TotalDiscountAmount) * 100m, 1) 
+                : 0m;
+
+            // 6. Aggregate Top Preset Reasons
+            var allPresets = await _context.DiscountReasons.AsNoTracking().ToListAsync();
+            result.TotalPresetsCount = allPresets.Count;
+            result.ActivePresetsCount = allPresets.Count(p => p.IsActive);
+
+            var presetUsageMap = new Dictionary<string, (int Count, decimal Total)>(StringComparer.OrdinalIgnoreCase);
+            var staffUsageMap = new Dictionary<string, (int Count, decimal Total)>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var f in patientFacts)
+            {
+                string staff = f.AppliedBy ?? "Reception";
+                string reason = "Direct Concession";
+                if (staff.Contains(" - "))
+                {
+                    var parts = staff.Split(new[] { " - " }, 2, StringSplitOptions.None);
+                    staff = parts[0].Trim();
+                    reason = parts.Length > 1 && !string.IsNullOrWhiteSpace(parts[1]) ? parts[1].Trim() : reason;
+                }
+                else
+                {
+                    staff = staff.Trim();
+                }
+
+                // Staff
+                if (staffUsageMap.TryGetValue(staff, out var sVal))
+                    staffUsageMap[staff] = (sVal.Count + 1, sVal.Total + f.DiscountAmount);
+                else
+                    staffUsageMap[staff] = (1, f.DiscountAmount);
+
+                // Reason
+                if (presetUsageMap.TryGetValue(reason, out var rVal))
+                    presetUsageMap[reason] = (rVal.Count + 1, rVal.Total + f.DiscountAmount);
+                else
+                    presetUsageMap[reason] = (1, f.DiscountAmount);
+            }
+
+            // Also include B2B staff entries
+            foreach (var b in b2bList)
+            {
+                string staff = string.IsNullOrWhiteSpace(b.EnteredBy) ? "Reception" : b.EnteredBy.Trim();
+                if (staffUsageMap.TryGetValue(staff, out var sVal))
+                    staffUsageMap[staff] = (sVal.Count + 1, sVal.Total + b.DiscountAmount);
+                else
+                    staffUsageMap[staff] = (1, b.DiscountAmount);
+            }
+
+            int usedPresets = 0;
+            var presetCategories = allPresets.ToDictionary(p => p.ReasonText.Trim(), p => p.Category ?? "General", StringComparer.OrdinalIgnoreCase);
+            var presetIds = allPresets.ToDictionary(p => p.ReasonText.Trim(), p => (Guid?)p.DiscountReasonId, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var kvp in presetUsageMap.OrderByDescending(x => x.Value.Total))
+            {
+                presetCategories.TryGetValue(kvp.Key, out var cat);
+                presetIds.TryGetValue(kvp.Key, out var rid);
+
+                if (rid.HasValue) usedPresets++;
+
+                result.TopPresetReasons.Add(new PresetReasonContributionDto
+                {
+                    DiscountReasonId = rid,
+                    ReasonText = kvp.Key,
+                    Category = cat ?? "General",
+                    UsageCount = kvp.Value.Count,
+                    TotalAmount = kvp.Value.Total,
+                    AvgAmount = kvp.Value.Count > 0 ? Math.Round(kvp.Value.Total / kvp.Value.Count, 2) : 0m,
+                    PercentageOfPatientDiscounts = result.PatientDiscountAmount > 0 
+                        ? Math.Round((kvp.Value.Total / result.PatientDiscountAmount) * 100m, 1) 
+                        : 0m
+                });
+            }
+
+            result.UsedPresetsCount = usedPresets;
+            result.DormantPresetsCount = Math.Max(0, result.TotalPresetsCount - usedPresets);
+
+            // 7. Aggregate Top B2B Partners
+            var partnerGroup = b2bList.GroupBy(x => x.PartnerName)
+                .OrderByDescending(g => g.Sum(x => x.DiscountAmount));
+
+            foreach (var g in partnerGroup)
+            {
+                decimal pTotal = g.Sum(x => x.DiscountAmount);
+                int pCount = g.Count();
+                var first = g.First();
+
+                result.TopB2BPartners.Add(new PartnerConcessionContributionDto
+                {
+                    PartnerId = first.ReferralPartnerId,
+                    PartnerName = g.Key,
+                    BillsCount = pCount,
+                    TotalAmount = pTotal,
+                    AvgAmount = pCount > 0 ? Math.Round(pTotal / pCount, 2) : 0m,
+                    PercentageOfPartnerDiscounts = result.PartnerDiscountAmount > 0 
+                        ? Math.Round((pTotal / result.PartnerDiscountAmount) * 100m, 1) 
+                        : 0m
+                });
+            }
+
+            // 8. Staff Summary
+            foreach (var kvp in staffUsageMap.OrderByDescending(x => x.Value.Total))
+            {
+                result.StaffContributions.Add(new StaffConcessionContributionDto
+                {
+                    StaffName = kvp.Key,
+                    BillsCount = kvp.Value.Count,
+                    TotalAmount = kvp.Value.Total,
+                    AvgAmount = kvp.Value.Count > 0 ? Math.Round(kvp.Value.Total / kvp.Value.Count, 2) : 0m
+                });
+            }
+
+            return result;
         }
 
         public async Task<DiscountReasonDto> GetDiscountReasonByIdAsync(Guid id)
