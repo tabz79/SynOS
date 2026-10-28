@@ -4,6 +4,7 @@ namespace SynOS.Models.Enums.Payables
     {
         Pending,
         PartiallyPaid,
-        Settled
+        Settled,
+        Cancelled
     }
 }

@@ -614,6 +614,58 @@ BEGIN
     );
     CREATE INDEX [IX_DiscountReasons_IsActive_SortOrder] ON [DiscountReasons] ([IsActive], [SortOrder]);
 END
+
+-- 26. Create Payables schema & Expense Audits if missing
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Payables')
+BEGIN
+    EXEC('CREATE SCHEMA [Payables]');
+END
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Payables].[ExpenseCorrectionAudits]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE [Payables].[ExpenseCorrectionAudits] (
+        [Id] uniqueidentifier NOT NULL,
+        [ExpenseId] uniqueidentifier NOT NULL,
+        [ExpenseType] nvarchar(50) NOT NULL,
+        [PreviousAmount] decimal(18, 4) NOT NULL,
+        [NewAmount] decimal(18, 4) NOT NULL,
+        [PreviousCategory] nvarchar(100) NOT NULL,
+        [NewCategory] nvarchar(100) NOT NULL,
+        [PreviousPaymentMethod] nvarchar(50) NOT NULL,
+        [NewPaymentMethod] nvarchar(50) NOT NULL,
+        [Reason] nvarchar(250) NOT NULL,
+        [Notes] nvarchar(1000) NOT NULL,
+        [AuditDiffJson] nvarchar(max) NULL,
+        [CorrectedByUserId] uniqueidentifier NOT NULL,
+        [CorrectedByName] nvarchar(150) NOT NULL,
+        [CorrectedAt] datetime2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT [PK_ExpenseCorrectionAudits] PRIMARY KEY ([Id])
+    );
+    CREATE INDEX [IX_ExpenseCorrectionAudits_ExpenseId] ON [Payables].[ExpenseCorrectionAudits] ([ExpenseId]);
+    CREATE INDEX [IX_ExpenseCorrectionAudits_CorrectedAt] ON [Payables].[ExpenseCorrectionAudits] ([CorrectedAt]);
+END
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[Payables].[ExpenseCancellationAudits]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE [Payables].[ExpenseCancellationAudits] (
+        [Id] uniqueidentifier NOT NULL,
+        [ExpenseId] uniqueidentifier NOT NULL,
+        [ExpenseType] nvarchar(50) NOT NULL,
+        [CancelledAmount] decimal(18, 4) NOT NULL,
+        [Category] nvarchar(100) NOT NULL,
+        [PaymentMethod] nvarchar(50) NOT NULL,
+        [Description] nvarchar(500) NOT NULL,
+        [Reason] nvarchar(250) NOT NULL,
+        [Notes] nvarchar(1000) NOT NULL,
+        [IsDrawerRefunded] bit NOT NULL DEFAULT 1,
+        [CancelledByUserId] uniqueidentifier NOT NULL,
+        [CancelledByName] nvarchar(150) NOT NULL,
+        [CancelledAt] datetime2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT [PK_ExpenseCancellationAudits] PRIMARY KEY ([Id])
+    );
+    CREATE INDEX [IX_ExpenseCancellationAudits_ExpenseId] ON [Payables].[ExpenseCancellationAudits] ([ExpenseId]);
+    CREATE INDEX [IX_ExpenseCancellationAudits_CancelledAt] ON [Payables].[ExpenseCancellationAudits] ([CancelledAt]);
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }

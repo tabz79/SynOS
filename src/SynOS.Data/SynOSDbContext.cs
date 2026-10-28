@@ -388,6 +388,8 @@ namespace SynOS.Data
         public DbSet<ReferenceLabRateRule> ReferenceLabRateRules { get; set; } = null!;
         public DbSet<OverheadExpense> OverheadExpenses { get; set; } = null!;
         public DbSet<OverheadPayableFact> OverheadPayableFacts { get; set; } = null!;
+        public DbSet<ExpenseCorrectionAudit> ExpenseCorrectionAudits { get; set; } = null!;
+        public DbSet<ExpenseCancellationAudit> ExpenseCancellationAudits { get; set; } = null!;
 
         // Compliance Engine DbSets
         public DbSet<StatutoryObligationFact> StatutoryObligationFacts { get; set; }

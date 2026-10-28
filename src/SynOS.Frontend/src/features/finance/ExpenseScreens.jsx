@@ -1998,6 +1998,428 @@ export const ExpenseOverviewTab = () => {
     );
 };
 
+export const CorrectedExpensesScreen = () => {
+    const [corrections, setCorrections] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [shiftFilter, setShiftFilter] = useState('All');
+    const [filterRange, setFilterRange] = useState('30D');
+    const [selectedAudit, setSelectedAudit] = useState(null);
+
+    const loadData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const start = new Date();
+            if (filterRange === 'Today') start.setHours(0,0,0,0);
+            else if (filterRange === '7D') start.setDate(start.getDate() - 7);
+            else if (filterRange === '30D') start.setDate(start.getDate() - 30);
+            else start.setFullYear(2020);
+
+            const data = await FinanceApi.getExpenseCorrections({
+                startDate: start.toISOString(),
+                endDate: new Date().toISOString()
+            });
+            setCorrections(data || []);
+        } catch (err) {
+            console.error('Failed to load expense corrections:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [filterRange]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    const filtered = useMemo(() => {
+        return corrections.filter(c => {
+            const diff = Number(c.newAmount) - Number(c.previousAmount);
+            if (shiftFilter === 'Upward' && diff <= 0) return false;
+            if (shiftFilter === 'Downward' && diff >= 0) return false;
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const matchReason = (c.reason || '').toLowerCase().includes(q);
+                const matchNotes = (c.notes || '').toLowerCase().includes(q);
+                const matchOperator = (c.correctedByName || '').toLowerCase().includes(q);
+                const matchCategory = (c.newCategory || c.previousCategory || '').toLowerCase().includes(q);
+                if (!matchReason && !matchNotes && !matchOperator && !matchCategory) return false;
+            }
+
+            return true;
+        });
+    }, [corrections, shiftFilter, searchQuery]);
+
+    const totalCount = filtered.length;
+    const netShift = filtered.reduce((sum, c) => sum + (Number(c.newAmount) - Number(c.previousAmount)), 0);
+    const upwardCount = filtered.filter(c => (Number(c.newAmount) - Number(c.previousAmount)) > 0).length;
+    const downwardCount = filtered.filter(c => (Number(c.newAmount) - Number(c.previousAmount)) < 0).length;
+
+    return (
+        <div className="p-6 space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex flex-col gap-1">
+                <h1 className="text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-synos-primary" />
+                    Corrected Expenses Audit
+                </h1>
+                <p className="text-xs text-zinc-500">Immutable ledger audit trail of all corrections applied to recorded expenses.</p>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <SummaryCard title="Total Amendments" value={totalCount.toString()} subtitle={`Last ${filterRange}`} />
+                <SummaryCard title="Net Ledger Shift" value={`₹ ${netShift.toFixed(2)}`} type={netShift >= 0 ? "positive" : "negative"} subtitle="Net Delta Amount" />
+                <SummaryCard title="Upward Adjustments" value={upwardCount.toString()} type="positive" subtitle="Increased Spend" />
+                <SummaryCard title="Downward Adjustments" value={downwardCount.toString()} type="negative" subtitle="Reduced Spend" />
+            </div>
+
+            {/* Table Card */}
+            <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b dark:border-zinc-800 border-slate-300 flex flex-wrap items-center justify-between gap-4 bg-slate-50/80 dark:bg-zinc-900/50">
+                    <div className="flex items-center gap-2">
+                        {['Today', '7D', '30D', 'All Time'].map(range => (
+                            <button
+                                key={range}
+                                onClick={() => setFilterRange(range)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer",
+                                    filterRange === range ? "bg-synos-primary text-white" : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                                )}
+                            >
+                                {range}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-800/80 p-0.5 rounded-lg text-xs font-bold">
+                            {['All', 'Upward', 'Downward'].map(s => (
+                                <button
+                                    key={s}
+                                    onClick={() => setShiftFilter(s)}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer",
+                                        shiftFilter === s ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" : "text-zinc-500"
+                                    )}
+                                >
+                                    {s}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="relative">
+                            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input
+                                type="text"
+                                placeholder="Search reason or operator..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="pl-9 pr-4 py-1.5 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg text-xs w-60 focus:outline-none focus:ring-1 focus:ring-synos-primary/50"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-zinc-100/60 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-zinc-200 text-zinc-500 uppercase text-[10px] font-bold">
+                            <tr>
+                                <th className="p-3.5">Timestamp</th>
+                                <th className="p-3.5">Expense / Category</th>
+                                <th className="p-3.5">Previous → New Amount</th>
+                                <th className="p-3.5">Difference</th>
+                                <th className="p-3.5">Mandatory Reason</th>
+                                <th className="p-3.5">Authorized By</th>
+                                <th className="p-3.5 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y dark:divide-zinc-800/60 divide-zinc-200">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="7" className="p-8 text-center text-zinc-400">
+                                        <Loader2 className="w-5 h-5 animate-spin mx-auto text-synos-primary" />
+                                        <span className="text-xs mt-1 block">Loading corrections audit...</span>
+                                    </td>
+                                </tr>
+                            ) : filtered.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="p-8 text-center text-zinc-400">
+                                        No expense corrections recorded for this period.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filtered.map(item => {
+                                    const diff = Number(item.newAmount) - Number(item.previousAmount);
+                                    return (
+                                        <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                                            <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                                {new Date(item.correctedAt).toLocaleString()}
+                                            </td>
+                                            <td className="p-3.5">
+                                                <div className="font-bold dark:text-zinc-200 text-zinc-800">
+                                                    {item.newCategory || item.previousCategory || 'Daily Expense'}
+                                                </div>
+                                                <span className="text-[10px] text-zinc-400 font-mono">
+                                                    ID: {item.expenseId ? String(item.expenseId).substring(0, 8) : 'N/A'}
+                                                </span>
+                                            </td>
+                                            <td className="p-3.5 whitespace-nowrap font-bold">
+                                                <span className="text-zinc-400 line-through mr-1">₹{Number(item.previousAmount).toFixed(2)}</span>
+                                                <span className="dark:text-white text-zinc-900">₹{Number(item.newAmount).toFixed(2)}</span>
+                                            </td>
+                                            <td className="p-3.5 whitespace-nowrap">
+                                                <span className={cn(
+                                                    "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                                    diff > 0 ? "bg-rose-500/10 text-rose-500 border-rose-500/20" :
+                                                    diff < 0 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                                                    "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+                                                )}>
+                                                    {diff > 0 ? `+₹${diff.toFixed(2)}` : diff < 0 ? `-₹${Math.abs(diff).toFixed(2)}` : '₹0.00'}
+                                                </span>
+                                            </td>
+                                            <td className="p-3.5 max-w-xs truncate text-zinc-700 dark:text-zinc-300">
+                                                <div className="font-semibold">{item.reason}</div>
+                                                {item.notes && <div className="text-[10px] text-zinc-400 truncate">{item.notes}</div>}
+                                            </td>
+                                            <td className="p-3.5 whitespace-nowrap font-medium text-zinc-600 dark:text-zinc-400">
+                                                {item.correctedByName || 'Staff'}
+                                            </td>
+                                            <td className="p-3.5 text-right whitespace-nowrap">
+                                                <button
+                                                    onClick={() => setSelectedAudit(item)}
+                                                    className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 border dark:border-white/10 border-zinc-200 text-synos-primary hover:bg-synos-primary hover:text-white transition-all text-[11px] font-bold cursor-pointer"
+                                                >
+                                                    Audit Diff
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Audit Diff Modal */}
+            {selectedAudit && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-2xl shadow-2xl border dark:border-white/10 border-zinc-200 overflow-hidden animate-in zoom-in-95">
+                        <div className="p-5 border-b dark:border-white/10 border-zinc-200 flex items-center justify-between">
+                            <h3 className="text-sm font-black dark:text-white">Correction Audit Details</h3>
+                            <button onClick={() => setSelectedAudit(null)} className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                <X className="w-4 h-4 text-zinc-400" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4 text-xs">
+                            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-zinc-100 dark:bg-white/5">
+                                <div>
+                                    <span className="text-[10px] font-black uppercase text-zinc-400">Previous Amount</span>
+                                    <p className="text-base font-black text-zinc-500">₹{Number(selectedAudit.previousAmount).toFixed(2)}</p>
+                                    <span className="text-[10px] text-zinc-400">{selectedAudit.previousCategory}</span>
+                                </div>
+                                <div>
+                                    <span className="text-[10px] font-black uppercase text-synos-primary">Amended Amount</span>
+                                    <p className="text-base font-black text-synos-primary">₹{Number(selectedAudit.newAmount).toFixed(2)}</p>
+                                    <span className="text-[10px] text-zinc-400">{selectedAudit.newCategory}</span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase text-zinc-400">Reason</span>
+                                <p className="font-semibold dark:text-white">{selectedAudit.reason}</p>
+                            </div>
+
+                            {selectedAudit.notes && (
+                                <div className="space-y-1">
+                                    <span className="text-[10px] font-black uppercase text-zinc-400">Operator Notes</span>
+                                    <p className="text-zinc-600 dark:text-zinc-300">{selectedAudit.notes}</p>
+                                </div>
+                            )}
+
+                            <div className="pt-2 border-t dark:border-zinc-800 border-zinc-200 flex justify-between text-[11px] text-zinc-400">
+                                <span>Authorized By: <b className="text-zinc-700 dark:text-zinc-200">{selectedAudit.correctedByName}</b></span>
+                                <span>{new Date(selectedAudit.correctedAt).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export const DeletedExpensesScreen = () => {
+    const [cancellations, setCancellations] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterRange, setFilterRange] = useState('30D');
+
+    const loadData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const start = new Date();
+            if (filterRange === 'Today') start.setHours(0,0,0,0);
+            else if (filterRange === '7D') start.setDate(start.getDate() - 7);
+            else if (filterRange === '30D') start.setDate(start.getDate() - 30);
+            else start.setFullYear(2020);
+
+            const data = await FinanceApi.getExpenseCancellations({
+                startDate: start.toISOString(),
+                endDate: new Date().toISOString()
+            });
+            setCancellations(data || []);
+        } catch (err) {
+            console.error('Failed to load expense cancellations:', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [filterRange]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    const filtered = useMemo(() => {
+        if (!searchQuery.trim()) return cancellations;
+        const q = searchQuery.toLowerCase();
+        return cancellations.filter(c => 
+            (c.reason || '').toLowerCase().includes(q) ||
+            (c.notes || '').toLowerCase().includes(q) ||
+            (c.category || '').toLowerCase().includes(q) ||
+            (c.description || '').toLowerCase().includes(q) ||
+            (c.cancelledByName || '').toLowerCase().includes(q)
+        );
+    }, [cancellations, searchQuery]);
+
+    const totalCount = filtered.length;
+    const totalReversed = filtered.reduce((sum, c) => sum + Number(c.cancelledAmount || 0), 0);
+    const drawerRestored = filtered.filter(c => c.isDrawerRefunded).reduce((sum, c) => sum + Number(c.cancelledAmount || 0), 0);
+
+    return (
+        <div className="p-6 space-y-6 animate-in fade-in duration-500">
+            {/* Header */}
+            <div className="flex flex-col gap-1">
+                <h1 className="text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-rose-500" />
+                    Deleted & Cancelled Expenses Audit
+                </h1>
+                <p className="text-xs text-zinc-500">Registry of cancelled disbursements, ledger reversals, and cash drawer restorations.</p>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <SummaryCard title="Total Deletions" value={totalCount.toString()} subtitle={`Last ${filterRange}`} />
+                <SummaryCard title="Total Reversals" value={`₹ ${totalReversed.toFixed(2)}`} type="negative" subtitle="Ledger Reversals" />
+                <SummaryCard title="Restored to Cash Drawer" value={`₹ ${drawerRestored.toFixed(2)}`} type="positive" subtitle="Physical Currency Restored" />
+            </div>
+
+            {/* Table Card */}
+            <div className="synos-dept-card rounded-2xl overflow-hidden shadow-sm">
+                <div className="p-4 border-b dark:border-zinc-800 border-slate-300 flex flex-wrap items-center justify-between gap-4 bg-slate-50/80 dark:bg-zinc-900/50">
+                    <div className="flex items-center gap-2">
+                        {['Today', '7D', '30D', 'All Time'].map(range => (
+                            <button
+                                key={range}
+                                onClick={() => setFilterRange(range)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer",
+                                    filterRange === range ? "bg-synos-primary text-white" : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+                                )}
+                            >
+                                {range}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="relative">
+                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                        <input
+                            type="text"
+                            placeholder="Search reason, category, operator..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9 pr-4 py-1.5 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg text-xs w-64 focus:outline-none focus:ring-1 focus:ring-synos-primary/50"
+                        />
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-zinc-100/60 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-zinc-200 text-zinc-500 uppercase text-[10px] font-bold">
+                            <tr>
+                                <th className="p-3.5">Cancelled At</th>
+                                <th className="p-3.5">Expense / Description</th>
+                                <th className="p-3.5">Category</th>
+                                <th className="p-3.5">Reversal Amount</th>
+                                <th className="p-3.5">Drawer Restored</th>
+                                <th className="p-3.5">Cancellation Reason</th>
+                                <th className="p-3.5">Cancelled By</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y dark:divide-zinc-800/60 divide-zinc-200">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="7" className="p-8 text-center text-zinc-400">
+                                        <Loader2 className="w-5 h-5 animate-spin mx-auto text-rose-500" />
+                                        <span className="text-xs mt-1 block">Loading cancellations audit...</span>
+                                    </td>
+                                </tr>
+                            ) : filtered.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="p-8 text-center text-zinc-400">
+                                        No deleted expenses found for this period.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filtered.map(item => (
+                                    <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                                        <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                            {new Date(item.cancelledAt).toLocaleString()}
+                                        </td>
+                                        <td className="p-3.5 max-w-xs">
+                                            <div className="font-bold line-through text-zinc-400 truncate">
+                                                {item.description || 'Expense Entry'}
+                                            </div>
+                                            <span className="text-[10px] text-zinc-400 font-mono">
+                                                ID: {item.expenseId ? String(item.expenseId).substring(0, 8) : 'N/A'}
+                                            </span>
+                                        </td>
+                                        <td className="p-3.5 whitespace-nowrap text-zinc-600 dark:text-zinc-400">
+                                            {item.category}
+                                        </td>
+                                        <td className="p-3.5 whitespace-nowrap font-black text-rose-500">
+                                            ₹{Number(item.cancelledAmount).toFixed(2)}
+                                        </td>
+                                        <td className="p-3.5 whitespace-nowrap">
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                                item.isDrawerRefunded 
+                                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
+                                                    : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+                                            )}>
+                                                {item.isDrawerRefunded ? "Restored" : "Not Restored"}
+                                            </span>
+                                        </td>
+                                        <td className="p-3.5 max-w-xs truncate text-zinc-700 dark:text-zinc-300">
+                                            <div className="font-semibold text-rose-600 dark:text-rose-400">{item.reason}</div>
+                                            {item.notes && <div className="text-[10px] text-zinc-400 truncate">{item.notes}</div>}
+                                        </td>
+                                        <td className="p-3.5 whitespace-nowrap font-medium text-zinc-600 dark:text-zinc-400">
+                                            {item.cancelledByName || 'Staff'}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export const ExpenseTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
@@ -2009,7 +2431,9 @@ export const ExpenseTerminal = () => {
         { id: 'payables', label: 'Vendor Payables', icon: IndianRupee },
         { id: 'vendors', label: 'Vendor Master', icon: Building2 },
         { id: 'daily', label: 'Daily Expenses', icon: Zap },
-        { id: 'overheads', label: 'Monthly Overheads', icon: Calendar }
+        { id: 'overheads', label: 'Monthly Overheads', icon: Calendar },
+        { id: 'corrections', label: 'Corrected Expenses', icon: ShieldCheck },
+        { id: 'deletions', label: 'Deleted Expenses', icon: AlertCircle }
     ];
 
     useEffect(() => {
@@ -2064,6 +2488,8 @@ export const ExpenseTerminal = () => {
                 {tab === 'vendors' && <VendorMasterScreen />}
                 {tab === 'daily' && <DailyExpensesScreen />}
                 {tab === 'overheads' && <OverheadExpensesScreen />}
+                {tab === 'corrections' && <CorrectedExpensesScreen />}
+                {tab === 'deletions' && <DeletedExpensesScreen />}
             </div>
         </div>
     );

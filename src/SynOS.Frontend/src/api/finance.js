@@ -932,6 +932,86 @@ export const FinanceApi = {
         return result;
     },
 
+    getReceptionExpensesFeed: async (filter = 'today', userId = null) => {
+        let url = `/api/v1/OverheadExpenses/reception-feed?filter=${encodeURIComponent(filter)}`;
+        const effectiveUserId = userId || localStorage.getItem('synos_user_id');
+        if (effectiveUserId) {
+            url += `&userId=${encodeURIComponent(effectiveUserId)}`;
+        }
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to fetch reception expense feed");
+        return response.json();
+    },
+
+    correctExpense: async (id, data) => {
+        const response = await fetch(`/api/v1/OverheadExpenses/${id}/correct`, {
+            method: 'PUT',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({
+                newAmount: Number(data.newAmount || data.amount),
+                newCategory: data.newCategory || data.category,
+                newPaymentMethod: data.newPaymentMethod || data.paymentMethod,
+                newDescription: data.newDescription || data.description,
+                reason: data.reason,
+                notes: data.notes || '',
+                userId: localStorage.getItem('synos_user_id'),
+                userName: localStorage.getItem('synos_user_name') || 'Reception Staff'
+            })
+        });
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err || "Failed to correct expense");
+        }
+        return response.json();
+    },
+
+    cancelExpense: async (id, data) => {
+        const response = await fetch(`/api/v1/OverheadExpenses/${id}/cancel`, {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify({
+                reason: data.reason,
+                notes: data.notes || '',
+                refundToDrawer: data.refundToDrawer !== false,
+                userId: localStorage.getItem('synos_user_id'),
+                userName: localStorage.getItem('synos_user_name') || 'Reception Staff'
+            })
+        });
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err || "Failed to cancel expense");
+        }
+        return response.json();
+    },
+
+    getExpenseCorrections: async (params = {}) => {
+        const searchParams = new URLSearchParams();
+        if (params.query) searchParams.append('query', params.query);
+        if (params.startDate) searchParams.append('startDate', params.startDate);
+        if (params.endDate) searchParams.append('endDate', params.endDate);
+        const url = `/api/v1/OverheadExpenses/corrections${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to fetch expense corrections");
+        return response.json();
+    },
+
+    getExpenseCancellations: async (params = {}) => {
+        const searchParams = new URLSearchParams();
+        if (params.query) searchParams.append('query', params.query);
+        if (params.startDate) searchParams.append('startDate', params.startDate);
+        if (params.endDate) searchParams.append('endDate', params.endDate);
+        const url = `/api/v1/OverheadExpenses/cancellations${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to fetch expense cancellations");
+        return response.json();
+    },
+
     getVendors: async () => {
         const response = await fetch('/api/v1/finance/Vendors', {
             headers: FinanceApi.getHeaders()

@@ -53,7 +53,9 @@ export function FinanceLayout() {
                 { name: "Vendor Payables", path: "/finance/expenses/payables" },
                 { name: "Vendor Master", path: "/finance/expenses/vendors" },
                 { name: "Daily Expenses", path: "/finance/expenses/daily" },
-                { name: "Monthly Overheads", path: "/finance/expenses/overheads" }
+                { name: "Monthly Overheads", path: "/finance/expenses/overheads" },
+                { name: "Corrected Expenses", path: "/finance/expenses/corrections" },
+                { name: "Deleted Expenses", path: "/finance/expenses/deletions" }
             ]
         },
         {

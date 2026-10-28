@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -10,6 +10,7 @@ import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells'
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
+import { ReceptionExpenseDrawer } from '@/features/reception/components/ReceptionExpenseDrawer'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
@@ -26,6 +27,7 @@ export function ReceptionScreen() {
     const [actionQueue, setActionQueue] = useState([]); // Real Data
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+    const [isExpenseDrawerOpen, setIsExpenseDrawerOpen] = useState(false);
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
@@ -304,7 +306,7 @@ export function ReceptionScreen() {
                 <div className="flex h-full gap-4">
                     {/* Main Dashboard Panel - STABLE WIDTH, NO CONTRACTION/EXPANSION REF-LOW */}
                     <div className="flex-1 flex flex-col min-h-0 min-w-0">
-                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
+                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
                             <div
                                 ref={summaryRef}
                                 className="mb-4 shrink-0"
@@ -352,6 +354,16 @@ export function ReceptionScreen() {
                                     </div>
 
                                     <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsExpenseDrawerOpen(true)}
+                                            className={cn(
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                                theme === 'dark' ? "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:text-white hover:bg-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-200 hover:text-rose-900 hover:bg-rose-100"
+                                            )}
+                                        >
+                                            <Receipt className="w-4 h-4" />
+                                            Record Expense
+                                        </button>
                                         <button
                                             onClick={() => navigate('/admin/patients')}
                                             className={cn(
@@ -401,7 +413,7 @@ export function ReceptionScreen() {
                     {/* Activity Stream Column when Drawer is closed */}
                     <div className={cn(
                         "w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0",
-                        (isIntentPanelOpen || isInventoryModalOpen) ? "hidden" : "flex"
+                        (isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen) ? "hidden" : "flex"
                     )}>
                         <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
@@ -411,6 +423,13 @@ export function ReceptionScreen() {
                     <StockRequestPanel
                         isOpen={isInventoryModalOpen}
                         onClose={() => setIsInventoryModalOpen(false)}
+                    />
+                    <ReceptionExpenseDrawer
+                        isOpen={isExpenseDrawerOpen}
+                        onClose={() => {
+                            setIsExpenseDrawerOpen(false);
+                            refreshDashboard();
+                        }}
                     />
                 </div>
             </div>
