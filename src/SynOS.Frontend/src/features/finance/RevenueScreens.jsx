@@ -2745,45 +2745,157 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                             </div>
                         </div>
 
-                        {/* Parsed JSON Staged Actions */}
+                        {/* Dynamic Change Badges */}
                         {(() => {
                             const p = parsePayload(selectedCorrection.payloadJson);
-                            if (!p) return null;
+                            const summaryList = selectedCorrection.changeSummary || p?.ChangeSummary || p?.changeSummary || [];
+                            const detailedDiff = selectedCorrection.detailedDiff || p?.DetailedDiff || p?.detailedDiff;
+
                             return (
                                 <div className="space-y-3 pt-1 border-t dark:border-zinc-800 border-zinc-200">
-                                    <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Staged Actions In This Amendment</label>
+                                    <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Forensic Audit Diff & System Context</label>
                                     
-                                    {p.AddTestCodes && p.AddTestCodes.length > 0 && (
-                                        <div className="space-y-1">
-                                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Tests Added:</span>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {p.AddTestCodes.map((code, idx) => (
-                                                    <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                                                        +{code}
+                                    {summaryList && summaryList.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {summaryList.map((pill, idx) => {
+                                                const isDoc = pill.startsWith('Doctor:');
+                                                const isRec = pill.startsWith('Partner Receivable:');
+                                                const isAdd = pill.startsWith('Added:');
+                                                const isCancel = pill.startsWith('Cancelled:') || pill.startsWith('Removed:');
+                                                const isMode = pill.startsWith('Mode:');
+                                                return (
+                                                    <span 
+                                                        key={idx}
+                                                        className={cn(
+                                                            "px-2 py-1 rounded-md text-[11px] font-bold border",
+                                                            isDoc ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30" :
+                                                            isRec ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30" :
+                                                            isAdd ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" :
+                                                            isCancel ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30" :
+                                                            isMode ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30" :
+                                                            "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
+                                                        )}
+                                                    >
+                                                        {pill}
                                                     </span>
-                                                ))}
-                                            </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
 
-                                    {p.RemoveOrderIds && p.RemoveOrderIds.length > 0 && (
-                                        <div className="space-y-1">
-                                            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">Orders Cancelled / Removed:</span>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {p.RemoveOrderIds.map((id, idx) => (
-                                                    <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 line-through">
-                                                        Order #{idx + 1}
+                                    {/* Detailed Diff Cards */}
+                                    {detailedDiff ? (
+                                        <div className="space-y-2 text-xs">
+                                            {detailedDiff.doctorChange && (
+                                                <div className="p-2.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/40 flex items-center justify-between">
+                                                    <span className="font-bold text-indigo-700 dark:text-indigo-300">Referring Partner / Doctor</span>
+                                                    <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                                        <span className="line-through text-zinc-400 mr-1">{detailedDiff.doctorChange.previous || 'None'}</span>
+                                                        <span>→ {detailedDiff.doctorChange.current || 'None'}</span>
                                                     </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                                </div>
+                                            )}
 
-                                    {p.SettlementAction && (
-                                        <div className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                                            <span className="text-zinc-500 font-medium">Settlement Action:</span>
-                                            <span className="font-bold text-zinc-900 dark:text-white capitalize">{p.SettlementAction}</span>
+                                            {detailedDiff.receivableChange && (
+                                                <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 flex items-center justify-between">
+                                                    <span className="font-bold text-amber-700 dark:text-amber-300">Partner Receivable Shift</span>
+                                                    <span className="font-mono font-bold">
+                                                        <span className="text-zinc-400 line-through mr-1">₹{Number(detailedDiff.receivableChange.previous || 0).toLocaleString()}</span>
+                                                        <span className="text-zinc-900 dark:text-white">→ ₹{Number(detailedDiff.receivableChange.current || 0).toLocaleString()}</span>
+                                                        <span className={cn("ml-2 text-[10px] px-1.5 py-0.5 rounded", Number(detailedDiff.receivableChange.shift || 0) >= 0 ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600")}>
+                                                            {Number(detailedDiff.receivableChange.shift || 0) >= 0 ? `+₹${detailedDiff.receivableChange.shift}` : `-₹${Math.abs(detailedDiff.receivableChange.shift)}`}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {detailedDiff.billingModeChange && (
+                                                <div className="p-2.5 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 flex items-center justify-between">
+                                                    <span className="font-bold text-purple-700 dark:text-purple-300">Billing Mode</span>
+                                                    <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                                                        <span className="line-through text-zinc-400 mr-1">{detailedDiff.billingModeChange.previous}</span>
+                                                        <span>→ {detailedDiff.billingModeChange.current}</span>
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {detailedDiff.addedTests && detailedDiff.addedTests.length > 0 && (
+                                                <div className="p-2.5 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-1">
+                                                    <span className="font-bold text-emerald-700 dark:text-emerald-300 block">Tests Added:</span>
+                                                    <div className="space-y-0.5">
+                                                        {detailedDiff.addedTests.map((t, idx) => (
+                                                            <div key={idx} className="flex justify-between text-[11px] text-zinc-800 dark:text-zinc-200">
+                                                                <span>+{t.name}</span>
+                                                                <span className="font-mono font-bold text-emerald-600">+₹{Number(t.price || 0).toLocaleString()}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {detailedDiff.cancelledTests && detailedDiff.cancelledTests.length > 0 && (
+                                                <div className="p-2.5 rounded-lg bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 space-y-1">
+                                                    <span className="font-bold text-rose-700 dark:text-rose-300 block">Tests Cancelled / Removed:</span>
+                                                    <div className="space-y-0.5">
+                                                        {detailedDiff.cancelledTests.map((t, idx) => (
+                                                            <div key={idx} className="flex justify-between text-[11px] text-zinc-800 dark:text-zinc-200">
+                                                                <span className="line-through text-zinc-400">-{t.name}</span>
+                                                                <span className="font-mono font-bold text-rose-600">-₹{Number(t.price || 0).toLocaleString()}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {detailedDiff.demographicsChange && detailedDiff.demographicsChange.length > 0 && (
+                                                <div className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 space-y-0.5">
+                                                    <span className="font-bold text-zinc-700 dark:text-zinc-300 block">Demographics Updated:</span>
+                                                    {detailedDiff.demographicsChange.map((d, idx) => (
+                                                        <div key={idx} className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                                                            • {d}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
+                                    ) : (
+                                        /* Fallback to raw payload actions */
+                                        p && (
+                                            <div className="space-y-2">
+                                                {p.AddTestCodes && p.AddTestCodes.length > 0 && (
+                                                    <div className="space-y-1">
+                                                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Tests Added:</span>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {p.AddTestCodes.map((code, idx) => (
+                                                                <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                                    +{code}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {p.RemoveOrderIds && p.RemoveOrderIds.length > 0 && (
+                                                    <div className="space-y-1">
+                                                        <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">Orders Cancelled / Removed:</span>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {p.RemoveOrderIds.map((id, idx) => (
+                                                                <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 line-through">
+                                                                    Order #{idx + 1}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {p.SettlementAction && (
+                                                    <div className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                                                        <span className="text-zinc-500 font-medium">Settlement Action:</span>
+                                                        <span className="font-bold text-zinc-900 dark:text-white capitalize">{p.SettlementAction}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             );

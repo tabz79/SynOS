@@ -1815,8 +1815,36 @@ namespace SynOS.Services
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
                 {
+                    // === CAPTURE TRUE "BEFORE" SNAPSHOT FOR FORENSIC AUDIT ===
+                    decimal previousInvoiceTotal = invoice.Total;
+                    decimal previousGross = invoice.GrossAmount;
+                    decimal previousDiscount = invoice.DiscountAmount;
+                    Guid? previousPartnerId = visit.ReferralPartnerId;
+                    var previousPartner = visit.ReferralPartnerId.HasValue 
+                        ? await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId.Value) 
+                        : null;
+                    string previousDoctorName = previousPartner?.Name ?? visit.ReferrerText ?? "Direct / None";
+                    string previousBillingMode = visit.PaymentCollectionModel == "PartnerCollects" ? "PrepaidPartner" : visit.BillingType.ToString();
+                    decimal previousB2BDiscountAmount = visit.B2BDiscountAmount ?? 0m;
+                    var previousReceivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId && r.DebtorType == DebtorType.Partner);
+                    decimal previousReceivableAmount = previousReceivable?.Amount ?? 0m;
+                    string previousReceivablePartnerName = previousReceivable?.DebtorName ?? previousDoctorName;
+
+                    var previousOrders = visit.Orders
+                        .Where(o => o.Status != OrderStatus.Cancelled)
+                        .Select(o => new { o.OrderId, o.TestCode, Name = o.Test != null ? o.Test.TestName : o.TestCode, Price = o.Price })
+                        .ToList();
+
+                    string prevFirstName = visit.Patient?.FirstName ?? "";
+                    string prevLastName = visit.Patient?.LastName ?? "";
+                    string prevMobile = visit.Patient?.CurrentPhoneNumber ?? "";
+                    string prevGender = visit.Patient?.Gender ?? "";
+                    int? prevAge = visit.Patient?.IsDateOfBirthKnown == true && visit.Patient.DateOfBirth > DateTime.MinValue
+                        ? (int?)Math.Floor((DateTime.UtcNow - visit.Patient.DateOfBirth).TotalDays / 365.25)
+                        : null;
+
                     // 1. Patient Demographics In-Place Updates
-                if (visit.Patient != null)
+                    if (visit.Patient != null)
                 {
                     if (!string.IsNullOrWhiteSpace(dto.FirstName)) visit.Patient.FirstName = dto.FirstName.Trim();
                     if (!string.IsNullOrWhiteSpace(dto.LastName)) visit.Patient.LastName = dto.LastName.Trim();
@@ -2179,20 +2207,163 @@ namespace SynOS.Services
                     await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
                 }
 
-                // 10. Audit Fact & Branch Operational Event
+                // 10. Compile Dynamic Forensic Audit Diff & Branch Operational Event
+                decimal newInvoiceTotal = invoice.Total;
+                decimal newGross = invoice.GrossAmount;
+                decimal newDiscount = invoice.DiscountAmount;
+                var newReceivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId && r.DebtorType == DebtorType.Partner);
+                decimal newReceivableAmount = newReceivable?.Amount ?? 0m;
+                var newPartner = visit.ReferralPartnerId.HasValue 
+                    ? await _context.ReferralPartners.FindAsync(visit.ReferralPartnerId.Value) 
+                    : null;
+                string newDoctorName = newPartner?.Name ?? visit.ReferrerText ?? "Direct / None";
+                string newReceivablePartnerName = newReceivable?.DebtorName ?? newDoctorName;
+                string newBillingMode = visit.PaymentCollectionModel == "PartnerCollects" ? "PrepaidPartner" : visit.BillingType.ToString();
+
+                var newOrders = visit.Orders
+                    .Where(o => o.Status != OrderStatus.Cancelled)
+                    .Select(o => new { o.OrderId, o.TestCode, Name = o.Test != null ? o.Test.TestName : o.TestCode, Price = o.Price })
+                    .ToList();
+
+                var changeSummary = new List<string>();
+
+                // 1. Doctor / Referral Shift
+                bool doctorChanged = !string.Equals(previousDoctorName, newDoctorName, StringComparison.OrdinalIgnoreCase);
+                if (doctorChanged)
+                {
+                    changeSummary.Add($"Doctor: {previousDoctorName} → {newDoctorName}");
+                }
+
+                // 2. B2B Partner Receivable Shift
+                bool receivableChanged = (previousReceivableAmount != newReceivableAmount) || 
+                                         (previousPartnerId != visit.ReferralPartnerId && newReceivableAmount > 0);
+                if (receivableChanged)
+                {
+                    decimal shift = newReceivableAmount - previousReceivableAmount;
+                    string shiftSign = shift >= 0 ? $"+₹{shift:N0}" : $"-₹{Math.Abs(shift):N0}";
+                    if (previousPartnerId != visit.ReferralPartnerId && previousPartnerId.HasValue && visit.ReferralPartnerId.HasValue)
+                    {
+                        changeSummary.Add($"Receivable Reallocated: {previousReceivablePartnerName} (₹{previousReceivableAmount:N0}) → {newReceivablePartnerName} (₹{newReceivableAmount:N0})");
+                    }
+                    else
+                    {
+                        changeSummary.Add($"Partner Receivable: ₹{previousReceivableAmount:N0} → ₹{newReceivableAmount:N0} ({shiftSign})");
+                    }
+                }
+
+                // 3. Billing Mode Shift
+                bool modeChanged = !string.Equals(previousBillingMode, newBillingMode, StringComparison.OrdinalIgnoreCase);
+                if (modeChanged)
+                {
+                    changeSummary.Add($"Mode: {previousBillingMode} → {newBillingMode}");
+                }
+
+                // 4. Test Additions
+                var addedOrders = newOrders.Where(no => !previousOrders.Any(po => po.TestCode.Equals(no.TestCode, StringComparison.OrdinalIgnoreCase))).ToList();
+                if (addedOrders.Any())
+                {
+                    changeSummary.Add($"+Tests: {string.Join(", ", addedOrders.Select(a => $"{a.Name} (₹{a.Price:N0})"))}");
+                }
+
+                // 5. Test Removals
+                var removedOrders = previousOrders.Where(po => !newOrders.Any(no => no.OrderId == po.OrderId)).ToList();
+                if (removedOrders.Any())
+                {
+                    changeSummary.Add($"-Cancelled: {string.Join(", ", removedOrders.Select(r => $"{r.Name} (₹{r.Price:N0})"))}");
+                }
+
+                // 6. Discount Shift
+                if (previousDiscount != newDiscount)
+                {
+                    changeSummary.Add($"Discount: ₹{previousDiscount:N0} → ₹{newDiscount:N0}");
+                }
+
+                // 7. Demographics Shift
+                var demoDiffs = new List<string>();
+                string newFirst = visit.Patient?.FirstName ?? "";
+                string newLast = visit.Patient?.LastName ?? "";
+                if (!string.Equals(prevFirstName, newFirst, StringComparison.OrdinalIgnoreCase) || !string.Equals(prevLastName, newLast, StringComparison.OrdinalIgnoreCase))
+                {
+                    demoDiffs.Add($"Name: '{prevFirstName} {prevLastName}'.Trim() → '{newFirst} {newLast}'.Trim()");
+                }
+                if (dto.Age.HasValue && prevAge.HasValue && prevAge.Value != dto.Age.Value)
+                {
+                    demoDiffs.Add($"Age: {prevAge.Value}Y → {dto.Age.Value}Y");
+                }
+                if (!string.IsNullOrWhiteSpace(dto.Gender) && !string.Equals(prevGender, dto.Gender, StringComparison.OrdinalIgnoreCase))
+                {
+                    demoDiffs.Add($"Gender: {prevGender} → {dto.Gender}");
+                }
+                if (!string.IsNullOrWhiteSpace(dto.Mobile) && !string.Equals(prevMobile, dto.Mobile, StringComparison.OrdinalIgnoreCase))
+                {
+                    demoDiffs.Add($"Phone: {prevMobile} → {dto.Mobile}");
+                }
+                if (demoDiffs.Any())
+                {
+                    changeSummary.Add($"Demographics: {string.Join(", ", demoDiffs)}");
+                }
+
+                // 8. Bill Amount Net Shift
+                if (previousInvoiceTotal != newInvoiceTotal)
+                {
+                    decimal billShift = newInvoiceTotal - previousInvoiceTotal;
+                    string shiftSign = billShift >= 0 ? $"+₹{billShift:N0}" : $"-₹{Math.Abs(billShift):N0}";
+                    changeSummary.Add($"Bill Total: ₹{previousInvoiceTotal:N0} → ₹{newInvoiceTotal:N0} ({shiftSign})");
+                }
+
+                // 9. Settlement Desk Action
+                if (settlementAction == "RefundIssued")
+                {
+                    changeSummary.Add($"Cash Refund: ₹{Math.Abs(dto.SettlementDifference):N0} disbursed at desk");
+                }
+                else if (settlementAction == "AdditionalPaymentRecorded")
+                {
+                    changeSummary.Add($"Payment Collected: ₹{dto.SettlementDifference:N0} received at desk");
+                }
+
+                if (!changeSummary.Any())
+                {
+                    changeSummary.Add("Visit Details Verified (Zero Financial Shift)");
+                }
+
+                var correctionType = addedOrders.Any() ? CorrectionType.AddTest :
+                    (removedOrders.Any() ? CorrectionType.RemoveTest :
+                    (doctorChanged ? CorrectionType.ChangeReferral :
+                    (previousDiscount != newDiscount ? CorrectionType.ChangeDiscount :
+                    (previousInvoiceTotal != newInvoiceTotal ? CorrectionType.PriceOverride : CorrectionType.PriceOverride))));
+
                 var auditCorrectionFact = new CorrectionFact
                 {
                     CorrectionId = Guid.NewGuid(),
                     VisitId = visit.VisitId,
                     InvoiceId = invoice.InvoiceId,
-                    CorrectionType = CorrectionType.PriceOverride, // Generic amendment
-                    PreviousAmount = invoice.Total - dto.SettlementDifference,
-                    NewAmount = invoice.Total,
+                    CorrectionType = correctionType,
+                    PreviousAmount = previousInvoiceTotal,
+                    NewAmount = newInvoiceTotal,
                     CreatedBy = actorUserId,
                     CreatedAt = DateTime.UtcNow,
                     Reason = dto.Reason,
                     PayloadJson = JsonSerializer.Serialize(new
                     {
+                        ChangeSummary = changeSummary,
+                        DetailedDiff = new
+                        {
+                            Doctor = new { Previous = previousDoctorName, New = newDoctorName, Changed = doctorChanged },
+                            Receivable = new { 
+                                Previous = previousReceivableAmount, 
+                                New = newReceivableAmount, 
+                                Shift = newReceivableAmount - previousReceivableAmount,
+                                PreviousPartner = previousReceivablePartnerName,
+                                NewPartner = newReceivablePartnerName,
+                                Changed = receivableChanged 
+                            },
+                            BillingMode = new { Previous = previousBillingMode, New = newBillingMode, Changed = modeChanged },
+                            BillTotal = new { Previous = previousInvoiceTotal, New = newInvoiceTotal, Shift = newInvoiceTotal - previousInvoiceTotal },
+                            TestsAdded = addedOrders,
+                            TestsRemoved = removedOrders,
+                            Demographics = demoDiffs,
+                            Settlement = new { Action = settlementAction, Difference = dto.SettlementDifference }
+                        },
                         dto.FirstName,
                         dto.LastName,
                         dto.Age,
@@ -2206,10 +2377,11 @@ namespace SynOS.Services
                         dto.BillingMode,
                         dto.DiscountValue,
                         dto.DiscountReason,
-                        DoctorChange = visit.ReferralPartner?.Name,
+                        DoctorChange = doctorChanged ? $"{previousDoctorName} → {newDoctorName}" : newDoctorName,
                         dto.SettlementDifference,
                         SettlementAction = settlementAction,
-                        dto.Reason
+                        dto.Reason,
+                        ActorName = actorName
                     })
                 };
                 _context.CorrectionFacts.Add(auditCorrectionFact);

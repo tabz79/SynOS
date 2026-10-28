@@ -630,6 +630,7 @@ namespace SynOS.Api.Controllers
                 users.TryGetValue(c.CreatedBy, out var staffName);
 
                 var changeSummary = new List<string>();
+                object? detailedDiff = null;
                 try
                 {
                     if (!string.IsNullOrWhiteSpace(c.PayloadJson))
@@ -637,48 +638,62 @@ namespace SynOS.Api.Controllers
                         using var doc = JsonDocument.Parse(c.PayloadJson);
                         var root = doc.RootElement;
 
-                        if (root.TryGetProperty("AddTestCodes", out var addCodes) && addCodes.ValueKind == JsonValueKind.Array)
+                        // Check if rich ChangeSummary was already compiled
+                        if (root.TryGetProperty("ChangeSummary", out var csProp) && csProp.ValueKind == JsonValueKind.Array)
                         {
-                            var codes = addCodes.EnumerateArray().Select(x => x.GetString()).Where(s => !string.IsNullOrEmpty(s)).ToList();
-                            if (codes.Any())
+                            foreach (var item in csProp.EnumerateArray())
                             {
-                                changeSummary.Add($"+Tests: {string.Join(", ", codes)}");
+                                var s = item.GetString();
+                                if (!string.IsNullOrWhiteSpace(s)) changeSummary.Add(s);
                             }
                         }
 
-                        if (root.TryGetProperty("RemoveOrderIds", out var remOrders) && remOrders.ValueKind == JsonValueKind.Array)
+                        if (root.TryGetProperty("DetailedDiff", out var ddProp))
                         {
-                            var remCount = remOrders.GetArrayLength();
-                            if (remCount > 0)
+                            detailedDiff = JsonSerializer.Deserialize<object>(ddProp.GetRawText());
+                        }
+
+                        // Fallback parsing for legacy records
+                        if (!changeSummary.Any())
+                        {
+                            if (root.TryGetProperty("AddTestCodes", out var addCodes) && addCodes.ValueKind == JsonValueKind.Array)
                             {
-                                changeSummary.Add($"-{remCount} Test{(remCount > 1 ? "s" : "")} Cancelled");
+                                var codes = addCodes.EnumerateArray().Select(x => x.GetString()).Where(s => !string.IsNullOrEmpty(s)).ToList();
+                                if (codes.Any())
+                                {
+                                    changeSummary.Add($"+Tests: {string.Join(", ", codes)}");
+                                }
                             }
-                        }
 
-                        if (root.TryGetProperty("DoctorChange", out var docChange))
-                        {
-                            changeSummary.Add($"Doctor: {docChange.GetString()}");
-                        }
-                        else if (visit?.ReferralPartner != null)
-                        {
-                            changeSummary.Add($"Doctor: {visit.ReferralPartner.Name}");
-                        }
+                            if (root.TryGetProperty("RemoveOrderIds", out var remOrders) && remOrders.ValueKind == JsonValueKind.Array)
+                            {
+                                var remCount = remOrders.GetArrayLength();
+                                if (remCount > 0)
+                                {
+                                    changeSummary.Add($"-{remCount} Test{(remCount > 1 ? "s" : "")} Cancelled");
+                                }
+                            }
 
-                        if (root.TryGetProperty("BillingMode", out var bMode))
-                        {
-                            changeSummary.Add($"Mode: {bMode.GetString()}");
-                        }
+                            if (root.TryGetProperty("DoctorChange", out var docChange))
+                            {
+                                changeSummary.Add($"Doctor: {docChange.GetString()}");
+                            }
+                            else if (visit?.ReferralPartner != null)
+                            {
+                                changeSummary.Add($"Doctor: {visit.ReferralPartner.Name}");
+                            }
 
-                        if (root.TryGetProperty("SettlementAction", out var setAct) && setAct.GetString() != "None")
-                        {
-                            var actStr = setAct.GetString();
-                            if (actStr == "RefundIssued") changeSummary.Add("Refund Issued at Desk");
-                            else if (actStr == "AdditionalPaymentRecorded") changeSummary.Add("Additional Payment Collected");
-                        }
+                            if (root.TryGetProperty("BillingMode", out var bMode))
+                            {
+                                changeSummary.Add($"Mode: {bMode.GetString()}");
+                            }
 
-                        if (root.TryGetProperty("Age", out var _) || root.TryGetProperty("Gender", out _) || root.TryGetProperty("FirstName", out _))
-                        {
-                            changeSummary.Add("Patient Demographics Corrected");
+                            if (root.TryGetProperty("SettlementAction", out var setAct) && setAct.GetString() != "None")
+                            {
+                                var actStr = setAct.GetString();
+                                if (actStr == "RefundIssued") changeSummary.Add("Refund Issued at Desk");
+                                else if (actStr == "AdditionalPaymentRecorded") changeSummary.Add("Additional Payment Collected");
+                            }
                         }
                     }
                 }
@@ -713,6 +728,7 @@ namespace SynOS.Api.Controllers
                     Reason = c.Reason ?? "Administrative visit amendment",
                     PayloadJson = c.PayloadJson,
                     ChangeSummary = changeSummary,
+                    DetailedDiff = detailedDiff,
                     IsReversal = c.IsReversal
                 };
             });
@@ -871,10 +887,10 @@ namespace SynOS.Api.Controllers
             var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
             var defaultSettings = new Dictionary<string, object>
             {
-                ["labLegalName"] = lab?.Name ?? "SynOS Diagnostic Centre & Laboratory",
-                ["labTradeName"] = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "Advanced Pathology & Imaging Services",
-                ["address"] = lab?.Address ?? "Central Diagnostic Facility, Hyderabad, Telangana",
-                ["phone"] = lab?.Phone ?? "+91 98765 43210",
+                ["labLegalName"] = lab?.Name ?? "SRI DIVYA DIAGNOSTIC CENTRE",
+                ["labTradeName"] = !string.IsNullOrEmpty(lab?.Tagline) ? lab.Tagline : "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+                ["address"] = !string.IsNullOrEmpty(lab?.Address) ? lab.Address : "Wyra Road, Khammam | Ph: 9876543210",
+                ["phone"] = !string.IsNullOrEmpty(lab?.Phone) ? lab.Phone : "9876543210",
                 ["email"] = lab?.Email ?? "billing@synoslab.in",
                 ["website"] = lab?.Website ?? "www.synoslab.in",
                 ["gstin"] = "36AAAAA0000A1Z5",
@@ -883,7 +899,7 @@ namespace SynOS.Api.Controllers
                 ["accountNumber"] = "50200012345678",
                 ["ifscCode"] = "HDFC0001234",
                 ["branch"] = "Main Branch, Khammam",
-                ["accountHolderName"] = lab?.Name ?? "SynOS Healthcare Diagnostic Services",
+                ["accountHolderName"] = lab?.Name ?? "SRI DIVYA DIAGNOSTIC CENTRE",
                 ["upiId"] = !string.IsNullOrEmpty(lab?.UpiId) ? lab.UpiId : "synoslab@hdfcbank",
                 ["enableUpiQr"] = true,
                 ["customQrImage"] = "",
@@ -987,6 +1003,21 @@ namespace SynOS.Api.Controllers
                     letterheadMode = "raw_thermal",
                     topMarginMm = 0,
                     enableUpiQr = true,
+                    enableBankDetails = false,
+                    customTerms = (string?)null,
+                    isSystemDefault = true
+                },
+                new {
+                    slotId = "prepaid_patient_a4_slip",
+                    module = "Corporate B2B",
+                    moduleCode = "corporate",
+                    slotName = "Prepaid Patient Slip (A4)",
+                    triggerDescription = "Generated for corporate B2B and prepaid partner visits in A4 format (zero patient pricing disclosed).",
+                    assignedTemplateId = "template_prepaid_patient_a4",
+                    templateName = "Prepaid Patient Slip (A4)",
+                    letterheadMode = "digital",
+                    topMarginMm = 40,
+                    enableUpiQr = false,
                     enableBankDetails = false,
                     customTerms = (string?)null,
                     isSystemDefault = true

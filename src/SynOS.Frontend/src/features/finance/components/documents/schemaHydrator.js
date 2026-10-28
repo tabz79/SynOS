@@ -280,6 +280,74 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             break;
         }
 
+        case 'prepaid_patient_a4_slip': {
+            const p = liveData.patient || {};
+            const refPartnerName = liveData.referringDoctorName || liveData.partnerName || liveData.billing?.referral?.partner?.displayName || liveData.billing?.referral?.partner?.name || liveData.billingContext?.referralPartnerName || "Referring Doctor / Clinic";
+            const refClinic = liveData.partnerClinic || liveData.billingContext?.referralPartnerClinic || "";
+
+            if (boxes.docBadge?.fields) {
+                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || (liveData.token ? `ORD-${liveData.token}` : boxes.docBadge.fields.billNumber.value);
+                if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date || liveData.dateTime ? new Date(liveData.date || liveData.dateTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : new Date().toLocaleString();
+                if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = p.token || liveData.token || "COUNTER";
+                if (boxes.docBadge.fields.branchName) boxes.docBadge.fields.branchName.value = p.branchName || liveData.branchName || "Main Facility";
+                if (boxes.docBadge.fields.paymentStatus) {
+                    boxes.docBadge.fields.paymentStatus.value = "PARTNER SETTLED (NO DESK PAYMENT)";
+                }
+            }
+
+            if (boxes.partyDetails?.fields) {
+                if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} / ${p.gender || ''}` : "Adult");
+                if (boxes.partyDetails.fields.phone) boxes.partyDetails.fields.phone.value = p.phone || p.mobile || "N/A";
+                if (boxes.partyDetails.fields.refDoctor) {
+                    boxes.partyDetails.fields.refDoctor.value = refClinic ? `${refPartnerName} (${refClinic})` : refPartnerName;
+                }
+                if (boxes.partyDetails.fields.sponsorName) {
+                    boxes.partyDetails.fields.sponsorName.value = refClinic ? `${refPartnerName} (${refClinic})` : refPartnerName;
+                }
+                if (boxes.partyDetails.fields.address) boxes.partyDetails.fields.address.value = p.address || "N/A";
+            }
+
+            if (boxes.billerDetails?.fields) {
+                const billerObj = liveData.biller || liveData.visit?.biller || {};
+                const billerDisplay = liveData.billerName 
+                    || (typeof liveData.biller === 'string' ? liveData.biller : '')
+                    || (billerObj.billedBy || (billerObj.fullName ? `${billerObj.fullName}${billerObj.username ? ` (${billerObj.username})` : ''}` : ''))
+                    || liveData.billedBy 
+                    || "Billing Desk";
+
+                if (boxes.billerDetails.fields.billedBy) {
+                    boxes.billerDetails.fields.billedBy.value = billerDisplay;
+                }
+            }
+
+            if (boxes.itemsTable && Array.isArray(liveData.items || liveData.orders)) {
+                const list = liveData.items || liveData.orders;
+                boxes.itemsTable.rows = list.map((it, idx) => ({
+                    id: `r-${idx}`,
+                    index: idx + 1,
+                    description: it.testName || it.name || it.description || 'Test',
+                    department: it.department || it.section || 'Pathology / Radiology',
+                    sampleType: it.sampleType || it.specimen || 'Standard Specimen',
+                    tat: it.tat || it.timeline || 'Same Day'
+                }));
+            }
+
+            if (boxes.financialSummary?.fields) {
+                if (boxes.financialSummary.fields.counterPayable) {
+                    boxes.financialSummary.fields.counterPayable.value = "₹0.00 (Zero Desk Cash Due)";
+                }
+                if (boxes.financialSummary.fields.settlementMode) {
+                    boxes.financialSummary.fields.settlementMode.value = "Direct Settlement by Referring Clinic / Doctor";
+                }
+                if (boxes.financialSummary.fields.settlementType) {
+                    boxes.financialSummary.fields.settlementType.value = "B2B Partner Prepaid Account";
+                }
+            }
+            break;
+        }
+
         case 'patient_thermal_prepaid_slip': {
             const p = liveData.patient || {};
             const refPartnerName = liveData.referringDoctorName || liveData.partnerName || liveData.billing?.referral?.partner?.displayName || liveData.billing?.referral?.partner?.name || "Corporate B2B Partner";

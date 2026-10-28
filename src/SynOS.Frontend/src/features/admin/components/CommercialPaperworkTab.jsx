@@ -45,7 +45,7 @@ const getSlotsForCategory = (catId, list = []) => {
         return list.filter(m => m.slotId === 'patient_tax_invoice' || m.slotId === 'patient_thermal_receipt');
     }
     if (catId === 'corporate') {
-        return list.filter(m => m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'corporate_b2b_invoice' || m.slotId === 'summary_corporate');
+        return list.filter(m => m.slotId === 'prepaid_patient_a4_slip' || m.slotId === 'patient_thermal_prepaid_slip' || m.slotId === 'corporate_b2b_invoice' || m.slotId === 'summary_corporate');
     }
     if (catId === 'insurance') {
         return list.filter(m => m.slotId === 'insurance_tpa_claim' || m.slotId === 'summary_insurance');
@@ -98,12 +98,12 @@ export const CommercialPaperworkTab = () => {
 
     // Commercial Stationery Settings
     const [settings, setSettings] = useState({
-        labLegalName: "SynOS Diagnostic Centre & Laboratory",
-        labTradeName: "Advanced Pathology & Imaging Services",
+        labLegalName: "SRI DIVYA DIAGNOSTIC CENTRE",
+        labTradeName: "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
         logoUrl: "",
         receiptPrinterName: "",
-        address: "Central Diagnostic Facility, Hyderabad, Telangana",
-        phone: "+91 98765 43210",
+        address: "Wyra Road, Khammam | Ph: 9876543210",
+        phone: "9876543210",
         email: "billing@synoslab.in",
         website: "www.synoslab.in",
         gstin: "36AAAAA0000A1Z5",
@@ -111,8 +111,8 @@ export const CommercialPaperworkTab = () => {
         bankName: "HDFC Bank",
         accountNumber: "50200012345678",
         ifscCode: "HDFC0001234",
-        branch: "Main Branch, Hyderabad",
-        accountHolderName: "SynOS Healthcare Diagnostic Services",
+        branch: "Main Branch, Khammam",
+        accountHolderName: "SRI DIVYA DIAGNOSTIC CENTRE",
         upiId: "synoslab@hdfcbank",
         enableUpiQr: true,
         customQrImage: "",
@@ -508,6 +508,9 @@ export const CommercialPaperworkTab = () => {
         patient_thermal_receipt: [
             { id: 'template_thermal_pos_80mm', label: '80mm POS Slip' },
             { id: 'template_thermal_pos_58mm', label: '58mm POS Slip' }
+        ],
+        prepaid_patient_a4_slip: [
+            { id: 'template_prepaid_patient_a4', label: 'Prepaid Patient Slip (A4)' }
         ],
         patient_thermal_prepaid_slip: [
             { id: 'template_thermal_prepaid_80mm', label: '80mm Prepaid Slip' }

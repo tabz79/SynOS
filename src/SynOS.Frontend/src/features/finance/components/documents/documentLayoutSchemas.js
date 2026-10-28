@@ -10,10 +10,10 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Lab Letterhead & Clinic Brand',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'Comprehensive Pathology, Radiology & Molecular Diagnostics' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Diagnostic Complex, Wyra Road, Khammam, Telangana - 507001' },
-                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '9876543210' },
                     email: { id: 'email', enabled: true, label: 'Email', value: 'billing@synoslab.in' },
                     gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
                     pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
@@ -160,10 +160,10 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Tagline', value: 'Automated Pathology & Imaging' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
                     address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
-                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
+                    gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
             },
@@ -253,6 +253,115 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
         }
     },
 
+    prepaid_patient_a4_slip: {
+        slotId: 'prepaid_patient_a4_slip',
+        title: 'Prepaid Patient Slip (A4)',
+        boxes: {
+            header: {
+                id: 'header',
+                name: 'Lab Letterhead & Clinic Brand',
+                enabled: true,
+                fields: {
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '9876543210' },
+                    email: { id: 'email', enabled: true, label: 'Email', value: 'billing@synoslab.in' },
+                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
+                    pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
+                },
+                customLines: []
+            },
+            docBadge: {
+                id: 'docBadge',
+                name: 'Document Badge & Meta Numbers',
+                enabled: true,
+                fields: {
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'PATIENT ACKNOWLEDGEMENT & TEST ORDER' },
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Sub-Badge', value: 'Prepaid / Partner Account Billing' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Order / Slip No', value: 'ORD-202610-0042' },
+                    date: { id: 'date', enabled: true, label: 'Order Date & Time', value: '14/10/2026 12:45 PM' },
+                    tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'COUNTER-104' },
+                    branchName: { id: 'branchName', enabled: true, label: 'Branch Facility', value: 'Main Diagnostic Facility' },
+                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Payment Status', value: 'PARTNER ACCOUNT SETTLED (NO CASH DUE)' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Patient & Sponsor Particulars',
+                enabled: true,
+                title: 'Patient & Referral Information',
+                fields: {
+                    fullName: { id: 'fullName', enabled: true, label: 'Patient Name', value: 'K. Ramesh Kumar' },
+                    uhid: { id: 'uhid', enabled: true, label: 'UHID / MRN', value: 'SYN-2026-9042' },
+                    ageGender: { id: 'ageGender', enabled: true, label: 'Age / Gender', value: '46 Yrs / Male' },
+                    phone: { id: 'phone', enabled: true, label: 'Contact Phone', value: '+91 98480 22334' },
+                    refDoctor: { id: 'refDoctor', enabled: true, label: 'Referring Doctor', value: 'Dr. Khaleeq Ur Rahman, MD' },
+                    sponsorName: { id: 'sponsorName', enabled: true, label: 'Referral Partner / Account', value: 'Khaleeq Polyclinic & Hospital' },
+                    address: { id: 'address', enabled: true, label: 'Patient Address', value: 'Doctors Colony, Khammam' }
+                },
+                customLines: []
+            },
+            billerDetails: {
+                id: 'billerDetails',
+                name: 'Biller / Desk Audit Particulars',
+                enabled: true,
+                title: 'Billing Desk',
+                fields: {
+                    billedBy: { id: 'billedBy', enabled: true, label: 'Billed by', value: 'Dr. Vasudeva Rao (admin)' },
+                    discountReason: { id: 'discountReason', enabled: false, label: 'Discount Context', value: '' }
+                },
+                customLines: []
+            },
+            itemsTable: {
+                id: 'itemsTable',
+                name: 'Investigation Line Items Table (Zero Pricing Disclosed)',
+                enabled: true,
+                columns: {
+                    index: { id: 'index', enabled: true, label: '#' },
+                    description: { id: 'description', enabled: true, label: 'Investigation / Prescribed Test' },
+                    department: { id: 'department', enabled: true, label: 'Department / Section' },
+                    sampleType: { id: 'sampleType', enabled: true, label: 'Specimen / Sample' },
+                    tat: { id: 'tat', enabled: true, label: 'Expected Delivery Timeline' }
+                },
+                rows: [
+                    { id: 'row-1', index: 1, description: 'Complete Blood Picture (CBC with Automated 5-Part Differential)', department: 'Hematology', sampleType: 'EDTA Whole Blood (2ml)', tat: 'Within 2-3 Hours' },
+                    { id: 'row-2', index: 2, description: 'Liver Function Test (LFT 11 Parameters)', department: 'Biochemistry', sampleType: 'Plain Serum (SST)', tat: 'Within 3-4 Hours' },
+                    { id: 'row-3', index: 3, description: 'Whole Abdomen & Pelvis Ultrasound (USG)', department: 'Radiology & Imaging', sampleType: 'In-Person Scan', tat: 'Same Day' }
+                ]
+            },
+            financialSummary: {
+                id: 'financialSummary',
+                name: 'Prepaid Settlement Notice',
+                enabled: true,
+                title: 'BILLED TO REFERRAL PARTNER ACCOUNT',
+                isPrepaidNotice: true,
+                fields: {
+                    settlementType: { id: 'settlementType', enabled: true, label: 'Billing Mode', value: 'B2B Partner Prepaid Account' },
+                    settlementMode: { id: 'settlementMode', enabled: true, label: 'Settlement Status', value: 'Direct Settlement by Referring Clinic / Doctor' },
+                    counterPayable: { id: 'counterPayable', enabled: true, label: 'Amount Payable at Desk', value: '₹0.00 (Zero Desk Cash Due)' }
+                },
+                customLines: []
+            },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'Patient Instructions & Collection Guidelines',
+                enabled: true,
+                title: 'Instructions for Sample Collection & Test Reports',
+                text: '1. Please present this order slip at the Phlebotomy / Sample Collection and Radiology reception desks.\n2. Diagnostic findings and reports will be dispatched directly to your referring doctor / clinic upon clinical verification.\n3. Digital PDF test reports will be shared via WhatsApp / SMS on your registered mobile number.\n4. For duplicate copies or clinical enquiries, please contact the central counter with your UHID and Order No.',
+                systemNote: 'This is an authentic computer-generated Test Order Slip generated by SynOS Diagnostic OS.'
+            },
+            signatory: {
+                id: 'signatory',
+                name: 'Authorised Desk Signatory',
+                enabled: true,
+                title: 'Phlebotomy & Billing Desk',
+                subtitle: 'Sri Divya Diagnostic Centre'
+            }
+        }
+    },
+
     patient_thermal_prepaid_slip: {
         slotId: 'patient_thermal_prepaid_slip',
         title: 'Prepaid B2B Investigation Slip (80mm)',
@@ -263,10 +372,10 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Thermal Brand Header',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SYNOS DIAGNOSTIC LAB' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Tagline', value: 'Automated Pathology & Imaging' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Lab Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    tagline: { id: 'tagline', enabled: false, label: 'Tagline', value: 'Automated Pathology & Imaging' },
                     address: { id: 'address', enabled: true, label: 'Address', value: 'Wyra Road, Khammam | Ph: 9876543210' },
-                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
+                    gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' }
                 },
                 customLines: []
             },

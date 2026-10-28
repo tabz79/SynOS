@@ -1236,9 +1236,14 @@ export function IntentPanel({ onVisitUpdated }) {
                     <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
                         <button
                             type="button"
-                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                            onClick={() => setTaxInvoiceModal({ 
+                                isOpen: true, 
+                                slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
+                                data: buildTaxInvoiceData(), 
+                                title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
+                            })}
                             className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                            title="Preview & Print Full A4 Tax Invoice"
+                            title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
                         >
                             <FileText className="w-4 h-4" /> A4 Receipt
                         </button>
@@ -1318,9 +1323,14 @@ export function IntentPanel({ onVisitUpdated }) {
                     <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
                         <button
                             type="button"
-                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                            onClick={() => setTaxInvoiceModal({ 
+                                isOpen: true, 
+                                slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
+                                data: buildTaxInvoiceData(), 
+                                title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
+                            })}
                             className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                            title="Preview & Print Full A4 Tax Invoice"
+                            title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
                         >
                             <FileText className="w-4 h-4" /> A4 Receipt
                         </button>
@@ -1379,9 +1389,14 @@ export function IntentPanel({ onVisitUpdated }) {
                                     <>
                                         <button
                                             type="button"
-                                            onClick={() => setTaxInvoiceModal({ isOpen: true, slotId: 'patient_tax_invoice', data: buildTaxInvoiceData(), title: 'Patient Tax Invoice (A4)' })}
+                                            onClick={() => setTaxInvoiceModal({ 
+                                                isOpen: true, 
+                                                slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
+                                                data: buildTaxInvoiceData(), 
+                                                title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
+                                            })}
                                             className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                                            title="Preview & Print Full A4 Tax Invoice"
+                                            title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
                                         >
                                             <FileText className="w-4 h-4" /> A4 Receipt
                                         </button>
