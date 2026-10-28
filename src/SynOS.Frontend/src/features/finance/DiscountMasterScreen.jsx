@@ -30,7 +30,10 @@ import {
     ArrowRight,
     ArrowUpRight,
     Sparkles,
-    CheckCircle
+    CheckCircle,
+    Volume2,
+    Sun,
+    ArrowLeftRight
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn, formatDateCompact } from '@/lib/utils';
@@ -434,350 +437,362 @@ export function DiscountMasterScreen() {
             <div className="flex-1 overflow-y-auto px-8 py-4 space-y-6 custom-scrollbar">
                 {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
                 {tab === 'intelligence' && (
-                    <div className="space-y-6 animate-in fade-in duration-300">
+                    <div className="space-y-4 animate-in fade-in duration-300">
                         {loadingIntelligence ? (
-                            <div className="flex flex-col items-center justify-center p-24 gap-3 text-zinc-400">
-                                <Loader2 className="w-7 h-7 animate-spin text-synos-primary" />
-                                <span className="text-xs font-semibold">Loading Concession Intelligence Deck...</span>
+                            <div className="flex flex-col items-center justify-center p-20 gap-2.5 text-zinc-400">
+                                <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
+                                <span className="text-xs font-medium">Loading Concession Intelligence Deck...</span>
                             </div>
                         ) : intelligence ? (
                             <>
-                                {/* 1. HERO CONTROL DECK (iOS Control Center Banner) */}
-                                <div className="p-6 md:p-8 rounded-3xl bg-slate-100/70 dark:bg-zinc-900/70 backdrop-blur-md border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-8">
-                                    {/* Left: Net Concession Position */}
-                                    <div className="space-y-2 lg:max-w-md">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                                                Total Concessions (All Channels)
-                                            </span>
-                                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                                {intelligence.overallDiscountPercentage}% of Total Tariff
-                                            </span>
-                                        </div>
-                                        <p className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
-                                            ₹{intelligence.totalDiscountAmount.toLocaleString()}
-                                        </p>
-                                        <div className="flex items-center gap-3 text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                                            <span>Total Billed Tariff: ₹{intelligence.totalGrossBilled.toLocaleString()}</span>
-                                            <span>•</span>
-                                            <span>{intelligence.totalBillsDiscounted} Discounted Bills</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Right: Dual Channel Volume Sliders */}
-                                    <div className="flex-1 max-w-xl space-y-4">
-                                        {/* Channel 1: Walk-In Patients */}
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                    Walk-In Patient Concessions (Desk)
+                                {/* SECTION 1: HERO CONTROL DECK (Finance Hub Style) */}
+                                <div className="space-y-1.5">
+                                    <h3 className="text-xs font-semibold text-slate-700 dark:text-zinc-300 px-0.5">
+                                        Finance Hub
+                                    </h3>
+                                    <div className="p-4 sm:p-5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6">
+                                        {/* Left: Net Cash Position Equivalent */}
+                                        <div className="space-y-1.5 lg:min-w-[240px]">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
+                                                    Net Concessions Given
                                                 </span>
-                                                <span className="font-black text-zinc-900 dark:text-white">
-                                                    ₹{intelligence.patientDiscountAmount.toLocaleString()} <span className="font-normal text-zinc-400">({intelligence.patientBillsCount} bills · {intelligence.patientSharePercentage}%)</span>
+                                                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700">
+                                                    +{intelligence.overallDiscountPercentage}% Realized
                                                 </span>
                                             </div>
-                                            {/* iOS Style Pill Track */}
-                                            <div className="relative h-6 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
-                                                <div 
-                                                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 relative"
-                                                    style={{ width: `${Math.max(5, Math.min(100, intelligence.patientSharePercentage))}%` }}
-                                                >
-                                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-sm"></div>
+                                            <p className="text-3xl font-bold text-slate-800 dark:text-white tracking-tight">
+                                                ₹{intelligence.totalDiscountAmount.toLocaleString()}
+                                            </p>
+                                            <p className="text-xs text-slate-500 dark:text-zinc-400 font-normal">
+                                                Total Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
+                                            </p>
+                                        </div>
+
+                                        {/* Right: iOS Volume / Brightness Sliders */}
+                                        <div className="flex-1 max-w-2xl space-y-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {/* Slider 1: Collected / Patient Walk-Ins */}
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-zinc-400">
+                                                        <span>Walk-In Patient: ₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
+                                                        <span className="text-[10px] text-slate-400 font-normal">({intelligence.patientBillsCount} bills)</span>
+                                                    </div>
+                                                    <div className="relative h-6 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 flex items-center">
+                                                        <div 
+                                                            className="h-full rounded-full bg-gradient-to-r from-slate-600 via-slate-500 to-slate-400 dark:from-zinc-500 dark:to-zinc-400 flex items-center relative transition-all duration-500"
+                                                            style={{ width: `${Math.max(12, Math.min(100, intelligence.patientSharePercentage))}%` }}
+                                                        >
+                                                            <Volume2 size={11} className="text-white/80 ml-2 shrink-0" />
+                                                            <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-300 shadow-sm border border-white/80 absolute right-0 top-1/2 -translate-y-1/2" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Slider 2: Uncollected / Corporate B2B */}
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-zinc-400">
+                                                        <span>B2B Wholesale: ₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
+                                                        <span className="text-[10px] text-slate-400 font-normal">({intelligence.partnerBillsCount} bills)</span>
+                                                    </div>
+                                                    <div className="relative h-6 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 flex items-center">
+                                                        <div 
+                                                            className="h-full rounded-full bg-gradient-to-r from-slate-700/80 via-teal-700/70 to-teal-500/70 dark:from-zinc-600 dark:to-teal-500 flex items-center relative transition-all duration-500"
+                                                            style={{ width: `${Math.max(12, Math.min(100, intelligence.partnerSharePercentage))}%` }}
+                                                        >
+                                                            <Sun size={11} className="text-white/80 ml-2 shrink-0" />
+                                                            <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-zinc-300 shadow-sm border border-white/80 absolute right-0 top-1/2 -translate-y-1/2" />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Channel 2: B2B Partners */}
-                                        <div className="space-y-1.5">
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                                                    Corporate B2B Wholesale Concessions
-                                                </span>
-                                                <span className="font-black text-zinc-900 dark:text-white">
-                                                    ₹{intelligence.partnerDiscountAmount.toLocaleString()} <span className="font-normal text-zinc-400">({intelligence.partnerBillsCount} bills · {intelligence.partnerSharePercentage}%)</span>
-                                                </span>
-                                            </div>
-                                            {/* iOS Style Pill Track */}
-                                            <div className="relative h-6 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 shadow-inner">
-                                                <div 
-                                                    className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500 relative"
-                                                    style={{ width: `${Math.max(5, Math.min(100, intelligence.partnerSharePercentage))}%` }}
-                                                >
-                                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white shadow-sm"></div>
+                                            {/* Thin Split Bar (Bills/Payouts We Owe style) */}
+                                            <div className="space-y-1 pt-1">
+                                                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                                    <span>Concession Split (Patient vs B2B)</span>
+                                                    <span className="font-medium text-slate-700 dark:text-zinc-300">
+                                                        {intelligence.patientSharePercentage}% Patient · {intelligence.partnerSharePercentage}% B2B
+                                                    </span>
+                                                </div>
+                                                <div className="relative h-1.5 bg-slate-200/80 dark:bg-zinc-800 rounded-full overflow-hidden flex">
+                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-slate-500 h-full" />
+                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-teal-500/70 h-full" />
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* Distribution Note */}
-                                        <div className="pt-1 flex items-center justify-between text-[11px] text-zinc-500 font-medium border-t border-slate-200/70 dark:border-zinc-800/80">
-                                            <span>Average Patient Concession: ₹{intelligence.patientAvgDiscount}</span>
-                                            <span>Average B2B Concession: ₹{intelligence.partnerAvgDiscount}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* 2. MIDDLE SECTION: THE TWO CHANNELS SIDE-BY-SIDE */}
-                                <div className="space-y-3">
-                                    <div className="px-1 flex items-center justify-between">
-                                        <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-                                            Channel Breakdown & Concession Drivers
-                                        </h3>
-                                        <span className="text-[10px] text-zinc-400 font-medium">Ranked by Financial Impact</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                        {/* CARD A: TOP WALK-IN PRESETS */}
-                                        <div className="p-6 rounded-3xl synos-dept-card space-y-4">
-                                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                                                        <ShieldCheck size={16} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-sm font-black text-zinc-900 dark:text-white">
-                                                            Top Walk-In Preset Reasons
-                                                        </h4>
-                                                        <p className="text-[10px] text-zinc-500">Authorized reasons chosen at reception for patients</p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                                                    {intelligence.topPresetReasons.length} Reasons Active
+                                {/* SECTION 2: CHANNEL BREAKDOWN (Department & Modality Economics Style) */}
+                                <div className="space-y-1.5">
+                                    <h3 className="text-xs font-semibold text-slate-700 dark:text-zinc-300 px-0.5">
+                                        Department & Modality Economics
+                                    </h3>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                        {/* CARD 1: PATHOLOGY STYLE (Top Patient Presets) */}
+                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] space-y-3">
+                                            <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-zinc-800/80">
+                                                <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                                                    Patient Walk-In Presets
+                                                </span>
+                                                <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500">
+                                                    Margin %
                                                 </span>
                                             </div>
 
-                                            {/* Preset List */}
-                                            <div className="space-y-3">
+                                            <div className="space-y-1.5">
                                                 {intelligence.topPresetReasons.slice(0, 5).map((r, i) => (
-                                                    <div key={i} className="p-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800 space-y-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="text-xs font-black text-zinc-900 dark:text-white">
-                                                                    {r.reasonText}
-                                                                </span>
-                                                                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-md bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                                                                    {r.category}
-                                                                </span>
+                                                    <div key={i} className="h-9 px-2 rounded-xl flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                                        <div className="flex items-center gap-2 min-w-0 max-w-[170px]">
+                                                            <div className="w-6 h-6 rounded-full bg-slate-200/60 dark:bg-zinc-800 flex items-center justify-center text-slate-500 shrink-0">
+                                                                <ShieldCheck size={12} />
                                                             </div>
-                                                            <div className="text-right">
-                                                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
-                                                                    ₹{r.totalAmount.toLocaleString()}
-                                                                </span>
-                                                                <span className="text-[10px] text-zinc-400 ml-1.5">
-                                                                    ({r.usageCount} {r.usageCount === 1 ? 'bill' : 'bills'})
-                                                                </span>
+                                                            <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 truncate">
+                                                                {r.reasonText}
+                                                            </span>
+                                                        </div>
+
+                                                        <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 font-mono shrink-0">
+                                                            ₹{r.totalAmount.toLocaleString()}
+                                                        </span>
+
+                                                        {/* Inline Slider with Knob */}
+                                                        <div className="flex-1 max-w-[120px] h-3 bg-slate-200/80 dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center">
+                                                            <div 
+                                                                className="h-full rounded-full bg-gradient-to-r from-slate-600 to-slate-400 relative"
+                                                                style={{ width: `${Math.min(100, Math.max(15, r.percentageOfPatientDiscounts))}%` }}
+                                                            >
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-slate-200 shadow-sm border border-white/70 absolute right-0 top-1/2 -translate-y-1/2" />
                                                             </div>
                                                         </div>
-                                                        {/* Slider bar */}
-                                                        <div className="h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className="h-full bg-blue-500 rounded-full"
-                                                                style={{ width: `${Math.min(100, Math.max(5, r.percentageOfPatientDiscounts))}%` }}
-                                                            />
+
+                                                        {/* Circular Progress Gauge */}
+                                                        <div className="w-4 h-4 rounded-full border-2 border-slate-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                                                         </div>
                                                     </div>
                                                 ))}
 
                                                 {intelligence.topPresetReasons.length === 0 && (
-                                                    <div className="text-center py-8 text-zinc-400 text-xs">
-                                                        No patient presets used yet.
-                                                    </div>
+                                                    <p className="text-xs text-slate-400 py-4 text-center">No patient presets used yet.</p>
                                                 )}
                                             </div>
-
-                                            <button 
-                                                onClick={() => navigate('/finance/discounts/reasons')}
-                                                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                                            >
-                                                <span>View All {intelligence.totalPresetsCount} Preset Definitions & Analytics</span>
-                                                <ArrowRight size={13} />
-                                            </button>
                                         </div>
 
-                                        {/* CARD B: TOP B2B PARTNERS */}
-                                        <div className="p-6 rounded-3xl synos-dept-card space-y-4">
-                                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800/80 pb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-                                                        <Building2 size={16} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-sm font-black text-zinc-900 dark:text-white">
-                                                            Top Corporate B2B Concessions
-                                                        </h4>
-                                                        <p className="text-[10px] text-zinc-500">Hospitals & referral accounts with wholesale rates</p>
-                                                    </div>
-                                                </div>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                                    {intelligence.topB2BPartners.length} Partners
+                                        {/* CARD 2: RADIOLOGY STYLE (Top Corporate B2B Concessions) */}
+                                        <div className="p-4 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] space-y-3">
+                                            <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-zinc-800/80">
+                                                <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                                                    Corporate B2B Wholesale
+                                                </span>
+                                                <span className="text-[10px] font-medium text-slate-400 dark:text-zinc-500">
+                                                    Margin %
                                                 </span>
                                             </div>
 
-                                            {/* Partners List */}
-                                            <div className="space-y-3">
+                                            <div className="space-y-1.5">
                                                 {intelligence.topB2BPartners.slice(0, 5).map((p, i) => (
-                                                    <div key={i} className="p-3 rounded-2xl bg-slate-50/80 dark:bg-zinc-900/60 border border-slate-100 dark:border-zinc-800 space-y-2">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs font-black text-zinc-900 dark:text-white">
+                                                    <div key={i} className="h-9 px-2 rounded-xl flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                                        <div className="flex items-center gap-2 min-w-0 max-w-[170px]">
+                                                            <div className="w-6 h-6 rounded-full bg-slate-200/60 dark:bg-zinc-800 flex items-center justify-center text-slate-500 shrink-0">
+                                                                <Building2 size={12} />
+                                                            </div>
+                                                            <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 truncate">
                                                                 {p.partnerName}
                                                             </span>
-                                                            <div className="text-right">
-                                                                <span className="text-xs font-black text-amber-600 dark:text-amber-400">
-                                                                    ₹{p.totalAmount.toLocaleString()}
-                                                                </span>
-                                                                <span className="text-[10px] text-zinc-400 ml-1.5">
-                                                                    ({p.billsCount} {p.billsCount === 1 ? 'bill' : 'bills'})
-                                                                </span>
+                                                        </div>
+
+                                                        <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 font-mono shrink-0">
+                                                            ₹{p.totalAmount.toLocaleString()}
+                                                        </span>
+
+                                                        {/* Inline Slider with Knob */}
+                                                        <div className="flex-1 max-w-[120px] h-3 bg-slate-200/80 dark:bg-zinc-800 rounded-full relative overflow-hidden p-0.5 flex items-center">
+                                                            <div 
+                                                                className="h-full rounded-full bg-gradient-to-r from-slate-600 via-teal-700/60 to-teal-500/60 relative"
+                                                                style={{ width: `${Math.min(100, Math.max(15, p.percentageOfPartnerDiscounts))}%` }}
+                                                            >
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-slate-200 shadow-sm border border-white/70 absolute right-0 top-1/2 -translate-y-1/2" />
                                                             </div>
                                                         </div>
-                                                        {/* Slider bar */}
-                                                        <div className="h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className="h-full bg-amber-500 rounded-full"
-                                                                style={{ width: `${Math.min(100, Math.max(5, p.percentageOfPartnerDiscounts))}%` }}
-                                                            />
+
+                                                        {/* Circular Progress Gauge */}
+                                                        <div className="w-4 h-4 rounded-full border-2 border-slate-300 dark:border-zinc-700 flex items-center justify-center shrink-0">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500/70" />
                                                         </div>
                                                     </div>
                                                 ))}
 
                                                 {intelligence.topB2BPartners.length === 0 && (
-                                                    <div className="text-center py-8 text-zinc-400 text-xs">
-                                                        No B2B partner concessions recorded yet.
-                                                    </div>
+                                                    <p className="text-xs text-slate-400 py-4 text-center">No B2B partner concessions recorded yet.</p>
                                                 )}
                                             </div>
-
-                                            <button 
-                                                onClick={() => {
-                                                    setHistorySource('Partner');
-                                                    navigate('/finance/discounts/history');
-                                                }}
-                                                className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                                            >
-                                                <span>View B2B Partner Receivable Ledger</span>
-                                                <ArrowRight size={13} />
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* 3. BOTTOM ROW: 4 CONTROL CENTER PODS */}
-                                <div className="space-y-3">
-                                    <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 px-1">
-                                        Operations & Catalog Health
+                                {/* SECTION 3: FINANCIAL OPERATIONS & MODULES (Bottom 4 Pods) */}
+                                <div className="space-y-1.5">
+                                    <h3 className="text-xs font-semibold text-slate-700 dark:text-zinc-300 px-0.5">
+                                        Financial Operations & Modules
                                     </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                        {/* POD 1: CHANNEL BALANCE */}
-                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        {/* POD 1: DOCTOR SETTLEMENTS STYLE (Channel Balance) */}
+                                        <div className="p-3.5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2.5">
                                             <div>
-                                                <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Channel Balance</span>
-                                                <p className="text-sm font-black text-zinc-900 dark:text-white mt-1">
-                                                    Walk-In vs. Corporate
-                                                </p>
+                                                <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                                                    Concession Balance
+                                                </span>
+                                                <p className="text-[10px] text-slate-400 text-center font-medium mt-0.5">Balance</p>
                                             </div>
-                                            <div className="py-2">
-                                                <div className="flex justify-between text-[11px] font-bold text-zinc-500 mb-1">
-                                                    <span className="text-blue-600 dark:text-blue-400">Patient: ₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
-                                                    <span className="text-amber-600 dark:text-amber-400">B2B: ₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
+
+                                            {/* Dual Slider Indicator with swap circle */}
+                                            <div className="relative py-1 flex items-center justify-center">
+                                                <div className="h-1 w-full bg-slate-200 dark:bg-zinc-800 rounded-full flex">
+                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-rose-400/70 h-full rounded-l-full" />
+                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-teal-500/70 h-full rounded-r-full" />
                                                 </div>
-                                                <div className="h-2 bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-blue-500 h-full" />
-                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-amber-500 h-full" />
+                                                <div className="absolute w-5 h-5 rounded-full bg-slate-400 text-white flex items-center justify-center shadow-xs text-[10px]">
+                                                    <ArrowLeftRight size={10} />
                                                 </div>
                                             </div>
-                                            <p className="text-[10px] text-zinc-500 border-t border-slate-100 dark:border-zinc-800 pt-2">
-                                                Patient discounts reduce cash at desk; B2B reduces hospital receivables.
-                                            </p>
+
+                                            <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-100 dark:border-zinc-800">
+                                                <div>
+                                                    <span className="text-slate-400 block">Walk-In</span>
+                                                    <span className="font-semibold text-slate-800 dark:text-zinc-200">₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-slate-400 block">B2B Wholesale</span>
+                                                    <span className="font-semibold text-slate-800 dark:text-zinc-200">₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="text-slate-400 block">B2B Ratio</span>
+                                                    <span className="font-semibold text-teal-600 dark:text-teal-400">{intelligence.partnerSharePercentage}%</span>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        {/* POD 2: PRESET HEALTH */}
-                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Preset Master Health</span>
-                                                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">
-                                                        {intelligence.totalPresetsCount} Presets
-                                                    </p>
+                                        {/* POD 2: INSURANCE & B2B STYLE (Channel Modules Pills) */}
+                                        <div className="p-3.5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2">
+                                            <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                                                Channel Modules
+                                            </span>
+
+                                            <div className="space-y-1.5">
+                                                {/* Pill 1: Corporate B2B */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setHistorySource('Partner');
+                                                        navigate('/finance/discounts/history');
+                                                    }}
+                                                    className="p-2 rounded-xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200/70 dark:hover:bg-zinc-700/80 transition-all flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <div className="w-6 h-6 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0">
+                                                        <Building2 size={13} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block truncate">Corporate B2B</span>
+                                                        <span className="text-[10px] text-slate-500 font-medium">₹{intelligence.partnerDiscountAmount.toLocaleString()} ({intelligence.partnerBillsCount} Bills)</span>
+                                                    </div>
                                                 </div>
-                                                <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                                                    <Sliders size={15} />
+
+                                                {/* Pill 2: Patient Walk-Ins */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setHistorySource('Patient');
+                                                        navigate('/finance/discounts/history');
+                                                    }}
+                                                    className="p-2 rounded-xl bg-slate-100/80 dark:bg-zinc-800/80 hover:bg-slate-200/70 dark:hover:bg-zinc-700/80 transition-all flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                                        <Users size={13} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 block truncate">Patient Walk-Ins</span>
+                                                        <span className="text-[10px] text-slate-500 font-medium">₹{intelligence.patientDiscountAmount.toLocaleString()} ({intelligence.patientBillsCount} Bills)</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="text-xs space-y-1">
-                                                <div className="flex justify-between font-bold text-emerald-600 dark:text-emerald-400">
-                                                    <span>Active & Used in Bills:</span>
-                                                    <span>{intelligence.usedPresetsCount}</span>
-                                                </div>
-                                                <div className="flex justify-between font-medium text-zinc-400">
-                                                    <span>Dormant / Never Used:</span>
-                                                    <span>{intelligence.dormantPresetsCount}</span>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    setReasonUsageFilter('DORMANT');
-                                                    navigate('/finance/discounts/reasons');
-                                                }}
-                                                className="text-[10px] font-bold text-synos-primary hover:underline text-left border-t border-slate-100 dark:border-zinc-800 pt-2 cursor-pointer"
-                                            >
-                                                View Dormant Presets →
-                                            </button>
                                         </div>
 
-                                        {/* POD 3: STAFF CONCESSIONS */}
-                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
-                                            <div className="flex justify-between items-start">
+                                        {/* POD 3: STAFF & PAYROLL STYLE (Staff Approvals) */}
+                                        <div className="p-3.5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2">
+                                            <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                                                Staff & Approvals
+                                            </span>
+
+                                            <div className="flex items-center justify-between">
                                                 <div>
-                                                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Top Approver</span>
-                                                    <p className="text-sm font-black text-zinc-900 dark:text-white mt-1 truncate">
-                                                        {intelligence.staffContributions[0]?.staffName || 'Staff Desk'}
+                                                    <p className="text-2xl font-bold text-slate-800 dark:text-white">
+                                                        {intelligence.staffContributions.length || 1}
                                                     </p>
+                                                    <p className="text-[10px] text-slate-400 font-medium">Active Staff</p>
                                                 </div>
-                                                <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                                                    <Users size={15} />
+
+                                                {/* Overlapping Avatar Stack */}
+                                                <div className="flex -space-x-2">
+                                                    <div className="w-7 h-7 rounded-full bg-slate-300 dark:bg-zinc-700 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[10px] text-slate-600 font-bold">
+                                                        VR
+                                                    </div>
+                                                    <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[10px] text-slate-500">
+                                                        AD
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="text-xs space-y-1">
-                                                <p className="text-lg font-black text-zinc-900 dark:text-white">
-                                                    ₹{(intelligence.staffContributions[0]?.totalAmount || 0).toLocaleString()}
-                                                </p>
-                                                <p className="text-[10px] text-zinc-500">
-                                                    Across {intelligence.staffContributions[0]?.billsCount || 0} bills · ₹{intelligence.staffContributions[0]?.avgAmount || 0} avg
-                                                </p>
+
+                                            {/* Pipeline flow */}
+                                            <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium pt-1.5 border-t border-slate-100 dark:border-zinc-800">
+                                                <span>Desk</span>
+                                                <span>&rarr;</span>
+                                                <span>Audit</span>
+                                                <span>&rarr;</span>
+                                                <span>Settled</span>
                                             </div>
-                                            <button
-                                                onClick={() => navigate('/finance/discounts/staff')}
-                                                className="text-[10px] font-bold text-synos-primary hover:underline text-left border-t border-slate-100 dark:border-zinc-800 pt-2 cursor-pointer"
-                                            >
-                                                View Staff Audit Report →
-                                            </button>
                                         </div>
 
-                                        {/* POD 4: GOVERNANCE & INTEGRITY */}
-                                        <div className="p-5 rounded-2xl synos-dept-card flex flex-col justify-between space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <span className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Policy & Guardrails</span>
-                                                    <p className="text-sm font-black text-zinc-900 dark:text-white mt-1">
-                                                        Desk Safety
-                                                    </p>
+                                        {/* POD 4: OUTSOURCED LABS STYLE (Preset Health with iOS Toggles) */}
+                                        <div className="p-3.5 rounded-2xl bg-white/95 dark:bg-zinc-900 border border-slate-200/70 dark:border-zinc-800 shadow-[0_2px_12px_rgba(0,0,0,0.03),inset_0_1px_0_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-2">
+                                            <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200">
+                                                Preset Catalog Health
+                                            </span>
+
+                                            <div className="space-y-2">
+                                                {/* Toggle Row 1: Active Presets */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setReasonUsageFilter('USED');
+                                                        navigate('/finance/discounts/reasons');
+                                                    }}
+                                                    className="p-1.5 px-2 rounded-xl bg-slate-100/80 dark:bg-zinc-800/60 flex items-center justify-between cursor-pointer"
+                                                >
+                                                    <span className="text-xs font-medium text-slate-700 dark:text-zinc-300">
+                                                        <strong className="font-semibold">{intelligence.usedPresetsCount}</strong> Active Used
+                                                    </span>
+                                                    {/* iOS Toggle Switch (ON) */}
+                                                    <div className="w-9 h-5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 p-0.5 flex items-center justify-end shadow-inner">
+                                                        <div className="w-4 h-4 rounded-full bg-white dark:bg-emerald-400 shadow-sm" />
+                                                    </div>
                                                 </div>
-                                                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                                                    <CheckCircle size={15} />
+
+                                                {/* Toggle Row 2: Dormant Presets */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setReasonUsageFilter('DORMANT');
+                                                        navigate('/finance/discounts/reasons');
+                                                    }}
+                                                    className="p-1.5 px-2 rounded-xl bg-slate-100/80 dark:bg-zinc-800/60 flex items-center justify-between cursor-pointer"
+                                                >
+                                                    <span className="text-xs font-medium text-slate-700 dark:text-zinc-300">
+                                                        <strong className="font-semibold">{intelligence.dormantPresetsCount}</strong> Dormant
+                                                    </span>
+                                                    {/* iOS Toggle Switch (OFF) */}
+                                                    <div className="w-9 h-5 rounded-full bg-slate-200 dark:bg-zinc-700 p-0.5 flex items-center justify-start shadow-inner">
+                                                        <div className="w-4 h-4 rounded-full bg-white dark:bg-zinc-300 shadow-sm" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-1.5 text-[11px]">
-                                                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-                                                    <Check size={12} /> Reason Mandatory
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-                                                    <Check size={12} /> Immutable Audit Fact
-                                                </div>
-                                            </div>
-                                            <p className="text-[10px] text-zinc-400 border-t border-slate-100 dark:border-zinc-800 pt-2">
-                                                100% of discounts tied to authorized audit facts.
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
