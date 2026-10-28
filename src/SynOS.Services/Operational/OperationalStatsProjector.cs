@@ -320,6 +320,11 @@ namespace SynOS.Services.Operational
                                     branchStats.PrepaidBillsCount++;
                                     userStats.PrepaidBillsTotal += fact.Amount;
                                     branchStats.PrepaidBillsTotal += fact.Amount;
+
+                                    if (Guid.TryParse(evt.VisitId, out var visitGuid))
+                                    {
+                                        await CheckAndIncrementWalkInAsync(userStats, branchStats, visitGuid, fact.ReceivableFactId);
+                                    }
                                     updated = true;
                                 }
                             }

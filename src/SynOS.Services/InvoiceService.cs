@@ -84,7 +84,7 @@ namespace SynOS.Services
                 })
                 .FirstOrDefaultAsync();
 
-            // Calculate actual confirmed walk-ins from Visits table (excluding blank unbilled drafts, cancellations, and partner prepaid)
+            // Calculate actual confirmed walk-ins from Visits table (all registered patient visits with orders/bills, excluding empty unbilled drafts and cancellations)
             var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
             var endOfToday = startOfToday.AddDays(1);
 
@@ -103,9 +103,7 @@ namespace SynOS.Services
                 visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
             }
 
-            var walkIns = await visitsQuery
-                .Where(v => v.PaymentCollectionModel != "PartnerCollects")
-                .CountAsync();
+            var walkIns = await visitsQuery.CountAsync();
 
             var prepaidVisits = await visitsQuery
                 .Where(v => v.PaymentCollectionModel == "PartnerCollects" && (v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid))
