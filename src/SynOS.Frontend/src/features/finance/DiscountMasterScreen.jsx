@@ -41,6 +41,7 @@ import {
 import { FinanceApi } from '@/api/finance';
 import { cn, formatDateCompact } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 
 function CircularProgressGauge({ percentage = 0, color = "#14B8A6" }) {
@@ -133,6 +134,10 @@ export function DiscountMasterScreen() {
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { user, activeOversightBranchId } = useAuth();
+    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+    const [isConsolidated, setIsConsolidated] = useState(true);
+    const [presetRange, setPresetRange] = useState('today'); // 'today' | 'month' | 'quarter' | 'year'
 
     // Normalize tab
     const tab = paramTab === 'reasons' || paramTab === 'history' || paramTab === 'staff' || paramTab === 'codes' 
@@ -182,7 +187,12 @@ export function DiscountMasterScreen() {
     const loadIntelligence = useCallback(async () => {
         try {
             setLoadingIntelligence(true);
-            const data = await FinanceApi.getConcessionIntelligence();
+            const bId = isConsolidated && isAdmin ? null : (activeOversightBranchId || user?.branchId);
+            const data = await FinanceApi.getConcessionIntelligence({
+                preset: presetRange,
+                branchId: bId,
+                isConsolidated: isConsolidated && isAdmin
+            });
             setIntelligence(data || DEFAULT_CONCESSION_INTELLIGENCE);
         } catch (err) {
             console.error("Failed to load concession intelligence, using baseline:", err);
@@ -190,7 +200,7 @@ export function DiscountMasterScreen() {
         } finally {
             setLoadingIntelligence(false);
         }
-    }, []);
+    }, [presetRange, isConsolidated, isAdmin, activeOversightBranchId, user?.branchId]);
 
     // Load discount codes
     const loadDiscounts = useCallback(async () => {
@@ -232,9 +242,13 @@ export function DiscountMasterScreen() {
     const loadHistory = useCallback(async () => {
         try {
             setLoadingHistory(true);
+            const bId = isConsolidated && isAdmin ? null : (activeOversightBranchId || user?.branchId);
             const data = await FinanceApi.getDiscountHistory({
                 source: historySource,
-                search: historySearch.trim() || undefined
+                search: historySearch.trim() || undefined,
+                preset: presetRange,
+                branchId: bId,
+                isConsolidated: isConsolidated && isAdmin
             });
             setHistory(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -242,7 +256,7 @@ export function DiscountMasterScreen() {
         } finally {
             setLoadingHistory(false);
         }
-    }, [historySource, historySearch]);
+    }, [historySource, historySearch, presetRange, isConsolidated, isAdmin, activeOversightBranchId, user?.branchId]);
 
     useEffect(() => {
         if (tab === 'intelligence') {
@@ -472,6 +486,60 @@ export function DiscountMasterScreen() {
                         >
                             <Plus className="w-4 h-4" /> Add Preset Reason
                         </button>
+                    )}
+
+                    {/* Time Horizon Selector */}
+                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                        {[
+                            { id: 'today', label: 'Today' },
+                            { id: 'month', label: 'This Month' },
+                            { id: 'quarter', label: 'This Quarter' },
+                            { id: 'year', label: 'This Year' }
+                        ].map(t => (
+                            <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setPresetRange(t.id)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    presetRange === t.id 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" 
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Consolidated Switcher */}
+                    {isAdmin && (
+                        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                            <button
+                                type="button"
+                                onClick={() => setIsConsolidated(true)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    isConsolidated 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                All Branches
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsConsolidated(false)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    !isConsolidated 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                Branch
+                            </button>
+                        </div>
                     )}
 
                     {tab !== 'codes' && (

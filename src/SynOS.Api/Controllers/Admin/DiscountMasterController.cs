@@ -93,9 +93,12 @@ namespace SynOS.Api.Controllers.Admin
             [FromQuery] string? source,
             [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate,
-            [FromQuery] string? search)
+            [FromQuery] string? search,
+            [FromQuery] Guid? branchId,
+            [FromQuery] bool isConsolidated = false,
+            [FromQuery] string? preset = null)
         {
-            var result = await _service.GetDiscountHistoryAsync(source, fromDate, toDate, search);
+            var result = await _service.GetDiscountHistoryAsync(source, fromDate, toDate, search, branchId, isConsolidated, preset);
             return Ok(result);
         }
 
@@ -103,9 +106,12 @@ namespace SynOS.Api.Controllers.Admin
         [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
         public async Task<IActionResult> GetConcessionIntelligence(
             [FromQuery] DateTime? fromDate,
-            [FromQuery] DateTime? toDate)
+            [FromQuery] DateTime? toDate,
+            [FromQuery] Guid? branchId,
+            [FromQuery] bool isConsolidated = false,
+            [FromQuery] string? preset = null)
         {
-            var result = await _service.GetConcessionIntelligenceAsync(fromDate, toDate);
+            var result = await _service.GetConcessionIntelligenceAsync(fromDate, toDate, branchId, isConsolidated, preset);
             return Ok(result);
         }
 

@@ -690,5 +690,95 @@ namespace SynOS.Tests
             Assert.Equal(0m, updatedInvoice.NetAmount);
             Assert.Equal(0m, updatedInvoice.Total);
         }
+
+        [Fact]
+        public async Task DiscountService_GetConcessionIntelligence_ReturnsLiveAggregationsAndFiltersByPresetAndBranch()
+        {
+            using var db = GetDbContext();
+            var branchA = Guid.NewGuid();
+            var branchB = Guid.NewGuid();
+
+            // Visit 1 (Branch A): Humera, ₹350 discount today
+            var patient1 = new Patient { PatientId = Guid.NewGuid(), FirstName = "Humera", LastName = "Khan", MRN = "MRN-HUMERA" };
+            var visit1 = new Visit { VisitId = Guid.NewGuid(), PatientId = patient1.PatientId, Token = "TKN-H01", BranchId = branchA, TokenDate = DateTime.UtcNow.Date };
+            var invoice1 = new Invoice { InvoiceId = Guid.NewGuid(), VisitId = visit1.VisitId, Currency = "INR" };
+            var fact1 = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoice1.InvoiceId,
+                DiscountDefinitionId = Guid.NewGuid(),
+                Type = DiscountType.Flat,
+                Value = 350m,
+                GrossAmount = 1000m,
+                DiscountAmount = 350m,
+                NetAmountAfterDiscount = 650m,
+                AppliedBy = "Dr. Smith - Patient Hardship",
+                AppliedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            // Visit 2 (Branch B): Rahul, ₹500 discount today
+            var patient2 = new Patient { PatientId = Guid.NewGuid(), FirstName = "Rahul", LastName = "Sharma", MRN = "MRN-RAHUL" };
+            var visit2 = new Visit { VisitId = Guid.NewGuid(), PatientId = patient2.PatientId, Token = "TKN-R02", BranchId = branchB, TokenDate = DateTime.UtcNow.Date };
+            var invoice2 = new Invoice { InvoiceId = Guid.NewGuid(), VisitId = visit2.VisitId, Currency = "INR" };
+            var fact2 = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoice2.InvoiceId,
+                DiscountDefinitionId = Guid.NewGuid(),
+                Type = DiscountType.Flat,
+                Value = 500m,
+                GrossAmount = 1500m,
+                DiscountAmount = 500m,
+                NetAmountAfterDiscount = 1000m,
+                AppliedBy = "Dr. Rao - VIP Concession",
+                AppliedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            // Visit 3 (Branch A): Old discount last month (should NOT appear in 'today' preset)
+            var patient3 = new Patient { PatientId = Guid.NewGuid(), FirstName = "Old", LastName = "Patient", MRN = "MRN-OLD" };
+            var visit3 = new Visit { VisitId = Guid.NewGuid(), PatientId = patient3.PatientId, Token = "TKN-OLD", BranchId = branchA, TokenDate = DateTime.UtcNow.AddDays(-40).Date };
+            var invoice3 = new Invoice { InvoiceId = Guid.NewGuid(), VisitId = visit3.VisitId, Currency = "INR" };
+            var fact3 = new DiscountFact
+            {
+                DiscountFactId = Guid.NewGuid(),
+                InvoiceId = invoice3.InvoiceId,
+                DiscountDefinitionId = Guid.NewGuid(),
+                Type = DiscountType.Flat,
+                Value = 200m,
+                GrossAmount = 2000m,
+                DiscountAmount = 200m,
+                NetAmountAfterDiscount = 1800m,
+                AppliedBy = "Reception",
+                AppliedAt = DateTime.UtcNow.AddDays(-40),
+                IsActive = true
+            };
+
+            db.Patients.AddRange(patient1, patient2, patient3);
+            db.Visits.AddRange(visit1, visit2, visit3);
+            db.Invoices.AddRange(invoice1, invoice2, invoice3);
+            db.DiscountFacts.AddRange(fact1, fact2, fact3);
+            await db.SaveChangesAsync();
+
+            var service = new DiscountService(db, null!, null!);
+
+            // 1. Consolidated 'today': Should return 350 + 500 = 850 (excluding old 200)
+            var intelConsolidatedToday = await service.GetConcessionIntelligenceAsync(preset: "today", isConsolidated: true);
+            Assert.Equal(850m, intelConsolidatedToday.TotalDiscountAmount);
+            Assert.Equal(2, intelConsolidatedToday.TotalBillsDiscounted);
+            Assert.Equal(2, intelConsolidatedToday.TopPresetReasons.Count);
+
+            // 2. Branch A 'today': Should return only 350 for Humera
+            var intelBranchAToday = await service.GetConcessionIntelligenceAsync(branchId: branchA, preset: "today", isConsolidated: false);
+            Assert.Equal(350m, intelBranchAToday.TotalDiscountAmount);
+            Assert.Equal(1, intelBranchAToday.TotalBillsDiscounted);
+
+            // 3. Discount History 'today' for Branch B: Should return Rahul's ₹500
+            var historyBranchB = (await service.GetDiscountHistoryAsync(source: "Patient", fromDate: null, toDate: null, search: null, branchId: branchB, isConsolidated: false, preset: "today")).ToList();
+            Assert.Single(historyBranchB);
+            Assert.Equal("Rahul Sharma", historyBranchB[0].PatientName);
+            Assert.Equal(500m, historyBranchB[0].DiscountAmount);
+        }
     }
 }

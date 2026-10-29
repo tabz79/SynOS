@@ -107,8 +107,49 @@ namespace SynOS.Services
             return _mapper.Map<DiscountDto>(discount);
         }
 
-        public async Task<IEnumerable<DiscountHistoryItemDto>> GetDiscountHistoryAsync(string? source, DateTime? fromDate, DateTime? toDate, string? search)
+        private (DateTime? FromDate, DateTime? ToDate) ResolvePresetDates(string? preset, DateTime? fromDate, DateTime? toDate)
         {
+            if (!string.IsNullOrWhiteSpace(preset))
+            {
+                var now = DateTime.UtcNow;
+                switch (preset.ToLowerInvariant())
+                {
+                    case "today":
+                        fromDate = now.Date;
+                        toDate = now.Date.AddDays(1).AddTicks(-1);
+                        break;
+                    case "month":
+                    case "mtd":
+                        fromDate = new DateTime(now.Year, now.Month, 1);
+                        toDate = now;
+                        break;
+                    case "quarter":
+                        int qMonth = ((now.Month - 1) / 3) * 3 + 1;
+                        fromDate = new DateTime(now.Year, qMonth, 1);
+                        toDate = now;
+                        break;
+                    case "year":
+                    case "fy":
+                        int fyStartYear = now.Month >= 4 ? now.Year : now.Year - 1;
+                        fromDate = new DateTime(fyStartYear, 4, 1);
+                        toDate = now;
+                        break;
+                }
+            }
+            return (fromDate, toDate);
+        }
+
+        public async Task<IEnumerable<DiscountHistoryItemDto>> GetDiscountHistoryAsync(
+            string? source, 
+            DateTime? fromDate, 
+            DateTime? toDate, 
+            string? search, 
+            Guid? branchId = null, 
+            bool isConsolidated = false, 
+            string? preset = null)
+        {
+            (fromDate, toDate) = ResolvePresetDates(preset, fromDate, toDate);
+
             var results = new List<DiscountHistoryItemDto>();
 
             // 1. Patient / Counter Discounts from DiscountFacts (Default)
@@ -137,13 +178,16 @@ namespace SynOS.Services
                                 PatientName = patient != null ? (patient.FirstName + " " + patient.LastName).Trim() : "",
                                 PatientMrn = patient != null ? patient.MRN : "",
                                 MasterName = master != null ? master.Name : "Counter Concession",
-                                MasterCode = master != null ? master.Code : ""
+                                MasterCode = master != null ? master.Code : "",
+                                BranchId = visit != null ? visit.BranchId : (Guid?)null
                             };
 
                 if (fromDate.HasValue)
                     query = query.Where(x => x.AppliedAt >= fromDate.Value);
                 if (toDate.HasValue)
                     query = query.Where(x => x.AppliedAt <= toDate.Value);
+                if (!isConsolidated && branchId.HasValue)
+                    query = query.Where(x => x.BranchId == branchId.Value);
 
                 var facts = await query.OrderByDescending(x => x.AppliedAt).Take(500).ToListAsync();
 
@@ -162,6 +206,7 @@ namespace SynOS.Services
                     {
                         Id = f.DiscountFactId,
                         OccurredAt = f.AppliedAt,
+                        FormattedDate = f.AppliedAt.ToString("dd MMM yyyy, hh:mm tt"),
                         Source = "Patient",
                         VisitToken = f.Token,
                         PatientName = string.IsNullOrWhiteSpace(f.PatientName) ? "Patient" : f.PatientName,
@@ -173,7 +218,8 @@ namespace SynOS.Services
                         DiscountAmount = f.DiscountAmount,
                         NetAmount = f.NetAmountAfterDiscount,
                         AppliedBy = staff,
-                        Reason = reason
+                        Reason = reason,
+                        BranchId = f.BranchId
                     });
                 }
             }
@@ -201,13 +247,16 @@ namespace SynOS.Services
                                    B2BValue = v.B2BDiscountValue ?? 0,
                                    GrossAmount = invoice != null ? invoice.GrossAmount : (v.B2BDiscountAmount ?? 0),
                                    DiscountAmount = v.B2BDiscountAmount ?? 0,
-                                   EnteredBy = v.B2BDiscountEnteredBy ?? "Reception"
+                                   EnteredBy = v.B2BDiscountEnteredBy ?? "Reception",
+                                   v.BranchId
                                };
 
                 if (fromDate.HasValue)
                     b2bQuery = b2bQuery.Where(x => x.OccurredAt >= fromDate.Value);
                 if (toDate.HasValue)
                     b2bQuery = b2bQuery.Where(x => x.OccurredAt <= toDate.Value);
+                if (!isConsolidated && branchId.HasValue)
+                    b2bQuery = b2bQuery.Where(x => x.BranchId == branchId.Value);
 
                 var b2bList = await b2bQuery.OrderByDescending(x => x.OccurredAt).Take(500).ToListAsync();
 
@@ -217,6 +266,7 @@ namespace SynOS.Services
                     {
                         Id = b.VisitId,
                         OccurredAt = b.OccurredAt.DateTime,
+                        FormattedDate = b.OccurredAt.DateTime.ToString("dd MMM yyyy, hh:mm tt"),
                         Source = "Partner B2B",
                         VisitToken = b.Token,
                         PatientName = string.IsNullOrWhiteSpace(b.PatientName) ? "Patient" : b.PatientName,
@@ -229,7 +279,8 @@ namespace SynOS.Services
                         DiscountAmount = b.DiscountAmount,
                         NetAmount = Math.Max(0, b.GrossAmount - b.DiscountAmount),
                         AppliedBy = b.EnteredBy,
-                        Reason = $"B2B Discount for {b.PartnerName}"
+                        Reason = $"B2B Discount for {b.PartnerName}",
+                        BranchId = b.BranchId
                     });
                 }
             }
@@ -327,31 +378,45 @@ namespace SynOS.Services
             return list;
         }
 
-        public async Task<ConcessionIntelligenceDto> GetConcessionIntelligenceAsync(DateTime? fromDate = null, DateTime? toDate = null)
+        public async Task<ConcessionIntelligenceDto> GetConcessionIntelligenceAsync(
+            DateTime? fromDate = null, 
+            DateTime? toDate = null, 
+            Guid? branchId = null, 
+            bool isConsolidated = false, 
+            string? preset = null)
         {
+            (fromDate, toDate) = ResolvePresetDates(preset, fromDate, toDate);
+
             var result = new ConcessionIntelligenceDto();
 
-            // 1. Fetch Patient Discounts from DiscountFact
-            var factsQuery = _context.DiscountFacts
-                .AsNoTracking()
-                .Where(f => f.IsActive);
+            // 1. Fetch Patient Discounts from DiscountFact with Visit & Branch
+            var factsQuery = from df in _context.DiscountFacts.AsNoTracking()
+                             join inv in _context.Invoices.AsNoTracking() on df.InvoiceId equals inv.InvoiceId
+                             join v in _context.Visits.AsNoTracking() on inv.VisitId equals v.VisitId into vGroup
+                             from visit in vGroup.DefaultIfEmpty()
+                             where df.IsActive && df.DiscountAmount > 0
+                             select new
+                             {
+                                 df.DiscountFactId,
+                                 df.AppliedAt,
+                                 df.Type,
+                                 df.Value,
+                                 df.DiscountAmount,
+                                 df.GrossAmount,
+                                 df.NetAmountAfterDiscount,
+                                 df.AppliedBy,
+                                 VisitId = visit != null ? visit.VisitId : (Guid?)null,
+                                 BranchId = visit != null ? visit.BranchId : (Guid?)null
+                             };
 
             if (fromDate.HasValue)
                 factsQuery = factsQuery.Where(f => f.AppliedAt >= fromDate.Value);
             if (toDate.HasValue)
                 factsQuery = factsQuery.Where(f => f.AppliedAt <= toDate.Value);
+            if (!isConsolidated && branchId.HasValue)
+                factsQuery = factsQuery.Where(f => f.BranchId == branchId.Value);
 
-            var patientFacts = await factsQuery
-                .Select(f => new
-                {
-                    f.DiscountFactId,
-                    f.AppliedAt,
-                    f.DiscountAmount,
-                    f.GrossAmount,
-                    f.NetAmountAfterDiscount,
-                    f.AppliedBy
-                })
-                .ToListAsync();
+            var patientFacts = await factsQuery.ToListAsync();
 
             // 2. Fetch B2B Partner Concessions from Visits
             var b2bQuery = from v in _context.Visits.AsNoTracking()
@@ -368,19 +433,24 @@ namespace SynOS.Services
                                OccurredAt = v.B2BDiscountEnteredAt ?? v.CreatedAt,
                                DiscountAmount = v.B2BDiscountAmount ?? 0,
                                GrossAmount = invoice != null ? invoice.GrossAmount : (v.B2BDiscountAmount ?? 0),
-                               EnteredBy = v.B2BDiscountEnteredBy ?? "Reception"
+                               EnteredBy = v.B2BDiscountEnteredBy ?? "Reception",
+                               v.B2BDiscountType,
+                               v.B2BDiscountValue,
+                               v.BranchId
                            };
 
             if (fromDate.HasValue)
                 b2bQuery = b2bQuery.Where(x => x.OccurredAt >= fromDate.Value);
             if (toDate.HasValue)
                 b2bQuery = b2bQuery.Where(x => x.OccurredAt <= toDate.Value);
+            if (!isConsolidated && branchId.HasValue)
+                b2bQuery = b2bQuery.Where(x => x.BranchId == branchId.Value);
 
             var b2bList = await b2bQuery.ToListAsync();
 
             // 3. Aggregate Patient Pool
             result.PatientDiscountAmount = patientFacts.Sum(x => x.DiscountAmount);
-            result.PatientBillsCount = patientFacts.Count;
+            result.PatientBillsCount = patientFacts.Select(x => x.VisitId ?? x.DiscountFactId).Distinct().Count();
             result.PatientAvgDiscount = result.PatientBillsCount > 0 
                 ? Math.Round(result.PatientDiscountAmount / result.PatientBillsCount, 2) 
                 : 0m;
@@ -514,11 +584,141 @@ namespace SynOS.Services
                 result.StaffContributions.Add(new StaffConcessionContributionDto
                 {
                     StaffName = kvp.Key,
+                    Role = "Staff",
                     BillsCount = kvp.Value.Count,
                     TotalAmount = kvp.Value.Total,
-                    AvgAmount = kvp.Value.Count > 0 ? Math.Round(kvp.Value.Total / kvp.Value.Count, 2) : 0m
+                    AvgAmount = kvp.Value.Count > 0 ? Math.Round(kvp.Value.Total / kvp.Value.Count, 2) : 0m,
+                    Percentage = result.TotalDiscountAmount > 0 
+                        ? Math.Round((kvp.Value.Total / result.TotalDiscountAmount) * 100m, 1) 
+                        : 0m
                 });
             }
+
+            // 9. 7-Day Trend
+            var today = DateTime.UtcNow.Date;
+            for (int i = 6; i >= 0; i--)
+            {
+                var d = today.AddDays(-i);
+                var dayPatient = patientFacts.Where(x => x.AppliedAt.Date == d).ToList();
+                var dayB2b = b2bList.Where(x => x.OccurredAt.Date == d).ToList();
+                decimal dayTotal = dayPatient.Sum(x => x.DiscountAmount) + dayB2b.Sum(x => x.DiscountAmount);
+                int dayBills = dayPatient.Count + dayB2b.Count;
+
+                result.DailyTrends.Add(new DailyConcessionTrendDto
+                {
+                    Date = d,
+                    DayOfWeek = d.ToString("ddd"),
+                    FormattedDate = d.ToString("dd MMM"),
+                    TotalAmount = dayTotal,
+                    BillsCount = dayBills,
+                    IsToday = (d == today)
+                });
+            }
+
+            // 10. Mechanism Mix (Flat Rupee vs Percentage)
+            decimal flatPatient = patientFacts.Where(x => x.Type != DiscountType.Percentage).Sum(x => x.DiscountAmount);
+            decimal flatPartner = b2bList.Where(x => !(x.B2BDiscountType ?? "").Equals("Percentage", StringComparison.OrdinalIgnoreCase)).Sum(x => x.DiscountAmount);
+            decimal flatTotal = flatPatient + flatPartner;
+            int flatCount = patientFacts.Count(x => x.Type != DiscountType.Percentage) + b2bList.Count(x => !(x.B2BDiscountType ?? "").Equals("Percentage", StringComparison.OrdinalIgnoreCase));
+
+            decimal pctPatient = patientFacts.Where(x => x.Type == DiscountType.Percentage).Sum(x => x.DiscountAmount);
+            decimal pctPartner = b2bList.Where(x => (x.B2BDiscountType ?? "").Equals("Percentage", StringComparison.OrdinalIgnoreCase)).Sum(x => x.DiscountAmount);
+            decimal pctTotal = pctPatient + pctPartner;
+            int pctCount = patientFacts.Count(x => x.Type == DiscountType.Percentage) + b2bList.Count(x => (x.B2BDiscountType ?? "").Equals("Percentage", StringComparison.OrdinalIgnoreCase));
+
+            result.MechanismMix = new List<MechanismContributionDto>
+            {
+                new MechanismContributionDto
+                {
+                    Mechanism = "Flat Rupee Concession",
+                    TotalAmount = flatTotal,
+                    Percentage = result.TotalDiscountAmount > 0 ? Math.Round((flatTotal / result.TotalDiscountAmount) * 100m, 1) : 0m,
+                    Count = flatCount,
+                    Color = "#4A8CA6",
+                    PatientAmount = flatPatient,
+                    PartnerAmount = flatPartner
+                },
+                new MechanismContributionDto
+                {
+                    Mechanism = "Percentage Discount",
+                    TotalAmount = pctTotal,
+                    Percentage = result.TotalDiscountAmount > 0 ? Math.Round((pctTotal / result.TotalDiscountAmount) * 100m, 1) : 0m,
+                    Count = pctCount,
+                    Color = "#E67E22",
+                    PatientAmount = pctPatient,
+                    PartnerAmount = pctPartner
+                }
+            };
+
+            // 11. Department Split (Pathology vs Radiology)
+            var allDiscountedVisitIds = patientFacts.Select(x => x.VisitId)
+                .Where(v => v.HasValue)
+                .Select(v => v!.Value)
+                .Concat(b2bList.Select(b => b.VisitId))
+                .Distinct()
+                .ToList();
+
+            if (allDiscountedVisitIds.Count > 0)
+            {
+                var orders = await _context.Orders.AsNoTracking()
+                    .Where(o => allDiscountedVisitIds.Contains(o.VisitId))
+                    .Select(o => new { o.VisitId, o.Department, o.Price })
+                    .ToListAsync();
+
+                bool IsRadio(string dept)
+                {
+                    if (string.IsNullOrWhiteSpace(dept)) return false;
+                    var d = dept.ToLowerInvariant();
+                    return d.Contains("radio") || d.Contains("x-ray") || d.Contains("ct") || d.Contains("mri") || d.Contains("ultrasound") || d.Contains("usg");
+                }
+
+                var pathOrders = orders.Where(o => !IsRadio(o.Department)).ToList();
+                var radOrders = orders.Where(o => IsRadio(o.Department)).ToList();
+
+                result.DepartmentSplit.PathologyInvestigationsCount = pathOrders.Count;
+                result.DepartmentSplit.PathologyBillsCount = pathOrders.Select(o => o.VisitId).Distinct().Count();
+                result.DepartmentSplit.RadiologyInvestigationsCount = radOrders.Count;
+                result.DepartmentSplit.RadiologyBillsCount = radOrders.Select(o => o.VisitId).Distinct().Count();
+
+                decimal pathPrice = pathOrders.Sum(o => o.Price);
+                decimal radPrice = radOrders.Sum(o => o.Price);
+                decimal totalPrice = pathPrice + radPrice;
+
+                if (totalPrice > 0)
+                {
+                    decimal pathShare = pathPrice / totalPrice;
+                    result.DepartmentSplit.PathologyAmount = Math.Round(result.TotalDiscountAmount * pathShare, 2);
+                    result.DepartmentSplit.RadiologyAmount = result.TotalDiscountAmount - result.DepartmentSplit.PathologyAmount;
+                }
+                else
+                {
+                    result.DepartmentSplit.PathologyAmount = result.TotalDiscountAmount;
+                    result.DepartmentSplit.RadiologyAmount = 0m;
+                }
+
+                result.DepartmentSplit.PathologyPercentage = result.TotalDiscountAmount > 0 
+                    ? Math.Round((result.DepartmentSplit.PathologyAmount / result.TotalDiscountAmount) * 100m, 1) 
+                    : 0m;
+                result.DepartmentSplit.RadiologyPercentage = result.TotalDiscountAmount > 0 
+                    ? Math.Round((result.DepartmentSplit.RadiologyAmount / result.TotalDiscountAmount) * 100m, 1) 
+                    : 0m;
+            }
+
+            // 12. Unit Economics
+            result.UnitEconomics = new UnitEconomicsDto
+            {
+                AvgPatientConcession = result.PatientAvgDiscount,
+                AvgPartnerConcession = result.PartnerAvgDiscount,
+                OverallRecoveryRate = result.TotalGrossBilled > 0 
+                    ? Math.Round(((result.TotalGrossBilled - result.TotalDiscountAmount) / result.TotalGrossBilled) * 100m, 1) 
+                    : 100m,
+                AvgGrossTicketSize = result.TotalBillsDiscounted > 0 
+                    ? Math.Round(result.TotalGrossBilled / result.TotalBillsDiscounted, 2) 
+                    : 0m,
+                AvgNetTicketSize = result.TotalBillsDiscounted > 0 
+                    ? Math.Round((result.TotalGrossBilled - result.TotalDiscountAmount) / result.TotalBillsDiscounted, 2) 
+                    : 0m
+            };
 
             return result;
         }

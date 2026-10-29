@@ -1404,6 +1404,9 @@ export const FinanceApi = {
         if (params.fromDate) queryParams.append('fromDate', params.fromDate);
         if (params.toDate) queryParams.append('toDate', params.toDate);
         if (params.search) queryParams.append('search', params.search);
+        if (params.preset) queryParams.append('preset', params.preset);
+        if (params.branchId) queryParams.append('branchId', params.branchId);
+        if (params.isConsolidated !== undefined) queryParams.append('isConsolidated', params.isConsolidated);
 
         const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
         const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/history${qs}`), {
@@ -1417,6 +1420,9 @@ export const FinanceApi = {
         const queryParams = new URLSearchParams();
         if (params.fromDate) queryParams.append('fromDate', params.fromDate);
         if (params.toDate) queryParams.append('toDate', params.toDate);
+        if (params.preset) queryParams.append('preset', params.preset);
+        if (params.branchId) queryParams.append('branchId', params.branchId);
+        if (params.isConsolidated !== undefined) queryParams.append('isConsolidated', params.isConsolidated);
 
         const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
         const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/intelligence${qs}`), {
