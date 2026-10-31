@@ -1361,8 +1361,457 @@ export function IntentPanel({ onVisitUpdated }) {
                                     isCorrectionIntent={isCorrectionIntent}
                                 />
                             </div>
+                        ) : isPostProcessingView ? (
+                            /* 2. POST-PROCESSING SPLIT VIEW: 50% DOCUMENT PREVIEW & PRINTER / 50% CONSOLIDATION OF VISIT */
+                            <div className="p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                                {/* Inline Print Stylesheet for In-Panel Document Printing */}
+                                <style>{`
+                                    @media print {
+                                        body * {
+                                            visibility: hidden !important;
+                                        }
+                                        #synos-inpanel-print-canvas, #synos-inpanel-print-canvas * {
+                                            visibility: visible !important;
+                                        }
+                                        #synos-inpanel-print-canvas {
+                                            position: absolute !important;
+                                            left: 0 !important;
+                                            top: 0 !important;
+                                            width: 100% !important;
+                                            max-width: none !important;
+                                            margin: 0 !important;
+                                            padding: 0 !important;
+                                            transform: none !important;
+                                            box-shadow: none !important;
+                                            border: none !important;
+                                            background: white !important;
+                                        }
+                                    }
+                                `}</style>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+                                    {/* LEFT HALF (50% Width) - Document Preview & Print Controls */}
+                                    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                                        <div className={cn(
+                                            "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
+                                            isDark
+                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                        )}>
+                                            {/* Top Controls Toolbar: Format Switcher & Printer Selector */}
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                {/* Format Switcher Pills */}
+                                                <div className="flex items-center gap-1.5 bg-slate-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-700/60">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedDocFormat('thermal')}
+                                                        className={cn(
+                                                            "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer synos-focus-btn",
+                                                            selectedDocFormat === 'thermal'
+                                                                ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        <ScrollText className="w-3.5 h-3.5" />
+                                                        <span>Thermal (80mm)</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedDocFormat('a4')}
+                                                        className={cn(
+                                                            "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer synos-focus-btn",
+                                                            selectedDocFormat === 'a4'
+                                                                ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        <FileText className="w-3.5 h-3.5" />
+                                                        <span>{isPrepaid ? 'A4 Slip' : 'A4 Tax Invoice'}</span>
+                                                    </button>
+                                                    {(isPrepaid || Boolean(snapshot?.visit?.referralPartnerId) || Boolean(stagedReferralPartnerId) || Boolean(snapshot?.billing?.referral?.partner)) && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedDocFormat('claim')}
+                                                            className={cn(
+                                                                "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer synos-focus-btn",
+                                                                selectedDocFormat === 'claim'
+                                                                    ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                                                                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                            )}
+                                                        >
+                                                            <Building2 className="w-3.5 h-3.5" />
+                                                            <span>Doc Claim</span>
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Printer Selector */}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+                                                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                                                        <span className="hidden sm:inline">Printer:</span>
+                                                    </span>
+                                                    <select
+                                                        value={selectedPrinter}
+                                                        onChange={handlePrinterChange}
+                                                        className="text-xs font-bold bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-2.5 py-1.5 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-synos-primary shadow-2xs cursor-pointer synos-focus-input"
+                                                    >
+                                                        {printerOptions.map(p => (
+                                                            <option key={p.id} value={p.id}>
+                                                                {p.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Live Document Canvas Surface */}
+                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-100/70 dark:bg-zinc-950/70 p-3 flex justify-center items-center overflow-y-auto relative shadow-inner">
+                                                {selectedDocFormat === 'thermal' && (
+                                                    <div className="w-[285px] max-w-full my-auto rounded-xl shadow-xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto">
+                                                        <div className="bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-3 py-1.5 text-[11px] font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
+                                                            <span>Thermal POS (80mm)</span>
+                                                            <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
+                                                        </div>
+                                                        <iframe
+                                                            title="Thermal POS Receipt"
+                                                            srcDoc={thermalHtml}
+                                                            className="w-full h-[490px] border-0 mx-auto"
+                                                        />
+                                                    </div>
+                                                )}
+                                                {selectedDocFormat === 'a4' && (
+                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                        <div 
+                                                            id="synos-inpanel-print-canvas" 
+                                                            style={{ 
+                                                                width: '210mm', 
+                                                                minHeight: '297mm',
+                                                                transform: 'scale(0.60)',
+                                                                transformOrigin: 'top center',
+                                                                marginBottom: '-118mm'
+                                                            }}
+                                                            className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                        >
+                                                            <DynamicDocumentRenderer
+                                                                slotId={isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice'}
+                                                                data={buildTaxInvoiceData()}
+                                                                readOnly={true}
+                                                            />
+                                                            <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                <span>SynOS Enterprise Clinical & Financial OS</span>
+                                                                <span>A4 Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {selectedDocFormat === 'claim' && (
+                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                        {isLoadingClaimDoc ? (
+                                                            <div className="flex flex-col items-center justify-center h-64 gap-2 text-slate-500">
+                                                                <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
+                                                                <span className="text-xs font-semibold">Generating Doctor Receivable Statement...</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div 
+                                                                id="synos-inpanel-print-canvas" 
+                                                                style={{ 
+                                                                    width: '210mm', 
+                                                                    minHeight: '297mm',
+                                                                    transform: 'scale(0.60)',
+                                                                    transformOrigin: 'top center',
+                                                                    marginBottom: '-118mm'
+                                                                }}
+                                                                className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                            >
+                                                                <DynamicDocumentRenderer
+                                                                    slotId="partner_b2b_invoice"
+                                                                    data={partnerClaimData || buildTaxInvoiceData()}
+                                                                    readOnly={true}
+                                                                />
+                                                                <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                    <span>SynOS Enterprise Clinical & Financial OS • Doctor Receivable Claim</span>
+                                                                    <span>Commercial Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Bottom Print Action Bar */}
+                                            <div className="pt-2 flex items-center justify-between gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                <div className="flex items-center gap-2">
+                                                    {printFeedback ? (
+                                                        <span className={cn(
+                                                            "text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-in fade-in",
+                                                            printFeedback.type === 'success'
+                                                                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                                                : "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
+                                                        )}>
+                                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                                            {printFeedback.message}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                            Ready to Print • {selectedDocFormat === 'thermal' ? '80mm Roll' : 'A4 Paper'} • {selectedPrinter === 'default' ? 'OS Dialog' : selectedPrinter}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleExecutePrint}
+                                                        disabled={isPrinting}
+                                                        className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
+                                                    >
+                                                        {isPrinting ? (
+                                                            <>
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                                <span>Dispatching...</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Printer className="w-4 h-4 text-white" />
+                                                                <span>Print {selectedDocFormat === 'thermal' ? 'Thermal Slip' : (selectedDocFormat === 'a4' ? 'A4 Invoice' : 'Doc Claim')}</span>
+                                                                <span className="text-[10px] font-mono opacity-80 bg-white/20 px-1.5 py-0.5 rounded">↵ Enter</span>
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* RIGHT HALF (50% Width) - Visit Consolidation Summary */}
+                                    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                                        <div className={cn(
+                                            "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
+                                            isDark
+                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                        )}>
+                                            {/* Header: Check icon, Title, Payer Mode Badge, Token */}
+                                            <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                        Visit Consolidation Summary
+                                                    </h3>
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    {/* Token Badge */}
+                                                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/60 dark:border-zinc-700">
+                                                        {snapshot?.visit?.visitToken || snapshot?.visit?.token || postProcessingSession?.token || currentVisitId}
+                                                    </span>
+
+                                                    {/* Canonical Payer Mode Badge */}
+                                                    <span className={cn(
+                                                        "px-2.5 py-1 rounded-full text-xs font-bold border",
+                                                        billingMode === 'PrepaidPartner'
+                                                            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
+                                                            : billingMode === 'Insurance'
+                                                                ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30"
+                                                                : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                                    )}>
+                                                        {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Scrollable Summary Cards */}
+                                            <div className="flex-1 min-h-0 my-3 overflow-y-auto space-y-3.5 pr-1">
+                                                {/* Card 1: Patient Demographics & Channel */}
+                                                <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/90 p-4 shadow-xs space-y-3 synos-focus-card">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full bg-synos-primary/15 text-synos-primary flex items-center justify-center font-bold text-base">
+                                                                {(displayedPatient?.fullName || displayedPatient?.name || 'P')[0]?.toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-base text-slate-900 dark:text-white">
+                                                                    {displayedPatient?.fullName || displayedPatient?.name || 'Direct Patient'}
+                                                                </div>
+                                                                <div className="text-xs font-medium text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                                                                    <span>Age: {displayedPatient?.age ? `${displayedPatient.age} Yrs` : '—'}</span>
+                                                                    <span>•</span>
+                                                                    <span>Sex: {displayedPatient?.gender || '—'}</span>
+                                                                    <span>•</span>
+                                                                    <span className="font-mono">MRN: {displayedPatient?.mrn || displayedPatient?.uhid || '—'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {displayedPatient?.phone && (
+                                                            <div className="text-right">
+                                                                <span className="text-xs font-mono font-semibold text-slate-600 dark:text-zinc-300 bg-slate-100 dark:bg-zinc-700/60 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-zinc-700">
+                                                                    {displayedPatient.phone}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Doctor / Corporate Channel Info */}
+                                                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/80 grid grid-cols-2 gap-2 text-xs">
+                                                        <div>
+                                                            <span className="text-slate-400 dark:text-zinc-400 block font-semibold text-[11px] uppercase tracking-wider">Prescribing Doctor</span>
+                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">
+                                                                {snapshot?.billing?.referral?.partner?.name || snapshot?.billing?.referral?.partner?.displayName || snapshot?.visit?.referringDoctorName || "Direct / Self"}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-slate-400 dark:text-zinc-400 block font-semibold text-[11px] uppercase tracking-wider">Billing Channel</span>
+                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">
+                                                                {billingMode === 'PrepaidPartner'
+                                                                    ? 'B2B Partner Billed'
+                                                                    : billingMode === 'Insurance'
+                                                                        ? `${snapshot?.visit?.insuranceCompanyName || 'Insurance TPA'}`
+                                                                        : 'Direct Counter Collection'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Card 2: Tests & Investigations */}
+                                                <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/90 p-4 shadow-xs space-y-2.5 synos-focus-card">
+                                                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                                        <span>Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})</span>
+                                                        <span className="text-slate-500 dark:text-zinc-400">Standard Tariff</span>
+                                                    </div>
+                                                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                                        {[...activeRemainingTests, ...stagedAddedTests].map((t, idx) => (
+                                                            <div key={idx} className="flex items-center justify-between text-xs bg-slate-50/80 dark:bg-zinc-900/60 p-2.5 rounded-xl border border-slate-200/70 dark:border-zinc-800">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                                                                        {t.testCode || t.code}
+                                                                    </span>
+                                                                    <span className="font-semibold text-slate-800 dark:text-zinc-200">
+                                                                        {t.testName || t.name || t.testCode}
+                                                                    </span>
+                                                                    {(t.department || t.category) && (
+                                                                        <span className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                                                            ({t.department || t.category})
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
+                                                                    ₹{Number(t.price || t.basePrice || 0).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Card 3: Financial Settlement Ledger */}
+                                                <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/90 p-4 shadow-xs space-y-2.5 synos-focus-card">
+                                                    <div className="space-y-1.5 text-xs">
+                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                                                            <span>Total Gross Tariff</span>
+                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
+                                                                ₹{(stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                            </span>
+                                                        </div>
+
+                                                        {(stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0)) && (
+                                                            <div className="flex items-center justify-between text-rose-600 dark:text-rose-400">
+                                                                <span>
+                                                                    Applied Concession
+                                                                    {(stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason) ? ` (${stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason})` : ''}
+                                                                </span>
+                                                                <span className="font-mono font-bold">
+                                                                    -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                                                            <span>GST / Statutory Tax</span>
+                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">₹0</span>
+                                                        </div>
+
+                                                        <div className="pt-2 border-t border-slate-200 dark:border-zinc-700/80 flex items-baseline justify-between">
+                                                            <span className="font-bold text-sm text-slate-900 dark:text-white">Net Bill Amount</span>
+                                                            <span className="font-black text-2xl text-slate-900 dark:text-white font-mono">
+                                                                ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Settlement Allocation Pod */}
+                                                    <div className="mt-2 p-2.5 rounded-xl bg-slate-50/90 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 space-y-1.5 text-xs">
+                                                        {billingMode === 'PrepaidPartner' ? (
+                                                            <>
+                                                                <div className="flex items-center justify-between font-bold text-blue-700 dark:text-blue-300">
+                                                                    <span>Patient Desk Collection</span>
+                                                                    <span className="font-mono">₹0 (Zero Counter Payment)</span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
+                                                                    <span>Doctor B2B Receivable</span>
+                                                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                                                                        ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                                                                    <span>Counter Amount Paid</span>
+                                                                    <span className="font-mono">
+                                                                        ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()} via {paymentMethod || snapshot?.billing?.paymentMethod || 'Cash'}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
+                                                                    <span>Balance Remaining Due</span>
+                                                                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
+                                                                        ₹{Math.max(0, (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)) - (postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || 0))).toLocaleString()} (Fully Settled)
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Billed By & Timestamp footer */}
+                                                    <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                                        <span>Billed by: <strong className="text-slate-700 dark:text-zinc-300">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
+                                                        <span>Status: <strong className="text-emerald-700 dark:text-emerald-300">Locked & Audited</strong></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Bottom Actions on Right Half */}
+                                            <div className="pt-2 flex items-center gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setPostProcessingSession(null);
+                                                        openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
+                                                    }}
+                                                    className="py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
+                                                    title="Enter Visit Correction to amend tests or alter billing"
+                                                >
+                                                    <Pencil className="w-4 h-4 text-synos-primary" />
+                                                    <span>Visit Correction</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCloseAndReset}
+                                                    className="flex-1 py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
+                                                >
+                                                    <span>Done & Back to Queue</span>
+                                                    <span className="text-[10px] font-mono opacity-70 bg-white/20 dark:bg-black/20 px-1.5 py-0.5 rounded">Esc</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         ) : (
-                            /* 2. IDENTIFIED PATIENT WORKFLOW (Strictly following iOS Target Design) */
+                            /* 3. IDENTIFIED PATIENT WORKFLOW (Strictly following iOS Target Design) */
                             <div className="p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
                                 {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
@@ -1649,7 +2098,8 @@ export function IntentPanel({ onVisitUpdated }) {
                 )}
             </div>
 
-            {/* Footer / Status Bar - UNIFIED BUTTON */}
+            {/* Footer / Status Bar - UNIFIED BUTTON (Hidden during 50/50 Live Preview) */}
+            {!isPostProcessingView && (
                 <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
                     {isCorrectionIntent ? (
                         <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
@@ -1855,6 +2305,7 @@ export function IntentPanel({ onVisitUpdated }) {
                         )
                     )}
                 </div>
+            )}
 
             {/* Commercial Patient Tax Invoice Viewer */}
             {taxInvoiceModal.isOpen && taxInvoiceModal.data && (
