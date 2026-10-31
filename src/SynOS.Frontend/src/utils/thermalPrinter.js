@@ -1229,10 +1229,13 @@ export function generateThermalSlipHtml(payload) {
 /**
  * Attempts to print using the Electron wrapper. Fallbacks to browser native printing.
  */
-export async function legacyTriggerPrint(htmlContent) {
-    const configuredPrinter = typeof window !== 'undefined'
-        ? (window.localStorage?.getItem('synos_receipt_printer_name') || '')
-        : '';
+export async function legacyTriggerPrint(htmlContent, customPrinterName) {
+    const rawPrinter = customPrinterName !== undefined
+        ? customPrinterName
+        : (typeof window !== 'undefined'
+            ? (window.localStorage?.getItem('synos_receipt_printer_name') || '')
+            : '');
+    const configuredPrinter = (rawPrinter === 'default' || rawPrinter === 'dialog') ? '' : rawPrinter;
 
     if (window.api && typeof window.api.printLabel === 'function') {
         const pageWidthMicrons = 70000; // 70mm safe printable width for 80mm roll
