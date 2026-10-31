@@ -605,9 +605,11 @@ export const FinanceOverviewDeck = ({
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
 
     // Receivables & Dues: Patient Desk Dues + Corporate B2B Pending + Insurance Cashless Claims
-    const totalReceivablesAndDues = Number(pendingCollectionsVal || 0) + 
-                                   Number(totalCorporateReceivables || 0) + 
-                                   Number(totalInsuranceReceivables || 0);
+    const totalReceivablesAndDues = presetRange === 'today'
+        ? (Number(pendingCollectionsVal || 0) + Number(totalCorporateReceivables || 0))
+        : (Number(pendingCollectionsVal || 0) + 
+           Number(totalCorporateReceivables || 0) + 
+           Number(totalInsuranceReceivables || 0));
 
     // Doctor payouts (strictly doctor commissions; excludes vendor payables & overheads)
     const doctorPayoutsVal = Number(activeDoctorPayouts || 0);

@@ -1415,11 +1415,17 @@ export const FinanceApi = {
 
     getConcessionIntelligence: async (params = {}) => {
         const queryParams = new URLSearchParams();
+        if (params.preset) queryParams.append('preset', params.preset);
         if (params.fromDate) queryParams.append('fromDate', params.fromDate);
         if (params.toDate) queryParams.append('toDate', params.toDate);
+        if (params.branchId) queryParams.append('branchId', params.branchId);
+        if (params.isConsolidated) queryParams.append('isConsolidated', 'true');
 
         const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
-        const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/discounts/intelligence${qs}`), {
+        const url = (params.branchId && !params.isConsolidated)
+            ? FinanceApi.withBranchId(`/api/v1/admin/discounts/intelligence${qs}`)
+            : `/api/v1/admin/discounts/intelligence${qs}`;
+        const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load concession intelligence");

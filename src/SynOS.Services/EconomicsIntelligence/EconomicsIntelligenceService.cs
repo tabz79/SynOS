@@ -9,6 +9,7 @@ using SynOS.Models.Entities.Revenue;
 using SynOS.Models.ReadModels.Economics;
 using SynOS.Models.DTOs.Economics;
 using SynOS.Models.Entities.Payables; // ADDED
+using SynOS.Models.Enums;
 
 namespace SynOS.Services.EconomicsIntelligence
 {
@@ -389,14 +390,31 @@ namespace SynOS.Services.EconomicsIntelligence
                 }
             }
 
-            // Also check total active concessions declared in period
-            var totalConcessionsInPeriod = await _context.DiscountFacts
+            // Also check total active concessions declared in period (Patient DiscountFacts + B2B Partner Concessions)
+            var patientConcessions = await _context.DiscountFacts
                 .AsNoTracking()
                 .Where(df => df.AppliedAt >= start && df.AppliedAt <= end && df.IsActive)
                 .SumAsync(df => df.DiscountAmount);
 
+            var visitsInPeriodQuery = _context.Visits.AsNoTracking()
+                .Where(v => v.CreatedAt >= start && v.CreatedAt <= end && v.Status != VisitStatus.Cancelled);
+            if (branchId.HasValue) visitsInPeriodQuery = visitsInPeriodQuery.Where(v => v.BranchId == branchId.Value);
+
+            var b2bConcessions = await visitsInPeriodQuery
+                .SumAsync(v => v.B2BDiscountAmount ?? 0m);
+
+            var totalConcessionsInPeriod = patientConcessions + b2bConcessions;
+
             var totalGrossInPeriod = invoicesInPeriod.Sum(i => i.GrossAmount > 0 ? i.GrossAmount : i.Total);
-            if (totalConcessionsInPeriod > 0 && calculatedNetBilled >= totalGrossInPeriod && totalGrossInPeriod > 0)
+            if (totalGrossInPeriod == 0)
+            {
+                var ordersInPeriod = _context.Orders.AsNoTracking()
+                    .Where(o => o.CreatedAt >= start && o.CreatedAt <= end && o.Status != OrderStatus.Cancelled);
+                if (branchId.HasValue) ordersInPeriod = ordersInPeriod.Where(o => o.Visit != null && o.Visit.BranchId == branchId.Value);
+                totalGrossInPeriod = await ordersInPeriod.SumAsync(o => o.Price);
+            }
+
+            if (totalConcessionsInPeriod > 0)
             {
                 calculatedNetBilled = Math.Max(0, totalGrossInPeriod - totalConcessionsInPeriod);
             }

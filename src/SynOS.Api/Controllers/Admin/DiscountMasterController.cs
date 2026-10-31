@@ -102,10 +102,11 @@ namespace SynOS.Api.Controllers.Admin
         [HttpGet("intelligence")]
         [Authorize(Roles = "Admin,SystemAdmin,Accountant,FinanceManager,Finance,Receptionist")]
         public async Task<IActionResult> GetConcessionIntelligence(
+            [FromQuery] string? preset,
             [FromQuery] DateTime? fromDate,
             [FromQuery] DateTime? toDate)
         {
-            var result = await _service.GetConcessionIntelligenceAsync(fromDate, toDate);
+            var result = await _service.GetConcessionIntelligenceAsync(preset, fromDate, toDate);
             return Ok(result);
         }
 

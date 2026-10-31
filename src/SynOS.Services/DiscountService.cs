@@ -327,9 +327,40 @@ namespace SynOS.Services
             return list;
         }
 
-        public async Task<ConcessionIntelligenceDto> GetConcessionIntelligenceAsync(DateTime? fromDate = null, DateTime? toDate = null)
+        public async Task<ConcessionIntelligenceDto> GetConcessionIntelligenceAsync(string? preset = null, DateTime? fromDate = null, DateTime? toDate = null)
         {
             var result = new ConcessionIntelligenceDto();
+
+            if (!string.IsNullOrEmpty(preset) && !fromDate.HasValue && !toDate.HasValue)
+            {
+                var istOffset = TimeSpan.FromHours(5.5);
+                var istNow = DateTime.UtcNow.Add(istOffset);
+                var istToday = istNow.Date;
+
+                switch (preset.ToLowerInvariant())
+                {
+                    case "today":
+                        fromDate = istToday.Subtract(istOffset);
+                        toDate = fromDate.Value.AddDays(1).AddTicks(-1);
+                        break;
+                    case "month":
+                        var monthStartIst = new DateTime(istNow.Year, istNow.Month, 1);
+                        fromDate = monthStartIst.Subtract(istOffset);
+                        toDate = monthStartIst.AddMonths(1).Subtract(istOffset).AddTicks(-1);
+                        break;
+                    case "quarter":
+                        int quarter = (istNow.Month - 1) / 3;
+                        var quarterStartIst = new DateTime(istNow.Year, quarter * 3 + 1, 1);
+                        fromDate = quarterStartIst.Subtract(istOffset);
+                        toDate = quarterStartIst.AddMonths(3).Subtract(istOffset).AddTicks(-1);
+                        break;
+                    case "year":
+                        var yearStartIst = new DateTime(istNow.Year, 1, 1);
+                        fromDate = yearStartIst.Subtract(istOffset);
+                        toDate = yearStartIst.AddYears(1).Subtract(istOffset).AddTicks(-1);
+                        break;
+                }
+            }
 
             // 1. Fetch Patient Discounts from DiscountFact
             var factsQuery = _context.DiscountFacts

@@ -178,14 +178,22 @@ export const FinanceOverview = () => {
     const onlineCollected = isAllPrepaid ? 0 : rawOnline;
     const cashInflow = cashCollected + onlineCollected;
 
+    // Prepaid total from Reception Intake
+    const prepaidBillsTotal = Number(receptionSummary?.prepaidBillsTotal) || 0;
+
     // Total Amount Billed: Truthful Net Clinical Revenue Billed (Gross Tariff minus Concessions).
-    // If raw accrual was ₹600 and concession was ₹150, Net Billed is strictly ₹450.
-    const rawAccrual = Number(profitability?.totalRevenueAccrual) || 0;
-    const billedRevenue = rawAccrual > 0
-        ? (totalConcessions > 0 && rawAccrual > totalConcessions && rawAccrual >= (cashInflow + totalConcessions)
-            ? (rawAccrual - totalConcessions)
-            : rawAccrual)
-        : (cashInflow > 0 ? cashInflow : 0);
+    // If today has 2 prepaid bills totaling ₹725 (₹275 + ₹450), Net Billed is strictly ₹725.
+    let billedRevenue = 0;
+    if (presetRange === 'today' && isAllPrepaid && prepaidBillsTotal > 0) {
+        billedRevenue = prepaidBillsTotal;
+    } else {
+        const rawAccrual = Number(profitability?.totalRevenueAccrual) || 0;
+        billedRevenue = rawAccrual > 0
+            ? (totalConcessions > 0 && rawAccrual > totalConcessions && rawAccrual >= (cashInflow + totalConcessions)
+                ? (rawAccrual - totalConcessions)
+                : rawAccrual)
+            : (cashInflow > 0 ? cashInflow : (prepaidBillsTotal > 0 ? prepaidBillsTotal : 0));
+    }
 
     const netCashPosition = Number(profitability?.netCashPosition || profitability?.operationalNetPosition) || 0;
 
@@ -197,17 +205,19 @@ export const FinanceOverview = () => {
         ? (billedRevenue > 0 ? (Number(profitability?.referralAccrual || profitability?.referralCashOutflow) || 0) : 0)
         : (Number(referrals?.totalPendingPayouts) || 0);
 
+    const todayUncollected = Math.max(0, billedRevenue - cashInflow);
+
+    const totalCorporateReceivables = presetRange === 'today'
+        ? (isAllPrepaid ? todayUncollected : (prepaidBillsTotal > 0 ? prepaidBillsTotal : 0))
+        : pendingCorporateVisits.reduce((sum, v) => sum + (Number(v.totalAmount || v.billAmount || 0) - Number(v.paidAmount || 0)), 0);
+
     const pendingCollectionsVal = presetRange === 'today'
-        ? (billedRevenue > 0 ? Math.max(0, billedRevenue - cashInflow) : 0)
+        ? (isAllPrepaid ? 0 : Math.max(0, todayUncollected - totalCorporateReceivables))
         : (Number(profitability?.pendingCollections) || 0);
 
     const totalInsuranceReceivables = presetRange === 'today'
         ? 0
         : pendingInsuranceClaims.reduce((sum, c) => sum + (Number(c.claimAmount || 0)), 0);
-
-    const totalCorporateReceivables = presetRange === 'today'
-        ? (billedRevenue > 0 ? Math.max(0, Number(receptionSummary?.prepaidBillsTotal || (billedRevenue - cashInflow))) : 0)
-        : pendingCorporateVisits.reduce((sum, v) => sum + (Number(v.totalAmount || v.billAmount || 0) - Number(v.paidAmount || 0)), 0);
 
     const rawDeptList = profitability?.departmentProfitability || [];
 
@@ -238,11 +248,23 @@ export const FinanceOverview = () => {
         };
     });
 
-    const pathologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'pathology' || ['biochemistry', 'hematology', 'microbiology', 'histopathology'].includes((d.departmentName || '').toLowerCase()));
-    const finalPathology = sanitizeDeptList(pathologyList.length ? pathologyList : defaultPathology);
+    const adjustDeptRevenueToNet = (list, targetTotal) => {
+        const sum = list.reduce((acc, d) => acc + (Number(d.billedRevenue) || 0), 0);
+        if (sum > 0 && targetTotal > 0 && sum !== targetTotal) {
+            return list.map(d => ({
+                ...d,
+                billedRevenue: Math.round((Number(d.billedRevenue) || 0) * (targetTotal / sum))
+            }));
+        }
+        return list;
+    };
 
-    const radiologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'radiology' || ['x-ray', 'ct scan', 'ultrasound', 'mri', 'radiology'].includes((d.departmentName || '').toLowerCase()));
-    const finalRadiology = sanitizeDeptList(radiologyList.length ? radiologyList : defaultRadiology);
+    const rawPathologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'pathology' || ['biochemistry', 'hematology', 'microbiology', 'histopathology'].includes((d.departmentName || '').toLowerCase()));
+    const finalPathology = sanitizeDeptList(rawPathologyList.length ? rawPathologyList : defaultPathology);
+
+    const rawRadiologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'radiology' || ['x-ray', 'ct scan', 'ultrasound', 'mri', 'radiology'].includes((d.departmentName || '').toLowerCase()));
+    const sanitizedRadiology = sanitizeDeptList(rawRadiologyList.length ? rawRadiologyList : defaultRadiology);
+    const finalRadiology = presetRange === 'today' ? adjustDeptRevenueToNet(sanitizedRadiology, billedRevenue) : sanitizedRadiology;
 
     const handleDeptClick = (dept) => {
         const cat = dept.category || (['x-ray', 'ct scan', 'ultrasound', 'mri'].includes((dept.departmentName || '').toLowerCase()) ? 'Radiology' : 'Pathology');

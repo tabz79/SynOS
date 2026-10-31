@@ -87,9 +87,11 @@ namespace SynOS.Services
             // Calculate actual confirmed walk-ins from Visits table (all registered patient visits with orders/bills, excluding empty unbilled drafts and cancellations)
             var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
             var endOfToday = startOfToday.AddDays(1);
+            var startUtc = startOfToday.UtcDateTime;
+            var endUtc = endOfToday.UtcDateTime;
 
             var visitsQuery = _context.Visits
-                .Where(v => v.BranchId == branchId && v.CreatedAt >= startOfToday && v.CreatedAt < endOfToday
+                .Where(v => v.BranchId == branchId && v.CreatedAt >= startUtc && v.CreatedAt < endUtc
                          && v.Status != VisitStatus.Cancelled
                          && (v.Status != VisitStatus.Draft || v.Orders.Any() || v.Invoices.Any()));
 
@@ -100,7 +102,8 @@ namespace SynOS.Services
             else if (_userContext.CurrentRole == "Receptionist")
             {
                 var currentUserId = _userContext.CurrentUserId;
-                visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
+                // If user is receptionist, include visits assigned to/created by them, or unassigned branch visits they are serving
+                visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId || v.AssignedReceptionistId == null);
             }
 
             var walkIns = await visitsQuery.CountAsync();
@@ -117,10 +120,13 @@ namespace SynOS.Services
                 return Math.Max(0m, invTotal - b2bDiscount);
             });
 
+            var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);
+            var finalWalkIns = Math.Max(walkIns, Math.Max(stats?.WalkIns ?? 0, finalPrepaidCount));
+
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
-                .Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= startOfToday.UtcDateTime && p.ReceivedAt < endOfToday.UtcDateTime);
+                .Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
 
             if (userId.HasValue)
             {
@@ -149,12 +155,12 @@ namespace SynOS.Services
 
             return new RevenueStatsDto
             {
-                WalkInsToday = walkIns,
+                WalkInsToday = finalWalkIns,
                 PaymentsCollected = finalTotal,
                 PaymentsCashTotal = finalCash,
                 PaymentsOnlineTotal = finalOnline,
                 PaymentsOnlineCount = finalOnlineCount,
-                PrepaidBillsCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0),
+                PrepaidBillsCount = finalPrepaidCount,
                 PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
                 PendingReports = 0,
                 AvgReportTimeMinutes = 0
