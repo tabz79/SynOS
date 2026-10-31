@@ -702,6 +702,18 @@ export function BillingSummary({
                                         data-concession-trigger="true"
                                         type="button"
                                         onClick={() => setIsDiscountExpanded(prev => !prev)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab' && e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                if (outsourceBtn) outsourceBtn.focus();
+                                                else {
+                                                    const testInput = document.getElementById('input-test-search');
+                                                    if (testInput) testInput.focus();
+                                                }
+                                            }
+                                        }}
                                         className={cn(
                                             "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs shrink-0",
                                             isDiscountExpanded
@@ -901,6 +913,22 @@ export function BillingSummary({
                                                         placeholder={customDiscountType === 'PERCENTAGE' ? 'Discount % (e.g. 15)' : 'Discount ₹ (e.g. 100)'}
                                                         value={customDiscountValue}
                                                         onFocus={(e) => e.target.select()}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab' && e.shiftKey) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                const trigger = document.querySelector('[data-concession-trigger="true"]');
+                                                                if (trigger) trigger.focus();
+                                                                else {
+                                                                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                                    if (outsourceBtn) outsourceBtn.focus();
+                                                                    else {
+                                                                        const testInput = document.getElementById('input-test-search');
+                                                                        if (testInput) testInput.focus();
+                                                                    }
+                                                                }
+                                                            }
+                                                        }}
                                                         onChange={(e) => {
                                                             const raw = e.target.value;
                                                             const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;

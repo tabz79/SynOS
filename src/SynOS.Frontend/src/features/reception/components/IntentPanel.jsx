@@ -86,7 +86,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
-    const [userPayerExpandedState, setUserPayerExpandedState] = useState(null);
+    const [userPayerExpandedState, setUserPayerExpandedState] = useState(true);
     const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
 
     // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
@@ -155,44 +155,6 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     };
 
-    // Auto-minimize Billing & Payer Mode when user moves to or interacts with other sections
-    useEffect(() => {
-        if (!userPayerExpandedState) return;
-
-        const handlePointerDown = (e) => {
-            if (payerModeContainerRef.current && !payerModeContainerRef.current.contains(e.target)) {
-                const isPortal = e.target.closest && (
-                    e.target.closest('[role="dialog"]') || 
-                    e.target.closest('[role="listbox"]') ||
-                    e.target.closest('.suggestion-portal')
-                );
-                if (!isPortal) {
-                    setUserPayerExpandedState(false);
-                }
-            }
-        };
-
-        const handleFocusIn = (e) => {
-            if (payerModeContainerRef.current && !payerModeContainerRef.current.contains(e.target)) {
-                const isPortal = e.target.closest && (
-                    e.target.closest('[role="dialog"]') || 
-                    e.target.closest('[role="listbox"]') ||
-                    e.target.closest('.suggestion-portal')
-                );
-                if (!isPortal) {
-                    setUserPayerExpandedState(false);
-                }
-            }
-        };
-
-        document.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('focusin', handleFocusIn);
-        return () => {
-            document.removeEventListener('pointerdown', handlePointerDown);
-            document.removeEventListener('focusin', handleFocusIn);
-        };
-    }, [userPayerExpandedState]);
-
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
@@ -247,9 +209,12 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsEditDemographicsOpen(false);
             setIsBatchEditConfirmModalOpen(false);
             setBatchEditReason('');
-            setUserPayerExpandedState(null);
+            setUserPayerExpandedState(true);
             return;
         }
+
+        // On open, always start with Payer Mode expanded by default
+        setUserPayerExpandedState(true);
 
         if ((isResumeIntent || isCorrectionIntent) && drawerState.visitId) {
             // RESUME/CORRECT: Preset Visit ID, No Patient Selection needed yet (internal)
@@ -1473,12 +1438,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                             )}
                                         </div>
 
-                                        {/* Step 2: Visit Details (Directly below Patient Identification, auto-minimizes Payer Mode on entry) */}
-                                        <div
-                                            className="min-h-0"
-                                            onFocusCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
-                                            onPointerDownCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
-                                        >
+                                        {/* Step 2: Visit Details (Directly below Patient Identification) */}
+                                        <div className="min-h-0">
                                             <VisitDetails
                                                 snapshot={snapshot}
                                                 visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
@@ -1560,11 +1521,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         </div>
 
                                         {/* Step 3: Financials (BillingSummary with internal scroll) */}
-                                        <div 
-                                            className="flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-700"
-                                            onFocusCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
-                                            onPointerDownCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
-                                        >
+                                        <div className="flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-700">
                                             <BillingSummary
                                                 snapshot={snapshot}
                                                 onVisitUpdated={loadSnapshot}

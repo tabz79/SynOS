@@ -885,17 +885,53 @@ export function VisitDetails({
                                         </span>
                                     </span>
                                     <button
+                                        id="btn-add-prescribing-doctor"
                                         type="button"
                                         onClick={() => onOpenModal && onOpenModal('referral')}
                                         disabled={!canEditReferral}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const secInput = document.getElementById('input-secondary-doctor') ||
+                                                                 document.getElementById('card-secondary-doctor') ||
+                                                                 document.getElementById('btn-add-secondary-doctor');
+                                                if (secInput) secInput.focus();
+                                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const docInput = document.getElementById('input-prescribing-doctor') ||
+                                                                 document.getElementById('card-prescribing-doctor');
+                                                if (docInput) docInput.focus();
+                                            }
+                                        }}
                                         className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs"
                                     >
                                         <Plus className="w-4 h-4" /> Add Doctor
                                     </button>
                                 </div>
                                 {effectivePartner ? (
-                                    <div className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border",
-                                        isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}>
+                                    <div 
+                                        id="card-prescribing-doctor"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const addBtn = document.getElementById('btn-add-prescribing-doctor');
+                                                if (addBtn) addBtn.focus();
+                                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
+                                                const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                                 document.querySelector('[data-payer-mode-btn="true"]');
+                                                if (payerBtn) payerBtn.focus();
+                                            }
+                                        }}
+                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                        isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
+                                    >
                                         <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
@@ -929,6 +965,7 @@ export function VisitDetails({
                                 ) : (
                                     <div className="space-y-2">
                                         <ReferralCombinedInput
+                                            inputId="input-prescribing-doctor"
                                             initialValue={snapshot?.billing?.referral?.referrerText || ""}
                                             isReadOnly={!canEditReferral}
                                             isProcessing={isProcessing}
@@ -937,6 +974,16 @@ export function VisitDetails({
                                             onApplyPartner={handleApplyReferral}
                                             nextInputRef={testSearchInputRef}
                                             fallbackNextRef={testSearchInputRef}
+                                            onAdvanceForward={() => {
+                                                const addBtn = document.getElementById('btn-add-prescribing-doctor');
+                                                if (addBtn) addBtn.focus();
+                                            }}
+                                            onAdvanceBackward={() => {
+                                                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
+                                                const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                                 document.querySelector('[data-payer-mode-btn="true"]');
+                                                if (payerBtn) payerBtn.focus();
+                                            }}
                                             onUpdateText={async (text) => {
                                                 if (!visitId || !canEditReferral) return;
                                                 if (isCorrectionIntent) {
@@ -974,17 +1021,50 @@ export function VisitDetails({
                                         </span>
                                     </span>
                                     <button
+                                        id="btn-add-secondary-doctor"
                                         type="button"
                                         onClick={() => onOpenModal && onOpenModal('rmp')}
                                         disabled={!canEditReferral}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                if (testSearch) testSearch.focus();
+                                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const secDoc = document.getElementById('input-secondary-doctor') ||
+                                                               document.getElementById('card-secondary-doctor');
+                                                if (secDoc) secDoc.focus();
+                                            }
+                                        }}
                                         className="bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs"
                                     >
                                         <Plus className="w-4 h-4" /> Add RMP
                                     </button>
                                 </div>
                                 {snapshot?.billing?.referral?.secondaryPartner ? (
-                                    <div className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border",
-                                        isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs")}>
+                                    <div 
+                                        id="card-secondary-doctor"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const addRmp = document.getElementById('btn-add-secondary-doctor');
+                                                if (addRmp) addRmp.focus();
+                                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const addDoc = document.getElementById('btn-add-prescribing-doctor');
+                                                if (addDoc) addDoc.focus();
+                                            }
+                                        }}
+                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500",
+                                        isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs")}
+                                    >
                                         <div className="w-3 h-3 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
@@ -1014,6 +1094,7 @@ export function VisitDetails({
                                 ) : (
                                     <div className="space-y-2">
                                         <ReferralCombinedInput
+                                            inputId="input-secondary-doctor"
                                             inputRef={standardSecondaryReferralRef}
                                             nextInputRef={testSearchInputRef}
                                             fallbackNextRef={testSearchInputRef}
@@ -1024,6 +1105,14 @@ export function VisitDetails({
                                             allowFreeText={false}
                                             onApplyPartner={handleApplySecondaryReferral}
                                             onUpdateText={() => {}}
+                                            onAdvanceForward={() => {
+                                                const addRmp = document.getElementById('btn-add-secondary-doctor');
+                                                if (addRmp) addRmp.focus();
+                                            }}
+                                            onAdvanceBackward={() => {
+                                                const addDoc = document.getElementById('btn-add-prescribing-doctor');
+                                                if (addDoc) addDoc.focus();
+                                            }}
                                         />
                                     </div>
                                 )}
@@ -1042,17 +1131,52 @@ export function VisitDetails({
                                     <span>Prescribing Doctor (Main Doctor on Reports)</span>
                                 </span>
                                 <button
+                                    id="btn-add-prescribing-doctor"
                                     type="button"
                                     onClick={() => onOpenModal && onOpenModal('referral')}
                                     disabled={!canEditReferral}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                            const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                            if (testSearch) testSearch.focus();
+                                        } else if (e.key === 'Tab' && e.shiftKey) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const docInput = document.getElementById('input-prescribing-doctor') ||
+                                                             document.getElementById('card-prescribing-doctor');
+                                            if (docInput) docInput.focus();
+                                        }
+                                    }}
                                     className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                                 >
                                     <Plus className="w-3.5 h-3.5" /> Add Doctor
                                 </button>
                             </div>
                             {effectivePartner ? (
-                                <div className={cn("flex items-center gap-2 font-semibold p-3 rounded-xl border",
-                                    isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}>
+                                <div 
+                                    id="card-prescribing-doctor"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const addBtn = document.getElementById('btn-add-prescribing-doctor');
+                                            if (addBtn) addBtn.focus();
+                                        } else if (e.key === 'Tab' && e.shiftKey) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
+                                            const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                             document.querySelector('[data-payer-mode-btn="true"]');
+                                            if (payerBtn) payerBtn.focus();
+                                        }
+                                    }}
+                                    className={cn("flex items-center gap-2 font-semibold p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                    isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
+                                >
                                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <div className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
@@ -1078,6 +1202,7 @@ export function VisitDetails({
                             ) : (
                                 <div className="space-y-2">
                                     <ReferralCombinedInput
+                                        inputId="input-prescribing-doctor"
                                         initialValue={snapshot?.billing?.referral?.referrerText || ""}
                                         isReadOnly={!canEditReferral}
                                         isProcessing={isProcessing}
@@ -1086,6 +1211,16 @@ export function VisitDetails({
                                         onApplyPartner={handleApplyReferral}
                                         nextInputRef={testSearchInputRef}
                                         fallbackNextRef={testSearchInputRef}
+                                        onAdvanceForward={() => {
+                                            const addBtn = document.getElementById('btn-add-prescribing-doctor');
+                                            if (addBtn) addBtn.focus();
+                                        }}
+                                        onAdvanceBackward={() => {
+                                            window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
+                                            const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                             document.querySelector('[data-payer-mode-btn="true"]');
+                                            if (payerBtn) payerBtn.focus();
+                                        }}
                                         onUpdateText={async (text) => {
                                             if (!visitId || !canEditReferral) return;
                                             setIsProcessing(true);
@@ -1216,37 +1351,50 @@ export function VisitDetails({
                                 if (e.key === 'ArrowDown') {
                                     if (suggestions.length > 0) {
                                         e.preventDefault();
+                                        e.stopPropagation();
                                         setTestSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
                                     }
                                 } else if (e.key === 'ArrowUp') {
                                     if (suggestions.length > 0) {
                                         e.preventDefault();
+                                        e.stopPropagation();
                                         setTestSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
                                     }
                                 } else if (e.key === 'Enter') {
                                     if (suggestions.length > 0 && testSelectedIndex >= 0 && testSelectedIndex < suggestions.length) {
                                         e.preventDefault();
+                                        e.stopPropagation();
                                         handleAddTest(suggestions[testSelectedIndex]);
                                     }
                                 } else if (e.key === 'Tab') {
                                     setIsSearchFocused(false);
                                     if (!e.shiftKey) {
                                         e.preventDefault();
+                                        e.stopPropagation();
                                         const outsourceBtn = document.getElementById('btn-outsource-test');
                                         if (outsourceBtn) {
                                             outsourceBtn.focus();
                                         } else {
-                                            const finTarget = document.querySelector('[data-financials-focus="true"]') ||
+                                            const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
                                                               document.querySelector('#input-flat-concession') ||
-                                                              document.querySelector('[data-concession-trigger="true"]') ||
+                                                              document.querySelector('[data-financials-focus="true"]') ||
                                                               document.querySelector('#btn-settlement-full');
                                             if (finTarget) finTarget.focus();
                                         }
                                     } else {
                                         e.preventDefault();
-                                        const docInput = document.getElementById('input-prescribing-doctor') ||
-                                                         document.querySelector('input[placeholder*="Search Doctor"]');
-                                        if (docInput) docInput.focus();
+                                        e.stopPropagation();
+                                        window.dispatchEvent(new CustomEvent('synos:expand-doctor-section'));
+                                        const addRmp = document.getElementById('btn-add-secondary-doctor');
+                                        if (addRmp) {
+                                            addRmp.focus();
+                                        } else {
+                                            const secDoc = document.getElementById('input-secondary-doctor') ||
+                                                           document.getElementById('card-secondary-doctor') ||
+                                                           document.getElementById('btn-add-prescribing-doctor') ||
+                                                           document.getElementById('input-prescribing-doctor');
+                                            if (secDoc) secDoc.focus();
+                                        }
                                     }
                                 }
                             }}
@@ -1683,13 +1831,15 @@ export function VisitDetails({
                             onKeyDown={(e) => {
                                 if (e.key === 'Tab' && !e.shiftKey) {
                                     e.preventDefault();
-                                    const finTarget = document.querySelector('[data-financials-focus="true"]') ||
+                                    e.stopPropagation();
+                                    const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
                                                       document.querySelector('#input-flat-concession') ||
-                                                      document.querySelector('[data-concession-trigger="true"]') ||
+                                                      document.querySelector('[data-financials-focus="true"]') ||
                                                       document.querySelector('#btn-settlement-full');
                                     if (finTarget) finTarget.focus();
                                 } else if (e.key === 'Tab' && e.shiftKey) {
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     const testInput = document.getElementById('input-test-search') ||
                                                       testSearchInputRef?.current;
                                     if (testInput) testInput.focus();
@@ -1761,7 +1911,10 @@ function ReferralCombinedInput({
     onUpdateText,
     inputRef,
     nextInputRef,
-    fallbackNextRef
+    fallbackNextRef,
+    inputId,
+    onAdvanceForward,
+    onAdvanceBackward
 }) {
     const [value, setValue] = useState(initialValue);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -1824,6 +1977,7 @@ function ReferralCombinedInput({
     const handleKeyDown = (e) => {
         if (e.key === 'ArrowDown') {
             e.preventDefault();
+            e.stopPropagation();
             if (!showSuggestions) {
                 setShowSuggestions(true);
             }
@@ -1832,42 +1986,44 @@ function ReferralCombinedInput({
             }
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
+            e.stopPropagation();
             if (suggestions.length > 0) {
                 setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
             }
         } else if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
             if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
-                e.preventDefault();
                 handleApply(suggestions[selectedIndex].referralPartnerId);
-                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                if (onAdvanceForward) onAdvanceForward();
             } else {
-                e.preventDefault();
                 setShowSuggestions(false);
-                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
-                const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
-                if (target) target.focus();
+                if (onAdvanceForward) onAdvanceForward();
+                else {
+                    const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
+                    if (target) target.focus();
+                }
             }
         } else if (e.key === 'Tab') {
+            e.preventDefault();
+            e.stopPropagation();
             if (!e.shiftKey) {
                 if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
                     handleApply(suggestions[selectedIndex].referralPartnerId);
                 }
                 setShowSuggestions(false);
-                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
-                const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
-                if (target) {
-                    e.preventDefault();
-                    target.focus();
+                if (onAdvanceForward) onAdvanceForward();
+                else {
+                    const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
+                    if (target) target.focus();
                 }
             } else {
-                // Shift+Tab back to Billing & Payer Mode
-                e.preventDefault();
-                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
-                const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
-                                 document.querySelector('[data-payer-mode-btn="true"]');
-                if (payerBtn) payerBtn.focus();
+                setShowSuggestions(false);
+                if (onAdvanceBackward) onAdvanceBackward();
             }
         } else if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
             setShowSuggestions(false);
         }
     };
@@ -1889,7 +2045,7 @@ function ReferralCombinedInput({
         <div className="relative">
             <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
             <input
-                id="input-prescribing-doctor"
+                id={inputId || "input-prescribing-doctor"}
                 data-doctor-input="true"
                 ref={inputRef}
                 type="text"
@@ -1903,8 +2059,6 @@ function ReferralCombinedInput({
                     isReadOnly && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none")}
                 onFocus={() => {
                     setShowSuggestions(true);
-                    // Minimize Payer Mode card upon reaching Referring Doctor card
-                    window.dispatchEvent(new CustomEvent('synos:minimize-payer-mode'));
                 }}
                 onChange={(e) => {
                     setValue(e.target.value);

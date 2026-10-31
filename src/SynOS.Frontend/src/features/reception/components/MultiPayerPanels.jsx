@@ -44,11 +44,13 @@ export function MultiPayerSelector({
     const advanceToDoctor = () => {
         // 1. Ensure Referring Doctor section is expanded
         window.dispatchEvent(new CustomEvent('synos:expand-doctor-section'));
-        // 2. Set focus on the prescribing doctor search input
+        // 2. Set focus on the prescribing doctor search input or partner card or add button
         setTimeout(() => {
             const docInput = document.getElementById('input-prescribing-doctor') ||
+                             document.getElementById('card-prescribing-doctor') ||
                              document.querySelector('[data-doctor-input="true"]') ||
-                             document.querySelector('input[placeholder*="Search Doctor"]');
+                             document.querySelector('input[placeholder*="Search Doctor"]') ||
+                             document.getElementById('btn-add-prescribing-doctor');
             if (docInput) {
                 docInput.focus();
                 // 3. Minimize Payer Mode card upon reaching Referring Doctor card
@@ -60,6 +62,7 @@ export function MultiPayerSelector({
     const handleModeKeyDown = (e, index, modeId) => {
         if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
             e.preventDefault();
+            e.stopPropagation();
             const nextIndex = (index + 1) % visibleModes.length;
             const nextMode = visibleModes[nextIndex];
             if (nextMode && !disabled) {
@@ -70,6 +73,7 @@ export function MultiPayerSelector({
             }
         } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
             e.preventDefault();
+            e.stopPropagation();
             const prevIndex = (index - 1 + visibleModes.length) % visibleModes.length;
             const prevMode = visibleModes[prevIndex];
             if (prevMode && !disabled) {
@@ -80,6 +84,7 @@ export function MultiPayerSelector({
             }
         } else if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
+            e.stopPropagation();
             if (isCollapsed && onToggleCollapse) {
                 onToggleCollapse();
             } else if (!disabled) {
@@ -87,11 +92,11 @@ export function MultiPayerSelector({
                 advanceToDoctor();
             }
         } else if (e.key === 'Tab') {
+            e.preventDefault();
+            e.stopPropagation();
             if (!e.shiftKey) {
-                e.preventDefault();
                 advanceToDoctor();
             } else {
-                e.preventDefault();
                 const editBtn = document.getElementById('btn-edit-demographics');
                 if (editBtn) {
                     editBtn.focus();
@@ -119,6 +124,7 @@ export function MultiPayerSelector({
                     return (
                         <button
                             key={m.id}
+                            id={isSelected ? "btn-payer-mode-active" : `btn-payer-mode-${m.id}`}
                             ref={(el) => { modeRefs.current[idx] = el; }}
                             data-payer-mode-btn="true"
                             data-selected={isSelected ? "true" : "false"}

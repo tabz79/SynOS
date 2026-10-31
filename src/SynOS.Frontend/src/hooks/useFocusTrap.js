@@ -24,10 +24,12 @@ export function useFocusTrap(ref, isActive, onClose) {
             // 2. INITIAL FOCUS (Auto-Focus first element)
             const focusables = getFocusables(ref.current);
             if (focusables.length > 0) {
-                // Check if any element already has autofocus attribute
-                const autoFocusEl = ref.current.querySelector('[autofocus]');
-                if (autoFocusEl) {
-                    autoFocusEl.focus();
+                // Check if explicit initial focus element exists (e.g. edit demographics)
+                const initialTarget = ref.current.querySelector('#btn-edit-demographics') || 
+                                      ref.current.querySelector('[data-initial-focus="true"]') ||
+                                      ref.current.querySelector('[autofocus]');
+                if (initialTarget) {
+                    initialTarget.focus();
                 } else {
                     // Prefer first interactive form input (phone/test search) over close button
                     const firstInput = ref.current.querySelector('input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])');
@@ -41,6 +43,9 @@ export function useFocusTrap(ref, isActive, onClose) {
 
             // 3. TRAP EVENT LISTENERS
             const handleKeyDown = (e) => {
+                // If an element already handled the event explicitly, respect it
+                if (e.defaultPrevented) return;
+
                 // ESCAPE HATCH
                 if (e.key === 'Escape' && onClose) {
                     e.preventDefault();

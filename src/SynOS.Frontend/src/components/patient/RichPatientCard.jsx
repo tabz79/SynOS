@@ -166,6 +166,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                     {secondaryActionLabel && (
                         <button 
                             id="btn-edit-demographics"
+                            data-initial-focus="true"
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -174,9 +175,14 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                             onKeyDown={(e) => {
                                 if (e.key === 'Tab' && !e.shiftKey) {
                                     e.preventDefault();
-                                    const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                    e.stopPropagation();
+                                    const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                     document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
                                                      document.querySelector('[data-payer-mode-btn="true"]');
                                     if (payerBtn) payerBtn.focus();
+                                } else if (e.key === 'Tab' && e.shiftKey) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                 }
                             }}
                             className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
@@ -197,11 +203,14 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                             onKeyDown={(e) => {
                                 if (e.key === 'Tab' && !e.shiftKey) {
                                     e.preventDefault();
-                                    const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                    e.stopPropagation();
+                                    const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                     document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
                                                      document.querySelector('[data-payer-mode-btn="true"]');
                                     if (payerBtn) payerBtn.focus();
                                 } else if (e.key === 'Tab' && e.shiftKey) {
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     const editBtn = document.getElementById('btn-edit-demographics');
                                     if (editBtn) editBtn.focus();
                                 }
