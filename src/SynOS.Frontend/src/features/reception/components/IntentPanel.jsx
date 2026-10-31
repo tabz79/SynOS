@@ -1126,8 +1126,6 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     };
 
-    if (!isOpen) return null;
-
     const hasPatient = !!snapshot?.patient;
     const hasVisit = !!snapshot?.visit;
     
@@ -1162,7 +1160,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // Keyboard shortcuts for in-panel print and close
     useEffect(() => {
-        if (!isPostProcessingView) return;
+        if (!isOpen || !isPostProcessingView) return;
         const handleKeyDown = (e) => {
             if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !['TEXTAREA', 'INPUT', 'SELECT'].includes(e.target.tagName)) {
                 e.preventDefault();
@@ -1174,7 +1172,9 @@ export function IntentPanel({ onVisitUpdated }) {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isPostProcessingView, selectedDocFormat, selectedPrinter, thermalHtml]);
+    }, [isOpen, isPostProcessingView, selectedDocFormat, selectedPrinter, thermalHtml]);
+
+    if (!isOpen) return null;
 
     // Determine Button Label & State
     let mainActionLabel = "Identify Patient & Start Visit";

@@ -299,12 +299,9 @@ export function BillingSummary({
         }
     };
 
-    // Strict Guard: If no billing object, render nothing (or skeleton).
-    if (!billing) return null;
-
     // 2. READ-ONLY Flags (Strictly from Snapshot)
     // Phase 6.4.4: Governance Rule - If Locked OR ReadOnly -> UI is Dead.
-    const isLocked = billing.isLocked || false;
+    const isLocked = billing?.isLocked || false;
     const isUiReadOnly = uiHints?.isReadOnly || false;
     const isStrictReadOnly = (isLocked || isUiReadOnly) && !isCorrectionIntent; // Unlocked for Correction
 
@@ -374,6 +371,9 @@ export function BillingSummary({
             }
         }
     }, [reasonSelectedIndex]);
+
+    // Strict Guard: If no billing object, render nothing (or skeleton).
+    if (!billing) return null;
 
     const handleReasonKeyDown = (e) => {
         if (!showReasonDropdown) {

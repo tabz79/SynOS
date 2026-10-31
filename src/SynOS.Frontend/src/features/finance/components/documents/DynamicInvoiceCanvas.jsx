@@ -304,6 +304,16 @@ export const DynamicInvoiceCanvas = ({
     onToggleBox,
     readOnly = false
 }) => {
+    const [showColumnManager, setShowColumnManager] = useState(false);
+    const [newColName, setNewColName] = useState("");
+    const [editingColumn, setEditingColumn] = useState(null); // { boxId, colKey, label }
+    const [editColLabel, setEditColLabel] = useState("");
+
+    // Helper to update schema immutably
+    const updateSchema = (newSchema) => {
+        if (onUpdateSchema) onUpdateSchema(newSchema);
+    };
+
     if (!schema || !schema.boxes) {
         return <div className="p-8 text-center text-zinc-400">Loading document canvas...</div>;
     }
@@ -368,16 +378,6 @@ export const DynamicInvoiceCanvas = ({
                 window.localStorage.removeItem('synos_custom_qr_image');
             }
         } catch {}
-    };
-
-    const [showColumnManager, setShowColumnManager] = useState(false);
-    const [newColName, setNewColName] = useState("");
-    const [editingColumn, setEditingColumn] = useState(null); // { boxId, colKey, label }
-    const [editColLabel, setEditColLabel] = useState("");
-
-    // Helper to update schema immutably
-    const updateSchema = (newSchema) => {
-        if (onUpdateSchema) onUpdateSchema(newSchema);
     };
 
     // Box toggle / delete
