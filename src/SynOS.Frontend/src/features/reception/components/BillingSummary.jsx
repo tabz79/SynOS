@@ -709,8 +709,13 @@ export function BillingSummary({
                                                 const outsourceBtn = document.getElementById('btn-outsource-test');
                                                 if (outsourceBtn) outsourceBtn.focus();
                                                 else {
-                                                    const testInput = document.getElementById('input-test-search');
-                                                    if (testInput) testInput.focus();
+                                                    const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                    if (allTestButtons.length > 0) {
+                                                        allTestButtons[allTestButtons.length - 1].focus();
+                                                    } else {
+                                                        const testInput = document.getElementById('input-test-search');
+                                                        if (testInput) testInput.focus();
+                                                    }
                                                 }
                                             }
                                         }}
@@ -923,8 +928,13 @@ export function BillingSummary({
                                                                     const outsourceBtn = document.getElementById('btn-outsource-test');
                                                                     if (outsourceBtn) outsourceBtn.focus();
                                                                     else {
-                                                                        const testInput = document.getElementById('input-test-search');
-                                                                        if (testInput) testInput.focus();
+                                                                        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                                        if (allTestButtons.length > 0) {
+                                                                            allTestButtons[allTestButtons.length - 1].focus();
+                                                                        } else {
+                                                                            const testInput = document.getElementById('input-test-search');
+                                                                            if (testInput) testInput.focus();
+                                                                        }
                                                                     }
                                                                 }
                                                             }

@@ -648,6 +648,40 @@ export function VisitDetails({
         }
     };
 
+    const handleTestRemoveKeyDown = (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            e.stopPropagation();
+            const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+            const currentIdx = allTestButtons.indexOf(e.currentTarget);
+            if (!e.shiftKey) {
+                // Forward
+                if (currentIdx !== -1 && currentIdx < allTestButtons.length - 1) {
+                    allTestButtons[currentIdx + 1].focus();
+                } else {
+                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                    if (outsourceBtn) {
+                        outsourceBtn.focus();
+                    } else {
+                        const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
+                                          document.querySelector('#input-flat-concession') ||
+                                          document.querySelector('[data-financials-focus="true"]') ||
+                                          document.querySelector('#btn-settlement-full');
+                        if (finTarget) finTarget.focus();
+                    }
+                }
+            } else {
+                // Backward
+                if (currentIdx > 0) {
+                    allTestButtons[currentIdx - 1].focus();
+                } else {
+                    const testInput = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                    if (testInput) testInput.focus();
+                }
+            }
+        }
+    };
+
 
     // EXECUTE CORRECTION (Called from Modal)
     const confirmCorrection = async () => {
@@ -1515,15 +1549,20 @@ export function VisitDetails({
                                     if (!e.shiftKey) {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        const outsourceBtn = document.getElementById('btn-outsource-test');
-                                        if (outsourceBtn) {
-                                            outsourceBtn.focus();
+                                        const firstRemoveBtn = document.querySelector('[data-test-remove-btn="true"]');
+                                        if (firstRemoveBtn) {
+                                            firstRemoveBtn.focus();
                                         } else {
-                                            const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
-                                                              document.querySelector('#input-flat-concession') ||
-                                                              document.querySelector('[data-financials-focus="true"]') ||
-                                                              document.querySelector('#btn-settlement-full');
-                                            if (finTarget) finTarget.focus();
+                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                            if (outsourceBtn) {
+                                                outsourceBtn.focus();
+                                            } else {
+                                                const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
+                                                                  document.querySelector('#input-flat-concession') ||
+                                                                  document.querySelector('[data-financials-focus="true"]') ||
+                                                                  document.querySelector('#btn-settlement-full');
+                                                if (finTarget) finTarget.focus();
+                                            }
                                         }
                                     } else {
                                         e.preventDefault();
@@ -1683,19 +1722,25 @@ export function VisitDetails({
                                                 isStagedRemoved ? (
                                                     <button
                                                         type="button"
+                                                        id={`btn-undo-test-${test.testCode || test.code}`}
+                                                        data-test-remove-btn="true"
                                                         onClick={() => handleRemoveTest(test.testCode || test.code, orderId)}
-                                                        className="text-xs font-bold text-synos-primary hover:underline px-2 py-0.5 bg-synos-primary/10 rounded cursor-pointer no-underline"
+                                                        onKeyDown={handleTestRemoveKeyDown}
+                                                        className="text-xs font-bold text-synos-primary hover:underline px-2 py-0.5 bg-synos-primary/10 rounded cursor-pointer no-underline focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                     >
                                                         Undo
                                                     </button>
                                                 ) : (
                                                     <button
                                                         type="button"
+                                                        id={`btn-remove-test-${test.testCode || test.code}`}
+                                                        data-test-remove-btn="true"
                                                         onClick={() => {
                                                             handleRemoveTest(test.testCode || test.code, orderId);
                                                         }}
+                                                        onKeyDown={handleTestRemoveKeyDown}
                                                         disabled={isProcessing}
-                                                        className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                                        className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                                                         title="Remove Test"
                                                     >
                                                         <X className="w-4 h-4" />
@@ -1734,8 +1779,11 @@ export function VisitDetails({
                                         </div>
                                         <button
                                             type="button"
+                                            id={`btn-remove-staged-test-${sIdx}`}
+                                            data-test-remove-btn="true"
                                             onClick={() => onRemoveStagedAddedTest && onRemoveStagedAddedTest(sIdx)}
-                                            className="text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                            onKeyDown={handleTestRemoveKeyDown}
+                                            className="text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
                                             title="Discard Add-On"
                                         >
                                             <X className="w-4 h-4" />
@@ -1932,11 +1980,16 @@ export function VisitDetails({
                                     {/* Allow Remove if NOT ReadOnly OR if Correction Intent */}
                                     {(!isReadOnly || isCorrectionIntent) && (
                                         <button
+                                            type="button"
+                                            id={`btn-remove-outsourced-test-${test.testCode || test.code}`}
+                                            data-test-remove-btn="true"
                                             onClick={() => {
                                                 handleRemoveTest(test.testCode, test.orderId);
                                             }}
+                                            onKeyDown={handleTestRemoveKeyDown}
                                             disabled={isProcessing}
-                                            className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors"
+                                            className="text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                                            title="Remove Outsourced Test"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -1980,9 +2033,14 @@ export function VisitDetails({
                                 } else if (e.key === 'Tab' && e.shiftKey) {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    const testInput = document.getElementById('input-test-search') ||
-                                                      testSearchInputRef?.current;
-                                    if (testInput) testInput.focus();
+                                    const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                    if (allTestButtons.length > 0) {
+                                        allTestButtons[allTestButtons.length - 1].focus();
+                                    } else {
+                                        const testInput = document.getElementById('input-test-search') ||
+                                                          testSearchInputRef?.current;
+                                        if (testInput) testInput.focus();
+                                    }
                                 }
                             }}
                             className="rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
