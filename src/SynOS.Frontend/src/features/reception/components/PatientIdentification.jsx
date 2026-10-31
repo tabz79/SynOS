@@ -28,35 +28,34 @@ export function PatientIdentification({
 
     const ui = isDark ? {
         indicator: {
-            active: "bg-synos-primary type-value border-synos-primary",
-            inactive: "bg-zinc-800 border-synos-border type-label"
+            active: "bg-slate-600 text-white border-transparent",
+            inactive: "bg-zinc-800 text-zinc-400 border-zinc-700"
         },
         headerText: {
-            active: "type-value",
-            inactive: "type-value"
+            active: "text-xl font-bold text-white tracking-normal",
+            inactive: "text-xl font-bold text-zinc-400 tracking-normal"
         },
-        input: "bg-zinc-900 border-synos-border type-code focus:border-synos-primary",
-        emptyBox: "bg-zinc-800/30 border-zinc-700 type-body",
-        form: "bg-zinc-900 border-synos-border",
-        formLabel: "type-section-header",
-        formInput: "bg-black border-zinc-800 type-body focus:border-synos-primary"
+        section: "p-5 sm:p-6 rounded-[28px] bg-zinc-900/90 border border-zinc-800 shadow-xl space-y-4",
+        input: "bg-zinc-950 border border-zinc-800 text-base font-medium tracking-normal text-white placeholder:text-zinc-500 focus:border-synos-primary transition-all",
+        emptyBox: "bg-zinc-800/30 border-zinc-700 text-sm text-zinc-400",
+        form: "bg-zinc-900 border-zinc-800",
+        formLabel: "text-sm font-semibold tracking-normal text-zinc-300",
+        formInput: "bg-zinc-950 border-zinc-800 text-sm focus:border-synos-primary tracking-normal"
     } : {
         indicator: {
-            active: "bg-white type-value border-zinc-200 shadow-sm",
-            inactive: "type-label border-black/10 shadow-none bg-white/20"
+            active: "bg-[#5A6E85] text-white border-transparent shadow-xs",
+            inactive: "bg-slate-200 text-slate-600 border-transparent shadow-none"
         },
         headerText: {
-            active: "type-value",
-            inactive: "type-value opacity-60"
+            active: "text-xl font-bold text-slate-900 tracking-normal",
+            inactive: "text-xl font-bold text-slate-900 tracking-normal"
         },
-        // UNIFIED RECESSED SECTION
-        section: "p-4 rounded-lg bg-black/[0.04] border border-black/5 shadow-inner space-y-3",
-        // ETCHED INPUT
-        input: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-code focus:ring-1 focus:ring-black/5 transition-all",
-        emptyBox: "border-dashed border-black/20 type-body opacity-60",
+        section: "p-5 sm:p-6 rounded-[28px] bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] space-y-4",
+        input: "bg-white border border-[#CCDCE8] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-base font-medium tracking-normal text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all",
+        emptyBox: "border-dashed border-slate-300 text-sm text-slate-500",
         form: "ring-0 space-y-4",
-        formLabel: "type-section-header opacity-70",
-        formInput: "bg-white/85 border-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] type-body focus:border-black"
+        formLabel: "text-sm font-semibold tracking-normal text-slate-700",
+        formInput: "bg-white border-slate-200 text-sm focus:border-blue-500 tracking-normal"
     };
 
     // Search Effect (Debounced)
@@ -94,9 +93,13 @@ export function PatientIdentification({
                 <div className="animate-in fade-in slide-in-from-top-2 pt-2 xl:pt-4 px-3 xl:px-4 space-y-2 xl:space-y-4">
                     {/* ... (Existing Locked View) ... */}
                     {/* NOTE: This uses RichPatientCard which handles its own locked state style */}
-                    <div className="flex items-center gap-2">
-                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator.active)}>1</div>
-                        <h3 className={cn("tracking-tight", ui.headerText.active)}>Patient Identification</h3>
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                            1
+                        </div>
+                        <h3 className={cn(ui.headerText.active)}>
+                            Patient Identification
+                        </h3>
                     </div>
                     <RichPatientCard
                         patient={selectedPatient}
@@ -114,37 +117,37 @@ export function PatientIdentification({
                 <div className="flex flex-col h-full min-h-0 overflow-hidden animate-in fade-in">
 
                     {/* BLOCK A: PATIENT IDENTIFICATION HEADER (Static) */}
-                    <div className="shrink-0 p-4 pb-0">
+                    <div className="shrink-0 p-4 sm:p-6 pb-0">
                         <div className={cn(ui.section)}>
                             {/* Header */}
-                            <div className="flex items-center gap-2">
-                                <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border transition-colors", ui.indicator.inactive)}>1</div>
-                                <h3 className={cn("tracking-tight", ui.headerText.inactive)}>Patient Identification</h3>
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                    1
+                                </div>
+                                <h3 className={cn(ui.headerText.inactive)}>
+                                    Patient Identification
+                                </h3>
                             </div>
 
-                            <div className="space-y-1">
-                                <label className={cn("block type-section-header ml-1 transition-colors",
-                                    isDark ? "text-zinc-500" : "text-zinc-500")}
-                                >
+                            <div className="space-y-1.5">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 ml-1">
                                     Mobile Number / MRN
                                 </label>
                                 <div className="relative group">
-                                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-zinc-500 group-focus-within:text-zinc-900 transition-colors" />
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition-colors pointer-events-none" />
                                     <input
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder="Search by Mobile..."
                                         className={cn(
-                                            "w-full h-10 rounded-lg pl-9 pr-4 py-2 focus:outline-none focus:ring-1 transition-all type-code",
-                                            isDark
-                                                ? "bg-black border-zinc-700 focus:ring-synos-primary"
-                                                : ui.input // Use Etched Input Style
+                                            "w-full h-11 rounded-xl !pl-10 !pr-10 py-2.5 text-base font-medium tracking-normal focus:outline-none transition-all",
+                                            ui.input
                                         )}
                                         autoFocus
                                     />
                                     {isSearching && (
-                                        <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-zinc-500 animate-spin" />
+                                        <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
                                     )}
                                 </div>
                             </div>
@@ -152,8 +155,7 @@ export function PatientIdentification({
                     </div>
 
                     {/* BLOCK B: SEARCH RESULTS (The ONLY Scrolling Region) */}
-                    {/* BLOCK B: SEARCH RESULTS (The ONLY Scrolling Region) */}
-                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 p-4 pt-3 space-y-3">
+                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 p-4 sm:p-6 pt-3 space-y-3">
                         {matches.length > 0 && (
                             <>
                                 {matches.map(p => {
@@ -207,9 +209,13 @@ export function PatientIdentification({
             {/* NEW PATIENT FORM (Inline) */}
             {isNewPatientMode && (
                 <div className={cn("rounded-lg p-4 animate-in slide-in-from-right-2 border", ui.form)}>
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border", ui.indicator.inactive)}>1</div>
-                        <h3 className={cn("uppercase tracking-wide", ui.headerText.inactive)}>Patient Identification</h3>
+                    <div className="flex items-center gap-2.5 mb-4">
+                        <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                            1
+                        </div>
+                        <h3 className={cn(ui.headerText.inactive)}>
+                            Patient Identification
+                        </h3>
                     </div>
 
                     <div className="flex items-center justify-between mb-4 mt-2">
