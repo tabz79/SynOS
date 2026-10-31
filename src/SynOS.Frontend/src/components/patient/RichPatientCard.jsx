@@ -75,7 +75,7 @@ export const formatPatientDob = (dobString, isDobKnown) => {
     return `${day}-${month}-${year} (${status})`;
 };
 
-export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActionLabel, onSecondaryAction, isLocked, isHighlighted, patientIndex }) => {
+export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActionLabel, onSecondaryAction, isLocked, isHighlighted, patientIndex, onHighlight }) => {
     // Robust extraction
     const p = patient;
     let name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
@@ -133,6 +133,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
             className={cn(
                 "flex flex-col gap-3 transition-all group",
                 isLocked ? cardUi.locked : cardUi.inactive,
+                !isLocked && "focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 focus-within:bg-blue-50/50 dark:focus-within:bg-blue-950/30",
                 isHighlighted && "ring-2 ring-blue-500 border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-sm"
             )}
         >
@@ -198,6 +199,11 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                             id={actionLabel === "Select" ? `btn-select-patient-${p.id || p.Id || p.patientId || patientIndex}` : "btn-change-patient"}
                             data-patient-select-btn={actionLabel === "Select" ? "true" : undefined}
                             type="button"
+                            onFocus={() => {
+                                if (actionLabel === "Select" && onHighlight) {
+                                    onHighlight(patientIndex);
+                                }
+                            }}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onAction) onAction();
@@ -215,9 +221,13 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                         const currentPos = allButtons.indexOf(e.currentTarget);
                                         if (currentPos !== -1 && currentPos < allButtons.length - 1) {
                                             allButtons[currentPos + 1].focus();
+                                            if (onHighlight) onHighlight(currentPos + 1);
                                         } else {
                                             const newBtn = document.getElementById('btn-new-patient');
-                                            if (newBtn) newBtn.focus();
+                                            if (newBtn) {
+                                                newBtn.focus();
+                                                if (onHighlight) onHighlight(-1);
+                                            }
                                         }
                                     } else if (e.key === 'ArrowUp') {
                                         e.preventDefault();
@@ -226,9 +236,13 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                         const currentPos = allButtons.indexOf(e.currentTarget);
                                         if (currentPos > 0) {
                                             allButtons[currentPos - 1].focus();
+                                            if (onHighlight) onHighlight(currentPos - 1);
                                         } else {
                                             const searchInput = document.getElementById('input-patient-search');
-                                            if (searchInput) searchInput.focus();
+                                            if (searchInput) {
+                                                searchInput.focus();
+                                                if (onHighlight) onHighlight(0);
+                                            }
                                         }
                                     }
                                 } else {

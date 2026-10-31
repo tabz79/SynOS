@@ -221,7 +221,7 @@ export function PatientIdentification({
                                         <div
                                             key={pId}
                                             className={cn(
-                                                "rounded-2xl transition-all duration-150",
+                                                "rounded-2xl transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500",
                                                 isHighlighted && "ring-2 ring-blue-500 shadow-md"
                                             )}
                                         >
@@ -231,6 +231,7 @@ export function PatientIdentification({
                                                 actionLabel="Select"
                                                 patientIndex={idx}
                                                 isHighlighted={isHighlighted}
+                                                onHighlight={(highlightIdx) => setSelectedMatchIndex(highlightIdx)}
                                             />
                                         </div>
                                     );
@@ -257,6 +258,19 @@ export function PatientIdentification({
                                 <button
                                     id="btn-new-patient"
                                     onClick={() => setIsNewPatientMode(true)}
+                                    onFocus={() => setSelectedMatchIndex(-1)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+                                            const allButtons = Array.from(document.querySelectorAll('[data-patient-select-btn="true"]'));
+                                            if (allButtons.length > 0) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const lastBtn = allButtons[allButtons.length - 1];
+                                                lastBtn.focus();
+                                                setSelectedMatchIndex(allButtons.length - 1);
+                                            }
+                                        }
+                                    }}
                                     className={cn(
                                         "flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors",
                                         matches.length > 0

@@ -1067,8 +1067,8 @@ export function VisitDetails({
                                             partners={referralPartners}
                                             allowFreeText={true}
                                             onApplyPartner={handleApplyReferral}
-                                            nextInputRef={testSearchInputRef}
-                                            fallbackNextRef={testSearchInputRef}
+                                            nextInputRef={standardSecondaryReferralRef}
+                                            fallbackNextRef={standardSecondaryReferralRef}
                                             onAdvanceForward={() => {
                                                 const addBtn = document.getElementById('btn-add-prescribing-doctor');
                                                 if (addBtn) addBtn.focus();
@@ -1090,15 +1090,11 @@ export function VisitDetails({
                                                     });
                                                     return;
                                                 }
-                                                setIsProcessing(true);
                                                 try {
                                                     await ReceptionApi.updateReferrerText(visitId, text);
                                                     if (onVisitUpdated) onVisitUpdated();
                                                 } catch (err) {
                                                     console.error("Failed to update referrer text", err);
-                                                    alert(err.message);
-                                                } finally {
-                                                    setIsProcessing(false);
                                                 }
                                             }}
                                         />
@@ -1386,14 +1382,11 @@ export function VisitDetails({
                                         }}
                                         onUpdateText={async (text) => {
                                             if (!visitId || !canEditReferral) return;
-                                            setIsProcessing(true);
                                             try {
                                                 await ReceptionApi.updateReferrerText(visitId, text);
                                                 if (onVisitUpdated) onVisitUpdated();
                                             } catch (err) {
                                                 console.error("Failed to update referrer text", err);
-                                            } finally {
-                                                setIsProcessing(false);
                                             }
                                         }}
                                     />
@@ -1464,7 +1457,6 @@ export function VisitDetails({
             {/* SECTION 3: Test Selection (Reordered Down) */}
             <div 
                 className={cn(ui.section)}
-                onFocusCapture={() => { if (userDoctorExpandedState !== false) setUserDoctorExpandedState(false); }}
                 onPointerDownCapture={() => { if (userDoctorExpandedState !== false) setUserDoctorExpandedState(false); }}
             >
                 <div className="flex items-center justify-between">
