@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw, Lock } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { RichPatientCard } from '@/components/patient/RichPatientCard'
@@ -1227,6 +1227,17 @@ export function IntentPanel({ onVisitUpdated }) {
         : Boolean(isVisitFinalized);
     const isPostProcessingView = Boolean(postProcessingSession) || (isVisitFinalized && !isCorrectionIntent);
 
+    const effectivePartner = stagedReferralPartnerId !== undefined
+        ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || snapshot?.visit?.referralPartner || snapshot?.billing?.referral?.partner) : null)
+        : (snapshot?.visit?.referralPartner || snapshot?.billing?.referral?.partner);
+
+    const effectiveSecondaryPartner = stagedSecondaryPartnerId !== undefined
+        ? (stagedSecondaryPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedSecondaryPartnerId) || snapshot?.visit?.secondaryReferralPartner || snapshot?.billing?.referral?.secondaryPartner) : null)
+        : (snapshot?.visit?.secondaryReferralPartner || snapshot?.billing?.referral?.secondaryPartner);
+
+    const doctorDisplay = effectivePartner ? (effectivePartner.displayName || effectivePartner.name) : (snapshot?.billing?.referral?.referrerText || snapshot?.visit?.referringDoctorName || "Direct / Self");
+    const secondaryDoctorDisplay = effectiveSecondaryPartner ? (effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name) : null;
+
     // Keyboard shortcuts for in-panel print and close
     useEffect(() => {
         if (!isOpen || !isPostProcessingView) return;
@@ -1466,17 +1477,17 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </div>
 
                                             {/* Live Document Canvas Surface */}
-                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-slate-100/70 dark:bg-zinc-950/70 p-3 flex justify-center items-center overflow-y-auto relative shadow-inner">
+                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-3 sm:p-4 flex justify-center items-center overflow-y-auto relative shadow-inner">
                                                 {selectedDocFormat === 'thermal' && (
-                                                    <div className="w-[285px] max-w-full my-auto rounded-xl shadow-xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto">
-                                                        <div className="bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-3 py-1.5 text-[11px] font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
-                                                            <span>Thermal POS (80mm)</span>
-                                                            <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
+                                                    <div className="w-[340px] sm:w-[360px] max-w-full my-auto rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform">
+                                                        <div className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
+                                                            <span className="font-bold">Thermal POS (80mm)</span>
+                                                            <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
                                                         </div>
                                                         <iframe
                                                             title="Thermal POS Receipt"
                                                             srcDoc={thermalHtml}
-                                                            className="w-full h-[490px] border-0 mx-auto"
+                                                            className="w-full h-[540px] sm:h-[580px] border-0 mx-auto"
                                                         />
                                                     </div>
                                                 )}
@@ -1487,9 +1498,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             style={{ 
                                                                 width: '210mm', 
                                                                 minHeight: '297mm',
-                                                                transform: 'scale(0.60)',
+                                                                transform: 'scale(0.62)',
                                                                 transformOrigin: 'top center',
-                                                                marginBottom: '-118mm'
+                                                                marginBottom: '-110mm'
                                                             }}
                                                             className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
                                                         >
@@ -1518,9 +1529,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 style={{ 
                                                                     width: '210mm', 
                                                                     minHeight: '297mm',
-                                                                    transform: 'scale(0.60)',
+                                                                    transform: 'scale(0.62)',
                                                                     transformOrigin: 'top center',
-                                                                    marginBottom: '-118mm'
+                                                                    marginBottom: '-110mm'
                                                                 }}
                                                                 className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
                                                             >
@@ -1585,7 +1596,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         </div>
                                     </div>
 
-                                    {/* RIGHT HALF (50% Width) - Visit Consolidation Summary */}
+                                    {/* RIGHT HALF (50% Width) - Visit Consolidation Summary (Three Native Intent Panel Cards) */}
                                     <div className="flex flex-col h-full min-h-0 overflow-hidden">
                                         <div className={cn(
                                             "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
@@ -1606,7 +1617,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                                 <div className="flex items-center gap-2">
                                                     {/* Token Badge */}
-                                                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300/60 dark:border-zinc-700">
+                                                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-300/80 dark:border-zinc-700 shadow-2xs">
                                                         {snapshot?.visit?.visitToken || snapshot?.visit?.token || postProcessingSession?.token || currentVisitId}
                                                     </span>
 
@@ -1624,125 +1635,272 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 </div>
                                             </div>
 
-                                            {/* Scrollable Summary Cards */}
-                                            <div className="flex-1 min-h-0 my-3 overflow-y-auto space-y-3.5 pr-1">
-                                                {/* Card 1: Patient Demographics & Channel */}
-                                                <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/90 p-4 shadow-xs space-y-3 synos-focus-card">
+                                            {/* Scrollable Summary Cards - Three Native Intent Panel Cards */}
+                                            <div className="flex-1 min-h-0 my-3 overflow-y-auto space-y-4 pr-1.5">
+                                                {/* CARD 1: Patient Identification */}
+                                                <div className={cn(
+                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0 synos-focus-card",
+                                                    isDark
+                                                        ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                        : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                )}>
                                                     <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-synos-primary/15 text-synos-primary flex items-center justify-center font-bold text-base">
-                                                                {(displayedPatient?.fullName || displayedPatient?.name || 'P')[0]?.toUpperCase()}
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                                1
                                                             </div>
-                                                            <div>
-                                                                <div className="font-bold text-base text-slate-900 dark:text-white">
-                                                                    {displayedPatient?.fullName || displayedPatient?.name || 'Direct Patient'}
-                                                                </div>
-                                                                <div className="text-xs font-medium text-slate-500 dark:text-zinc-400 flex items-center gap-2">
-                                                                    <span>Age: {displayedPatient?.age ? `${displayedPatient.age} Yrs` : '—'}</span>
-                                                                    <span>•</span>
-                                                                    <span>Sex: {displayedPatient?.gender || '—'}</span>
-                                                                    <span>•</span>
-                                                                    <span className="font-mono">MRN: {displayedPatient?.mrn || displayedPatient?.uhid || '—'}</span>
-                                                                </div>
-                                                            </div>
+                                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                                Patient Identification
+                                                            </h3>
                                                         </div>
-                                                        {displayedPatient?.phone && (
-                                                            <div className="text-right">
-                                                                <span className="text-xs font-mono font-semibold text-slate-600 dark:text-zinc-300 bg-slate-100 dark:bg-zinc-700/60 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-zinc-700">
-                                                                    {displayedPatient.phone}
-                                                                </span>
-                                                            </div>
-                                                        )}
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setPostProcessingSession(null);
+                                                                    openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
+                                                                }}
+                                                                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn"
+                                                                title="Edit Patient Demographics in Visit Correction"
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                                <span>Edit</span>
+                                                            </button>
+                                                        </div>
                                                     </div>
 
-                                                    {/* Doctor / Corporate Channel Info */}
-                                                    <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/80 grid grid-cols-2 gap-2 text-xs">
-                                                        <div>
-                                                            <span className="text-slate-400 dark:text-zinc-400 block font-semibold text-[11px] uppercase tracking-wider">Prescribing Doctor</span>
-                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">
-                                                                {snapshot?.billing?.referral?.partner?.name || snapshot?.billing?.referral?.partner?.displayName || snapshot?.visit?.referringDoctorName || "Direct / Self"}
-                                                            </span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-slate-400 dark:text-zinc-400 block font-semibold text-[11px] uppercase tracking-wider">Billing Channel</span>
-                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">
-                                                                {billingMode === 'PrepaidPartner'
-                                                                    ? 'B2B Partner Billed'
-                                                                    : billingMode === 'Insurance'
-                                                                        ? `${snapshot?.visit?.insuranceCompanyName || 'Insurance TPA'}`
-                                                                        : 'Direct Counter Collection'}
-                                                            </span>
-                                                        </div>
+                                                    {/* Recessed Patient Card Pod - Exact Intent Panel Design */}
+                                                    <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
+                                                        <RichPatientCard
+                                                            patient={displayedPatient}
+                                                            isLocked={true}
+                                                            actionLabel={null}
+                                                            secondaryActionLabel="Edit"
+                                                            onSecondaryAction={() => {
+                                                                setPostProcessingSession(null);
+                                                                openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
 
-                                                {/* Card 2: Tests & Investigations */}
-                                                <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/90 p-4 shadow-xs space-y-2.5 synos-focus-card">
-                                                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300">
-                                                        <span>Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})</span>
-                                                        <span className="text-slate-500 dark:text-zinc-400">Standard Tariff</span>
+                                                {/* CARD 2: Visit Details (Doctor Channel & Ordered Investigations) */}
+                                                <div className={cn(
+                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card",
+                                                    isDark
+                                                        ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                        : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                )}>
+                                                    {/* Header */}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                                2
+                                                            </div>
+                                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                                Visit Details
+                                                            </h3>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={cn(
+                                                                "flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs sm:text-sm font-bold tracking-normal",
+                                                                isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                                            )}>
+                                                                <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                                                                <span>PAID</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-                                                        {[...activeRemainingTests, ...stagedAddedTests].map((t, idx) => (
-                                                            <div key={idx} className="flex items-center justify-between text-xs bg-slate-50/80 dark:bg-zinc-900/60 p-2.5 rounded-xl border border-slate-200/70 dark:border-zinc-800">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
-                                                                        {t.testCode || t.code}
+
+                                                    {/* Doctor Context Section */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
+                                                                {billingMode === 'Standard' && "Referring Doctor / Clinic"}
+                                                                {billingMode === 'PrepaidPartner' && "Referring Doctor / Partner (Prepaid B2B)"}
+                                                                {billingMode === 'Insurance' && "Insurance Details"}
+                                                                {billingMode === 'Corporate' && "Corporate B2B Account"}
+                                                            </h4>
+                                                            <span className={cn(
+                                                                "text-xs font-bold tracking-normal px-2.5 py-0.5 rounded-md border",
+                                                                billingMode === 'PrepaidPartner' ? "border-amber-500/40 text-amber-500 bg-amber-500/10" :
+                                                                billingMode === 'Insurance' ? "border-blue-500/40 text-blue-500 bg-blue-500/10" :
+                                                                "border-slate-200 dark:border-zinc-700 text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800"
+                                                            )}>
+                                                                {billingMode === 'PrepaidPartner' ? 'Doctor Bill (B2B)' : billingMode === 'Insurance' ? 'Insurance TPA' : 'Standard'}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Side-by-side doctor cards */}
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                                                            {/* Prescribing Doctor */}
+                                                            <div className={cn(
+                                                                "flex items-center gap-3 p-3.5 rounded-xl border transition-all",
+                                                                isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"
+                                                            )}>
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)] shrink-0"></div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block leading-tight">
+                                                                        Prescribing Doctor
                                                                     </span>
-                                                                    <span className="font-semibold text-slate-800 dark:text-zinc-200">
-                                                                        {t.testName || t.name || t.testCode}
-                                                                    </span>
-                                                                    {(t.department || t.category) && (
-                                                                        <span className="text-[10px] text-slate-500 dark:text-zinc-400">
-                                                                            ({t.department || t.category})
+                                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                                        <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                                                            {doctorDisplay}
                                                                         </span>
-                                                                    )}
+                                                                        {effectivePartner && effectiveSecondaryPartner && (
+                                                                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 font-bold border border-[#F5E2C8] dark:border-amber-900/40 shrink-0">
+                                                                                Commission to RMP
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate mt-0.5">
+                                                                        Type: {effectivePartner?.partnerType || 'Doctor'}
+                                                                    </div>
                                                                 </div>
-                                                                <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
-                                                                    ₹{Number(t.price || t.basePrice || 0).toLocaleString()}
-                                                                </span>
                                                             </div>
-                                                        ))}
+
+                                                            {/* Second Referral Doctor / RMP */}
+                                                            <div className={cn(
+                                                                "flex items-center gap-3 p-3.5 rounded-xl border transition-all",
+                                                                effectiveSecondaryPartner
+                                                                    ? (isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs")
+                                                                    : (isDark ? "bg-zinc-900/40 border-dashed border-zinc-700/80 text-zinc-400" : "bg-slate-50/60 border-dashed border-slate-300 text-slate-500")
+                                                            )}>
+                                                                <div className={cn(
+                                                                    "w-2.5 h-2.5 rounded-full shrink-0",
+                                                                    effectiveSecondaryPartner ? "bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]" : "bg-slate-300 dark:bg-zinc-600"
+                                                                )}></div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <span className={cn(
+                                                                        "text-[11px] font-bold uppercase tracking-wider block leading-tight",
+                                                                        effectiveSecondaryPartner ? "text-[#2D6A4F] dark:text-emerald-300" : "text-slate-400 dark:text-zinc-500"
+                                                                    )}>
+                                                                        Second Referral Doctor / RMP
+                                                                    </span>
+                                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                                        <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
+                                                                            {secondaryDoctorDisplay || "No RMP assigned (Optional)"}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Ordered Investigations */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
+                                                            <span>Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})</span>
+                                                            <span className="text-slate-500 dark:text-zinc-400">Standard Tariff</span>
+                                                        </div>
+                                                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                                                            {[...activeRemainingTests, ...stagedAddedTests].map((t, idx) => (
+                                                                <div 
+                                                                    key={idx} 
+                                                                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-900 border border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)]"
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200/90 dark:border-zinc-700 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold">
+                                                                            {t.testCode || t.code}
+                                                                        </span>
+                                                                        <div>
+                                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white block">
+                                                                                {t.testName || t.name || t.testCode}
+                                                                            </span>
+                                                                            {(t.department || t.category) && (
+                                                                                <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                                                                                    {t.department || t.category}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className="font-black font-mono text-base sm:text-lg text-slate-900 dark:text-white">
+                                                                        ₹{Number(t.price || t.basePrice || 0).toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                {/* Card 3: Financial Settlement Ledger */}
-                                                <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-700/80 bg-white dark:bg-zinc-800/90 p-4 shadow-xs space-y-2.5 synos-focus-card">
-                                                    <div className="space-y-1.5 text-xs">
+                                                {/* CARD 3: Financials */}
+                                                <div className={cn(
+                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card",
+                                                    isDark
+                                                        ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                        : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                )}>
+                                                    {/* Header */}
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                                3
+                                                            </div>
+                                                            <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                                Financials
+                                                            </h3>
+                                                        </div>
+                                                        <div className="px-3 py-1 rounded-full text-xs sm:text-sm font-bold border tracking-normal bg-[#EAF5F0] text-[#245E49] border-[#CFE8DD] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
+                                                            {billingMode === 'PrepaidPartner' ? 'B2B Partner Billed' : 'Paid'}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Referral row */}
+                                                    <div className="p-3 rounded-xl bg-white/90 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 flex items-center justify-between text-xs sm:text-sm shadow-2xs">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-semibold text-slate-500 dark:text-zinc-400 text-xs uppercase tracking-wider">Referral:</span>
+                                                            <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.4)]"></span>
+                                                            <span className="font-bold text-slate-900 dark:text-white">{doctorDisplay}</span>
+                                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                                {effectivePartner?.partnerType || 'Doctor'}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                                                            {billingMode === 'PrepaidPartner' ? 'B2B Tariff' : 'Counter Collection'}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Ledger breakdown */}
+                                                    <div className="space-y-2 text-sm sm:text-base">
                                                         <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
-                                                            <span>Total Gross Tariff</span>
-                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
+                                                            <span className="font-medium">Total Amount</span>
+                                                            <span className="font-mono font-bold text-slate-900 dark:text-white">
                                                                 ₹{(stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || snapshot?.billing?.netAmount || 0)).toLocaleString()}
                                                             </span>
                                                         </div>
 
-                                                        {(stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0)) && (
-                                                            <div className="flex items-center justify-between text-rose-600 dark:text-rose-400">
-                                                                <span>
-                                                                    Applied Concession
-                                                                    {(stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason) ? ` (${stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason})` : ''}
-                                                                </span>
-                                                                <span className="font-mono font-bold">
-                                                                    -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
-                                                                </span>
-                                                            </div>
-                                                        )}
-
                                                         <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
-                                                            <span>GST / Statutory Tax</span>
-                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">₹0</span>
+                                                            <span className="font-medium">Discount</span>
+                                                            {(stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0)) ? (
+                                                                <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
+                                                                    - ₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
+                                                                    {(stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason) && (
+                                                                        <span className="text-xs font-normal ml-1">({stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason})</span>
+                                                                    )}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-slate-400 dark:text-zinc-500 text-xs sm:text-sm">No discount applied</span>
+                                                            )}
                                                         </div>
 
-                                                        <div className="pt-2 border-t border-slate-200 dark:border-zinc-700/80 flex items-baseline justify-between">
-                                                            <span className="font-bold text-sm text-slate-900 dark:text-white">Net Bill Amount</span>
-                                                            <span className="font-black text-2xl text-slate-900 dark:text-white font-mono">
-                                                                ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
-                                                            </span>
+                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                                                            <span className="font-medium">GST / Tax</span>
+                                                            <span className="font-mono font-bold text-slate-900 dark:text-white">₹0</span>
                                                         </div>
                                                     </div>
 
-                                                    {/* Settlement Allocation Pod */}
-                                                    <div className="mt-2 p-2.5 rounded-xl bg-slate-50/90 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 space-y-1.5 text-xs">
+                                                    {/* Big Total Bill Amount Card (Identical to Image 1) */}
+                                                    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200/90 dark:border-zinc-700/80 shadow-xs flex items-center justify-between">
+                                                        <span className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
+                                                            {billingMode === 'PrepaidPartner' ? 'Amount to Collect (Prepaid Partner)' : 'Total Bill Amount'}
+                                                        </span>
+                                                        <span className="font-black text-3xl sm:text-4xl text-slate-900 dark:text-white font-mono tracking-tight">
+                                                            ₹{billingMode === 'PrepaidPartner' ? '0' : (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Settlement Allocation Pod (Identical to Image 1) */}
+                                                    <div className="p-3.5 rounded-xl bg-white/90 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 space-y-2 text-xs sm:text-sm">
                                                         {billingMode === 'PrepaidPartner' ? (
                                                             <>
                                                                 <div className="flex items-center justify-between font-bold text-blue-700 dark:text-blue-300">
@@ -1751,46 +1909,52 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 </div>
                                                                 <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
                                                                     <span>Doctor B2B Receivable</span>
-                                                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                                                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm">
                                                                         ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
                                                                     </span>
                                                                 </div>
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
-                                                                    <span>Counter Amount Paid</span>
-                                                                    <span className="font-mono">
-                                                                        ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()} via {paymentMethod || snapshot?.billing?.paymentMethod || 'Cash'}
+                                                                <div className="flex items-center justify-between text-slate-700 dark:text-zinc-300">
+                                                                    <span className="font-medium">Revised Net Amount</span>
+                                                                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                                                                        ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
                                                                     </span>
                                                                 </div>
-                                                                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
-                                                                    <span>Balance Remaining Due</span>
-                                                                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
-                                                                        ₹{Math.max(0, (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)) - (postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || 0))).toLocaleString()} (Fully Settled)
+                                                                <div className="flex items-center justify-between font-bold text-emerald-700 dark:text-emerald-400">
+                                                                    <span className="flex items-center gap-1.5">
+                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                                                        Already Paid at Desk
+                                                                    </span>
+                                                                    <span className="font-mono">
+                                                                        - ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()}
                                                                     </span>
                                                                 </div>
                                                             </>
                                                         )}
-                                                    </div>
 
-                                                    {/* Billed By & Timestamp footer */}
-                                                    <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
-                                                        <span>Billed by: <strong className="text-slate-700 dark:text-zinc-300">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
-                                                        <span>Status: <strong className="text-emerald-700 dark:text-emerald-300">Locked & Audited</strong></span>
+                                                        {/* Live Bill Difference Pod */}
+                                                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/80 flex items-center justify-between text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400">
+                                                            <span>Billed by: <strong className="text-slate-800 dark:text-zinc-200">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
+                                                            <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold">
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                                Locked & Audited
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Bottom Actions on Right Half */}
-                                            <div className="pt-2 flex items-center gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                            <div className="pt-3 flex items-center gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
                                                 <button
                                                     type="button"
                                                     onClick={() => {
                                                         setPostProcessingSession(null);
                                                         openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
                                                     }}
-                                                    className="py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
+                                                    className="py-3.5 px-5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
                                                     title="Enter Visit Correction to amend tests or alter billing"
                                                 >
                                                     <Pencil className="w-4 h-4 text-synos-primary" />
