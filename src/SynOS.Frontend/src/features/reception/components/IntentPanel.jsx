@@ -521,20 +521,53 @@ export function IntentPanel({ onVisitUpdated }) {
         };
     }, [snapshot?.patient, stagedDemographics]);
 
-    // Auto-focus Edit Demographics button after adding/selecting a patient
+    // Auto-focus Edit Demographics button after adding/selecting/resuming a patient
     useEffect(() => {
         if (!isOpen) return;
-        const patientPresent = Boolean(displayedPatient?.id || currentPatientId || snapshot?.patient?.id);
+        const patientPresent = Boolean(
+            displayedPatient?.id || 
+            displayedPatient?.patientId || 
+            displayedPatient?.fullName || 
+            displayedPatient?.name ||
+            currentPatientId || 
+            snapshot?.patient?.id ||
+            snapshot?.patient?.patientId ||
+            snapshot?.patient?.fullName ||
+            snapshot?.patient?.name
+        );
         if (patientPresent) {
             const timer = setTimeout(() => {
                 const editBtn = document.getElementById('btn-edit-demographics');
                 if (editBtn) {
                     editBtn.focus();
                 }
-            }, 100);
+            }, 80);
             return () => clearTimeout(timer);
         }
-    }, [isOpen, displayedPatient?.id, currentPatientId, snapshot?.patient?.id]);
+    }, [
+        isOpen, 
+        displayedPatient?.id, 
+        displayedPatient?.patientId, 
+        displayedPatient?.fullName, 
+        displayedPatient?.name,
+        currentPatientId, 
+        snapshot?.patient?.id,
+        snapshot?.patient?.patientId,
+        snapshot?.patient?.fullName,
+        snapshot?.patient?.name
+    ]);
+
+    // External triggers for Payer Mode minimize/expand
+    useEffect(() => {
+        const handleMinimize = () => setUserPayerExpandedState(false);
+        const handleExpand = () => setUserPayerExpandedState(true);
+        window.addEventListener('synos:minimize-payer-mode', handleMinimize);
+        window.addEventListener('synos:expand-payer-mode', handleExpand);
+        return () => {
+            window.removeEventListener('synos:minimize-payer-mode', handleMinimize);
+            window.removeEventListener('synos:expand-payer-mode', handleExpand);
+        };
+    }, []);
 
     const handleVisitDetailsUpdated = (vId, action) => {
         if (action === 'deleted') {

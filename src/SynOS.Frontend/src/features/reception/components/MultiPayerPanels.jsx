@@ -41,6 +41,22 @@ export function MultiPayerSelector({
     const visibleModes = isCollapsed ? modes.filter(m => m.id === billingMode) : modes;
     const modeRefs = useRef([]);
 
+    const advanceToDoctor = () => {
+        // 1. Ensure Referring Doctor section is expanded
+        window.dispatchEvent(new CustomEvent('synos:expand-doctor-section'));
+        // 2. Set focus on the prescribing doctor search input
+        setTimeout(() => {
+            const docInput = document.getElementById('input-prescribing-doctor') ||
+                             document.querySelector('[data-doctor-input="true"]') ||
+                             document.querySelector('input[placeholder*="Search Doctor"]');
+            if (docInput) {
+                docInput.focus();
+                // 3. Minimize Payer Mode card upon reaching Referring Doctor card
+                window.dispatchEvent(new CustomEvent('synos:minimize-payer-mode'));
+            }
+        }, 50);
+    };
+
     const handleModeKeyDown = (e, index, modeId) => {
         if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
             e.preventDefault();
@@ -68,23 +84,12 @@ export function MultiPayerSelector({
                 onToggleCollapse();
             } else if (!disabled) {
                 onChangeMode(modeId);
-                // Advance focus to Referring Doctor or Clinic
-                setTimeout(() => {
-                    const docInput = document.getElementById('input-prescribing-doctor') ||
-                                     document.querySelector('input[placeholder*="Search Doctor"]');
-                    if (docInput) {
-                        docInput.focus();
-                    }
-                }, 80);
+                advanceToDoctor();
             }
         } else if (e.key === 'Tab') {
             if (!e.shiftKey) {
                 e.preventDefault();
-                const docInput = document.getElementById('input-prescribing-doctor') ||
-                                 document.querySelector('input[placeholder*="Search Doctor"]');
-                if (docInput) {
-                    docInput.focus();
-                }
+                advanceToDoctor();
             } else {
                 e.preventDefault();
                 const editBtn = document.getElementById('btn-edit-demographics');
@@ -127,9 +132,8 @@ export function MultiPayerSelector({
                                 } else if (!disabled) {
                                     if (billingMode !== m.id) {
                                         onChangeMode(m.id);
-                                    } else if (onToggleCollapse) {
-                                        onToggleCollapse();
                                     }
+                                    advanceToDoctor();
                                 }
                             }}
                             className={cn(

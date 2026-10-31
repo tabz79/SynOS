@@ -188,10 +188,23 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                     )}
                     {actionLabel && (
                         <button 
+                            id="btn-change-patient"
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onAction) onAction();
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Tab' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                                     document.querySelector('[data-payer-mode-btn="true"]');
+                                    if (payerBtn) payerBtn.focus();
+                                } else if (e.key === 'Tab' && e.shiftKey) {
+                                    e.preventDefault();
+                                    const editBtn = document.getElementById('btn-edit-demographics');
+                                    if (editBtn) editBtn.focus();
+                                }
                             }}
                             className="text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer"
                         >

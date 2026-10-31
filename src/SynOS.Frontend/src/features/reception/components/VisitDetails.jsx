@@ -128,45 +128,19 @@ export function VisitDetails({
     const [userDoctorExpandedState, setUserDoctorExpandedState] = useState(null);
     const isDoctorSectionCollapsed = userDoctorExpandedState !== null
         ? !userDoctorExpandedState
-        : Boolean(isFinalized || isLocked || (hasDoctorConfigured && hasTests));
+        : Boolean(isFinalized || isLocked);
 
-    // Auto-minimize Referring Doctor section when user moves to or interacts with other sections
+    // Controlled expansion/collapse listeners (only collapses when moving to test selection)
     useEffect(() => {
-        if (userDoctorExpandedState === false) return;
-
-        const handlePointerDown = (e) => {
-            if (doctorSectionRef.current && !doctorSectionRef.current.contains(e.target)) {
-                const isPortal = e.target.closest && (
-                    e.target.closest('[role="dialog"]') || 
-                    e.target.closest('[role="listbox"]') ||
-                    e.target.closest('.suggestion-portal')
-                );
-                if (!isPortal) {
-                    setUserDoctorExpandedState(false);
-                }
-            }
-        };
-
-        const handleFocusIn = (e) => {
-            if (doctorSectionRef.current && !doctorSectionRef.current.contains(e.target)) {
-                const isPortal = e.target.closest && (
-                    e.target.closest('[role="dialog"]') || 
-                    e.target.closest('[role="listbox"]') ||
-                    e.target.closest('.suggestion-portal')
-                );
-                if (!isPortal) {
-                    setUserDoctorExpandedState(false);
-                }
-            }
-        };
-
-        document.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('focusin', handleFocusIn);
+        const handleExpand = () => setUserDoctorExpandedState(true);
+        const handleCollapse = () => setUserDoctorExpandedState(false);
+        window.addEventListener('synos:expand-doctor-section', handleExpand);
+        window.addEventListener('synos:collapse-doctor-section', handleCollapse);
         return () => {
-            document.removeEventListener('pointerdown', handlePointerDown);
-            document.removeEventListener('focusin', handleFocusIn);
+            window.removeEventListener('synos:expand-doctor-section', handleExpand);
+            window.removeEventListener('synos:collapse-doctor-section', handleCollapse);
         };
-    }, [userDoctorExpandedState]);
+    }, []);
 
     // Sync isPrepaidIntent with actual locked status (if locked as Paid/Prepaid)
     useEffect(() => {
@@ -961,7 +935,7 @@ export function VisitDetails({
                                             partners={referralPartners}
                                             allowFreeText={true}
                                             onApplyPartner={handleApplyReferral}
-                                            nextInputRef={snapshot?.billing?.referral?.secondaryPartner ? testSearchInputRef : standardSecondaryReferralRef}
+                                            nextInputRef={testSearchInputRef}
                                             fallbackNextRef={testSearchInputRef}
                                             onUpdateText={async (text) => {
                                                 if (!visitId || !canEditReferral) return;
@@ -1865,9 +1839,11 @@ function ReferralCombinedInput({
             if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
                 e.preventDefault();
                 handleApply(suggestions[selectedIndex].referralPartnerId);
+                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
             } else {
                 e.preventDefault();
                 setShowSuggestions(false);
+                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
                 const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
                 if (target) target.focus();
             }
@@ -1877,6 +1853,7 @@ function ReferralCombinedInput({
                     handleApply(suggestions[selectedIndex].referralPartnerId);
                 }
                 setShowSuggestions(false);
+                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
                 const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
                 if (target) {
                     e.preventDefault();
@@ -1885,6 +1862,7 @@ function ReferralCombinedInput({
             } else {
                 // Shift+Tab back to Billing & Payer Mode
                 e.preventDefault();
+                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
                 const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
                                  document.querySelector('[data-payer-mode-btn="true"]');
                 if (payerBtn) payerBtn.focus();
@@ -1923,6 +1901,11 @@ function ReferralCombinedInput({
                 className={cn(ui.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors", 
                     isProcessing && "opacity-70 pointer-events-none",
                     isReadOnly && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none")}
+                onFocus={() => {
+                    setShowSuggestions(true);
+                    // Minimize Payer Mode card upon reaching Referring Doctor card
+                    window.dispatchEvent(new CustomEvent('synos:minimize-payer-mode'));
+                }}
                 onChange={(e) => {
                     setValue(e.target.value);
                     setShowSuggestions(true);
@@ -1944,7 +1927,6 @@ function ReferralCombinedInput({
                         }
                     }, 200);
                 }}
-                onFocus={() => setShowSuggestions(true)}
             />
 
             {/* Suggestions Overlay */}
