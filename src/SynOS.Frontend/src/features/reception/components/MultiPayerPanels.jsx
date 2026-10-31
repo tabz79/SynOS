@@ -44,15 +44,17 @@ export function MultiPayerSelector({
     const advanceToDoctor = () => {
         // 1. Ensure Referring Doctor section is expanded
         window.dispatchEvent(new CustomEvent('synos:expand-doctor-section'));
-        // 2. Set focus on the prescribing doctor search input or partner card or add button
+        // 2. Set focus on Delete Draft (if present) OR prescribing doctor search input / partner card / add button
         setTimeout(() => {
-            const docInput = document.getElementById('input-prescribing-doctor') ||
-                             document.getElementById('card-prescribing-doctor') ||
-                             document.querySelector('[data-doctor-input="true"]') ||
-                             document.querySelector('input[placeholder*="Search Doctor"]') ||
-                             document.getElementById('btn-add-prescribing-doctor');
-            if (docInput) {
-                docInput.focus();
+            const deleteDraftBtn = document.getElementById('btn-delete-draft');
+            const target = deleteDraftBtn ||
+                           document.getElementById('card-prescribing-doctor') ||
+                           document.getElementById('input-prescribing-doctor') ||
+                           document.querySelector('[data-doctor-input="true"]') ||
+                           document.querySelector('input[placeholder*="Search Doctor"]') ||
+                           document.getElementById('btn-add-prescribing-doctor');
+            if (target) {
+                target.focus();
                 // 3. Minimize Payer Mode card upon reaching Referring Doctor card
                 window.dispatchEvent(new CustomEvent('synos:minimize-payer-mode'));
             }
