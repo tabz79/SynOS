@@ -41602,7 +41602,7 @@ Details: ${A.inner}`);
       if (!n || !it) return;
       const ze = () => {
         if (!Ht.current) return;
-        const Jn = Ht.current.clientWidth - 24, Lr = Math.max(1, Jn / 794);
+        const Jn = Ht.current.clientWidth - 24, Lr = Math.min(1.42, Math.max(0.55, Jn / 794));
         Sn(Number(Lr.toFixed(2)));
       };
       ze();
@@ -41650,7 +41650,7 @@ Details: ${A.inner}`);
     let st = "Registration";
     return d && (st = Ke ? "Visit Summary" : "Resume Visit"), g && (st = "Visit Correction"), r.jsxs("div", {
       ref: o,
-      className: ve("flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", ra || g ? "absolute right-0 top-0 bottom-0 w-[85vw] max-w-[85vw]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]", rt.panel),
+      className: ve("flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", ra || g ? "absolute right-0 top-0 bottom-0 w-[94vw] max-w-[1720px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]", rt.panel),
       children: [
         r.jsxs("div", {
           className: ve("h-16 flex items-center justify-between px-6 shrink-0", rt.header),
@@ -41860,7 +41860,7 @@ Details: ${A.inner}`);
                                     r.jsx("iframe", {
                                       title: "Thermal POS Receipt",
                                       srcDoc: oA,
-                                      className: "w-full h-[740px] sm:h-[760px] border-0 mx-auto"
+                                      className: "w-full h-[620px] 2xl:h-[740px] border-0 mx-auto"
                                     })
                                   ]
                                 }),

@@ -1250,7 +1250,8 @@ export function IntentPanel({ onVisitUpdated }) {
             // Available width inside container with snug margins (removes empty side padding)
             const targetWidth = containerWidth - 24;
             // 210mm in pixels at 96 DPI is 793.7px
-            const scale = Math.max(1.0, targetWidth / 794);
+            // Smooth responsive scale: 0.55 on small screens up to 1.42 on widescreen monitors
+            const scale = Math.min(1.42, Math.max(0.55, targetWidth / 794));
             setCanvasScale(Number(scale.toFixed(2)));
         };
         calculateScale();
@@ -1340,7 +1341,7 @@ export function IntentPanel({ onVisitUpdated }) {
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", 
                 (hasPatient || isCorrectionIntent) 
-                    ? "absolute right-0 top-0 bottom-0 w-[85vw] max-w-[85vw]" 
+                    ? "absolute right-0 top-0 bottom-0 w-[94vw] max-w-[1720px]" 
                     : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]",
                 ui.panel
             )}
@@ -1519,7 +1520,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <iframe
                                                             title="Thermal POS Receipt"
                                                             srcDoc={thermalHtml}
-                                                            className="w-full h-[740px] sm:h-[760px] border-0 mx-auto"
+                                                            className="w-full h-[620px] 2xl:h-[740px] border-0 mx-auto"
                                                         />
                                                     </div>
                                                 )}
