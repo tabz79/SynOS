@@ -97,7 +97,7 @@ export function MyHRDashboard() {
                 <div key={idx} className="flex items-center justify-between py-2 border-b dark:border-zinc-800/60 border-zinc-100 last:border-0">
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{log.status}</span>
-                    <span className="text-[10px] font-mono text-zinc-500">{new Date(log.timestamp).toLocaleDateString()}</span>
+                    <span className="text-xs font-mono text-zinc-500">{new Date(log.timestamp).toLocaleDateString()}</span>
                   </div>
                   <StatusBadge status={log.status} />
                 </div>
@@ -153,7 +153,7 @@ function StatCard({ label, value, icon: Icon, color }) {
         <Icon className="w-5 h-5" />
       </div>
       <span className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{value}</span>
-      <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-extrabold mt-0.5">{label}</span>
+      <span className="text-xs uppercase tracking-wider text-zinc-500 font-extrabold mt-0.5">{label}</span>
     </div>
   );
 }
@@ -170,7 +170,7 @@ function StatusBadge({ status }) {
   const style = config[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20";
 
   return (
-    <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-tight", style)}>
+    <span className={cn("px-2 py-0.5 rounded-full text-xs font-bold border uppercase tracking-tight", style)}>
       {status}
     </span>
   );
@@ -183,7 +183,7 @@ function QuickActionButton({ label, description, path }) {
       className="p-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition-all shadow-xs active:scale-95 flex flex-col text-left group"
     >
       <span className="text-xs font-extrabold text-indigo-700 dark:text-indigo-300 group-hover:text-indigo-600">{label}</span>
-      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">{description}</span>
+      <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium mt-0.5">{description}</span>
     </a>
   );
 }

@@ -250,7 +250,7 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                                         onChange={e => setDob(e.target.value)}
                                     />
                                 </div>
-                                <div className="h-9 flex items-center pl-1 text-[11px] text-zinc-500 font-medium leading-tight">
+                                <div className="h-9 flex items-center pl-1 text-xs text-zinc-500 font-medium leading-tight">
                                     {dob ? (
                                         <span>
                                             Calculated Age: <strong className="text-emerald-600">{calculateDetailedAge(dob).text}</strong>

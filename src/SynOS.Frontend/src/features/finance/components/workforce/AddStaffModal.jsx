@@ -160,7 +160,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">First Name</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">First Name</label>
                             <input 
                                 required
                                 value={formData.firstName}
@@ -170,7 +170,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Last Name</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Last Name</label>
                             <input 
                                 required
                                 value={formData.lastName}
@@ -183,7 +183,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Job Title</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Job Title</label>
                             <input 
                                 required
                                 value={formData.jobTitle}
@@ -193,7 +193,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Department</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Department</label>
                             <select 
                                 value={formData.department}
                                 onChange={e => setFormData({...formData, department: e.target.value})}
@@ -211,7 +211,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Employment Type</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Employment Type</label>
                             <select 
                                 value={formData.employmentType}
                                 onChange={e => setFormData({...formData, employmentType: parseInt(e.target.value)})}
@@ -223,7 +223,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                             </select>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Join Date</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Join Date</label>
                             <input 
                                 type="date"
                                 required
@@ -236,7 +236,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone Number</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Phone Number</label>
                             <input 
                                 value={formData.phone}
                                 onChange={e => setFormData({...formData, phone: e.target.value})}
@@ -245,7 +245,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Email Address (for Identity)</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Email Address (for Identity)</label>
                             <input 
                                 type="email"
                                 value={formData.email}
@@ -258,7 +258,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Salary Type</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Salary Type</label>
                             <select 
                                 value={formData.salaryType}
                                 onChange={e => setFormData({...formData, salaryType: parseInt(e.target.value)})}
@@ -270,7 +270,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                             </select>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Base Salary / Rate (₹)</label>
+                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Base Salary / Rate (₹)</label>
                             <input 
                                 type="number"
                                 required
@@ -337,9 +337,9 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                                             step="0.01"
                                             value={formData.pfPercentage}
                                             onChange={e => setFormData({...formData, pfPercentage: e.target.value})}
-                                            className="w-16 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-[11px] outline-none"
+                                            className="w-16 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-xs outline-none"
                                         />
-                                        <span className="text-[10px] text-zinc-500">%</span>
+                                        <span className="text-xs text-zinc-500">%</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-zinc-950 border dark:border-zinc-800">
@@ -364,9 +364,9 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                                             step="0.01"
                                             value={formData.esiPercentage}
                                             onChange={e => setFormData({...formData, esiPercentage: e.target.value})}
-                                            className="w-16 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-[11px] outline-none"
+                                            className="w-16 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-xs outline-none"
                                         />
-                                        <span className="text-[10px] text-zinc-500">%</span>
+                                        <span className="text-xs text-zinc-500">%</span>
                                     </div>
                                 </div>
                             </div>
@@ -387,7 +387,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                                         <select 
                                             value={formData.tdsMode}
                                             onChange={e => setFormData({...formData, tdsMode: parseInt(e.target.value)})}
-                                            className="flex-1 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-[11px] outline-none"
+                                            className="flex-1 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-xs outline-none"
                                         >
                                             <option value={0}>Fixed (₹)</option>
                                             <option value={1}>Percentage (%)</option>
@@ -396,7 +396,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                                             type="number"
                                             value={formData.tdsValue}
                                             onChange={e => setFormData({...formData, tdsValue: e.target.value})}
-                                            className="w-20 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-[11px] outline-none"
+                                            className="w-20 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 rounded px-2 py-1 text-xs outline-none"
                                             placeholder="Value"
                                         />
                                     </div>
@@ -407,7 +407,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                         {/* ID Numbers */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold uppercase text-zinc-400 ml-1">PAN Number</label>
+                                <label className="text-xs font-bold uppercase text-zinc-400 ml-1">PAN Number</label>
                                 <div className="relative">
                                     <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
                                     <input 
@@ -419,7 +419,7 @@ export function AddStaffModal({ isOpen, onClose, onStaffAdded, editStaff = null 
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold uppercase text-zinc-400 ml-1">Aadhaar Number</label>
+                                <label className="text-xs font-bold uppercase text-zinc-400 ml-1">Aadhaar Number</label>
                                 <div className="relative">
                                     <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
                                     <input 

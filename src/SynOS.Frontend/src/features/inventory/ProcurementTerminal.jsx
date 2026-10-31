@@ -74,7 +74,7 @@ export const ProcurementTerminal = () => {
                         <ShoppingCart className="w-5 h-5 text-indigo-500" />
                         Procurement Terminal
                     </h1>
-                    <p className="text-xs text-zinc-500 tracking-tight">Formalizing commitments and managing supplier obligations.</p>
+                    <p className="text-xs text-zinc-500 tracking-normal">Formalizing commitments and managing supplier obligations.</p>
                 </div>
                 <button 
                     onClick={() => setShowCreateModal(true)}
@@ -88,19 +88,19 @@ export const ProcurementTerminal = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
-                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Active POs</p>
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Active POs</p>
                     <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1">{orders.filter(o => o.status !== 'Closed').length}</p>
                 </div>
                 <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
-                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Pending Receipt</p>
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Pending Receipt</p>
                     <p className="text-lg font-black text-amber-500 mt-1">{orders.filter(o => o.status === 'Approved').length}</p>
                 </div>
                 <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
-                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Order Value (Total)</p>
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Order Value (Total)</p>
                     <p className="text-lg font-black text-zinc-900 dark:text-white mt-1">₹--</p>
                 </div>
                 <div className="synos-dept-card p-4 rounded-2xl border dark:border-zinc-800 border-zinc-200">
-                    <p className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-wider">Vendors Active</p>
+                    <p className="text-xs font-extrabold text-zinc-500 uppercase tracking-wider">Vendors Active</p>
                     <p className="text-lg font-black text-emerald-500 mt-1">{vendors.length}</p>
                 </div>
             </div>
@@ -127,11 +127,11 @@ export const ProcurementTerminal = () => {
                     <table className="w-full text-left border-collapse synos-table">
                         <thead>
                             <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
-                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Order ID & Date</th>
-                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Vendor</th>
-                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Status</th>
-                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Items</th>
-                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Order ID & Date</th>
+                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Vendor</th>
+                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Status</th>
+                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Items</th>
+                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
@@ -149,7 +149,7 @@ export const ProcurementTerminal = () => {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="text-xs font-mono font-bold text-synos-primary">PO-{po.poId.substring(0, 8).toUpperCase()}</span>
-                                                <span className="text-[10px] text-zinc-500">{new Date(po.createdAt).toLocaleDateString()}</span>
+                                                <span className="text-xs text-zinc-500">{new Date(po.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -161,7 +161,7 @@ export const ProcurementTerminal = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter border ${
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-tighter border ${
                                                 po.status === 'Draft' ? 'bg-zinc-100 text-zinc-500 border-zinc-200' :
                                                 po.status === 'Approved' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
                                                 po.status === 'Closed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
@@ -197,7 +197,7 @@ export const ProcurementTerminal = () => {
                         <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold dark:text-white tracking-tight">Initiate Order</h3>
-                                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Select your supplying partner</p>
+                                <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Select your supplying partner</p>
                             </div>
                             <button onClick={() => setShowCreateModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl">
                                 <X className="w-5 h-5 text-zinc-400" />
@@ -207,10 +207,10 @@ export const ProcurementTerminal = () => {
                         <div className="p-8 space-y-6">
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center px-4">
-                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 tracking-wider">Select Vendor</label>
+                                    <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Select Vendor</label>
                                     <button 
                                         onClick={() => setShowAddVendorModal(true)}
-                                        className="text-[10px] text-synos-primary font-bold uppercase hover:underline"
+                                        className="text-xs text-synos-primary font-bold uppercase hover:underline"
                                     >
                                         + New Supplier
                                     </button>
@@ -247,7 +247,7 @@ export const ProcurementTerminal = () => {
                         <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold dark:text-white tracking-tight">Onboard Supplier</h3>
-                                <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Quick master data entry</p>
+                                <p className="text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">Quick master data entry</p>
                             </div>
                             <button onClick={() => setShowAddVendorModal(false)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl">
                                 <X className="w-5 h-5 text-zinc-400" />
@@ -270,11 +270,11 @@ export const ProcurementTerminal = () => {
                             }
                         }} className="p-8 space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Company Name</label>
+                                <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Company Name</label>
                                 <input name="name" required className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Category</label>
+                                <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Category</label>
                                 <input name="category" placeholder="Medical / Lab / General" className="w-full bg-zinc-100 dark:bg-white/5 border-none rounded-2xl px-6 py-4 text-xs font-medium focus:ring-2 ring-synos-primary outline-none transition-all dark:text-white" />
                             </div>
                             <button type="submit" className="w-full px-4 py-3 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all uppercase tracking-wider">

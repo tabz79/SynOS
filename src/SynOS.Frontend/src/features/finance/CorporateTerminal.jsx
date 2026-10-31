@@ -459,12 +459,12 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                         <div className="flex items-center gap-4 flex-wrap">
                             <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                                 <div className="text-right">
-                                    <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total B2B Invoiced</p>
+                                    <p className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Total B2B Invoiced</p>
                                     <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">₹{totalB2BAmount.toLocaleString()}</p>
                                 </div>
                                 <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
                                 <div className="text-right">
-                                    <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Active Clients</p>
+                                    <p className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Active Clients</p>
                                     <p className="text-xs font-black text-zinc-900 dark:text-zinc-100">{accounts.filter(a => a.isActive).length}</p>
                                 </div>
                             </div>
@@ -519,7 +519,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                         <Icon size={14} />
                                         <span>{t.label}</span>
                                         {t.id === 'packages' && corporatePackages.length > 0 && (
-                                            <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full font-mono">
+                                            <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs rounded-full font-mono">
                                                 {corporatePackages.length}
                                             </span>
                                         )}
@@ -550,7 +550,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <FileText className="w-4 h-4 text-indigo-500" />
                                         </div>
                                         <p className="text-2xl font-black tracking-tight dark:text-white">{visits.length}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Staff & employee registrations</p>
+                                        <p className="text-xs text-zinc-500 mt-1">Staff & employee registrations</p>
                                     </div>
 
                                     <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
@@ -559,7 +559,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <DollarSign className="w-4 h-4 text-emerald-500" />
                                         </div>
                                         <p className="text-2xl font-black tracking-tight text-emerald-500">₹{totalB2BAmount.toLocaleString()}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Total revenue from corporate tie-ups</p>
+                                        <p className="text-xs text-zinc-500 mt-1">Total revenue from corporate tie-ups</p>
                                     </div>
 
                                     <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
@@ -568,7 +568,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <Building2 className="w-4 h-4 text-blue-500" />
                                         </div>
                                         <p className="text-2xl font-black tracking-tight dark:text-white">{accounts.length}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Contracted organizations</p>
+                                        <p className="text-xs text-zinc-500 mt-1">Contracted organizations</p>
                                     </div>
 
                                     <div className="synos-kpi-card p-5 rounded-2xl flex flex-col justify-between">
@@ -577,7 +577,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <Package className="w-4 h-4 text-amber-500" />
                                         </div>
                                         <p className="text-2xl font-black tracking-tight text-amber-500">{corporatePackages.length}</p>
-                                        <p className="text-[11px] text-zinc-500 mt-1">Packages active across accounts</p>
+                                        <p className="text-xs text-zinc-500 mt-1">Packages active across accounts</p>
                                     </div>
                                 </div>
 
@@ -597,7 +597,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                     </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3">Employee / Patient</th>
                                                     <th className="px-6 py-3">Corporate Account</th>
@@ -611,19 +611,19 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                     <tr key={v.visitId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                                                         <td className="px-6 py-3.5">
                                                             <div className="font-bold dark:text-zinc-100">{v.patientName}</div>
-                                                            <div className="text-[10px] text-zinc-400 font-mono">{v.patientMrn}</div>
+                                                            <div className="text-xs text-zinc-400 font-mono">{v.patientMrn}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 font-medium dark:text-zinc-200">
                                                             {v.companyName}
                                                         </td>
-                                                        <td className="px-6 py-3.5 font-mono text-[11px] text-indigo-500 font-bold">
+                                                        <td className="px-6 py-3.5 font-mono text-xs text-indigo-500 font-bold">
                                                             {v.employeeId}
                                                         </td>
                                                         <td className="px-6 py-3.5 text-right font-mono font-bold text-emerald-500">
                                                             ₹{v.grossAmount?.toLocaleString()}
                                                         </td>
                                                         <td className="px-6 py-3.5 text-center">
-                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-500">
+                                                            <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-indigo-500/10 text-indigo-500">
                                                                 {v.status}
                                                             </span>
                                                         </td>
@@ -669,7 +669,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                 <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3.5">Organization / Company</th>
                                                     <th className="px-6 py-3.5">Corporate Code / GST</th>
@@ -688,27 +688,27 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                                 {a.companyName}
                                                             </div>
                                                             {a.billingAddress && (
-                                                                <div className="text-[10px] text-zinc-400 mt-0.5 truncate max-w-xs">{a.billingAddress}</div>
+                                                                <div className="text-xs text-zinc-400 mt-0.5 truncate max-w-xs">{a.billingAddress}</div>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 font-mono space-y-0.5">
-                                                            <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] block w-fit">
+                                                            <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs block w-fit">
                                                                 {a.corporateCode || "N/A"}
                                                             </span>
                                                             {a.gstNumber && (
-                                                                <span className="text-[10px] text-zinc-400 block">GST: {a.gstNumber}</span>
+                                                                <span className="text-xs text-zinc-400 block">GST: {a.gstNumber}</span>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 space-y-1">
                                                             <div className="font-semibold dark:text-zinc-200">{a.contactPerson || "Not Assigned"}</div>
                                                             {a.contactPhone && (
-                                                                <div className="flex items-center gap-1.5 text-zinc-500 text-[11px]">
+                                                                <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
                                                                     <Phone className="w-3 h-3 text-zinc-400" /> {a.contactPhone}
                                                                 </div>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 text-center font-mono">
-                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-500">
+                                                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-500">
                                                                 {a.paymentTermsDays || 30} Days Net
                                                             </span>
                                                         </td>
@@ -727,7 +727,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                                     loadData();
                                                                 }}
                                                                 className={cn(
-                                                                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer",
+                                                                    "px-2.5 py-0.5 rounded-full text-xs font-bold transition-all cursor-pointer",
                                                                     a.isActive 
                                                                         ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" 
                                                                         : "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
@@ -779,7 +779,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                     <div className="flex flex-wrap items-center gap-3">
                                         <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-950 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
                                             <Building2 size={15} className="text-indigo-500 shrink-0" />
-                                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">Company:</span>
+                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider shrink-0">Company:</span>
                                             <select
                                                 value={selectedAccountId}
                                                 onChange={(e) => setSelectedAccountId(e.target.value)}
@@ -811,7 +811,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <Package size={14} className="text-indigo-500" />
                                             Packages ({corporatePackages.length})
                                         </h4>
-                                        <span className="text-[11px] text-zinc-400">
+                                        <span className="text-xs text-zinc-400">
                                             Click any card or pencil to edit package details and bundled tests
                                         </span>
                                     </div>
@@ -827,10 +827,10 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                     <div className="flex items-start justify-between gap-2">
                                                         <div>
                                                             <div className="flex items-center gap-2 mb-1">
-                                                                <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold border border-indigo-500/20">
+                                                                <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-xs font-mono font-bold border border-indigo-500/20">
                                                                     {pkg.packageCode || pkg.testCode}
                                                                 </span>
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                                     Active Package
                                                                 </span>
@@ -853,7 +853,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
 
                                                     {/* Bundled Tests */}
                                                     <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
                                                             Bundled Tests ({(pkg.includedTests || []).length})
                                                         </span>
                                                         <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto custom-scrollbar">
@@ -861,20 +861,20 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                                 pkg.includedTests.map(t => (
                                                                     <span 
                                                                         key={t.testId || t.testCode} 
-                                                                        className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-[10px] font-medium border border-zinc-200/50 dark:border-zinc-700/50"
+                                                                        className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 text-xs font-medium border border-zinc-200/50 dark:border-zinc-700/50"
                                                                     >
                                                                         {t.testName}
                                                                     </span>
                                                                 ))
                                                             ) : (
-                                                                <span className="text-zinc-400 text-[10px]">Configured package profile</span>
+                                                                <span className="text-zinc-400 text-xs">Configured package profile</span>
                                                             )}
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                                                    <span className="text-[10px] text-zinc-400">Available at reception Intent Panel</span>
+                                                    <span className="text-xs text-zinc-400">Available at reception Intent Panel</span>
                                                     <div className="flex items-center gap-1.5">
                                                         <button
                                                             onClick={(e) => {
@@ -911,7 +911,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <div className="col-span-full p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-center text-zinc-400 space-y-2">
                                                 <Package className="w-8 h-8 text-indigo-400 mx-auto opacity-70" />
                                                 <p className="text-xs font-bold dark:text-zinc-300">No Corporate Packages Configured for this Client</p>
-                                                <p className="text-[11px] text-zinc-500 max-w-sm mx-auto">
+                                                <p className="text-xs text-zinc-500 max-w-sm mx-auto">
                                                     Click "+ Build Corporate Package" above to bundle tests (e.g. Annual Health Checkup) and assign negotiated package pricing.
                                                 </p>
                                             </div>
@@ -927,12 +927,12 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                 <ShieldCheck size={15} className="text-indigo-500" />
                                                 Corporate Test Pricing Master ({filteredTestMasterList.length})
                                             </h4>
-                                            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                                                 Bidirectional sync with Test Master. Rates edited below immediately reflect inside Test Master pricing &amp; corporate billing.
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[11px] text-indigo-500 font-bold bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20 font-mono">
+                                            <span className="text-xs text-indigo-500 font-bold bg-indigo-500/10 px-2.5 py-1 rounded-lg border border-indigo-500/20 font-mono">
                                                 {individualRateRules.length} Client Overrides Active
                                             </span>
                                         </div>
@@ -954,7 +954,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
 
                                             {/* Department Filter */}
                                             <div className="flex items-center gap-1.5">
-                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Dept:</span>
+                                                <span className="text-xs font-bold text-zinc-400 uppercase">Dept:</span>
                                                 <select
                                                     value={selectedDepartment}
                                                     onChange={(e) => setSelectedDepartment(e.target.value)}
@@ -969,7 +969,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
 
                                             {/* Modality Filter */}
                                             <div className="flex items-center gap-1.5">
-                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Modality:</span>
+                                                <span className="text-xs font-bold text-zinc-400 uppercase">Modality:</span>
                                                 <select
                                                     value={selectedModality}
                                                     onChange={(e) => setSelectedModality(e.target.value)}
@@ -984,7 +984,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
 
                                             {/* Rate Status Filter */}
                                             <div className="flex items-center gap-1.5">
-                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">Status:</span>
+                                                <span className="text-xs font-bold text-zinc-400 uppercase">Status:</span>
                                                 <select
                                                     value={rateFilter}
                                                     onChange={(e) => setRateFilter(e.target.value)}
@@ -998,7 +998,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                         </div>
 
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[10px] font-bold text-zinc-400 uppercase">Show:</span>
+                                            <span className="text-xs font-bold text-zinc-400 uppercase">Show:</span>
                                             <select
                                                 value={pageSize}
                                                 onChange={(e) => setPageSize(Number(e.target.value))}
@@ -1016,7 +1016,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                     <div className="synos-dept-card rounded-2xl overflow-hidden">
                                         <div className="overflow-x-auto">
                                             <table className="w-full text-left text-xs">
-                                                <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                                <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                     <tr>
                                                         <th className="px-6 py-3.5">Test Code &amp; Modality</th>
                                                         <th className="px-6 py-3.5">Test Name &amp; Department</th>
@@ -1041,13 +1041,13 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                             <tr key={testId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                                                                 <td className="px-6 py-3.5 font-mono">
                                                                     <div className="font-bold text-indigo-500">{test.testCode || test.code}</div>
-                                                                    <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-sans font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase">
+                                                                    <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded text-xs font-sans font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 uppercase">
                                                                         {test.category || test.modality || 'LAB'}
                                                                     </span>
                                                                 </td>
                                                                 <td className="px-6 py-3.5">
                                                                     <div className="font-semibold dark:text-zinc-200">{test.testName || test.name}</div>
-                                                                    <div className="text-[10px] text-zinc-400 mt-0.5">{test.department || 'PATHOLOGY'}</div>
+                                                                    <div className="text-xs text-zinc-400 mt-0.5">{test.department || 'PATHOLOGY'}</div>
                                                                 </td>
                                                                 <td className="px-6 py-3.5 text-right font-mono text-zinc-500 dark:text-zinc-400 font-semibold">
                                                                     ₹{retailPrice.toLocaleString()}
@@ -1090,11 +1090,11 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                                                 ₹{corporateRate?.toLocaleString()}
                                                                             </div>
                                                                             {overrideRule ? (
-                                                                                <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                                                                                <span className="inline-block px-1.5 py-0.2 rounded text-xs font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
                                                                                     Client Contract
                                                                                 </span>
                                                                             ) : (
-                                                                                <span className="inline-block px-1.5 py-0.2 rounded text-[9px] font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800">
+                                                                                <span className="inline-block px-1.5 py-0.2 rounded text-xs font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800">
                                                                                     Test Master Tier
                                                                                 </span>
                                                                             )}
@@ -1207,7 +1207,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                 <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                             <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                             <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3.5">Token / Inv No</th>
                                                     <th className="px-6 py-3.5">Employee / Patient</th>
@@ -1223,17 +1223,17 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                                                 {filteredVisits.map(v => (
                                                     <tr key={v.visitId || v.token || v.invoiceNumber} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                                                        <td className="px-6 py-3.5 font-mono text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                                                        <td className="px-6 py-3.5 font-mono text-xs font-bold text-zinc-700 dark:text-zinc-300">
                                                             {v.token || v.visitToken || v.invoiceNumber || '-'}
                                                         </td>
                                                         <td className="px-6 py-3.5">
                                                             <div className="font-bold text-sm dark:text-zinc-100">{v.patientName}</div>
-                                                            <div className="text-[10px] text-zinc-400 font-mono">MRN: {v.patientMrn || '-'}</div>
+                                                            <div className="text-xs text-zinc-400 font-mono">MRN: {v.patientMrn || '-'}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 font-medium dark:text-zinc-200">
                                                             {v.companyName || activeAccountObj?.companyName || '-'}
                                                         </td>
-                                                        <td className="px-6 py-3.5 font-mono text-[11px] text-indigo-500 font-bold">
+                                                        <td className="px-6 py-3.5 font-mono text-xs text-indigo-500 font-bold">
                                                             {v.employeeId || 'N/A'}
                                                         </td>
                                                         <td className="px-6 py-3.5 text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={v.testsSummary || (v.tests?.join(', ')) || '-'}>
@@ -1246,7 +1246,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                                             ₹{(v.grossAmount || v.totalAmount || 0).toLocaleString()}
                                                         </td>
                                                         <td className="px-6 py-3.5 text-center">
-                                                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-500/10 text-indigo-500">
+                                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-indigo-500/10 text-indigo-500">
                                                                 {v.status || 'Invoiced'}
                                                              </span>
                                                         </td>
@@ -1368,7 +1368,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                         </div>
                         <div className="space-y-3 text-xs">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Company / Organization</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Company / Organization</label>
                                 <select 
                                     value={selectedAccountId} 
                                     onChange={(e) => setSelectedAccountId(e.target.value)}
@@ -1381,11 +1381,11 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Amount Paid (₹)</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Amount Paid (₹)</label>
                                     <input type="number" placeholder="100000" className="w-full h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none font-mono" />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Payment Mode</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Payment Mode</label>
                                     <select className="w-full h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none">
                                         <option value="NEFT">NEFT / RTGS</option>
                                         <option value="Cheque">Company Cheque</option>
@@ -1394,7 +1394,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Bank Reference / UTR #</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Bank Reference / UTR #</label>
                                 <input type="text" placeholder="CMS-SBI-2026-X88" className="w-full h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none font-mono" />
                             </div>
                         </div>
@@ -1545,12 +1545,12 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                             <div className="flex items-center gap-2">
                                 <h3 className="text-sm font-bold">{isEdit ? 'Edit Package' : 'Create Package'}</h3>
                                 {isEdit && (packageData.packageCode || packageData.testCode) && (
-                                    <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-[10px] font-mono font-bold border border-indigo-500/20">
+                                    <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-500 text-xs font-mono font-bold border border-indigo-500/20">
                                         {packageData.packageCode || packageData.testCode}
                                     </span>
                                 )}
                             </div>
-                            <p className="text-[10px] text-zinc-500 font-medium">For: <span className="text-indigo-500 font-bold">{corporateAccountName}</span></p>
+                            <p className="text-xs text-zinc-500 font-medium">For: <span className="text-indigo-500 font-bold">{corporateAccountName}</span></p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer">
@@ -1567,7 +1567,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                 <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto text-xs">
                     <div className="grid grid-cols-2 gap-3">
                         <div className="col-span-2">
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Package Name *
                             </label>
                             <input
@@ -1581,7 +1581,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Package Code (Optional)
                             </label>
                             <input
@@ -1594,7 +1594,7 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">
                                 Package Price (₹) *
                             </label>
                             <input
@@ -1612,10 +1612,10 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                     {/* Test Selection Picker */}
                     <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                         <div className="flex items-center justify-between">
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500">
                                 Select Tests to Bundle ({selectedTestIds.length} Selected)
                             </label>
-                            <span className="text-[10px] text-indigo-500 font-bold">Pick tests & profiles</span>
+                            <span className="text-xs text-indigo-500 font-bold">Pick tests & profiles</span>
                         </div>
 
                         <div className="relative">
@@ -1652,9 +1652,9 @@ function CorporatePackageBuilderModal({ isOpen, packageData, corporateAccountId,
                                                 className="rounded text-indigo-600"
                                             />
                                             <span>{t.testName || t.name}</span>
-                                            <span className="text-[10px] font-mono text-zinc-400">[{t.testCode || t.code}]</span>
+                                            <span className="text-xs font-mono text-zinc-400">[{t.testCode || t.code}]</span>
                                         </div>
-                                        <span className="text-zinc-400 font-mono text-[11px]">₹{t.basePrice || t.price || 0}</span>
+                                        <span className="text-zinc-400 font-mono text-xs">₹{t.basePrice || t.price || 0}</span>
                                     </div>
                                 );
                             })}
@@ -1753,7 +1753,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
                         </div>
                         <div>
                             <h3 className="text-sm font-bold">{isEdit ? "Configure Corporate Client" : "Add Corporate Organization"}</h3>
-                            <p className="text-[10px] text-zinc-500">Persists to CorporateAccounts master table</p>
+                            <p className="text-xs text-zinc-500">Persists to CorporateAccounts master table</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer">
@@ -1769,7 +1769,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-xs">
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Company / Organization Name *</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Company / Organization Name *</label>
                         <input
                             type="text"
                             required
@@ -1782,7 +1782,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Corporate Code</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Corporate Code</label>
                             <input
                                 type="text"
                                 placeholder="e.g. CORP-SBI"
@@ -1792,7 +1792,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">GSTIN Number</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">GSTIN Number</label>
                             <input
                                 type="text"
                                 placeholder="29ABCDE1234F1Z5"
@@ -1805,7 +1805,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">HR / Liaison Person</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">HR / Liaison Person</label>
                             <input
                                 type="text"
                                 placeholder="HR Manager Name"
@@ -1815,7 +1815,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Phone Number</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Phone Number</label>
                             <input
                                 type="text"
                                 placeholder="+91 98765-43210"
@@ -1828,7 +1828,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Billing Cycle (Days)</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Billing Cycle (Days)</label>
                             <input
                                 type="number"
                                 min="7"
@@ -1839,7 +1839,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Credit Limit (₹)</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Credit Limit (₹)</label>
                             <input
                                 type="number"
                                 min="0"
@@ -1851,7 +1851,7 @@ function CorporateAccountConfigModal({ isOpen, initialData, isDark, onClose, onS
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Billing Address</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Billing Address</label>
                         <input
                             type="text"
                             placeholder="Corporate Headquarters, Mumbai"
@@ -1930,7 +1930,7 @@ function SingleRateRuleModal({ isOpen, corporateAccountId, catalog, isDark, onCl
                 {error && <div className="text-rose-500 text-xs">{error}</div>}
                 <form onSubmit={handleSubmit} className="space-y-3 text-xs">
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Select Test</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Select Test</label>
                         <select
                             value={testId}
                             onChange={(e) => setTestId(e.target.value)}
@@ -1946,7 +1946,7 @@ function SingleRateRuleModal({ isOpen, corporateAccountId, catalog, isDark, onCl
                         </select>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Negotiated Rate (₹)</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Negotiated Rate (₹)</label>
                         <input
                             type="number"
                             required

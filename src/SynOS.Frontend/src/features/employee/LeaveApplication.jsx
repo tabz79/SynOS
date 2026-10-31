@@ -51,7 +51,7 @@ export function LeaveApplication() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Leave Type */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-500">Leave Type</label>
+              <label className="text-xs font-extrabold uppercase tracking-wider text-zinc-500">Leave Type</label>
               <select
                 required
                 value={formData.leaveType}
@@ -69,7 +69,7 @@ export function LeaveApplication() {
 
             {/* Start Date */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-500">Start Date</label>
+              <label className="text-xs font-extrabold uppercase tracking-wider text-zinc-500">Start Date</label>
               <input
                 type="date"
                 required
@@ -81,7 +81,7 @@ export function LeaveApplication() {
 
             {/* End Date */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-500">End Date</label>
+              <label className="text-xs font-extrabold uppercase tracking-wider text-zinc-500">End Date</label>
               <input
                 type="date"
                 required
@@ -94,7 +94,7 @@ export function LeaveApplication() {
 
           {/* Reason */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-500">Reason / Notes</label>
+            <label className="text-xs font-extrabold uppercase tracking-wider text-zinc-500">Reason / Notes</label>
             <textarea
               rows={4}
               value={formData.reason}

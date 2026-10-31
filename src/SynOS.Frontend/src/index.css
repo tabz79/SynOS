@@ -11,101 +11,109 @@
    * - large: High Legibility for small screens / low-res operator counter displays (17px - 18.5px)
    */
 
-  /* Default & Medium Scale */
+  /* 
+   * SYNOS WORKSTATION DUAL-LAYER ERGONOMICS:
+   * Layer 1: Display Scaling / Interface Density (data-display-size: small | medium | large)
+   * Layer 2: Typography Legibility Scale (data-font-size: small | medium | large)
+   * These two dimensions are 100% ISOLATED. A user can set Display Size = Medium 
+   * and Font Size = Large, achieving big, bold text without bloating the UI layout.
+   */
+
+  /* LAYER 1: DISPLAY SCALING (INTERFACE DENSITY) */
   html,
-  html.font-size-medium,
-  html[data-font-size="medium"] {
-    font-size: 16.5px;
+  html.display-size-medium,
+  html[data-display-size="medium"] {
+    font-size: 16px;
   }
   @media (max-width: 1536px) or (max-height: 900px) {
     html,
-    html.font-size-medium,
-    html[data-font-size="medium"] {
-      font-size: 15.5px;
-    }
-  }
-  @media (max-width: 1366px) or (max-height: 768px) {
-    html,
-    html.font-size-medium,
-    html[data-font-size="medium"] {
-      font-size: 15px; /* Immediately readable on 768p displays */
-    }
-  }
-  @media (max-width: 1100px) or (max-height: 650px) {
-    html,
-    html.font-size-medium,
-    html[data-font-size="medium"] {
-      font-size: 14px;
-    }
-  }
-
-  /* Small / Compact Scale (Dense data for high-res 27"+ monitors) */
-  html.font-size-small,
-  html[data-font-size="small"] {
-    font-size: 15px;
-  }
-  @media (max-width: 1536px) or (max-height: 900px) {
-    html.font-size-small,
-    html[data-font-size="small"] {
-      font-size: 14px;
-    }
-  }
-  @media (max-width: 1366px) or (max-height: 768px) {
-    html.font-size-small,
-    html[data-font-size="small"] {
-      font-size: 13px;
-    }
-  }
-  @media (max-width: 1100px) or (max-height: 650px) {
-    html.font-size-small,
-    html[data-font-size="small"] {
-      font-size: 12px;
-    }
-  }
-
-  /* Large / High Legibility Scale (For admins with small displays or vision preference) */
-  html.font-size-large,
-  html[data-font-size="large"] {
-    font-size: 18.5px;
-  }
-  @media (max-width: 1536px) or (max-height: 900px) {
-    html.font-size-large,
-    html[data-font-size="large"] {
-      font-size: 17.5px;
-    }
-  }
-  @media (max-width: 1366px) or (max-height: 768px) {
-    html.font-size-large,
-    html[data-font-size="large"] {
-      font-size: 17px; /* Provides large, comfortable readability on small displays */
-    }
-  }
-  @media (max-width: 1100px) or (max-height: 650px) {
-    html.font-size-large,
-    html[data-font-size="large"] {
+    html.display-size-medium,
+    html[data-display-size="medium"] {
       font-size: 16px;
     }
   }
 
-  /* Micro-typography scaling when Large or Medium size is selected (STRICT: preserve font-weight without making fat/bold) */
-  html.font-size-large .text-xxs,
-  html.font-size-large .text-\[10px\],
-  html.font-size-large .text-\[9\.5px\],
-  html.font-size-large .text-\[9px\],
-  html.font-size-large .text-\[8\.5px\],
-  html.font-size-large .text-\[8px\] {
-    font-size: 0.72rem !important; /* ~12.2px at base 17px */
-    font-weight: inherit;
+  html.display-size-small,
+  html[data-display-size="small"] {
+    font-size: 14.5px;
   }
 
-  html.font-size-medium .text-xxs,
-  html.font-size-medium .text-\[10px\],
-  html.font-size-medium .text-\[9\.5px\],
-  html.font-size-medium .text-\[9px\],
-  html.font-size-medium .text-\[8\.5px\],
-  html.font-size-medium .text-\[8px\] {
-    font-size: 0.68rem !important; /* ~10.5px at base 15px */
-    font-weight: inherit;
+  html.display-size-large,
+  html[data-display-size="large"] {
+    font-size: 18px;
+  }
+
+  /* LAYER 2: ISOLATED TYPOGRAPHY LEGIBILITY SCALE */
+  /* Large / High Legibility Mode (Elevated +22% reading scale without altering card layouts) */
+  html.font-size-large .text-xs,
+  html[data-font-size="large"] .text-xs {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+  html.font-size-large .text-sm,
+  html[data-font-size="large"] .text-sm {
+    font-size: 1.05rem !important;
+    line-height: 1.5rem !important;
+  }
+  html.font-size-large .text-base,
+  html[data-font-size="large"] .text-base {
+    font-size: 1.22rem !important;
+    line-height: 1.75rem !important;
+  }
+  html.font-size-large .text-lg,
+  html[data-font-size="large"] .text-lg {
+    font-size: 1.38rem !important;
+    line-height: 1.85rem !important;
+  }
+  html.font-size-large .text-xl,
+  html[data-font-size="large"] .text-xl {
+    font-size: 1.55rem !important;
+    line-height: 2rem !important;
+  }
+  html.font-size-large .text-2xl,
+  html[data-font-size="large"] .text-2xl {
+    font-size: 1.85rem !important;
+    line-height: 2.25rem !important;
+  }
+  html.font-size-large .text-3xl,
+  html[data-font-size="large"] .text-3xl {
+    font-size: 2.25rem !important;
+    line-height: 2.5rem !important;
+  }
+  html.font-size-large .text-4xl,
+  html[data-font-size="large"] .text-4xl {
+    font-size: 2.75rem !important;
+    line-height: 1.1 !important;
+  }
+  html.font-size-large .text-5xl,
+  html[data-font-size="large"] .text-5xl {
+    font-size: 3.5rem !important;
+    line-height: 1 !important;
+  }
+
+  /* Small / Compact Typography Mode (Enforces 12px clinical legibility floor) */
+  html.font-size-small .text-xs,
+  html[data-font-size="small"] .text-xs {
+    font-size: 0.75rem !important;
+    line-height: 1.15rem !important;
+  }
+  html.font-size-small .text-sm,
+  html[data-font-size="small"] .text-sm {
+    font-size: 0.85rem !important;
+    line-height: 1.3rem !important;
+  }
+  html.font-size-small .text-base,
+  html[data-font-size="small"] .text-base {
+    font-size: 0.95rem !important;
+    line-height: 1.45rem !important;
+  }
+
+  /* Micro-typography scaling when Large or Medium size is selected */
+  html.font-size-large .text-xxs {
+    font-size: 0.8rem !important;
+  }
+  html.font-size-medium .text-xxs {
+    font-size: 0.75rem !important;
   }
 
   /* LIGHT MODE (DEFAULT) */
@@ -224,12 +232,11 @@
   }
 
   body {
-    /* GLOBAL FONT LOCKDOWN */
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* SINGLE GOVERNING TYPOGRAPHY AUTHORITY: Enterprise San Francisco & Inter */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: normal;
     @apply text-foreground antialiased;
 
-    /* Variable Font Optimizations */
-    font-feature-settings: "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
@@ -251,6 +258,44 @@
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
+  }
+
+  /* ========================================================
+     iOS-INSPIRED TACTILE CIRCULAR & SQUIRCLE DEPTH SYSTEM
+     ======================================================== */
+  .ios-badge-3d-blue,
+  .ios-squircle-3d-blue {
+    background: linear-gradient(180deg, #EBF5FE 0%, #D4EAFA 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.18), inset 0 1.5px 1px #FFFFFF, inset 0 -1px 1px rgba(180, 215, 245, 0.5);
+  }
+
+  .ios-badge-3d-coral,
+  .ios-squircle-3d-coral {
+    background: linear-gradient(180deg, #FEF0F0 0%, #FCDCDC 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.18), inset 0 1.5px 1px #FFFFFF, inset 0 -1px 1px rgba(245, 195, 195, 0.5);
+  }
+
+  .ios-badge-3d-teal,
+  .ios-squircle-3d-teal {
+    background: linear-gradient(180deg, #EAF9F4 0%, #CEF1E6 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.18), inset 0 1.5px 1px #FFFFFF, inset 0 -1px 1px rgba(185, 235, 220, 0.5);
+  }
+
+  .ios-badge-3d-purple,
+  .ios-squircle-3d-purple {
+    background: linear-gradient(180deg, #F7F0FD 0%, #E9D6FB 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 10px rgba(147, 51, 234, 0.18), inset 0 1.5px 1px #FFFFFF, inset 0 -1px 1px rgba(220, 195, 245, 0.5);
+  }
+
+  .ios-badge-3d-orange,
+  .ios-squircle-3d-orange {
+    background: linear-gradient(180deg, #FFF4EE 0%, #FEDFCB 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 10px rgba(234, 88, 12, 0.18), inset 0 1.5px 1px #FFFFFF, inset 0 -1px 1px rgba(245, 210, 185, 0.5);
   }
 
   ::-webkit-scrollbar-track {
@@ -300,45 +345,50 @@
 
 
 
-  /* TYPOGRAPHY SYSTEM v2.0 (THE LAW) */
+  /* TYPOGRAPHY SYSTEM (ENTERPRISE CLINICAL CANON - SINGLE GOVERNING AUTHORITY) */
   /* Role: Pricing Totals, Hero Stats */
   .type-display {
-    @apply text-3xl font-bold tracking-tight text-zinc-900 dark:text-white;
+    @apply text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-normal text-zinc-900 dark:text-white tabular-nums;
   }
 
-  /* Role: Panel Headers */
+  /* Role: Panel / Screen Main Headers */
   .type-page-title {
-    @apply text-xl font-bold tracking-tight text-zinc-900 dark:text-white;
+    @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-normal text-zinc-900 dark:text-white;
   }
 
-  /* Role: Section Dividers (THE STANDARD) */
+  /* Role: Card / Island Container Titles (e.g., Step 1, Step 2, Step 3) */
+  .type-card-title {
+    @apply text-base sm:text-lg font-bold tracking-normal text-slate-900 dark:text-white;
+  }
+
+  /* Role: Section Dividers & Block Headers (e.g., Referring Doctor, Test Selection) */
   .type-section-header {
-    @apply text-xs font-bold tracking-wider text-zinc-700 dark:text-zinc-300;
+    @apply text-sm font-bold tracking-normal text-slate-800 dark:text-zinc-200;
   }
 
   /* Role: Form Labels, Input Hints */
   .type-label {
-    @apply text-xs font-semibold text-zinc-700 dark:text-zinc-300;
+    @apply text-xs sm:text-sm font-semibold tracking-normal text-slate-600 dark:text-zinc-400;
   }
 
   /* Role: Instructions, Long text */
   .type-body {
-    @apply text-sm font-medium text-zinc-900 dark:text-zinc-100;
+    @apply text-sm sm:text-base font-normal tracking-normal text-slate-800 dark:text-zinc-200 leading-relaxed;
   }
 
   /* Role: Data Content (Names, Choices) */
   .type-value {
-    @apply text-sm font-bold text-zinc-900 dark:text-white;
+    @apply text-sm sm:text-base font-semibold tracking-normal text-slate-900 dark:text-white;
   }
 
   /* Role: Badges, Timestamps, Secondary info */
   .type-meta {
-    @apply text-xs font-semibold text-zinc-600 dark:text-zinc-400;
+    @apply text-xs font-medium tracking-normal text-slate-500 dark:text-zinc-400;
   }
 
   /* Role: MRNs, Test Codes, Search Inputs */
   .type-code {
-    @apply text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100;
+    @apply text-xs sm:text-sm font-mono font-bold tracking-normal text-zinc-900 dark:text-zinc-100;
   }
 }
 @layer components {

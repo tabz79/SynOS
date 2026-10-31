@@ -279,12 +279,16 @@ namespace SynOS.Services.EconomicsIntelligence
             summary.CashCollected = revenueFacts.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount);
             summary.OnlineCollected = revenueFacts.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount);
 
-            // Reconcile with direct Payments table for physical drawer and digital truth
+            // Reconcile with direct Payments table for physical drawer and digital truth (excluding B2B Partner credit/receivable adjustments)
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
                 .AsNoTracking()
-                .Where(p => p.ReceivedAt >= start && p.ReceivedAt <= end);
+                .Where(p => p.ReceivedAt >= start && p.ReceivedAt <= end && 
+                            p.Method != "PartnerAccount" && 
+                            p.Method != "Prepaid" && 
+                            p.Method != "PartnerCollects" &&
+                            (p.Invoice == null || p.Invoice.Visit == null || p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects"));
 
             if (branchId.HasValue)
             {
@@ -343,6 +347,17 @@ namespace SynOS.Services.EconomicsIntelligence
             summary.TotalRevenueAccrual = await invoicesQuery
                 .Where(i => i.CreatedAt >= start && i.CreatedAt <= end)
                 .SumAsync(i => i.Total);
+
+            summary.BillsCount = await invoicesQuery
+                .Where(i => i.CreatedAt >= start && i.CreatedAt <= end)
+                .CountAsync();
+
+            if (summary.BillsCount == 0)
+            {
+                var visitsQuery = _context.Visits.AsNoTracking();
+                if (branchId.HasValue) visitsQuery = visitsQuery.Where(v => v.BranchId == branchId.Value);
+                summary.BillsCount = await visitsQuery.Where(v => v.CreatedAt >= start && v.CreatedAt <= end).CountAsync();
+            }
 
             var vendorPayablesQuery = _context.VendorPayables.AsNoTracking();
             if (branchId.HasValue)
@@ -476,13 +491,22 @@ namespace SynOS.Services.EconomicsIntelligence
                         deptRev = matched.Sum(m => Math.Max(0, m.Price));
                         testsCount = matched.Count;
                     }
+                    else
+                    {
+                        deptRev = 0;
+                        testsCount = 0;
+                    }
                 }
-
-                // If no direct matches in DB or revenue is 0, provide realistic distribution
-                if (deptRev <= 0)
+                else if (totalRev > 0 && (end - start).TotalDays > 2)
                 {
+                    // Only provide baseline proportional distribution for broad legacy time windows (e.g. Month/Quarter) if zero discrete order rows exist
                     deptRev = Math.Round(totalRev * target.Share, MidpointRounding.AwayFromZero);
                     testsCount = Math.Max(1, (int)Math.Round(target.DefaultCount * (totalRev > 100000 ? (totalRev / 200000m) : 1m)));
+                }
+                else
+                {
+                    deptRev = 0;
+                    testsCount = 0;
                 }
 
                 // Material / direct cost calculation:

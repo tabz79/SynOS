@@ -388,7 +388,7 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse text-xs">
                                 <thead>
-                                    <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900 text-[10px] type-meta font-bold uppercase tracking-wider">
+                                    <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900 text-xs type-meta font-bold uppercase tracking-wider">
                                         <th 
                                             onClick={() => setSortBy('name')} 
                                             className="py-3 px-4 cursor-pointer hover:text-synos-primary transition-colors"
@@ -464,12 +464,12 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                                                                     {doctor.name}
                                                                 </span>
                                                                 {doctor.demographics?.registrationNumber && (
-                                                                    <span className="type-code text-[9px] px-1 py-0.2 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
+                                                                    <span className="type-code text-xs px-1 py-0.2 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
                                                                         {doctor.demographics.registrationNumber}
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <span className="type-meta text-[10px] text-zinc-400 block">
+                                                            <span className="type-meta text-xs text-zinc-400 block">
                                                                 {doctor.partnerType || 'Doctor'}
                                                             </span>
                                                         </div>
@@ -481,7 +481,7 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                                                     <span className="type-value !text-xs block">
                                                         {doctor.demographics?.speciality || 'General Medicine'}
                                                     </span>
-                                                    <span className="type-meta text-[11px] text-zinc-400 block line-clamp-1">
+                                                    <span className="type-meta text-xs text-zinc-400 block line-clamp-1">
                                                         {doctor.clinicName || doctor.location || 'Walk-in Partner'}
                                                     </span>
                                                 </td>
@@ -517,17 +517,17 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                                                     {hasUnmapped ? (
                                                         <span 
                                                             onClick={() => setSelectedDoctorId(doctor.referralPartnerId)}
-                                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 text-[10px] font-bold cursor-pointer hover:bg-amber-100 transition-colors"
+                                                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 text-xs font-bold cursor-pointer hover:bg-amber-100 transition-colors"
                                                         >
                                                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                                             <span>{doctor.unmappedTestsCount} Tests Awaiting Rate</span>
                                                         </span>
                                                     ) : doctor.learnedRulesCount > 0 ? (
-                                                        <span className="type-code text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                                                        <span className="type-code text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                                                             {doctor.learnedRulesCount} Learned Rules
                                                         </span>
                                                     ) : (
-                                                        <span className="type-meta text-[11px] text-zinc-500">
+                                                        <span className="type-meta text-xs text-zinc-500">
                                                             Default: {doctor.defaultCommissionPercentage ?? 10}%
                                                         </span>
                                                     )}
@@ -539,7 +539,7 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                                                         {doctor.totalPatientsReferred || 0}
                                                     </span>
                                                     {doctor.thisMonthPatientsReferred > 0 && (
-                                                        <span className="type-meta text-[10px] text-cyan-600 dark:text-cyan-400 block">
+                                                        <span className="type-meta text-xs text-cyan-600 dark:text-cyan-400 block">
                                                             +{doctor.thisMonthPatientsReferred} this mo
                                                         </span>
                                                     )}
@@ -566,7 +566,7 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                                                 <td className="py-3 px-3 text-center">
                                                     <div className="flex items-center justify-center gap-1.5">
                                                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                                                        <span className="type-meta text-[11px]">Active</span>
+                                                        <span className="type-meta text-xs">Active</span>
                                                     </div>
                                                 </td>
 
@@ -704,7 +704,7 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                             <span>{doctor.unmappedTestsCount} test{doctor.unmappedTestsCount > 1 ? 's' : ''} awaiting commission rate</span>
                         </div>
-                        <span className="type-section-header !text-[11px] text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1">
+                        <span className="type-section-header !text-xs text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1">
                             Set Rate &rarr;
                         </span>
                     </div>
@@ -713,24 +713,24 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
                 {/* Commercial Metrics Strip */}
                 <div className="grid grid-cols-3 gap-2 py-3 border-t border-b border-black/[0.05] dark:border-white/[0.05]">
                     <div>
-                        <span className="type-meta uppercase !text-[9px] block">Patients</span>
+                        <span className="type-meta uppercase !text-xs block">Patients</span>
                         <span className="type-value !text-sm block mt-0.5">
                             {doctor.totalPatientsReferred || 0}
                             {doctor.thisMonthPatientsReferred > 0 && (
-                                <span className="text-[10px] font-semibold text-cyan-600 dark:text-cyan-400 ml-1">
+                                <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 ml-1">
                                     (+{doctor.thisMonthPatientsReferred})
                                 </span>
                             )}
                         </span>
                     </div>
                     <div>
-                        <span className="type-meta uppercase !text-[9px] block">Revenue</span>
+                        <span className="type-meta uppercase !text-xs block">Revenue</span>
                         <span className="type-value !text-sm block mt-0.5">
                             ₹ {Number(doctor.totalRevenueGenerated || 0).toLocaleString()}
                         </span>
                     </div>
                     <div>
-                        <span className="type-meta uppercase !text-[9px] block">Commission Due</span>
+                        <span className="type-meta uppercase !text-xs block">Commission Due</span>
                         <span className="type-value !text-sm block mt-0.5">
                             ₹ {Number(doctor.pendingPayoutDue || 0).toLocaleString()}
                         </span>
@@ -916,7 +916,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         {doc.name}
                                     </h2>
                                     {doc.demographics?.registrationNumber && (
-                                        <span className="type-code text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
+                                        <span className="type-code text-xs px-1.5 py-0.5 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
                                             {doc.demographics.registrationNumber}
                                         </span>
                                     )}
@@ -941,19 +941,19 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                 {profileData && (
                     <div className="grid grid-cols-4 gap-2 px-6 py-3.5 bg-slate-50 dark:bg-zinc-900/40 border-b border-black/[0.05] dark:border-white/[0.05]">
                         <div>
-                            <span className="type-meta uppercase !text-[9px] block">Patients</span>
+                            <span className="type-meta uppercase !text-xs block">Patients</span>
                             <span className="type-value block mt-0.5">{doc.totalPatientsReferred || 0}</span>
                         </div>
                         <div>
-                            <span className="type-meta uppercase !text-[9px] block">Revenue</span>
+                            <span className="type-meta uppercase !text-xs block">Revenue</span>
                             <span className="type-value block mt-0.5">₹ {Number(doc.totalRevenueGenerated || 0).toLocaleString()}</span>
                         </div>
                         <div>
-                            <span className="type-meta uppercase !text-[9px] block">Earned</span>
+                            <span className="type-meta uppercase !text-xs block">Earned</span>
                             <span className="type-value block mt-0.5">₹ {Number(doc.totalCommissionEarned || 0).toLocaleString()}</span>
                         </div>
                         <div>
-                            <span className="type-meta uppercase !text-[9px] block">Due</span>
+                            <span className="type-meta uppercase !text-xs block">Due</span>
                             <span className="type-value block mt-0.5 text-amber-600 dark:text-amber-400">₹ {Number(doc.pendingPayoutDue || 0).toLocaleString()}</span>
                         </div>
                     </div>
@@ -1028,14 +1028,14 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                         >
                                                             <div>
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="type-code text-[10px] bg-white dark:bg-zinc-800 px-1 rounded border border-amber-200 dark:border-amber-800">
+                                                                    <span className="type-code text-xs bg-white dark:bg-zinc-800 px-1 rounded border border-amber-200 dark:border-amber-800">
                                                                         {test.testCode}
                                                                     </span>
                                                                     <span className="type-value !text-xs text-zinc-900 dark:text-white">
                                                                         {test.testName}
                                                                     </span>
                                                                 </div>
-                                                                <span className="type-meta text-[11px] block mt-0.5">
+                                                                <span className="type-meta text-xs block mt-0.5">
                                                                     {test.departmentName} • Base Price: ₹{test.basePrice}
                                                                 </span>
                                                             </div>
@@ -1117,7 +1117,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                             <div className="synos-dept-card rounded-xl overflow-hidden">
                                                 <table className="w-full text-left border-collapse text-xs">
                                                     <thead>
-                                                        <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900 text-[10px] type-meta font-bold uppercase">
+                                                        <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900 text-xs type-meta font-bold uppercase">
                                                             <th className="py-2.5 px-3">Test</th>
                                                             <th className="py-2.5 px-2">Dept</th>
                                                             <th className="py-2.5 px-2">Base ₹</th>
@@ -1130,9 +1130,9 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                             <tr key={rule.ruleId} className="hover:bg-slate-50/50 dark:hover:bg-zinc-900/50">
                                                                 <td className="py-2.5 px-3">
                                                                     <p className="type-value !text-xs">{rule.testName}</p>
-                                                                    <p className="type-code text-[10px] text-zinc-400">{rule.testCode}</p>
+                                                                    <p className="type-code text-xs text-zinc-400">{rule.testCode}</p>
                                                                 </td>
-                                                                <td className="py-2.5 px-2 type-meta text-[11px]">{rule.departmentName}</td>
+                                                                <td className="py-2.5 px-2 type-meta text-xs">{rule.departmentName}</td>
                                                                 <td className="py-2.5 px-2 type-value !text-xs">₹{rule.testPrice}</td>
                                                                 <td className="py-2.5 px-2">
                                                                     <span className="type-code text-xs font-bold text-synos-primary">
@@ -1174,7 +1174,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Speciality</label>
+                                            <label className="type-label text-xs">Speciality</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.speciality || ''}
@@ -1185,7 +1185,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Medical Registration No (MCI / SMC)</label>
+                                            <label className="type-label text-xs">Medical Registration No (MCI / SMC)</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.registrationNumber || ''}
@@ -1196,7 +1196,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Phone</label>
+                                            <label className="type-label text-xs">Phone</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.phone || ''}
@@ -1207,7 +1207,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Clinic Address</label>
+                                            <label className="type-label text-xs">Clinic Address</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.clinicAddress || doc.location || ''}
@@ -1218,7 +1218,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="type-label text-[11px]">UPI ID (VPA)</label>
+                                            <label className="type-label text-xs">UPI ID (VPA)</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.upiId || ''}
@@ -1229,7 +1229,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         </div>
 
                                         <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Bank Account / IFSC</label>
+                                            <label className="type-label text-xs">Bank Account / IFSC</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.accountNumber ? `${demographicsForm.accountNumber} (${demographicsForm.ifscCode || ''})` : ''}
@@ -1271,15 +1271,15 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                         <div className="flex items-center gap-2">
                                                             <span className="type-code text-xs text-synos-primary">{visit.token}</span>
                                                             <span className="type-value !text-xs">{visit.patientName}</span>
-                                                            <span className="type-meta text-[11px]">({visit.age}y / {visit.gender || 'N/A'})</span>
+                                                            <span className="type-meta text-xs">({visit.age}y / {visit.gender || 'N/A'})</span>
                                                         </div>
-                                                        <p className="type-meta text-[11px] mt-0.5 line-clamp-1">
+                                                        <p className="type-meta text-xs mt-0.5 line-clamp-1">
                                                             {visit.testsSummary?.join(', ') || 'Diagnostics'}
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
                                                         <span className="type-value !text-xs block">₹{visit.totalBill}</span>
-                                                        <span className="type-meta text-[10px] text-zinc-500">
+                                                        <span className="type-meta text-xs text-zinc-500">
                                                             {visit.commissionStatus} {visit.commissionAmount > 0 && `(₹${visit.commissionAmount})`}
                                                         </span>
                                                     </div>
@@ -1307,11 +1307,11 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 >
                                                     <div>
                                                         <p className="type-value !text-xs">{t.testName}</p>
-                                                        <p className="type-meta text-[11px]">{t.departmentName} • {t.prescribedCount || t.prescriptionCount || 0} Prescriptions</p>
+                                                        <p className="type-meta text-xs">{t.departmentName} • {t.prescribedCount || t.prescriptionCount || 0} Prescriptions</p>
                                                     </div>
                                                     <div className="text-right">
                                                         <span className="type-value !text-xs block">₹{Number(t.totalRevenue || t.totalRevenueGenerated || 0).toLocaleString()}</span>
-                                                        <span className="type-meta text-[10px]">Total Revenue</span>
+                                                        <span className="type-meta text-xs">Total Revenue</span>
                                                     </div>
                                                 </div>
                                             ))}

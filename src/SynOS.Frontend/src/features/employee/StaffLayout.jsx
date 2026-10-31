@@ -53,13 +53,13 @@ export function StaffLayout() {
                     key={item.id}
                     onClick={() => navigate(item.path)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border",
+                      "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm sm:text-base font-semibold transition-all border cursor-pointer",
                       isActive 
-                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 shadow-xs" 
-                        : "border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/50 hover:text-zinc-900 dark:hover:text-white"
+                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 shadow-xs font-bold" 
+                        : "border-transparent text-slate-700 dark:text-zinc-300 hover:bg-slate-100/80 dark:hover:bg-zinc-800/50 hover:text-slate-900 dark:hover:text-white"
                     )}
                   >
-                    <item.icon className={cn("w-4 h-4", isActive ? "text-indigo-600 dark:text-indigo-400" : "opacity-60")} />
+                    <item.icon className={cn("w-4.5 h-4.5", isActive ? "text-indigo-600 dark:text-indigo-400" : "opacity-60")} />
                     {item.label}
                   </button>
                 );
@@ -69,18 +69,18 @@ export function StaffLayout() {
 
           {/* Sidebar User Chip */}
           <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800/60 px-2 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center justify-center">
               {user?.name ? user.name.substring(0, 2).toUpperCase() : 'HR'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200 truncate">{user?.name || 'Staff User'}</p>
-              <p className="text-[10px] text-zinc-500 truncate">{user?.role || 'Employee'}</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">{user?.name || 'Staff User'}</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate uppercase tracking-normal">{user?.role || 'Employee'}</p>
             </div>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:px-6 md:py-5">
           {/* Mobile Back Button */}
           <div className="md:hidden mb-4">
             <button 

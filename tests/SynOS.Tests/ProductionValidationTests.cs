@@ -957,6 +957,40 @@ namespace SynOS.Tests
                 It.IsAny<Guid>(),
                 null
             ), Times.Once);
+
+            // Verify InvoiceService does NOT count PartnerAccount as cash or online revenue
+            var invoiceLoggerMock = new Mock<ILogger<InvoiceService>>();
+            var invoiceService = new InvoiceService(
+                db,
+                invoiceLoggerMock.Object,
+                eventWriterMock.Object,
+                userContextMock.Object,
+                revenueFactWriterMock.Object,
+                visitService,
+                outboxMock.Object,
+                labTimeMock.Object
+            );
+            var revStats = await invoiceService.GetDailyRevenueStatsAsync(branchId, actorUserId);
+            Assert.Equal(0m, revStats.PaymentsOnlineTotal);
+            Assert.Equal(0, revStats.PaymentsOnlineCount);
+            Assert.Equal(0m, revStats.PaymentsCashTotal);
+            Assert.Equal(0m, revStats.PaymentsCollected);
+            Assert.Equal(1, revStats.PrepaidBillsCount);
+            Assert.Equal(400m, revStats.PrepaidBillsTotal);
+
+            // Verify EconomicsIntelligenceService: Zero fake cash inflow, zero phantom departments
+            var econService = new SynOS.Services.EconomicsIntelligence.EconomicsIntelligenceService(db);
+            var todayStart = DateTime.UtcNow.Date;
+            var todayEnd = todayStart.AddDays(1).AddTicks(-1);
+            var econSummary = await econService.GetLabProfitabilitySummaryAsync(todayStart, todayEnd, branchId);
+            Assert.Equal(0m, econSummary.TotalRevenueCash);
+            Assert.Equal(0m, econSummary.CashCollected);
+            Assert.Equal(0m, econSummary.OnlineCollected);
+
+            var biochem = econSummary.DepartmentProfitability.FirstOrDefault(d => d.Modality == "Biochemistry");
+            Assert.NotNull(biochem);
+            Assert.Equal(0m, biochem.BilledRevenue);
+            Assert.Equal(0, biochem.TotalTestsCompleted);
         }
     }
 }

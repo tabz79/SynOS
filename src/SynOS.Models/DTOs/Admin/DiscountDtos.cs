@@ -61,7 +61,6 @@ namespace SynOS.Models.DTOs.Admin
     {
         public Guid Id { get; set; }
         public DateTime OccurredAt { get; set; }
-        public string FormattedDate { get; set; } = string.Empty;
         public string Source { get; set; } = "Patient"; // "Patient" or "Partner B2B"
         public string VisitToken { get; set; } = string.Empty;
         public string PatientName { get; set; } = string.Empty;
@@ -75,7 +74,6 @@ namespace SynOS.Models.DTOs.Admin
         public decimal NetAmount { get; set; }
         public string AppliedBy { get; set; } = string.Empty;
         public string? Reason { get; set; }
-        public Guid? BranchId { get; set; }
     }
 
     public class DiscountReasonDto
@@ -101,47 +99,55 @@ namespace SynOS.Models.DTOs.Admin
         public decimal TotalGrossBilled { get; set; }
         public decimal OverallDiscountPercentage { get; set; }
 
-        // Channel Split
         public decimal PatientDiscountAmount { get; set; }
-        public decimal PartnerDiscountAmount { get; set; }
-        public decimal PatientSharePercentage { get; set; }
-        public decimal PartnerSharePercentage { get; set; }
         public int PatientBillsCount { get; set; }
-        public int PartnerBillsCount { get; set; }
         public decimal PatientAvgDiscount { get; set; }
-        public decimal PartnerAvgDiscount { get; set; }
+        public decimal PatientSharePercentage { get; set; }
 
-        // Preset Reasons & Partners
+        public decimal PartnerDiscountAmount { get; set; }
+        public int PartnerBillsCount { get; set; }
+        public decimal PartnerAvgDiscount { get; set; }
+        public decimal PartnerSharePercentage { get; set; }
+
         public System.Collections.Generic.List<PresetReasonContributionDto> TopPresetReasons { get; set; } = new();
         public System.Collections.Generic.List<PartnerConcessionContributionDto> TopB2BPartners { get; set; } = new();
-        public System.Collections.Generic.List<StaffConcessionContributionDto> StaffContributions { get; set; } = new();
 
-        // Counts
         public int TotalPresetsCount { get; set; }
         public int ActivePresetsCount { get; set; }
         public int UsedPresetsCount { get; set; }
         public int DormantPresetsCount { get; set; }
 
-        // 7-Day Trend
-        public System.Collections.Generic.List<DailyConcessionTrendDto> DailyTrends { get; set; } = new();
-
-        // Mechanism Mix (Flat Rupee vs Percentage)
-        public System.Collections.Generic.List<MechanismContributionDto> MechanismMix { get; set; } = new();
-
-        // Department Split (Pathology vs Radiology)
+        public System.Collections.Generic.List<StaffConcessionContributionDto> StaffContributions { get; set; } = new();
+        public System.Collections.Generic.List<ConcessionMechanismMixDto> MechanismMix { get; set; } = new();
         public DepartmentConcessionSplitDto DepartmentSplit { get; set; } = new();
-        public UnitEconomicsDto UnitEconomics { get; set; } = new();
+        public ConcessionUnitEconomicsDto UnitEconomics { get; set; } = new();
+        public System.Collections.Generic.List<DiscountCodeContributionDto> TopDiscountCodes { get; set; } = new();
+        public System.Collections.Generic.List<MonthlyConcessionTrendDto> MonthlyTrends { get; set; } = new();
+        public System.Collections.Generic.List<DailyConcessionTrendDto> DailyTrends { get; set; } = new();
+        public System.Collections.Generic.List<ConcessionCategoryMixDto> CategoryMix { get; set; } = new();
+    }
+
+    public class DailyConcessionTrendDto
+    {
+        public DateTime Date { get; set; }
+        public string DayOfWeek { get; set; } = string.Empty; // "Fri", "Sat", "Sun", etc.
+        public string FormattedDate { get; set; } = string.Empty; // "23 Oct"
+        public decimal TotalAmount { get; set; }
+        public decimal PatientAmount { get; set; }
+        public decimal PartnerAmount { get; set; }
+        public int BillsCount { get; set; }
+        public bool IsToday { get; set; }
     }
 
     public class PresetReasonContributionDto
     {
         public Guid? DiscountReasonId { get; set; }
         public string ReasonText { get; set; } = string.Empty;
-        public string Category { get; set; } = string.Empty;
+        public string Category { get; set; } = "General";
         public int UsageCount { get; set; }
         public decimal TotalAmount { get; set; }
-        public decimal AvgAmount { get; set; }
         public decimal PercentageOfPatientDiscounts { get; set; }
+        public decimal AvgAmount { get; set; }
     }
 
     public class PartnerConcessionContributionDto
@@ -150,33 +156,23 @@ namespace SynOS.Models.DTOs.Admin
         public string PartnerName { get; set; } = string.Empty;
         public int BillsCount { get; set; }
         public decimal TotalAmount { get; set; }
-        public decimal AvgAmount { get; set; }
         public decimal PercentageOfPartnerDiscounts { get; set; }
+        public decimal AvgAmount { get; set; }
     }
 
     public class StaffConcessionContributionDto
     {
         public string StaffName { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty;
+        public string Role { get; set; } = "Staff";
         public int BillsCount { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal AvgAmount { get; set; }
         public decimal Percentage { get; set; }
     }
 
-    public class DailyConcessionTrendDto
+    public class ConcessionMechanismMixDto
     {
-        public string DayOfWeek { get; set; } = string.Empty;
-        public string FormattedDate { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
-        public decimal TotalAmount { get; set; }
-        public int BillsCount { get; set; }
-        public bool IsToday { get; set; }
-    }
-
-    public class MechanismContributionDto
-    {
-        public string Mechanism { get; set; } = string.Empty;
+        public string Mechanism { get; set; } = string.Empty; // "Flat Rupee (₹)", "Percentage (%)"
         public decimal TotalAmount { get; set; }
         public decimal Percentage { get; set; }
         public int Count { get; set; }
@@ -197,13 +193,41 @@ namespace SynOS.Models.DTOs.Admin
         public int RadiologyInvestigationsCount { get; set; }
     }
 
-    public class UnitEconomicsDto
+    public class ConcessionUnitEconomicsDto
     {
         public decimal AvgPatientConcession { get; set; }
         public decimal AvgPartnerConcession { get; set; }
         public decimal OverallRecoveryRate { get; set; }
         public decimal AvgGrossTicketSize { get; set; }
         public decimal AvgNetTicketSize { get; set; }
+    }
+
+    public class DiscountCodeContributionDto
+    {
+        public Guid? DiscountDefinitionId { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public decimal PercentageOfTotalDiscounts { get; set; }
+        public int UsageCount { get; set; }
+    }
+
+    public class MonthlyConcessionTrendDto
+    {
+        public string Month { get; set; } = string.Empty;
+        public int MonthNumber { get; set; }
+        public int Year { get; set; }
+        public decimal PatientDiscountAmount { get; set; }
+        public decimal PartnerDiscountAmount { get; set; }
+        public decimal TotalDiscountAmount => PatientDiscountAmount + PartnerDiscountAmount;
+    }
+
+    public class ConcessionCategoryMixDto
+    {
+        public string Category { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public decimal Percentage { get; set; }
+        public string Color { get; set; } = string.Empty;
     }
 
     public class CreateDiscountReasonDto

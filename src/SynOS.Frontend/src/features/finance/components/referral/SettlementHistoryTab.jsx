@@ -41,7 +41,7 @@ export const SettlementHistoryTab = () => {
     );
 
     return (
-        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="px-6 py-5 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             {/* ACTION BAR */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative group flex-1 max-w-md">
@@ -64,11 +64,11 @@ export const SettlementHistoryTab = () => {
                 <table className="w-full text-left synos-table">
                     <thead>
                         <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Type</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Partner / Payee</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Reference & Notes</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500 text-right">Amount</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-500">Handled By</th>
+                            <th className="p-6 text-xs font-black uppercase tracking-widest text-zinc-500">Type</th>
+                            <th className="p-6 text-xs font-black uppercase tracking-widest text-zinc-500">Partner / Payee</th>
+                            <th className="p-6 text-xs font-black uppercase tracking-widest text-zinc-500">Reference & Notes</th>
+                            <th className="p-6 text-xs font-black uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                            <th className="p-6 text-xs font-black uppercase tracking-widest text-zinc-500">Handled By</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -82,11 +82,11 @@ export const SettlementHistoryTab = () => {
                                     <tr key={h.factId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                         <td className="p-6">
                                             {h.direction === 'Inflow' ? (
-                                                <div className="flex items-center gap-2 text-emerald-500 font-bold text-[10px] uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded-full w-fit border border-emerald-500/20">
+                                                <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded-full w-fit border border-emerald-500/20">
                                                     <ArrowDownLeft size={12} /> Recovery
                                                 </div>
                                             ) : (
-                                                <div className="flex items-center gap-2 text-rose-500 font-bold text-[10px] uppercase tracking-widest bg-rose-500/10 px-2 py-1 rounded-full w-fit border border-rose-500/20">
+                                                <div className="flex items-center gap-2 text-rose-500 font-bold text-xs uppercase tracking-widest bg-rose-500/10 px-2 py-1 rounded-full w-fit border border-rose-500/20">
                                                     <ArrowUpRight size={12} /> Payout
                                                 </div>
                                             )}
@@ -95,18 +95,18 @@ export const SettlementHistoryTab = () => {
                                             <p className="text-xs font-bold dark:text-zinc-200">{h.payeeName}</p>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <Tag size={10} className="text-zinc-400" />
-                                                <p className="text-[10px] text-zinc-500 font-medium">{h.category}</p>
+                                                <p className="text-xs text-zinc-500 font-medium">{h.category}</p>
                                             </div>
                                         </td>
                                         <td className="p-6">
                                             <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">{h.notes || 'System Settlement'}</p>
-                                            <p className="text-[9px] text-zinc-400 uppercase font-black mt-1">Ref: {h.reference}</p>
+                                            <p className="text-xs text-zinc-400 uppercase font-black mt-1">Ref: {h.reference}</p>
                                         </td>
                                         <td className="p-6 text-right">
                                             <p className={`text-sm font-black ${h.direction === 'Inflow' ? 'text-emerald-500' : 'dark:text-white text-zinc-900'}`}>
                                                 {h.direction === 'Inflow' ? '+' : '-'} ₹{h.amount.toLocaleString()}
                                             </p>
-                                            <p className="text-[10px] text-zinc-400 mt-1 font-bold">{h.paymentMethod || h.paymentMode}</p>
+                                            <p className="text-xs text-zinc-400 mt-1 font-bold">{h.paymentMethod || h.paymentMode}</p>
                                         </td>
                                         <td className="p-6">
                                             <div className="flex items-center gap-2">
@@ -114,8 +114,8 @@ export const SettlementHistoryTab = () => {
                                                     <User size={12} />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold dark:text-zinc-300 text-zinc-700">{h.recordedBy || 'System Admin'}</p>
-                                                    <p className="text-[9px] text-zinc-400 uppercase font-medium">{new Date(h.recordedAt).toLocaleDateString()}</p>
+                                                    <p className="text-xs font-bold dark:text-zinc-300 text-zinc-700">{h.recordedBy || 'System Admin'}</p>
+                                                    <p className="text-xs text-zinc-400 uppercase font-medium">{new Date(h.recordedAt).toLocaleDateString()}</p>
                                                 </div>
                                             </div>
                                         </td>

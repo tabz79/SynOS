@@ -437,12 +437,12 @@ export const ReferralTerminal = () => {
                     {summary && (
                         <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                             <div className="text-right">
-                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Payout Due</span>
+                                <span className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Payout Due</span>
                                 <span className="text-xs font-black text-rose-600 dark:text-rose-400">₹{summary.totalPendingPayouts?.toLocaleString()}</span>
                             </div>
                             <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
                             <div className="text-right">
-                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Receivables</span>
+                                <span className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Receivables</span>
                                 <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{summary.totalPendingReceivables?.toLocaleString()}</span>
                             </div>
                         </div>

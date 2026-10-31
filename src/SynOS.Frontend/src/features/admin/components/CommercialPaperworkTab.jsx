@@ -742,7 +742,7 @@ export const CommercialPaperworkTab = () => {
                                             }`}
                                         >
                                             <span>{cat.label}</span>
-                                            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                                            <span className={`px-1.5 py-0.5 rounded-md text-xs font-bold ${
                                                 isActive 
                                                     ? 'bg-white/20 text-white' 
                                                     : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400'
@@ -758,7 +758,7 @@ export const CommercialPaperworkTab = () => {
                             <div className="synos-dept-card rounded-2xl p-5 border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 space-y-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b dark:border-zinc-800 border-zinc-200 pb-3">
                                     <div className="flex items-center gap-2">
-                                        <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider">
+                                        <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-xs font-black uppercase tracking-wider">
                                             Active
                                         </span>
                                         <h3 className="text-sm font-black text-zinc-900 dark:text-zinc-100">
@@ -771,7 +771,7 @@ export const CommercialPaperworkTab = () => {
                                             type="button"
                                             onClick={handleSaveAll}
                                             disabled={saving}
-                                            className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-synos-primary/90 shadow-xs active:scale-95 transition-all"
+                                            className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-xs font-bold flex items-center gap-1 cursor-pointer hover:bg-synos-primary/90 shadow-xs active:scale-95 transition-all"
                                             title="Make this layout the system default for this bill"
                                         >
                                             <Check size={12} /> Make Default
@@ -779,14 +779,14 @@ export const CommercialPaperworkTab = () => {
                                         <button
                                             type="button"
                                             onClick={handleResetLayout}
-                                            className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer"
+                                            className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer"
                                         >
                                             Reset
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setShowAddBoxInput(prev => !prev)}
-                                            className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-[10px] font-bold flex items-center gap-1 cursor-pointer hover:bg-indigo-700 shadow-xs"
+                                            className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold flex items-center gap-1 cursor-pointer hover:bg-indigo-700 shadow-xs"
                                         >
                                             <Plus size={12} /> Add Box
                                         </button>
@@ -847,7 +847,7 @@ export const CommercialPaperworkTab = () => {
                                                         <span className="font-black text-xs text-zinc-900 dark:text-zinc-100">
                                                             {box.name || boxKey}
                                                         </span>
-                                                        <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${box.enabled ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'}`}>
+                                                        <span className={`text-xs font-bold px-1.5 py-0.2 rounded ${box.enabled ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'}`}>
                                                             {box.enabled ? "Included on Bill" : "Hidden"}
                                                         </span>
                                                     </label>
@@ -857,7 +857,7 @@ export const CommercialPaperworkTab = () => {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setExpandedBoxIds(prev => ({ ...prev, [boxKey]: !prev[boxKey] }))}
-                                                                className="px-2 py-1 rounded text-[10px] font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1 cursor-pointer"
+                                                                className="px-2 py-1 rounded text-xs font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-1 cursor-pointer"
                                                             >
                                                                 <span>Fields ({Object.keys(box.fields || box.columns || {}).length})</span>
                                                                 {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
@@ -869,7 +869,7 @@ export const CommercialPaperworkTab = () => {
                                                 {/* EXPANDABLE SUB-FIELDS CHECKLIST */}
                                                 {isExpanded && box.enabled && hasSubFields && (
                                                     <div className="px-3 pb-3 pt-1 border-t border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-950/30 rounded-b-xl">
-                                                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider mb-2">
+                                                        <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider mb-2">
                                                             Visible Information Inside this Box
                                                         </p>
                                                         
@@ -885,12 +885,12 @@ export const CommercialPaperworkTab = () => {
                                                                         )}
                                                                     </div>
                                                                     <div>
-                                                                        <span className="text-[11px] font-black text-zinc-900 dark:text-zinc-100 block leading-tight">Brand Logo</span>
-                                                                        <span className="text-[9px] text-zinc-500">{settings.logoUrl ? "Logo configured" : "No logo uploaded"}</span>
+                                                                        <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 block leading-tight">Brand Logo</span>
+                                                                        <span className="text-xs text-zinc-500">{settings.logoUrl ? "Logo configured" : "No logo uploaded"}</span>
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <label className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs active:scale-95">
+                                                                    <label className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs active:scale-95">
                                                                         <Upload size={11} />
                                                                         <span>{settings.logoUrl ? "Change" : "Upload"}</span>
                                                                         <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleLogoUpload} className="hidden" />
@@ -921,12 +921,12 @@ export const CommercialPaperworkTab = () => {
                                                                         )}
                                                                     </div>
                                                                     <div>
-                                                                        <span className="text-[11px] font-black text-zinc-900 dark:text-zinc-100 block leading-tight">Payment QR</span>
-                                                                        <span className="text-[9px] text-zinc-500">{settings.customQrImage ? "Custom Screenshot" : "Dynamic Bharat UPI"}</span>
+                                                                        <span className="text-xs font-black text-zinc-900 dark:text-zinc-100 block leading-tight">Payment QR</span>
+                                                                        <span className="text-xs text-zinc-500">{settings.customQrImage ? "Custom Screenshot" : "Dynamic Bharat UPI"}</span>
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <label className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs active:scale-95">
+                                                                    <label className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer transition-all flex items-center gap-1 shadow-xs active:scale-95">
                                                                         <Upload size={11} />
                                                                         <span>{settings.customQrImage ? "Change" : "Upload QR"}</span>
                                                                         <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
@@ -949,7 +949,7 @@ export const CommercialPaperworkTab = () => {
                                                         {box.fields && (
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                 {Object.entries(box.fields).map(([fieldKey, field]) => (
-                                                                    <label key={fieldKey} className="flex items-center gap-2 text-[11px] cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
+                                                                    <label key={fieldKey} className="flex items-center gap-2 text-xs cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
                                                                         <input 
                                                                             type="checkbox"
                                                                             checked={field.enabled}
@@ -972,7 +972,7 @@ export const CommercialPaperworkTab = () => {
 
                                                             return (
                                                                 <div className="space-y-2 mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                                                                    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10px] font-bold ${
+                                                                    <div className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold ${
                                                                         isOverBudget 
                                                                             ? 'bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400' 
                                                                             : isTight 
@@ -984,7 +984,7 @@ export const CommercialPaperworkTab = () => {
                                                                     </div>
                                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                                         {Object.entries(box.columns).map(([colKey, col]) => (
-                                                                            <label key={colKey} className="flex items-center gap-2 text-[11px] cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
+                                                                            <label key={colKey} className="flex items-center gap-2 text-xs cursor-pointer select-none hover:bg-white dark:hover:bg-zinc-900 p-1.5 rounded-lg border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 transition-all">
                                                                                 <input 
                                                                                     type="checkbox" 
                                                                                     checked={col.enabled}
@@ -1037,7 +1037,7 @@ export const CommercialPaperworkTab = () => {
                                                 {/* CARD HEADER */}
                                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b dark:border-zinc-800 border-zinc-200">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="px-2 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-800 text-[10px] font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                                                        <span className="px-2 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-800 text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
                                                             {slot.module}
                                                         </span>
                                                         <h3 className="text-xs font-black text-zinc-900 dark:text-zinc-100">
@@ -1048,7 +1048,7 @@ export const CommercialPaperworkTab = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => setPreviewSlotId(slot.slotId)}
-                                                        className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
+                                                        className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                                                             isSelectedForPreview
                                                                 ? 'bg-indigo-600 text-white shadow-xs'
                                                                 : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
@@ -1060,15 +1060,15 @@ export const CommercialPaperworkTab = () => {
                                                 </div>
 
                                                 {/* TRIGGER DESCRIPTION */}
-                                                <p className="text-[11px] text-zinc-500 pt-2 pb-2 font-medium">
+                                                <p className="text-xs text-zinc-500 pt-2 pb-2 font-medium">
                                                     {slot.triggerDescription}
                                                 </p>
 
                                                 {/* CONFIGURATION CONTROLS */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-zinc-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-[11px]">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-zinc-50 dark:bg-zinc-900/40 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs">
                                                     {/* TEMPLATE PICKER */}
                                                     <div>
-                                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1">
                                                             Template
                                                         </label>
                                                         <select
@@ -1088,7 +1088,7 @@ export const CommercialPaperworkTab = () => {
 
                                                     {/* PRINT MODE PICKER */}
                                                     <div>
-                                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+                                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1">
                                                             Print Mode
                                                         </label>
                                                         <select
@@ -1107,7 +1107,7 @@ export const CommercialPaperworkTab = () => {
                                                     {/* MARGIN SLIDER (IF PREPRINTED) */}
                                                     {slot.letterheadMode === 'preprinted' && (
                                                         <div className="sm:col-span-2 space-y-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
-                                                            <div className="flex justify-between items-center text-[10px]">
+                                                            <div className="flex justify-between items-center text-xs">
                                                                 <span className="text-zinc-500 font-semibold">Top Margin (mm):</span>
                                                                 <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{slot.topMarginMm || 40} mm</span>
                                                             </div>
@@ -1154,7 +1154,7 @@ export const CommercialPaperworkTab = () => {
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center text-zinc-400 text-center p-2">
                                                     <Building2 size={24} className="mb-1 text-zinc-400" />
-                                                    <span className="text-[9px] font-bold uppercase tracking-wider">No Logo</span>
+                                                    <span className="text-xs font-bold uppercase tracking-wider">No Logo</span>
                                                 </div>
                                             )}
                                         </div>
@@ -1188,7 +1188,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div className="sm:col-span-2">
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Lab Name *
                                         </label>
                                         <input
@@ -1201,7 +1201,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div className="sm:col-span-2">
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Tagline
                                         </label>
                                         <input
@@ -1214,7 +1214,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             GSTIN *
                                         </label>
                                         <input
@@ -1228,7 +1228,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             PAN
                                         </label>
                                         <input
@@ -1242,7 +1242,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div className="sm:col-span-2">
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Address
                                         </label>
                                         <textarea
@@ -1255,7 +1255,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Phone
                                         </label>
                                         <input
@@ -1268,7 +1268,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Email
                                         </label>
                                         <input
@@ -1291,14 +1291,14 @@ export const CommercialPaperworkTab = () => {
                                             2. Bank & UPI Details
                                         </h3>
                                     </div>
-                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                                         <QrCode size={12} /> UPI QR
                                     </span>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Bank Name *
                                         </label>
                                         <input
@@ -1311,7 +1311,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Account Holder Name *
                                         </label>
                                         <input
@@ -1324,7 +1324,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Account Number *
                                         </label>
                                         <input
@@ -1337,7 +1337,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             IFSC Code *
                                         </label>
                                         <input
@@ -1351,7 +1351,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Branch
                                         </label>
                                         <input
@@ -1364,7 +1364,7 @@ export const CommercialPaperworkTab = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             UPI ID (For QR Code) *
                                         </label>
                                         <input
@@ -1393,11 +1393,11 @@ export const CommercialPaperworkTab = () => {
                                                 <h4 className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider">
                                                     UPI App QR Code / Screenshot
                                                 </h4>
-                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${settings.customQrImage ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${settings.customQrImage ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
                                                     {settings.customQrImage ? "Custom Upload Active" : "Dynamic Bharat UPI"}
                                                 </span>
                                             </div>
-                                            <p className="text-[10px] text-zinc-500 leading-relaxed">
+                                            <p className="text-xs text-zinc-500 leading-relaxed">
                                                 Take a screenshot from PhonePe, Google Pay, Paytm, BHIM, or your bank UPI app and upload it here. This exact QR image will be formatted for both 80mm thermal printers and A4 invoices.
                                             </p>
                                             <div className="flex items-center gap-2 justify-center sm:justify-start pt-1">
@@ -1440,19 +1440,19 @@ export const CommercialPaperworkTab = () => {
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Bill Terms & Conditions
                                         </label>
                                         <textarea
                                             rows={3}
                                             value={settings.termsAndConditions}
                                             onChange={(e) => handleSettingChange('termsAndConditions', e.target.value)}
-                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none font-mono text-[11px]"
+                                            className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all resize-none font-mono text-xs"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Authorized Signatory Title
                                         </label>
                                         <input
@@ -1479,7 +1479,7 @@ export const CommercialPaperworkTab = () => {
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
                                             Printer Name
                                         </label>
                                         <input
@@ -1508,7 +1508,7 @@ export const CommercialPaperworkTab = () => {
                                     key={slot.slotId}
                                     type="button"
                                     onClick={() => setPreviewSlotId(slot.slotId)}
-                                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                                    className={`px-2.5 py-1 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
                                         previewSlotId === slot.slotId
                                             ? 'bg-synos-primary text-white shadow-xs'
                                             : 'bg-zinc-100 dark:bg-zinc-800/80 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -1529,7 +1529,7 @@ export const CommercialPaperworkTab = () => {
                         </div>
 
                         {/* STATUS & RECEPTION TRIGGER CONTEXT */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-[10px] text-zinc-500 font-medium pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80">
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500 font-medium pt-1.5 border-t border-zinc-100 dark:border-zinc-800/80">
                             <div className="flex items-center gap-1.5">
                                 <span className="font-bold text-zinc-900 dark:text-zinc-100">{currentActiveSlot.slotName || 'Template'}:</span>
                                 <span className="px-2 py-0.5 rounded-md font-bold text-[9.5px] bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">

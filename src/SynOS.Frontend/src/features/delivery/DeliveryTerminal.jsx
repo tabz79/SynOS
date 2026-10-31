@@ -252,14 +252,14 @@ export function DeliveryTerminal() {
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-semibold tracking-tight dark:text-white text-zinc-900">Delivery Desk</h2>
-                                    <p className="text-[10px] uppercase font-medium tracking-widest text-zinc-400">Queue Management</p>
+                                    <p className="text-xs uppercase font-medium tracking-widest text-zinc-400">Queue Management</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2 dark:bg-zinc-950/50 bg-zinc-50 rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm w-fit shrink-0 font-sans">
                                 <button
                                     onClick={() => { setShowHistory(false); setSelectedReportId(null); }}
-                                    className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                    className={`text-xs uppercase font-bold px-2 py-0.5 rounded transition-all ${
                                         !showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
                                     }`}
                                 >
@@ -267,7 +267,7 @@ export function DeliveryTerminal() {
                                 </button>
                                 <button
                                     onClick={() => { setShowHistory(true); setSelectedReportId(null); }}
-                                    className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all ${
+                                    className={`text-xs uppercase font-bold px-2 py-0.5 rounded transition-all ${
                                         showHistory ? "bg-zinc-800 text-white shadow-sm" : "text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-300"
                                     }`}
                                 >
@@ -280,7 +280,7 @@ export function DeliveryTerminal() {
                         <div className="flex items-center gap-1.5 p-1 bg-zinc-100 dark:bg-zinc-900/80 rounded-xl border border-zinc-200 dark:border-white/5">
                             <button
                                 onClick={() => handleDepartmentChange('Pathology')}
-                                className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
                                     departmentTab === 'Pathology'
                                         ? "bg-white dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-black/5 dark:border-white/5"
                                         : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
@@ -291,7 +291,7 @@ export function DeliveryTerminal() {
                             </button>
                             <button
                                 onClick={() => handleDepartmentChange('Radiology')}
-                                className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                                className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
                                     departmentTab === 'Radiology'
                                         ? "bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-black/5 dark:border-white/5"
                                         : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
@@ -341,7 +341,7 @@ export function DeliveryTerminal() {
                             title="Request Stock"
                         >
                             <Package className="w-5 h-5" />
-                            <span className="text-[10px] font-semibold uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                            <span className="text-xs font-semibold uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
                                 Request Stock
                             </span>
                         </button>
@@ -362,7 +362,7 @@ export function DeliveryTerminal() {
                                     {/* Minimal Floating Glass Window Label */}
                                     <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-md flex items-center gap-1.5">
                                         <FileText className="w-3.5 h-3.5 text-synos-primary" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider dark:text-zinc-300 text-zinc-700">
+                                        <span className="text-xs font-bold uppercase tracking-wider dark:text-zinc-300 text-zinc-700">
                                             High-Fidelity Preview
                                         </span>
                                     </div>
@@ -403,11 +403,11 @@ export function DeliveryTerminal() {
                                                 {isVerified ? <CheckCircle2 className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <h4 className="text-xs font-bold tracking-tight dark:text-white text-zinc-900 truncate">
+                                                <h4 className="text-xs font-bold tracking-normal dark:text-white text-zinc-900 truncate">
                                                     {isVerified ? "Verification Complete" : 
                                                      reportStructure?.isManualFlow ? "Awaiting Manual Signature" : "Physical Verification Needed"}
                                                 </h4>
-                                                <p className="text-[10px] text-zinc-500 font-medium truncate">
+                                                <p className="text-xs text-zinc-500 font-medium truncate">
                                                     {isVerified ? "Manually verified by desk operator." : 
                                                      isDigital && !reportStructure?.isManualFlow ? "Digital signature detected. System trust verified." : 
                                                      reportStructure?.isManualFlow ? "Typist requested manual sign-off on paper report." :
@@ -439,7 +439,7 @@ export function DeliveryTerminal() {
                                                         }}
                                                         className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                                                     />
-                                                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                                                         Preprinted
                                                     </span>
                                                 </label>
@@ -504,14 +504,14 @@ export function DeliveryTerminal() {
                                         <span>{gatewayStatus.statusMessage || (gatewayStatus.isHealthy ? "Gateway Connected" : "Gateway Offline")}</span>
                                     </div>
                                     {gatewayStatus.pendingOutboxCount > 0 && (
-                                        <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono text-[10px]">
+                                        <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-mono text-xs">
                                             {gatewayStatus.pendingOutboxCount} Syncing...
                                         </span>
                                     )}
                                 </div>
                                 {!gatewayStatus.isHealthy && gatewayStatus.lastError && (
                                     <div className="pt-2 border-t border-rose-500/20 text-left">
-                                        <p className="text-[11px] font-normal text-rose-500 leading-normal">
+                                        <p className="text-xs font-normal text-rose-500 leading-normal">
                                             {gatewayStatus.lastError}
                                         </p>
                                     </div>
@@ -530,7 +530,7 @@ export function DeliveryTerminal() {
                                     disabled={isDelivering}
                                     className="w-full bg-emerald-500 hover:bg-emerald-600 text-white p-6 rounded-[2rem] flex flex-col items-center gap-1 group transition-all active:scale-95 shadow-xl shadow-emerald-500/20 disabled:opacity-50"
                                 >
-                                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80 italic">Registered Number</span>
+                                    <span className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80 italic">Registered Number</span>
                                     <span className="text-lg font-semibold tracking-tight flex items-center gap-2">
                                         {isDelivering ? <Loader2 className="w-6 h-6 animate-spin" /> : <MessageSquare className="w-6 h-6" />}
                                         {reportStructure.patient.phone}
@@ -538,14 +538,14 @@ export function DeliveryTerminal() {
                                 </button>
                             ) : (
                                 <div className="bg-zinc-100 dark:bg-zinc-800 p-6 rounded-[2rem] text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700">
-                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">No Registered Number Found</p>
+                                    <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500">No Registered Number Found</p>
                                 </div>
                             )}
 
                             {/* Divider */}
                             <div className="flex items-center gap-4 text-zinc-300 dark:text-zinc-700 py-2">
                                 <div className="h-[1px] flex-1 bg-current" />
-                                <span className="text-[8px] font-semibold uppercase tracking-widest">or send to alternative</span>
+                                <span className="text-xs font-semibold uppercase tracking-widest">or send to alternative</span>
                                 <div className="h-[1px] flex-1 bg-current" />
                             </div>
 

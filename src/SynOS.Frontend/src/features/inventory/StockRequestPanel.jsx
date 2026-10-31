@@ -159,7 +159,7 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
                     </div>
                     <div>
                         <h2 className={cn("text-lg font-semibold tracking-tight", ui.title)}>Stock Request</h2>
-                        <p className={cn("text-[10px] uppercase font-semibold tracking-wider flex items-center gap-1.5", ui.subtitle)}>
+                        <p className={cn("text-xs uppercase font-semibold tracking-wider flex items-center gap-1.5", ui.subtitle)}>
                             <span>{user?.branchName || 'Main Lab'}</span>
                             <span>•</span>
                             <span className="text-emerald-500 font-bold">{user?.role || 'Staff'} Role</span>
@@ -280,10 +280,10 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
                                                     <div className="text-xs font-bold flex items-center gap-2">
                                                         <span>{item.name}</span>
                                                         {isMappedToUserRole && (
-                                                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500">Role Item</span>
+                                                            <span className="text-xs font-bold px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500">Role Item</span>
                                                         )}
                                                     </div>
-                                                    <div className="text-[10px] opacity-60 font-mono mt-0.5">{item.code} • Stock Unit: {item.unitOfMeasure}</div>
+                                                    <div className="text-xs opacity-60 font-mono mt-0.5">{item.code} • Stock Unit: {item.unitOfMeasure}</div>
                                                 </div>
                                             </div>
 
@@ -302,7 +302,7 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
                         {selectedItem && (
                             <div className="p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-950/60 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <label className={cn("text-[10px] uppercase font-bold tracking-wider block", ui.subtitle)}>Requested Quantity & Unit</label>
+                                    <label className={cn("text-xs uppercase font-bold tracking-wider block", ui.subtitle)}>Requested Quantity & Unit</label>
                                     <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300">{selectedItem.name}</span>
                                 </div>
 
@@ -328,7 +328,7 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
                                 </div>
 
                                 {/* Live Equivalency Helper */}
-                                <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                                <div className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
                                     <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                                     <span>
                                         <strong>{quantity} {selectedUnit}</strong>  ➜  Equiv. <strong>{calculateBaseQuantity(quantity, selectedUnit, selectedItem.unitOfMeasure)} {selectedItem.unitOfMeasure}</strong> stock deduction
@@ -344,7 +344,7 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
                                     <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
                                     <span>Cross-Role Request Notice</span>
                                 </div>
-                                <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium">
+                                <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium">
                                     <strong>{selectedItem.name}</strong> is outside your standard <strong>{user?.role || 'Staff'}</strong> role catalog. Requesting this will require Store Manager approval.
                                 </p>
                                 <label className="flex items-center gap-2 pt-1 cursor-pointer">
@@ -354,7 +354,7 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
                                         onChange={(e) => setAutoMapRequest(e.target.checked)}
                                         className="rounded border-amber-500 text-amber-600 focus:ring-amber-500"
                                     />
-                                    <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                                    <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
                                         Recommend adding this item to '{user?.role || 'Staff'}' role for future quick access
                                     </span>
                                 </label>

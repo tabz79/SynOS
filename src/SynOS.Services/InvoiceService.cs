@@ -135,10 +135,13 @@ namespace SynOS.Services
             }
 
             var payments = await paymentsQuery.ToListAsync();
+            // Filter out system accounting payments for B2B partner credit/receivables
+            var deskPayments = payments.Where(p => p.Method != "PartnerAccount" && p.Method != "Prepaid" && p.Method != "PartnerCollects" && p.Invoice?.Visit?.PaymentCollectionModel != "PartnerCollects").ToList();
             Func<string?, bool> isCash = m => !string.IsNullOrEmpty(m) && m.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0;
 
-            decimal cashTotal = payments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
-            var onlinePayments = payments.Where(p => !isCash(p.Method)).ToList();
+            decimal cashTotal = deskPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
+            Func<string?, bool> isOnline = m => !string.IsNullOrEmpty(m) && (m.IndexOf("UPI", StringComparison.OrdinalIgnoreCase) >= 0 || m.IndexOf("Card", StringComparison.OrdinalIgnoreCase) >= 0 || m.IndexOf("Online", StringComparison.OrdinalIgnoreCase) >= 0 || m.IndexOf("NetBanking", StringComparison.OrdinalIgnoreCase) >= 0 || m.IndexOf("POS", StringComparison.OrdinalIgnoreCase) >= 0 || m.IndexOf("QR", StringComparison.OrdinalIgnoreCase) >= 0 || (!isCash(m) && m != "PartnerAccount" && m != "Prepaid" && m != "PartnerCollects"));
+            var onlinePayments = deskPayments.Where(p => isOnline(p.Method)).ToList();
             decimal onlineTotal = onlinePayments.Sum(p => p.Amount);
             int onlineCount = onlinePayments.Count(p => p.Amount > 0);
             decimal totalPayments = cashTotal + onlineTotal;

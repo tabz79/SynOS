@@ -368,8 +368,10 @@ namespace SynOS.Services.Reception
                     Referral = referralState, // Updated Structure
                     BilledBy = billerDisplay,
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
-                    PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
-                    TotalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0m) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0m),
+                    PaymentMethod = invoice.Payments?.FirstOrDefault(p => p.Method != "PartnerAccount")?.Method ?? (visit.PaymentCollectionModel == "PartnerCollects" ? "PartnerAccount" : invoice.Payments?.FirstOrDefault()?.Method), // Safe navigation
+                    TotalPaid = visit.PaymentCollectionModel == "PartnerCollects"
+                        ? 0m
+                        : ((invoice.Payments?.Where(p => p.Method != "PartnerAccount").Sum(p => p.Amount) ?? 0m) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0m)),
                     
                     IsEditable = !_lifecyclePolicy.IsTerminal(visit.Status),
                     IsLocked = _lifecyclePolicy.IsTerminal(visit.Status)

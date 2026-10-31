@@ -111,7 +111,7 @@ export const VendorMasterScreen = () => {
                         </div>
                         <h1 className="type-display !text-4xl">Vendor Master</h1>
                     </div>
-                    <p className="type-body text-zinc-500 font-bold uppercase text-[10px] tracking-[0.2em] ml-1">Enterprise Creditor & Supplier Registry</p>
+                    <p className="type-body text-zinc-500 font-bold uppercase text-xs tracking-[0.2em] ml-1">Enterprise Creditor & Supplier Registry</p>
                 </div>
                 <button 
                     onClick={() => openModal()}
@@ -159,15 +159,15 @@ export const VendorMasterScreen = () => {
                         <div className="flex flex-col h-full gap-6">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="px-3 py-1 bg-zinc-100 dark:bg-white/5 text-[9px] font-black uppercase text-zinc-500 rounded-full border border-zinc-200 dark:border-white/10">
+                                    <span className="px-3 py-1 bg-zinc-100 dark:bg-white/5 text-xs font-black uppercase text-zinc-500 rounded-full border border-zinc-200 dark:border-white/10">
                                         {vendor.category || 'General'}
                                     </span>
                                     {!vendor.isActive && (
-                                        <span className="px-3 py-1 bg-red-500/10 text-[9px] font-black uppercase text-red-500 rounded-full border border-red-500/20">Inactive</span>
+                                        <span className="px-3 py-1 bg-red-500/10 text-xs font-black uppercase text-red-500 rounded-full border border-red-500/20">Inactive</span>
                                     )}
                                 </div>
                                 <h3 className="type-display !text-xl dark:text-white line-clamp-1">{vendor.name}</h3>
-                                <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{vendor.taxId || 'NO TAX ID'}</p>
+                                <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">{vendor.taxId || 'NO TAX ID'}</p>
                             </div>
 
                             <div className="space-y-3">
@@ -197,7 +197,7 @@ export const VendorMasterScreen = () => {
                                         <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                                     </div>
                                 </div>
-                                <button className="text-[10px] font-black uppercase text-zinc-400 group-hover:text-synos-primary transition-colors flex items-center gap-1">
+                                <button className="text-xs font-black uppercase text-zinc-400 group-hover:text-synos-primary transition-colors flex items-center gap-1">
                                     View Ledger <ChevronRight className="w-3 h-3" />
                                 </button>
                             </div>
@@ -213,7 +213,7 @@ export const VendorMasterScreen = () => {
                         <div className="p-10 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50 dark:bg-white/[0.02]">
                             <div>
                                 <h3 className="text-2xl font-black dark:text-white tracking-tight">{editingVendor ? 'Modify Vendor' : 'Onboard Vendor'}</h3>
-                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Registry Entry Profile</p>
+                                <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-1">Registry Entry Profile</p>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-zinc-200 dark:hover:bg-white/10 rounded-2xl transition-colors">
                                 <X className="w-6 h-6 text-zinc-500" />
@@ -223,7 +223,7 @@ export const VendorMasterScreen = () => {
                         <form onSubmit={handleSubmit} className="p-10 space-y-8">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="flex flex-col gap-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Legal Name / Entity</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Legal Name / Entity</label>
                                     <div className="relative">
                                         <Building2 className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                         <input 
@@ -238,7 +238,7 @@ export const VendorMasterScreen = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Tax ID (GST/VAT)</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Tax ID (GST/VAT)</label>
                                     <input 
                                         type="text"
                                         value={formData.taxId}
@@ -249,7 +249,7 @@ export const VendorMasterScreen = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Category</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Category</label>
                                     <select 
                                         value={formData.category}
                                         onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -265,7 +265,7 @@ export const VendorMasterScreen = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Email Address</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Email Address</label>
                                     <input 
                                         type="email"
                                         value={formData.email}
@@ -276,7 +276,7 @@ export const VendorMasterScreen = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Phone Number</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Phone Number</label>
                                     <input 
                                         type="tel"
                                         value={formData.phone}
@@ -287,7 +287,7 @@ export const VendorMasterScreen = () => {
                                 </div>
 
                                 <div className="flex flex-col gap-2 col-span-2">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Address & Detailed Info</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Address & Detailed Info</label>
                                     <textarea 
                                         value={formData.contactInfo}
                                         onChange={(e) => setFormData({...formData, contactInfo: e.target.value})}

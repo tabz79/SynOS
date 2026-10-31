@@ -974,7 +974,7 @@ export function RadiologistTerminal() {
                     }}
                     className="w-1 accent-synos-primary bg-zinc-800 rounded outline-none"
                 />
-                <span className="text-[8px] font-mono text-zinc-400 mt-1 select-none">
+                <span className="text-xs font-mono text-zinc-400 mt-1 select-none">
                     {current + 1}/{max}
                 </span>
             </div>
@@ -1029,7 +1029,7 @@ export function RadiologistTerminal() {
                             <div className="p-4 border-b dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex flex-col gap-3">
                                 <div className="flex justify-between items-center">
                                     <span className="font-black text-xs uppercase tracking-wider dark:text-zinc-400 text-zinc-550">Interpretations Worklist</span>
-                                    <span className="text-[10px] text-zinc-500 uppercase font-mono tracking-wider">
+                                    <span className="text-xs text-zinc-500 uppercase font-mono tracking-wider">
                                         {filteredStudies.length} {showHistory ? "historical" : "active"}
                                     </span>
                                 </div>
@@ -1047,13 +1047,13 @@ export function RadiologistTerminal() {
                                 {loading ? (
                                     <div className="h-full flex items-center justify-center flex-col gap-2">
                                         <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                                        <span className="text-[11px] text-zinc-500">Retrieving diagnostic queue...</span>
+                                        <span className="text-xs text-zinc-500">Retrieving diagnostic queue...</span>
                                     </div>
                                 ) : filteredStudies.length === 0 ? (
                                     <div className="h-full flex items-center justify-center flex-col text-center p-6 text-zinc-655">
                                         <Activity className="h-8 w-8 mb-2 dark:text-zinc-700 text-zinc-300 animate-pulse" />
                                         <span className="text-xs font-semibold uppercase">Queue Empty</span>
-                                        <span className="text-[10px] dark:text-zinc-600 text-zinc-500 mt-1">No studies awaiting reporting.</span>
+                                        <span className="text-xs dark:text-zinc-600 text-zinc-500 mt-1">No studies awaiting reporting.</span>
                                     </div>
                                 ) : (
                                     filteredStudies.map((study) => {
@@ -1078,17 +1078,17 @@ export function RadiologistTerminal() {
                                                  }`}
                                              >
                                                  <div className="flex justify-between items-center mb-1">
-                                                     <span className="text-[9px] font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
+                                                     <span className="text-xs font-bold dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-650 px-2 py-0.5 rounded">
                                                          Token #{study.tokenNumber}
                                                      </span>
-                                                     <span className="text-[10px] font-black uppercase text-synos-primary">
+                                                     <span className="text-xs font-black uppercase text-synos-primary">
                                                          {study.modality}
                                                      </span>
                                                  </div>
                                                  <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
-                                                 <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
-                                                 <div className="mt-2 flex items-center justify-between text-[10px]">
-                                                     <span className={`px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${
+                                                 <p className="text-xs dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                                                 <div className="mt-2 flex items-center justify-between text-xs">
+                                                     <span className={`px-1.5 py-0.5 rounded border text-xs font-bold uppercase tracking-tight ${
                                                          isSigned || isClaimedByMe
                                                              ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' 
                                                              : isClaimedByOthers 
@@ -1098,7 +1098,7 @@ export function RadiologistTerminal() {
                                                          {isSigned ? 'Signed' : isClaimedByMe ? 'Claimed by Me' : isClaimedByOthers ? `Locked (${study.claimedByUserName || 'Other'})` : 'Unclaimed'}
                                                      </span>
                                                      {study.status && (
-                                                         <span className="dark:text-zinc-500 text-zinc-400 font-mono text-[9px]">{study.status}</span>
+                                                         <span className="dark:text-zinc-500 text-zinc-400 font-mono text-xs">{study.status}</span>
                                                      )}
                                                  </div>
                                              </div>
@@ -1180,7 +1180,7 @@ export function RadiologistTerminal() {
                         <div className="h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-500 text-zinc-400">
                             <Monitor className="h-10 w-10 mb-2 dark:text-zinc-700 text-zinc-300" />
                             <h3 className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Diagnostic Viewport</h3>
-                            <p className="text-[11px] dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
+                            <p className="text-xs dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
                                 Select a modality study to initialize the Cornerstone3D WebGL anatomical frameset.
                             </p>
                         </div>
@@ -1220,7 +1220,7 @@ export function RadiologistTerminal() {
                                 </p>
 
                                 {isClaimedByOthers && (
-                                    <div className="mt-4 p-3 dark:bg-zinc-900/60 bg-zinc-100 rounded-lg border dark:border-synos-border border-zinc-200 text-left w-full space-y-2 font-mono text-[11px] dark:text-zinc-400 text-zinc-650">
+                                    <div className="mt-4 p-3 dark:bg-zinc-900/60 bg-zinc-100 rounded-lg border dark:border-synos-border border-zinc-200 text-left w-full space-y-2 font-mono text-xs dark:text-zinc-400 text-zinc-650">
                                         <div>Claimed: {new Date(selectedStudy.claimedAt).toLocaleTimeString()}</div>
                                         <div>Last Activity: {selectedStudy.lastActivityAt ? new Date(selectedStudy.lastActivityAt).toLocaleTimeString() : 'None'}</div>
                                         <div>Status: <span className={isInactiveTimeout ? 'text-amber-500 font-bold' : 'text-emerald-500 font-bold'}>{isInactiveTimeout ? 'Inactive (Timed Out)' : 'Active'}</span></div>
@@ -1261,7 +1261,7 @@ export function RadiologistTerminal() {
                             <div className="flex-1 flex flex-col overflow-hidden">
                                 {/* UNIFIED COLLABORATIVE PANEL WITH SWITCH TOGGLE */}
                                 {isClaimExpired && selectedStudy?.studyStatus !== 'Signed' && (
-                                    <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-[11px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider flex items-center justify-between gap-2 shrink-0 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2.5 text-xs text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider flex items-center justify-between gap-2 shrink-0 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="flex items-center gap-2">
                                             <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
                                             <span>Your claim lease has expired. Please reclaim the study to ensure your updates are saved.</span>
@@ -1269,7 +1269,7 @@ export function RadiologistTerminal() {
                                         <button
                                             onClick={handleClaimStudy}
                                             disabled={actionLoading}
-                                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded font-bold uppercase text-[9px] tracking-wider transition-all shrink-0 active:scale-[0.98]"
+                                            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded font-bold uppercase text-xs tracking-wider transition-all shrink-0 active:scale-[0.98]"
                                         >
                                             Reclaim Study
                                         </button>
@@ -1281,7 +1281,7 @@ export function RadiologistTerminal() {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-bold text-xs uppercase tracking-wider dark:text-zinc-200 text-zinc-800">Collaborative Transcription</h3>
-                                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                                            <span className={`px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider border ${
                                                 connectionStatus === 'Connected' ? 'dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200' :
                                                 connectionStatus === 'Reconnecting' ? 'dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-amber-200 animate-pulse' :
                                                 'dark:bg-red-500/10 bg-red-50 text-red-600 dark:text-red-400 dark:border-red-500/20 border-red-200'
@@ -1291,7 +1291,7 @@ export function RadiologistTerminal() {
                                         </div>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             <span className={`h-1.5 w-1.5 rounded-full ${liveTypistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'}`} />
-                                            <span className="text-[9px] dark:text-zinc-400 text-zinc-550 font-semibold">
+                                            <span className="text-xs dark:text-zinc-400 text-zinc-550 font-semibold">
                                                 {liveTypistConnected ? 'Typist joined session (Live Sync)' : 'Waiting for Typist...'}
                                             </span>
                                         </div>
@@ -1301,7 +1301,7 @@ export function RadiologistTerminal() {
                                     <div className="flex items-center bg-zinc-200/80 dark:bg-zinc-800/80 p-0.5 rounded-lg border dark:border-white/10 border-zinc-300">
                                         <button
                                             onClick={() => setRightPanelTab('preview')}
-                                            className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
+                                            className={`px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
                                                 rightPanelTab === 'preview'
                                                     ? 'bg-synos-primary text-white shadow-sm'
                                                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -1312,7 +1312,7 @@ export function RadiologistTerminal() {
                                         </button>
                                         <button
                                             onClick={() => setRightPanelTab('editor')}
-                                            className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
+                                            className={`px-2.5 py-1 text-xs font-bold uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
                                                 rightPanelTab === 'editor'
                                                     ? 'bg-synos-primary text-white shadow-sm'
                                                     : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -1325,7 +1325,7 @@ export function RadiologistTerminal() {
                                 </div>
 
                                 {selectedStudy.studyStatus === 'AwaitingSignature' && (
-                                    <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0">
+                                    <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0">
                                         <Users className="h-3.5 w-3.5 animate-pulse text-emerald-500" />
                                         Typist has requested digital signature review
                                     </div>
@@ -1344,7 +1344,7 @@ export function RadiologistTerminal() {
                                     >
                                         {/* Zoom & Pan Hint Overlay */}
                                         <div className="absolute top-2 left-3 z-10 pointer-events-none">
-                                            <span className="text-[9px] font-mono bg-zinc-900/80 text-zinc-200 px-2 py-0.5 rounded shadow-sm backdrop-blur-sm">
+                                            <span className="text-xs font-mono bg-zinc-900/80 text-zinc-200 px-2 py-0.5 rounded shadow-sm backdrop-blur-sm">
                                                 Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
                                             </span>
                                         </div>
@@ -1352,7 +1352,7 @@ export function RadiologistTerminal() {
                                         {(previewLoading || templateLoading) ? (
                                             <div className="h-full flex flex-col items-center justify-center opacity-40">
                                                 <Loader2 className="w-6 h-6 animate-spin mb-2 text-synos-primary" />
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Rendering Live A4 Preview...</span>
+                                                <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">Rendering Live A4 Preview...</span>
                                             </div>
                                         ) : (memoizedReportData && template) ? (
                                             <div className="p-4 flex justify-center items-start w-full h-full absolute top-0 left-0">
@@ -1369,7 +1369,7 @@ export function RadiologistTerminal() {
                                         ) : (
                                             <div className="h-full flex flex-col items-center justify-center text-center opacity-40 p-6">
                                                 <FileText className="w-8 h-8 mb-2 text-zinc-400" />
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
                                                     Awaiting Live Draft Data...
                                                 </p>
                                             </div>
@@ -1378,7 +1378,7 @@ export function RadiologistTerminal() {
                                 ) : (
                                     <div className="flex-1 overflow-y-auto p-4 flex flex-col min-h-0">
                                         <div className="space-y-2 synos-card-elevated rounded-2xl p-4 bg-white dark:bg-zinc-950 flex-1 flex flex-col min-h-0">
-                                            <label className="text-[10px] font-black uppercase dark:text-zinc-400 text-zinc-600 tracking-wider flex items-center gap-1.5 shrink-0">
+                                            <label className="text-xs font-black uppercase dark:text-zinc-400 text-zinc-600 tracking-wider flex items-center gap-1.5 shrink-0">
                                                 <FileText className="h-4 w-4 text-synos-primary animate-pulse" />
                                                 Radiology Findings & Impression
                                             </label>
@@ -1430,7 +1430,7 @@ export function RadiologistTerminal() {
                         <div className="h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-500 text-zinc-400">
                             <FileText className="h-10 w-10 mb-2 dark:text-zinc-700 text-zinc-300" />
                             <h3 className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Clinical Narrative</h3>
-                            <p className="text-[11px] dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
+                            <p className="text-xs dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
                                 Once a modality study is active, clinical narrative drafting and digital signature operations will unlock.
                             </p>
                         </div>

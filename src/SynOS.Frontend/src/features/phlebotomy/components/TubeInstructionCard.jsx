@@ -64,7 +64,7 @@ export function TubeInstructionCard({ instruction, index }) {
                         <div className="flex items-center gap-2">
                             {/* Color Dot (Optional redundant identifier, often requested by phlebotomists) */}
                             <div className="w-3 h-3 rounded-full border border-black/10 shadow-sm" style={{ backgroundColor: color }} title={color} />
-                            <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider", ui.badge)}>
+                            <span className={cn("px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider", ui.badge)}>
                                 {requiredTubes} Tube{requiredTubes > 1 ? 's' : ''}
                             </span>
                         </div>
@@ -74,8 +74,8 @@ export function TubeInstructionCard({ instruction, index }) {
                     </div>
                     {instruction?.accessionNumber && (
                         <div className="flex items-center gap-1.5 mt-1.5 px-2 py-0.5 bg-synos-primary/5 dark:bg-synos-primary/10 rounded border border-synos-primary/10 w-fit">
-                            <span className="text-[9px] font-mono font-bold text-synos-primary/60 uppercase tracking-tighter">Acc:</span>
-                            <span className="text-[10px] font-mono font-bold text-synos-primary tracking-tight">{instruction.accessionNumber}</span>
+                            <span className="text-xs font-mono font-bold text-synos-primary/60 uppercase tracking-normal">Acc:</span>
+                            <span className="text-xs font-mono font-bold text-synos-primary tracking-normal">{instruction.accessionNumber}</span>
                         </div>
                     )}
                 </div>
@@ -97,7 +97,7 @@ export function TubeInstructionCard({ instruction, index }) {
                         className={cn("border-t border-black/5 dark:border-white/5", ui.expandBg)}
                     >
                         <div className="p-3 space-y-2">
-                            <div className="text-[10px] uppercase font-bold tracking-wider text-zinc-500 mb-1">
+                            <div className="text-xs uppercase font-bold tracking-wider text-zinc-500 mb-1">
                                 Included Tests
                             </div>
                             {tests.map((test, idx) => (
@@ -107,7 +107,7 @@ export function TubeInstructionCard({ instruction, index }) {
                                         <div className="text-sm font-medium dark:text-zinc-300 text-zinc-800 leading-tight">
                                             {test.testName}
                                         </div>
-                                        <div className="type-code text-[10px] text-zinc-500 uppercase">
+                                        <div className="type-code text-xs text-zinc-500 uppercase">
                                             {test.testCode}
                                         </div>
                                     </div>

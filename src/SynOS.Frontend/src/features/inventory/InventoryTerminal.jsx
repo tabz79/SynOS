@@ -70,8 +70,8 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
             <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="p-8 border-b border-zinc-100 dark:border-white/5 flex items-center justify-between bg-zinc-50 dark:bg-white/[0.02]">
                     <div>
-                        <h3 className="text-xl font-semibold dark:text-white tracking-tight">Provision New Item</h3>
-                        <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-widest mt-1">Register missing consumable</p>
+                        <h3 className="text-xl font-bold dark:text-white tracking-tight">Provision New Item</h3>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mt-1">Register missing consumable</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-white/10 rounded-full transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -80,14 +80,14 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-[10px] font-bold uppercase text-center">
+                        <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl text-red-500 text-xs font-bold uppercase text-center">
                             {error}
                         </div>
                     )}
                     
                     <div className="space-y-4">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Display Name</label>
+                            <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Display Name</label>
                             <input 
                                 required
                                 type="text"
@@ -100,7 +100,7 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Unit</label>
+                                <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Unit</label>
                                 <input 
                                     required
                                     type="text"
@@ -111,7 +111,7 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
                                 />
                             </div>
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Alert Threshold</label>
+                                <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Alert Threshold</label>
                                 <input 
                                     required
                                     type="number"
@@ -124,7 +124,7 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Service Area</label>
+                                <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Service Area</label>
                                 <select 
                                     value={formData.serviceArea}
                                     onChange={(e) => {
@@ -146,7 +146,7 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
 
                             {formData.serviceArea === 'Radiology' ? (
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Radiology Modality</label>
+                                    <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Radiology Modality</label>
                                     <select 
                                         required
                                         value={formData.modality}
@@ -160,7 +160,7 @@ const QuickItemModal = ({ isOpen, onClose, onCreated }) => {
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Category</label>
+                                    <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">Category</label>
                                     <select 
                                         value={formData.category}
                                         onChange={(e) => setFormData({...formData, category: e.target.value})}
@@ -214,7 +214,7 @@ const InventoryDashboard = ({ isConsolidated, setIsConsolidated, selectedBranchI
 
     if (isLoading) return (
         <div className="flex-1 flex items-center justify-center">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-zinc-500 animate-pulse">Calculating System Pulse...</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 animate-pulse">Calculating System Pulse...</p>
         </div>
     );
 
@@ -433,21 +433,21 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                             <button 
                                 onClick={handleCleanAndSyncMaster}
                                 disabled={isCleaning}
-                                className="flex items-center gap-2 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-sm"
+                                className="flex items-center gap-2 text-xs font-bold uppercase text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3.5 py-2 rounded-xl border border-emerald-500/20 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all shadow-sm"
                             >
                                 {isCleaning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
                                 <span>Purge Dummy Items & Sync Master</span>
                             </button>
                             <button 
                                 onClick={() => setIsModalOpen(true)}
-                                className="flex items-center gap-2 text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-4 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
+                                className="flex items-center gap-2 text-xs font-semibold uppercase text-synos-primary bg-synos-primary/10 px-3.5 py-2 rounded-xl border border-synos-primary/20 hover:scale-105 active:scale-95 transition-all"
                             >
                                 <Plus className="w-3.5 h-3.5" />
                                 New Inventory Item
                             </button>
                             <button 
                                 onClick={onAddExistingStock}
-                                className="flex items-center gap-2 text-[10px] font-semibold uppercase text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-xl border border-zinc-200 dark:border-white/5 hover:scale-105 active:scale-95 transition-all"
+                                className="flex items-center gap-2 text-xs font-semibold uppercase text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-white/5 hover:scale-105 active:scale-95 transition-all"
                             >
                                 <Package className="w-3.5 h-3.5" />
                                 Add Existing Stock
@@ -491,7 +491,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
 
                 <div className="flex flex-col gap-2 mb-6 border-b border-zinc-100 dark:border-white/5 pb-4 shrink-0">
                     <div className="flex items-center gap-2 overflow-x-auto">
-                        <span className="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider min-w-24">Service Area:</span>
+                        <span className="text-xs font-bold uppercase text-zinc-500 tracking-wider min-w-24">Service Area:</span>
                         {serviceAreas.map(sa => (
                             <button
                                 key={sa}
@@ -517,7 +517,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
 
                     {selectedServiceArea === 'Radiology' && (
                         <div className="flex items-center gap-2 overflow-x-auto">
-                            <span className="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider min-w-24">Modality:</span>
+                            <span className="text-xs font-bold uppercase text-zinc-500 tracking-wider min-w-24">Modality:</span>
                             {modalities.map(m => (
                                 <button
                                     key={m}
@@ -537,7 +537,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
 
                     {selectedServiceArea !== 'Radiology' && (
                         <div className="flex items-center gap-2 overflow-x-auto">
-                            <span className="text-[10px] font-bold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider min-w-24">Category:</span>
+                            <span className="text-xs font-bold uppercase text-zinc-500 tracking-wider min-w-24">Category:</span>
                             {categories.map(cat => (
                                 <button
                                     key={cat}
@@ -568,13 +568,13 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                     ) : (
                         <table className="w-full text-left border-collapse synos-table">
                             <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                                <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
-                                    <th className="px-4 py-4">Item</th>
-                                    <th className="px-4 py-4">Code</th>
-                                    <th className="px-4 py-4">Branch</th>
-                                    <th className="px-4 py-4 text-right">Quantity</th>
-                                    <th className="px-4 py-4">Status</th>
-                                    <th className="px-4 py-4 text-right">Quick Ops</th>
+                                <tr className="border-b dark:border-white/10 text-xs uppercase tracking-wider text-slate-600 dark:text-zinc-400 font-bold py-3.5 px-4 bg-slate-50 dark:bg-zinc-800/80">
+                                    <th className="px-4 py-3.5">Item</th>
+                                    <th className="px-4 py-3.5">Code</th>
+                                    <th className="px-4 py-3.5">Branch</th>
+                                    <th className="px-4 py-3.5 text-right">Quantity</th>
+                                    <th className="px-4 py-3.5">Status</th>
+                                    <th className="px-4 py-3.5 text-right">Quick Ops</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
@@ -590,31 +590,31 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                         )}
                                     >
                                         <td className="px-4 py-4">
-                                            <div className="font-semibold dark:text-zinc-200 leading-tight">{item.itemName}</div>
+                                            <div className="font-semibold text-sm sm:text-base dark:text-zinc-200 leading-tight">{item.itemName}</div>
                                         </td>
-                                        <td className="px-4 py-4 text-[10px] font-mono text-zinc-500 uppercase">{item.itemCode}</td>
+                                        <td className="px-4 py-4 text-xs font-mono font-medium text-zinc-500 uppercase">{item.itemCode}</td>
                                         <td className="px-4 py-4 text-xs text-zinc-500 font-medium">{item.branchName}</td>
                                         <td className={cn(
                                             "px-4 py-4 text-right font-semibold font-mono text-base",
                                             item.status === 'Critical' ? "text-red-500" : 
                                             item.status === 'Low' ? "text-amber-500" : "text-emerald-500"
                                         )}>
-                                            {item.totalQuantity.toLocaleString()} <span className="text-[10px] uppercase font-bold text-zinc-500 ml-1">{item.unit}</span>
+                                            {item.totalQuantity.toLocaleString()} <span className="text-xs uppercase font-bold text-zinc-500 ml-1">{item.unit}</span>
                                         </td>
                                         <td className="px-4 py-4">
                                             {item.status === 'Critical' ? (
-                                                <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase text-red-500 bg-red-500/10 px-2.5 py-1 rounded-full w-fit border border-red-500/20">
-                                                    <AlertCircle className="w-3 h-3" />
+                                                <span className="flex items-center gap-1.5 text-xs font-bold uppercase text-red-500 bg-red-500/10 px-2.5 py-1 rounded-md w-fit border border-red-500/20">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
                                                     Stock Out
                                                 </span>
                                             ) : item.status === 'Low' ? (
-                                                <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full w-fit border border-amber-500/20">
-                                                    <AlertCircle className="w-3 h-3" />
+                                                <span className="flex items-center gap-1.5 text-xs font-bold uppercase text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-md w-fit border border-amber-500/20">
+                                                    <AlertCircle className="w-3.5 h-3.5" />
                                                     Low Stock
                                                 </span>
                                             ) : (
-                                                <span className="flex items-center gap-1.5 text-[9px] font-semibold uppercase text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full w-fit border border-emerald-500/20">
-                                                    <CheckCircle2 className="w-3 h-3" />
+                                                <span className="flex items-center gap-1.5 text-xs font-bold uppercase text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-md w-fit border border-emerald-500/20">
+                                                    <CheckCircle2 className="w-3.5 h-3.5" />
                                                     Healthy
                                                 </span>
                                             )}
@@ -625,9 +625,9 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                                     e.stopPropagation();
                                                     onReceive(item);
                                                 }}
-                                                className="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-auto text-[10px] font-bold uppercase bg-synos-primary text-white px-3 py-1.5 rounded-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-synos-primary/20"
+                                                className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 ml-auto text-xs font-bold uppercase bg-synos-primary text-white px-3 py-1.5 rounded-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-synos-primary/20"
                                             >
-                                                <PlusCircle className="w-3 h-3" />
+                                                <PlusCircle className="w-3.5 h-3.5" />
                                                 Receive
                                             </button>
                                         </td>
@@ -649,7 +649,7 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                         <div className="p-6 border-b border-zinc-200 dark:border-white/5 flex items-center justify-between shrink-0 bg-zinc-50 dark:bg-white/[0.02]">
                             <div>
                                 <h3 className="font-semibold text-lg dark:text-white leading-tight">{selectedItem.itemName}</h3>
-                                <p className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{selectedItem.itemCode} • {selectedItem.branchName}</p>
+                                <p className="text-xs text-zinc-500 font-mono uppercase tracking-wider">{selectedItem.itemCode} • {selectedItem.branchName}</p>
                             </div>
                             <button 
                                 onClick={() => setSelectedItem(null)}
@@ -662,21 +662,21 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-zinc-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-zinc-200 dark:border-white/5">
-                                    <div className="text-[10px] font-bold text-zinc-500 uppercase mb-1">In Stock</div>
+                                    <div className="text-xs font-bold text-zinc-500 uppercase mb-1">In Stock</div>
                                     <div className="text-xl font-semibold dark:text-white font-mono">{selectedItem.totalQuantity} <span className="text-xs font-normal text-zinc-500 uppercase">{selectedItem.unit}</span></div>
                                 </div>
                                 <div className="bg-zinc-50 dark:bg-white/[0.02] p-4 rounded-2xl border border-zinc-200 dark:border-white/5">
-                                    <div className="text-[10px] font-bold text-zinc-500 uppercase mb-1">Batches</div>
+                                    <div className="text-xs font-bold text-zinc-500 uppercase mb-1">Batches</div>
                                     <div className="text-xl font-semibold dark:text-white font-mono">{lots.length}</div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-3">
-                                <h4 className="text-[10px] font-semibold uppercase text-zinc-400 dark:text-zinc-500 tracking-wider">Active Lots / Batches</h4>
+                                <h4 className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Active Lots / Batches</h4>
                                 {isLotsLoading ? (
-                                    <div className="py-20 text-center text-zinc-500 animate-pulse font-bold text-[10px] uppercase">Retrieving Batches...</div>
+                                    <div className="py-20 text-center text-zinc-500 animate-pulse font-bold text-xs uppercase tracking-wider">Retrieving Batches...</div>
                                 ) : lots.length === 0 ? (
-                                    <div className="py-20 text-center text-zinc-500 border-2 border-dashed border-zinc-800/10 rounded-2xl">No active lots found</div>
+                                    <div className="py-20 text-center text-zinc-500 border-2 border-dashed border-zinc-800/10 rounded-2xl text-xs">No active lots found</div>
                                 ) : (
                                     <div className="flex flex-col gap-2">
                                         {lots.map(lot => (
@@ -685,10 +685,10 @@ const StockLedger = ({ onReceive, isConsolidated, setIsConsolidated, selectedBra
                                                     <div className="font-bold font-mono text-sm dark:text-white">#{lot.lotNumber}</div>
                                                     <div className="font-semibold font-mono text-emerald-500">{lot.quantity}</div>
                                                 </div>
-                                                <div className="flex items-center justify-between text-[10px] text-zinc-500 font-bold uppercase">
+                                                <div className="flex items-center justify-between text-xs text-zinc-500 font-semibold uppercase">
                                                     <span>Rec: {new Date(lot.receivedAt).toLocaleDateString()}</span>
                                                     <span className={cn(
-                                                        "px-2 py-0.5 rounded-md",
+                                                        "px-2 py-0.5 rounded-md text-xs font-semibold",
                                                         lot.isExpired ? "bg-red-500/10 text-red-500" : "bg-zinc-500/10"
                                                     )}>
                                                         Exp: {lot.expiryDate ? new Date(lot.expiryDate).toLocaleDateString() : 'N/A'}
@@ -867,8 +867,8 @@ const ReceiveStock = ({ prefilledItem }) => {
 
             <div className="mb-8 flex items-end justify-between px-2">
                 <div>
-                    <h2 className="text-2xl font-semibold dark:text-white mb-2 tracking-tight">Goods Received</h2>
-                    <p className="text-zinc-500 font-semibold uppercase text-[10px] tracking-[0.2em]">Goods Received Note (GRN) Entry</p>
+                    <h2 className="text-2xl font-bold dark:text-white mb-2 tracking-tight">Goods Received</h2>
+                    <p className="text-zinc-500 font-semibold uppercase text-xs tracking-wider">Goods Received Note (GRN) Entry</p>
                 </div>
             </div>
 
@@ -877,9 +877,9 @@ const ReceiveStock = ({ prefilledItem }) => {
                     {/* PO Link Selector */}
                     <div className="flex flex-col gap-2 p-4 bg-synos-primary/5 border border-synos-primary/20 rounded-2xl">
                         <div className="flex items-center justify-between ml-2">
-                            <label className="text-[10px] font-bold uppercase text-synos-primary tracking-wider">Search / Select Purchase Order (Optional)</label>
+                            <label className="text-xs font-bold uppercase text-synos-primary tracking-wider">Search / Select Purchase Order (Optional)</label>
                             {selectedPOId && (
-                                <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md uppercase">✓ Auto-Populated from PO</span>
+                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-md uppercase">✓ Auto-Populated from PO</span>
                             )}
                         </div>
                         <select 
@@ -901,7 +901,7 @@ const ReceiveStock = ({ prefilledItem }) => {
 
                         {selectedPOId && poItemsList.length > 1 && (
                             <div className="flex flex-col gap-1 mt-2">
-                                <label className="text-[9px] font-semibold uppercase text-zinc-500 ml-2 tracking-wider">PO Position / Line Item</label>
+                                <label className="text-xs font-semibold uppercase text-zinc-500 ml-2 tracking-wider">PO Position / Line Item</label>
                                 <select 
                                     value={formData.poItemId || ""}
                                     onChange={(e) => handleSelectPOItem(e.target.value)}
@@ -918,7 +918,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Item</label>
+                        <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Item</label>
                         <select 
                             required
                             value={formData.itemId}
@@ -933,7 +933,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Vendor / Supplier (For Finance Payable)</label>
+                        <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Select Vendor / Supplier (For Finance Payable)</label>
                         <select 
                             value={formData.supplierId}
                             onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
@@ -948,7 +948,7 @@ const ReceiveStock = ({ prefilledItem }) => {
 
                     <div className="grid grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Batch / Lot #</label>
+                            <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Batch / Lot #</label>
                             <input 
                                 required
                                 type="text" 
@@ -959,7 +959,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Quantity Received</label>
+                            <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Quantity Received</label>
                             <input 
                                 required
                                 type="number" 
@@ -974,7 +974,7 @@ const ReceiveStock = ({ prefilledItem }) => {
 
                     <div className="grid grid-cols-2 gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Expiry Date</label>
+                            <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Expiry Date</label>
                             <input 
                                 type="date" 
                                 value={formData.expiryDate}
@@ -983,7 +983,7 @@ const ReceiveStock = ({ prefilledItem }) => {
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[10px] font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Unit Cost (Optional)</label>
+                            <label className="text-xs font-semibold uppercase text-zinc-500 ml-4 tracking-wider">Unit Cost (Optional)</label>
                             <input 
                                 type="number" 
                                 step="0.01"
@@ -1069,7 +1069,7 @@ const RequestsQueue = () => {
             <div className="flex items-center justify-between mb-6 shrink-0">
                 <div>
                     <h2 className="text-xl font-bold dark:text-white">Requests Queue</h2>
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Pending items from operational branches</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mt-1">Pending items from operational branches</p>
                 </div>
                 <button 
                     onClick={load}
@@ -1082,7 +1082,7 @@ const RequestsQueue = () => {
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                 {isLoading ? (
                     <div className="h-full flex items-center justify-center border-2 border-dashed border-zinc-800/10 rounded-xl">
-                        <p className="text-zinc-500 animate-pulse font-bold tracking-widest uppercase text-[10px]">Scanning Branch Demands...</p>
+                        <p className="text-zinc-500 animate-pulse font-bold tracking-wider uppercase text-xs">Scanning Branch Demands...</p>
                     </div>
                 ) : requests.length === 0 ? (
                     <div className="h-full flex items-center justify-center border-2 border-dashed border-zinc-800/10 rounded-xl flex-col gap-2">
@@ -1092,38 +1092,38 @@ const RequestsQueue = () => {
                 ) : (
                     <table className="w-full text-left border-collapse synos-table">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                            <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
-                                <th className="px-4 py-4">Consumable</th>
-                                <th className="px-4 py-4">Branch</th>
-                                <th className="px-4 py-4">Requested From</th>
-                                <th className="px-4 py-4">Requested By</th>
-                                <th className="px-4 py-4 text-right">Quantity</th>
-                                <th className="px-4 py-4 text-right">Actions</th>
+                            <tr className="border-b dark:border-white/10 text-xs uppercase tracking-wider text-slate-600 dark:text-zinc-400 font-bold py-3.5 px-4 bg-slate-50 dark:bg-zinc-800/80">
+                                <th className="px-4 py-3.5">Consumable</th>
+                                <th className="px-4 py-3.5">Branch</th>
+                                <th className="px-4 py-3.5">Requested From</th>
+                                <th className="px-4 py-3.5">Requested By</th>
+                                <th className="px-4 py-3.5 text-right">Quantity</th>
+                                <th className="px-4 py-3.5 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                             {requests.map((req) => (
                                 <tr key={req.requestId} className="group hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors">
                                     <td className="px-4 py-4">
-                                        <div className="font-bold dark:text-zinc-200">{req.consumableName}</div>
-                                        <div className="text-[9px] text-zinc-500 font-mono mt-0.5">{new Date(req.requestedAt).toLocaleString()}</div>
+                                        <div className="font-bold text-slate-900 dark:text-zinc-200">{req.consumableName}</div>
+                                        <div className="text-xs text-zinc-500 font-mono mt-0.5">{new Date(req.requestedAt).toLocaleString()}</div>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="text-[10px] font-semibold uppercase text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded-md border border-synos-primary/20">
+                                        <span className="text-xs font-semibold uppercase text-synos-primary bg-synos-primary/10 px-2.5 py-1 rounded-md border border-synos-primary/20">
                                             {req.branchName}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="text-[10px] font-bold uppercase text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/20">
+                                        <span className="text-xs font-bold uppercase text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-md border border-purple-500/20">
                                             {req.requestedFromScreen || 'Reception'}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4 text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                                        {req.requestedByUserName} <span className="text-[10px] font-normal text-zinc-400 dark:text-zinc-500">({req.requestedByUserRole || 'Admin'})</span>
+                                        {req.requestedByUserName} <span className="text-xs font-normal text-zinc-400 dark:text-zinc-500">({req.requestedByUserRole || 'Admin'})</span>
                                     </td>
                                     <td className="px-4 py-4 text-right">
                                         <div className="font-semibold font-mono text-base dark:text-white">
-                                            {req.quantity} <span className="text-[9px] uppercase font-semibold text-zinc-500">{req.unitOfMeasure}</span>
+                                            {req.quantity} <span className="text-xs uppercase font-semibold text-zinc-500">{req.unitOfMeasure}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-4 text-right">
@@ -1140,14 +1140,14 @@ const RequestsQueue = () => {
                                                 disabled={isActioning !== null}
                                                 onClick={() => handleFulfill(req.requestId)}
                                                 className={cn(
-                                                    "bg-synos-primary text-white text-[10px] font-semibold uppercase px-4 py-2 rounded-xl transition-all shadow-lg shadow-synos-primary/20 flex items-center gap-2",
+                                                    "bg-synos-primary text-white text-xs font-bold uppercase px-3.5 py-2 rounded-xl transition-all shadow-lg shadow-synos-primary/20 flex items-center gap-2",
                                                     isActioning === req.requestId ? "opacity-50" : "hover:scale-105 active:scale-95"
                                                 )}
                                             >
                                                 {isActioning === req.requestId ? (
-                                                    <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                                    <div className="w-3.5 h-3.5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                                 ) : (
-                                                    <Zap className="w-3 h-3" />
+                                                    <Zap className="w-3.5 h-3.5" />
                                                 )}
                                                 Fulfill
                                             </button>
@@ -1196,11 +1196,11 @@ const MovementHistory = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-white/5 p-6 overflow-hidden">
-            <div className="flex items-center justify-between mb-6 shrink-0">
+        <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200 dark:border-white/5 p-5 overflow-hidden">
+            <div className="flex items-center justify-between mb-5 shrink-0">
                 <div>
-                    <h2 className="text-xl font-bold dark:text-white">Operational Audit Trail</h2>
-                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-1">Forensic movement logging & traceability</p>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Operational Audit Trail</h2>
+                    <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-slate-500 mt-1">Forensic movement logging & traceability</p>
                 </div>
                 <button 
                     onClick={load}
@@ -1213,57 +1213,57 @@ const MovementHistory = () => {
             <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
                 {isLoading ? (
                     <div className="h-full flex items-center justify-center border-2 border-dashed border-zinc-800/10 rounded-xl">
-                        <p className="text-zinc-500 animate-pulse font-bold tracking-widest uppercase text-[10px]">Reconstructing Audit Logs...</p>
+                        <p className="text-zinc-500 animate-pulse font-bold tracking-widest uppercase text-xs">Reconstructing Audit Logs...</p>
                     </div>
                 ) : movements.length === 0 ? (
                     <div className="h-full flex items-center justify-center border-2 border-dashed border-zinc-800/10 rounded-xl">
-                        <p className="text-zinc-500 font-bold text-xs">No movements recorded yet</p>
+                        <p className="text-zinc-500 font-bold text-sm">No movements recorded yet</p>
                     </div>
                 ) : (
                     <table className="w-full text-left border-collapse synos-table">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-                            <tr className="border-b dark:border-white/10 text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold">
-                                <th className="px-4 py-4">Item & Batch</th>
-                                <th className="px-4 py-4">Type</th>
-                                <th className="px-4 py-4">Quantity</th>
-                                <th className="px-4 py-4">Location</th>
-                                <th className="px-4 py-4">Recorded By</th>
-                                <th className="px-4 py-4 text-right">Reference</th>
+                            <tr className="border-b dark:border-white/10 text-xs sm:text-sm uppercase tracking-wider text-slate-600 dark:text-zinc-400 font-bold py-3.5 px-4 bg-slate-50 dark:bg-zinc-800/80">
+                                <th className="px-4 py-3.5">Item & Batch</th>
+                                <th className="px-4 py-3.5">Type</th>
+                                <th className="px-4 py-3.5">Quantity</th>
+                                <th className="px-4 py-3.5">Location</th>
+                                <th className="px-4 py-3.5">Recorded By</th>
+                                <th className="px-4 py-3.5 text-right">Reference</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                             {movements.map((move) => (
                                 <tr key={move.movementId} className="group hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-colors">
                                     <td className="px-4 py-4">
-                                        <div className="font-bold dark:text-zinc-200">{move.itemName}</div>
+                                        <div className="text-base font-bold text-slate-900 dark:text-white">{move.itemName}</div>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-[9px] text-zinc-500 font-mono">LOT: {move.lotNumber}</span>
-                                            <span className="text-[9px] text-zinc-500/50">•</span>
-                                            <span className="text-[9px] text-zinc-400">{new Date(move.movedAt).toLocaleString()}</span>
+                                            <span className="text-xs text-slate-500 dark:text-zinc-400 font-mono font-medium">LOT: {move.lotNumber}</span>
+                                            <span className="text-xs text-slate-400">•</span>
+                                            <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">{new Date(move.movedAt).toLocaleString()}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-4">
                                         <span className={cn(
-                                            "text-[9px] font-semibold uppercase px-2 py-0.5 rounded-md border",
+                                            "text-xs font-bold uppercase px-2.5 py-1 rounded-md border",
                                             getMovementBadge(move.movementType)
                                         )}>
                                             {move.movementType}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <div className="font-semibold font-mono dark:text-white">
+                                        <div className="text-base font-bold font-mono text-slate-900 dark:text-white">
                                             {move.quantity > 0 ? `+${move.quantity}` : move.quantity}
                                         </div>
                                     </td>
-                                    <td className="px-4 py-4 text-xs text-zinc-500 font-medium">
+                                    <td className="px-4 py-4 text-sm font-medium text-slate-700 dark:text-zinc-300">
                                         {move.branchName}
                                     </td>
-                                    <td className="px-4 py-4 text-xs text-zinc-500 font-medium">
+                                    <td className="px-4 py-4 text-sm font-medium text-slate-700 dark:text-zinc-300">
                                         {move.recordedBy}
                                     </td>
                                     <td className="px-4 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <span className="text-[9px] font-mono text-zinc-500 uppercase">
+                                            <span className="text-xs font-mono font-medium text-slate-600 dark:text-zinc-400 uppercase">
                                                 {move.reference}
                                             </span>
                                             {move.movementType === 'Receive' && (
@@ -1283,10 +1283,10 @@ const MovementHistory = () => {
                                                             total: 0
                                                         }]
                                                     })}
-                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer shadow-xs"
+                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer shadow-xs"
                                                     title="Print Material GRN Slip"
                                                 >
-                                                    <Printer size={12} />
+                                                    <Printer size={13} />
                                                     <span>GRN</span>
                                                 </button>
                                             )}
@@ -1406,9 +1406,9 @@ export function InventoryTerminal() {
                 >
                     <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
                     
-                    <nav className="flex-1 overflow-y-auto p-4 pt-8 space-y-2 relative z-10">
-                        <div className="px-3 mb-6">
-                            <span className="type-section-header transition-colors">Inventory</span>
+                    <nav className="flex-1 overflow-y-auto p-4 pt-6 space-y-2 relative z-10">
+                        <div className="px-3 mb-4">
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Inventory</span>
                         </div>
                         <div className="space-y-1">
                             {tabs.map(tab => (
@@ -1419,19 +1419,14 @@ export function InventoryTerminal() {
                                         if (tab.id !== 'receive') setPrefilledItem(null);
                                     }}
                                     className={cn(
-                                        "w-full flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 group border",
+                                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group border text-sm sm:text-base font-semibold",
                                         activeTab === tab.id 
                                             ? "bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30" 
-                                            : "text-zinc-500 dark:hover:bg-zinc-900 hover:bg-zinc-200/50 hover:text-zinc-900 border-transparent"
+                                            : "text-zinc-600 dark:text-zinc-400 dark:hover:bg-zinc-900 hover:bg-zinc-100 hover:text-zinc-900 border-transparent"
                                     )}
                                 >
                                     <tab.icon className={cn("w-4 h-4 shrink-0 transition-colors", activeTab === tab.id ? "text-synos-primary dark:text-white" : "text-zinc-500 group-hover:text-synos-primary")} />
-                                    <span className={cn(
-                                        "type-label transition-colors",
-                                        activeTab === tab.id 
-                                            ? "text-synos-primary dark:text-white font-semibold" 
-                                            : "text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-zinc-300"
-                                    )}>{tab.label}</span>
+                                    <span className="truncate">{tab.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -1440,7 +1435,7 @@ export function InventoryTerminal() {
 
                 {/* Main Content */}
                 <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-                    <div className="flex-1 overflow-y-auto p-8 relative z-10">
+                    <div className="flex-1 overflow-y-auto px-6 py-5 relative z-10">
                         {activeTab === 'dashboard' && (
                             <InventoryDashboard 
                                 isConsolidated={isConsolidated} 

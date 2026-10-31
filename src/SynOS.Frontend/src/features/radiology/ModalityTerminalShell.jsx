@@ -269,7 +269,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                     {/* Left Panel: Workflow Worklist Queue */}
                     <div className="w-80 flex flex-col h-full overflow-hidden shrink-0">
                         <div className="p-2.5 mb-2.5 synos-card-elevated dark:bg-synos-surface bg-white rounded-xl flex justify-between items-center shadow-xs">
-                            <h2 className="font-bold text-xs tracking-tight dark:text-zinc-300 text-zinc-800 flex items-center gap-1.5">
+                            <h2 className="font-bold text-xs tracking-normal dark:text-zinc-300 text-zinc-800 flex items-center gap-1.5">
                                 <Activity className="h-3.5 w-3.5 text-emerald-500" />
                                 <span>Modality Worklist</span>
                             </h2>
@@ -317,10 +317,10 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                             }`}
                                         >
                                             <div className="flex justify-between items-center mb-1.5">
-                                                <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-250 dark:border-zinc-700">
+                                                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-250 dark:border-zinc-700">
                                                     {study.tokenNumber || 'N/A'}
                                                 </span>
-                                                <span className={`text-[10px] font-bold tracking-tight px-2 py-0.5 rounded border ${
+                                                <span className={`text-xs font-bold tracking-tight px-2 py-0.5 rounded border ${
                                                     study.status === 'Assigned' 
                                                         ? 'bg-indigo-50 text-indigo-700 dark:text-indigo-300 border-indigo-200'
                                                         : 'bg-emerald-50 text-emerald-700 dark:text-emerald-300 border-emerald-200'
@@ -330,19 +330,19 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                             </div>
 
                                             <div className="flex items-baseline gap-1.5">
-                                                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 tracking-tight">{study.patientName}</h3>
+                                                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 tracking-normal">{study.patientName}</h3>
                                                 {study.patientAge && (
-                                                    <span className="font-mono text-[10px] font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
+                                                    <span className="font-mono text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700">
                                                         {study.patientAge}y/{study.patientGender?.[0] || 'M'}
                                                     </span>
                                                 )}
                                             </div>
 
                                             <div className="mt-2 pt-2 border-t border-zinc-150 dark:border-zinc-800 flex justify-between items-center">
-                                                <span className="font-bold text-[11px] text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/40 uppercase tracking-tight">
+                                                <span className="font-bold text-xs text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/40 uppercase tracking-normal">
                                                     {study.testName}
                                                 </span>
-                                                <span className="text-[10px] font-mono uppercase text-zinc-400 font-bold">{study.modality}</span>
+                                                <span className="text-xs font-mono uppercase text-zinc-400 font-bold">{study.modality}</span>
                                             </div>
                                         </div>
                                     );
@@ -359,17 +359,17 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                 <div className="synos-card-elevated dark:bg-synos-surface bg-white rounded-xl p-3 flex justify-between items-center shadow-xs">
                                     <div>
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <span className="text-[10px] font-bold uppercase tracking-tight text-emerald-700 dark:text-emerald-400 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                            <span className="text-xs font-bold uppercase tracking-normal text-emerald-700 dark:text-emerald-400 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                                                 ACTIVE SESSION
                                             </span>
                                             <h2 className="font-bold text-base text-zinc-900 dark:text-zinc-100">{activeStudy.patientName}</h2>
                                         </div>
-                                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">{activeStudy.testName} ({activeStudy.modality})</p>
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{activeStudy.testName} ({activeStudy.modality})</p>
                                     </div>
 
                                     <div className="flex items-center gap-2.5">
                                         {/* Image Count Badge */}
-                                        <div className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold flex items-center gap-1.5 border ${
+                                        <div className={`px-2.5 py-1 rounded-lg text-xs font-mono font-semibold flex items-center gap-1.5 border ${
                                             dicomSliceCount > 0 
                                                 ? 'bg-emerald-50 text-emerald-700 dark:text-emerald-300 border-emerald-200' 
                                                 : 'bg-amber-50 text-amber-700 dark:text-amber-300 border-amber-200'
@@ -402,8 +402,8 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                         1
                                                     </div>
                                                     <div>
-                                                        <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100">Study Claimed</div>
-                                                        <div className="text-[10px] text-zinc-500 font-medium">In Scan Room</div>
+                                                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Study Claimed</div>
+                                                        <div className="text-xs text-zinc-500 font-medium">In Scan Room</div>
                                                     </div>
                                                 </div>
 
@@ -418,8 +418,8 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                         2
                                                     </div>
                                                     <div>
-                                                        <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100">Scanner Sync / Upload</div>
-                                                        <div className="text-[10px] text-zinc-500 font-medium">DICOM Transfer</div>
+                                                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Scanner Sync / Upload</div>
+                                                        <div className="text-xs text-zinc-500 font-medium">DICOM Transfer</div>
                                                     </div>
                                                 </div>
 
@@ -434,8 +434,8 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                         3
                                                     </div>
                                                     <div>
-                                                        <div className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100">{dicomSliceCount} Images Ready</div>
-                                                        <div className="text-[10px] text-zinc-500 font-medium">Indexed in PACS</div>
+                                                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100">{dicomSliceCount} Images Ready</div>
+                                                        <div className="text-xs text-zinc-500 font-medium">Indexed in PACS</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -449,7 +449,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                             <Cpu className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                                                             <h3 className="font-bold text-xs uppercase tracking-wider text-zinc-900 dark:text-zinc-100">Import From Scanner</h3>
                                                         </div>
-                                                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed mb-3 font-medium">
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-3 font-medium">
                                                             Query connected local DICOM scanner network and sync DICOM series for this Accession.
                                                         </p>
                                                     </div>
@@ -464,7 +464,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                         </button>
                                                     ) : (
                                                         <div className="space-y-2 bg-zinc-50 dark:bg-zinc-900 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800">
-                                                            <div className="flex justify-between text-[11px] font-bold uppercase tracking-wider">
+                                                            <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
                                                                 <span className="text-zinc-500">Status</span>
                                                                 <span className={pacsStep === 4 ? "text-emerald-600 dark:text-emerald-400" : "text-indigo-600 dark:text-indigo-400"}>
                                                                     {pacsStep === 1 && "Querying Scanner..."}
@@ -482,7 +482,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                             </div>
 
                                                             {pacsStep === 4 && (
-                                                                <div className="text-[11px] text-zinc-600 dark:text-zinc-400 space-y-0.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
+                                                                <div className="text-xs text-zinc-600 dark:text-zinc-400 space-y-0.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
                                                                     <div className="flex justify-between font-mono">
                                                                         <span>Accession:</span>
                                                                         <span className="text-zinc-900 dark:text-zinc-100 font-bold">{pacsAccession}</span>
@@ -500,7 +500,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                             <UploadCloud className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                                             <h3 className="font-bold text-xs uppercase tracking-wider text-zinc-900 dark:text-zinc-100">Manual DICOM Upload</h3>
                                                         </div>
-                                                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed mb-3 font-medium">
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-3 font-medium">
                                                             Upload .dcm files or compressed ZIP archives directly from disk or USB.
                                                         </p>
                                                     </div>
@@ -524,7 +524,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
 
                                                         {uploadProgress > 0 && (
                                                             <div className="mt-2 space-y-1.5 bg-zinc-50 dark:bg-zinc-900 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-800 animate-fadeIn">
-                                                                <div className="flex justify-between text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+                                                                <div className="flex justify-between text-xs font-bold text-zinc-600 dark:text-zinc-400">
                                                                     <span className="truncate max-w-[220px]">{uploadStatusText || 'Transferring DICOM dataset...'}</span>
                                                                     <span className="text-amber-500 font-mono shrink-0 ml-1">{uploadProgress}%</span>
                                                                 </div>
@@ -541,7 +541,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                         <div className="synos-card-elevated dark:bg-synos-surface bg-white rounded-xl p-8 text-center text-zinc-500 flex flex-col items-center justify-center shadow-xs">
                                             <CloudLightning className="h-8 w-8 text-zinc-400 mb-2 animate-bounce" />
                                             <span className="font-bold text-xs uppercase tracking-wider text-zinc-800 dark:text-zinc-200">Awaiting Staff Assignment</span>
-                                            <span className="text-[11px] text-zinc-500 mt-1 font-medium max-w-xs">Assign this study to yourself on the left to unlock scanner import and DICOM file controllers.</span>
+                                            <span className="text-xs text-zinc-500 mt-1 font-medium max-w-xs">Assign this study to yourself on the left to unlock scanner import and DICOM file controllers.</span>
                                         </div>
                                     )}
 
@@ -553,7 +553,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                                                     <CheckCircle className={`h-4 w-4 ${dicomSliceCount > 0 ? 'text-emerald-600' : 'text-amber-600'}`} />
                                                     <span>Release Study to Reporting?</span>
                                                 </h4>
-                                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">
+                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 font-medium">
                                                     {dicomSliceCount > 0 
                                                         ? `✓ ${dicomSliceCount} DICOM images ready. Dispatch patient to radiologist dictation queue.`
                                                         : '⚠️ Hard Stop: Cannot release study. 0 DICOM images acquired. Import from scanner or upload files first.'}
@@ -580,7 +580,7 @@ export function ModalityTerminalShell({ modalityName, technicianRole }) {
                             <div className="h-full flex flex-col items-center justify-center p-8 text-center text-zinc-400">
                                 <Monitor className="h-10 w-10 mb-2 text-zinc-300 dark:text-zinc-700" />
                                 <h3 className="font-bold text-sm uppercase tracking-wider text-zinc-800 dark:text-zinc-200">Acquisition Workstation</h3>
-                                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm leading-relaxed font-medium">
+                                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm leading-relaxed font-medium">
                                     Select a pending or assigned patient from the worklist on the left to start mapping raw frames and dispatching study files.
                                 </p>
                             </div>

@@ -3,7 +3,7 @@ import { IndianRupee, ArrowUpRight, ArrowDownRight, Clock, ExternalLink } from '
 
 export const SummaryCard = ({ title, value, type = 'neutral' }) => (
   <div className="p-6 rounded-xl border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900/40 bg-white shadow-sm flex flex-col gap-2">
-    <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-500">{title}</p>
+    <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-500">{title}</p>
     <div className="flex items-center justify-between">
       <p className="text-2xl font-bold dark:text-zinc-100 text-zinc-900">
         <span className="text-xs font-normal text-zinc-400 mr-1">₹</span>{value}
@@ -18,11 +18,11 @@ export const ActivityItem = ({ title, meta, amount, time }) => (
   <div className="flex items-center justify-between p-3 border-b dark:border-zinc-900 border-zinc-100 last:border-0 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
     <div className="flex flex-col gap-0.5">
       <p className="text-xs font-semibold dark:text-zinc-200">{title}</p>
-      <p className="text-[10px] uppercase text-zinc-500">{meta}</p>
+      <p className="text-xs uppercase text-zinc-500">{meta}</p>
     </div>
     <div className="text-right">
       <p className="text-xs font-bold dark:text-zinc-200">₹{amount}</p>
-      <p className="text-[10px] text-zinc-400">{time}</p>
+      <p className="text-xs text-zinc-400">{time}</p>
     </div>
   </div>
 );

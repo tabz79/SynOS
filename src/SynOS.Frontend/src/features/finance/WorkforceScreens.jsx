@@ -151,7 +151,7 @@ export function AttendanceLeavesScreen() {
                 <div className="col-span-4 space-y-4">
                     <div className="dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden h-[600px] flex flex-col">
                         <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-950/50">
-                            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Employee List</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Employee List</h3>
                         </div>
                         <div className="flex-1 overflow-y-auto divide-y divide-slate-200/80 dark:divide-zinc-800">
                             {staff.map(s => (
@@ -163,12 +163,12 @@ export function AttendanceLeavesScreen() {
                                     }}
                                     className={`w-full p-4 flex items-center gap-3 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${selectedStaff?.employeeId === s.employeeId ? 'bg-synos-primary/5 dark:bg-synos-primary/10 border-r-2 border-synos-primary' : ''}`}
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
                                         {s.firstName[0]}{s.lastName[0]}
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold dark:text-zinc-200">{s.firstName} {s.lastName}</p>
-                                        <p className="text-[10px] text-zinc-500">{s.jobTitle}</p>
+                                        <p className="text-xs text-zinc-500">{s.jobTitle}</p>
                                     </div>
                                 </button>
                             ))}
@@ -195,19 +195,19 @@ export function AttendanceLeavesScreen() {
                              {/* Summary Stats */}
                             <div className="grid grid-cols-4 gap-4">
                                 <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                                    <p className="text-[10px] font-bold text-emerald-600 uppercase">Days Present</p>
+                                    <p className="text-xs font-bold text-emerald-600 uppercase">Days Present</p>
                                     <p className="text-2xl font-black text-emerald-500">{summary?.totalPresentDays || 0}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                                    <p className="text-[10px] font-bold text-amber-600 uppercase">Leave Days</p>
+                                    <p className="text-xs font-bold text-amber-600 uppercase">Leave Days</p>
                                     <p className="text-2xl font-black text-amber-500">{summary?.totalLeaveDays || 0}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
-                                    <p className="text-[10px] font-bold text-zinc-500 uppercase">Planned Leaves</p>
+                                    <p className="text-xs font-bold text-zinc-500 uppercase">Planned Leaves</p>
                                     <p className="text-2xl font-black dark:text-white">{summary?.totalPlannedLeaves || 0}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-                                    <p className="text-[10px] font-bold text-rose-600 uppercase">Total Absent</p>
+                                    <p className="text-xs font-bold text-rose-600 uppercase">Total Absent</p>
                                     <p className="text-2xl font-black text-rose-500">{summary?.totalAbsentDays || 0}</p>
                                 </div>
                             </div>
@@ -236,18 +236,18 @@ export function AttendanceLeavesScreen() {
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <p className="text-sm font-bold dark:text-white">{l.employeeName}</p>
-                                    <p className="text-[10px] text-zinc-500 font-medium tracking-tight">Requested on {new Date(l.appliedAt).toLocaleDateString()}</p>
+                                    <p className="text-xs text-zinc-500 font-medium tracking-normal">Requested on {new Date(l.appliedAt).toLocaleDateString()}</p>
                                 </div>
-                                <span className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary text-[9px] font-bold rounded-full">{l.leaveType}</span>
+                                <span className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary text-xs font-bold rounded-full">{l.leaveType}</span>
                             </div>
                             <div className="space-y-2 mb-6">
-                                <div className="flex justify-between text-[11px]">
+                                <div className="flex justify-between text-xs">
                                     <span className="text-zinc-400">Duration</span>
                                     <span className="font-bold dark:text-zinc-300">
                                         {new Date(l.startDate).toLocaleDateString()} - {new Date(l.endDate).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="text-[11px] text-zinc-500 line-clamp-2 italic">"{l.reason || 'No reason provided'}"</p>
+                                <p className="text-xs text-zinc-500 line-clamp-2 italic">"{l.reason || 'No reason provided'}"</p>
                             </div>
                             <button 
                                 onClick={() => setReviewingLeave(l)}
@@ -410,7 +410,7 @@ export function StaffRegistryScreen() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="dark:bg-zinc-950/50 bg-zinc-50/50 text-[10px] uppercase tracking-widest font-bold text-zinc-500">
+                            <tr className="dark:bg-zinc-950/50 bg-zinc-50/50 text-xs uppercase tracking-widest font-bold text-zinc-500">
                                 <th className="px-6 py-4">Employee</th>
                                 <th className="px-6 py-4">Department</th>
                                 <th className="px-6 py-4">Salary Type</th>
@@ -699,7 +699,7 @@ export function SalaryProcessingScreen() {
                                             loadPeriods();
                                         } catch (e) { alert(e.message); }
                                     }}
-                                    className="text-[10px] font-bold text-synos-primary uppercase tracking-widest hover:underline flex items-center gap-1"
+                                    className="text-xs font-bold text-synos-primary uppercase tracking-widest hover:underline flex items-center gap-1"
                                 >
                                     <PlusCircle className="w-3 h-3" /> New Period
                                 </button>
@@ -727,7 +727,7 @@ export function SalaryProcessingScreen() {
                                             alert("Init failed: " + e.message);
                                         }
                                     }}
-                                    className="text-[10px] font-bold text-synos-primary uppercase tracking-widest hover:underline flex items-center gap-1"
+                                    className="text-xs font-bold text-synos-primary uppercase tracking-widest hover:underline flex items-center gap-1"
                                 >
                                     <Zap className="w-3 h-3" /> Initialize Year
                                 </button>
@@ -745,7 +745,7 @@ export function SalaryProcessingScreen() {
                                             alert("Cleanup failed: " + e.message);
                                         }
                                     }}
-                                    className="text-[10px] font-bold text-amber-500 uppercase tracking-widest hover:underline"
+                                    className="text-xs font-bold text-amber-500 uppercase tracking-widest hover:underline"
                                 >
                                     Cleanup Duplicates
                                 </button>
@@ -795,10 +795,10 @@ export function SalaryProcessingScreen() {
                                 <AlertCircle className="w-4 h-4" />
                                 <h3 className="text-xs font-bold uppercase tracking-widest">LOP & Quota Reconciliation</h3>
                             </div>
-                            <span className="text-[10px] text-zinc-500 font-mono">Month: {lopSummary?.month}</span>
+                            <span className="text-xs text-zinc-500 font-mono">Month: {lopSummary?.month}</span>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-[11px]">
+                            <table className="w-full text-left text-xs">
                                 <thead>
                                     <tr className="bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 font-bold border-b dark:border-zinc-800">
                                         <th className="px-6 py-3">Employee</th>
@@ -836,10 +836,10 @@ export function SalaryProcessingScreen() {
                                     <CheckCircle2 className="w-4 h-4" />
                                     <h3 className="text-xs font-bold uppercase tracking-widest">Provisional Payroll Worksheet</h3>
                                 </div>
-                                <span className="text-[10px] text-zinc-500 font-mono">Calculated Draft</span>
+                                <span className="text-xs text-zinc-500 font-mono">Calculated Draft</span>
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left text-[11px]">
+                                <table className="w-full text-left text-xs">
                                     <thead>
                                         <tr className="bg-zinc-50 dark:bg-zinc-950/50 text-zinc-500 font-bold border-b dark:border-zinc-800">
                                             <th className="px-6 py-3 text-left">Employee</th>
@@ -913,36 +913,36 @@ export function SalaryProcessingScreen() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Primary Metrics Row */}
                         <div className="p-5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
-                            <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Gross Salary</span>
+                            <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Total Gross Salary</span>
                             <h3 className="text-xl md:text-2xl font-black dark:text-white">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.grossSalary || 0), 0)).toLocaleString()}</h3>
-                            <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total salary earned before any cuts</span>
+                            <span className="text-xs text-zinc-500 max-w-[200px] leading-tight">Total salary earned before any cuts</span>
                         </div>
                         <div className="p-5 bg-white dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
-                            <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Combined Cuts (Total)</span>
+                            <span className="text-xs uppercase font-bold text-amber-500 tracking-wider">Combined Cuts (Total)</span>
                             <h3 className="text-xl md:text-2xl font-black text-amber-500">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.pfDeduction || 0) + (p.esiDeduction || 0) + (p.tdsDeduction || 0), 0)).toLocaleString()}</h3>
-                            <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total government deductions</span>
+                            <span className="text-xs text-zinc-500 max-w-[200px] leading-tight">Total government deductions</span>
                         </div>
                         <div className="p-5 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
-                            <span className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">Take-Home Payout</span>
+                            <span className="text-xs uppercase font-bold text-emerald-500 tracking-wider">Take-Home Payout</span>
                             <h3 className="text-xl md:text-2xl font-black text-emerald-500">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.netPayable || 0), 0)).toLocaleString()}</h3>
-                            <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Final amount paid to employees</span>
+                            <span className="text-xs text-zinc-500 max-w-[200px] leading-tight">Final amount paid to employees</span>
                         </div>
 
                         {/* Breakdown Row */}
                         <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-                            <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Retirement Fund (PF)</span>
+                            <span className="text-xs uppercase font-bold text-rose-500/80 tracking-wider">Retirement Fund (PF)</span>
                             <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.pfDeduction || 0), 0)).toLocaleString()}</h4>
-                            <span className="text-[9px] text-zinc-500 leading-tight">Provident Fund savings</span>
+                            <span className="text-xs text-zinc-500 leading-tight">Provident Fund savings</span>
                         </div>
                         <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-                            <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Health Insurance (ESI)</span>
+                            <span className="text-xs uppercase font-bold text-rose-500/80 tracking-wider">Health Insurance (ESI)</span>
                             <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.esiDeduction || 0), 0)).toLocaleString()}</h4>
-                            <span className="text-[9px] text-zinc-500 leading-tight">Employee state insurance cuts</span>
+                            <span className="text-xs text-zinc-500 leading-tight">Employee state insurance cuts</span>
                         </div>
                         <div className="p-4 bg-zinc-50/50 dark:bg-zinc-900/50 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-                            <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Income Tax (TDS)</span>
+                            <span className="text-xs uppercase font-bold text-rose-500/80 tracking-wider">Income Tax (TDS)</span>
                             <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(finalPayables.reduce((acc, p) => acc + (p.tdsDeduction || 0), 0)).toLocaleString()}</h4>
-                            <span className="text-[9px] text-zinc-500 leading-tight">Tax deducted at source</span>
+                            <span className="text-xs text-zinc-500 leading-tight">Tax deducted at source</span>
                         </div>
                     </div>
 
@@ -1065,7 +1065,7 @@ export function SalaryProcessingScreen() {
                                 >
                                     <CreditCard className="w-8 h-8 text-synos-primary" />
                                     <span className="font-bold text-sm dark:text-white">Bulk Bank Settle</span>
-                                    <span className="text-[10px] text-zinc-500">Emit bank transfer ledger entries</span>
+                                    <span className="text-xs text-zinc-500">Emit bank transfer ledger entries</span>
                                 </button>
                                 <button 
                                     onClick={async () => {
@@ -1082,7 +1082,7 @@ export function SalaryProcessingScreen() {
                                 >
                                     <Wallet className="w-8 h-8 text-amber-500" />
                                     <span className="font-bold text-sm dark:text-white">Cash Settle Hub</span>
-                                    <span className="text-[10px] text-zinc-500">Record direct ledger cash distributions</span>
+                                    <span className="text-xs text-zinc-500">Record direct ledger cash distributions</span>
                                 </button>
                             </div>
                         )}
@@ -1092,10 +1092,10 @@ export function SalaryProcessingScreen() {
                     <div className="synos-dept-card rounded-2xl overflow-hidden">
                         <div className="p-4 border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/50 dark:bg-zinc-900 flex items-center justify-between">
                             <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Finalized Employee Pay Roll Worksheet</h3>
-                            <span className="text-[10px] font-mono text-zinc-400">Total Employees: {finalPayables.length}</span>
+                            <span className="text-xs font-mono text-zinc-400">Total Employees: {finalPayables.length}</span>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-[11px]">
+                            <table className="w-full text-left text-xs">
                                 <thead>
                                     <tr className="bg-zinc-50/50 dark:bg-zinc-950/50 text-zinc-500 font-bold border-b dark:border-zinc-800">
                                         <th className="px-6 py-3">Employee</th>
@@ -1120,7 +1120,7 @@ export function SalaryProcessingScreen() {
                                             <td className="px-6 py-3 text-right text-rose-500 font-mono">{p.otherDeductions > 0 ? `-₹${(p.otherDeductions).toLocaleString()}` : '--'}</td>
                                             <td className="px-6 py-3 text-right text-emerald-500 font-bold font-sans text-sm">₹{(p.netPayable || 0).toLocaleString()}</td>
                                             <td className="px-6 py-3 text-center">
-                                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
                                                     {p.status}
                                                 </span>
                                             </td>
@@ -1212,7 +1212,7 @@ export function PayrollHistoryScreen() {
 
             <div className="synos-dept-card rounded-2xl overflow-hidden">
                 <table className="w-full text-left text-xs">
-                    <thead className="dark:bg-zinc-950/50 bg-zinc-50/50 text-[10px] uppercase font-bold text-zinc-500">
+                    <thead className="dark:bg-zinc-950/50 bg-zinc-50/50 text-xs uppercase font-bold text-zinc-500">
                         <tr>
                             <th className="px-6 py-4">Pay Period</th>
                             <th className="px-6 py-4">Finalized Time</th>
@@ -1235,7 +1235,7 @@ export function PayrollHistoryScreen() {
                                     )}
                                 </td>
                                 <td className="px-6 py-4 text-zinc-500 font-mono">{run.completedAt ? new Date(run.completedAt).toLocaleString() : 'N/A'}</td>
-                                <td className="px-6 py-4 font-mono text-[10px] text-zinc-400">{run.payrollRunId}</td>
+                                <td className="px-6 py-4 font-mono text-xs text-zinc-400">{run.payrollRunId}</td>
                                 <td className="px-6 py-4 text-right">
                                     <button 
                                         onClick={() => handleViewReport(run)}
@@ -1274,36 +1274,36 @@ export function PayrollHistoryScreen() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {/* Primary Metrics Row */}
                             <div className="p-5 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
-                                <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Total Gross Salary</span>
+                                <span className="text-xs uppercase font-bold text-zinc-400 tracking-wider">Total Gross Salary</span>
                                 <h3 className="text-xl md:text-2xl font-black dark:text-white">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.grossSalary || 0), 0)).toLocaleString()}</h3>
-                                <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total salary earned before any cuts</span>
+                                <span className="text-xs text-zinc-500 max-w-[200px] leading-tight">Total salary earned before any cuts</span>
                             </div>
                             <div className="p-5 bg-zinc-50 dark:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
-                                <span className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Combined Cuts (Total)</span>
+                                <span className="text-xs uppercase font-bold text-amber-500 tracking-wider">Combined Cuts (Total)</span>
                                 <h3 className="text-xl md:text-2xl font-black text-amber-500">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.pfDeduction || 0) + (p.esiDeduction || 0) + (p.tdsDeduction || 0), 0)).toLocaleString()}</h3>
-                                <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Total government deductions</span>
+                                <span className="text-xs text-zinc-500 max-w-[200px] leading-tight">Total government deductions</span>
                             </div>
                             <div className="p-5 bg-emerald-500/10 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex flex-col items-center justify-center text-center space-y-1 shadow-sm">
-                                <span className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">Take-Home Payout</span>
+                                <span className="text-xs uppercase font-bold text-emerald-500 tracking-wider">Take-Home Payout</span>
                                 <h3 className="text-xl md:text-2xl font-black text-emerald-500">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.netPayable || 0), 0)).toLocaleString()}</h3>
-                                <span className="text-[10px] text-zinc-500 max-w-[200px] leading-tight">Final amount paid to employees</span>
+                                <span className="text-xs text-zinc-500 max-w-[200px] leading-tight">Final amount paid to employees</span>
                             </div>
 
                             {/* Breakdown Row */}
                             <div className="p-4 bg-zinc-100/30 dark:bg-zinc-900/30 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-                                <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Retirement Fund (PF)</span>
+                                <span className="text-xs uppercase font-bold text-rose-500/80 tracking-wider">Retirement Fund (PF)</span>
                                 <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.pfDeduction || 0), 0)).toLocaleString()}</h4>
-                                <span className="text-[9px] text-zinc-500 leading-tight">Provident Fund savings</span>
+                                <span className="text-xs text-zinc-500 leading-tight">Provident Fund savings</span>
                             </div>
                             <div className="p-4 bg-zinc-100/30 dark:bg-zinc-900/30 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-                                <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Health Insurance (ESI)</span>
+                                <span className="text-xs uppercase font-bold text-rose-500/80 tracking-wider">Health Insurance (ESI)</span>
                                 <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.esiDeduction || 0), 0)).toLocaleString()}</h4>
-                                <span className="text-[9px] text-zinc-500 leading-tight">Employee state insurance cuts</span>
+                                <span className="text-xs text-zinc-500 leading-tight">Employee state insurance cuts</span>
                             </div>
                             <div className="p-4 bg-zinc-100/30 dark:bg-zinc-900/30 border dark:border-zinc-800/80 border-zinc-200/80 rounded-xl flex flex-col items-center justify-center text-center space-y-1">
-                                <span className="text-[9px] uppercase font-bold text-rose-500/80 tracking-wider">Income Tax (TDS)</span>
+                                <span className="text-xs uppercase font-bold text-rose-500/80 tracking-wider">Income Tax (TDS)</span>
                                 <h4 className="text-base font-bold text-rose-500/80">₹{Math.round(runPayables.reduce((acc, p) => acc + (p.tdsDeduction || 0), 0)).toLocaleString()}</h4>
-                                <span className="text-[9px] text-zinc-500 leading-tight">Tax deducted at source</span>
+                                <span className="text-xs text-zinc-500 leading-tight">Tax deducted at source</span>
                             </div>
                         </div>
 
@@ -1326,7 +1326,7 @@ export function PayrollHistoryScreen() {
                                         link.click();
                                         document.body.removeChild(link);
                                     }}
-                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
                                 >
                                     <Download className="w-3.5 h-3.5 text-synos-primary" /> Bank Advice (CSV)
                                 </button>
@@ -1347,7 +1347,7 @@ export function PayrollHistoryScreen() {
                                         link.click();
                                         document.body.removeChild(link);
                                     }}
-                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
                                 >
                                     <Download className="w-3.5 h-3.5 text-synos-primary" /> EPF ECR (TXT)
                                 </button>
@@ -1369,7 +1369,7 @@ export function PayrollHistoryScreen() {
                                         link.click();
                                         document.body.removeChild(link);
                                     }}
-                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
                                 >
                                     <Download className="w-3.5 h-3.5 text-synos-primary" /> ESIC Return (CSV)
                                 </button>
@@ -1390,7 +1390,7 @@ export function PayrollHistoryScreen() {
                                         link.click();
                                         document.body.removeChild(link);
                                     }}
-                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-[10px] font-bold dark:text-zinc-300"
+                                    className="flex items-center justify-center gap-1.5 p-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl hover:border-synos-primary transition-all text-xs font-bold dark:text-zinc-300"
                                 >
                                     <Download className="w-3.5 h-3.5 text-synos-primary" /> TDS 24Q (CSV)
                                 </button>
@@ -1399,7 +1399,7 @@ export function PayrollHistoryScreen() {
 
                         {/* Pay roll register worksheet */}
                         <div className="border dark:border-zinc-800 border-zinc-200 rounded-2xl overflow-hidden max-h-[300px] overflow-y-auto">
-                            <table className="w-full text-left text-[11px]">
+                            <table className="w-full text-left text-xs">
                                 <thead className="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 font-bold sticky top-0 border-b dark:border-zinc-800">
                                     <tr>
                                         <th className="px-4 py-2.5">Employee</th>
@@ -1422,14 +1422,14 @@ export function PayrollHistoryScreen() {
                                             <td className="px-4 py-2.5 text-right text-rose-500 font-mono">-₹{(p.tdsDeduction || 0).toLocaleString()}</td>
                                             <td className="px-4 py-2.5 text-right text-emerald-500 font-bold font-sans text-xs">₹{(p.netPayable || 0).toLocaleString()}</td>
                                             <td className="px-4 py-2.5 text-center">
-                                                <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${p.status === 'Settled' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
                                                     {p.status}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2.5 text-right">
                                                 <button 
                                                     onClick={() => setSelectedPayslip(p)}
-                                                    className="text-synos-primary hover:underline font-bold text-[10px] flex items-center gap-1 ml-auto"
+                                                    className="text-synos-primary hover:underline font-bold text-xs flex items-center gap-1 ml-auto"
                                                 >
                                                     <FileText className="w-3 h-3" /> Payslip
                                                 </button>
@@ -1560,7 +1560,7 @@ export function AdvancesDeductionsScreen() {
                                     <button 
                                         key={tab}
                                         onClick={() => setActiveTab(tab)} 
-                                        className={`pb-2 text-[10px] font-bold uppercase tracking-wider border-b-2 transition-all ${activeTab === tab ? `${activeColor}` : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+                                        className={`pb-2 text-xs font-bold uppercase tracking-wider border-b-2 transition-all ${activeTab === tab ? `${activeColor}` : 'border-transparent text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
                                     >
                                         {labels[tab]} ({count})
                                     </button>
@@ -1591,7 +1591,7 @@ export function AdvancesDeductionsScreen() {
                                                 <td className="px-4 py-3 text-zinc-500">{a.reason || 'Salary advance request'}</td>
                                                 <td className="px-4 py-3 text-right font-mono font-bold dark:text-zinc-300">₹{(Number(a.amount) || 0).toLocaleString()}</td>
                                                 <td className="px-4 py-3 text-center">
-                                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                                                         a.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
                                                         a.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-500' :
                                                         'bg-zinc-500/10 text-zinc-500'
@@ -1605,7 +1605,7 @@ export function AdvancesDeductionsScreen() {
                                                     <td className="px-4 py-3 text-right">
                                                         <button 
                                                             onClick={() => handleApprove(a.advanceId)}
-                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all shadow-md shadow-emerald-500/10"
+                                                            className="bg-emerald-500 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg text-xs font-bold transition-all shadow-md shadow-emerald-500/10"
                                                         >
                                                             Approve & Disburse
                                                         </button>
@@ -1664,9 +1664,9 @@ function StatCard({ label, value, icon: Icon, trend, color }) {
                 <div className={`p-2.5 rounded-xl ${colors[color]}`}>
                     <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold text-zinc-400 group-hover:text-zinc-600 transition-colors">{trend}</span>
+                <span className="text-xs font-bold text-zinc-400 group-hover:text-zinc-600 transition-colors">{trend}</span>
             </div>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{label}</p>
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{label}</p>
             <p className="text-2xl font-black mt-1 dark:text-white">{value}</p>
         </div>
     );
@@ -1691,7 +1691,7 @@ function StaffRow({ name, role, dept, type, salary, status, pfEnabled, esiEnable
             <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-500 border dark:border-zinc-700">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500 border dark:border-zinc-700">
                             {name.split(' ').map(n => n[0]).join('')}
                         </div>
                         {isLinked && (
@@ -1704,18 +1704,18 @@ function StaffRow({ name, role, dept, type, salary, status, pfEnabled, esiEnable
                         <div className="flex items-center gap-2">
                             <p className="text-sm font-bold text-zinc-900 dark:text-zinc-200">{name}</p>
                             <div className="flex gap-1">
-                                {pfEnabled && <span className="text-[8px] font-black bg-emerald-500/10 text-emerald-600 px-1 rounded uppercase tracking-tighter border border-emerald-500/10">PF</span>}
-                                {esiEnabled && <span className="text-[8px] font-black bg-blue-500/10 text-blue-600 px-1 rounded uppercase tracking-tighter border border-blue-500/10">ESI</span>}
-                                {tdsEnabled && <span className="text-[8px] font-black bg-amber-500/10 text-amber-600 px-1 rounded uppercase tracking-tighter border border-amber-500/10">TDS</span>}
+                                {pfEnabled && <span className="text-xs font-black bg-emerald-500/10 text-emerald-600 px-1 rounded uppercase tracking-normal border border-emerald-500/10">PF</span>}
+                                {esiEnabled && <span className="text-xs font-black bg-blue-500/10 text-blue-600 px-1 rounded uppercase tracking-normal border border-blue-500/10">ESI</span>}
+                                {tdsEnabled && <span className="text-xs font-black bg-amber-500/10 text-amber-600 px-1 rounded uppercase tracking-normal border border-amber-500/10">TDS</span>}
                             </div>
                         </div>
-                        <p className="text-[10px] text-zinc-500 font-medium">{role}</p>
+                        <p className="text-xs text-zinc-500 font-medium">{role}</p>
                     </div>
                 </div>
             </td>
             <td className="px-6 py-4 text-xs font-medium text-zinc-500">{dept}</td>
             <td className="px-6 py-4">
-                <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">
+                <span className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md text-xs font-bold text-zinc-500 uppercase tracking-normal">
                     {type}
                 </span>
             </td>
@@ -1723,7 +1723,7 @@ function StaffRow({ name, role, dept, type, salary, status, pfEnabled, esiEnable
                 ₹{salary}
             </td>
             <td className="px-6 py-4 text-center">
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'} border`}>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold ${status === 'Active' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'} border`}>
                     <div className={`w-1 h-1 rounded-full ${status === 'Active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                     {status}
                 </span>
@@ -1766,7 +1766,7 @@ function StaffRow({ name, role, dept, type, salary, status, pfEnabled, esiEnable
 function StepIndicator({ active, number, label }) {
     return (
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all ${active ? 'bg-white dark:bg-zinc-800 shadow-sm border border-zinc-200 dark:border-zinc-700' : 'opacity-50'}`}>
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${active ? 'bg-synos-primary text-white' : 'bg-zinc-300 dark:bg-zinc-700'}`}>
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${active ? 'bg-synos-primary text-white' : 'bg-zinc-300 dark:bg-zinc-700'}`}>
                 {number}
             </div>
             <span className="text-xs font-bold">{label}</span>
@@ -1780,7 +1780,7 @@ function PeriodCard({ month, status, staffCount, accrual, onSelect, isCurrent })
             <div className="flex justify-between items-start mb-6">
                 <div>
                     <h3 className="text-xl font-black dark:text-white group-hover:text-synos-primary transition-colors">{month}</h3>
-                    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${status === 'Finalized' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500 animate-pulse'}`}>
+                    <span className={`text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${status === 'Finalized' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500 animate-pulse'}`}>
                         {status}
                     </span>
                 </div>
@@ -1796,7 +1796,7 @@ function PeriodCard({ month, status, staffCount, accrual, onSelect, isCurrent })
                     <span className="font-bold dark:text-zinc-300">{accrual}</span>
                 </div>
             </div>
-            <button className="w-full mt-6 py-2 rounded-xl bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
+            <button className="w-full mt-6 py-2 rounded-xl bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all">
                 Select Period
             </button>
         </div>
@@ -1868,7 +1868,7 @@ function LeaveReviewModal({ request, onClose }) {
 
                 <div className="p-8 space-y-6">
                     <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/50 border dark:border-zinc-800 border-zinc-200">
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-2">Request Reason</p>
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2">Request Reason</p>
                         <p className="text-sm italic dark:text-zinc-300">"{request.reason || 'No reason provided'}"</p>
                     </div>
 
@@ -1905,7 +1905,7 @@ function LeaveReviewModal({ request, onClose }) {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Supervisor Note (Optional)</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Supervisor Note (Optional)</label>
                         <textarea 
                             value={note}
                             onChange={e => setNote(e.target.value)}
@@ -2247,7 +2247,7 @@ export function IdentityProvisioningScreen() {
                         <Users className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="text-[11px] font-normal text-zinc-400">Total Accounts</h4>
+                        <h4 className="text-xs font-normal text-zinc-400">Total Accounts</h4>
                         <p className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5">{users.length}</p>
                     </div>
                 </div>
@@ -2256,7 +2256,7 @@ export function IdentityProvisioningScreen() {
                         <Fingerprint className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="text-[11px] font-normal text-zinc-400">Active Accounts</h4>
+                        <h4 className="text-xs font-normal text-zinc-400">Active Accounts</h4>
                         <p className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5">{users.filter(u => u.isActive).length}</p>
                     </div>
                 </div>
@@ -2265,7 +2265,7 @@ export function IdentityProvisioningScreen() {
                         <Key className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="text-[11px] font-normal text-zinc-400">Pending Access</h4>
+                        <h4 className="text-xs font-normal text-zinc-400">Pending Access</h4>
                         <p className="text-lg font-semibold text-zinc-800 dark:text-zinc-100 mt-0.5">{pending.length} hires</p>
                     </div>
                 </div>
@@ -2279,7 +2279,7 @@ export function IdentityProvisioningScreen() {
                             <Clock className="w-4 h-4 text-amber-500" />
                             <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">HR Hired &bull; Pending System Access</h3>
                         </div>
-                        <span className="text-[10px] font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full">
+                        <span className="text-xs font-medium bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-full">
                             Awaiting login creation
                         </span>
                     </div>
@@ -2302,13 +2302,13 @@ export function IdentityProvisioningScreen() {
                                         <td className="px-6 py-3.5 text-right flex justify-end gap-2">
                                             <button 
                                                 onClick={() => handleQuickProvision(e)}
-                                                className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all flex items-center gap-1"
+                                                className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1"
                                             >
                                                 <Zap className="w-3 h-3" /> Quick Link
                                             </button>
                                             <button 
                                                 onClick={() => setSelectedEmployee(e)}
-                                                className="bg-synos-primary text-white hover:bg-opacity-95 px-3.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors"
+                                                className="bg-synos-primary text-white hover:bg-opacity-95 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors"
                                             >
                                                 Custom Setup
                                             </button>
@@ -2350,7 +2350,7 @@ export function IdentityProvisioningScreen() {
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="relative">
-                                                <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-medium text-zinc-500 border dark:border-zinc-700">
+                                                <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-500 border dark:border-zinc-700">
                                                     {user.name.split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 {user.signatureImageUrl && (
@@ -2361,22 +2361,22 @@ export function IdentityProvisioningScreen() {
                                             </div>
                                             <div className="space-y-0.5">
                                                 <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{user.name}</p>
-                                                <p className="text-[10px] text-zinc-400 font-medium">{user.designation || 'Staff'}</p>
+                                                <p className="text-xs text-zinc-400 font-medium">{user.designation || 'Staff'}</p>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col">
                                             <span className="text-xs font-mono text-zinc-600 dark:text-zinc-400">@{user.username}</span>
-                                            <span className="text-[10px] text-zinc-400 font-medium">{user.email}</span>
+                                            <span className="text-xs text-zinc-400 font-medium">{user.email}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-wrap gap-1">
                                             {user.branchRoles.length === 0 ? (
-                                                <span className="text-[9px] font-normal text-zinc-400 italic">No access mapped</span>
+                                                <span className="text-xs font-normal text-zinc-400 italic">No access mapped</span>
                                             ) : user.branchRoles.map((br, idx) => (
-                                                <span key={idx} className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/10 rounded-md text-[9px] font-medium uppercase tracking-normal">
+                                                <span key={idx} className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/10 rounded-md text-xs font-medium uppercase tracking-normal">
                                                     {br.branchName} - {br.roleName}
                                                 </span>
                                             ))}
@@ -2385,16 +2385,16 @@ export function IdentityProvisioningScreen() {
                                     <td className="px-6 py-4">
                                         <div className="flex flex-wrap gap-1 max-w-[200px]">
                                             {user.username === 'admin' || user.branchRoles?.some(br => br.roleName === 'Admin') ? (
-                                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/10 rounded-md text-[9px] font-semibold uppercase tracking-wide flex items-center gap-1">
+                                                <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 border border-emerald-500/10 rounded-md text-xs font-semibold uppercase tracking-wide flex items-center gap-1">
                                                     <ShieldCheck className="w-2.5 h-2.5" /> All Workspaces
                                                 </span>
                                             ) : (!user.workspaceIds || user.workspaceIds.length === 0) ? (
-                                                <span className="text-[9px] font-normal text-zinc-400 italic">No workspaces mapped</span>
+                                                <span className="text-xs font-normal text-zinc-400 italic">No workspaces mapped</span>
                                             ) : (
                                                 workspaces
                                                     .filter(w => user.workspaceIds?.includes(w.workspaceId))
                                                     .map((w, idx) => (
-                                                        <span key={idx} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border dark:border-zinc-700/60 rounded-md text-[9px] font-medium uppercase tracking-normal">
+                                                        <span key={idx} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border dark:border-zinc-700/60 rounded-md text-xs font-medium uppercase tracking-normal">
                                                             {w.name}
                                                         </span>
                                                     ))
@@ -2402,14 +2402,14 @@ export function IdentityProvisioningScreen() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[9px] font-medium text-zinc-500 uppercase tracking-normal">
+                                        <span className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-xs font-medium text-zinc-500 uppercase tracking-normal">
                                             {user.departmentCode || 'GENERAL'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <button 
                                             onClick={() => toggleAccess(user)}
-                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase border transition-colors ${
+                                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase border transition-colors ${
                                                 user.isActive 
                                                     ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20' 
                                                     : 'bg-rose-500/10 text-rose-500 border-rose-500/20 hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20'
@@ -2562,7 +2562,7 @@ export function IdentityProvisioningScreen() {
                     <Settings className="w-4 h-4 text-synos-primary" />
                     <div>
                         <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Operational Laboratory Departments</h3>
-                        <p className="text-[11px] text-zinc-400 mt-0.5">Core departments routed in the workbench & processing queues</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">Core departments routed in the workbench & processing queues</p>
                     </div>
                 </div>
                 
@@ -2580,7 +2580,7 @@ export function IdentityProvisioningScreen() {
                                         {isEditing ? (
                                             <div className="space-y-3 w-full">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary rounded text-[10px] font-medium tracking-tight">{d.code}</span>
+                                                    <span className="px-2 py-0.5 bg-synos-primary/10 text-synos-primary rounded text-xs font-medium tracking-normal">{d.code}</span>
                                                     <label className="flex items-center gap-1.5 cursor-pointer">
                                                         <input 
                                                             type="checkbox" 
@@ -2588,7 +2588,7 @@ export function IdentityProvisioningScreen() {
                                                             onChange={e => setEditingDeptActive(e.target.checked)} 
                                                             className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
                                                         />
-                                                        <span className="text-[10px] text-zinc-400 font-medium">Active</span>
+                                                        <span className="text-xs text-zinc-400 font-medium">Active</span>
                                                     </label>
                                                 </div>
                                                 <div className="space-y-1">
@@ -2606,7 +2606,7 @@ export function IdentityProvisioningScreen() {
                                                         list="macro-departments"
                                                         value={editingDeptMacro} 
                                                         onChange={e => setEditingDeptMacro(e.target.value)} 
-                                                        className="px-2 py-0.5 border dark:border-zinc-850 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded text-[10px] text-zinc-500 outline-none w-28"
+                                                        className="px-2 py-0.5 border dark:border-zinc-850 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 rounded text-xs text-zinc-500 outline-none w-28"
                                                         placeholder="Macro Area"
                                                     />
                                                     <div className="flex gap-1">
@@ -2631,11 +2631,11 @@ export function IdentityProvisioningScreen() {
                                             <div className="flex justify-between items-start h-full">
                                                 <div className="flex-1 min-w-0 pr-8">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="px-2 py-0.5 bg-synos-primary/5 text-synos-primary rounded text-[10px] font-medium tracking-tight">{d.code}</span>
+                                                        <span className="px-2 py-0.5 bg-synos-primary/5 text-synos-primary rounded text-xs font-medium tracking-normal">{d.code}</span>
                                                         <span className={`w-1.5 h-1.5 rounded-full ${d.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} title={d.isActive ? 'Active' : 'Inactive'} />
                                                     </div>
                                                     <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 mt-2 truncate">{d.name}</h4>
-                                                    <p className="text-[10px] text-zinc-400 mt-0.5">Macro Area: {d.macroDepartment || 'Pathology'}</p>
+                                                    <p className="text-xs text-zinc-400 mt-0.5">Macro Area: {d.macroDepartment || 'Pathology'}</p>
                                                 </div>
                                                 {d.code.toUpperCase() !== 'GENERAL' && d.code.toUpperCase() !== 'RAD' && (
                                                     <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/dept:opacity-100 transition-opacity">
@@ -2666,7 +2666,7 @@ export function IdentityProvisioningScreen() {
                                 <div className="col-span-full py-8 text-center bg-zinc-50 dark:bg-zinc-900/20 border border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl">
                                     <div className="animate-pulse space-y-2">
                                         <div className="h-4 w-48 bg-zinc-200 dark:bg-zinc-800 mx-auto rounded"></div>
-                                        <p className="text-[10px] text-zinc-400 font-medium tracking-wide">Fetching active laboratory departments...</p>
+                                        <p className="text-xs text-zinc-400 font-medium tracking-wide">Fetching active laboratory departments...</p>
                                     </div>
                                 </div>
                             )}
@@ -2677,7 +2677,7 @@ export function IdentityProvisioningScreen() {
                     <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-zinc-50/30 dark:bg-zinc-900/20 space-y-4 shadow-sm">
                         <div>
                             <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Create Laboratory Department</h4>
-                            <p className="text-[11px] text-zinc-400 mt-0.5">Introduce a new operational workflow</p>
+                            <p className="text-xs text-zinc-400 mt-0.5">Introduce a new operational workflow</p>
                         </div>
                         
                         <form onSubmit={handleCreateDepartment} className="space-y-4">
@@ -2689,7 +2689,7 @@ export function IdentityProvisioningScreen() {
                                     value={newDeptCode}
                                     onChange={e => setNewDeptCode(e.target.value.toUpperCase().replace(/\s+/g, ''))}
                                     placeholder="e.g. HEM, BIO, SER"
-                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors tracking-tight font-medium text-zinc-700 dark:text-zinc-300"
+                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-850 rounded text-xs outline-none focus:border-synos-primary transition-colors tracking-normal font-medium text-zinc-700 dark:text-zinc-300"
                                 />
                             </div>
 
@@ -2734,7 +2734,7 @@ export function IdentityProvisioningScreen() {
                     <Fingerprint className="w-4 h-4 text-synos-primary" />
                     <div>
                         <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">System Workspace Registry</h3>
-                        <p className="text-[11px] text-zinc-400 mt-0.5">Register browser screens and route paths to manage system access permissions</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">Register browser screens and route paths to manage system access permissions</p>
                     </div>
                 </div>
                 
@@ -2758,7 +2758,7 @@ export function IdentityProvisioningScreen() {
                                                             onChange={e => setEditingWorkspaceActive(e.target.checked)} 
                                                             className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-3.5 h-3.5"
                                                         />
-                                                        <span className="text-[10px] text-zinc-400 font-medium">Active</span>
+                                                        <span className="text-xs text-zinc-400 font-medium">Active</span>
                                                     </label>
                                                 </div>
                                                 <div className="space-y-2">
@@ -2801,7 +2801,7 @@ export function IdentityProvisioningScreen() {
                                                         <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-200 truncate">{ws.name}</h4>
                                                         <span className={`w-1.5 h-1.5 rounded-full ${ws.isActive ? 'bg-emerald-500' : 'bg-rose-500'}`} title={ws.isActive ? 'Active' : 'Inactive'} />
                                                     </div>
-                                                    <p className="text-[10px] font-mono text-zinc-400 mt-2">{ws.routePath}</p>
+                                                    <p className="text-xs font-mono text-zinc-400 mt-2">{ws.routePath}</p>
                                                 </div>
                                                 <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/ws:opacity-100 transition-opacity">
                                                     <button 
@@ -2827,7 +2827,7 @@ export function IdentityProvisioningScreen() {
 
                             {(!workspaces || workspaces.length === 0) && (
                                 <div className="col-span-full py-8 text-center bg-zinc-50 dark:bg-zinc-900/20 border border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl">
-                                    <p className="text-[10px] text-zinc-400 font-medium tracking-wide">No workspaces registered yet.</p>
+                                    <p className="text-xs text-zinc-400 font-medium tracking-wide">No workspaces registered yet.</p>
                                 </div>
                             )}
                         </div>
@@ -2837,7 +2837,7 @@ export function IdentityProvisioningScreen() {
                     <div className="p-6 rounded-2xl border dark:border-zinc-800 border-zinc-100 bg-zinc-50/30 dark:bg-zinc-900/20 space-y-4 shadow-sm">
                         <div>
                             <h4 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">Register Workspace Screen</h4>
-                            <p className="text-[11px] text-zinc-400 mt-0.5">Add a new route to the access permissions pool</p>
+                            <p className="text-xs text-zinc-400 mt-0.5">Add a new route to the access permissions pool</p>
                         </div>
                         
                         <form onSubmit={handleCreateWorkspace} className="space-y-4">
@@ -2914,7 +2914,7 @@ function AddUserModal({ onClose, onSuccess }) {
                 <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
                     <div>
                         <h2 className="text-sm font-semibold dark:text-white">Create System User</h2>
-                        <p className="text-[10px] text-zinc-400 font-medium">Onboard operational login and sync HR</p>
+                        <p className="text-xs text-zinc-400 font-medium">Onboard operational login and sync HR</p>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
                         ✖
@@ -2924,7 +2924,7 @@ function AddUserModal({ onClose, onSuccess }) {
                 <div className="p-5 space-y-4">
                     <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Full Name</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Full Name</label>
                             <input 
                                 type="text" 
                                 value={name}
@@ -2935,7 +2935,7 @@ function AddUserModal({ onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Username</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Username</label>
                             <input 
                                 type="text" 
                                 value={username}
@@ -2946,7 +2946,7 @@ function AddUserModal({ onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Email Address</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Email Address</label>
                             <input 
                                 type="email" 
                                 value={email}
@@ -2957,7 +2957,7 @@ function AddUserModal({ onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Designation / Role Title</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Designation / Role Title</label>
                             <input 
                                 type="text" 
                                 value={designation}
@@ -2968,7 +2968,7 @@ function AddUserModal({ onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Initial Password</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Initial Password</label>
                             <input 
                                 type="password" 
                                 value={password}
@@ -3033,7 +3033,7 @@ function LinkAccessModal({ employee, onClose, onSuccess }) {
                 <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
                     <div>
                         <h2 className="text-sm font-semibold dark:text-white">Provision System Login</h2>
-                        <p className="text-[10px] text-zinc-400 font-medium">{employee.displayName}</p>
+                        <p className="text-xs text-zinc-400 font-medium">{employee.displayName}</p>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
                         ✖
@@ -3043,7 +3043,7 @@ function LinkAccessModal({ employee, onClose, onSuccess }) {
                 <div className="p-5 space-y-4">
                     <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Username (Mandatory)</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Username (Mandatory)</label>
                             <input 
                                 type="text" 
                                 value={username}
@@ -3054,7 +3054,7 @@ function LinkAccessModal({ employee, onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Email Address (Optional)</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Email Address (Optional)</label>
                             <input 
                                 type="email" 
                                 value={email}
@@ -3065,7 +3065,7 @@ function LinkAccessModal({ employee, onClose, onSuccess }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Initial Password</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Initial Password</label>
                             <input 
                                 type="password" 
                                 value={password}
@@ -3077,7 +3077,7 @@ function LinkAccessModal({ employee, onClose, onSuccess }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 block">System Roles (Assign Login Level)</label>
+                        <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block">System Roles (Assign Login Level)</label>
                         <div className="flex flex-wrap gap-1.5">
                             {availableRoles.map(role => (
                                 <button
@@ -3090,7 +3090,7 @@ function LinkAccessModal({ employee, onClose, onSuccess }) {
                                             setRoles([...roles, role]);
                                         }
                                     }}
-                                    className={`px-2.5 py-1 rounded text-[10px] font-medium tracking-tight border transition-all ${
+                                    className={`px-2.5 py-1 rounded text-xs font-medium tracking-tight border transition-all ${
                                         roles.includes(role) 
                                         ? 'bg-synos-primary border-synos-primary text-white' 
                                         : 'bg-transparent border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400'
@@ -3153,7 +3153,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                 <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
                     <div>
                         <h2 className="text-sm font-semibold dark:text-white">Edit User Profile</h2>
-                        <p className="text-[10px] text-zinc-400 font-medium">Configure access and operations</p>
+                        <p className="text-xs text-zinc-400 font-medium">Configure access and operations</p>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
                         ✖
@@ -3163,7 +3163,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                 <div className="p-5 space-y-4">
                     <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Name</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Name</label>
                             <input 
                                 type="text" 
                                 value={name}
@@ -3173,7 +3173,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Username</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Username</label>
                             <input 
                                 type="text" 
                                 value={username}
@@ -3183,7 +3183,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Email Address</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Email Address</label>
                             <input 
                                 type="email" 
                                 value={email}
@@ -3193,7 +3193,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Designation</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Designation</label>
                             <input 
                                 type="text" 
                                 value={designation}
@@ -3203,7 +3203,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Operational Department</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Operational Department</label>
                             <select 
                                 value={departmentCode}
                                 onChange={e => setDepartmentCode(e.target.value)}
@@ -3220,13 +3220,13 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 block">Workspace Access Mappings</label>
+                            <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500 block">Workspace Access Mappings</label>
                             {isAdmin ? (
                                 <div className="p-3 bg-zinc-50 dark:bg-zinc-950/20 border border-dashed dark:border-zinc-800 rounded-xl space-y-2">
                                     <div className="flex items-center gap-2 text-xs text-synos-primary font-medium">
                                         <ShieldCheck className="w-4 h-4" /> Admin Bypass Enabled
                                     </div>
-                                    <p className="text-[10px] text-zinc-400">Administrators retain full system override access. Workspace restrictions do not apply.</p>
+                                    <p className="text-xs text-zinc-400">Administrators retain full system override access. Workspace restrictions do not apply.</p>
                                     <div className="grid grid-cols-2 gap-2 pt-2">
                                         {workspaces.map(ws => (
                                             <label key={ws.workspaceId} className="flex items-center gap-2 opacity-60 cursor-not-allowed">
@@ -3264,7 +3264,7 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
                                             ))}
                                         </div>
                                     ) : (
-                                        <span className="text-[10px] text-zinc-400 italic">No workspaces registered in database</span>
+                                        <span className="text-xs text-zinc-400 italic">No workspaces registered in database</span>
                                     )}
                                 </div>
                             )}
@@ -3272,13 +3272,13 @@ function EditUserModal({ user, departments, workspaces = [], onClose, onSuccess 
 
                         <div className="flex items-center justify-between p-3 rounded-xl border dark:border-zinc-800 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-950/20">
                             <div>
-                                <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">Account Status</span>
-                                <p className="text-[10px] text-zinc-400 mt-0.5">Toggle active system login access</p>
+                                <span className="text-xs font-medium text-zinc-400 dark:text-zinc-500">Account Status</span>
+                                <p className="text-xs text-zinc-400 mt-0.5">Toggle active system login access</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsActive(!isActive)}
-                                className={`px-3 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
                                     isActive ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
                                 }`}
                             >
@@ -3329,7 +3329,7 @@ function ResetPasswordModal({ user, onClose, onSuccess }) {
                 <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
                     <div>
                         <h2 className="text-sm font-semibold dark:text-white">Reset Password</h2>
-                        <p className="text-[10px] text-zinc-400 font-medium">Account: @{user.username}</p>
+                        <p className="text-xs text-zinc-400 font-medium">Account: @{user.username}</p>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
                         ✖
@@ -3338,7 +3338,7 @@ function ResetPasswordModal({ user, onClose, onSuccess }) {
 
                 <div className="p-5 space-y-4">
                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">New Secure Password</label>
+                        <label className="text-xs font-medium text-zinc-400 dark:text-zinc-500">New Secure Password</label>
                         <input 
                             type="password" 
                             value={password}
@@ -3411,7 +3411,7 @@ function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
                 <div className="px-5 py-4 border-b dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 rounded-t-xl">
                     <div>
                         <h2 className="text-sm font-semibold dark:text-white">Locations & Roles Access</h2>
-                        <p className="text-[10px] text-zinc-400 font-medium">{user.name} • @{user.username}</p>
+                        <p className="text-xs text-zinc-400 font-medium">{user.name} • @{user.username}</p>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400">
                         ✖
@@ -3421,7 +3421,7 @@ function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
                 <div className="p-6 space-y-6 rounded-b-xl">
                     {/* Assigned mappings */}
                     <div className="space-y-2">
-                        <label className="text-[11px] font-medium text-zinc-400 block">Current Mapped Access</label>
+                        <label className="text-xs font-medium text-zinc-400 block">Current Mapped Access</label>
                         <div className="border dark:border-zinc-800 rounded-xl divide-y dark:divide-zinc-800 overflow-hidden">
                             {user.branchRoles.length === 0 ? (
                                 <div className="p-4 text-center text-xs text-zinc-400 italic bg-zinc-50/50 dark:bg-zinc-900/10">
@@ -3431,12 +3431,12 @@ function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
                                 <div key={idx} className="px-4 py-3 flex justify-between items-center bg-white dark:bg-zinc-950/20 hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors">
                                     <div>
                                         <p className="text-xs font-semibold dark:text-zinc-200">{br.branchName}</p>
-                                        <p className="text-[10px] text-zinc-500">{br.roleName}</p>
+                                        <p className="text-xs text-zinc-500">{br.roleName}</p>
                                     </div>
                                     <button 
                                         onClick={() => handleRemove(br.branchId, br.roleId)}
                                         disabled={submitting}
-                                        className="text-[10px] font-medium text-rose-500 hover:bg-rose-500/10 border border-rose-500/10 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                                        className="text-xs font-medium text-rose-500 hover:bg-rose-500/10 border border-rose-500/10 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
                                     >
                                         Revoke Access
                                     </button>
@@ -3450,7 +3450,7 @@ function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
                         <span className="text-xs font-medium text-synos-primary block">Map New Location & Role</span>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-medium text-zinc-400">Select Branch</label>
+                                <label className="text-xs font-medium text-zinc-400">Select Branch</label>
                                 <select 
                                     value={selectedBranch}
                                     onChange={e => setSelectedBranch(e.target.value)}
@@ -3463,7 +3463,7 @@ function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
                                 </select>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-medium text-zinc-400">Select System Role</label>
+                                <label className="text-xs font-medium text-zinc-400">Select System Role</label>
                                 <select 
                                     value={selectedRole}
                                     onChange={e => setSelectedRole(e.target.value)}
@@ -3528,7 +3528,7 @@ export const WorkforceOverviewTab = () => {
         load();
     }, []);
 
-    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing human resources ledger...</div>;
+    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs">Syncing human resources ledger...</div>;
 
     const cards = [
         { title: "Active Employees", value: stats.staffCount.toString(), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", description: "Registered operational members" },
@@ -3548,9 +3548,9 @@ export const WorkforceOverviewTab = () => {
                             </div>
                             {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
                         </div>
-                        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+                        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
                         <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
-                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
+                        <p className="text-xs text-zinc-400 mt-2 font-medium">{card.description}</p>
                     </div>
                 ))}
             </div>
@@ -3566,7 +3566,7 @@ export const WorkforceOverviewTab = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs border-collapse">
                                 <thead>
-                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
+                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-xs uppercase font-bold text-zinc-400">
                                         <th className="pb-3">Name</th>
                                         <th className="pb-3">Designation</th>
                                         <th className="pb-3 text-right">Base Salary</th>
@@ -3580,7 +3580,7 @@ export const WorkforceOverviewTab = () => {
                                             <td className="py-3 text-zinc-500">{s.designation}</td>
                                             <td className="py-3 text-right font-black text-zinc-900 dark:text-zinc-100">₹{s.baseSalary?.toLocaleString()}</td>
                                             <td className="py-3 text-center">
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${
+                                                <span className={`px-2 py-0.5 rounded-full text-xs uppercase tracking-wider font-bold border ${
                                                     s.isActive 
                                                         ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                                                         : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
@@ -3608,7 +3608,7 @@ export const WorkforceOverviewTab = () => {
                                 <div key={idx} className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50 flex items-center justify-between">
                                     <div>
                                         <p className="text-xs font-bold dark:text-zinc-200">{a.staffName || 'Employee advance'}</p>
-                                        <p className="text-[9px] text-zinc-400 uppercase tracking-tighter mt-1">{a.status}</p>
+                                        <p className="text-xs text-zinc-400 uppercase tracking-normal mt-1">{a.status}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs font-black text-rose-500">₹{a.amount?.toLocaleString()}</p>

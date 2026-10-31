@@ -246,7 +246,7 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
                                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                                 <div>
                                     <span className="font-bold">INVENTORY SHORTAGE:</span> {s.tubeCode} stock is low (Only {s.available} available). Required {s.required}.
-                                    <p className="text-[10px] opacity-70">Clinician notified. Proceeding as non-blocking alert.</p>
+                                    <p className="text-xs opacity-70">Clinician notified. Proceeding as non-blocking alert.</p>
                                 </div>
                             </div>
                         ))}

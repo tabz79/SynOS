@@ -22,7 +22,7 @@ const StatusBadge = ({ status }) => {
     };
 
     return (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider border ${styles[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"}`}>
+        <span className={`px-2 py-0.5 rounded-full text-xs uppercase tracking-wider border ${styles[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"}`}>
             {status}
         </span>
     );
@@ -68,10 +68,10 @@ export const PartnerRegistryScreen = () => {
                                 <StatusBadge status={p.isActive ? 'Active' : 'Inactive'} />
                             </div>
                             <h3 className="text-sm font-bold dark:text-white text-zinc-900">{p.name}</h3>
-                            <p className="text-[10px] text-zinc-500 uppercase font-medium mt-1">{p.partnerType} • {p.collectionModel}</p>
+                            <p className="text-xs text-zinc-500 uppercase font-medium mt-1">{p.partnerType} • {p.collectionModel}</p>
                             <div className="mt-4 pt-4 border-t dark:border-zinc-900 border-zinc-100 flex justify-between items-center">
-                                <span className="text-[10px] text-zinc-400">Created: {new Date(p.createdAt).toLocaleDateString()}</span>
-                                <button className="text-synos-primary hover:underline text-[10px] font-bold uppercase">View Profile</button>
+                                <span className="text-xs text-zinc-400">Created: {new Date(p.createdAt).toLocaleDateString()}</span>
+                                <button className="text-synos-primary hover:underline text-xs font-bold uppercase">View Profile</button>
                             </div>
                         </div>
                     ))
@@ -120,11 +120,11 @@ export const CommissionPayoutsScreen = () => {
                     <table className="w-full text-left synos-table">
                         <thead>
                             <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Commission Amount</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Due Since</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Partner</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Commission Amount</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Due Since</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -132,13 +132,13 @@ export const CommissionPayoutsScreen = () => {
                                 <tr key={p.factId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4">
                                         <p className="text-xs font-bold dark:text-zinc-200">{p.partnerName}</p>
-                                        <p className="text-[10px] text-zinc-500 uppercase">{p.description}</p>
+                                        <p className="text-xs text-zinc-500 uppercase">{p.description}</p>
                                     </td>
                                     <td className="p-4 text-xs font-bold text-right">₹{p.amount.toLocaleString()}</td>
                                     <td className="p-4 text-center"><StatusBadge status={p.status} /></td>
                                     <td className="p-4 text-xs text-zinc-400">{new Date(p.createdAt).toLocaleDateString()}</td>
                                     <td className="p-4 text-right">
-                                        <button onClick={() => handleSettle(p)} className="px-3 py-1.5 rounded-lg bg-synos-primary/10 text-synos-primary text-[10px] font-bold uppercase hover:bg-synos-primary hover:text-white transition-all">Issue Payout</button>
+                                        <button onClick={() => handleSettle(p)} className="px-3 py-1.5 rounded-lg bg-synos-primary/10 text-synos-primary text-xs font-bold uppercase hover:bg-synos-primary hover:text-white transition-all">Issue Payout</button>
                                     </td>
                                 </tr>
                             ))}
@@ -198,19 +198,19 @@ export const CommissionRulesScreen = () => {
                             
                             <div className="mt-6 flex items-center gap-6">
                                 <div>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-widest">Commission</p>
+                                    <p className="text-xs text-zinc-400 uppercase font-bold tracking-widest">Commission</p>
                                     <p className="text-lg font-bold text-synos-primary">{r.percentage}%</p>
                                 </div>
                                 <div className="h-8 w-px bg-zinc-100 dark:bg-zinc-900" />
                                 <div>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-bold tracking-widest">Base</p>
+                                    <p className="text-xs text-zinc-400 uppercase font-bold tracking-widest">Base</p>
                                     <p className="text-xs font-semibold dark:text-zinc-300">{r.calculationBase || "Net Amount"}</p>
                                 </div>
                             </div>
 
                             <div className="mt-6 flex items-center gap-2">
                                 <StatusBadge status={r.isActive ? 'Active' : 'Inactive'} />
-                                <span className="text-[10px] text-zinc-400">Applies to: {r.partnerType || "All Partners"}</span>
+                                <span className="text-xs text-zinc-400">Applies to: {r.partnerType || "All Partners"}</span>
                             </div>
                         </div>
                     ))

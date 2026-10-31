@@ -18,7 +18,7 @@ export const FilterPill = ({ label, count, isActive, onClick, variant = "default
                 <span>{label}</span>
                 {count !== undefined && (
                     <span className={cn(
-                        "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
+                        "text-xs px-1.5 py-0.2 rounded-full font-mono",
                         isActive ? "bg-white/20 text-white dark:bg-black/20 dark:text-black" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
                     )}>
                         {count}
@@ -42,7 +42,7 @@ export const FilterPill = ({ label, count, isActive, onClick, variant = "default
             <span>{label}</span>
             {count !== undefined && (
                 <span className={cn(
-                    "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
+                    "text-xs px-1.5 py-0.2 rounded-full font-mono",
                     isActive ? "bg-white/20 text-white" : "bg-zinc-200 dark:bg-zinc-800 text-zinc-500"
                 )}>
                     {count}
@@ -251,14 +251,14 @@ export const FinanceFilterBar = ({
                                     type="date"
                                     value={customDates?.start || ''}
                                     onChange={(e) => onCustomDatesChange && onCustomDatesChange({ ...customDates, start: e.target.value })}
-                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary outline-none"
+                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-xs font-bold text-synos-primary outline-none"
                                 />
-                                <span className="text-zinc-400 text-[10px]">to</span>
+                                <span className="text-zinc-400 text-xs">to</span>
                                 <input
                                     type="date"
                                     value={customDates?.end || ''}
                                     onChange={(e) => onCustomDatesChange && onCustomDatesChange({ ...customDates, end: e.target.value })}
-                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary outline-none"
+                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-xs font-bold text-synos-primary outline-none"
                                 />
                             </div>
                         )}

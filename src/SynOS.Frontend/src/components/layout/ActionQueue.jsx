@@ -4,8 +4,8 @@ import { useTheme } from "@/context/ThemeContext";
 
 export function ActionQueueHeader({ title, count }) {
     return (
-        <div className="flex items-center gap-3 mb-3 px-1">
-            <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">{title}</h2>
+        <div className="flex items-center gap-3 mb-1 px-1">
+            <h2 className="text-xl sm:text-2xl font-extrabold dark:text-white text-slate-900 tracking-tight">{title}</h2>
         </div>
     );
 }

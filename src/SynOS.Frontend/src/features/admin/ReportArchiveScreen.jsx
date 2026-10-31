@@ -272,7 +272,7 @@ export function ReportArchiveScreen() {
                             </div>
                             <div>
                                 <h2 className="text-lg font-black tracking-tight dark:text-white text-zinc-900">Report Archive</h2>
-                                <p className="text-[9px] uppercase font-bold tracking-widest text-zinc-400">Enterprise Registry</p>
+                                <p className="text-xs uppercase font-bold tracking-widest text-zinc-400">Enterprise Registry</p>
                             </div>
                         </div>
                         <button 
@@ -312,7 +312,7 @@ export function ReportArchiveScreen() {
                                 key={chip.id}
                                 onClick={() => handleIntervalChange(chip.id)}
                                 className={cn(
-                                    "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all border",
+                                    "px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all border",
                                     selectedInterval === chip.id
                                         ? "bg-synos-primary text-white border-transparent shadow-sm"
                                         : "dark:bg-zinc-900 bg-white border-zinc-200 dark:border-white/5 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
@@ -327,7 +327,7 @@ export function ReportArchiveScreen() {
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={cn(
-                            "flex items-center justify-between w-full px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all border",
+                            "flex items-center justify-between w-full px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all border",
                             showFilters
                                 ? "bg-synos-primary/10 text-synos-primary border-synos-primary/20"
                                 : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
@@ -346,14 +346,14 @@ export function ReportArchiveScreen() {
                             {/* Branch and Department dropdowns */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-zinc-400 uppercase tracking-wider ml-1">Branch</label>
+                                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider ml-1">Branch</label>
                                     <select
                                         value={selectedBranchId}
                                         onChange={(e) => {
                                             setSelectedBranchId(e.target.value);
                                             setPage(1);
                                         }}
-                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
+                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
                                     >
                                         <option value="">All Branches</option>
                                         {branches.map(b => (
@@ -362,14 +362,14 @@ export function ReportArchiveScreen() {
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-zinc-400 uppercase tracking-wider ml-1">Department</label>
+                                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider ml-1">Department</label>
                                     <select
                                         value={selectedDepartment}
                                         onChange={(e) => {
                                             setSelectedDepartment(e.target.value);
                                             setPage(1);
                                         }}
-                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
+                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
                                     >
                                         <option value="">All Departments</option>
                                         {departments.map(d => (
@@ -381,7 +381,7 @@ export function ReportArchiveScreen() {
 
                             {/* Statuses Checkboxes (Multi-select) */}
                             <div className="space-y-1.5">
-                                <label className="text-[9px] font-black text-zinc-400 uppercase tracking-wider ml-1 block">Report Status</label>
+                                <label className="text-xs font-black text-zinc-400 uppercase tracking-wider ml-1 block">Report Status</label>
                                 <div className="flex items-center gap-x-4 gap-y-2 flex-wrap">
                                     {[
                                         { id: 'Signed', label: 'Signed' },
@@ -392,7 +392,7 @@ export function ReportArchiveScreen() {
                                     ].map(stat => {
                                         const isChecked = selectedStatuses.includes(stat.id);
                                         return (
-                                            <label key={stat.id} className="flex items-center gap-2 cursor-pointer select-none text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+                                            <label key={stat.id} className="flex items-center gap-2 cursor-pointer select-none text-xs font-bold text-zinc-600 dark:text-zinc-400">
                                                 <input 
                                                     type="checkbox"
                                                     checked={isChecked}
@@ -409,7 +409,7 @@ export function ReportArchiveScreen() {
                             {/* Custom Date Ranges */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-zinc-400 uppercase tracking-wider ml-1">Start Date</label>
+                                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider ml-1">Start Date</label>
                                     <input 
                                         type="date"
                                         value={startDate}
@@ -418,11 +418,11 @@ export function ReportArchiveScreen() {
                                             setSelectedInterval("");
                                             setPage(1);
                                         }}
-                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
+                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-zinc-400 uppercase tracking-wider ml-1">End Date</label>
+                                    <label className="text-xs font-black text-zinc-400 uppercase tracking-wider ml-1">End Date</label>
                                     <input 
                                         type="date"
                                         value={endDate}
@@ -431,7 +431,7 @@ export function ReportArchiveScreen() {
                                             setSelectedInterval("");
                                             setPage(1);
                                         }}
-                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
+                                        className="w-full bg-white dark:bg-zinc-950 border dark:border-white/5 border-zinc-200 rounded-xl px-3 py-2 text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none"
                                     />
                                 </div>
                             </div>
@@ -475,26 +475,26 @@ export function ReportArchiveScreen() {
                                             <h4 className={cn("text-xs font-bold truncate transition-colors", isSelected ? "text-synos-primary dark:text-white" : "text-zinc-800 dark:text-zinc-200")}>
                                                 {report.patientName}
                                             </h4>
-                                            <p className="text-[10px] text-zinc-450 dark:text-zinc-500 font-medium">
+                                            <p className="text-xs text-zinc-450 dark:text-zinc-500 font-medium">
                                                 {report.patientAgeGender} &bull; {report.mrn || 'No MRN'}
                                             </p>
                                         </div>
-                                        <span className="text-[9px] font-mono font-bold dark:text-zinc-500 text-zinc-450">
+                                        <span className="text-xs font-mono font-bold dark:text-zinc-500 text-zinc-450">
                                             Token: {report.token}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between border-t dark:border-white/5 border-zinc-100 pt-2 text-[10px] font-medium text-zinc-500">
+                                    <div className="flex items-center justify-between border-t dark:border-white/5 border-zinc-100 pt-2 text-xs font-medium text-zinc-500">
                                         <div className="flex items-center gap-1.5 truncate max-w-[65%]">
-                                            <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[9px] font-bold tracking-tight text-zinc-500 truncate">
+                                            <span className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-xs font-bold tracking-normal text-zinc-500 truncate">
                                                 {report.testName}
                                             </span>
-                                            <span className="text-[9px] text-zinc-400">
+                                            <span className="text-xs text-zinc-400">
                                                 {report.branchName}
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             <span className={cn(
-                                                "px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider border",
+                                                "px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border",
                                                 report.status === "Signed" || report.status === "Delivered"
                                                     ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                                                     : report.status === "ReadyForVerification"
@@ -514,7 +514,7 @@ export function ReportArchiveScreen() {
                 {/* Pagination Controls */}
                 {!isLoadingList && reports.length > 0 && (
                     <div className="p-4 border-t dark:border-white/5 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-950/20 shrink-0">
-                        <div className="flex items-center gap-4 text-[10px] text-zinc-500">
+                        <div className="flex items-center gap-4 text-xs text-zinc-500">
                             <div className="flex items-center gap-1.5">
                                 <span>Rows:</span>
                                 <select
@@ -541,7 +541,7 @@ export function ReportArchiveScreen() {
                             >
                                 <ChevronLeft className="w-3.5 h-3.5 text-zinc-500" />
                             </button>
-                            <span className="text-[10px] font-bold px-2 py-0.5 bg-zinc-150 dark:bg-zinc-850 rounded-md text-zinc-600 dark:text-zinc-300">
+                            <span className="text-xs font-bold px-2 py-0.5 bg-zinc-150 dark:bg-zinc-850 rounded-md text-zinc-600 dark:text-zinc-300">
                                 Page {page} / {totalPages || 1}
                             </span>
                             <button
@@ -569,11 +569,11 @@ export function ReportArchiveScreen() {
                             {/* Minimal Floating Glass Window Label */}
                             <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-md flex items-center gap-2">
                                 <FileText className="w-3.5 h-3.5 text-synos-primary" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider dark:text-zinc-300 text-zinc-700">
+                                <span className="text-xs font-bold uppercase tracking-wider dark:text-zinc-300 text-zinc-700">
                                     High-Fidelity Document Preview
                                 </span>
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-1" />
-                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                                     Archived
                                 </span>
                             </div>
@@ -611,10 +611,10 @@ export function ReportArchiveScreen() {
                                         <FileCheck2 className="w-5 h-5" />
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="text-xs font-bold tracking-tight dark:text-white text-zinc-900 truncate">
+                                        <h4 className="text-xs font-bold tracking-normal dark:text-white text-zinc-900 truncate">
                                             {reportListItem?.patientName} ({reportListItem?.patientAgeGender})
                                         </h4>
-                                        <div className="text-[10px] text-zinc-500 font-medium flex items-center gap-2 truncate mt-0.5">
+                                        <div className="text-xs text-zinc-500 font-medium flex items-center gap-2 truncate mt-0.5">
                                             <span>MRN: <strong className="text-zinc-700 dark:text-zinc-300">{reportListItem?.mrn || 'N/A'}</strong></span>
                                             <span>&bull;</span>
                                             <span>Token: <strong className="text-zinc-700 dark:text-zinc-300">{reportListItem?.token}</strong></span>
@@ -637,7 +637,7 @@ export function ReportArchiveScreen() {
                                         }}
                                         className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
                                     />
-                                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                                         Preprinted
                                     </span>
                                 </label>

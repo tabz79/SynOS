@@ -262,17 +262,17 @@ export function InsuranceTerminal({ forcedTab }) {
                 <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                         <div className="text-right">
-                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total Claims</p>
+                            <p className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Total Claims</p>
                             <p className="text-xs font-black text-blue-600 dark:text-blue-400">₹{totalClaimsAmount.toLocaleString()}</p>
                         </div>
                         <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
                         <div className="text-right">
-                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Co-Pay</p>
+                            <p className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Co-Pay</p>
                             <p className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{totalCoPayCollected.toLocaleString()}</p>
                         </div>
                         <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
                         <div className="text-right">
-                            <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Active TPAs</p>
+                            <p className="text-xs text-zinc-500 uppercase font-black tracking-wider block">Active TPAs</p>
                             <p className="text-xs font-black text-zinc-900 dark:text-zinc-100">{companies.filter(c => c.isActive).length}</p>
                         </div>
                     </div>
@@ -327,7 +327,7 @@ export function InsuranceTerminal({ forcedTab }) {
                                 <Icon size={14} />
                                 <span>{t.label}</span>
                                 {t.id === 'claims' && pendingClaimsCount > 0 && (
-                                    <span className="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] rounded-full font-mono">
+                                    <span className="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs rounded-full font-mono">
                                         {pendingClaimsCount}
                                     </span>
                                 )}
@@ -353,14 +353,14 @@ export function InsuranceTerminal({ forcedTab }) {
                                     <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Claims Submissions</span>
+                                                <span className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Claims Submissions</span>
                                                 <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{claims.length}</p>
                                             </div>
                                             <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                                                 <FileText size={17} />
                                             </div>
                                         </div>
-                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                             Cashless diagnostic claims submitted
                                         </p>
                                     </div>
@@ -368,14 +368,14 @@ export function InsuranceTerminal({ forcedTab }) {
                                     <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Pending Claims Value</span>
+                                                <span className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Pending Claims Value</span>
                                                 <p className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">₹{totalClaimsAmount.toLocaleString()}</p>
                                             </div>
                                             <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                                                 <Clock size={17} />
                                             </div>
                                         </div>
-                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                             {pendingClaimsCount} claims awaiting reimbursement
                                         </p>
                                     </div>
@@ -383,14 +383,14 @@ export function InsuranceTerminal({ forcedTab }) {
                                     <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Desk Co-Pay Collected</span>
+                                                <span className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Desk Co-Pay Collected</span>
                                                 <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">₹{totalCoPayCollected.toLocaleString()}</p>
                                             </div>
                                             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                                                 <DollarSign size={17} />
                                             </div>
                                         </div>
-                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                             Directly collected from patients
                                         </p>
                                     </div>
@@ -398,14 +398,14 @@ export function InsuranceTerminal({ forcedTab }) {
                                     <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Empanelled TPAs</span>
+                                                <span className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Empanelled TPAs</span>
                                                 <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{companies.length}</p>
                                             </div>
                                             <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                                                 <Building2 size={17} />
                                             </div>
                                         </div>
-                                        <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                        <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                             Insurers with active pre-auth desk
                                         </p>
                                     </div>
@@ -427,7 +427,7 @@ export function InsuranceTerminal({ forcedTab }) {
                                     </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3">Patient</th>
                                                     <th className="px-6 py-3">Insurer / TPA</th>
@@ -443,20 +443,20 @@ export function InsuranceTerminal({ forcedTab }) {
                                                     <tr key={c.visitId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                                                         <td className="px-6 py-3.5">
                                                             <div className="font-bold dark:text-zinc-100">{c.patientName}</div>
-                                                            <div className="text-[10px] text-zinc-400 font-mono">{c.patientMrn}</div>
+                                                            <div className="text-xs text-zinc-400 font-mono">{c.patientMrn}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 font-medium dark:text-zinc-300">
                                                             {c.insuranceCompanyName}
                                                         </td>
-                                                        <td className="px-6 py-3.5 font-mono text-[11px]">
+                                                        <td className="px-6 py-3.5 font-mono text-xs">
                                                             <div className="text-blue-500 font-bold">{c.preAuthApprovalNumber}</div>
-                                                            <div className="text-zinc-400 text-[10px]">Pol: {c.policyNumber}</div>
+                                                            <div className="text-zinc-400 text-xs">Pol: {c.policyNumber}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-zinc-500">₹{c.grossAmount?.toLocaleString()}</td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-emerald-500 font-bold">₹{c.coPayAmount?.toLocaleString()}</td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-blue-500 font-bold">₹{c.claimAmount?.toLocaleString()}</td>
                                                         <td className="px-6 py-3.5 text-center">
-                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-500/10 text-blue-500">
+                                                            <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-500/10 text-blue-500">
                                                                 {c.status}
                                                             </span>
                                                         </td>
@@ -502,7 +502,7 @@ export function InsuranceTerminal({ forcedTab }) {
                                 <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3.5">Insurance Company / Payer</th>
                                                     <th className="px-6 py-3.5">TPA Code / Payer ID</th>
@@ -521,39 +521,39 @@ export function InsuranceTerminal({ forcedTab }) {
                                                                 {c.name}
                                                             </div>
                                                             {c.tpaName && (
-                                                                <div className="text-[11px] text-zinc-500 mt-0.5">TPA: {c.tpaName}</div>
+                                                                <div className="text-xs text-zinc-500 mt-0.5">TPA: {c.tpaName}</div>
                                                             )}
                                                             {c.address && (
-                                                                <div className="text-[10px] text-zinc-400 mt-0.5 truncate max-w-xs">{c.address}</div>
+                                                                <div className="text-xs text-zinc-400 mt-0.5 truncate max-w-xs">{c.address}</div>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 font-mono">
-                                                            <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-[11px]">
+                                                            <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs">
                                                                 {c.code || c.payerId || "N/A"}
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 space-y-1">
                                                             {c.contactPhone && (
-                                                                <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 text-[11px]">
+                                                                <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-300 text-xs">
                                                                     <Phone className="w-3 h-3 text-zinc-400" /> {c.contactPhone}
                                                                 </div>
                                                             )}
                                                             {c.contactEmail && (
-                                                                <div className="flex items-center gap-1.5 text-zinc-500 text-[11px]">
+                                                                <div className="flex items-center gap-1.5 text-zinc-500 text-xs">
                                                                     <Mail className="w-3 h-3 text-zinc-400" /> {c.contactEmail}
                                                                 </div>
                                                             )}
                                                             {!c.contactPhone && !c.contactEmail && (
-                                                                <span className="text-zinc-400 text-[11px]">No contacts configured</span>
+                                                                <span className="text-zinc-400 text-xs">No contacts configured</span>
                                                             )}
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
                                                             {c.preAuthRequired !== false ? (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                                                     Mandatory Pre-Auth
                                                                 </span>
                                                             ) : (
-                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
                                                                     Direct Claim
                                                                 </span>
                                                             )}
@@ -573,7 +573,7 @@ export function InsuranceTerminal({ forcedTab }) {
                                                                     loadData();
                                                                 }}
                                                                 className={cn(
-                                                                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer",
+                                                                    "px-2.5 py-0.5 rounded-full text-xs font-bold transition-all cursor-pointer",
                                                                     c.isActive 
                                                                         ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" 
                                                                         : "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
@@ -649,7 +649,7 @@ export function InsuranceTerminal({ forcedTab }) {
                                 <div className="synos-dept-card rounded-2xl overflow-hidden">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3.5">Patient Details</th>
                                                     <th className="px-6 py-3.5">Insurer & TPA</th>
@@ -666,20 +666,20 @@ export function InsuranceTerminal({ forcedTab }) {
                                                     <tr key={c.visitId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                                                         <td className="px-6 py-3.5">
                                                             <div className="font-bold text-sm dark:text-zinc-100">{c.patientName}</div>
-                                                            <div className="text-[10px] text-zinc-400 font-mono">MRN: {c.patientMrn}</div>
+                                                            <div className="text-xs text-zinc-400 font-mono">MRN: {c.patientMrn}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 font-medium dark:text-zinc-200">
                                                             {c.insuranceCompanyName}
                                                         </td>
-                                                        <td className="px-6 py-3.5 font-mono text-[11px] space-y-0.5">
+                                                        <td className="px-6 py-3.5 font-mono text-xs space-y-0.5">
                                                             <div className="font-bold text-blue-500">Auth: {c.preAuthApprovalNumber}</div>
-                                                            <div className="text-zinc-400 text-[10px]">Pol: {c.policyNumber}</div>
+                                                            <div className="text-zinc-400 text-xs">Pol: {c.policyNumber}</div>
                                                         </td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-zinc-500">₹{c.grossAmount?.toLocaleString()}</td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-emerald-500 font-bold">₹{c.coPayAmount?.toLocaleString()}</td>
                                                         <td className="px-6 py-3.5 text-right font-mono text-blue-500 font-bold">₹{c.claimAmount?.toLocaleString()}</td>
                                                         <td className="px-6 py-3.5 text-center">
-                                                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-500/10 text-blue-500">
+                                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-500/10 text-blue-500">
                                                                 {c.status}
                                                             </span>
                                                         </td>
@@ -719,14 +719,14 @@ export function InsuranceTerminal({ forcedTab }) {
                                             <p className="text-xs text-zinc-500">Total cashless claims outstanding across empanelled insurers</p>
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-[11px] text-zinc-400 font-bold uppercase">Total TPA Outstanding</span>
+                                            <span className="text-xs text-zinc-400 font-bold uppercase">Total TPA Outstanding</span>
                                             <p className="text-2xl font-black text-blue-500">₹{totalClaimsAmount.toLocaleString()}</p>
                                         </div>
                                     </div>
 
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs">
-                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-zinc-200 dark:border-zinc-800">
+                                            <thead className="bg-zinc-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-xs border-b border-zinc-200 dark:border-zinc-800">
                                                 <tr>
                                                     <th className="px-6 py-3">Empanelled Provider</th>
                                                     <th className="px-6 py-3 text-center">Claims Count</th>
@@ -815,7 +815,7 @@ export function InsuranceTerminal({ forcedTab }) {
                         </div>
                         <div className="space-y-3 text-xs">
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Select Insurer / TPA</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Select Insurer / TPA</label>
                                 <select className="w-full h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none">
                                     {companies.map(c => (
                                         <option key={c.insuranceCompanyId || c.id} value={c.insuranceCompanyId || c.id}>{c.name}</option>
@@ -824,16 +824,16 @@ export function InsuranceTerminal({ forcedTab }) {
                             </div>
                             <div className="grid grid-cols-2 gap-2.5">
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Amount Received (₹)</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Amount Received (₹)</label>
                                     <input type="number" placeholder="50000" className="w-full h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none font-mono" />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">UTR / Bank Ref #</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">UTR / Bank Ref #</label>
                                     <input type="text" placeholder="NEFT-BARB2026..." className="w-full h-9 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none font-mono" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Notes / Disallowances</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Notes / Disallowances</label>
                                 <textarea placeholder="Notes on TDS or disallowed line items..." className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-transparent outline-none resize-none h-16" />
                             </div>
                         </div>
@@ -954,7 +954,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                         </div>
                         <div>
                             <h3 className="text-sm font-bold">{isEdit ? "Edit Insurance Company" : "Add Insurance Company"}</h3>
-                            <p className="text-[10px] text-zinc-500">Register insurance company or TPA network</p>
+                            <p className="text-xs text-zinc-500">Register insurance company or TPA network</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer">
@@ -970,7 +970,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-xs">
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Company / Insurer Name *</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Company / Insurer Name *</label>
                         <input
                             type="text"
                             required
@@ -983,7 +983,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">TPA Name</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">TPA Name</label>
                             <input
                                 type="text"
                                 placeholder="e.g. Medi Assist TPA"
@@ -993,7 +993,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">TPA Code / Payer ID</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">TPA Code / Payer ID</label>
                             <input
                                 type="text"
                                 placeholder="e.g. STAR_TPA"
@@ -1006,7 +1006,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
 
                     <div className="grid grid-cols-2 gap-2.5">
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Pre-Auth Desk Phone</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Pre-Auth Desk Phone</label>
                             <input
                                 type="text"
                                 placeholder="1800-XXX-XXXX"
@@ -1016,7 +1016,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Claims Email</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Claims Email</label>
                             <input
                                 type="email"
                                 placeholder="cashless@starhealth.in"
@@ -1028,7 +1028,7 @@ function InsurerConfigModal({ isOpen, initialData, isDark, onClose, onSuccess })
                     </div>
 
                     <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Claims Submission Address</label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 mb-1">Claims Submission Address</label>
                         <input
                             type="text"
                             placeholder="Floor 4, TPA Claims Processing Center, Bengaluru"

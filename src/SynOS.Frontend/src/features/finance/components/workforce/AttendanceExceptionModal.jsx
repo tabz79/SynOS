@@ -77,7 +77,7 @@ export function AttendanceExceptionModal({ isOpen, onClose, date, employeeId, cu
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes / Reason</label>
+                        <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Notes / Reason</label>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}

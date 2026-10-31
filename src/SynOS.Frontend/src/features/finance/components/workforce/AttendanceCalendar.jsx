@@ -27,7 +27,7 @@ export function AttendanceCalendar({ statuses, isLocked, onDateClick }) {
             <div className="p-4 border-b dark:border-zinc-800 border-zinc-100 bg-zinc-50 dark:bg-zinc-950/50 flex justify-between items-center">
                 <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">{month} {year}</h3>
                 {isLocked && (
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold border border-amber-500/20">
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-amber-500/10 text-amber-500 text-xs font-bold border border-amber-500/20">
                         <Lock className="w-3 h-3" /> PERIOD LOCKED
                     </div>
                 )}
@@ -36,7 +36,7 @@ export function AttendanceCalendar({ statuses, isLocked, onDateClick }) {
             <div className="p-4">
                 <div className="grid grid-cols-7 gap-px dark:bg-zinc-800 bg-zinc-100 border dark:border-zinc-800 border-zinc-100 rounded-lg overflow-hidden">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                        <div key={d} className="bg-zinc-50 dark:bg-zinc-900/80 p-2 text-center text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
+                        <div key={d} className="bg-zinc-50 dark:bg-zinc-900/80 p-2 text-center text-xs font-bold text-zinc-400 uppercase tracking-normal">
                             {d}
                         </div>
                     ))}
@@ -61,7 +61,7 @@ export function AttendanceCalendar({ statuses, isLocked, onDateClick }) {
                                 )}
 
                                 <div className="relative z-10 flex justify-between items-start">
-                                    <span className={`text-[9px] font-bold font-mono transition-colors ${
+                                    <span className={`text-xs font-bold font-mono transition-colors ${
                                         isToday ? 'text-synos-primary' : 
                                         d.status?.status === 'Upcoming' ? 'text-zinc-500' : 
                                         'text-zinc-400 group-hover:text-synos-primary'
@@ -99,7 +99,7 @@ export function AttendanceCalendar({ statuses, isLocked, onDateClick }) {
                     })}
                 </div>
                 
-                <div className="mt-4 flex flex-wrap gap-4 text-[9px] font-bold uppercase text-zinc-500">
+                <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold uppercase text-zinc-500">
                     <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-emerald-500" /> Present
                     </div>

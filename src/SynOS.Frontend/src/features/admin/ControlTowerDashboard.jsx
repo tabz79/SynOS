@@ -196,12 +196,12 @@ export function ControlTowerDashboard() {
         : (branches.find(b => (b.branchId || b.id) === activeOversightBranchId)?.name || user?.branchName || "Selected Branch");
 
     return (
-        <div className="p-8 space-y-8 pb-16 relative z-10">
+        <div className="px-6 py-5 space-y-6 pb-12 relative z-10">
             {/* HEADER WITH SWITCHER */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
-                    <p className="text-xs text-zinc-500 font-medium mt-1">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
+                    <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">Control Tower</h1>
+                    <p className="text-sm md:text-base text-slate-600 dark:text-zinc-400 font-medium mt-1 leading-normal">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
                 </div>
 
                 {/* Clean Subscription Reminder Card */}
@@ -228,12 +228,12 @@ export function ControlTowerDashboard() {
                         };
 
                         return (
-                            <div className="synos-elevated-card rounded-2xl p-3.5 flex flex-row items-center justify-between gap-4 w-full md:w-[380px] text-left animate-fadeIn">
+                            <div className="synos-elevated-card rounded-2xl p-4 flex flex-row items-center justify-between gap-4 w-full md:w-[400px] text-left animate-fadeIn">
                                 <div className="space-y-1">
-                                    <div className="text-[11px] font-black uppercase tracking-wider text-zinc-450 dark:text-zinc-500">
+                                    <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                                         Annual Subscription
                                     </div>
-                                    <div className="text-xs text-zinc-650 dark:text-zinc-350 leading-relaxed font-medium">
+                                    <div className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
                                         {isExpired ? (
                                             <>
                                                 <p>Your subscription expired <strong className="font-extrabold">{Math.abs(diffDays)} day(s) ago</strong>.</p>
@@ -243,13 +243,13 @@ export function ControlTowerDashboard() {
                                         ) : (
                                             <>
                                                 <p>Your annual subscription expires {diffDays === 1 ? <strong className="font-extrabold">tomorrow</strong> : <>in <strong className="font-extrabold">{diffDays} days</strong></>}.</p>
-                                                <p>Renew before <strong className="font-extrabold text-zinc-850 dark:text-zinc-200">{formatDateStr(expiryDate)}</strong> to continue uninterrupted operation.</p>
+                                                <p>Renew before <strong className="font-extrabold text-slate-900 dark:text-zinc-100">{formatDateStr(expiryDate)}</strong> to continue uninterrupted operation.</p>
                                             </>
                                         )}
-                                        <p className="text-[10px] font-bold text-zinc-450 dark:text-zinc-550 mt-1">Expiry: {formatDateStr(expiryDate)}</p>
+                                        <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 mt-1">Expiry: {formatDateStr(expiryDate)}</p>
                                     </div>
                                     <div className="pt-1">
-                                        <a href="mailto:tabrez.ataher@gmail.com" className="text-[10px] font-extrabold text-synos-primary hover:underline uppercase tracking-wider">
+                                        <a href="mailto:tabrez.ataher@gmail.com" className="text-xs font-bold text-synos-primary hover:underline uppercase tracking-wider">
                                             Contact TBZ Labs
                                         </a>
                                     </div>
@@ -258,13 +258,13 @@ export function ControlTowerDashboard() {
                                     <button 
                                         onClick={handleSyncLicense}
                                         disabled={isSyncingLicense}
-                                        className="px-3 py-1.5 bg-synos-primary text-white rounded-lg text-[10px] font-black hover:opacity-90 transition-all shadow-xs uppercase tracking-wider shrink-0 flex items-center justify-center gap-1"
+                                        className="px-3 py-1.5 bg-synos-primary text-white rounded-lg text-xs font-bold hover:opacity-90 transition-all shadow-xs uppercase tracking-wider shrink-0 flex items-center justify-center gap-1 cursor-pointer"
                                     >
                                         {isSyncingLicense ? <Loader2 className="h-3 w-3 animate-spin" /> : "Sync License"}
                                     </button>
                                     <button 
                                         onClick={handleCopyLabId} 
-                                        className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[10px] font-black text-zinc-650 dark:text-zinc-450 hover:bg-zinc-50 dark:hover:bg-zinc-850/50 hover:text-zinc-850 dark:hover:text-zinc-200 transition-all shadow-xs uppercase tracking-wider shrink-0"
+                                        className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-zinc-100 transition-all shadow-xs uppercase tracking-wider shrink-0 cursor-pointer"
                                     >
                                         {copiedId ? "Copied!" : "Copy Lab ID"}
                                     </button>
@@ -306,8 +306,8 @@ export function ControlTowerDashboard() {
             {/* Operations Section */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
-                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
-                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Operations</h2>
+                    <span className="w-1.5 h-4.5 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs sm:text-sm font-extrabold dark:text-zinc-300 text-slate-700 tracking-wider uppercase">Operations</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {operationsCards.map((card) => (
@@ -319,8 +319,8 @@ export function ControlTowerDashboard() {
             {/* Pathology Section */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
-                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
-                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Pathology</h2>
+                    <span className="w-1.5 h-4.5 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs sm:text-sm font-extrabold dark:text-zinc-300 text-slate-700 tracking-wider uppercase">Pathology</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {pathologyCards.map((card) => (
@@ -332,8 +332,8 @@ export function ControlTowerDashboard() {
             {/* Radiology Section */}
             <div className="space-y-4">
                 <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
-                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
-                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Radiology</h2>
+                    <span className="w-1.5 h-4.5 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs sm:text-sm font-extrabold dark:text-zinc-300 text-slate-700 tracking-wider uppercase">Radiology</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {radiologyCards.map((card) => (
@@ -378,20 +378,20 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                         <div className="flex gap-3.5 items-center">
                             <Icon className="w-5 h-5 text-zinc-500 group-hover:text-synos-primary transition-colors" />
                             <div>
-                                <h3 className="type-value !text-sm leading-none mb-1 font-bold">{title}</h3>
-                                <p className="type-meta text-xs text-zinc-500">{data?.secondaryText || subtitle}</p>
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1">{title}</h3>
+                                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400">{data?.secondaryText || subtitle}</p>
                             </div>
                         </div>
                         {data?.status && (
-                            <div className="flex items-center gap-1.5 shrink-0 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-black/5 dark:border-white/5">
-                                <div className={cn("w-1.5 h-1.5 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
-                                <span className="type-meta text-[11px] font-medium">{data.status}</span>
+                            <div className="flex items-center gap-1.5 shrink-0 bg-white/80 dark:bg-zinc-800/80 px-2.5 py-1 rounded-full border border-slate-200/80 dark:border-white/10 shadow-2xs">
+                                <div className={cn("w-2 h-2 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
+                                <span className="text-xs font-semibold text-slate-700 dark:text-zinc-200">{data.status}</span>
                             </div>
                         )}
                     </div>
                     <div className="flex items-baseline gap-2 pt-1">
-                        <span className="type-display !text-4xl leading-none font-black">{data?.count || 0}</span>
-                        <span className="type-label text-xs text-zinc-500">{data?.primaryText || 'items pending'}</span>
+                        <span className="text-4xl sm:text-5xl leading-none font-extrabold text-slate-900 dark:text-white tabular-nums">{data?.count || 0}</span>
+                        <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400">{data?.primaryText || 'items pending'}</span>
                     </div>
                 </div>
 
@@ -400,13 +400,13 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                     {data?.items && data.items.length > 0 ? (
                         <div className="space-y-1.5 max-w-[62%]">
                             {data.items.map((item, idx) => (
-                                <div key={idx} className="flex flex-col text-[11px] group/item bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs py-1 px-2.5 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10">
-                                    <span className="type-code font-bold truncate">{item.name}</span>
+                                <div key={idx} className="flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 py-1.5 px-3 rounded-lg shadow-2xs border border-slate-200/90 dark:border-white/10">
+                                    <span className="font-bold text-slate-900 dark:text-white truncate">{item.name}</span>
                                     <div className="flex items-center justify-between gap-2 mt-0.5">
-                                        <span className="type-meta italic opacity-75 truncate text-[10px]">{item.detail}</span>
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            <div className={cn("w-1 h-1 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
-                                            <span className="text-[10px] font-semibold opacity-80">{item.statusBadge}</span>
+                                        <span className="italic text-slate-500 dark:text-zinc-400 truncate text-xs">{item.detail}</span>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            <div className={cn("w-1.5 h-1.5 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
+                                            <span className="text-xs font-semibold text-slate-600 dark:text-zinc-300">{item.statusBadge}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -414,14 +414,14 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                         </div>
                     ) : (
                         <div className="py-5">
-                            <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
+                            <span className="text-sm font-semibold text-slate-400 dark:text-zinc-500 tracking-wide">Standby</span>
                         </div>
                     )}
                 </div>
             </div>
-            <button onClick={onAction} className="w-full py-2.5 border-t dark:border-white/5 border-slate-200/80 type-section-header hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+            <button onClick={onAction} className="w-full py-2.5 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300 cursor-pointer">
                 {btnText}
-                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
         </div>
     );
@@ -448,13 +448,13 @@ function MetricBox({ label, value, icon: Icon, watermark: Watermark, isCurrency,
 
             <div className="relative z-10 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="type-label text-xs font-semibold text-zinc-500">{label}</span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-600 dark:text-zinc-400">{label}</span>
                     <Icon className={cn("w-4 h-4", highlight ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-500')} />
                 </div>
-                <div className={cn("type-display !text-2xl font-black", highlight ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-white")}>
+                <div className={cn("text-2xl sm:text-3xl font-extrabold tabular-nums tracking-tight", highlight ? "text-indigo-600 dark:text-indigo-400" : "text-slate-900 dark:text-white")}>
                     {value ?? (isCurrency ? '₹ 0' : '0')}
                 </div>
-                <div className="type-meta mt-1 opacity-50 text-[10px]">Reality Check</div>
+                <div className="text-xs font-medium text-slate-400 dark:text-zinc-500 mt-1">Reality Check</div>
             </div>
         </div>
     );

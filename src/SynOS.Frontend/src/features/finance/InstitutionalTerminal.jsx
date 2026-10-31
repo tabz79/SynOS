@@ -134,24 +134,24 @@ export function InstitutionalTerminal() {
                 {/* High-Level Institutional KPIs */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-blue-500">Empanelled Insurers</div>
+                        <div className="text-xs font-black uppercase tracking-wider text-blue-500">Empanelled Insurers</div>
                         <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1">{stats.insuranceCount}</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Active TPA & Insurance Networks</div>
+                        <div className="text-xs text-zinc-500 font-medium mt-0.5">Active TPA & Insurance Networks</div>
                     </div>
                     <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-indigo-500">Corporate Clients</div>
+                        <div className="text-xs font-black uppercase tracking-wider text-indigo-500">Corporate Clients</div>
                         <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100 mt-1">{stats.corporateCount}</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Contracted Companies & Groups</div>
+                        <div className="text-xs text-zinc-500 font-medium mt-0.5">Contracted Companies & Groups</div>
                     </div>
                     <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-500">Billing Modality</div>
+                        <div className="text-xs font-black uppercase tracking-wider text-amber-500">Billing Modality</div>
                         <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">Cashless & B2B</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Pre-Auth Claims & Monthly Invoices</div>
+                        <div className="text-xs text-zinc-500 font-medium mt-0.5">Pre-Auth Claims & Monthly Invoices</div>
                     </div>
                     <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-xs">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-emerald-500">Counter Desk Mode</div>
+                        <div className="text-xs font-black uppercase tracking-wider text-emerald-500">Counter Desk Mode</div>
                         <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹0 Desk Claim</div>
-                        <div className="text-[10px] text-zinc-500 font-medium mt-0.5">Billed to Institutional Ledger</div>
+                        <div className="text-xs text-zinc-500 font-medium mt-0.5">Billed to Institutional Ledger</div>
                     </div>
                 </div>
 

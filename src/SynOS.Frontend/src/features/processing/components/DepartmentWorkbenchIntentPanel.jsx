@@ -373,7 +373,7 @@ export function DepartmentWorkbenchIntentPanel({ assignmentId, onClose, onDirtyU
                             <div className="px-4 py-2 dark:bg-zinc-800/30 bg-zinc-100 flex items-center justify-between sticky top-0 z-10 border-b dark:border-white/5 border-zinc-200">
                                  <div className="flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-500" />
-                                    <span className="text-[11px] font-black uppercase tracking-wider dark:text-zinc-400 text-zinc-600">
+                                    <span className="text-xs font-black uppercase tracking-wider dark:text-zinc-400 text-zinc-600">
                                         {test.testName}
                                     </span>
                                  </div>

@@ -65,9 +65,9 @@ const SummaryCard = ({ title, value, type = 'neutral', subtitle, icon: Icon }) =
     return (
         <div className={`synos-kpi-card p-5 rounded-2xl group flex items-center justify-between ${borders[type]}`}>
             <div className="space-y-1.5">
-                <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">{title}</p>
+                <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-none">{title}</p>
                 <p className="text-2xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight leading-none">{value}</p>
-                {subtitle && <p className="text-[10px] text-zinc-500 leading-none">{subtitle}</p>}
+                {subtitle && <p className="text-xs text-zinc-500 leading-none">{subtitle}</p>}
             </div>
             {Icon && (
                 <div className={`p-3 rounded-xl border ${
@@ -141,12 +141,12 @@ export const OverheadExpensesScreen = () => {
 
     const getStatusBadge = (status) => {
         if (status === 2 || status === 'Settled') {
-            return <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Paid</span>;
+            return <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Paid</span>;
         }
         if (status === 1 || status === 'PartiallyPaid') {
-            return <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">Partially Paid</span>;
+            return <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-blue-500/10 text-blue-500 border border-blue-500/20">Partially Paid</span>;
         }
-        return <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">Due</span>;
+        return <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">Due</span>;
     };
 
     const handleInitializeTemplates = async () => {
@@ -171,7 +171,7 @@ export const OverheadExpensesScreen = () => {
                         <Building2 className="w-5 h-5 text-emerald-500" />
                         Monthly Overheads
                     </h1>
-                    <p className="text-xs text-zinc-500 tracking-tight">Record operational expenses, subscriptions, leases, and utilities.</p>
+                    <p className="text-xs text-zinc-500 tracking-normal">Record operational expenses, subscriptions, leases, and utilities.</p>
                 </div>
 
                 {/* Period Controls & Actions */}
@@ -279,14 +279,14 @@ export const OverheadExpensesScreen = () => {
                         <table className="w-full text-left border-collapse synos-table">
                             <thead>
                                 <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Due Date</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Description</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Bill Amount</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount Paid</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Outstanding</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
-                                    <th className="px-6 py-3.5 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500">Due Date</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500">Description</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500">Category</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Bill Amount</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Amount Paid</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Outstanding</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
@@ -305,7 +305,7 @@ export const OverheadExpensesScreen = () => {
                                                         <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">
                                                             {new Date(bill.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                                                         </span>
-                                                        <span className="text-[10px] text-zinc-400">
+                                                        <span className="text-xs text-zinc-400">
                                                             {new Date(bill.dueDate).getFullYear()}
                                                         </span>
                                                     </div>
@@ -315,13 +315,13 @@ export const OverheadExpensesScreen = () => {
                                                         <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                                                             {cleanDescription(bill.description)}
                                                         </span>
-                                                        <span className="text-[9px] font-semibold text-zinc-400">
+                                                        <span className="text-xs font-semibold text-zinc-400">
                                                             Cycle: {extractCycle(bill.description)}
                                                         </span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${cat.color}`}>
+                                                    <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${cat.color}`}>
                                                         {cat.label}
                                                     </span>
                                                 </td>
@@ -343,13 +343,13 @@ export const OverheadExpensesScreen = () => {
                                                     {!isPaid ? (
                                                         <button 
                                                             onClick={() => setPaymentModal({ isOpen: true, bill })}
-                                                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg shadow-sm transition-all"
+                                                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm transition-all"
                                                         >
                                                             Record Payment
                                                         </button>
                                                     ) : (
                                                         <div className="flex items-center justify-end gap-2">
-                                                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Completed</span>
+                                                            <span className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Completed</span>
                                                             <button
                                                                 onClick={() => setSelectedVoucher({
                                                                     voucherNumber: bill.overheadPayableId ? `VCH-${bill.overheadPayableId.slice(0, 8).toUpperCase()}` : 'VCH-EXP-001',
@@ -458,7 +458,7 @@ const RecordPaymentModal = ({ isOpen, bill, onClose, onSaved }) => {
                 <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div>
                         <h3 className="text-xl font-black dark:text-white tracking-tight">Record Payment</h3>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{cleanDescription(bill.description)}</p>
+                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{cleanDescription(bill.description)}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -467,7 +467,7 @@ const RecordPaymentModal = ({ isOpen, bill, onClose, onSaved }) => {
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Bill Details</p>
+                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Bill Details</p>
                         <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-white/5 border dark:border-zinc-800 border-zinc-200 flex justify-between items-center">
                             <div>
                                 <p className="text-xs text-zinc-500">Obligated Cost</p>
@@ -481,7 +481,7 @@ const RecordPaymentModal = ({ isOpen, bill, onClose, onSaved }) => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Amount to Record (₹)</label>
+                        <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Amount to Record (₹)</label>
                         <div className="relative">
                             <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₹</span>
                             <input 
@@ -499,14 +499,14 @@ const RecordPaymentModal = ({ isOpen, bill, onClose, onSaved }) => {
 
                     {/* Payment Mode Selector */}
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Recorded Mode</label>
+                        <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Recorded Mode</label>
                         <div className="flex gap-2">
                             {['Cash', 'UPI', 'BankTransfer'].map(mode => (
                                 <button 
                                     key={mode}
                                     type="button"
                                     onClick={() => setPaymentMethod(mode)}
-                                    className={`flex-1 py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all ${paymentMethod === mode ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900' : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900'}`}
+                                    className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-xl border transition-all ${paymentMethod === mode ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900' : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900'}`}
                                 >
                                     {mode === 'BankTransfer' ? 'Bank' : mode}
                                 </button>
@@ -701,7 +701,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                         <h3 className="text-xl font-black dark:text-white tracking-tight">
                             {editingTemplateId ? "Edit Recurring Template" : "Add Bill"}
                         </h3>
-                        <p className="text-xs text-zinc-500 tracking-tight">Record operational costs and choose recurrence cycles in a single form.</p>
+                        <p className="text-xs text-zinc-500 tracking-normal">Record operational costs and choose recurrence cycles in a single form.</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -725,7 +725,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                             {/* Left Column inputs */}
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">Bill Description</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-1 tracking-widest">Bill Description</label>
                                     <input 
                                         type="text"
                                         required
@@ -737,7 +737,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">Amount (₹)</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-1 tracking-widest">Amount (₹)</label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">₹</span>
                                         <input 
@@ -757,7 +757,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                             {/* Right Column inputs */}
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">Category</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-1 tracking-widest">Category</label>
                                     <select 
                                         value={formData.category}
                                         onChange={e => setFormData({ ...formData, category: e.target.value })}
@@ -770,7 +770,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">Due Date / Start Date</label>
+                                    <label className="text-xs font-black uppercase text-zinc-500 ml-1 tracking-widest">Due Date / Start Date</label>
                                     <input 
                                         type="date"
                                         required
@@ -783,7 +783,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
 
                             {/* Recurrence Cycles Picker Below Date (Colspan 2) */}
                             <div className="md:col-span-2 space-y-2 border-t dark:border-zinc-800 border-zinc-200 pt-4 mt-2">
-                                <label className="text-[10px] font-black uppercase text-zinc-500 ml-1 tracking-widest">Repeat Billing Cycle</label>
+                                <label className="text-xs font-black uppercase text-zinc-500 ml-1 tracking-widest">Repeat Billing Cycle</label>
                                 <div className="flex gap-2 flex-wrap">
                                     {cycleSuggestions.map(cycle => {
                                         const isActive = formData.cycle === cycle;
@@ -792,7 +792,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                                 key={cycle}
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, cycle })}
-                                                className={`px-4 py-2.5 rounded-xl border text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                                className={`px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition-all ${
                                                     isActive 
                                                         ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 shadow-sm'
                                                         : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900'
@@ -839,8 +839,8 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                     {/* Active Recurring Registry list at the bottom */}
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-2 ml-1">
-                            <h4 className="text-[10px] font-black dark:text-zinc-300 text-zinc-700 tracking-widest uppercase">Active Recurring Cycles Register</h4>
-                            <span className="text-[9px] font-bold bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-500">Templates</span>
+                            <h4 className="text-xs font-black dark:text-zinc-300 text-zinc-700 tracking-widest uppercase">Active Recurring Cycles Register</h4>
+                            <span className="text-xs font-bold bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-zinc-500">Templates</span>
                         </div>
 
                         {templatesLoading ? (
@@ -854,12 +854,12 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                 <table className="w-full text-left border-collapse synos-table">
                                     <thead>
                                         <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Obligation Description</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Cost</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Cycle</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Recurrence / Start Date</th>
-                                            <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                            <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Category</th>
+                                            <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Obligation Description</th>
+                                            <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Cost</th>
+                                            <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Cycle</th>
+                                            <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Recurrence / Start Date</th>
+                                            <th className="px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
@@ -871,7 +871,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                             return (
                                                 <tr key={tpl.id} className={`hover:bg-zinc-50 dark:hover:bg-zinc-800/20 text-xs transition-colors ${isEditingThis ? 'bg-synos-primary/[0.02] border-l-2 border-synos-primary' : ''}`}>
                                                     <td className="px-4 py-3">
-                                                        <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${cat.color}`}>
+                                                        <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${cat.color}`}>
                                                             {cat.label}
                                                         </span>
                                                     </td>
@@ -882,7 +882,7 @@ const AddBillUnifiedModal = ({ isOpen, onClose, onSaved, activeUserId, activeMon
                                                         ₹{tpl.amount.toLocaleString('en-IN')}
                                                     </td>
                                                     <td className="px-4 py-3 text-center">
-                                                        <span className={`px-2 py-0.5 rounded-[5px] text-[10px] font-bold uppercase tracking-widest ${
+                                                        <span className={`px-2 py-0.5 rounded-[5px] text-xs font-bold uppercase tracking-widest ${
                                                             cycle === 'Annual' ? 'bg-sky-500/10 text-sky-500 border border-sky-500/20' :
                                                             cycle === 'Quarterly' ? 'bg-violet-500/10 text-violet-500 border border-violet-500/20' :
                                                             cycle === '6 Months' ? 'bg-indigo-500/10 text-indigo-500 border border-indigo-500/20' :
