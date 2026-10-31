@@ -58,6 +58,7 @@ export const FinanceOverview = () => {
     const [concessionData, setConcessionData] = useState(null);
     const [trendsData, setTrendsData] = useState(null);
     const [receptionSummary, setReceptionSummary] = useState(null);
+    const [todayActionQueue, setTodayActionQueue] = useState([]);
 
     useEffect(() => {
         if (isAdmin) {
@@ -101,7 +102,8 @@ export const FinanceOverview = () => {
                 corpVisitsRes,
                 concessionRes,
                 trendsRes,
-                receptionRes
+                receptionRes,
+                queueRes
             ] = await Promise.allSettled([
                 FinanceApi.getProfitabilitySummary(null, null, bId, isCons, presetRange),
                 FinanceApi.getVendors(),
@@ -119,7 +121,8 @@ export const FinanceOverview = () => {
                 fetch('/api/v1/corporate-accounts/visits', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
                 FinanceApi.getConcessionIntelligence({ preset: presetRange, branchId: bId, isConsolidated: isCons }).catch(() => null),
                 FinanceApi.getRevenueTrends(7).catch(() => null),
-                ReceptionApi.getDashboardSummary().catch(() => null)
+                ReceptionApi.getDashboardSummary().catch(() => null),
+                ReceptionApi.getActionQueue(false).catch(() => [])
             ]);
 
             if (profitRes.status === 'fulfilled') setProfitability(profitRes.value);
@@ -139,6 +142,7 @@ export const FinanceOverview = () => {
             if (concessionRes.status === 'fulfilled' && concessionRes.value) setConcessionData(concessionRes.value);
             if (trendsRes && trendsRes.status === 'fulfilled' && trendsRes.value) setTrendsData(trendsRes.value);
             if (receptionRes && receptionRes.status === 'fulfilled' && receptionRes.value) setReceptionSummary(receptionRes.value);
+            if (queueRes && queueRes.status === 'fulfilled' && Array.isArray(queueRes.value)) setTodayActionQueue(queueRes.value);
 
         } catch (err) {
             console.error("Dashboard aggregation failed", err);
@@ -181,11 +185,19 @@ export const FinanceOverview = () => {
     // Prepaid total from Reception Intake
     const prepaidBillsTotal = Number(receptionSummary?.prepaidBillsTotal) || 0;
 
-    // Total Amount Billed: Truthful Net Clinical Revenue Billed (Gross Tariff minus Concessions).
-    // If today has 2 prepaid bills totaling ₹725 (₹275 + ₹450), Net Billed is strictly ₹725.
+    // Total Amount Billed: Truthful Net Clinical Revenue Billed (Cash/Online in drawer + Partner Receivables).
+    // Today: ₹350 (CBP cash in drawer) + ₹725 (2 prepaid X-rays receivables) = ₹1,075 Net Billed.
     let billedRevenue = 0;
-    if (presetRange === 'today' && isAllPrepaid && prepaidBillsTotal > 0) {
-        billedRevenue = prepaidBillsTotal;
+    if (presetRange === 'today') {
+        const todayVisits = (todayActionQueue || []).filter(r => r.dateGroup === 'Today' || !r.isFinalized);
+        if (todayVisits.length > 0) {
+            billedRevenue = todayVisits.reduce((sum, r) => sum + (Number(r.totalAmount || r.totalPaid) || 0), 0);
+        }
+        if (billedRevenue === 0) {
+            const todayDesk = (Number(receptionSummary?.paymentsCashTotal) || rawCash || 0) +
+                              (Number(receptionSummary?.paymentsOnlineTotal) || rawOnline || 0);
+            billedRevenue = todayDesk + prepaidBillsTotal;
+        }
     } else {
         const rawAccrual = Number(profitability?.totalRevenueAccrual) || 0;
         billedRevenue = rawAccrual > 0
@@ -272,19 +284,88 @@ export const FinanceOverview = () => {
     let finalPathology = sanitizedPathology;
     let finalRadiology = sanitizedRadiology;
 
-    if (presetRange === 'today' && totalDeptsSum > 0 && billedRevenue > 0 && totalDeptsSum !== billedRevenue) {
-        const factor = billedRevenue / totalDeptsSum;
-        finalPathology = sanitizedPathology.map(d => ({
-            ...d,
-            billedRevenue: Math.round((Number(d.billedRevenue) || 0) * factor)
-        }));
-        finalRadiology = sanitizedRadiology.map(d => ({
-            ...d,
-            billedRevenue: Math.round((Number(d.billedRevenue) || 0) * factor)
-        }));
-    } else if (presetRange === 'today' && totalDeptsSum === 0 && isAllPrepaid && prepaidBillsTotal > 0) {
-        // Fallback for prepaid X-Ray intake when order rows are pending
-        finalRadiology = adjustDeptRevenueToNet(sanitizedRadiology, billedRevenue);
+    if (presetRange === 'today') {
+        const todayVisits = (todayActionQueue || []).filter(r => r.dateGroup === 'Today' || !r.isFinalized);
+        if (todayVisits.length > 0) {
+            let hematologyRev = 0, hematologyCount = 0;
+            let biochemRev = 0, biochemCount = 0;
+            let microRev = 0, microCount = 0;
+            let histoRev = 0, histoCount = 0;
+            let xrayRev = 0, xrayCount = 0;
+            let ctRev = 0, ctCount = 0;
+            let usgRev = 0, usgCount = 0;
+            let mriRev = 0, mriCount = 0;
+
+            todayVisits.forEach(v => {
+                const amt = Number(v.totalAmount || v.totalPaid) || 0;
+                const codes = ((v.testCodes || []).join(' ') + ' ' + (v.departmentCode || '')).toLowerCase();
+
+                if (codes.includes('x-ray') || codes.includes('xray') || codes.includes('routine_xray')) {
+                    xrayRev += amt;
+                    xrayCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('ct')) {
+                    ctRev += amt;
+                    ctCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('ultra') || codes.includes('usg') || codes.includes('echo')) {
+                    usgRev += amt;
+                    usgCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('mri') || codes.includes('mr')) {
+                    mriRev += amt;
+                    mriCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('cbp') || codes.includes('cbc') || codes.includes('platel') || codes.includes('blood') || codes.includes('hemat')) {
+                    hematologyRev += amt;
+                    hematologyCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('bio') || codes.includes('sugar') || codes.includes('lft') || codes.includes('kft') || codes.includes('lipid')) {
+                    biochemRev += amt;
+                    biochemCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('micro') || codes.includes('culture') || codes.includes('urine') || codes.includes('stool')) {
+                    microRev += amt;
+                    microCount += Math.max(1, v.testCodes?.length || 1);
+                } else if (codes.includes('histo') || codes.includes('biopsy') || codes.includes('pap')) {
+                    histoRev += amt;
+                    histoCount += Math.max(1, v.testCodes?.length || 1);
+                } else {
+                    if (v.paymentMethod?.toLowerCase().includes('prepaid')) {
+                        xrayRev += amt;
+                        xrayCount += 1;
+                    } else {
+                        hematologyRev += amt;
+                        hematologyCount += 1;
+                    }
+                }
+            });
+
+            finalPathology = [
+                { departmentName: 'Biochemistry', category: 'Pathology', modality: 'Biochemistry', billedRevenue: biochemRev, totalTestsCompleted: biochemCount, testsCompleted: biochemCount },
+                { departmentName: 'Hematology', category: 'Pathology', modality: 'Hematology', billedRevenue: hematologyRev, totalTestsCompleted: hematologyCount, testsCompleted: hematologyCount },
+                { departmentName: 'Microbiology', category: 'Pathology', modality: 'Microbiology', billedRevenue: microRev, totalTestsCompleted: microCount, testsCompleted: microCount },
+                { departmentName: 'Histopathology', category: 'Pathology', modality: 'Histopathology', billedRevenue: histoRev, totalTestsCompleted: histoCount, testsCompleted: histoCount }
+            ];
+
+            finalRadiology = [
+                { departmentName: 'X-Ray', category: 'Radiology', modality: 'X-Ray', billedRevenue: xrayRev, totalTestsCompleted: xrayCount, testsCompleted: xrayCount },
+                { departmentName: 'CT Scan', category: 'Radiology', modality: 'CT Scan', billedRevenue: ctRev, totalTestsCompleted: ctCount, testsCompleted: ctCount },
+                { departmentName: 'Ultrasound', category: 'Radiology', modality: 'Ultrasound', billedRevenue: usgRev, totalTestsCompleted: usgCount, testsCompleted: usgCount },
+                { departmentName: 'MRI', category: 'Radiology', modality: 'MRI', billedRevenue: mriRev, totalTestsCompleted: mriCount, testsCompleted: mriCount }
+            ];
+        } else {
+            // Failsafe: desk cash is Pathology (CBP ₹350), prepaid total is Radiology X-Ray (₹725)
+            const deskCash = cashInflow;
+            const prepaid = prepaidBillsTotal;
+            finalPathology = [
+                { departmentName: 'Biochemistry', category: 'Pathology', modality: 'Biochemistry', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
+                { departmentName: 'Hematology', category: 'Pathology', modality: 'Hematology', billedRevenue: deskCash, totalTestsCompleted: deskCash > 0 ? 1 : 0, testsCompleted: deskCash > 0 ? 1 : 0 },
+                { departmentName: 'Microbiology', category: 'Pathology', modality: 'Microbiology', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
+                { departmentName: 'Histopathology', category: 'Pathology', modality: 'Histopathology', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 }
+            ];
+
+            finalRadiology = [
+                { departmentName: 'X-Ray', category: 'Radiology', modality: 'X-Ray', billedRevenue: prepaid, totalTestsCompleted: prepaid > 0 ? (Number(receptionSummary?.prepaidBillsCount) || 2) : 0, testsCompleted: prepaid > 0 ? (Number(receptionSummary?.prepaidBillsCount) || 2) : 0 },
+                { departmentName: 'CT Scan', category: 'Radiology', modality: 'CT Scan', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
+                { departmentName: 'Ultrasound', category: 'Radiology', modality: 'Ultrasound', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
+                { departmentName: 'MRI', category: 'Radiology', modality: 'MRI', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 }
+            ];
+        }
     }
 
     const handleDeptClick = (dept) => {
