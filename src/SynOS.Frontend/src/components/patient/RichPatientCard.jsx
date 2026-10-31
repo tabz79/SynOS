@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
-import { User } from 'lucide-react'
+import { User, Pencil } from 'lucide-react'
 
 export const calculateDetailedAge = (dobString, fallbackAge) => {
     if (!dobString && fallbackAge && fallbackAge > 0) {
@@ -165,14 +165,25 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                 <div className="justify-self-end self-start flex items-center gap-2">
                     {secondaryActionLabel && (
                         <button 
+                            id="btn-edit-demographics"
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onSecondaryAction) onSecondaryAction();
                             }}
-                            className="text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Tab' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                                     document.querySelector('[data-payer-mode-btn="true"]');
+                                    if (payerBtn) payerBtn.focus();
+                                }
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                            title="Edit Patient Demographics"
                         >
-                            {secondaryActionLabel}
+                            <Pencil className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                            <span>{secondaryActionLabel}</span>
                         </button>
                     )}
                     {actionLabel && (

@@ -8,6 +8,7 @@ import { BillingSummary, extractB2BInfo } from './BillingSummary'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ReceptionApi, fetchReferralPartnersCached, clearReceptionMasterCaches } from '@/api/reception'
+import { PatientApi } from '@/api/patient'
 import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { usePanelEntry } from '@/hooks/useSynOSMotion'
@@ -191,6 +192,21 @@ export function IntentPanel({ onVisitUpdated }) {
             document.removeEventListener('focusin', handleFocusIn);
         };
     }, [userPayerExpandedState]);
+
+    // Auto-focus Edit Demographics button after adding/selecting a patient
+    useEffect(() => {
+        if (!isOpen) return;
+        const patientPresent = Boolean(displayedPatient?.id || currentPatientId || snapshot?.patient?.id);
+        if (patientPresent) {
+            const timer = setTimeout(() => {
+                const editBtn = document.getElementById('btn-edit-demographics');
+                if (editBtn) {
+                    editBtn.focus();
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, displayedPatient?.id, currentPatientId, snapshot?.patient?.id]);
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -1072,9 +1088,35 @@ export function IntentPanel({ onVisitUpdated }) {
         setIsEditDemographicsOpen(true);
     };
 
-    const handleSaveDemographicsDraft = () => {
-        setStagedDemographics({ ...editDemographicsDraft });
-        setIsEditDemographicsOpen(false);
+    const handleSaveDemographicsDraft = async () => {
+        if (isCorrectionIntent) {
+            setStagedDemographics({ ...editDemographicsDraft });
+            setIsEditDemographicsOpen(false);
+            return;
+        }
+
+        const patientId = displayedPatient?.id || snapshot?.patient?.id;
+        if (patientId) {
+            try {
+                await PatientApi.updatePatient(patientId, {
+                    firstName: editDemographicsDraft.firstName || '',
+                    lastName: editDemographicsDraft.lastName || '',
+                    age: editDemographicsDraft.age ? parseInt(editDemographicsDraft.age) : null,
+                    gender: editDemographicsDraft.gender || 'Male',
+                    currentPhoneNumber: editDemographicsDraft.mobile || ''
+                });
+                setStagedDemographics({ ...editDemographicsDraft });
+                setIsEditDemographicsOpen(false);
+                if (loadSnapshot) await loadSnapshot();
+            } catch (err) {
+                console.error("Failed to update patient demographics", err);
+                setStagedDemographics({ ...editDemographicsDraft });
+                setIsEditDemographicsOpen(false);
+            }
+        } else {
+            setStagedDemographics({ ...editDemographicsDraft });
+            setIsEditDemographicsOpen(false);
+        }
     };
 
     const handleConfirmBatchEdit = async () => {
@@ -1381,7 +1423,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         patient={displayedPatient}
                                                         onAction={handleClearPatient}
                                                         actionLabel={(Boolean(snapshot?.visit?.id || snapshot?.visit?.visitId || snapshot?.billing?.isLocked)) ? null : "Change"}
-                                                        secondaryActionLabel={isCorrectionIntent ? "Edit" : null}
+                                                        secondaryActionLabel="Edit"
                                                         onSecondaryAction={handleOpenEditDemographics}
                                                         isLocked={true}
                                                     />

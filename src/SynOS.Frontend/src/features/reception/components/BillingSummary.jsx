@@ -699,6 +699,7 @@ export function BillingSummary({
                                 {canPerformActions && !isPrepaid && (
                                     <button
                                         ref={concessionTriggerRef}
+                                        data-concession-trigger="true"
                                         type="button"
                                         onClick={() => setIsDiscountExpanded(prev => !prev)}
                                         className={cn(
@@ -891,6 +892,8 @@ export function BillingSummary({
 
                                                 <div className="relative flex-1">
                                                     <input
+                                                        id="input-flat-concession"
+                                                        data-financials-focus="true"
                                                         type="number"
                                                         min="0"
                                                         max={customDiscountType === 'PERCENTAGE' ? 100 : (billing.grossAmount || 100000)}
@@ -1584,6 +1587,7 @@ export function BillingSummary({
                         {/* Segmented control: Full Settlement vs Partial */}
                         <div className="inline-flex w-full p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60">
                             <button
+                                id="btn-settlement-full"
                                 type="button"
                                 onClick={() => {
                                     setIsPartialPayment?.(false);
@@ -1601,6 +1605,7 @@ export function BillingSummary({
                             </button>
 
                             <button
+                                id="btn-settlement-partial"
                                 type="button"
                                 onClick={() => {
                                     setIsPartialPayment?.(true);

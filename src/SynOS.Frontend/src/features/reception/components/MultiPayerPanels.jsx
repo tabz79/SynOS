@@ -39,6 +39,53 @@ export function MultiPayerSelector({
 
     const isCol = layout === 'column';
     const visibleModes = isCollapsed ? modes.filter(m => m.id === billingMode) : modes;
+    const modeRefs = useRef([]);
+
+    const handleModeKeyDown = (e, index, modeId) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+            e.preventDefault();
+            const nextIndex = (index + 1) % visibleModes.length;
+            if (modeRefs.current[nextIndex]) {
+                modeRefs.current[nextIndex].focus();
+            }
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prevIndex = (index - 1 + visibleModes.length) % visibleModes.length;
+            if (modeRefs.current[prevIndex]) {
+                modeRefs.current[prevIndex].focus();
+            }
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (isCollapsed && onToggleCollapse) {
+                onToggleCollapse();
+            } else if (!disabled) {
+                onChangeMode(modeId);
+                // Advance focus to Referring Doctor or Clinic
+                setTimeout(() => {
+                    const docInput = document.getElementById('input-prescribing-doctor') ||
+                                     document.querySelector('input[placeholder*="Search Doctor"]');
+                    if (docInput) {
+                        docInput.focus();
+                    }
+                }, 80);
+            }
+        } else if (e.key === 'Tab') {
+            if (!e.shiftKey) {
+                e.preventDefault();
+                const docInput = document.getElementById('input-prescribing-doctor') ||
+                                 document.querySelector('input[placeholder*="Search Doctor"]');
+                if (docInput) {
+                    docInput.focus();
+                }
+            } else {
+                e.preventDefault();
+                const editBtn = document.getElementById('btn-edit-demographics');
+                if (editBtn) {
+                    editBtn.focus();
+                }
+            }
+        }
+    };
 
     return (
         <div className={cn("w-full", isCol ? "space-y-2.5" : "space-y-3")}>
@@ -53,14 +100,19 @@ export function MultiPayerSelector({
             <div className={cn(
                 isCol ? "flex flex-col gap-2 sm:gap-2.5" : "grid grid-cols-1 sm:grid-cols-3 gap-3.5"
             )}>
-                {visibleModes.map((m) => {
+                {visibleModes.map((m, idx) => {
                     const Icon = m.icon;
                     const isSelected = billingMode === m.id;
                     return (
                         <button
                             key={m.id}
+                            ref={(el) => { modeRefs.current[idx] = el; }}
+                            data-payer-mode-btn="true"
+                            data-selected={isSelected ? "true" : "false"}
+                            tabIndex={0}
                             type="button"
                             disabled={disabled}
+                            onKeyDown={(e) => handleModeKeyDown(e, idx, m.id)}
                             onClick={() => {
                                 if (isCollapsed && onToggleCollapse) {
                                     onToggleCollapse();

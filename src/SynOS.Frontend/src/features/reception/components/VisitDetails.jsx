@@ -1216,6 +1216,8 @@ export function VisitDetails({
                             <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
                         )}
                         <input
+                            id="input-test-search"
+                            data-test-search-input="true"
                             ref={testSearchInputRef}
                             type="text"
                             placeholder={isInstitutionalMode 
@@ -1247,8 +1249,25 @@ export function VisitDetails({
                                         handleAddTest(suggestions[testSelectedIndex]);
                                     }
                                 } else if (e.key === 'Tab') {
-                                    // Smoothly dismiss suggestions dropdown so tab focus advances to next section
                                     setIsSearchFocused(false);
+                                    if (!e.shiftKey) {
+                                        e.preventDefault();
+                                        const outsourceBtn = document.getElementById('btn-outsource-test');
+                                        if (outsourceBtn) {
+                                            outsourceBtn.focus();
+                                        } else {
+                                            const finTarget = document.querySelector('[data-financials-focus="true"]') ||
+                                                              document.querySelector('#input-flat-concession') ||
+                                                              document.querySelector('[data-concession-trigger="true"]') ||
+                                                              document.querySelector('#btn-settlement-full');
+                                            if (finTarget) finTarget.focus();
+                                        }
+                                    } else {
+                                        e.preventDefault();
+                                        const docInput = document.getElementById('input-prescribing-doctor') ||
+                                                         document.querySelector('input[placeholder*="Search Doctor"]');
+                                        if (docInput) docInput.focus();
+                                    }
                                 }
                             }}
                             disabled={isInstitutionalMode && !activeCorporateAccountId}
@@ -1679,8 +1698,24 @@ export function VisitDetails({
                 ) : (
                     !isReadOnly && (
                         <button
+                            id="btn-outsource-test"
                             onClick={() => setIsOutsourceFormVisible(true)}
-                            className="rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Tab' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    const finTarget = document.querySelector('[data-financials-focus="true"]') ||
+                                                      document.querySelector('#input-flat-concession') ||
+                                                      document.querySelector('[data-concession-trigger="true"]') ||
+                                                      document.querySelector('#btn-settlement-full');
+                                    if (finTarget) finTarget.focus();
+                                } else if (e.key === 'Tab' && e.shiftKey) {
+                                    e.preventDefault();
+                                    const testInput = document.getElementById('input-test-search') ||
+                                                      testSearchInputRef?.current;
+                                    if (testInput) testInput.focus();
+                                }
+                            }}
+                            className="rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                         >
                             <Beaker className="w-4 h-4 text-slate-500" />
                             <span>Outsource Test</span>
@@ -1759,10 +1794,12 @@ function ReferralCombinedInput({
         setValue(initialValue);
     }, [initialValue]);
 
-    // Derived Suggestions
-    const suggestions = value.length < 2 ? [] : partners.filter(p =>
-        p.name.toLowerCase().includes(value.toLowerCase())
-    );
+    // Derived Suggestions (Show top partners when empty so ArrowDown immediately navigates)
+    const suggestions = useMemo(() => {
+        if (!value || value.trim().length === 0) return (partners || []).slice(0, 15);
+        const q = value.toLowerCase();
+        return (partners || []).filter(p => p.name && p.name.toLowerCase().includes(q)).slice(0, 15);
+    }, [value, partners]);
 
     // Reset keyboard selection index when suggestions change
     useEffect(() => {
@@ -1805,23 +1842,46 @@ function ReferralCombinedInput({
     };
 
     const handleKeyDown = (e) => {
-        if (!showSuggestions || suggestions.length === 0) return;
-
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+            if (!showSuggestions) {
+                setShowSuggestions(true);
+            }
+            if (suggestions.length > 0) {
+                setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+            }
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+            if (suggestions.length > 0) {
+                setSelectedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+            }
         } else if (e.key === 'Enter') {
-            if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+            if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
                 e.preventDefault();
                 handleApply(suggestions[selectedIndex].referralPartnerId);
+            } else {
+                e.preventDefault();
+                setShowSuggestions(false);
+                const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
+                if (target) target.focus();
             }
         } else if (e.key === 'Tab') {
-            if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
+            if (!e.shiftKey) {
+                if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
+                    handleApply(suggestions[selectedIndex].referralPartnerId);
+                }
+                setShowSuggestions(false);
+                const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
+                if (target) {
+                    e.preventDefault();
+                    target.focus();
+                }
+            } else {
+                // Shift+Tab back to Billing & Payer Mode
                 e.preventDefault();
-                handleApply(suggestions[selectedIndex].referralPartnerId);
+                const payerBtn = document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                 document.querySelector('[data-payer-mode-btn="true"]');
+                if (payerBtn) payerBtn.focus();
             }
         } else if (e.key === 'Escape') {
             setShowSuggestions(false);
@@ -1845,6 +1905,8 @@ function ReferralCombinedInput({
         <div className="relative">
             <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
             <input
+                id="input-prescribing-doctor"
+                data-doctor-input="true"
                 ref={inputRef}
                 type="text"
                 value={value}
